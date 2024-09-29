@@ -151,7 +151,10 @@ export async function genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */
-export async function genRequestsTrieRoot(requests: CLRequest<CLRequestType>[], emptyTrie?: Trie) {
+export async function genRequestsRoot(
+  requests: CLRequest<CLRequestType>[],
+  keccakFunction: (msg: Uint8Array) => Uint8Array,
+) {
   // Requests should be sorted in monotonically ascending order based on type
   // and whatever internal sorting logic is defined by each request type
   if (requests.length > 1) {
@@ -160,9 +163,14 @@ export async function genRequestsTrieRoot(requests: CLRequest<CLRequestType>[], 
         throw new Error('requests are not sorted in ascending order')
     }
   }
-  const trie = emptyTrie ?? new Trie()
-  for (const [i, req] of requests.entries()) {
-    await trie.put(RLP.encode(i), req.serialize())
+
+  // def compute_requests_hash(list):
+  //    return keccak256(rlp.encode([rlp.encode(req) for req in list]))
+
+  const encodedRequests = []
+  for (const req of requests) {
+    encodedRequests.push(RLP.encode(req.serialize()))
   }
-  return trie.root()
+
+  return keccakFunction(RLP.encode(encodedRequests))
 }

@@ -19,7 +19,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   BlockHeader,
@@ -261,11 +261,11 @@ export class Block {
 
     if (requestsInput === undefined) {
       if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsTrieRoot(this.requests!)
+        this.cache.requestsRoot = await genRequestsRoot(this.requests!, this.keccakFunction)
       }
       return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
     } else {
-      const reportedRoot = await genRequestsTrieRoot(requests)
+      const reportedRoot = await genRequestsRoot(requests, this.keccakFunction)
       return equalsBytes(reportedRoot, this.header.requestsRoot!)
     }
   }

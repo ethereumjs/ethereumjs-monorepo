@@ -1,4 +1,4 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
@@ -8,6 +8,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
@@ -54,7 +55,7 @@ describe('EIP-7685 runBlock tests', () => {
   it('should not throw invalid requestsRoot error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
-    const requestsRoot = await genRequestsTrieRoot([request])
+    const requestsRoot = await genRequestsRoot([request], keccak256)
     const block = createBlock(
       {
         requests: [request],

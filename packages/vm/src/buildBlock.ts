@@ -1,7 +1,7 @@
 import {
   createBlock,
   createSealedCliqueBlock,
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
@@ -23,6 +23,7 @@ import {
   toType,
   zeros,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -339,8 +340,9 @@ export class BlockBuilder {
     let requests
     let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {
+      const keccakFunction = this.vm.common.customCrypto.keccak256 ?? keccak256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsTrieRoot(requests)
+      requestsRoot = await genRequestsRoot(requests, keccakFunction)
       // Do other validations per request type
     }
 

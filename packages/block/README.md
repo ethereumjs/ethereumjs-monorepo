@@ -244,7 +244,7 @@ Starting with v5.3.0 this library supports requests to the consensus layer which
 ```ts
 // ./examples/6110Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -253,6 +253,7 @@ import {
   createDepositRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -269,7 +270,7 @@ const main = async () => {
   }
   const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsRoot(requests, keccak256)
 
   const block = createBlock(
     {
@@ -297,7 +298,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various d
 ```ts
 // ./examples/7002Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -306,6 +307,7 @@ import {
   createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -320,7 +322,7 @@ const main = async () => {
   }
   const request = createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsRoot(requests, keecak256)
 
   const block = createBlock(
     {
@@ -348,7 +350,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 ```ts
 // ./examples/7251Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -356,6 +358,7 @@ import {
   createConsolidationRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -370,7 +373,7 @@ const main = async () => {
   }
   const request = createConsolidationRequest(consolidationRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsRoot(requests, keccak256)
 
   const block = createBlock(
     {

@@ -23,9 +23,10 @@ import {
   intToHex,
   isHexString,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
+import { genRequestsRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
 import {
   Block,
   createBlockHeader,
@@ -433,9 +434,8 @@ export async function createBlockFromExecutionPayload(
     }
   }
 
-  const requestsRoot = requests
-    ? await genRequestsTrieRoot(requests, new Trie({ common: opts?.common }))
-    : undefined
+  const keccakFunction = opts?.common?.customCrypto.keccak256 ?? keccak256
+  const requestsRoot = requests ? await genRequestsRoot(requests, keccakFunction) : undefined
 
   const header: HeaderData = {
     ...payload,

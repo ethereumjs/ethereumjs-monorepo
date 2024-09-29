@@ -6,9 +6,10 @@ import {
   createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
-import { genRequestsTrieRoot } from '../src/helpers.js'
+import { genRequestsRoot } from '../src/helpers.js'
 import {
   Block,
   createBlock,
@@ -55,7 +56,7 @@ describe('7685 tests', () => {
   })
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
-    const requestsRoot = await genRequestsTrieRoot([request])
+    const requestsRoot = await genRequestsRoot([request], keccak256)
     const block = createBlock(
       {
         requests: [request],
@@ -83,7 +84,7 @@ describe('7685 tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsRoot(requests, keccak256)
 
     // Construct block with requests in correct order
 
@@ -125,7 +126,7 @@ describe('createWithdrawalFromBytesArray tests', () => {
     const request2 = getRandomWithdrawalRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsRoot(requests, keccak256)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromBytesArray(
@@ -145,7 +146,7 @@ describe('fromRPC tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = await genRequestsTrieRoot(requests)
+    const requestsRoot = await genRequestsRoot(requests, keccak256)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromBytesArray(
