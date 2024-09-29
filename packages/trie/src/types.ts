@@ -8,10 +8,9 @@ export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
 export type Nibbles = number[]
 
-// [ encodedPath, key ]
+// Raw nodes as specified in the MPT spec
+// To learn more: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/#optimization
 export type RawExtensionNode = [Uint8Array, Uint8Array]
-
-// [ encodedPath, value ]
 export type RawLeafNode = [Uint8Array, Uint8Array]
 
 // Branch and extension nodes might store
