@@ -96,11 +96,11 @@ describe('VM initialized with custom state', () => {
     common.setHardfork(Hardfork.London)
     const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
-    const sigHash = '0x2e64cec1'
+    const calldata = '0x2e64cec1' // This is the call data to trigger the `retrieve` method on the given contract
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
-      data: hexToBytes(sigHash),
+      data: hexToBytes(calldata),
       caller: createAddressFromPrivateKey(privateKey),
     })
 
