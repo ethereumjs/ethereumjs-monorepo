@@ -26,6 +26,7 @@ import type { PeerPool } from '../net/peerpool.js'
 import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 // Configuration constants
@@ -34,6 +35,8 @@ const MIN_GAS_PRICE = BigInt(100000000) // .1 GWei
 const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
 const MAX_POOL_SIZE = 5000
 const MAX_TXS_PER_ACCOUNT = 100
+// keep for 1 epoch deep to handle reorgs
+const BLOBS_AND_PROOFS_CACHE_LENGTH = 6 * 32 * 1
 
 export interface TxPoolOptions {
   /* Config */
@@ -102,6 +105,10 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  public blobsAndProofsByHash: Map<
+    PrefixedHexString,
+    { blob: PrefixedHexString; proof: PrefixedHexString }
+  >
 
   /**
    * The number of txs currently in the pool
@@ -167,6 +174,10 @@ export class TxPool {
     this.service = options.service
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.blobsAndProofsByHash = new Map<
+      PrefixedHexString,
+      { blob: PrefixedHexString; proof: PrefixedHexString }
+    >()
     this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -371,11 +382,31 @@ export class TxPool {
         this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
       }
       if (isBlob4844Tx(tx)) {
+        // add to blobs and proofs cache
+        for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
+          const blob = tx.blobs![i]
+          const proof = tx.kzgProofs![i]
+          this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+        }
+        this.pruneBlobsAndProofsCache()
+
         this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
+    }
+  }
+
+  pruneBlobsAndProofsCache() {
+    const pruneLength = this.blobsAndProofsByHash.size - BLOBS_AND_PROOFS_CACHE_LENGTH
+    let pruned = 0
+    for (const versionedHash of this.blobsAndProofsByHash.keys()) {
+      if (pruned >= pruneLength) {
+        break
+      }
+      this.blobsAndProofsByHash.delete(versionedHash)
+      pruned++
     }
   }
 
