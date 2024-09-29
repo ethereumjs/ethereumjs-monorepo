@@ -59,7 +59,6 @@
     "typedoc": "^0.26.6",
     "typedoc-plugin-markdown": "^4.2.5",
     "typescript": "5.0.4",
-    "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",
     "vitest": "2.1.0"
@@ -68,8 +67,8 @@
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "peerDependencies": {
-    "@vitest/browser": "2.1.0",
-    "webdriverio": "^8.39.0"
+    "@vitest/browser": "^2.1.0",
+    "webdriverio": "^8.40.5"
   },
   "peerDependenciesMeta": {
     "playwright": {
