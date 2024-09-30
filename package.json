@@ -68,7 +68,7 @@
   },
   "peerDependencies": {
     "@vitest/browser": "^2.1.0",
-    "webdriverio": "^8.40.5"
+    "webdriverio": "^8.39.0"
   },
   "peerDependenciesMeta": {
     "playwright": {
