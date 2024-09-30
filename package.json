@@ -79,9 +79,6 @@
     },
     "@vitest/browser": {
       "optional": true
-    },
-    "kzg-wasm": {
-      "optional": true
     }
   },
   "engines": {

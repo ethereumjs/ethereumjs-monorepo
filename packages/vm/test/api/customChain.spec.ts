@@ -8,6 +8,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
+import { Interface } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.js'
