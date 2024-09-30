@@ -16,6 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
+import { createVerkleTree } from '../../../../verkle/dist/esm/constructors.js'
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
@@ -47,8 +48,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   const verkleCrypto = await loadVerkleCrypto()
+  const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
   const state = new StatefulVerkleStateManager({
     verkleCrypto,
+    trie,
   })
 
   let cacheDB = new MapDB()
