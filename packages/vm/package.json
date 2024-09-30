@@ -84,6 +84,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
+    "ethers": "^6.13.2",
     "mcl-wasm": "^1.5.0",
     "micro-eth-signer": "^0.11.0",
     "minimist": "^1.2.5",
