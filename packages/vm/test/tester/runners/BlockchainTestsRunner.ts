@@ -3,7 +3,8 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { Trie } from '@ethereumjs/trie'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -14,16 +15,17 @@ import {
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
-import { createVerkleTree } from '../../../../verkle/dist/esm/constructors.js'
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
-import type { Common } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
@@ -47,12 +49,24 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let common = options.common.copy() as Common
   common.setHardforkBy({ blockNumber: 0 })
 
-  const verkleCrypto = await loadVerkleCrypto()
-  const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
-  const state = new StatefulVerkleStateManager({
-    verkleCrypto,
-    trie,
-  })
+  let stateTree: Trie | VerkleTree
+  let stateManager: StateManagerInterface
+
+  if (options.stateManager === 'verkle') {
+    const verkleCrypto = await loadVerkleCrypto()
+    stateTree = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+    stateManager = new StatefulVerkleStateManager({
+      verkleCrypto,
+      trie: stateTree,
+    })
+  } else {
+    stateTree = new Trie({ useKeyHashing: true, common })
+    stateManager = new MerkleStateManager({
+      caches: new Caches(),
+      trie: stateTree,
+      common,
+    })
+  }
 
   let cacheDB = new MapDB()
 
@@ -98,7 +112,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     bn254: options.bn254,
   }
   let vm = await createVM({
-    stateManager: state,
+    stateManager,
     blockchain,
     common,
     setHardfork: true,
@@ -226,7 +240,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const headBlock = await (vm.blockchain as Blockchain).getIteratorHead()
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
-          await verifyPostConditions(state, testData.postState, t)
+          await verifyPostConditions(stateTree, testData.postState, t)
         }
 
         throw e
