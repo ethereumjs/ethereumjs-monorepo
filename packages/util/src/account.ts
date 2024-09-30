@@ -13,7 +13,6 @@ import {
   intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
-  zeros,
 } from './bytes.js'
 import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
@@ -612,10 +611,8 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 /**
  * Returns the zero address.
  */
-export const zeroAddress = function (): string {
-  const addressLength = 20
-  const addr = zeros(addressLength)
-  return bytesToHex(addr)
+export const zeroAddress = function (): PrefixedHexString {
+  return bytesToHex(new Uint8Array(20))
 }
 
 /**

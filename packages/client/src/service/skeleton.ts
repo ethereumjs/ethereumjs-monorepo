@@ -13,7 +13,6 @@ import {
   formatBigDecimal,
   intToBytes,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 
 import { short, timeDuration } from '../util/index.js'
@@ -89,7 +88,7 @@ export const errReorgDenied = new Error('non-forced head reorg denied')
  */
 export const errSyncMerged = new Error('sync merged')
 
-const zeroBlockHash = zeros(32)
+const zeroBlockHash = new Uint8Array(32)
 /**
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.

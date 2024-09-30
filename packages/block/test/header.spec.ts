@@ -8,7 +8,6 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -32,21 +31,21 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
-      assert.ok(equalsBytes(header.parentHash, zeros(32)))
+      assert.ok(equalsBytes(header.parentHash, new Uint8Array(32)))
       assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
       assert.ok(header.coinbase.equals(createZeroAddress()))
-      assert.ok(equalsBytes(header.stateRoot, zeros(32)))
+      assert.ok(equalsBytes(header.stateRoot, new Uint8Array(32)))
       assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
       assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.logsBloom, zeros(256)))
+      assert.ok(equalsBytes(header.logsBloom, new Uint8Array(256)))
       assert.equal(header.difficulty, BigInt(0))
       assert.equal(header.number, BigInt(0))
       assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
       assert.equal(header.gasUsed, BigInt(0))
       assert.equal(header.timestamp, BigInt(0))
       assert.ok(equalsBytes(header.extraData, new Uint8Array(0)))
-      assert.ok(equalsBytes(header.mixHash, zeros(32)))
-      assert.ok(equalsBytes(header.nonce, zeros(8)))
+      assert.ok(equalsBytes(header.mixHash, new Uint8Array(32)))
+      assert.ok(equalsBytes(header.nonce, new Uint8Array(8)))
     }
 
     const header = createBlockHeader()
@@ -137,14 +136,14 @@ describe('[Block]: Header functions', () => {
       headerArray.push(zero)
     }
 
-    // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) //parentHash
-    headerArray[2] = zeros(20) //coinbase
-    headerArray[3] = zeros(32) //stateRoot
-    headerArray[4] = zeros(32) //transactionsTrie
-    headerArray[5] = zeros(32) //receiptTrie
-    headerArray[13] = zeros(32) // mixHash
-    headerArray[14] = zeros(8) // nonce
+    // mock header data (if set to new Uint8Array() header throws)
+    headerArray[0] = new Uint8Array(32) //parentHash
+    headerArray[2] = new Uint8Array(20) //coinbase
+    headerArray[3] = new Uint8Array(32) //stateRoot
+    headerArray[4] = new Uint8Array(32) //transactionsTrie
+    headerArray[5] = new Uint8Array(32) //receiptTrie
+    headerArray[13] = new Uint8Array(32) // mixHash
+    headerArray[14] = new Uint8Array(8) // nonce
 
     let header = createBlockHeaderFromBytesArray(headerArray, { common })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
@@ -159,15 +158,15 @@ describe('[Block]: Header functions', () => {
   it('Initialization -> createWithdrawalFromBytesArray() -> error cases', () => {
     const headerArray = Array(22).fill(new Uint8Array(0))
 
-    // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) //parentHash
-    headerArray[2] = zeros(20) //coinbase
-    headerArray[3] = zeros(32) //stateRoot
-    headerArray[4] = zeros(32) //transactionsTrie
-    headerArray[5] = zeros(32) //receiptTrie
-    headerArray[13] = zeros(32) // mixHash
-    headerArray[14] = zeros(8) // nonce
-    headerArray[15] = zeros(4) // bad data
+    // mock header data (if set to new Uint8Array() header throws)
+    headerArray[0] = new Uint8Array(32) //parentHash
+    headerArray[2] = new Uint8Array(20) //coinbase
+    headerArray[3] = new Uint8Array(32) //stateRoot
+    headerArray[4] = new Uint8Array(32) //transactionsTrie
+    headerArray[5] = new Uint8Array(32) //receiptTrie
+    headerArray[13] = new Uint8Array(32) // mixHash
+    headerArray[14] = new Uint8Array(8) // nonce
+    headerArray[15] = new Uint8Array(4) // bad data
     try {
       createBlockHeaderFromBytesArray(headerArray)
     } catch (e: any) {

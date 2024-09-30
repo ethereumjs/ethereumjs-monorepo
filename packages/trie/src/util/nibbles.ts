@@ -81,13 +81,3 @@ export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
   }
   return i
 }
-
-/**
- * Compare two nibble array keys.
- * @param keyA
- * @param keyB
- */
-export function doKeysMatch(keyA: Nibbles, keyB: Nibbles): boolean {
-  const length = matchingNibbleLength(keyA, keyB)
-  return length === keyA.length && length === keyB.length
-}

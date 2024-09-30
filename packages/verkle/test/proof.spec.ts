@@ -80,7 +80,7 @@ describe('lets make proofs', () => {
         serializedCommitment: verkleCrypto.serializeCommitment(
           (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
         ),
-        vector: new Array(256).fill(new Uint8Array(32).fill(0)),
+        vector: new Array(256).fill(new Uint8Array(32)),
         indices: [0],
       },
     ])

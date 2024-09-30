@@ -19,7 +19,6 @@ import {
   hexToBytes,
   setLengthLeft,
   setLengthRight,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -123,7 +122,7 @@ async function runBlock(block: Block) {
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
+  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
   return bytesToBigInt(stat)
 }
 

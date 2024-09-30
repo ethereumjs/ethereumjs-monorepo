@@ -1,5 +1,3 @@
-import { zeros } from '@ethereumjs/util'
-
 import type { EOFContainer } from './eof/container.js'
 import type { EvmError } from './exceptions.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
@@ -490,7 +488,7 @@ export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
       hash() {
-        return zeros(32)
+        return new Uint8Array(32)
       },
     }
   }

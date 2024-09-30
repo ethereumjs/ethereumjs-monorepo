@@ -1,14 +1,7 @@
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
-import {
-  KECCAK256_RLP_ARRAY,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  toBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.js'
@@ -76,14 +69,14 @@ describe('[Block]: block functions', () => {
       headerArray.push(zero)
     }
 
-    // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) // parentHash
-    headerArray[2] = zeros(20) // coinbase
-    headerArray[3] = zeros(32) // stateRoot
-    headerArray[4] = zeros(32) // transactionsTrie
-    headerArray[5] = zeros(32) // receiptTrie
-    headerArray[13] = zeros(32) // mixHash
-    headerArray[14] = zeros(8) // nonce
+    // mock header data (if set to new Uint8Array() header throws)
+    headerArray[0] = new Uint8Array(32) // parentHash
+    headerArray[2] = new Uint8Array(20) // coinbase
+    headerArray[3] = new Uint8Array(32) // stateRoot
+    headerArray[4] = new Uint8Array(32) // transactionsTrie
+    headerArray[5] = new Uint8Array(32) // receiptTrie
+    headerArray[13] = new Uint8Array(32) // mixHash
+    headerArray[14] = new Uint8Array(8) // nonce
 
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
@@ -265,7 +258,7 @@ describe('[Block]: block functions', () => {
       }
     }
 
-    const zeroRoot = zeros(32)
+    const zeroRoot = new Uint8Array(32)
 
     // Tx root
     block = createBlock({
