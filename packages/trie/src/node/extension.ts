@@ -1,15 +1,13 @@
-import { addHexPrefix } from '../util/hex.js'
+import { ExtensionOrLeafNodeBase } from './extensionOrLeafNodeBase.js'
 
-import { Node } from './node.js'
+import type { Nibbles, RawExtensionNode } from '../types.js'
 
-import type { Nibbles } from '../types.js'
-
-export class ExtensionNode extends Node {
+export class ExtensionNode extends ExtensionOrLeafNodeBase {
   constructor(nibbles: Nibbles, value: Uint8Array) {
     super(nibbles, value, false)
   }
 
-  static encodeKey(key: Nibbles): Nibbles {
-    return addHexPrefix(key, false)
+  raw(): RawExtensionNode {
+    return super.raw()
   }
 }

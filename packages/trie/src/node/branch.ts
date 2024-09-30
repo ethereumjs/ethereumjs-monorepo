@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { EmbeddedNode } from '../types.js'
+import type { BranchNodeBranchValue, NodeReferenceOrRawNode } from '../types.js'
 
 export class BranchNode {
-  _branches: (EmbeddedNode | null)[]
+  _branches: BranchNodeBranchValue[]
   _value: Uint8Array | null
 
   constructor() {
@@ -26,19 +26,19 @@ export class BranchNode {
     return this._value && this._value.length > 0 ? this._value : null
   }
 
-  setBranch(i: number, v: EmbeddedNode | null) {
+  setBranch(i: number, v: BranchNodeBranchValue) {
     this._branches[i] = v
   }
 
-  raw(): (EmbeddedNode | null)[] {
+  raw(): BranchNodeBranchValue[] {
     return [...this._branches, this._value]
   }
 
   serialize(): Uint8Array {
-    return RLP.encode(this.raw() as Uint8Array[])
+    return RLP.encode(this.raw())
   }
 
-  getBranch(i: number) {
+  getBranch(i: number): BranchNodeBranchValue {
     const b = this._branches[i]
     if (b !== null && b.length > 0) {
       return b
@@ -47,8 +47,8 @@ export class BranchNode {
     }
   }
 
-  getChildren(): [number, EmbeddedNode][] {
-    const children: [number, EmbeddedNode][] = []
+  getChildren(): [number, NodeReferenceOrRawNode][] {
+    const children: [number, NodeReferenceOrRawNode][] = []
     for (let i = 0; i < 16; i++) {
       const b = this._branches[i]
       if (b !== null && b.length > 0) {

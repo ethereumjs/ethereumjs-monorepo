@@ -14,7 +14,6 @@ import {
   privateToAddress,
   setLengthRight,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { equalsBytes } from 'ethereum-cryptography/utils'
@@ -298,7 +297,7 @@ describe('test EIP-7702 opcodes', () => {
       // Set authority and immediately call into the contract to get the extcodehash / extcodesize
       await runTx(vm, { tx: authTx })
 
-      const result = await vm.stateManager.getStorage(deploymentAddress, zeros(32))
+      const result = await vm.stateManager.getStorage(deploymentAddress, new Uint8Array(32))
       assert.ok(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
     }
 

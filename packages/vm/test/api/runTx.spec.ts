@@ -22,7 +22,6 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -790,7 +789,7 @@ it('Validate EXTCODEHASH puts KECCAK256_NULL on stack if calling account has no 
   await vm.stateManager.putAccount(addr, acc!)
   await runTx(vm, { tx, skipHardForkValidation: true })
 
-  const hash = await vm.stateManager.getStorage(codeAddr, zeros(32))
+  const hash = await vm.stateManager.getStorage(codeAddr, new Uint8Array(32))
   assert.deepEqual(hash, KECCAK256_NULL, 'hash ok')
 })
 
