@@ -1,5 +1,6 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
+
 import { Trie } from '../../src/index.js'
 
 // exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by

@@ -12,8 +12,6 @@ import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
-import type { BatchDBOp } from '@ethereumjs/util'
-
 describe('testing checkpoints', () => {
   let trie: Trie
   let trieCopy: Trie
