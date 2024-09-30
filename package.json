@@ -29,6 +29,7 @@
     "install-browser-deps": "npm install webdriverio@8.39.0 @vitest/browser@2.1.0"
   },
   "devDependencies": {
+    "@ethersproject/abi": "^5.7.0",
     "@types/estree": "^1.0.1",
     "@types/node": "18.11.9",
     "@types/tape": "4.13.2",
