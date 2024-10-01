@@ -12,6 +12,7 @@ import {
   ecrecover,
   ecsign,
   equalsBytes,
+  ErrorCode, UsageErrorType
 } from '@ethereumjs/util'
 
 import type { BlockHeader } from '../index.js'
@@ -28,7 +29,7 @@ export function requireClique(header: BlockHeader, name: string) {
     const msg = header['_errorMsg'](
       `BlockHeader.${name}() call only supported for clique PoA networks`,
     )
-    throw new Error(msg)
+    throw new UsageErrorType(msg, ErrorCode.INVALID_METHOD_CALL)
   }
 }
 
@@ -84,7 +85,7 @@ export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
   requireClique(header, 'cliqueEpochTransitionSigners')
   if (!cliqueIsEpochTransition(header)) {
     const msg = header['_errorMsg']('Signers are only included in epoch transition blocks (clique)')
-    throw new Error(msg)
+    throw new UsageErrorType(msg, ErrorCode.INVALID_METHOD_CALL)
   }
 
   const start = CLIQUE_EXTRA_VANITY
