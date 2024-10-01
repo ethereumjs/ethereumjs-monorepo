@@ -448,8 +448,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   getStateRoot(): Promise<Uint8Array> {
     return Promise.resolve(this._trie.root())
   }
-  setStateRoot(_stateRoot: Uint8Array, _clearCache?: boolean): Promise<void> {
-    throw new Error('Method not implemented.')
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
+    this._trie.root(stateRoot)
+    clearCache === true && this.clearCaches()
+    return Promise.resolve()
   }
   hasStateRoot(_root: Uint8Array): Promise<boolean> {
     throw new Error('Method not implemented.')
@@ -461,7 +463,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     throw new Error('Method not implemented.')
   }
   clearCaches(): void {
-    throw new Error('Method not implemented.')
+    this._caches?.clear()
   }
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
     throw new Error('Method not implemented.')
