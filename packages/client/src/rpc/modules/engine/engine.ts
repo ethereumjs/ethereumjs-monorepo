@@ -1522,9 +1522,9 @@ export class Engine {
     return payloads
   }
 
-  private async getBlobsV1(params: [Bytes32]): Promise<(BlobAndProofV1 | null)[]> {
+  private async getBlobsV1(params: [[Bytes32]]): Promise<(BlobAndProofV1 | null)[]> {
     const blobsAndProof: (BlobAndProofV1 | null)[] = []
-    for (const versionedHashHex of params) {
+    for (const versionedHashHex of params[0]) {
       blobsAndProof.push(this.service.txPool.blobsAndProofsByHash.get(versionedHashHex) ?? null)
     }
 
