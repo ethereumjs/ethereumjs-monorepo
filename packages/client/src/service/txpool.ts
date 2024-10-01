@@ -399,7 +399,12 @@ export class TxPool {
   }
 
   pruneBlobsAndProofsCache() {
-    const pruneLength = this.blobsAndProofsByHash.size - this.config.blobsAndProofsCacheLength
+    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
+    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
+    const allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
+
+    const pruneLength =
+      this.blobsAndProofsByHash.size - allowedBlobs * this.config.blobsAndProofsCacheBlocks
     let pruned = 0
     // since keys() is sorted by insertion order this prunes the oldest data in cache
     for (const versionedHash of this.blobsAndProofsByHash.keys()) {

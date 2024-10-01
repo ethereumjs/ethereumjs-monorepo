@@ -342,7 +342,7 @@ export interface ConfigOptions {
   /**
    * The cache for blobs and proofs to support CL import blocks
    */
-  blobsAndProofsCacheLength?: number
+  blobsAndProofsCacheBlocks?: number
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -459,7 +459,7 @@ export class Config {
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
 
-  public readonly blobsAndProofsCacheLength: number
+  public readonly blobsAndProofsCacheBlocks: number
 
   public synchronized: boolean
   public lastSynchronized?: boolean
@@ -563,11 +563,8 @@ export class Config {
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
 
-    const blobGasLimit = common.param('maxblobGasPerBlock')
-    const blobGasPerBlob = common.param('blobGasPerBlob')
-    const allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
-    this.blobsAndProofsCacheLength =
-      options.blobsAndProofsCacheLength ?? allowedBlobs * Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
+    this.blobsAndProofsCacheBlocks =
+      options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
 
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
