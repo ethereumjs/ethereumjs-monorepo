@@ -18,7 +18,7 @@ export type EthereumJSErrorObject = {
  */
 export class EthereumJSError<T extends { code: string }> extends Error {
   type: T
-  code: string
+  code: string // TODO likely remove this and for error inspection inspect `error.type.code` (like Lodestar)
   constructor(type: T, message?: string, stack?: string) {
     super(message ?? type.code)
     this.type = type

@@ -338,8 +338,8 @@ export class Interpreter {
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
-        // re-throw on non-VM errors
-        if (!('errorType' in e && e.errorType === 'EvmError')) {
+        // re-throw on non-VM-runtime errors
+        if (getRuntimeError(e) === undefined) {
           throw e
         }
         // STOP is not an exception
