@@ -35,8 +35,6 @@ const MIN_GAS_PRICE = BigInt(100000000) // .1 GWei
 const TX_MAX_DATA_SIZE = 128 * 1024 // 128KB
 const MAX_POOL_SIZE = 5000
 const MAX_TXS_PER_ACCOUNT = 100
-// keep for 1 epoch deep to handle reorgs
-const BLOBS_AND_PROOFS_CACHE_LENGTH = 6 * 32 * 1
 
 export interface TxPoolOptions {
   /* Config */
@@ -401,8 +399,9 @@ export class TxPool {
   }
 
   pruneBlobsAndProofsCache() {
-    const pruneLength = this.blobsAndProofsByHash.size - BLOBS_AND_PROOFS_CACHE_LENGTH
+    const pruneLength = this.blobsAndProofsByHash.size - this.config.blobsAndProofsCacheLength
     let pruned = 0
+    // since keys() is sorted by insertion order this prunes the olddest data in cache
     for (const versionedHash of this.blobsAndProofsByHash.keys()) {
       if (pruned >= pruneLength) {
         break
