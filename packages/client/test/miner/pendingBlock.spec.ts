@@ -357,7 +357,7 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
-    let blobs: PrefixedHexString = [],
+    let blobs: PrefixedHexString[] = [],
       proofs: PrefixedHexString[] = [],
       versionedHashes: PrefixedHexString[] = []
     for (let x = 0; x <= 2; x++) {
@@ -401,7 +401,10 @@ describe('[PendingBlock]', async () => {
       const blob = blobs[i]
       const proof = proofs[i]
 
-      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {}
+      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {
+        blob: '0x0',
+        proof: '0x0',
+      }
       assert.equal(blob, blobAndProof.blob, 'blob should match')
       assert.equal(proof, blobAndProof.proof, 'proof should match')
     }
