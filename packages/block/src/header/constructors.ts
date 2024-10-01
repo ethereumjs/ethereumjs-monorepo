@@ -34,22 +34,22 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
       eip1559ActivationBlock !== undefined &&
       equalsBytes(eip1559ActivationBlock, number as Uint8Array)
     ) {
-      throw new Error('invalid header. baseFeePerGas should be provided')
+      throw new ValueError('invalid header. baseFeePerGas should be provided', ValueError.INVALID_VALUE)
     }
   }
   if (header.common.isActivatedEIP(4844)) {
     if (excessBlobGas === undefined) {
-      throw new Error('invalid header. excessBlobGas should be provided')
+      throw new ValueError('invalid header. excessBlobGas should be provided', ValueError.INVALID_VALUE)
     } else if (blobGasUsed === undefined) {
-      throw new Error('invalid header. blobGasUsed should be provided')
+      throw new ValueError('invalid header. blobGasUsed should be provided', ValueError.INVALID_VALUE)
     }
   }
   if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
-    throw new Error('invalid header. parentBeaconBlockRoot should be provided')
+    throw new ValueError('invalid header. parentBeaconBlockRoot should be provided', ValueError.INVALID_VALUE)
   }
 
   if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
-    throw new Error('invalid header. requestsRoot should be provided')
+    throw new ValueError('invalid header. requestsRoot should be provided', ValueError.INVALID_VALUE)
   }
   return header
 }
