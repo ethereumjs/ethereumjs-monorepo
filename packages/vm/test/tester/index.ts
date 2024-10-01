@@ -141,6 +141,7 @@ async function runTests() {
     profile: boolean
     bls: EVMBLSInterface
     bn254: EVMBN254Interface
+    stateManager: string
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -155,6 +156,7 @@ async function runTests() {
     bls,
     profile: RUN_PROFILER,
     bn254,
+    stateManager: argv.stateManager,
   }
 
   /**
