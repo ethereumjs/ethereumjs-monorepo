@@ -401,7 +401,7 @@ export class TxPool {
   pruneBlobsAndProofsCache() {
     const pruneLength = this.blobsAndProofsByHash.size - this.config.blobsAndProofsCacheLength
     let pruned = 0
-    // since keys() is sorted by insertion order this prunes the olddest data in cache
+    // since keys() is sorted by insertion order this prunes the oldest data in cache
     for (const versionedHash of this.blobsAndProofsByHash.keys()) {
       if (pruned >= pruneLength) {
         break
