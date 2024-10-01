@@ -28,7 +28,9 @@ import { mockBlockchain } from '../rpc/mockBlockchain.js'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
+
 const kzg = new microEthKZG(trustedSetup)
 
 const A = {
@@ -354,23 +356,28 @@ describe('[PendingBlock]', async () => {
 
     const { txPool } = setup()
 
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(kzg, blobs)
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(kzg, blobs, commitments)
-
-    // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
+    // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
+    let blobs: PrefixedHexString = [],
+      proofs: PrefixedHexString[] = [],
+      versionedHashes: PrefixedHexString[] = []
     for (let x = 0; x <= 2; x++) {
+      // generate unique blobs
+      const txBlobs = [
+        ...getBlobs(`hello world-${x}1`),
+        ...getBlobs(`hello world-${x}2`),
+        ...getBlobs(`hello world-${x}3`),
+      ]
+      assert.equal(txBlobs.length, 3, '3 blobs should be created')
+      const txCommitments = blobsToCommitments(kzg, txBlobs)
+      const txBlobVersionedHashes = commitmentsToVersionedHashes(txCommitments)
+      const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
+
       const txA01 = createBlob4844Tx(
         {
-          blobVersionedHashes: [
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-          ],
-          blobs: [...blobs, ...blobs, ...blobs],
-          kzgCommitments: [...commitments, ...commitments, ...commitments],
-          kzgProofs: [...proofs, ...proofs, ...proofs],
+          blobVersionedHashes: txBlobVersionedHashes,
+          blobs: txBlobs,
+          kzgCommitments: txCommitments,
+          kzgProofs: txProofs,
           maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           maxFeePerGas: 1000000000n,
@@ -381,6 +388,22 @@ describe('[PendingBlock]', async () => {
         { common },
       ).sign(A.privateKey)
       await txPool.add(txA01)
+
+      // accumulate for verification
+      blobs = [...blobs, ...txBlobs]
+      proofs = [...proofs, ...txProofs]
+      versionedHashes = [...versionedHashes, ...txBlobVersionedHashes]
+    }
+
+    // check if blobs and proofs are added in txpool by versioned hashes
+    for (let i = 0; i < versionedHashes.length; i++) {
+      const versionedHash = versionedHashes[i]
+      const blob = blobs[i]
+      const proof = proofs[i]
+
+      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {}
+      assert.equal(blob, blobAndProof.blob, 'blob should match')
+      assert.equal(proof, blobAndProof.proof, 'proof should match')
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build

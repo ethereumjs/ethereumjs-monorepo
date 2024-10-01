@@ -383,12 +383,14 @@ export class TxPool {
       }
       if (isBlob4844Tx(tx)) {
         // add to blobs and proofs cache
-        for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
-          const blob = tx.blobs![i]
-          const proof = tx.kzgProofs![i]
-          this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+        if (tx.blobs !== undefined && tx.kzgProofs !== undefined) {
+          for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
+            const blob = tx.blobs![i]
+            const proof = tx.kzgProofs![i]
+            this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+          }
+          this.pruneBlobsAndProofsCache()
         }
-        this.pruneBlobsAndProofsCache()
 
         this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
