@@ -5,8 +5,11 @@ import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   CLRequestType,
+  ErrorCode,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
+  UsageError,
+  ValueError,
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
@@ -35,16 +38,13 @@ import {
 import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import {
+import type {
   CLRequest,
   ConsolidationRequest,
   DepositRequest,
   VerkleExecutionWitness,
   Withdrawal,
   WithdrawalRequest,
-  UsageErrorType,
-  ErrorCode,
-  ValueError
 } from '@ethereumjs/util'
 
 /**
@@ -136,18 +136,21 @@ export class Block {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed',
         )
-        throw new UsageErrorType(msg, ErrorCode.INVALID_OPTION_USAGE)
+        throw new UsageError(msg, ErrorCode.INVALID_OPTION_USAGE)
       }
       if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoS network is not allowed',
         )
-        throw new UsageErrorType(msg, ErrorCode.INVALID_OPTION_USAGE)
+        throw new UsageError(msg, ErrorCode.INVALID_OPTION_USAGE)
       }
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
-      throw new UsageErrorType('Cannot have a withdrawals field if EIP 4895 is not active', ErrorCode.EIP_NOT_ACTIVATED)
+      throw new UsageError(
+        'Cannot have a withdrawals field if EIP 4895 is not active',
+        ErrorCode.EIP_NOT_ACTIVATED,
+      )
     }
 
     if (
@@ -155,11 +158,17 @@ export class Block {
       executionWitness !== undefined &&
       executionWitness !== null
     ) {
-      throw new UsageErrorType(`Cannot have executionWitness field if EIP 6800 is not active `, ErrorCode.EIP_NOT_ACTIVATED)
+      throw new UsageError(
+        `Cannot have executionWitness field if EIP 6800 is not active `,
+        ErrorCode.EIP_NOT_ACTIVATED,
+      )
     }
 
     if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
-      throw new UsageErrorType(`Cannot have requests field if EIP 7685 is not active`, ErrorCode.EIP_NOT_ACTIVATED)
+      throw new UsageError(
+        `Cannot have requests field if EIP 7685 is not active`,
+        ErrorCode.EIP_NOT_ACTIVATED,
+      )
     }
 
     // Requests should be sorted in monotonically ascending order based on type
@@ -167,7 +176,10 @@ export class Block {
     if (requests !== undefined && requests.length > 1) {
       for (let x = 1; x < requests.length; x++) {
         if (requests[x].type < requests[x - 1].type)
-          throw new ValueError('requests are not sorted in ascending order', ErrorCode.INVALID_VALUE)
+          throw new ValueError(
+            'requests are not sorted in ascending order',
+            ErrorCode.INVALID_VALUE,
+          )
       }
     }
     const freeze = opts?.freeze ?? true
@@ -253,7 +265,7 @@ export class Block {
 
   async requestsTrieIsValid(requestsInput?: CLRequest<CLRequestType>[]): Promise<boolean> {
     if (!this.common.isActivatedEIP(7685)) {
-      throw new UsageErrorType('EIP 7685 is not activated', ErrorCode.EIP_NOT_ACTIVATED)
+      throw new UsageError('EIP 7685 is not activated', ErrorCode.EIP_NOT_ACTIVATED)
     }
 
     const requests = requestsInput ?? this.requests!
@@ -462,7 +474,7 @@ export class Block {
    */
   async withdrawalsTrieIsValid(): Promise<boolean> {
     if (!this.common.isActivatedEIP(4895)) {
-      throw new UsageErrorType('EIP 4895 is not activated', ErrorCode.EIP_NOT_ACTIVATED)
+      throw new UsageError('EIP 4895 is not activated', ErrorCode.EIP_NOT_ACTIVATED)
     }
 
     let result
