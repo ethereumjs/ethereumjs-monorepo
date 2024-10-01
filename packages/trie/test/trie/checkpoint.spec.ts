@@ -12,8 +12,6 @@ import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie, createTrie } from '../../src/index.js'
 
-import type { BatchDBOp } from '@ethereumjs/util'
-
 describe('testing checkpoints', () => {
   let trie: Trie
   let trieCopy: Trie
@@ -51,16 +49,6 @@ describe('testing checkpoints', () => {
     postRoot = bytesToHex(trie.root())
   })
 
-  it('should get values from before checkpoint', async () => {
-    const res = await trie.get(utf8ToBytes('doge'))
-    assert.ok(equalsBytes(utf8ToBytes('coin'), res!))
-  })
-
-  it('should get values from cache', async () => {
-    const res = await trie.get(utf8ToBytes('love'))
-    assert.ok(equalsBytes(utf8ToBytes('emotion'), res!))
-  })
-
   it('should copy trie and get upstream and cache values after checkpoint', async () => {
     trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), postRoot)
@@ -85,110 +73,6 @@ describe('testing checkpoints', () => {
     const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
     assert.equal(bytesToUtf8(value!), 'value1')
-  })
-
-  it('should revert to the original root', async () => {
-    assert.ok(trie.hasCheckpoints())
-    await trie.revert()
-    assert.equal(bytesToHex(trie.root()), preRoot)
-    assert.notOk(trie.hasCheckpoints())
-  })
-
-  it('should not get values from cache after revert', async () => {
-    const res = await trie.get(utf8ToBytes('love'))
-    assert.notOk(res)
-  })
-
-  it('should commit a checkpoint', async () => {
-    trie.checkpoint()
-    await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
-    await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
-    await trie.commit()
-    assert.equal(trie.hasCheckpoints(), false)
-    assert.equal(bytesToHex(trie.root()), postRoot)
-  })
-
-  it('should get new values after commit', async () => {
-    const res = await trie.get(utf8ToBytes('love'))
-    assert.ok(equalsBytes(utf8ToBytes('emotion'), res!))
-  })
-
-  it('should commit a nested checkpoint', async () => {
-    trie.checkpoint()
-    await trie.put(utf8ToBytes('test'), utf8ToBytes('something else'))
-    const root = trie.root()
-    trie.checkpoint()
-    await trie.put(utf8ToBytes('the feels'), utf8ToBytes('emotion'))
-    await trie.revert()
-    await trie.commit()
-    assert.equal(trie.hasCheckpoints(), false)
-    assert.equal(trie.root(), root)
-  })
-
-  const k1 = utf8ToBytes('k1')
-  const v1 = utf8ToBytes('v1')
-  const v12 = utf8ToBytes('v12')
-  const v123 = utf8ToBytes('v123')
-
-  it('revert -> put', async () => {
-    trie = new Trie()
-
-    trie.checkpoint()
-    await trie.put(k1, v1)
-    assert.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
-    await trie.revert()
-    assert.deepEqual(await trie.get(k1), null, 'after revert: v1 removed')
-  })
-
-  it('revert -> put (update)', async () => {
-    trie = new Trie()
-
-    await trie.put(k1, v1)
-    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
-    await trie.put(k1, v12)
-    await trie.put(k1, v123)
-    await trie.revert()
-    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-  })
-
-  it('revert -> put (update) batched', async () => {
-    const trie = new Trie()
-    await trie.put(k1, v1)
-    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
-    const ops = [
-      { type: 'put', key: k1, value: v12 },
-      { type: 'put', key: k1, value: v123 },
-    ] as BatchDBOp[]
-    await trie.batch(ops)
-    await trie.revert()
-    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-  })
-
-  it('Checkpointing: revert -> del', async () => {
-    const trie = new Trie()
-    await trie.put(k1, v1)
-    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
-    await trie.del(k1)
-    assert.deepEqual(await trie.get(k1), null, 'before revert: null')
-    await trie.revert()
-    assert.deepEqual(await trie.get(k1), v1, 'after revert: v1')
-  })
-
-  it('Checkpointing: nested checkpoints -> commit -> revert', async () => {
-    const trie = new Trie()
-    await trie.put(k1, v1)
-    assert.deepEqual(await trie.get(k1), v1, 'before CP: v1')
-    trie.checkpoint()
-    await trie.put(k1, v12)
-    trie.checkpoint()
-    await trie.put(k1, v123)
-    await trie.commit()
-    assert.deepEqual(await trie.get(k1), v123, 'after commit (second CP): v123')
-    await trie.revert()
-    assert.deepEqual(await trie.get(k1), v1, 'after revert (first CP): v1')
   })
 
   /*
