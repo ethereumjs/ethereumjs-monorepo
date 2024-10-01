@@ -78,6 +78,7 @@
   "devDependencies": {
     "@ethereumjs/blockchain": "^7.3.0",
     "@ethereumjs/ethash": "^3.0.3",
+    "@ethereumjs/verkle": "0.1.0",
     "@ethersproject/abi": "^5.0.12",
     "@paulmillr/trusted-setups": "^0.1.2",
     "@types/benchmark": "^1.0.33",

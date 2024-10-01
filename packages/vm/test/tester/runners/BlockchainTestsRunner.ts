@@ -258,7 +258,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
 
   t.equal(
-    bytesToHex((blockchain as any)._headHeaderHash),
+    bytesToHex(blockchain['_headHeaderHash']),
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
@@ -267,6 +267,5 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
 
-  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
+  common = blockchain = stateTree = stateManager = vm = cacheDB = null as any
 }
