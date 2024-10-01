@@ -147,7 +147,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   putAccount = async (address: Address, account?: Account): Promise<void> => {
     if (this.DEBUG) {
       this._debug(
-        `Save account address=${address} nonce=${account?.nonce} balance=${
+        `putAccount address=${address} nonce=${account?.nonce} balance=${
           account?.balance
         } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
           account && account.isEmpty() ? 'yes' : 'no'
