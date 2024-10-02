@@ -10,7 +10,7 @@ async function main() {
   const k1 = utf8ToBytes('keyOne')
   const k2 = utf8ToBytes('keyTwo')
 
-  const someOtherTrie = new Trie({ useKeyHashing: true })
+  const someOtherTrie = new MerklePatriciaTrie({ useKeyHashing: true })
   await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 

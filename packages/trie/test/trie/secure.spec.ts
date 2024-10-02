@@ -10,11 +10,16 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie, createMerkleProof, verifyTrieProof } from '../../src/index.js'
+import {
+  MerklePatriciaTrie,
+  ROOT_DB_KEY,
+  createMerkleProof,
+  verifyTrieProof,
+} from '../../src/index.js'
 import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.js'
 
 describe('SecureTrie', () => {
-  const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+  const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
   const k = utf8ToBytes('foo')
   const v = utf8ToBytes('bar')
 
@@ -49,7 +54,7 @@ describe('SecureTrie', () => {
 
 describe('SecureTrie proof', () => {
   it('create a merkle proof and verify it with a single short key', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
     const proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
@@ -60,7 +65,7 @@ describe('SecureTrie proof', () => {
   })
 
   it('read back data written with hashed key', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     // skip key transformation if the key is already hashed like data received in snapsync
     await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
 
@@ -68,14 +73,14 @@ describe('SecureTrie proof', () => {
     assert.equal(bytesToUtf8(val!), '01234')
 
     // check roots match if written in normal fashion
-    const trie2 = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie2 = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     await trie2.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
     assert.equal(bytesToUtf8(trie.root()), bytesToUtf8(trie2.root()))
   })
 })
 
 describe('secure tests', () => {
-  let trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+  let trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 
   it('empty values', async () => {
     for (const row of trieTestSecureTrieData.tests.emptyValues.in) {
@@ -86,7 +91,7 @@ describe('secure tests', () => {
   })
 
   it('branchingTests', async () => {
-    trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     for (const row of trieTestSecureTrieData.tests.branchingTests.in) {
       const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
@@ -106,7 +111,11 @@ describe('secure tests', () => {
   })
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB(), useRootPersistence: true })
+    const trie = new MerklePatriciaTrie({
+      useKeyHashing: true,
+      db: new MapDB(),
+      useRootPersistence: true,
+    })
 
     try {
       await trie.put(ROOT_DB_KEY, utf8ToBytes('bar'))
@@ -118,7 +127,7 @@ describe('secure tests', () => {
   })
 })
 
-const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 const a = hexToBytes(
   '0xf8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf',
 )
@@ -170,7 +179,7 @@ describe('secure tests should not crash', () => {
 
 describe('SecureTrie.copy', () => {
   it('created copy includes values added after checkpoint', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
@@ -181,7 +190,7 @@ describe('SecureTrie.copy', () => {
   })
 
   it('created copy includes values added before checkpoint', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
@@ -192,7 +201,7 @@ describe('SecureTrie.copy', () => {
   })
 
   it('created copy uses the correct hash function', async () => {
-    const trie = new Trie({
+    const trie = new MerklePatriciaTrie({
       db: new MapDB(),
       useKeyHashing: true,
       useKeyHashingFunction: sha256,

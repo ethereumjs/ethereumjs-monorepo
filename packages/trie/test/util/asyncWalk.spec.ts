@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import {
   LeafNode,
-  Trie,
+  MerklePatriciaTrie,
   createMerkleProof,
   createTrieFromProof,
   verifyTrieProof,
@@ -18,7 +18,7 @@ describe('walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
 
   for await (const testName of testNames) {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     describe(testName, async () => {
       const inputs = trieTestData.tests[testName].in
       const expect = trieTestData.tests[testName].root
@@ -64,7 +64,7 @@ describe('walk the tries from official tests', async () => {
 })
 
 describe('walk a sparse trie', async () => {
-  const trie = new Trie()
+  const trie = new MerklePatriciaTrie()
   const inputs = trieTestData.tests.jeff.in
   const expect = trieTestData.tests.jeff.root
 

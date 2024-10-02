@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
+import { MerklePatriciaTrie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -20,11 +20,11 @@ const TRIE_SIZE = 512
 /**
  * Create a random trie.
  * @param addKey - whether to add 100 ordered keys
- * @returns Trie object and sorted entries
+ * @returns MerklePatriciaTrie object and sorted entries
  */
 async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   const entries: [Uint8Array, Uint8Array][] = []
-  const trie = new Trie({ db })
+  const trie = new MerklePatriciaTrie({ db })
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
@@ -76,7 +76,7 @@ function increaseKey(key: Uint8Array) {
 }
 
 async function verify(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   entries: [Uint8Array, Uint8Array][],
   start: number,
   end: number,
@@ -199,7 +199,7 @@ describe('simple merkle range proofs generation and verification', () => {
     )
 
     // Test the mini trie with only a single element.
-    const tinyTrie = new Trie()
+    const tinyTrie = new MerklePatriciaTrie()
     const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
@@ -261,7 +261,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
   it('create a bad range proof and verify it', async () => {
     const runTest = async (
-      cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>,
+      cb: (trie: MerklePatriciaTrie, entries: [Uint8Array, Uint8Array][]) => Promise<void>,
     ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
 
@@ -320,7 +320,7 @@ describe('simple merkle range proofs generation and verification', () => {
   })
 
   it('create a gapped range proof and verify it', async () => {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
       const key = setLengthLeft(toBytes(i), 32)

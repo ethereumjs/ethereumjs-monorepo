@@ -12,7 +12,7 @@ import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, Trie } from '../src/index.js'
+import { LeafNode, MerklePatriciaTrie } from '../src/index.js'
 import { bytesToNibbles } from '../src/util/nibbles.js'
 
 import type { HashKeysFunction } from '../src/index.js'
@@ -25,12 +25,12 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
           '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
         )
 
-        const trie = new Trie({ root, keyPrefix })
+        const trie = new MerklePatriciaTrie({ root, keyPrefix })
         const value = await trie.get(utf8ToBytes('test'))
         assert.equal(value, null)
       })
 
-      const trie = new Trie({ cacheSize })
+      const trie = new MerklePatriciaTrie({ cacheSize })
 
       it('save a value', async () => {
         await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
@@ -83,7 +83,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
 
       describe('storing longer values', () => {
-        const trie = new Trie({ cacheSize })
+        const trie = new MerklePatriciaTrie({ cacheSize })
         const longString = 'this will be a really really really long value'
         const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
 
@@ -104,7 +104,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
 
       describe('testing extensions and branches', () => {
-        const trie = new Trie({ cacheSize })
+        const trie = new MerklePatriciaTrie({ cacheSize })
 
         it('should store a value', async () => {
           await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
@@ -128,7 +128,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
 
       describe('testing extensions and branches - reverse', () => {
-        const trie = new Trie({ cacheSize })
+        const trie = new MerklePatriciaTrie({ cacheSize })
 
         it('should create extension to store this value', async () => {
           await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
@@ -150,7 +150,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
     describe('testing deletion cases', () => {
       const trieSetup = {
-        trie: new Trie({ cacheSize }),
+        trie: new MerklePatriciaTrie({ cacheSize }),
         msg: 'without DB delete',
       }
 
@@ -234,7 +234,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
     describe('shall handle the case of node not found correctly', () => {
       it('should work', async () => {
-        const trie = new Trie({ cacheSize })
+        const trie = new MerklePatriciaTrie({ cacheSize })
         await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
         await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
         await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
@@ -266,7 +266,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
     describe('it should create the genesis state root from ethereum', () => {
       it('should work', async () => {
-        const trie4 = new Trie({ cacheSize })
+        const trie4 = new MerklePatriciaTrie({ cacheSize })
 
         const g = hexToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
         const j = hexToBytes('0xe6716f9544a56c530d868e4bfbacb172315bdead')
@@ -312,7 +312,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         )
 
         const trieSetup = {
-          trie: new Trie({ cacheSize }),
+          trie: new MerklePatriciaTrie({ cacheSize }),
           expected: v1,
           msg: 'should return v1 when setting back the state root when deleteFromDB=false',
         }
@@ -345,7 +345,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         const [k, v] = [utf8ToBytes('foo'), utf8ToBytes('bar')]
         const expectedRoot = useKeyHashingFunction(new LeafNode(bytesToNibbles(k), v).serialize())
 
-        const trie = new Trie({ useKeyHashingFunction, cacheSize })
+        const trie = new MerklePatriciaTrie({ useKeyHashingFunction, cacheSize })
         await trie.put(k, v)
         assert.equal(bytesToHex(trie.root()), bytesToHex(expectedRoot))
       })
@@ -353,7 +353,10 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
     describe('blake2b256 trie root', () => {
       it('should work', async () => {
-        const trie = new Trie({ useKeyHashingFunction: (msg) => blake2b(msg, 32), cacheSize })
+        const trie = new MerklePatriciaTrie({
+          useKeyHashingFunction: (msg) => blake2b(msg, 32),
+          cacheSize,
+        })
         await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
         assert.equal(
@@ -365,7 +368,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
     describe('empty root', () => {
       it('should work', async () => {
-        const trie = new Trie({ cacheSize })
+        const trie = new MerklePatriciaTrie({ cacheSize })
 
         assert.equal(bytesToHex(trie.root()), KECCAK256_RLP_S)
       })

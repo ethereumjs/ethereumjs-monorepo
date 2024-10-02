@@ -12,15 +12,15 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, Trie, createTrie } from '../../src/index.js'
+import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createTrie } from '../../src/index.js'
 
 for (const { constructor, defaults, title } of [
   {
-    constructor: Trie,
+    constructor: MerklePatriciaTrie,
     title: 'Trie',
   },
   {
-    constructor: Trie,
+    constructor: MerklePatriciaTrie,
     title: 'SecureTrie',
     defaults: {
       useKeyHashing: true,

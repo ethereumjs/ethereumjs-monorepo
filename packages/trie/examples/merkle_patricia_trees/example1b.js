@@ -3,9 +3,9 @@
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {

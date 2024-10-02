@@ -33,7 +33,7 @@ import type { AccountData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { Trie } from '@ethereumjs/trie'
+import type { MerklePatriciaTrie } from '@ethereumjs/trie'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
@@ -70,7 +70,7 @@ export type JobTask = {
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
   stateManager: MerkleStateManager
-  accountTrie: Trie
+  accountTrie: MerklePatriciaTrie
 
   root: Uint8Array
   highestKnownHash: Uint8Array | undefined

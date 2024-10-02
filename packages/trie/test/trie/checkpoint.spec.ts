@@ -10,16 +10,16 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY, Trie, createTrie } from '../../src/index.js'
+import { MerklePatriciaTrie, ROOT_DB_KEY, createTrie } from '../../src/index.js'
 
 describe('testing checkpoints', () => {
-  let trie: Trie
-  let trieCopy: Trie
+  let trie: MerklePatriciaTrie
+  let trieCopy: MerklePatriciaTrie
   let preRoot: string
   let postRoot: string
 
   it('setup', async () => {
-    trie = new Trie()
+    trie = new MerklePatriciaTrie()
     await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
     await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
     preRoot = bytesToHex(trie.root())
@@ -33,7 +33,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should deactivate cache on copy()', async () => {
-    const trie = new Trie({ cacheSize: 100 })
+    const trie = new MerklePatriciaTrie({ cacheSize: 100 })
     trieCopy = trie.shallowCopy()
     assert.equal((trieCopy as any)._opts.cacheSize, 0)
   })
@@ -61,7 +61,7 @@ describe('testing checkpoints', () => {
   })
 
   it('should copy trie and use the correct hash function', async () => {
-    const trie = new Trie({
+    const trie = new MerklePatriciaTrie({
       db: new MapDB(),
       useKeyHashing: true,
       useKeyHashingFunction: sha256,
@@ -84,7 +84,7 @@ describe('testing checkpoints', () => {
     one has to keep track of what key/values are changed and then re-apply these
     on the trie again. However, by copying the checkpoint, one can immediately
     update the original trie (have to manually copy the root after applying the checkpoint, too).
-    This test also implicitly checks that on copying a Trie, the checkpoints are deep-copied.
+    This test also implicitly checks that on copying a MerklePatriciaTrie, the checkpoints are deep-copied.
     If it would not deep copy, then some checks in this test will fail.
     See PR 2203 and 2236.
   */

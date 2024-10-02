@@ -2,7 +2,7 @@ import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createTrieFromProof } from '../constructors.js'
-import { Trie, verifyRangeProof } from '../index.js'
+import { MerklePatriciaTrie, verifyRangeProof } from '../index.js'
 import { bytesToNibbles } from '../util/nibbles.js'
 
 import type { Proof, TrieOpts } from '../index.js'
@@ -71,7 +71,7 @@ export function verifyTrieRangeProof(
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
  */
-export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Proof> {
+export async function createMerkleProof(trie: MerklePatriciaTrie, key: Uint8Array): Promise<Proof> {
   trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['create_proof'])
   const { stack } = await trie.findPath(trie['appliedKey'](key))
   const p = stack.map((stackElem) => {
@@ -90,7 +90,7 @@ export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Pr
  * @returns The root of the proof
  */
 export async function updateTrieFromMerkleProof(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   proof: Proof,
   shouldVerifyRoot: boolean = false,
 ) {
@@ -129,7 +129,7 @@ export async function updateTrieFromMerkleProof(
  * @returns The value from the key, or null if valid proof of non-existence.
  */
 export async function verifyMerkleProof(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Proof,
@@ -142,7 +142,7 @@ export async function verifyMerkleProof(
   `,
       ['VERIFY_PROOF'],
     )
-  const proofTrie = new Trie({
+  const proofTrie = new MerklePatriciaTrie({
     root: rootHash,
     useKeyHashingFunction: trie['_opts'].useKeyHashingFunction,
     common: trie['_opts'].common,

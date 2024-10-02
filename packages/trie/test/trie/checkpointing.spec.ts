@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { MerklePatriciaTrie } from '../../src/index.js'
 
 // exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by
 // the statemanager checkpointing.*.spec.ts tests
@@ -67,7 +67,7 @@ describe('trie: checkpointing', () => {
     },
   ]
 
-  const trieEval = async (trie: Trie, value: any) => {
+  const trieEval = async (trie: MerklePatriciaTrie, value: any) => {
     const actualValue = await trie.get(key)
     const pass = actualValue === null ? value === null : equalsBytes(actualValue, value)
     return pass
@@ -75,7 +75,7 @@ describe('trie: checkpointing', () => {
 
   for (const kv of kvs) {
     it('No CP -> V1 -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.flushCheckpoints()
@@ -83,7 +83,7 @@ describe('trie: checkpointing', () => {
       assert.ok(await trieEval(trie, kv.v1))
     })
     it('CP -> V1 -> Commit -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       trie.checkpoint()
       await trie.put(key, kv.v1)
@@ -94,7 +94,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('CP -> V1 -> Revert -> Flush() (-> Undefined)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       trie.checkpoint()
       await trie.put(key, kv.v1)
@@ -105,7 +105,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> Commit -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -116,7 +116,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> Revert -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -127,7 +127,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> Commit -> Flush() (-> V2)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -139,7 +139,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> Commit -> V3 -> Flush() (-> V3)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -152,7 +152,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> V3 -> Commit -> Flush() (-> V3)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -165,7 +165,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('CP -> V1 -> V2 -> Commit -> Flush() (-> V2)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       trie.checkpoint()
       await trie.put(key, kv.v1)
@@ -177,7 +177,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('CP -> V1 -> V2 -> Revert -> Flush() (-> Undefined)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       trie.checkpoint()
       await trie.put(key, kv.v1)
@@ -190,7 +190,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> Revert -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -202,7 +202,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Commit -> Commit -> Flush() (-> V3)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -217,7 +217,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Commit -> Revert -> Flush() (-> V1)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -232,7 +232,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> Commit -> Flush() (-> V2)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -247,7 +247,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> V4 -> Commit -> Flush() (-> V4)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()
@@ -263,7 +263,7 @@ describe('trie: checkpointing', () => {
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> V4 -> CP -> V5 -> Commit -> Commit -> Flush() (-> V5)', async () => {
-      const trie = new Trie()
+      const trie = new MerklePatriciaTrie()
 
       await trie.put(key, kv.v1)
       trie.checkpoint()

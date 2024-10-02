@@ -4,9 +4,9 @@ const rlp = require('@ethereumjs/rlp')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 
 async function test() {
   // We populate the tree to create an extension node.

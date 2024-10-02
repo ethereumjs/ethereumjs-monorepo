@@ -2,9 +2,9 @@
 
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 console.log('Empty trie root: ', bytesToHex(trie.root())) // The trie root
 
 async function test() {

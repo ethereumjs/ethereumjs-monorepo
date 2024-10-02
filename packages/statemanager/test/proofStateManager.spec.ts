@@ -1,4 +1,4 @@
-import { Trie, createTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createTrie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -140,7 +140,7 @@ describe('ProofStateManager', () => {
     // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
     // Storage slots: empty list
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -164,7 +164,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -177,7 +177,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -202,7 +202,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -215,7 +215,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -268,7 +268,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -281,7 +281,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenNonexistentAccountData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
     stateManager['_storageTries'][addressHex] = storageTrie

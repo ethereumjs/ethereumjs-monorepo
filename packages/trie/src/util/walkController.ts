@@ -2,7 +2,7 @@ import { PrioritizedTaskExecutor } from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
-import type { Trie } from '../trie.js'
+import type { MerklePatriciaTrie } from '../trie.js'
 import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
 
 /**
@@ -11,7 +11,7 @@ import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
 export class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
-  readonly trie: Trie
+  readonly trie: MerklePatriciaTrie
   private resolve: Function
   private reject: Function
 
@@ -21,7 +21,7 @@ export class WalkController {
    * @param trie - The `Trie` to walk on.
    * @param poolSize - The size of the task queue.
    */
-  private constructor(onNode: FoundNodeFunction, trie: Trie, poolSize: number) {
+  private constructor(onNode: FoundNodeFunction, trie: MerklePatriciaTrie, poolSize: number) {
     this.onNode = onNode
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
     this.trie = trie
@@ -38,7 +38,7 @@ export class WalkController {
    */
   static async newWalk(
     onNode: FoundNodeFunction,
-    trie: Trie,
+    trie: MerklePatriciaTrie,
     root: Uint8Array,
     poolSize?: number,
   ): Promise<void> {

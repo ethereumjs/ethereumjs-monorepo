@@ -2,14 +2,14 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark' // cspell:disable-line
 
-import { Trie } from '../dist/cjs/index.js'
+import { MerklePatriciaTrie } from '../dist/cjs/index.js'
 import { keys } from './keys'
 
 import type { DB } from '@ethereumjs/util'
 
 export function createSuite(db: DB<string, string>) {
-  const trie = new Trie({ db })
-  const checkpointTrie = new Trie({ db })
+  const trie = new MerklePatriciaTrie({ db })
+  const checkpointTrie = new MerklePatriciaTrie({ db })
 
   const ROUNDS = 1000
   const KEY_SIZE = 32
