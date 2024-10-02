@@ -1,5 +1,5 @@
 import {
-  Trie,
+  MerklePatriciaTrie,
   createMerkleProof,
   createTrieFromProof,
   updateTrieFromMerkleProof,
