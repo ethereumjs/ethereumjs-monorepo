@@ -1,13 +1,13 @@
-import { ExtensionOrLeafNodeBase } from './extensionOrLeafNodeBase.js'
+import { ExtensionOrLeafMPTNodeBase } from './extensionOrLeafNodeBase.js'
 
-import type { Nibbles, RawLeafNode } from '../types.js'
+import type { Nibbles, RawLeafMPTNode } from '../types.js'
 
-export class LeafNode extends ExtensionOrLeafNodeBase {
+export class LeafMPTNode extends ExtensionOrLeafMPTNodeBase {
   constructor(nibbles: Nibbles, value: Uint8Array) {
     super(nibbles, value, true)
   }
 
-  raw(): RawLeafNode {
+  raw(): RawLeafMPTNode {
     return super.raw()
   }
 }

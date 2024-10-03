@@ -2,11 +2,11 @@ import { bytesToHex, equalsBytes, hexToBytes, isHexString, utf8ToBytes } from '@
 import { assert, describe, it } from 'vitest'
 
 import {
-  LeafNode,
+  LeafMPTNode,
   MerklePatriciaTrie,
   createMerkleProof,
   createTrieFromProof,
-  verifyTrieProof,
+  verifyMPTProof,
 } from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
@@ -88,7 +88,7 @@ describe('walk a sparse trie', async () => {
   const rawProofKey = inputs[0][0] as string
   const proofKey = isHexString(rawProofKey) ? hexToBytes(rawProofKey) : utf8ToBytes(rawProofKey)
   const proof = await createMerkleProof(trie, proofKey)
-  assert.ok(await verifyTrieProof(proofKey, proof))
+  assert.ok(await verifyMPTProof(proofKey, proof))
 
   // Build a sparse trie from the proof
   const fromProof = await createTrieFromProof(proof, { root: trie.root() })
@@ -101,7 +101,7 @@ describe('walk a sparse trie', async () => {
       // The root of proof trie should be same as original
       assert.deepEqual(fromProof.root(), trie.root())
     }
-    if (node instanceof LeafNode) {
+    if (node instanceof LeafMPTNode) {
       // The only leaf node should be leaf from the proof
       const fullKeyNibbles = [...currentKey, ...node._nibbles]
       assert.deepEqual(fullKeyNibbles, bytesToNibbles(proofKey))

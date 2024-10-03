@@ -1,5 +1,5 @@
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { verifyTrieRangeProof } from '@ethereumjs/trie'
+import { verifyMPTRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -324,7 +324,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return verifyTrieRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+    return verifyMPTRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
       common: this.config.chainCommon,
       useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
     })
@@ -405,7 +405,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // check zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await verifyTrieRangeProof(
+          const isMissingRightRange = await verifyMPTRangeProof(
             this.root,
             origin,
             null,

@@ -1,9 +1,9 @@
 import { PrioritizedTaskExecutor } from '@ethereumjs/util'
 
-import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
 
 import type { MerklePatriciaTrie } from '../trie.js'
-import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
+import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.js'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -66,14 +66,14 @@ export class WalkController {
    * @param node - Node to get all children of and call onNode on.
    * @param key - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
    */
-  allChildren(node: TrieNode, key: Nibbles = []) {
-    if (node instanceof LeafNode) {
+  allChildren(node: MPTNode, key: Nibbles = []) {
+    if (node instanceof LeafMPTNode) {
       return
     }
     let children
-    if (node instanceof ExtensionNode) {
+    if (node instanceof ExtensionMPTNode) {
       children = [[node.key(), node.value()]]
-    } else if (node instanceof BranchNode) {
+    } else if (node instanceof BranchMPTNode) {
       children = node.getChildren().map((b) => [[b[0]], b[1]])
     }
     if (!children) {
@@ -105,20 +105,20 @@ export class WalkController {
           return this.reject(error)
         }
         taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
-        this.processNode(nodeRef as Uint8Array, childNode as TrieNode, key)
+        this.processNode(nodeRef as Uint8Array, childNode as MPTNode, key)
       },
     )
   }
 
   /**
-   * Push a branch of a certain BranchNode to the event queue.
-   * @param node - The node to select a branch on. Should be a BranchNode.
+   * Push a branch of a certain BranchMPTNode to the event queue.
+   * @param node - The node to select a branch on. Should be a BranchMPTNode.
    * @param key - The current key which leads to the corresponding node.
    * @param childIndex - The child index to add to the event queue.
    * @param priority - Optional priority of the event, defaults to the total key length.
    */
-  onlyBranchIndex(node: BranchNode, key: Nibbles = [], childIndex: number, priority?: number) {
-    if (!(node instanceof BranchNode)) {
+  onlyBranchIndex(node: BranchMPTNode, key: Nibbles = [], childIndex: number, priority?: number) {
+    if (!(node instanceof BranchMPTNode)) {
       throw new Error('Expected branch node')
     }
     const childRef = node.getBranch(childIndex)
@@ -131,7 +131,7 @@ export class WalkController {
     this.pushNodeToQueue(childRef as Uint8Array, childKey, prio)
   }
 
-  private processNode(nodeRef: Uint8Array, node: TrieNode | null, key: Nibbles = []) {
+  private processNode(nodeRef: Uint8Array, node: MPTNode | null, key: Nibbles = []) {
     this.onNode(nodeRef, node, key, this)
     if (this.taskExecutor.finished()) {
       // onNode should schedule new tasks. If no tasks was added and the queue is empty, then we have finished our walk.

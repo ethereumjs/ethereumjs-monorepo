@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { BranchNodeBranchValue, NodeReferenceOrRawNode } from '../types.js'
+import type { BranchMPTNodeBranchValue, NodeReferenceOrRawNode } from '../types.js'
 
-export class BranchNode {
-  _branches: BranchNodeBranchValue[]
+export class BranchMPTNode {
+  _branches: BranchMPTNodeBranchValue[]
   _value: Uint8Array | null
 
   constructor() {
@@ -11,8 +11,8 @@ export class BranchNode {
     this._value = null
   }
 
-  static fromArray(arr: Uint8Array[]): BranchNode {
-    const node = new BranchNode()
+  static fromArray(arr: Uint8Array[]): BranchMPTNode {
+    const node = new BranchMPTNode()
     node._branches = arr.slice(0, 16)
     node._value = arr[16]
     return node
@@ -26,11 +26,11 @@ export class BranchNode {
     return this._value && this._value.length > 0 ? this._value : null
   }
 
-  setBranch(i: number, v: BranchNodeBranchValue) {
+  setBranch(i: number, v: BranchMPTNodeBranchValue) {
     this._branches[i] = v
   }
 
-  raw(): BranchNodeBranchValue[] {
+  raw(): BranchMPTNodeBranchValue[] {
     return [...this._branches, this._value]
   }
 
@@ -38,7 +38,7 @@ export class BranchNode {
     return RLP.encode(this.raw())
   }
 
-  getBranch(i: number): BranchNodeBranchValue {
+  getBranch(i: number): BranchMPTNodeBranchValue {
     const b = this._branches[i]
     if (b !== null && b.length > 0) {
       return b
