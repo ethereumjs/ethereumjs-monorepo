@@ -4,14 +4,14 @@ import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'
 
-import type { Trie } from '../trie.js'
+import type { MerklePatriciaTrie } from '../trie.js'
 import type { TrieNode } from '../types.js'
 
 export type NodeFilter = (node: TrieNode, key: number[]) => Promise<boolean>
 export type OnFound = (node: TrieNode, key: number[]) => Promise<any>
 
 /**
- * Walk Trie via async generator
+ * Walk MerklePatriciaTrie via async generator
  * @param nodeHash - The root key to walk on.
  * @param currentKey - The current (partial) key.
  * @param onFound - Called on every node found (before filter)
@@ -22,7 +22,7 @@ export type OnFound = (node: TrieNode, key: number[]) => Promise<any>
  * `for await (const { node, currentKey } of trie._walkTrie(root)) { ... }`
  */
 export async function* _walkTrie(
-  this: Trie,
+  this: MerklePatriciaTrie,
   nodeHash: Uint8Array,
   currentKey: number[] = [],
   onFound: OnFound = async (_trieNode: TrieNode, _key: number[]) => {},

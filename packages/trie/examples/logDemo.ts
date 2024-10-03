@@ -1,7 +1,7 @@
 /**
  * Run with DEBUG=ethjs,trie:* to see debug log output
  */
-import { Trie, createMerkleProof, verifyMerkleProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMerkleProof, verifyMerkleProof } from '@ethereumjs/trie'
 import { utf8ToBytes } from '@ethereumjs/util'
 
 const trie_entries: [string, string | null][] = [
@@ -16,7 +16,7 @@ const trie_entries: [string, string | null][] = [
 ]
 
 const main = async () => {
-  const trie = new Trie({
+  const trie = new MerklePatriciaTrie({
     useRootPersistence: true,
   })
   for (const [key, value] of trie_entries) {

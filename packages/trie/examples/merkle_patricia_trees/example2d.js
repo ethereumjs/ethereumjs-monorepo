@@ -2,9 +2,9 @@
 
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 
 async function test() {
   console.log(bytesToHex(utf8ToBytes('testKey')))

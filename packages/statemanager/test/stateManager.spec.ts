@@ -1,4 +1,4 @@
-import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_RLP,
@@ -83,7 +83,7 @@ describe('StateManager -> General', () => {
   })
 
   it(`copy()`, async () => {
-    const trie = new Trie({ cacheSize: 1000 })
+    const trie = new MerklePatriciaTrie({ cacheSize: 1000 })
     let sm = new MerkleStateManager({
       trie,
       prefixCodeHashes: false,

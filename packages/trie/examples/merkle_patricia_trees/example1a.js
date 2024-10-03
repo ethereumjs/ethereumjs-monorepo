@@ -2,9 +2,9 @@
 
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
-const { Trie } = require('../../dist/cjs/index.js') // We import the library required to create a basic Merkle Patricia Tree
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js') // We import the library required to create a basic Merkle Patricia Tree
 
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new MerklePatriciaTrie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {

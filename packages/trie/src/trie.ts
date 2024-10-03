@@ -49,9 +49,9 @@ import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
- * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
+ * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/trie'`.
  */
-export class Trie {
+export class MerklePatriciaTrie {
   protected readonly _opts: TrieOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
@@ -946,8 +946,8 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): Trie {
-    const trie = new Trie({
+  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): MerklePatriciaTrie {
+    const trie = new MerklePatriciaTrie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),

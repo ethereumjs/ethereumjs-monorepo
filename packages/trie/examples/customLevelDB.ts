@@ -1,4 +1,4 @@
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
@@ -127,7 +127,7 @@ export class LevelDB<
 }
 
 async function main() {
-  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+  const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
   console.log(trie.database().db) // LevelDB { ...
 }
 void main()

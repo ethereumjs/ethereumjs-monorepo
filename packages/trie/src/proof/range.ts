@@ -2,7 +2,7 @@ import { equalsBytes } from '@ethereumjs/util'
 
 import { createTrieFromProof } from '../index.js'
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
-import { Trie } from '../trie.js'
+import { MerklePatriciaTrie } from '../trie.js'
 import { nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
 import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
@@ -21,7 +21,7 @@ import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
  * @returns The end position of key.
  */
 async function unset(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   parent: TrieNode,
   child: TrieNode | null,
   key: Nibbles,
@@ -105,7 +105,11 @@ async function unset(
  * @param right - right nibbles.
  * @returns Is it an empty trie.
  */
-async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise<boolean> {
+async function unsetInternal(
+  trie: MerklePatriciaTrie,
+  left: Nibbles,
+  right: Nibbles,
+): Promise<boolean> {
   // Key position
   let pos = 0
   // Parent node
@@ -322,7 +326,7 @@ async function verifyMerkleProof(
   key: Uint8Array,
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction,
-): Promise<{ value: Uint8Array | null; trie: Trie }> {
+): Promise<{ value: Uint8Array | null; trie: MerklePatriciaTrie }> {
   const proofTrie = await createTrieFromProof(proof, {
     root: rootHash,
     useKeyHashingFunction,
@@ -348,7 +352,7 @@ async function verifyMerkleProof(
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
+async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<boolean> {
   let pos = 0
   let node: TrieNode | null = await trie.lookupNode(trie.root())
   while (node !== null) {
@@ -437,7 +441,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ useKeyHashingFunction })
+    const trie = new MerklePatriciaTrie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
     }

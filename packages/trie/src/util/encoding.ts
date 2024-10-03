@@ -6,7 +6,7 @@ import type { Nibbles } from '../types.js'
 
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 //
-// Trie keys are dealt with in three distinct encodings:
+// MerklePatriciaTrie keys are dealt with in three distinct encodings:
 //
 // KEYBYTES encoding contains the actual key and nothing else. This encoding is the
 // input to most API functions.

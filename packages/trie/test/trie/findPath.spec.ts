@@ -1,11 +1,11 @@
 import { randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src/index.js'
+import { MerklePatriciaTrie } from '../../src/index.js'
 
 describe('TRIE > findPath', async () => {
   const keys = Array.from({ length: 200 }, () => randomBytes(8))
-  const trie = new Trie()
+  const trie = new MerklePatriciaTrie()
   for (const [i, k] of keys.entries()) {
     await trie.put(k, Uint8Array.from([i, i]))
   }
@@ -38,7 +38,7 @@ describe('TRIE > findPath', async () => {
 })
 describe('TRIE (secure) > findPath', async () => {
   const keys = Array.from({ length: 1000 }, () => randomBytes(20))
-  const trie = new Trie({ useKeyHashing: true })
+  const trie = new MerklePatriciaTrie({ useKeyHashing: true })
   for (const [i, k] of keys.entries()) {
     await trie.put(k, Uint8Array.from([i, i]))
   }

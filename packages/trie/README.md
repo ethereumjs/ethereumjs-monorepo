@@ -111,7 +111,7 @@ async function main() {
   const k1 = utf8ToBytes('keyOne')
   const k2 = utf8ToBytes('keyTwo')
 
-  const someOtherTrie = new Trie({ useKeyHashing: true })
+  const someOtherTrie = new MerklePatriciaTrie({ useKeyHashing: true })
   await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
@@ -175,7 +175,7 @@ As an example, to leverage `LevelDB` for all operations then you should create a
 ```ts
 // ./examples/customLevelDB.ts#L127-L131
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 console.log(trie.database().db) // LevelDB { ...
 
 void main()

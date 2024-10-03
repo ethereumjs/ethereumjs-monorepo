@@ -1,7 +1,7 @@
-import { Trie, createMerkleProof, verifyMerkleProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMerkleProof, verifyMerkleProof } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 
 async function main() {
   const k1 = utf8ToBytes('key1')

@@ -1,9 +1,9 @@
 /* Example 1c - Creating an empty Merkle Patricia Tree and updating it with a single key-value pair */
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
+const trie = new MerklePatriciaTrie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {

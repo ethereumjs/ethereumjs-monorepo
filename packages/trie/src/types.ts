@@ -56,11 +56,11 @@ export interface TrieOpts {
   root?: Uint8Array
 
   /**
-   * Create as a secure Trie where the keys are automatically hashed using the
+   * Create as a secure MerklePatriciaTrie where the keys are automatically hashed using the
    * **keccak256** hash function or alternatively the custom hash function provided.
    * Default: `false`
    *
-   * This is the flavor of the Trie which is used in production Ethereum networks
+   * This is the flavor of the MerklePatriciaTrie which is used in production Ethereum networks
    * like Ethereum Mainnet.
    *
    * Note: This functionality has been refactored along the v5 release and was before

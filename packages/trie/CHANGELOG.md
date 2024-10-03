@@ -188,7 +188,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
 ```ts
-Trie.create() / new Trie() // root constructor option
+Trie.create() / new MerklePatriciaTrie() // root constructor option
 Trie.root(value?: Uint8Array | null): Uint8Array
 Trie.checkRoot(root: Uint8Array): Promise<boolean>
 Trie.get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null>
@@ -287,7 +287,7 @@ Updating is a straightforward process:
 const trie = new SecureTrie()
 
 // New
-const trie = new Trie({ useKeyHashing: true })
+const trie = new MerklePatriciaTrie({ useKeyHashing: true })
 ```
 
 ### Removed Getter and Setter Functions
@@ -302,11 +302,11 @@ For this reason, a single `root(hash?: Buffer): Buffer` function serves as a rep
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root()
 ```
 
@@ -314,11 +314,11 @@ trie.root()
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root = Buffer.alloc(32)
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root(Buffer.alloc(32))
 ```
 
@@ -328,11 +328,11 @@ The `isCheckpoint` getter function has been removed, see PR [#2218](https://gith
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.isCheckpoint
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.hasCheckpoints()
 ```
 
@@ -381,7 +381,7 @@ To activate root hash persistence you can set the `useRootPersistence` option on
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({
+const trie = new MerklePatriciaTrie({
   db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')),
   useRootPersistence: true,
 })
@@ -483,7 +483,7 @@ The new `DB` interface can be used like this for LevelDB:
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
 If no `db` option is provided an in-memory [memory-level](https://github.com/Level/memory-level) data storage will be instantiated and used. (Side note: some internal non-persistent trie operations (e.g. proof trie creation for range proofs) will always use the internal `level` based data storage, so there will be some continued `level` DB usage also when you switch to an alternative data store for permanent trie storage).
@@ -584,7 +584,7 @@ Example using async/await syntax:
 
 ```ts
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))
   const value = await trie.get(Buffer.from('test'))

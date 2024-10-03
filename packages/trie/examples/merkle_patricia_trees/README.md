@@ -39,10 +39,10 @@ At their most basic, Merkle Patricia Trees allow us to store and retrieve key-va
 Let's begin right away with a simple example. Don't worry if things aren't too clear for now, they will become clearer as we go. In this example, we'll create an empty trie:
 
 ```jsx
-const { Trie } = require('@ethereumjs/trie') // We import the library required to create a basic Merkle Patricia Tree
+const { MerklePatriciaTrie } = require('@ethereumjs/trie') // We import the library required to create a basic Merkle Patricia Tree
 const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new MerklePatriciaTrie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 ```
 
@@ -83,7 +83,7 @@ Let's retry the example above while respecting the rules we just mentioned. We w
 Here's what this looks like:
 
 ```jsx
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new MerklePatriciaTrie() // We create an empty Merkle Patricia Tree
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {
@@ -110,7 +110,7 @@ Nothing spectacular: only the root hash of the tree has changed, as the key has 
 Fortunately, we also have an option called "useKeyHashing" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
-const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
+const trie = new MerklePatriciaTrie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {

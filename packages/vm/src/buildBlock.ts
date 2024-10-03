@@ -7,7 +7,7 @@ import {
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
@@ -143,7 +143,10 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.vm.common }),
+    )
   }
 
   /**
@@ -165,7 +168,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie({ common: this.vm.common })
+    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -322,7 +325,10 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(
+          this.withdrawals,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
