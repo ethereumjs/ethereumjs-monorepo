@@ -2,7 +2,7 @@ import { type PrefixedHexString } from '@ethereumjs/util'
 
 import type { AccessWitness, Caches } from './index.js'
 import type { Common } from '@ethereumjs/common'
-import type { MerklePatriciaTrie } from '@ethereumjs/trie'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { VerkleCrypto } from '@ethereumjs/util'
 import type { VerkleTree } from '@ethereumjs/verkle'
 /**

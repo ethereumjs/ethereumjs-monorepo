@@ -1,7 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
-import { verifyMPTProof } from '@ethereumjs/trie'
+import { verifyMPTProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,

@@ -1,4 +1,3 @@
-import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BranchMPTNode,
   ExtensionMPTNode,
@@ -7,7 +6,8 @@ import {
   decodeNode,
   mergeAndFormatKeyPaths,
   pathToHexKey,
-} from '@ethereumjs/trie'
+} from '@ethereumjs/mpt'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   KECCAK256_NULL,

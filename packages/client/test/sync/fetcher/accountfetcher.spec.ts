@@ -1,5 +1,5 @@
+import { createMPTFromProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { createTrieFromProof } from '@ethereumjs/trie'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
@@ -289,7 +289,7 @@ describe('[AccountFetcher]', async () => {
     const pool = new PeerPool() as any
 
     // calculate new root with a key all the way to the right of the trie
-    const trie = await createTrieFromProof(_zeroElementProof)
+    const trie = await createMPTFromProof(_zeroElementProof)
     await trie.put(hexToBytes(`0x${'F'.repeat(32)}`), hexToBytes('0x123'), true)
     const newRoot = trie.root()
 

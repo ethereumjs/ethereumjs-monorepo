@@ -1,5 +1,5 @@
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
 

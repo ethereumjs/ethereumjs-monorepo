@@ -1,5 +1,5 @@
+import { decodeNode } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { decodeNode } from '@ethereumjs/trie'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import { assert, describe, it, vi } from 'vitest'
@@ -9,7 +9,7 @@ import { Config } from '../../../src/config.js'
 import { SnapProtocol } from '../../../src/net/protocol/index.js'
 import { wait } from '../../integration/util.js'
 
-import type { BranchMPTNode } from '@ethereumjs/trie'
+import type { BranchMPTNode } from '@ethereumjs/mpt'
 
 // Collected from Sepolia:
 // getTrieNodes({

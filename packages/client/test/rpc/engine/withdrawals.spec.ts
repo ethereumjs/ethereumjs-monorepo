@@ -1,5 +1,5 @@
 import { genWithdrawalsTrieRoot } from '@ethereumjs/block'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 

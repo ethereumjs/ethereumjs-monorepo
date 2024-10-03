@@ -1,5 +1,5 @@
 import { ChainGenesis } from '@ethereumjs/common'
-import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/mpt'
 
 import type { Chain, Common } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'

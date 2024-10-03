@@ -1,4 +1,4 @@
-import { MerklePatriciaTrie, createTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT } from '@ethereumjs/mpt'
 import {
   Account,
   Address,
@@ -116,7 +116,7 @@ describe('ProofStateManager', () => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = createAddressFromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await createTrie({ useKeyHashing: true })
+    const trie = await createMPT({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
