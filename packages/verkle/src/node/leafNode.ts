@@ -1,20 +1,20 @@
 import { equalsBytes, intToBytes, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleLeafNodeValue, VerkleNodeType } from './types.js'
+import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
 import {
   createCValues,
-  createDefaultLeafValues,
-  createDeletedLeafValue,
+  createDefaultLeafVerkleValues,
+  createDeletedLeafVerkleValue,
   createUntouchedLeafValue,
 } from './util.js'
 
 import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
+export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
-  public values: (Uint8Array | VerkleLeafNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
+  public values: (Uint8Array | LeafVerkleNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
@@ -23,7 +23,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     super(options)
 
     this.stem = options.stem
-    this.values = options.values ?? createDefaultLeafValues()
+    this.values = options.values ?? createDefaultLeafVerkleValues()
     this.c1 = options.c1
     this.c2 = options.c2
   }
@@ -38,17 +38,17 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   static async create(
     stem: Uint8Array,
     verkleCrypto: VerkleCrypto,
-    values?: (Uint8Array | VerkleLeafNodeValue)[],
-  ): Promise<LeafNode> {
+    values?: (Uint8Array | LeafVerkleNodeValue)[],
+  ): Promise<LeafVerkleNode> {
     // Generate the value arrays for c1 and c2
     if (values !== undefined) {
       values = values.map((el) => {
         // Checks for instances of zeros and replaces with the "deleted" leaf node value
         if (el instanceof Uint8Array && equalsBytes(el, new Uint8Array(32)))
-          return VerkleLeafNodeValue.Deleted
+          return LeafVerkleNodeValue.Deleted
         return el
       })
-    } else values = createDefaultLeafValues()
+    } else values = createDefaultLeafVerkleValues()
 
     const c1Values = createCValues(values.slice(0, 128))
     const c2Values = createCValues(values.slice(128))
@@ -96,7 +96,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       new Uint8Array(32),
       verkleCrypto.hashCommitment(c2),
     )
-    return new LeafNode({
+    return new LeafVerkleNode({
       stem,
       values,
       commitment,
@@ -106,7 +106,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     })
   }
 
-  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): LeafNode {
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): LeafVerkleNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
       throw new Error('Invalid node type')
@@ -124,17 +124,17 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
 
     const values = rawNode
       .slice(5, rawNode.length)
-      .map((el) => (el.length === 0 ? 0 : equalsBytes(el, createDeletedLeafValue()) ? 1 : el))
-    return new LeafNode({ stem, values, c1, c2, commitment, verkleCrypto })
+      .map((el) => (el.length === 0 ? 0 : equalsBytes(el, createDeletedLeafVerkleValue()) ? 1 : el))
+    return new LeafVerkleNode({ stem, values, c1, c2, commitment, verkleCrypto })
   }
 
   // Retrieve the value at the provided index from the values array
   getValue(index: number): Uint8Array | undefined {
     const value = this.values[index]
     switch (value) {
-      case VerkleLeafNodeValue.Untouched:
+      case LeafVerkleNodeValue.Untouched:
         return undefined
-      case VerkleLeafNodeValue.Deleted:
+      case LeafVerkleNodeValue.Deleted:
         // Return zeroes if a value is "deleted" (i.e. overwritten with zeroes)
         return new Uint8Array(32)
       default:
@@ -147,15 +147,15 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
    * @param index the index of the specific leaf value to be updated
    * @param value the value to insert into the leaf value at `index`
    */
-  setValue(index: number, value: Uint8Array | VerkleLeafNodeValue): void {
+  setValue(index: number, value: Uint8Array | LeafVerkleNodeValue): void {
     let val
     // `val` is a bytes representation of `value` used to update the cCommitment
     if (value instanceof Uint8Array) val = value
     else
       val =
-        value === VerkleLeafNodeValue.Untouched
+        value === LeafVerkleNodeValue.Untouched
           ? createUntouchedLeafValue()
-          : createDeletedLeafValue()
+          : createDeletedLeafVerkleValue()
 
     // Set the new values in the values array
     this.values[index] = val
@@ -196,10 +196,10 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.c2 ?? new Uint8Array(),
       ...this.values.map((val) => {
         switch (val) {
-          case VerkleLeafNodeValue.Untouched:
+          case LeafVerkleNodeValue.Untouched:
             return new Uint8Array()
-          case VerkleLeafNodeValue.Deleted:
-            return createDeletedLeafValue()
+          case LeafVerkleNodeValue.Deleted:
+            return createDeletedLeafVerkleValue()
           default:
             return val
         }

@@ -1,8 +1,8 @@
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
+  BranchMPTNode,
+  ExtensionMPTNode,
+  LeafMPTNode,
   MerklePatriciaTrie,
   decodeNode,
   mergeAndFormatKeyPaths,
@@ -226,8 +226,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         let hasStorageComponent = false
 
         // get all children of received node
-        if (node instanceof BranchNode) {
-          const children = (node as BranchNode).getChildren()
+        if (node instanceof BranchMPTNode) {
+          const children = (node as BranchMPTNode).getChildren()
           for (const [i, embeddedNode] of children) {
             if (embeddedNode !== null) {
               const newStoragePath = nodePath.concat(bytesToHex(Uint8Array.from([i])))
@@ -240,7 +240,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               })
             }
           }
-        } else if (node instanceof ExtensionNode) {
+        } else if (node instanceof ExtensionMPTNode) {
           this.DEBUG && this.debug('extension node found')
           const stringPath = bytesToHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
@@ -341,7 +341,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
           // add account node data to account trie
           const node = decodeNode(nodeData)
-          if (node instanceof LeafNode) {
+          if (node instanceof LeafMPTNode) {
             const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
             ops.push({
               type: 'put',
@@ -359,7 +359,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
               for (const [path, data] of pathToStorageNode) {
                 const storageNode = decodeNode(data)
-                if (storageNode instanceof LeafNode) {
+                if (storageNode instanceof LeafMPTNode) {
                   const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
                   storageTrieOps.push({
                     type: 'put',

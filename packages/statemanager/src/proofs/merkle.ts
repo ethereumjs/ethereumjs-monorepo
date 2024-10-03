@@ -3,7 +3,7 @@ import {
   createMerkleProof,
   createTrieFromProof,
   updateTrieFromMerkleProof,
-  verifyTrieProof,
+  verifyMPTProof,
 } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
@@ -194,7 +194,7 @@ export async function verifyMerkleStateProof(
 
   // This returns the account if the proof is valid.
   // Verify that it matches the reported account.
-  const value = await verifyTrieProof(key, accountProof, {
+  const value = await verifyMPTProof(key, accountProof, {
     useKeyHashing: true,
   })
 
@@ -240,7 +240,7 @@ export async function verifyMerkleStateProof(
     const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
     const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
     const storageKey = hexToBytes(stProof.key)
-    const proofValue = await verifyTrieProof(storageKey, storageProof, {
+    const proofValue = await verifyMPTProof(storageKey, storageProof, {
       useKeyHashing: true,
     })
     const reportedValue = setLengthLeft(

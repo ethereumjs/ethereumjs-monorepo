@@ -12,7 +12,7 @@ import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { LeafNode, MerklePatriciaTrie } from '../src/index.js'
+import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.js'
 import { bytesToNibbles } from '../src/util/nibbles.js'
 
 import type { HashKeysFunction } from '../src/index.js'
@@ -240,11 +240,11 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trie.put(utf8ToBytes('aaa'), utf8ToBytes('value3'))
 
         /* Setups a trie which consists of
-        ExtensionNode ->
-        BranchNode -> value1
-        ExtensionNode ->
-        BranchNode -> value2
-        LeafNode -> value3
+        ExtensionMPTNode ->
+        BranchMPTNode -> value1
+        ExtensionMPTNode ->
+        BranchMPTNode -> value2
+        LeafMPTNode -> value3
       */
 
         let path = await trie.findPath(utf8ToBytes('aaa'))
@@ -252,7 +252,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.ok(path.node !== null, 'findPath should find a node')
 
         const { stack } = await trie.findPath(utf8ToBytes('aaa'))
-        await trie['_db'].del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
+        await trie['_db'].del(keccak256(stack[1].serialize())) // delete the BranchMPTNode -> value1 from the DB
 
         path = await trie.findPath(utf8ToBytes('aaa'))
 
@@ -343,7 +343,9 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         }
 
         const [k, v] = [utf8ToBytes('foo'), utf8ToBytes('bar')]
-        const expectedRoot = useKeyHashingFunction(new LeafNode(bytesToNibbles(k), v).serialize())
+        const expectedRoot = useKeyHashingFunction(
+          new LeafMPTNode(bytesToNibbles(k), v).serialize(),
+        )
 
         const trie = new MerklePatriciaTrie({ useKeyHashingFunction, cacheSize })
         await trie.put(k, v)

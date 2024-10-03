@@ -9,7 +9,7 @@ import { Config } from '../../../src/config.js'
 import { SnapProtocol } from '../../../src/net/protocol/index.js'
 import { wait } from '../../integration/util.js'
 
-import type { BranchNode } from '@ethereumjs/trie'
+import type { BranchMPTNode } from '@ethereumjs/trie'
 
 // Collected from Sepolia:
 // getTrieNodes({
@@ -165,7 +165,7 @@ describe('[TrieNodeFetcher]', async () => {
 
     await fetcher.store(requestResult)
 
-    const rootNode = decodeNode(nodes[0] as unknown as Uint8Array) as BranchNode
+    const rootNode = decodeNode(nodes[0] as unknown as Uint8Array) as BranchMPTNode
     const children = rootNode.getChildren()
     assert.equal(
       children.length,

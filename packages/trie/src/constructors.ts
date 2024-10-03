@@ -9,9 +9,9 @@ import { concatBytes } from 'ethereum-cryptography/utils'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, updateTrieFromMerkleProof } from './index.js'
 
-import type { Proof, TrieOpts } from './index.js'
+import type { MPTOpts, Proof } from './index.js'
 
-export async function createTrie(opts?: TrieOpts) {
+export async function createTrie(opts?: MPTOpts) {
   const keccakFunction =
     opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
   let key = ROOT_DB_KEY
@@ -60,7 +60,7 @@ export async function createTrie(opts?: TrieOpts) {
  * @param trieOpts trie opts to be applied to returned trie
  * @returns new trie created from given proof
  */
-export async function createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
+export async function createTrieFromProof(proof: Proof, trieOpts?: MPTOpts) {
   const shouldVerifyRoot = trieOpts?.root !== undefined
   const trie = new MerklePatriciaTrie(trieOpts)
   const root = await updateTrieFromMerkleProof(trie, proof, shouldVerifyRoot)

@@ -14,7 +14,7 @@ import {
   MerklePatriciaTrie,
   ROOT_DB_KEY,
   createMerkleProof,
-  verifyTrieProof,
+  verifyMPTProof,
 } from '../../src/index.js'
 import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.js'
 
@@ -58,7 +58,7 @@ describe('SecureTrie proof', () => {
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
 
     const proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
-    const val = await verifyTrieProof(utf8ToBytes('key1aa'), proof, {
+    const val = await verifyMPTProof(utf8ToBytes('key1aa'), proof, {
       useKeyHashing: true,
     })
     assert.deepEqual(val, utf8ToBytes('01234'))
