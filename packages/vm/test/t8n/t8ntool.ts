@@ -113,6 +113,7 @@ export class TransitionTool {
 
     if (args.state.reward !== BigInt(-1)) {
       await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+      this.vm.evm.journal.cleanup()
     }
 
     const result = await builder.build()
