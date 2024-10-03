@@ -128,7 +128,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return verifyMPTRangeProof(
+      return await verifyMPTRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],

@@ -4,7 +4,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
   InternalVerkleNode,
-  LeafNode,
+  LeafVerkleNode,
   LeafVerkleNodeValue,
   VerkleNodeType,
   createVerkleTree,
@@ -130,7 +130,7 @@ describe('Verkle tree', () => {
     let putStack: [Uint8Array, VerkleNode][] = []
     const stem1 = keys[0].slice(0, 31)
     // Create first leaf node
-    const leafNode1 = await LeafNode.create(stem1, verkleCrypto)
+    const leafNode1 = await LeafVerkleNode.create(stem1, verkleCrypto)
 
     leafNode1.setValue(keys[0][31], values[0])
     leafNode1.setValue(keys[1][31], values[1])
@@ -165,14 +165,14 @@ describe('Verkle tree', () => {
     assert.equal(foundPath.node, null)
 
     // Create new leaf node
-    const leafNode2 = await LeafNode.create(stem2, verkleCrypto)
+    const leafNode2 = await LeafVerkleNode.create(stem2, verkleCrypto)
     leafNode2.setValue(keys[2][31], values[2])
     putStack.push([leafNode2.hash(), leafNode2])
 
     const nearestNode = foundPath.stack.pop()![0]
     // Verify that another leaf node is "nearest" node
     assert.equal(nearestNode.type, VerkleNodeType.Leaf)
-    assert.deepEqual((nearestNode as LeafNode).getValue(2), values[1])
+    assert.deepEqual((nearestNode as LeafVerkleNode).getValue(2), values[1])
 
     // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
     const partialMatchingStemIndex = matchingBytesLength(stem1, stem2)
@@ -184,7 +184,7 @@ describe('Verkle tree', () => {
     // Update the child references for leafNode1 and leafNode 2
     internalNode1.setChild(stem1[partialMatchingStemIndex], {
       commitment: nearestNode.commitment,
-      path: (nearestNode as LeafNode).stem,
+      path: (nearestNode as LeafVerkleNode).stem,
     })
     internalNode1.setChild(stem2[partialMatchingStemIndex], {
       commitment: leafNode2.commitment,
@@ -266,6 +266,6 @@ describe('Verkle tree', () => {
     await trie.del(keys[0].slice(0, 31), [keys[0][31]])
     const res = await trie.findPath(keys[0].slice(0, 31))
     assert.ok(res.node !== null)
-    assert.deepEqual((res.node as LeafNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
+    assert.deepEqual((res.node as LeafVerkleNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
   })
 })
