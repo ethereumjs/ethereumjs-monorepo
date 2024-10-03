@@ -41,4 +41,4 @@ Processing new transaction...
 
 ## Writing a test in execution-spec-test
 
-This issue comment is a good refernece to write tests, together with an example: <https://github.com/ethereumjs/ethereumjs-monorepo/issues/3666#issuecomment-2349611424>
+This issue comment is a good reference to write tests, together with an example: <https://github.com/ethereumjs/ethereumjs-monorepo/issues/3666#issuecomment-2349611424>
