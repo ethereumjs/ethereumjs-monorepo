@@ -279,6 +279,69 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
 }
 
 /**
+ * Returns a common instance configured for verkle
+ * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param ttd If set: total terminal difficulty to switch to merge
+ * @returns
+ */
+function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
+  let ttd
+  // hard fork that verkle tests are filled on
+  const hfName = 'shanghai'
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
+  const hardforks = mainnetCommon.hardforks().slice(0, 17) // skip hardforks after Shanghai
+  const testHardforks: HardforkTransitionConfig[] = []
+  for (const hf of hardforks) {
+    // check if we enable this hf
+    // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+    if (mainnetCommon.gteHardfork(hf.name) && hf.name !== Hardfork.Dao) {
+      // this hardfork should be activated at block 0
+      testHardforks.push({
+        name: hf.name,
+        // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
+        // forkHash: hf.forkHash,
+        block: 0,
+      })
+    } else {
+      // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+      if (
+        (ttd === undefined && timestamp === undefined) ||
+        (hf.name === 'paris' && ttd !== undefined)
+      ) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+        })
+      }
+      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          timestamp,
+        })
+      }
+    }
+  }
+
+  testHardforks.push({ name: 'verkle', block: null })
+
+  const common = createCustomCommon(
+    {
+      hardforks: testHardforks,
+      defaultHardfork: 'verkle',
+    },
+    Mainnet,
+    { eips: [3607], customCrypto: { kzg } },
+  )
+  // Activate EIPs
+  const eips = network.match(/(?<=\+)(.\d+)/g)
+  if (eips) {
+    common.setEIPs(eips.map((e: string) => parseInt(e)))
+  }
+  return common
+}
+
+/**
  * Returns a Common for the given network (a test parameter)
  * @param network - the network field of a test.
  * If this network has a `+` sign, it will also include these EIPs.
@@ -288,6 +351,8 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
  * @returns the Common which should be used
  */
 export function getCommon(network: string, kzg?: KZG): Common {
+  // Special handler for verkle tests
+  if (network.toLowerCase().includes('verkle')) return setupCommonForVerkle(network, undefined, kzg)
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
