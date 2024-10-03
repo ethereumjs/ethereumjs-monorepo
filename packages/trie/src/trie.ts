@@ -21,9 +21,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
 import {
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
+  BranchMPTNode,
+  ExtensionMPTNode,
+  LeafMPTNode,
   decodeNode,
   decodeRawNode,
   isRawNode,
@@ -34,14 +34,14 @@ import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from '
 import { WalkController } from './util/walkController.js'
 
 import type {
-  BranchNodeBranchValue,
+  BranchMPTNodeBranchValue,
   FoundNodeFunction,
+  MPTNode,
+  MPTOpts,
+  MPTOptsWithDefaults,
   Nibbles,
   NodeReferenceOrRawNode,
   Path,
-  TrieNode,
-  TrieOpts,
-  TrieOptsWithDefaults,
   TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
@@ -52,7 +52,7 @@ import type { Debugger } from 'debug'
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/trie'`.
  */
 export class MerklePatriciaTrie {
-  protected readonly _opts: TrieOptsWithDefaults = {
+  protected readonly _opts: MPTOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     keyPrefix: undefined,
@@ -82,7 +82,7 @@ export class MerklePatriciaTrie {
    *
    * Note: in most cases, {@link createTrie} constructor should be used.  It uses the same API but provides sensible defaults
    */
-  constructor(opts?: TrieOpts) {
+  constructor(opts?: MPTOpts) {
     let valueEncoding: ValueEncoding
     if (opts !== undefined) {
       // Sanity check: can only set valueEncoding if a db is provided
@@ -319,25 +319,25 @@ export class MerklePatriciaTrie {
     key: Uint8Array,
     throwIfMissing = false,
     partialPath: {
-      stack: TrieNode[]
+      stack: MPTNode[]
     } = {
       stack: [],
     },
   ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
-    const stack: TrieNode[] = Array.from({ length: keyLen })
+    const stack: MPTNode[] = Array.from({ length: keyLen })
     let progress = 0
     for (let i = 0; i < partialPath.stack.length - 1; i++) {
       stack[i] = partialPath.stack[i]
-      progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
+      progress += stack[i] instanceof BranchMPTNode ? 1 : (<ExtensionMPTNode>stack[i]).keyLength()
     }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      stack[progress] = node as TrieNode
-      if (node instanceof BranchNode) {
+      stack[progress] = node as MPTNode
+      if (node instanceof BranchMPTNode) {
         if (progress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
@@ -370,7 +370,7 @@ export class MerklePatriciaTrie {
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
-      } else if (node instanceof LeafNode) {
+      } else if (node instanceof LeafMPTNode) {
         const _progress = progress
         if (keyLen - progress > node.key().length) {
           result = { node: null, remaining: targetKey.slice(_progress), stack }
@@ -384,7 +384,7 @@ export class MerklePatriciaTrie {
           progress++
         }
         result = { node, remaining: [], stack }
-      } else if (node instanceof ExtensionNode) {
+      } else if (node instanceof ExtensionMPTNode) {
         this.DEBUG &&
           this.debug(
             `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
@@ -482,7 +482,9 @@ export class MerklePatriciaTrie {
       [],
       undefined,
       async (node) => {
-        return node instanceof LeafNode || (node instanceof BranchNode && node.value() !== null)
+        return (
+          node instanceof LeafMPTNode || (node instanceof BranchMPTNode && node.value() !== null)
+        )
       },
     )) {
       await onFound(node, currentKey)
@@ -494,7 +496,7 @@ export class MerklePatriciaTrie {
    * @private
    */
   protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const newNode = new LeafNode(bytesToNibbles(key), value)
+    const newNode = new LeafMPTNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
@@ -507,7 +509,7 @@ export class MerklePatriciaTrie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<MPTNode> {
     if (isRawNode(node)) {
       const decoded = decodeRawNode(node)
       this.DEBUG && this.debug(`${decoded.constructor.name}`, ['lookup_node', 'raw_node'])
@@ -539,7 +541,7 @@ export class MerklePatriciaTrie {
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
-    stack: TrieNode[],
+    stack: MPTNode[],
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
@@ -553,11 +555,11 @@ export class MerklePatriciaTrie {
     // Check if the last node is a leaf and the key matches to this
     let matchLeaf = false
 
-    if (lastNode instanceof LeafNode) {
+    if (lastNode instanceof LeafMPTNode) {
       let l = 0
       for (let i = 0; i < stack.length; i++) {
         const n = stack[i]
-        if (n instanceof BranchNode) {
+        if (n instanceof BranchMPTNode) {
           l++
         } else {
           l += n.key().length
@@ -576,13 +578,13 @@ export class MerklePatriciaTrie {
       // just updating a found value
       lastNode.value(value)
       stack.push(lastNode)
-    } else if (lastNode instanceof BranchNode) {
+    } else if (lastNode instanceof BranchMPTNode) {
       stack.push(lastNode)
       if (keyRemainder.length !== 0) {
         // add an extension to a branch node
         keyRemainder.shift()
         // create a new leaf
-        const newLeaf = new LeafNode(keyRemainder, value)
+        const newLeaf = new LeafMPTNode(keyRemainder, value)
         stack.push(newLeaf)
       } else {
         lastNode.value(value)
@@ -591,43 +593,43 @@ export class MerklePatriciaTrie {
       // create a branch node
       const lastKey = lastNode.key()
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
-      const newBranchNode = new BranchNode()
+      const newBranchMPTNode = new BranchMPTNode()
 
       // create a new extension node
       if (matchingLength !== 0) {
         const newKey = lastNode.key().slice(0, matchingLength)
-        const newExtNode = new ExtensionNode(newKey, value)
+        const newExtNode = new ExtensionMPTNode(newKey, value)
         stack.push(newExtNode)
         lastKey.splice(0, matchingLength)
         keyRemainder.splice(0, matchingLength)
       }
 
-      stack.push(newBranchNode)
+      stack.push(newBranchMPTNode)
 
       if (lastKey.length !== 0) {
         const branchKey = lastKey.shift() as number
 
-        if (lastKey.length !== 0 || lastNode instanceof LeafNode) {
+        if (lastKey.length !== 0 || lastNode instanceof LeafMPTNode) {
           // shrinking extension or leaf
           lastNode.key(lastKey)
           const formattedNode = this._formatNode(lastNode, false, toSave) as NodeReferenceOrRawNode
-          newBranchNode.setBranch(branchKey, formattedNode)
+          newBranchMPTNode.setBranch(branchKey, formattedNode)
         } else {
           // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
-          newBranchNode.setBranch(branchKey, lastNode.value())
+          newBranchMPTNode.setBranch(branchKey, lastNode.value())
         }
       } else {
-        newBranchNode.value(lastNode.value())
+        newBranchMPTNode.value(lastNode.value())
       }
 
       if (keyRemainder.length !== 0) {
         keyRemainder.shift()
         // add a leaf node to the new branch node
-        const newLeafNode = new LeafNode(keyRemainder, value)
-        stack.push(newLeafNode)
+        const newLeafMPTNode = new LeafMPTNode(keyRemainder, value)
+        stack.push(newLeafMPTNode)
       } else {
-        newBranchNode.value(value)
+        newBranchMPTNode.value(value)
       }
     }
 
@@ -638,27 +640,27 @@ export class MerklePatriciaTrie {
    * Deletes a node from the trie.
    * @private
    */
-  protected async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
-    const processBranchNode = (
+  protected async _deleteNode(k: Uint8Array, stack: MPTNode[]): Promise<void> {
+    const processBranchMPTNode = (
       key: Nibbles,
       branchKey: number,
-      branchNode: TrieNode,
-      parentNode: TrieNode,
-      stack: TrieNode[],
+      branchNode: MPTNode,
+      parentNode: MPTNode,
+      stack: MPTNode[],
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
+      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchMPTNode) {
         // branch->?
         if (parentNode !== null && parentNode !== undefined) {
           stack.push(parentNode)
         }
 
-        if (branchNode instanceof BranchNode) {
+        if (branchNode instanceof BranchMPTNode) {
           // create an extension node
           // branch->extension->branch
           // We push an extension value with a temporarily empty value to the stack.
           // It will be replaced later on with the correct value in saveStack
-          const extensionNode = new ExtensionNode([branchKey], new Uint8Array())
+          const extensionNode = new ExtensionMPTNode([branchKey], new Uint8Array())
           stack.push(extensionNode)
           key.push(branchKey)
         } else {
@@ -674,7 +676,7 @@ export class MerklePatriciaTrie {
         // parent is an extension
         let parentKey = parentNode.key()
 
-        if (branchNode instanceof BranchNode) {
+        if (branchNode instanceof BranchMPTNode) {
           // ext->branch
           parentKey.push(branchKey)
           key.push(branchKey)
@@ -710,12 +712,12 @@ export class MerklePatriciaTrie {
       return
     }
 
-    if (lastNode instanceof BranchNode) {
+    if (lastNode instanceof BranchMPTNode) {
       lastNode.value(null)
     } else {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.
-      if (!(parentNode instanceof BranchNode)) {
+      if (!(parentNode instanceof BranchMPTNode)) {
         throw new Error('Expected branch node')
       }
       const lastNodeKey = lastNode.key()
@@ -739,8 +741,8 @@ export class MerklePatriciaTrie {
 
       // Special case where one needs to delete an extra node:
       // In this case, after updating the branch, the branch node has just one branch left
-      // However, this violates the trie spec; this should be converted in either an ExtensionNode
-      // Or a LeafNode
+      // However, this violates the trie spec; this should be converted in either an ExtensionMPTNode
+      // Or a LeafMPTNode
       // Since this branch is deleted, one can thus also delete this branch from the DB
       // So add this to the `opStack` and mark the keyHash to be deleted
       if (this._opts.useNodePruning) {
@@ -754,7 +756,7 @@ export class MerklePatriciaTrie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
+      key = processBranchMPTNode(key, branchNodeKey, foundNode, parentNode as MPTNode, stack)
       await this.saveStack(key, stack, opStack)
     } else {
       // simple removing a leaf and recalculation the stack
@@ -774,7 +776,7 @@ export class MerklePatriciaTrie {
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
-  async saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(key: Nibbles, stack: MPTNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
 
     // update nodes
@@ -783,13 +785,13 @@ export class MerklePatriciaTrie {
       if (node === undefined) {
         throw new Error('saveStack: missing node')
       }
-      if (node instanceof LeafNode || node instanceof ExtensionNode) {
+      if (node instanceof LeafMPTNode || node instanceof ExtensionMPTNode) {
         key.splice(key.length - node.key().length)
       }
-      if (node instanceof ExtensionNode && lastRoot !== undefined) {
+      if (node instanceof ExtensionMPTNode && lastRoot !== undefined) {
         node.value(lastRoot)
       }
-      if (node instanceof BranchNode && lastRoot !== undefined) {
+      if (node instanceof BranchMPTNode && lastRoot !== undefined) {
         const branchKey = key.pop()
         node.setBranch(branchKey!, lastRoot)
       }
@@ -814,11 +816,11 @@ export class MerklePatriciaTrie {
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
-    node: TrieNode,
+    node: MPTNode,
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false,
-  ): Uint8Array | NodeReferenceOrRawNode | BranchNodeBranchValue[] {
+  ): Uint8Array | NodeReferenceOrRawNode | BranchMPTNodeBranchValue[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
@@ -898,7 +900,7 @@ export class MerklePatriciaTrie {
             // Abort all other children checks
             return
           }
-          if (node instanceof BranchNode) {
+          if (node instanceof BranchMPTNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
               if (
@@ -914,8 +916,8 @@ export class MerklePatriciaTrie {
             // Check all children of the branch
             controller.allChildren(node, key)
           }
-          if (node instanceof ExtensionNode) {
-            // If the value of the ExtensionNode points to the dbkey, then it is found
+          if (node instanceof ExtensionMPTNode) {
+            // If the value of the ExtensionMPTNode points to the dbkey, then it is found
             if (bytesToUnprefixedHex(node.value()) === dbkey) {
               found = true
               return
@@ -1087,8 +1089,8 @@ export class MerklePatriciaTrie {
     let i = 0
     const values: { [key: string]: string } = {}
     let nextKey: string | null = null
-    await this.walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
-      if (node instanceof LeafNode) {
+    await this.walkAllValueNodes(async (node: MPTNode, currentKey: number[]) => {
+      if (node instanceof LeafMPTNode) {
         const keyBytes = nibblesTypeToPackedBytes(currentKey.concat(node.key()))
         if (!inRange) {
           // Check if the key is already in the correct range.

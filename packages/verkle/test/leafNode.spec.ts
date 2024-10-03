@@ -3,7 +3,7 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
-  VerkleLeafNodeValue,
+  LeafVerkleNodeValue,
   VerkleNodeType,
   createCValues,
   decodeNode,
@@ -63,14 +63,14 @@ describe('verkle node - leaf', () => {
     assert.equal(node.getValue(0), undefined)
     node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
     assert.deepEqual(node.getValue(0), setLengthRight(Uint8Array.from([5]), 32))
-    node.setValue(0, VerkleLeafNodeValue.Deleted)
+    node.setValue(0, LeafVerkleNodeValue.Deleted)
     assert.deepEqual(node.getValue(0), new Uint8Array(32))
   })
 
   it('should set the leaf marker on a touched value', async () => {
     const key = randomBytes(32)
     const node = await LeafNode.create(key.slice(0, 31), verkleCrypto)
-    node.setValue(0, VerkleLeafNodeValue.Deleted)
+    node.setValue(0, LeafVerkleNodeValue.Deleted)
     const c1Values = createCValues(node.values.slice(0, 128))
     assert.equal(c1Values[0][16], 1)
   })

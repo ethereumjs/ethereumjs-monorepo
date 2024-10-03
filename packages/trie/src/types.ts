@@ -1,10 +1,10 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
+import type { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
 import type { DB, ValueEncoding } from '@ethereumjs/util'
 
-export type TrieNode = BranchNode | ExtensionNode | LeafNode
+export type MPTNode = BranchMPTNode | ExtensionMPTNode | LeafMPTNode
 
 export type Nibbles = number[]
 
@@ -12,14 +12,14 @@ export type Nibbles = number[]
 // A raw extension node is a 2-item node, where the first item is the encoded path to the next node, and the second item is the reference to the next node
 // A raw leaf node is a 2-item node, where the first item is the remaining path to the leaf node, and the second item is the value
 // To learn more: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/#optimization
-export type RawExtensionNode = [Uint8Array, Uint8Array]
-export type RawLeafNode = [Uint8Array, Uint8Array]
+export type RawExtensionMPTNode = [Uint8Array, Uint8Array]
+export type RawLeafMPTNode = [Uint8Array, Uint8Array]
 
 // Branch and extension nodes might store
 // hash to next node, or a raw node if its length < 32
-export type NodeReferenceOrRawNode = Uint8Array | RawExtensionNode | RawLeafNode
+export type NodeReferenceOrRawNode = Uint8Array | RawExtensionMPTNode | RawLeafMPTNode
 
-export type BranchNodeBranchValue = NodeReferenceOrRawNode | null
+export type BranchMPTNodeBranchValue = NodeReferenceOrRawNode | null
 
 export type Proof = Uint8Array[]
 
@@ -30,21 +30,21 @@ export interface CommonInterface {
 }
 
 export interface Path {
-  node: TrieNode | null
+  node: MPTNode | null
   remaining: Nibbles
-  stack: TrieNode[]
+  stack: MPTNode[]
 }
 
 export type FoundNodeFunction = (
   nodeRef: Uint8Array,
-  node: TrieNode | null,
+  node: MPTNode | null,
   key: Nibbles,
   walkController: WalkController,
 ) => void
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
-export interface TrieOpts {
+export interface MPTOpts {
   /**
    * A database instance.
    */
@@ -111,7 +111,7 @@ export interface TrieOpts {
   common?: CommonInterface
 }
 
-export type TrieOptsWithDefaults = TrieOpts & {
+export type MPTOptsWithDefaults = MPTOpts & {
   useKeyHashing: boolean
   useKeyHashingFunction: HashKeysFunction
   useRootPersistence: boolean

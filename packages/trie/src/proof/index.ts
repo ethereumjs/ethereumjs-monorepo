@@ -5,7 +5,7 @@ import { createTrieFromProof } from '../constructors.js'
 import { MerklePatriciaTrie, verifyRangeProof } from '../index.js'
 import { bytesToNibbles } from '../util/nibbles.js'
 
-import type { Proof, TrieOpts } from '../index.js'
+import type { MPTOpts, Proof } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
 
 /**
@@ -18,10 +18,10 @@ import type { PutBatch } from '@ethereumjs/util'
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-export async function verifyTrieProof(
+export async function verifyMPTProof(
   key: Uint8Array,
   proof: Proof,
-  opts?: TrieOpts,
+  opts?: MPTOpts,
 ): Promise<Uint8Array | null> {
   try {
     const proofTrie = await createTrieFromProof(proof, opts)
@@ -45,14 +45,14 @@ export async function verifyTrieProof(
 //  * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
 //  * @returns a flag to indicate whether there exists more trie node in the trie
 //  */
-export function verifyTrieRangeProof(
+export function verifyMPTRangeProof(
   rootHash: Uint8Array,
   firstKey: Uint8Array | null,
   lastKey: Uint8Array | null,
   keys: Uint8Array[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  opts?: TrieOpts,
+  opts?: MPTOpts,
 ): Promise<boolean> {
   return verifyRangeProof(
     rootHash,
@@ -66,7 +66,7 @@ export function verifyTrieRangeProof(
 }
 
 /**
- * Creates a proof from a trie and key that can be verified using {@link verifyTrieProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+ * Creates a proof from a trie and key that can be verified using {@link verifyMPTProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
  * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for

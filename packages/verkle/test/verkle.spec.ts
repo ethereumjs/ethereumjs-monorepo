@@ -3,9 +3,9 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
-  InternalNode,
+  InternalVerkleNode,
   LeafNode,
-  VerkleLeafNodeValue,
+  LeafVerkleNodeValue,
   VerkleNodeType,
   createVerkleTree,
   decodeNode,
@@ -139,7 +139,7 @@ describe('Verkle tree', () => {
 
     // Pull root node from DB
     const rawNode = await trie['_db'].get(trie.root())
-    const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalNode
+    const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalVerkleNode
     // Update root node with commitment from leaf node
     rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
     trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))
@@ -179,7 +179,7 @@ describe('Verkle tree', () => {
     // Find the path to the new internal node (the matching portion of stem1 and stem2)
     const internalNode1Path = stem1.slice(0, partialMatchingStemIndex)
     // Create new internal node
-    const internalNode1 = InternalNode.create(verkleCrypto)
+    const internalNode1 = InternalVerkleNode.create(verkleCrypto)
 
     // Update the child references for leafNode1 and leafNode 2
     internalNode1.setChild(stem1[partialMatchingStemIndex], {
@@ -194,7 +194,7 @@ describe('Verkle tree', () => {
     putStack.push([internalNode1.hash(), internalNode1])
     // Update rootNode child reference for internal node 1
 
-    const rootNodeFromPath = foundPath.stack.pop()![0] as InternalNode
+    const rootNodeFromPath = foundPath.stack.pop()![0] as InternalVerkleNode
     // Confirm node from findPath matches root
     assert.deepEqual(rootNodeFromPath, rootNode)
     rootNodeFromPath.setChild(internalNode1Path[0], {
@@ -266,6 +266,6 @@ describe('Verkle tree', () => {
     await trie.del(keys[0].slice(0, 31), [keys[0][31]])
     const res = await trie.findPath(keys[0].slice(0, 31))
     assert.ok(res.node !== null)
-    assert.deepEqual((res.node as LeafNode).values[keys[0][31]], VerkleLeafNodeValue.Deleted)
+    assert.deepEqual((res.node as LeafNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
   })
 })

@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, createMerkleProof, verifyTrieRangeProof } from '../../src/index.js'
+import { MerklePatriciaTrie, createMerkleProof, verifyMPTRangeProof } from '../../src/index.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -88,7 +88,7 @@ async function verify(
   startKey = startKey ?? entries[start][0]
   endKey = endKey ?? entries[end][0]
   const targetRange = entries.slice(start, end + 1)
-  return verifyTrieRangeProof(
+  return verifyMPTRangeProof(
     trie.root(),
     startKey,
     endKey,
@@ -211,7 +211,7 @@ describe('simple merkle range proofs generation and verification', () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
     assert.equal(
-      await verifyTrieRangeProof(
+      await verifyMPTRangeProof(
         trie.root(),
         null,
         null,

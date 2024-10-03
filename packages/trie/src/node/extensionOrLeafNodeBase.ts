@@ -3,9 +3,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { addHexPrefix, removeHexPrefix } from '../util/hex.js'
 import { nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
-import type { Nibbles, RawExtensionNode, RawLeafNode } from '../types.js'
+import type { Nibbles, RawExtensionMPTNode, RawLeafMPTNode } from '../types.js'
 
-export abstract class ExtensionOrLeafNodeBase {
+export abstract class ExtensionOrLeafMPTNodeBase {
   _nibbles: Nibbles
   _value: Uint8Array
   _isLeaf: boolean
@@ -44,7 +44,7 @@ export abstract class ExtensionOrLeafNodeBase {
     return this._value
   }
 
-  raw(): RawExtensionNode | RawLeafNode {
+  raw(): RawExtensionMPTNode | RawLeafMPTNode {
     return [nibblesTypeToPackedBytes(this.encodedKey()), this._value]
   }
 
