@@ -1,5 +1,5 @@
+import { verifyMPTRangeProof } from '@ethereumjs/mpt'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { verifyMPTRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,

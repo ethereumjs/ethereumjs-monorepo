@@ -7,13 +7,13 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
+import { createMPT } from '@ethereumjs/mpt'
 import {
   CacheType,
   Caches,
   MerkleStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -147,7 +147,7 @@ export class VMExecution extends Execution {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = await createTrie({
+    const trie = await createMPT({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
       common: this.config.chainCommon,

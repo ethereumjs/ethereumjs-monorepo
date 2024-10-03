@@ -1,5 +1,5 @@
 import { Chain, ChainGenesis } from '@ethereumjs/common'
-import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/mpt'
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

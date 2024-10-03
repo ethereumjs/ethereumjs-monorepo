@@ -1,6 +1,6 @@
 import { ConsensusType } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,

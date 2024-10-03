@@ -1,5 +1,5 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { genesisStateRoot } from '@ethereumjs/trie'
+import { genesisStateRoot } from '@ethereumjs/mpt'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

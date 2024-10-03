@@ -1,5 +1,5 @@
+import { decodeNode, verifyMPTRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { decodeNode, verifyMPTRangeProof } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,

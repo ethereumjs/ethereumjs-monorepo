@@ -1,5 +1,5 @@
+import { verifyMPTRangeProof } from '@ethereumjs/mpt'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { verifyMPTRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -33,7 +33,7 @@ import type { AccountData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { MerklePatriciaTrie } from '@ethereumjs/trie'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }

@@ -1,8 +1,8 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,

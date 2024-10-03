@@ -1,6 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
 import {
   Account,
   bytesToUnprefixedHex,
@@ -52,7 +52,7 @@ export const CODEHASH_PREFIX = utf8ToBytes('c')
  * and storage slots.
  *
  * The default state manager implementation uses a
- * `@ethereumjs/trie` trie as a data backend.
+ * `@ethereumjs/mpt` trie as a data backend.
  *
  * Note that there is a `SimpleStateManager` dependency-free state
  * manager implementation available shipped with the `@ethereumjs/statemanager`
