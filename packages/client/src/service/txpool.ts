@@ -399,12 +399,10 @@ export class TxPool {
   }
 
   pruneBlobsAndProofsCache() {
-    // currently common.param errors when not achieved cancun hardfork to do the below calculation
-    // const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
-    // const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
-    //
-    // A better way could be figured out to get allowedBlobsPerBlock
-    const allowedBlobsPerBlock = 6
+    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
+    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+
     const pruneLength =
       this.blobsAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
     let pruned = 0
