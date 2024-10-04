@@ -359,11 +359,11 @@ describe('[PendingBlock]', async () => {
 
     // fill up the blobsAndProofsByHash and proofs cache before adding a blob tx
     // for cache pruning check
-    const fillupBlobs = getBlobs('hello world')
-    const fillupCommitments = blobsToCommitments(kzg, fillupBlobs)
-    const fillupBlobVersionedHashes = commitmentsToVersionedHashes(fillupCommitments)
-    const fillupProofs = blobsToProofs(kzg, fillupBlobs, fillupCommitments)
-    const fillupBlobAndProof = { blob: fillupBlobs[0], proof: fillupProofs[0] }
+    const fillBlobs = getBlobs('hello world')
+    const fillCommitments = blobsToCommitments(kzg, fillBlobs)
+    const fillBlobVersionedHashes = commitmentsToVersionedHashes(fillCommitments)
+    const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
+    const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
     const blobGasLimit = txPool['config'].chainCommon.param('maxblobGasPerBlock')
     const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
@@ -371,8 +371,8 @@ describe('[PendingBlock]', async () => {
     const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks
 
     for (let i = 0; i < allowedLength; i++) {
-      // this is space efficent as same object is inserted in dummpy positions
-      txPool.blobsAndProofsByHash.set(`${fillupBlobVersionedHashes}-${i}`, fillupBlobAndProof)
+      // this is space efficient as same object is inserted in dummy positions
+      txPool.blobsAndProofsByHash.set(`${fillBlobVersionedHashes}-${i}`, fillBlobAndProof)
     }
     assert.equal(txPool.blobsAndProofsByHash.size, allowedLength, 'fill the cache to capacity')
 
@@ -381,7 +381,7 @@ describe('[PendingBlock]', async () => {
       proofs: PrefixedHexString[] = [],
       versionedHashes: PrefixedHexString[] = []
     for (let x = 0; x <= 2; x++) {
-      // generate unique blobs different from fillupBlobs
+      // generate unique blobs different from fillBlobs
       const txBlobs = [
         ...getBlobs(`hello world-${x}1`),
         ...getBlobs(`hello world-${x}2`),
