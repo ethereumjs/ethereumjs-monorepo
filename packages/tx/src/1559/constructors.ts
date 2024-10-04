@@ -124,13 +124,13 @@ export function createFeeMarket1559TxFromSszTx(
       accessList,
       maxPriorityFeesPerGas: { regular: maxPriorityFeePerGas },
     },
-    signature: { ecdsaSignature },
+    signature: { secp256k1 },
   } = sszWrappedTx
 
   // TODO: bytes to bigint => bigint to unpadded bytes seem redundant and set for optimization
-  const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
-  const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
-  const v = bytesToBigInt(ecdsaSignature.slice(64))
+  const r = bytesToBigInt(secp256k1.slice(0, 32))
+  const s = bytesToBigInt(secp256k1.slice(32, 64))
+  const v = bytesToBigInt(secp256k1.slice(64))
 
   return create1559FeeMarketTxFromBytesArray(
     [

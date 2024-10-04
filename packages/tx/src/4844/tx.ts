@@ -239,13 +239,13 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
         blob: this.maxPriorityFeePerGas,
       },
       blobVersionedHashes: this.blobVersionedHashes.map((vh) => hexToBytes(vh)),
+      authorizationList: null,
     }
 
     const yParity = this.v
 
     const signature = {
-      from: this.getSenderAddress().bytes,
-      ecdsaSignature: Uint8Array.from([
+      secp256k1: Uint8Array.from([
         ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
         ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
         ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),

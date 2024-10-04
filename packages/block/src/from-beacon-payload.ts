@@ -45,6 +45,22 @@ export type BeaconAccessTupleV1 = {
   storage_keys: PrefixedHexString[] // Data 32 bytes MAX_ACCESS_LIST_STORAGE_KEYS array
 }
 
+export type BeaconAuthorizationPayloadV1 = {
+  magic: PrefixedHexString
+  chain_id: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString
+}
+
+export type BeaconExecutionSignatureV1 = {
+  secp256k1: PrefixedHexString | null // DATA 65 bytes or null
+}
+
+export type BeaconAuthorizationV1 = {
+  payload: BeaconAuthorizationPayloadV1
+  signature: BeaconExecutionSignatureV1
+}
+
 export type BeaconTransactionPayloadV1 = {
   type: PrefixedHexString | null // Quantity, 1 byte
   chain_id: PrefixedHexString | null // Quantity 8 bytes
@@ -57,16 +73,12 @@ export type BeaconTransactionPayloadV1 = {
   access_list: BeaconAccessTupleV1[] | null
   max_priority_fees_per_gas: BeaconFeesPerGasV1 | null
   blob_versioned_hashes: PrefixedHexString[] | null // DATA 32 bytes array
-}
-
-export type BeaconTransactionSignatureV1 = {
-  from: PrefixedHexString | null // DATA 20 bytes
-  ecdsa_signature: PrefixedHexString | null // DATA 65 bytes or null
+  authorization_list: BeaconAuthorizationV1[] | null
 }
 
 type BeaconTransactionV1 = {
   payload: BeaconTransactionPayloadV1
-  signature: BeaconTransactionSignatureV1
+  signature: BeaconExecutionSignatureV1
 }
 
 // Payload json that one gets using the beacon apis
@@ -181,10 +193,22 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): E
                 }) ?? null,
               maxPriorityFeesPerGas: btxv1.payload.max_priority_fees_per_gas,
               blobVersionedHashes: btxv1.payload.blob_versioned_hashes,
+              authorizationList:
+                btxv1.payload.authorization_list?.map((bal: BeaconAuthorizationV1) => {
+                  const { payload, signature } = bal
+                  return {
+                    payload: {
+                      magic: payload.magic,
+                      chainId: payload.chain_id,
+                      address: payload.address,
+                      nonce: payload.nonce,
+                    },
+                    signature,
+                  }
+                }) ?? null,
             },
             signature: {
-              from: btxv1.signature.from,
-              ecdsaSignature: btxv1.signature.ecdsa_signature,
+              secp256k1: btxv1.signature.secp256k1,
             },
           } as ssz.TransactionV1
         })

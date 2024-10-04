@@ -152,6 +152,7 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
       accessList: null,
       maxPriorityFeesPerGas: null,
       blobVersionedHashes: null,
+      authorizationList: null,
     }
 
     const yParity = calculateSigRecovery(this.v, chainId ?? undefined)
@@ -160,8 +161,7 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
     }
 
     const signature = {
-      from: this.getSenderAddress().bytes,
-      ecdsaSignature: Uint8Array.from([
+      secp256k1: Uint8Array.from([
         ...setLengthLeft(bigIntToBytes(this.r), 32),
         ...setLengthLeft(bigIntToBytes(this.s), 32),
         ...setLengthLeft(bigIntToBytes(yParity), 1),

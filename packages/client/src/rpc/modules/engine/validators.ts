@@ -33,8 +33,7 @@ const transaction = validators.hexOrObject(
       blobVersionedHashes: validators.nullOptional(validators.array(validators.bytes32)),
     }),
     signature: validators.object({
-      from: validators.nullOptional(validators.address),
-      ecdsaSignature: validators.nullOptional(validators.hex),
+      secp256k1: validators.nullOptional(validators.hex),
     }),
   }),
 )

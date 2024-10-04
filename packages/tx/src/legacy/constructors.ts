@@ -87,12 +87,12 @@ export function createLegacyTxFromSszTx(
       value,
       input: data,
     },
-    signature: { ecdsaSignature },
+    signature: { secp256k1 },
   } = sszWrappedTx as LegacyTransactionType
 
-  const r = bytesToBigInt(ecdsaSignature.slice(0, 32))
-  const s = bytesToBigInt(ecdsaSignature.slice(32, 64))
-  const yParity = bytesToBigInt(ecdsaSignature.slice(64))
+  const r = bytesToBigInt(secp256k1.slice(0, 32))
+  const s = bytesToBigInt(secp256k1.slice(32, 64))
+  const yParity = bytesToBigInt(secp256k1.slice(64))
 
   let v
   if (chainId !== null && chainId !== undefined) {

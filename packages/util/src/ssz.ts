@@ -18,7 +18,6 @@ import type { ValueOf } from '@chainsafe/ssz'
 export const MAX_CALLDATA_SIZE = 16_777_216
 export const MAX_ACCESS_LIST_STORAGE_KEYS = 524_288
 export const MAX_ACCESS_LIST_SIZE = 524_288
-export const ECDSA_SIGNATURE_SIZE = 65
 
 export const MAX_FEES_PER_GAS_FIELDS = 16
 export const MAX_TRANSACTION_PAYLOAD_FIELDS = 32
@@ -37,6 +36,14 @@ export const FeePerGas = Uint256
 export const ChainId = Uint64
 export const TransactionType = Uint8
 export const ExecutionAddress = Bytes20
+
+function getFullArray(prefixVec: boolean[], maxVecLength: number): BitArray {
+  const fullVec = [
+    ...prefixVec,
+    ...Array.from({ length: maxVecLength - prefixVec.length }, () => false),
+  ]
+  return BitArray.fromBoolArray(fullVec)
+}
 
 export const FeesPerGas = new StableContainerType(
   {
@@ -60,6 +67,46 @@ export const TransactionTo = new OptionalType(ExecutionAddress)
 export const TransactionInput = new ByteListType(MAX_CALLDATA_SIZE)
 export const VersionedHashes = new ListCompositeType(Bytes32, MAX_BLOB_COMMITMENTS_PER_BLOCK)
 
+export const SECP256K1_SIGNATURE_SIZE = 65
+export const Secp256k1Signature = new ByteVectorType(SECP256K1_SIGNATURE_SIZE)
+
+export const MAX_EXECUTION_SIGNATURE_FIELDS = 8
+export const ExecutionSignature = new StableContainerType(
+  {
+    secp256k1: new OptionalType(Secp256k1Signature),
+  },
+  MAX_EXECUTION_SIGNATURE_FIELDS,
+  { typeName: 'ExecutionSignature', jsonCase: 'eth2' },
+)
+export const Secp256k1ExecutionSignature = new ProfileType(
+  { secp256k1: Secp256k1Signature },
+  getFullArray([true], MAX_EXECUTION_SIGNATURE_FIELDS),
+  { typeName: 'Secp256k1ExecutionSignature', jsonCase: 'eth2' },
+)
+
+export const MAX_AUTHORIZATION_PAYLOAD_FIELDS = 16
+export const AuthorizationPayload = new StableContainerType(
+  {
+    magic: new OptionalType(TransactionType),
+    chainId: new OptionalType(ChainId),
+    address: new OptionalType(ExecutionAddress),
+    nonce: new OptionalType(Uint64),
+  },
+  MAX_AUTHORIZATION_PAYLOAD_FIELDS,
+  { typeName: 'AuthorizationPayload', jsonCase: 'eth2' },
+)
+
+export const Authorization = new ContainerType(
+  {
+    payload: AuthorizationPayload,
+    signature: ExecutionSignature,
+  },
+  { typeName: 'Authorization', jsonCase: 'eth2' },
+)
+
+export const MAX_AUTHORIZATION_LIST_SIZE = 65_536
+export const AuthorizationList = new ListCompositeType(Authorization, MAX_AUTHORIZATION_LIST_SIZE)
+
 export const TransactionPayload = new StableContainerType(
   {
     type: new OptionalType(TransactionType),
@@ -73,36 +120,19 @@ export const TransactionPayload = new StableContainerType(
     accessList: new OptionalType(AccessList),
     maxPriorityFeesPerGas: new OptionalType(FeesPerGas),
     blobVersionedHashes: new OptionalType(VersionedHashes),
+    authorizationList: new OptionalType(AuthorizationList),
   },
   MAX_TRANSACTION_PAYLOAD_FIELDS,
   { typeName: 'TransactionPayload', jsonCase: 'eth2' },
 )
 
-export const EcdsaSignature = new ByteVectorType(ECDSA_SIGNATURE_SIZE)
-export const TransactionSignature = new StableContainerType(
-  {
-    from: new OptionalType(ExecutionAddress),
-    ecdsaSignature: new OptionalType(EcdsaSignature),
-  },
-  MAX_TRANSACTION_SIGNATURE_FIELDS,
-  { typeName: 'TransactionSignature', jsonCase: 'eth2' },
-)
-
 export const Transaction = new ContainerType(
   {
     payload: TransactionPayload,
-    signature: TransactionSignature,
+    signature: ExecutionSignature,
   },
   { typeName: 'Transaction', jsonCase: 'eth2' },
 )
-
-function getFullArray(prefixVec: boolean[], maxVecLength: number): BitArray {
-  const fullVec = [
-    ...prefixVec,
-    ...Array.from({ length: maxVecLength - prefixVec.length }, () => false),
-  ]
-  return BitArray.fromBoolArray(fullVec)
-}
 
 export const BasicFeesPerGas = new ProfileType(
   { regular: FeePerGas },
@@ -117,15 +147,6 @@ export const BlobFeesPerGas = new ProfileType(
   },
   getFullArray([true, true], MAX_FEES_PER_GAS_FIELDS),
   { typeName: 'BlobFeesPerGas', jsonCase: 'eth2' },
-)
-
-export const EcdsaTransactionSignature = new ProfileType(
-  {
-    from: ExecutionAddress,
-    ecdsaSignature: EcdsaSignature,
-  },
-  getFullArray([true, true], MAX_TRANSACTION_SIGNATURE_FIELDS),
-  { typeName: 'EcdsaTransactionSignature', jsonCase: 'eth2' },
 )
 
 export const ReplayableTransactionPayload = new ProfileType(
@@ -145,7 +166,7 @@ export const ReplayableTransactionPayload = new ProfileType(
 export const ReplayableTransaction = new ContainerType(
   {
     payload: ReplayableTransactionPayload,
-    signature: EcdsaTransactionSignature,
+    signature: Secp256k1ExecutionSignature,
   },
   { typeName: 'ReplayableTransaction', jsonCase: 'eth2' },
 )
@@ -168,7 +189,7 @@ export const LegacyTransactionPayload = new ProfileType(
 export const LegacyTransaction = new ContainerType(
   {
     payload: LegacyTransactionPayload,
-    signature: EcdsaTransactionSignature,
+    signature: Secp256k1ExecutionSignature,
   },
   { typeName: 'LegacyTransaction', jsonCase: 'eth2' },
 )
@@ -192,7 +213,7 @@ export const Eip2930TransactionPayload = new ProfileType(
 export const Eip2930Transaction = new ContainerType(
   {
     payload: Eip2930TransactionPayload,
-    signature: EcdsaTransactionSignature,
+    signature: Secp256k1ExecutionSignature,
   },
   { typeName: 'Eip2930Transaction', jsonCase: 'eth2' },
 )
@@ -220,7 +241,7 @@ export const Eip1559TransactionPayload = new ProfileType(
 export const Eip1559Transaction = new ContainerType(
   {
     payload: Eip1559TransactionPayload,
-    signature: EcdsaTransactionSignature,
+    signature: Secp256k1ExecutionSignature,
   },
   { typeName: 'Eip1559Transaction', jsonCase: 'eth2' },
 )
@@ -249,7 +270,7 @@ export const Eip4844TransactionPayload = new ProfileType(
 export const Eip4844Transaction = new ContainerType(
   {
     payload: Eip4844TransactionPayload,
-    signature: EcdsaTransactionSignature,
+    signature: Secp256k1ExecutionSignature,
   },
   { typeName: 'Eip4844Transaction', jsonCase: 'eth2' },
 )
@@ -336,6 +357,22 @@ export type AccessTupleV1 = {
   storageKeys: PrefixedHexString[] // Data 32 bytes MAX_ACCESS_LIST_STORAGE_KEYS array
 }
 
+export type ExecutionSignatureV1 = {
+  secp256k1: PrefixedHexString | null // DATA 65 bytes
+}
+
+export type AuthorizationPayloadV1 = {
+  magic: PrefixedHexString | null // Quantity 1 byte,
+  chainId: PrefixedHexString | null // Quantity 8 bytes
+  address: PrefixedHexString | null // DATA 20 bytes
+  nonce: PrefixedHexString | null //Quantity 8 bytes
+}
+
+export type AuthorizationV1 = {
+  payload: AuthorizationPayloadV1
+  signature: ExecutionSignatureV1
+}
+
 export type TransactionPayloadV1 = {
   type: PrefixedHexString | null // Quantity, 1 byte
   chainId: PrefixedHexString | null // Quantity 8 bytes
@@ -348,16 +385,12 @@ export type TransactionPayloadV1 = {
   accessList: AccessTupleV1[] | null
   maxPriorityFeesPerGas: FeesPerGasV1 | null
   blobVersionedHashes: PrefixedHexString[] | null // DATA 32 bytes array
-}
-
-export type TransactionSignatureV1 = {
-  from: PrefixedHexString | null // DATA 20 bytes
-  ecdsaSignature: PrefixedHexString | null // DATA 65 bytes or null
+  authorizationList: AuthorizationV1[] | null
 }
 
 export type TransactionV1 = {
   payload: TransactionPayloadV1
-  signature: TransactionSignatureV1
+  signature: ExecutionSignatureV1
 }
 
 export const MAX_BLOCKHEADER_FIELDS = 64

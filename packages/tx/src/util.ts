@@ -358,13 +358,22 @@ export function fromPayloadJson(payloadTx: ssz.TransactionV1): SSZTransaction {
             blob: getQuantityOrNull(payload.maxPriorityFeesPerGas.blob),
           }
         : null,
-      blobVersionedHashes: payload.blobVersionedHashes
-        ? payload.blobVersionedHashes.map((vh) => hexToBytes(vh))
-        : null,
+      blobVersionedHashes: payload.blobVersionedHashes?.map((vh) => hexToBytes(vh)) ?? null,
+      authorizationList:
+        payload.authorizationList?.map((al) => ({
+          payload: {
+            magic: getQuantityOrNull(al.payload.magic),
+            chainId: getQuantityOrNull(al.payload.chainId),
+            address: getDataOrNull(al.payload.address),
+            nonce: getQuantityOrNull(al.payload.nonce),
+          },
+          signature: {
+            secp256k1: getDataOrNull(al.signature.secp256k1),
+          },
+        })) ?? null,
     },
     signature: {
-      from: getDataOrNull(signature.from),
-      ecdsaSignature: getDataOrNull(signature.ecdsaSignature),
+      secp256k1: getDataOrNull(signature.secp256k1),
     },
   }
 }
@@ -416,13 +425,22 @@ export function toPayloadJson(sszTx: SSZTransaction): ssz.TransactionV1 {
             blob: setQuantityOrNull(payload.maxPriorityFeesPerGas.blob),
           }
         : null,
-      blobVersionedHashes: payload.blobVersionedHashes
-        ? payload.blobVersionedHashes.map((vh) => bytesToHex(vh))
-        : null,
+      blobVersionedHashes: payload.blobVersionedHashes?.map((vh) => bytesToHex(vh)) ?? null,
+      authorizationList:
+        payload.authorizationList?.map((al) => ({
+          payload: {
+            magic: setQuantityOrNull(al.payload.magic),
+            chainId: setQuantityOrNull(al.payload.chainId),
+            address: setDataOrNull(al.payload.address),
+            nonce: setQuantityOrNull(al.payload.nonce),
+          },
+          signature: {
+            secp256k1: setDataOrNull(al.signature.secp256k1),
+          },
+        })) ?? null,
     },
     signature: {
-      from: setDataOrNull(signature.from),
-      ecdsaSignature: setDataOrNull(signature.ecdsaSignature),
+      secp256k1: setDataOrNull(signature.secp256k1),
     },
   }
 }

@@ -183,12 +183,12 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
       accessList: this.accessList.map(([address, storageKeys]) => ({ address, storageKeys })),
       maxPriorityFeesPerGas: { regular: this.maxPriorityFeePerGas, blob: null },
       blobVersionedHashes: null,
+      authorizationList: null,
     }
 
     const yParity = this.v
     const signature = {
-      from: this.getSenderAddress().bytes,
-      ecdsaSignature: Uint8Array.from([
+      secp256k1: Uint8Array.from([
         ...setLengthLeft(bigIntToUnpaddedBytes(this.r), 32),
         ...setLengthLeft(bigIntToUnpaddedBytes(this.s), 32),
         ...setLengthLeft(bigIntToUnpaddedBytes(yParity), 1),
