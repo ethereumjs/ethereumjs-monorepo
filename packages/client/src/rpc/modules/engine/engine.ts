@@ -1523,13 +1523,10 @@ export class Engine {
   }
 
   private async getBlobsV1(params: [[Bytes32]]): Promise<(BlobAndProofV1 | null)[]> {
-    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
-    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
-    const allowedBlobsPerBlock = blobGasLimit / blobGasPerBlob
-    if (params[0].length > allowedBlobsPerBlock) {
+    if (params[0].length > 128) {
       throw {
         code: TOO_LARGE_REQUEST,
-        message: `More than allowedBlobsPerBlock=${allowedBlobsPerBlock} hashes queried`,
+        message: `More than 128 hashes queried`,
       }
     }
 

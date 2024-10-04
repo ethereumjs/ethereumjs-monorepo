@@ -355,7 +355,7 @@ describe('[PendingBlock]', async () => {
     })
 
     const { txPool } = setup()
-    txPool["config"].chainCommon.setHardfork(Hardfork.Cancun)
+    txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
     // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
     let blobs: PrefixedHexString[] = [],
