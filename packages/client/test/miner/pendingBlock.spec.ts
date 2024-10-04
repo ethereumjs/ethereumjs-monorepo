@@ -357,12 +357,31 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
+    // fill up the blobsAndProofsByHash and proofs cache before adding a blob tx
+    // for cache pruning check
+    const fillupBlobs = getBlobs('hello world')
+    const fillupCommitments = blobsToCommitments(kzg, fillupBlobs)
+    const fillupBlobVersionedHashes = commitmentsToVersionedHashes(fillupCommitments)
+    const fillupProofs = blobsToProofs(kzg, fillupBlobs, fillupCommitments)
+    const fillupBlobAndProof = { blob: fillupBlobs[0], proof: fillupProofs[0] }
+
+    const blobGasLimit = txPool['config'].chainCommon.param('maxblobGasPerBlock')
+    const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+    const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks
+
+    for (let i = 0; i < allowedLength; i++) {
+      // this is space efficent as same object is inserted in dummpy positions
+      txPool.blobsAndProofsByHash.set(`${fillupBlobVersionedHashes}-${i}`, fillupBlobAndProof)
+    }
+    assert.equal(txPool.blobsAndProofsByHash.size, allowedLength, 'fill the cache to capacity')
+
     // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
     let blobs: PrefixedHexString[] = [],
       proofs: PrefixedHexString[] = [],
       versionedHashes: PrefixedHexString[] = []
     for (let x = 0; x <= 2; x++) {
-      // generate unique blobs
+      // generate unique blobs different from fillupBlobs
       const txBlobs = [
         ...getBlobs(`hello world-${x}1`),
         ...getBlobs(`hello world-${x}2`),
@@ -396,6 +415,11 @@ describe('[PendingBlock]', async () => {
       versionedHashes = [...versionedHashes, ...txBlobVersionedHashes]
     }
 
+    assert.equal(
+      txPool.blobsAndProofsByHash.size,
+      allowedLength,
+      'cache should be prune and stay at same size',
+    )
     // check if blobs and proofs are added in txpool by versioned hashes
     for (let i = 0; i < versionedHashes.length; i++) {
       const versionedHash = versionedHashes[i]
