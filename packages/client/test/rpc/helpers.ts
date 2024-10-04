@@ -1,4 +1,4 @@
-import { createBlockHeader } from '@ethereumjs/block'
+import { createBlockHeader, paramsBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -235,6 +235,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const common = createCommonFromGethGenesis(genesisFile, {
     chain: chainName,
     customCrypto: clientOpts.customCrypto,
+    params: paramsBlock,
   })
   common.setHardforkBy({
     blockNumber: 0,
