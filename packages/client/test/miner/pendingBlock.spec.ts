@@ -12,6 +12,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
+  intToHex,
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
@@ -361,7 +362,6 @@ describe('[PendingBlock]', async () => {
     // for cache pruning check
     const fillBlobs = getBlobs('hello world')
     const fillCommitments = blobsToCommitments(kzg, fillBlobs)
-    const fillBlobVersionedHashes = commitmentsToVersionedHashes(fillCommitments)
     const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
     const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
@@ -372,7 +372,7 @@ describe('[PendingBlock]', async () => {
 
     for (let i = 0; i < allowedLength; i++) {
       // this is space efficient as same object is inserted in dummy positions
-      txPool.blobsAndProofsByHash.set(`${fillBlobVersionedHashes}-${i}`, fillBlobAndProof)
+      txPool.blobsAndProofsByHash.set(intToHex(i), fillBlobAndProof)
     }
     assert.equal(txPool.blobsAndProofsByHash.size, allowedLength, 'fill the cache to capacity')
 
