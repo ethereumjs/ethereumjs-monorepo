@@ -8,6 +8,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
+  bigIntToAddressBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -17,9 +18,12 @@ import {
   hexToBytes,
   publicToAddress,
   short,
+  ssz,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+import { setLengthLeft } from '../../util/src/bytes.js'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -37,7 +41,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
+import type { EVM, Log } from '@ethereumjs/evm'
 import type {
   AccessList,
   AccessList2930Transaction,
@@ -741,6 +745,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     blobGasPrice,
   )
 
+  if (vm.common.isActivatedEIP(6493)) {
+    await accumulateIVCLogs(vm, block?.header.number ?? DEFAULT_HEADER.number, results.receipt.logs)
+  }
+
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(receiptsLabel)
@@ -764,6 +772,43 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   return results
+}
+
+async function accumulateIVCLogs(vm: VM, number: bigint, logs: Log[]) {
+  const ivcContractAddress = new Address(
+    bigIntToAddressBytes(vm.common.param('withdrawalRequestPredeployAddress')),
+  )
+
+  if ((await vm.stateManager.getAccount(ivcContractAddress)) === undefined) {
+    // store with nonce of 1 to prevent 158 cleanup
+    const ivcContract = new Account()
+    ivcContract.nonce = BIGINT_1
+    await vm.stateManager.putAccount(ivcContractAddress, ivcContract)
+  }
+
+  for (const log of logs) {
+    const sszLog = {
+      address: log[0],
+      topics: log[1],
+      data: log[2],
+    }
+
+    const logRoot = ssz.Log.hashTreeRoot(sszLog)
+    for (const topic of sszLog.topics) {
+      // should be 32 bytes but 0 bytes in case value doesn't exist so just left pad
+      const prevTopicRoot = setLengthLeft(
+        await vm.stateManager.getStorage(ivcContractAddress, topic),
+        32,
+      )
+      const newTopicRoot = ssz.IVCEntry.hashTreeRoot({
+        prevTopicRoot,
+        number,
+        logRoot,
+      })
+
+      await vm.stateManager.putStorage(ivcContractAddress, topic, newTopicRoot)
+    }
+  }
 }
 
 /**

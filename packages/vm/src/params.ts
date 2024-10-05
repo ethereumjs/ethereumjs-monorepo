@@ -89,4 +89,9 @@ export const paramsVM: ParamsDict = {
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
     consolidationRequestPredeployAddress: '0x00b42dbF2194e931E80326D950320f7d9Dbeac02', // Address of the consolidations contract
   },
+  6493: {
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
+    // dummu address right now as actual will be determined with the deployment of ivc contract
+    ivcPredeployAddress: '0x' + '6493'.repeat(10),
+  },
 }

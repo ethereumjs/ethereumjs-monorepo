@@ -452,3 +452,12 @@ export const BlockHeader = new StableContainerType(
   MAX_BLOCKHEADER_FIELDS,
   { typeName: 'BlockHeader', jsonCase: 'eth2' },
 )
+
+export const IVCEntry = new ContainerType(
+  {
+    prevTopicRoot: Bytes32,
+    number: Uint64,
+    logRoot: Bytes32,
+  },
+  { typeName: 'IVCEntry', jsonCase: 'eth2' },
+)
