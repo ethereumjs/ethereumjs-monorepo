@@ -60,9 +60,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
       depositRequests: [],
       withdrawalRequests: [],
       consolidationRequests: [],
+      receiptsRoot: "0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1",
       parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
       stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
-      blockHash: '0x5c0486debe1ed1cb21ed9d93e34d0c2908b12b45d75090e59198b7fd71e26305',
+      blockHash: '0x5e9dcd3f3e55e9dde218cad2958ef3f0f1c263a85d923d1e1d3821f96510e1dc',
     }
     let res
 
