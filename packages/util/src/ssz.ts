@@ -1,6 +1,7 @@
 import { Tree, hasher } from '@chainsafe/persistent-merkle-tree'
 import {
   BitArray,
+  BooleanType,
   ByteListType,
   ByteVectorType,
   ContainerType,
@@ -23,6 +24,8 @@ export const MAX_FEES_PER_GAS_FIELDS = 16
 export const MAX_TRANSACTION_PAYLOAD_FIELDS = 32
 export const MAX_TRANSACTION_SIGNATURE_FIELDS = 16
 export const MAX_BLOB_COMMITMENTS_PER_BLOCK = 4096
+
+export const Boolean = new BooleanType()
 
 export const Uint8 = new UintBigintType(1)
 export const Uint64 = new UintBigintType(8)
@@ -392,6 +395,37 @@ export type TransactionV1 = {
   payload: TransactionPayloadV1
   signature: ExecutionSignatureV1
 }
+
+const MAX_TOPICS_PER_LOG = 4
+const MAX_LOG_DATA_SIZE = 16_777_216
+const MAX_RECEIPT_FIELDS = 32
+const MAX_LOGS_PER_RECEIPT = 2_097_152
+
+export const LogTopics = new ListCompositeType(Bytes32, MAX_TOPICS_PER_LOG)
+export const Log = new ContainerType(
+  {
+    address: ExecutionAddress,
+    topics: LogTopics,
+    data: new ByteListType(MAX_LOG_DATA_SIZE),
+  },
+  { typeName: 'Log', jsonCase: 'eth2' },
+)
+export const LogList = new ListCompositeType(Log, MAX_LOGS_PER_RECEIPT)
+export const AuthoritiesList = new ListCompositeType(ExecutionAddress, MAX_AUTHORIZATION_LIST_SIZE)
+
+export const Receipt = new StableContainerType(
+  {
+    root: new OptionalType(Bytes32),
+    gasUsed: new OptionalType(Uint64),
+    contractAddress: new OptionalType(ExecutionAddress),
+    logs: new OptionalType(LogList),
+    status: new OptionalType(Boolean),
+    authorities: new OptionalType(AuthoritiesList),
+  },
+  MAX_RECEIPT_FIELDS,
+  { typeName: 'Receipt', jsonCase: 'eth2' },
+)
+export const Receipts = new ListCompositeType(Receipt, MAX_TRANSACTIONS_PER_PAYLOAD)
 
 export const MAX_BLOCKHEADER_FIELDS = 64
 const MAX_EXTRA_DATA_BYTES = 32

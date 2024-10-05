@@ -23,6 +23,7 @@ import {
   intToBytes,
   setLengthLeft,
   short,
+  ssz,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -44,10 +45,13 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+
+export type SSZReceiptType = ValueOf<typeof ssz.Receipt>
 
 const debug = debugDefault('vm:block')
 
@@ -583,11 +587,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
-  let receiptTrie: MerklePatriciaTrie | undefined = undefined
-  if (block.transactions.length !== 0) {
-    receiptTrie = new MerklePatriciaTrie({ common: vm.common })
-  }
-
   const receipts: TxReceipt[] = []
   const txResults: RunTxResult[] = []
 
@@ -637,8 +636,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
-    const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
   }
 
   if (enableProfiler) {
@@ -646,7 +643,23 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     console.timeEnd(processTxsLabel)
   }
 
-  const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
+  let receiptsRoot
+  if (vm.common.isActivatedEIP(6493)) {
+    const sszReceipts: SSZReceiptType[] = []
+    for (const [i, txReceipt] of receipts.entries()) {
+      const tx = block.transactions[i]
+      sszReceipts.push(encodeSszReceipt(txReceipt, tx.type))
+    }
+    receiptsRoot = ssz.Receipts.hashTreeRoot(sszReceipts)
+  } else {
+    const receiptTrie = new MerklePatriciaTrie({ common: vm.common })
+    for (const [i, txReceipt] of receipts.entries()) {
+      const tx = block.transactions[i]
+      const encodedReceipt = encodeReceipt(txReceipt, tx.type)
+      await receiptTrie!.put(RLP.encode(i), encodedReceipt)
+    }
+    receiptsRoot = receiptTrie.root()
+  }
 
   return {
     bloom,
@@ -759,6 +772,28 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
   return concatBytes(intToBytes(txType), encoded)
+}
+
+export function encodeSszReceipt(receipt: TxReceipt, _txType: TransactionType) {
+  const sszRaw: SSZReceiptType = {
+    root: (receipt as PreByzantiumTxReceipt).stateRoot ?? null,
+    gasUsed: receipt.cumulativeBlockGasUsed,
+    contractAddress: receipt.contractAddress?.bytes ?? null,
+    logs: receipt.logs.map((log) => ({
+      address: log[0],
+      topics: log[1],
+      data: log[2],
+    })),
+    status:
+      (receipt as PostByzantiumTxReceipt).status !== undefined
+        ? (receipt as PostByzantiumTxReceipt).status === 0
+          ? false
+          : true
+        : null,
+    authorities: receipt.authorities?.map((auth) => auth.bytes) ?? null,
+  }
+
+  return sszRaw
 }
 
 /**
