@@ -111,7 +111,7 @@ async function main() {
   const k1 = utf8ToBytes('keyOne')
   const k2 = utf8ToBytes('keyTwo')
 
-  const someOtherTrie = new Trie({ useKeyHashing: true })
+  const someOtherTrie = new MerklePatriciaTrie({ useKeyHashing: true })
   await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
@@ -175,7 +175,7 @@ As an example, to leverage `LevelDB` for all operations then you should create a
 ```ts
 // ./examples/customLevelDB.ts#L127-L131
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 console.log(trie.database().db) // LevelDB { ...
 
 void main()
@@ -341,12 +341,26 @@ The `Trie` class features optional debug logging. Individual debug selections ca
 
 The following options are available:
 
-| Logger            | Description                                    |
-| ----------------- | ---------------------------------------------- |
-| `trie`            | minimal info logging for all trie methods      |
-| `trie:<METHOD>`   | debug logging for specific trie method         |
-| `trie:<METHOD>:*` | verbose debug logging for specific trie method |
-| `trie:*`          | verbose debug logging for all trie methods     |
+| Logger                            | Description                                                          |
+| --------------------------------- | -------------------------------------------------------------------- |
+| `trie:#`                          | minimal info logging for all trie methods                            |
+| `trie:#:put`                      | a trie put operation has occurred                                    |
+| `trie:#:get`                      | a trie get operation has occurred                                    |
+| `trie:#:del`                      | a trie del operation has occurred                                    |
+| `trie:#:find_path`                | a node is being searched for                                         |
+| `trie:#:find_path:branch_node`    | a branch node has been found during a node search                    |
+| `trie:#:find_path:extension_node` | an extension node has been found during a node search                |
+| `trie:#:lookup_node`              | node lookup operations                                               |
+| `trie:#:lookup_node:raw_node`     | node lookup operations that have hit a raw node                      |
+| `trie:#:lookup_node:by_hash`      | node lookup operations that have hit a node hash                     |
+| `trie:#:persist_root`             | operations writing the state root to the disk                        |
+| `trie:#:checkpoint`               | checkpoint operations                                                |
+| `trie:#:commit`                   | operations committing checkpoints to the disk                        |
+| `trie:#:revert:before`            | the stateRoot before reverting committed checkpoints                 |
+| `trie:#:revert:after`             | the stateRoot after reverting committed checkpoints                  |
+| `trie:#:flush_checkpoints`        | checkpoints are being flushed                                        |
+| `trie:#:from_proof`               | a trie has been updated from a proof using updateTrieFromMerkleProof |
+| `trie:#:create_proof`             | a merkle proof has been created using updateTrieFromMerkleProof      |
 
 To observe the logging in action at different levels:
 
@@ -359,25 +373,25 @@ DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:put npx vitest test/util/log.spec.ts
 ```
 
 Run with **trie** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie,trie:put,trie:get,trie:del npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** debug logging:
 
 ```shell
-DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:find_path npx vitest test/util/log.spec.ts
 ```
 
 Run with **findPath** verbose logging:
 
 ```shell
-DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+DEBUG=ethjs,trie:find_path:* npx vitest test/util/log.spec.ts
 ```
 
 Run with max logging:
@@ -389,7 +403,7 @@ DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:PUT,trie:FIND_PATH:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,trie:put,trie:find_path:* npx vitest test/proof.spec.ts`
 
 ## References
 

@@ -2,10 +2,10 @@
 
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
-const trie1 = new Trie()
-const trie2 = new Trie()
+const trie1 = new MerklePatriciaTrie()
+const trie2 = new MerklePatriciaTrie()
 
 async function test() {
   await trie1.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))

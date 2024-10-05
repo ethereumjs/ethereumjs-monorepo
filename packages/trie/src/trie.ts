@@ -21,9 +21,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
 import {
-  BranchNode,
-  ExtensionNode,
-  LeafNode,
+  BranchMPTNode,
+  ExtensionMPTNode,
+  LeafMPTNode,
   decodeNode,
   decodeRawNode,
   isRawNode,
@@ -34,13 +34,14 @@ import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from '
 import { WalkController } from './util/walkController.js'
 
 import type {
-  EmbeddedNode,
+  BranchMPTNodeBranchValue,
   FoundNodeFunction,
+  MPTNode,
+  MPTOpts,
+  MPTOptsWithDefaults,
   Nibbles,
+  NodeReferenceOrRawNode,
   Path,
-  TrieNode,
-  TrieOpts,
-  TrieOptsWithDefaults,
   TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
@@ -48,10 +49,10 @@ import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
- * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
+ * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/trie'`.
  */
-export class Trie {
-  protected readonly _opts: TrieOptsWithDefaults = {
+export class MerklePatriciaTrie {
+  protected readonly _opts: MPTOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     keyPrefix: undefined,
@@ -72,7 +73,7 @@ export class Trie {
 
   /** Debug logging */
   protected DEBUG: boolean
-  protected _debug: Debugger = debug('trie')
+  protected _debug: Debugger = debug('trie:#')
   protected debug: (...args: any) => void
 
   /**
@@ -81,7 +82,7 @@ export class Trie {
    *
    * Note: in most cases, {@link createTrie} constructor should be used.  It uses the same API but provides sensible defaults
    */
-  constructor(opts?: TrieOpts) {
+  constructor(opts?: MPTOpts) {
     let valueEncoding: ValueEncoding
     if (opts !== undefined) {
       // Sanity check: can only set valueEncoding if a db is provided
@@ -187,13 +188,13 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['GET'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['get'])
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
-    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['GET'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['get'])
     return value
   }
 
@@ -209,8 +210,8 @@ export class Trie {
     value: Uint8Array | null,
     skipKeyTransform: boolean = false,
   ): Promise<void> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
-    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['put'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['put'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
@@ -272,7 +273,7 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
-    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
@@ -318,44 +319,50 @@ export class Trie {
     key: Uint8Array,
     throwIfMissing = false,
     partialPath: {
-      stack: TrieNode[]
+      stack: MPTNode[]
     } = {
       stack: [],
     },
   ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
-    const stack: TrieNode[] = Array.from({ length: keyLen })
+    const stack: MPTNode[] = Array.from({ length: keyLen })
     let progress = 0
     for (let i = 0; i < partialPath.stack.length - 1; i++) {
       stack[i] = partialPath.stack[i]
-      progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
+      progress += stack[i] instanceof BranchMPTNode ? 1 : (<ExtensionMPTNode>stack[i]).keyLength()
     }
-    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
+    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      stack[progress] = node as TrieNode
-      if (node instanceof BranchNode) {
+      stack[progress] = node as MPTNode
+      if (node instanceof BranchMPTNode) {
         if (progress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
           const branchIndex = targetKey[progress]
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
-              'FIND_PATH',
-              'BranchNode',
+              'find_path',
+              'branch_node',
             ])
           const branchNode = node.getBranch(branchIndex)
-          this.DEBUG &&
-            this.debug(
-              branchNode === null
-                ? 'NULL'
-                : branchNode instanceof Uint8Array
+
+          if (this.DEBUG) {
+            let debugString: string
+            if (branchNode === null) {
+              debugString = 'NULL'
+            } else {
+              debugString = `Branch index: ${branchIndex.toString()} - `
+              debugString +=
+                branchNode instanceof Uint8Array
                   ? `NodeHash: ${bytesToHex(branchNode)}`
-                  : `Raw_Node: ${branchNode.toString()}`,
-              ['FIND_PATH', 'BranchNode', branchIndex.toString()],
-            )
+                  : `Raw_Node: ${branchNode.toString()}`
+            }
+
+            this.debug(debugString, ['find_path', 'branch_node'])
+          }
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(progress), stack }
           } else {
@@ -363,7 +370,7 @@ export class Trie {
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
-      } else if (node instanceof LeafNode) {
+      } else if (node instanceof LeafMPTNode) {
         const _progress = progress
         if (keyLen - progress > node.key().length) {
           result = { node: null, remaining: targetKey.slice(_progress), stack }
@@ -377,7 +384,7 @@ export class Trie {
           progress++
         }
         result = { node, remaining: [], stack }
-      } else if (node instanceof ExtensionNode) {
+      } else if (node instanceof ExtensionMPTNode) {
         this.DEBUG &&
           this.debug(
             `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
@@ -388,11 +395,11 @@ export class Trie {
               node.key().toString()
             }]
             `,
-            ['FIND_PATH', 'ExtensionNode'],
+            ['find_path', 'extension_node'],
           )
         const _progress = progress
         for (const k of node.key()) {
-          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
+          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['find_path', 'extension_node'])
           if (k !== targetKey[progress]) {
             result = { node: null, remaining: targetKey.slice(_progress), stack }
             return
@@ -408,7 +415,7 @@ export class Trie {
       this.DEBUG &&
         this.debug(
           `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
-          ['FIND_PATH'],
+          ['find_path'],
         )
       await this.walkTrie(start, onFound)
     } catch (error: any) {
@@ -425,7 +432,7 @@ export class Trie {
         result.node !== null
           ? `Target Node FOUND for ${bytesToNibbles(key)}`
           : `Target Node NOT FOUND`,
-        ['FIND_PATH'],
+        ['find_path'],
       )
 
     result.stack = result.stack.filter((e) => e !== undefined)
@@ -436,7 +443,7 @@ export class Trie {
         || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
-        ['FIND_PATH'],
+        ['find_path'],
       )
     return result
   }
@@ -475,7 +482,9 @@ export class Trie {
       [],
       undefined,
       async (node) => {
-        return node instanceof LeafNode || (node instanceof BranchNode && node.value() !== null)
+        return (
+          node instanceof LeafMPTNode || (node instanceof BranchMPTNode && node.value() !== null)
+        )
       },
     )) {
       await onFound(node, currentKey)
@@ -487,7 +496,7 @@ export class Trie {
    * @private
    */
   protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const newNode = new LeafNode(bytesToNibbles(key), value)
+    const newNode = new LeafMPTNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
@@ -500,13 +509,13 @@ export class Trie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<MPTNode> {
     if (isRawNode(node)) {
       const decoded = decodeRawNode(node)
-      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['LOOKUP_NODE', 'RAW_NODE'])
+      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['lookup_node', 'raw_node'])
       return decoded
     }
-    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
+    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['lookup_node', 'by_hash'])
     const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, node) : node
     const value = (await this._db.get(key)) ?? null
 
@@ -516,7 +525,7 @@ export class Trie {
     }
 
     const decoded = decodeNode(value)
-    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['LOOKUP_NODE', 'BY_HASH'])
+    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['lookup_node', 'by_hash'])
     return decoded
   }
 
@@ -532,7 +541,7 @@ export class Trie {
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
-    stack: TrieNode[],
+    stack: MPTNode[],
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
@@ -546,11 +555,11 @@ export class Trie {
     // Check if the last node is a leaf and the key matches to this
     let matchLeaf = false
 
-    if (lastNode instanceof LeafNode) {
+    if (lastNode instanceof LeafMPTNode) {
       let l = 0
       for (let i = 0; i < stack.length; i++) {
         const n = stack[i]
-        if (n instanceof BranchNode) {
+        if (n instanceof BranchMPTNode) {
           l++
         } else {
           l += n.key().length
@@ -558,8 +567,8 @@ export class Trie {
       }
 
       if (
-        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length &&
-        keyRemainder.length === 0
+        keyRemainder.length === 0 &&
+        matchingNibbleLength(lastNode.key(), key.slice(l)) === lastNode.key().length
       ) {
         matchLeaf = true
       }
@@ -568,14 +577,14 @@ export class Trie {
     if (matchLeaf) {
       // just updating a found value
       lastNode.value(value)
-      stack.push(lastNode as TrieNode)
-    } else if (lastNode instanceof BranchNode) {
+      stack.push(lastNode)
+    } else if (lastNode instanceof BranchMPTNode) {
       stack.push(lastNode)
       if (keyRemainder.length !== 0) {
         // add an extension to a branch node
         keyRemainder.shift()
         // create a new leaf
-        const newLeaf = new LeafNode(keyRemainder, value)
+        const newLeaf = new LeafMPTNode(keyRemainder, value)
         stack.push(newLeaf)
       } else {
         lastNode.value(value)
@@ -584,43 +593,43 @@ export class Trie {
       // create a branch node
       const lastKey = lastNode.key()
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
-      const newBranchNode = new BranchNode()
+      const newBranchMPTNode = new BranchMPTNode()
 
       // create a new extension node
       if (matchingLength !== 0) {
         const newKey = lastNode.key().slice(0, matchingLength)
-        const newExtNode = new ExtensionNode(newKey, value)
+        const newExtNode = new ExtensionMPTNode(newKey, value)
         stack.push(newExtNode)
         lastKey.splice(0, matchingLength)
         keyRemainder.splice(0, matchingLength)
       }
 
-      stack.push(newBranchNode)
+      stack.push(newBranchMPTNode)
 
       if (lastKey.length !== 0) {
         const branchKey = lastKey.shift() as number
 
-        if (lastKey.length !== 0 || lastNode instanceof LeafNode) {
+        if (lastKey.length !== 0 || lastNode instanceof LeafMPTNode) {
           // shrinking extension or leaf
           lastNode.key(lastKey)
-          const formattedNode = this._formatNode(lastNode, false, toSave)
-          newBranchNode.setBranch(branchKey, formattedNode as EmbeddedNode)
+          const formattedNode = this._formatNode(lastNode, false, toSave) as NodeReferenceOrRawNode
+          newBranchMPTNode.setBranch(branchKey, formattedNode)
         } else {
           // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
-          newBranchNode.setBranch(branchKey, lastNode.value())
+          newBranchMPTNode.setBranch(branchKey, lastNode.value())
         }
       } else {
-        newBranchNode.value(lastNode.value())
+        newBranchMPTNode.value(lastNode.value())
       }
 
       if (keyRemainder.length !== 0) {
         keyRemainder.shift()
         // add a leaf node to the new branch node
-        const newLeafNode = new LeafNode(keyRemainder, value)
-        stack.push(newLeafNode)
+        const newLeafMPTNode = new LeafMPTNode(keyRemainder, value)
+        stack.push(newLeafMPTNode)
       } else {
-        newBranchNode.value(value)
+        newBranchMPTNode.value(value)
       }
     }
 
@@ -631,27 +640,27 @@ export class Trie {
    * Deletes a node from the trie.
    * @private
    */
-  protected async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
-    const processBranchNode = (
+  protected async _deleteNode(k: Uint8Array, stack: MPTNode[]): Promise<void> {
+    const processBranchMPTNode = (
       key: Nibbles,
       branchKey: number,
-      branchNode: TrieNode,
-      parentNode: TrieNode,
-      stack: TrieNode[],
+      branchNode: MPTNode,
+      parentNode: MPTNode,
+      stack: MPTNode[],
     ) => {
       // branchNode is the node ON the branch node not THE branch node
-      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchNode) {
+      if (parentNode === null || parentNode === undefined || parentNode instanceof BranchMPTNode) {
         // branch->?
         if (parentNode !== null && parentNode !== undefined) {
           stack.push(parentNode)
         }
 
-        if (branchNode instanceof BranchNode) {
+        if (branchNode instanceof BranchMPTNode) {
           // create an extension node
           // branch->extension->branch
           // We push an extension value with a temporarily empty value to the stack.
           // It will be replaced later on with the correct value in saveStack
-          const extensionNode = new ExtensionNode([branchKey], new Uint8Array())
+          const extensionNode = new ExtensionMPTNode([branchKey], new Uint8Array())
           stack.push(extensionNode)
           key.push(branchKey)
         } else {
@@ -667,7 +676,7 @@ export class Trie {
         // parent is an extension
         let parentKey = parentNode.key()
 
-        if (branchNode instanceof BranchNode) {
+        if (branchNode instanceof BranchMPTNode) {
           // ext->branch
           parentKey.push(branchKey)
           key.push(branchKey)
@@ -697,18 +706,18 @@ export class Trie {
 
     let key = bytesToNibbles(k)
 
-    if (!parentNode) {
+    if (parentNode === undefined) {
       // the root here has to be a leaf.
       this.root(this.EMPTY_TRIE_ROOT)
       return
     }
 
-    if (lastNode instanceof BranchNode) {
+    if (lastNode instanceof BranchMPTNode) {
       lastNode.value(null)
     } else {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.
-      if (!(parentNode instanceof BranchNode)) {
+      if (!(parentNode instanceof BranchMPTNode)) {
         throw new Error('Expected branch node')
       }
       const lastNodeKey = lastNode.key()
@@ -722,7 +731,7 @@ export class Trie {
 
     // nodes on the branch
     // count the number of nodes on the branch
-    const branchNodes: [number, EmbeddedNode][] = lastNode.getChildren()
+    const branchNodes: [number, NodeReferenceOrRawNode][] = lastNode.getChildren()
 
     // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
@@ -732,8 +741,8 @@ export class Trie {
 
       // Special case where one needs to delete an extra node:
       // In this case, after updating the branch, the branch node has just one branch left
-      // However, this violates the trie spec; this should be converted in either an ExtensionNode
-      // Or a LeafNode
+      // However, this violates the trie spec; this should be converted in either an ExtensionMPTNode
+      // Or a LeafMPTNode
       // Since this branch is deleted, one can thus also delete this branch from the DB
       // So add this to the `opStack` and mark the keyHash to be deleted
       if (this._opts.useNodePruning) {
@@ -747,10 +756,8 @@ export class Trie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      // if (foundNode) {
-      key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
+      key = processBranchMPTNode(key, branchNodeKey, foundNode, parentNode as MPTNode, stack)
       await this.saveStack(key, stack, opStack)
-      // }
     } else {
       // simple removing a leaf and recalculation the stack
       if (parentNode) {
@@ -769,7 +776,7 @@ export class Trie {
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
-  async saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(key: Nibbles, stack: MPTNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
 
     // update nodes
@@ -778,13 +785,13 @@ export class Trie {
       if (node === undefined) {
         throw new Error('saveStack: missing node')
       }
-      if (node instanceof LeafNode || node instanceof ExtensionNode) {
+      if (node instanceof LeafMPTNode || node instanceof ExtensionMPTNode) {
         key.splice(key.length - node.key().length)
       }
-      if (node instanceof ExtensionNode && lastRoot !== undefined) {
+      if (node instanceof ExtensionMPTNode && lastRoot !== undefined) {
         node.value(lastRoot)
       }
-      if (node instanceof BranchNode && lastRoot !== undefined) {
+      if (node instanceof BranchMPTNode && lastRoot !== undefined) {
         const branchKey = key.pop()
         node.setBranch(branchKey!, lastRoot)
       }
@@ -809,11 +816,11 @@ export class Trie {
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
-    node: TrieNode,
+    node: MPTNode,
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false,
-  ): Uint8Array | (EmbeddedNode | null)[] {
+  ): Uint8Array | NodeReferenceOrRawNode | BranchMPTNodeBranchValue[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
@@ -893,7 +900,7 @@ export class Trie {
             // Abort all other children checks
             return
           }
-          if (node instanceof BranchNode) {
+          if (node instanceof BranchMPTNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
               if (
@@ -909,8 +916,8 @@ export class Trie {
             // Check all children of the branch
             controller.allChildren(node, key)
           }
-          if (node instanceof ExtensionNode) {
-            // If the value of the ExtensionNode points to the dbkey, then it is found
+          if (node instanceof ExtensionMPTNode) {
+            // If the value of the ExtensionMPTNode points to the dbkey, then it is found
             if (bytesToUnprefixedHex(node.value()) === dbkey) {
               found = true
               return
@@ -941,8 +948,8 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): Trie {
-    const trie = new Trie({
+  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): MerklePatriciaTrie {
+    const trie = new MerklePatriciaTrie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
@@ -965,7 +972,7 @@ export class Trie {
           `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
             this.appliedKey(ROOT_DB_KEY),
           )}`,
-          ['PERSIST_ROOT'],
+          ['persist_root'],
         )
       let key = this.appliedKey(ROOT_DB_KEY)
       key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
@@ -1020,7 +1027,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['CHECKPOINT'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['checkpoint'])
     this._db.checkpoint(this.root())
   }
 
@@ -1033,7 +1040,7 @@ export class Trie {
     if (!this.hasCheckpoints()) {
       throw new Error('trying to commit when not checkpointed')
     }
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['COMMIT'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['commit'])
     await this._lock.acquire()
     await this._db.commit()
     await this.persistRoot()
@@ -1050,12 +1057,12 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'BEFORE'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'before'])
     await this._lock.acquire()
     this.root(await this._db.revert())
     await this.persistRoot()
     this._lock.release()
-    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'AFTER'])
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'after'])
   }
 
   /**
@@ -1063,7 +1070,7 @@ export class Trie {
    */
   flushCheckpoints() {
     this.DEBUG &&
-      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
+      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['flush_checkpoints'])
     this._db.checkpoints = []
   }
 
@@ -1082,8 +1089,8 @@ export class Trie {
     let i = 0
     const values: { [key: string]: string } = {}
     let nextKey: string | null = null
-    await this.walkAllValueNodes(async (node: TrieNode, currentKey: number[]) => {
-      if (node instanceof LeafNode) {
+    await this.walkAllValueNodes(async (node: MPTNode, currentKey: number[]) => {
+      if (node instanceof LeafMPTNode) {
         const keyBytes = nibblesTypeToPackedBytes(currentKey.concat(node.key()))
         if (!inRange) {
           // Check if the key is already in the correct range.

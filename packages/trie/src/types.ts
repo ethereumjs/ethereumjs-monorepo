@@ -1,16 +1,25 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
+import type { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
 import type { DB, ValueEncoding } from '@ethereumjs/util'
 
-export type TrieNode = BranchNode | ExtensionNode | LeafNode
+export type MPTNode = BranchMPTNode | ExtensionMPTNode | LeafMPTNode
 
 export type Nibbles = number[]
 
+// A raw node refers to the non-serialized, array form of the node
+// A raw extension node is a 2-item node, where the first item is the encoded path to the next node, and the second item is the reference to the next node
+// A raw leaf node is a 2-item node, where the first item is the remaining path to the leaf node, and the second item is the value
+// To learn more: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/#optimization
+export type RawExtensionMPTNode = [Uint8Array, Uint8Array]
+export type RawLeafMPTNode = [Uint8Array, Uint8Array]
+
 // Branch and extension nodes might store
-// hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+// hash to next node, or a raw node if its length < 32
+export type NodeReferenceOrRawNode = Uint8Array | RawExtensionMPTNode | RawLeafMPTNode
+
+export type BranchMPTNodeBranchValue = NodeReferenceOrRawNode | null
 
 export type Proof = Uint8Array[]
 
@@ -21,21 +30,21 @@ export interface CommonInterface {
 }
 
 export interface Path {
-  node: TrieNode | null
+  node: MPTNode | null
   remaining: Nibbles
-  stack: TrieNode[]
+  stack: MPTNode[]
 }
 
 export type FoundNodeFunction = (
   nodeRef: Uint8Array,
-  node: TrieNode | null,
+  node: MPTNode | null,
   key: Nibbles,
   walkController: WalkController,
 ) => void
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
-export interface TrieOpts {
+export interface MPTOpts {
   /**
    * A database instance.
    */
@@ -47,11 +56,11 @@ export interface TrieOpts {
   root?: Uint8Array
 
   /**
-   * Create as a secure Trie where the keys are automatically hashed using the
+   * Create as a secure MerklePatriciaTrie where the keys are automatically hashed using the
    * **keccak256** hash function or alternatively the custom hash function provided.
    * Default: `false`
    *
-   * This is the flavor of the Trie which is used in production Ethereum networks
+   * This is the flavor of the MerklePatriciaTrie which is used in production Ethereum networks
    * like Ethereum Mainnet.
    *
    * Note: This functionality has been refactored along the v5 release and was before
@@ -102,7 +111,7 @@ export interface TrieOpts {
   common?: CommonInterface
 }
 
-export type TrieOptsWithDefaults = TrieOpts & {
+export type MPTOptsWithDefaults = MPTOpts & {
   useKeyHashing: boolean
   useKeyHashingFunction: HashKeysFunction
   useRootPersistence: boolean

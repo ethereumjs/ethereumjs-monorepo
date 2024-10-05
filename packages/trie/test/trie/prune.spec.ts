@@ -1,13 +1,13 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie, createTrie, isRawNode } from '../../src/index.js'
+import { MerklePatriciaTrie, createTrie, isRawNode } from '../../src/index.js'
 
-import type { BranchNode } from '../../src/index.js'
+import type { BranchMPTNode } from '../../src/index.js'
 
 describe('Pruned trie tests', () => {
   it('should default to not prune the trie', async () => {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
     await trie.put(key, utf8ToBytes('2'))
@@ -20,7 +20,7 @@ describe('Pruned trie tests', () => {
   })
 
   it('should prune simple trie', async () => {
-    const trie = new Trie({ useNodePruning: true })
+    const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
     await trie.put(key, utf8ToBytes('2'))
@@ -33,7 +33,7 @@ describe('Pruned trie tests', () => {
   })
 
   it('should prune simple trie', async () => {
-    const trie = new Trie({ useNodePruning: true })
+    const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
     assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
@@ -46,8 +46,8 @@ describe('Pruned trie tests', () => {
   })
 
   it('should prune trie with depth = 2', async () => {
-    const trie = new Trie({ useNodePruning: true })
-    // Create a Trie with
+    const trie = new MerklePatriciaTrie({ useNodePruning: true })
+    // Create a MerklePatriciaTrie with
     const keys = ['01', '02', '0103', '0104', '0105']
     const values = ['00', '02', '03', '04', '05']
 
@@ -57,7 +57,7 @@ describe('Pruned trie tests', () => {
   })
 
   it('should not prune if the same value is put twice', async () => {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('01')
     const value = utf8ToBytes('02')
 
@@ -68,7 +68,7 @@ describe('Pruned trie tests', () => {
   })
 
   it('should not throw if a key is either non-existent or deleted twice', async () => {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('01')
     const value = utf8ToBytes('02')
 
@@ -92,7 +92,7 @@ describe('Pruned trie tests', () => {
 
   it('should prune when keys are updated or deleted', async () => {
     for (let testID = 0; testID < 1; testID++) {
-      const trie = new Trie({ useNodePruning: true })
+      const trie = new MerklePatriciaTrie({ useNodePruning: true })
       const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
         keys.push(randomBytes(32))
@@ -156,7 +156,7 @@ describe('Pruned trie tests', () => {
   it('should successfully delete branch nodes that are <32 bytes length with node pruning', async () => {
     // This test case was added after issue #3333 uncovered a problem with pruning trie paths that reference
     // nodes with their unhashed values (occurs when nodes are less than <32 bytes).
-    const trie = new Trie({
+    const trie = new MerklePatriciaTrie({
       useNodePruning: true,
     })
 
@@ -167,13 +167,13 @@ describe('Pruned trie tests', () => {
 
     // Because of the small values, the leaf nodes will be less than 32 bytes in length.
     // As per the MPT spec, they will therefore be referenced directly and not by their hash.
-    // We should therefore expect two BranchNode branches that reference these 2 leaf nodes directly, instead of by their hashes.
+    // We should therefore expect two BranchMPTNode branches that reference these 2 leaf nodes directly, instead of by their hashes.
     // If a node is referenced directly, the item will be a RawNode (a Uint8Array[]). If it's referenced by its hash, it will be a Uint8Array
     const path = await trie.findPath(utf8ToBytes('key1'))
-    const parentBranchNode = path.stack[1] as BranchNode
+    const parentBranchMPTNode = path.stack[1] as BranchMPTNode
     // Hex ASCII value for for `1` is 31, and for `2` is 32. We should expect a branching out at indexes 1 an 2.
-    assert.ok(isRawNode(parentBranchNode._branches[1]!), 'key1 node is not a rawNode')
-    assert.ok(isRawNode(parentBranchNode._branches[2]!), 'key2 node is not a rawNode')
+    assert.ok(isRawNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
+    assert.ok(isRawNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
 
     assert.notOk(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
 
@@ -184,16 +184,16 @@ describe('Pruned trie tests', () => {
   })
 
   it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async () => {
-    // Create empty Trie (is pruned)
-    let trie = new Trie()
+    // Create empty MerklePatriciaTrie (is pruned)
+    let trie = new MerklePatriciaTrie()
     // Create a new value (still is pruned)
     await trie.put(hexToBytes('0xaa'), hexToBytes('0xbb'))
     // Overwrite this value (trie is now not pruned anymore)
     await trie.put(hexToBytes('0xaa'), hexToBytes('0xaa'))
     assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
 
-    // Create new empty Trie (is pruned)
-    trie = new Trie()
+    // Create new empty MerklePatriciaTrie (is pruned)
+    trie = new MerklePatriciaTrie()
     // Create a new value raw in DB (is not pruned)
     await (<any>trie)._db.db.put(utf8ToBytes('aa'))
     assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')

@@ -2,10 +2,10 @@ import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createTrieFromProof } from '../constructors.js'
-import { Trie, verifyRangeProof } from '../index.js'
+import { MerklePatriciaTrie, verifyRangeProof } from '../index.js'
 import { bytesToNibbles } from '../util/nibbles.js'
 
-import type { Proof, TrieOpts } from '../index.js'
+import type { MPTOpts, Proof } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
 
 /**
@@ -18,10 +18,10 @@ import type { PutBatch } from '@ethereumjs/util'
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-export async function verifyTrieProof(
+export async function verifyMPTProof(
   key: Uint8Array,
   proof: Proof,
-  opts?: TrieOpts,
+  opts?: MPTOpts,
 ): Promise<Uint8Array | null> {
   try {
     const proofTrie = await createTrieFromProof(proof, opts)
@@ -45,14 +45,14 @@ export async function verifyTrieProof(
 //  * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
 //  * @returns a flag to indicate whether there exists more trie node in the trie
 //  */
-export function verifyTrieRangeProof(
+export function verifyMPTRangeProof(
   rootHash: Uint8Array,
   firstKey: Uint8Array | null,
   lastKey: Uint8Array | null,
   keys: Uint8Array[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  opts?: TrieOpts,
+  opts?: MPTOpts,
 ): Promise<boolean> {
   return verifyRangeProof(
     rootHash,
@@ -66,18 +66,18 @@ export function verifyTrieRangeProof(
 }
 
 /**
- * Creates a proof from a trie and key that can be verified using {@link verifyTrieProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+ * Creates a proof from a trie and key that can be verified using {@link verifyMPTProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
  * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
  */
-export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Proof> {
-  trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
+export async function createMerkleProof(trie: MerklePatriciaTrie, key: Uint8Array): Promise<Proof> {
+  trie['DEBUG'] && trie['debug'](`Creating Proof for Key: ${bytesToHex(key)}`, ['create_proof'])
   const { stack } = await trie.findPath(trie['appliedKey'](key))
   const p = stack.map((stackElem) => {
     return stackElem.serialize()
   })
-  trie['DEBUG'] && trie['debug'](`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
+  trie['DEBUG'] && trie['debug'](`Proof created with (${stack.length}) nodes`, ['create_proof'])
   return p
 }
 
@@ -90,11 +90,11 @@ export async function createMerkleProof(trie: Trie, key: Uint8Array): Promise<Pr
  * @returns The root of the proof
  */
 export async function updateTrieFromMerkleProof(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   proof: Proof,
   shouldVerifyRoot: boolean = false,
 ) {
-  trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
+  trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['from_proof'])
   const opStack = proof.map((nodeValue) => {
     let key = Uint8Array.from(trie['hash'](nodeValue))
     key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, key) : key
@@ -129,7 +129,7 @@ export async function updateTrieFromMerkleProof(
  * @returns The value from the key, or null if valid proof of non-existence.
  */
 export async function verifyMerkleProof(
-  trie: Trie,
+  trie: MerklePatriciaTrie,
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Proof,
@@ -142,7 +142,7 @@ export async function verifyMerkleProof(
   `,
       ['VERIFY_PROOF'],
     )
-  const proofTrie = new Trie({
+  const proofTrie = new MerklePatriciaTrie({
     root: rootHash,
     useKeyHashingFunction: trie['_opts'].useKeyHashingFunction,
     common: trie['_opts'].common,

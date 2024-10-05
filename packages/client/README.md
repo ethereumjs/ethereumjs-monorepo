@@ -466,7 +466,7 @@ The following options are available:
 
 | Logger              | Description                                      |
 | ------------------- | ------------------------------------------------ |
-| `client:fetcher`            | This option enables logging for all fetchers      |
+| `client:fetcher:#`            | This option enables logging for core fetcher operations such as job scheduling   |
 | `client:fetcher:bytecode`   | This option enables logging for the snap sync bytecode fetcher         |
 | `client:fetcher:storage`    | This option enables logging for the snap sync storage fetcher  |
 | `client:fetcher:trienode`   | This option enables logging for the snap sync trienode fetcher      |

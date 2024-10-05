@@ -2,7 +2,7 @@ const { utf8ToBytes, bytesToUtf8 } = require('ethereum-cryptography/utils')
 const { Level } = require('level')
 const { MemoryLevel } = require('memory-level')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
 const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
@@ -44,7 +44,7 @@ class LevelDB {
   }
 }
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 
 async function test() {
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))

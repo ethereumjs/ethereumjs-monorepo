@@ -7,12 +7,12 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
-import { Trie } from '../trie.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
+import { MerklePatriciaTrie } from '../trie.js'
 
 import { _walkTrie } from './asyncWalk.js'
 
-import type { TrieNode } from '../types.js'
+import type { MPTNode } from '../types.js'
 import type { Debugger } from 'debug'
 
 const debug = _debug('trieview') // cspell:disable-line
@@ -45,17 +45,17 @@ const debugN = (type: TNode, d?: Debugger) => {
 }
 const debugT = debug.extend('Trie')
 
-function getNodeType(node: TrieNode): TNode {
-  return node instanceof BranchNode
+function getNodeType(node: MPTNode): TNode {
+  return node instanceof BranchMPTNode
     ? 'br'
-    : node instanceof ExtensionNode
+    : node instanceof ExtensionMPTNode
       ? 'ex'
-      : node instanceof LeafNode
+      : node instanceof LeafMPTNode
         ? 'lf'
         : 'nl'
 }
 
-function logNode(trie: Trie, node: TrieNode, currentKey: number[]): void {
+function logNode(trie: MerklePatriciaTrie, node: MPTNode, currentKey: number[]): void {
   delimiter(3)
   const type = getNodeType(node)
   if (equalsBytes(trie.hash(node.serialize()), trie.root())) {
@@ -88,7 +88,7 @@ function logNode(trie: Trie, node: TrieNode, currentKey: number[]): void {
 }
 
 export const view = async (testName: string, inputs: any[], root: string) => {
-  const trie = new Trie()
+  const trie = new MerklePatriciaTrie()
   const expect = root
   const testKeys: Map<string, Uint8Array | null> = new Map()
   const testStrings: Map<string, [string, string | null]> = new Map()

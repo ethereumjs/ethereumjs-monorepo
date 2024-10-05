@@ -1,4 +1,4 @@
-import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_RLP,
@@ -11,7 +11,6 @@ import {
   intToBytes,
   setLengthLeft,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -53,7 +52,7 @@ describe('StateManager -> General', () => {
     const sm = new MerkleStateManager()
 
     try {
-      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
+      const storage = await sm.getStorage(createZeroAddress(), new Uint8Array(32))
       assert.ok(equalsBytes(storage, new Uint8Array()))
     } catch {
       assert.fail('should not throw')
@@ -84,7 +83,7 @@ describe('StateManager -> General', () => {
   })
 
   it(`copy()`, async () => {
-    const trie = new Trie({ cacheSize: 1000 })
+    const trie = new MerklePatriciaTrie({ cacheSize: 1000 })
     let sm = new MerkleStateManager({
       trie,
       prefixCodeHashes: false,

@@ -2,9 +2,9 @@ import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createMerkleProof, createTrieFromProof, verifyMerkleProof } from '../../src/index.js'
-import { Trie } from '../../src/trie.js'
+import { MerklePatriciaTrie } from '../../src/trie.js'
 
-describe('Run Trie script with DEBUG enabled', async () => {
+describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
   const trie_entries: [string, string | null][] = [
     ['do', 'verb'],
     ['ether', 'wookiedoo'], // cspell:disable-line
@@ -13,7 +13,7 @@ describe('Run Trie script with DEBUG enabled', async () => {
     ['dog', 'puppy'],
   ]
   process.env.DEBUG = 'ethjs'
-  const trie = new Trie({
+  const trie = new MerklePatriciaTrie({
     useRootPersistence: true,
   })
   for (const [key, value] of trie_entries) {

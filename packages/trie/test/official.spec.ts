@@ -1,7 +1,7 @@
 import { bytesToHex, hexToBytes, isHexString, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src/index.js'
+import { MerklePatriciaTrie } from '../src/index.js'
 
 import { trieAnyOrderData } from './fixtures/trieAnyOrder.js'
 import { trieTestData } from './fixtures/trieTest.js'
@@ -9,7 +9,7 @@ import { trieTestData } from './fixtures/trieTest.js'
 describe('official tests', () => {
   it('should work', async () => {
     const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
-    let trie = new Trie()
+    let trie = new MerklePatriciaTrie()
 
     for (const testName of testNames) {
       const inputs = trieTestData.tests[testName].in
@@ -26,7 +26,7 @@ describe('official tests', () => {
         await trie.put(processedInput[0], processedInput[1])
       }
       assert.equal(bytesToHex(trie.root()), expect)
-      trie = new Trie()
+      trie = new MerklePatriciaTrie()
     }
   })
 })
@@ -34,7 +34,7 @@ describe('official tests', () => {
 describe('official tests any order', async () => {
   it('should work', async () => {
     const testNames = Object.keys(trieAnyOrderData.tests) as (keyof typeof trieAnyOrderData.tests)[]
-    let trie = new Trie()
+    let trie = new MerklePatriciaTrie()
     for (const testName of testNames) {
       const test = trieAnyOrderData.tests[testName]
       const keys = Object.keys(test.in)
@@ -58,7 +58,7 @@ describe('official tests any order', async () => {
         await trie.put(key, value)
       }
       assert.equal(bytesToHex(trie.root()), test.root)
-      trie = new Trie()
+      trie = new MerklePatriciaTrie()
     }
   })
 })

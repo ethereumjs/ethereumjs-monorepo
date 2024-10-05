@@ -12,7 +12,6 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-  zeros,
 } from './bytes.js'
 import { BIGINT_0 } from './constants.js'
 
@@ -42,7 +41,7 @@ export class Address {
    * Is address zero.
    */
   isZero(): boolean {
-    return this.equals(new Address(zeros(20)))
+    return this.equals(new Address(new Uint8Array(20)))
   }
 
   /**
@@ -75,7 +74,7 @@ export class Address {
  * Returns the zero address.
  */
 export function createZeroAddress(): Address {
-  return new Address(zeros(20))
+  return new Address(new Uint8Array(20))
 }
 
 /**

@@ -8,15 +8,15 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src/index.js'
+import { MerklePatriciaTrie } from '../src/index.js'
 
 const key = new Uint8Array([11])
 const value = new Uint8Array([255, 255])
 
 describe('encoding hex prefixes', () => {
   it('should work', async () => {
-    const trie = new Trie()
-    const trie2 = new Trie()
+    const trie = new MerklePatriciaTrie()
+    const trie2 = new MerklePatriciaTrie()
     const hex = 'FF44A3B3'
     await trie.put(hexToBytes(`0x${hex}`), utf8ToBytes('test'))
     await trie2.put(toBytes(`0x${hex}`), utf8ToBytes('test'))
@@ -26,7 +26,7 @@ describe('encoding hex prefixes', () => {
 
 describe('support for Uint8Array', () => {
   it('should use Uint8Array in memory by default', async () => {
-    const trie = new Trie()
+    const trie = new MerklePatriciaTrie()
     const db = (<any>trie)._db.db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size
@@ -38,12 +38,12 @@ describe('support for Uint8Array', () => {
 
   it('should throw when setting valueEncoding and no database provided', () => {
     assert.throws(() => {
-      new Trie({ valueEncoding: ValueEncoding.String })
+      new MerklePatriciaTrie({ valueEncoding: ValueEncoding.String })
     })
   })
 
   it('should default to use strings when a database is provided', async () => {
-    const trie = new Trie({ db: new MapDB() })
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
     const db = (<any>trie)._db.db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size
@@ -57,7 +57,7 @@ describe('support for Uint8Array', () => {
   })
 
   it('should use Uint8Array in memory by default', async () => {
-    const trie = new Trie({ db: new MapDB(), valueEncoding: ValueEncoding.Bytes })
+    const trie = new MerklePatriciaTrie({ db: new MapDB(), valueEncoding: ValueEncoding.Bytes })
     const db = (<any>trie)._db.db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size

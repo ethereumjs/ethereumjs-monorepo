@@ -1,7 +1,7 @@
 const { utf8ToBytes, bytesToUtf8 } = require('ethereum-cryptography/utils')
 const { open } = require('lmdb')
 
-const { Trie } = require('../../dist/cjs/index.js')
+const { MerklePatriciaTrie } = require('../../dist/cjs/index.js')
 
 class LMDB {
   constructor(path) {
@@ -42,7 +42,7 @@ class LMDB {
   }
 }
 
-const trie = new Trie({ db: new LMDB('MY_TRIE_DB_LOCATION') })
+const trie = new MerklePatriciaTrie({ db: new LMDB('MY_TRIE_DB_LOCATION') })
 
 async function test() {
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))

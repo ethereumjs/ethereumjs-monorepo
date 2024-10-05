@@ -1,11 +1,11 @@
 import { equalsBytes } from '@ethereumjs/util'
 
 import { createTrieFromProof } from '../index.js'
-import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
-import { Trie } from '../trie.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
+import { MerklePatriciaTrie } from '../trie.js'
 import { nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
+import type { HashKeysFunction, MPTNode, Nibbles } from '../types.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -21,15 +21,15 @@ import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
  * @returns The end position of key.
  */
 async function unset(
-  trie: Trie,
-  parent: TrieNode,
-  child: TrieNode | null,
+  trie: MerklePatriciaTrie,
+  parent: MPTNode,
+  child: MPTNode | null,
   key: Nibbles,
   pos: number,
   removeLeft: boolean,
-  stack: TrieNode[],
+  stack: MPTNode[],
 ): Promise<number> {
-  if (child instanceof BranchNode) {
+  if (child instanceof BranchMPTNode) {
     /**
      * This node is a branch node,
      * remove all branches on the left or right
@@ -51,7 +51,7 @@ async function unset(
     const next = child.getBranch(key[pos])
     const _child = next && (await trie.lookupNode(next))
     return unset(trie, child, _child, key, pos + 1, removeLeft, stack)
-  } else if (child instanceof ExtensionNode || child instanceof LeafNode) {
+  } else if (child instanceof ExtensionMPTNode || child instanceof LeafMPTNode) {
     /**
      * This node is an extension node or lead node,
      * if node._nibbles is less or greater than the target key,
@@ -63,25 +63,25 @@ async function unset(
     ) {
       if (removeLeft) {
         if (nibblesCompare(child._nibbles, key.slice(pos)) < 0) {
-          ;(parent as BranchNode).setBranch(key[pos - 1], null)
+          ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
         }
       } else {
         if (nibblesCompare(child._nibbles, key.slice(pos)) > 0) {
-          ;(parent as BranchNode).setBranch(key[pos - 1], null)
+          ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
         }
       }
       return pos - 1
     }
 
-    if (child instanceof LeafNode) {
+    if (child instanceof LeafMPTNode) {
       // This node is a leaf node, directly remove it from parent
-      ;(parent as BranchNode).setBranch(key[pos - 1], null)
+      ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
       return pos - 1
     } else {
       const _child = await trie.lookupNode(child.value())
-      if (_child instanceof LeafNode) {
+      if (_child instanceof LeafMPTNode) {
         // The child of this node is leaf node, remove it from parent too
-        ;(parent as BranchNode).setBranch(key[pos - 1], null)
+        ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
         return pos - 1
       }
 
@@ -105,23 +105,27 @@ async function unset(
  * @param right - right nibbles.
  * @returns Is it an empty trie.
  */
-async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise<boolean> {
+async function unsetInternal(
+  trie: MerklePatriciaTrie,
+  left: Nibbles,
+  right: Nibbles,
+): Promise<boolean> {
   // Key position
   let pos = 0
   // Parent node
-  let parent: TrieNode | null = null
+  let parent: MPTNode | null = null
   // Current node
-  let node: TrieNode | null = await trie.lookupNode(trie.root())
+  let node: MPTNode | null = await trie.lookupNode(trie.root())
   let shortForkLeft!: number
   let shortForkRight!: number
   // A stack of modified nodes.
-  const stack: TrieNode[] = []
+  const stack: MPTNode[] = []
 
   // 1. Find the fork point of `left` and `right`
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (node instanceof ExtensionNode || node instanceof LeafNode) {
+    if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
       // record this node on the stack
       stack.push(node)
 
@@ -142,7 +146,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
         break
       }
 
-      if (node instanceof LeafNode) {
+      if (node instanceof LeafMPTNode) {
         // it shouldn't happen
         throw new Error('invalid node')
       }
@@ -151,7 +155,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       parent = node
       pos += node.keyLength()
       node = await trie.lookupNode(node.value())
-    } else if (node instanceof BranchNode) {
+    } else if (node instanceof BranchMPTNode) {
       // record this node on the stack
       stack.push(node)
 
@@ -204,11 +208,11 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
   // 2. Starting from the fork point, delete all nodes between `left` and `right`
 
-  const saveStack = (key: Nibbles, stack: TrieNode[]) => {
+  const saveStack = (key: Nibbles, stack: MPTNode[]) => {
     return trie.saveStack(key, stack, [])
   }
 
-  if (node instanceof ExtensionNode || node instanceof LeafNode) {
+  if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
     /**
      * There can have these five scenarios:
      * - both proofs are less than the trie path => no valid range
@@ -223,7 +227,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       stack.pop()
-      ;(parent as BranchNode).setBranch(key[pos - 1], null)
+      ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
       await saveStack(key.slice(0, pos - 1), stack)
       return false
     }
@@ -243,12 +247,12 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     // Unset left node
     if (shortForkRight !== 0) {
-      if (node instanceof LeafNode) {
+      if (node instanceof LeafMPTNode) {
         return removeSelfFromParentAndSaveStack(left)
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child instanceof LeafNode) {
+      if (child instanceof LeafMPTNode) {
         return removeSelfFromParentAndSaveStack(left)
       }
 
@@ -260,12 +264,12 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
 
     // Unset right node
     if (shortForkLeft !== 0) {
-      if (node instanceof LeafNode) {
+      if (node instanceof LeafMPTNode) {
         return removeSelfFromParentAndSaveStack(right)
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child instanceof LeafNode) {
+      if (child instanceof LeafMPTNode) {
         return removeSelfFromParentAndSaveStack(right)
       }
 
@@ -276,7 +280,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
     }
 
     return false
-  } else if (node instanceof BranchNode) {
+  } else if (node instanceof BranchMPTNode) {
     // Unset all internal nodes in the forkPoint
     for (let i = left[pos] + 1; i < right[pos]; i++) {
       node.setBranch(i, null)
@@ -322,7 +326,7 @@ async function verifyMerkleProof(
   key: Uint8Array,
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction,
-): Promise<{ value: Uint8Array | null; trie: Trie }> {
+): Promise<{ value: Uint8Array | null; trie: MerklePatriciaTrie }> {
   const proofTrie = await createTrieFromProof(proof, {
     root: rootHash,
     useKeyHashingFunction,
@@ -348,11 +352,11 @@ async function verifyMerkleProof(
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
+async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<boolean> {
   let pos = 0
-  let node: TrieNode | null = await trie.lookupNode(trie.root())
+  let node: MPTNode | null = await trie.lookupNode(trie.root())
   while (node !== null) {
-    if (node instanceof BranchNode) {
+    if (node instanceof BranchMPTNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
         if (node.getBranch(i) !== null) {
           return true
@@ -362,7 +366,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       const next = node.getBranch(key[pos])
       node = next && (await trie.lookupNode(next))
       pos += 1
-    } else if (node instanceof ExtensionNode) {
+    } else if (node instanceof ExtensionMPTNode) {
       if (
         key.length - pos < node.keyLength() ||
         nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength())) !== 0
@@ -372,7 +376,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
 
       pos += node.keyLength()
       node = await trie.lookupNode(node._value)
-    } else if (node instanceof LeafNode) {
+    } else if (node instanceof LeafMPTNode) {
       return false
     } else {
       throw new Error('invalid node')
@@ -437,7 +441,7 @@ export async function verifyRangeProof(
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new Trie({ useKeyHashingFunction })
+    const trie = new MerklePatriciaTrie({ useKeyHashingFunction })
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
     }

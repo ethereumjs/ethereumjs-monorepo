@@ -31,7 +31,7 @@ Updating is a straightforward process:
 const trie = new SecureTrie()
 
 // New
-const trie = new Trie({ useKeyHashing: true })
+const trie = new MerklePatriciaTrie({ useKeyHashing: true })
 ```
 
 ### Removed Getter and Setter Functions
@@ -46,11 +46,11 @@ For this reason, a single `root(hash?: Buffer): Buffer` function serves as a rep
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root()
 ```
 
@@ -58,11 +58,11 @@ trie.root()
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root = Buffer.alloc(32)
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.root(Buffer.alloc(32))
 ```
 
@@ -72,11 +72,11 @@ The `isCheckpoint` getter function has been removed. The `hasCheckpoints()` func
 
 ```tsx
 // Old
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.isCheckpoint
 
 // New
-const trie = new Trie()
+const trie = new MerklePatriciaTrie()
 trie.hasCheckpoints()
 ```
 
@@ -134,7 +134,7 @@ export class LevelDB implements DB {
   readonly _leveldb: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer>
 
   constructor(
-    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer> | null
+    leveldb?: AbstractLevel<string | Buffer | Uint8Array, string | Buffer, string | Buffer> | null,
   ) {
     this._leveldb = leveldb ?? new MemoryLevel(ENCODING_OPTS)
   }
@@ -180,7 +180,7 @@ import { Level } from 'level'
 
 import { LevelDB } from './your-level-implementation'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
 ```
 
 ##### Alternatives

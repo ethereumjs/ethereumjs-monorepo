@@ -8,7 +8,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { Interface } from '@ethersproject/abi' // cspell:disable-line
+import { Interface } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.js'
@@ -97,13 +97,11 @@ describe('VM initialized with custom state', () => {
     common.setHardfork(Hardfork.London)
     const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
-    const sigHash = new Interface(['function retrieve()']).getSighash(
-      'retrieve',
-    ) as PrefixedHexString
+    const calldata = new Interface(['function retrieve()']).getFunction('retrieve')!.selector
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
-      data: hexToBytes(sigHash),
+      data: hexToBytes(calldata),
       caller: createAddressFromPrivateKey(privateKey),
     })
 
