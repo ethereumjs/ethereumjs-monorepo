@@ -17,13 +17,12 @@ import {
   equalsBytes,
   hexToBytes,
   publicToAddress,
+  setLengthLeft,
   short,
   ssz,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-
-import { setLengthLeft } from '../../util/src/bytes.js'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -776,7 +775,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
 async function accumulateIVCLogs(vm: VM, number: bigint, logs: Log[]) {
   const ivcContractAddress = new Address(
-    bigIntToAddressBytes(vm.common.param('withdrawalRequestPredeployAddress')),
+    bigIntToAddressBytes(vm.common.param('ivcPredeployAddress')),
   )
 
   if ((await vm.stateManager.getAccount(ivcContractAddress)) === undefined) {
@@ -805,7 +804,6 @@ async function accumulateIVCLogs(vm: VM, number: bigint, logs: Log[]) {
         number,
         logRoot,
       })
-
       await vm.stateManager.putStorage(ivcContractAddress, topic, newTopicRoot)
     }
   }

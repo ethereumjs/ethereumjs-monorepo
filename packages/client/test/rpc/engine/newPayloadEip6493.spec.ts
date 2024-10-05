@@ -1,5 +1,5 @@
 import { createTx } from '@ethereumjs/tx'
-import { bigIntToHex, hexToBytes } from '@ethereumjs/util'
+import { bigIntToAddressBytes, bigIntToHex, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { beaconData } from '../../testdata/blocks/beacon.js'
@@ -60,7 +60,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       depositRequests: [],
       withdrawalRequests: [],
       consolidationRequests: [],
-      receiptsRoot: "0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1",
+      receiptsRoot: '0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1',
       parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
       stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
       blockHash: '0x5e9dcd3f3e55e9dde218cad2958ef3f0f1c263a85d923d1e1d3821f96510e1dc',
@@ -137,6 +137,19 @@ describe(`${method}: call with executionPayloadV4`, () => {
       null,
     ])
     assert.equal(res.result.payloadStatus.status, 'VALID')
+
+    const ivcContractHex = bytesToHex(bigIntToAddressBytes(common.param('ivcPredeployAddress')))
+
+    res = await rpc.request('eth_getStorageAt', [
+      ivcContractHex,
+      '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5',
+      'latest',
+    ])
+    assert.equal(
+      res.result,
+      '0x020c33960f53470c2e7f78f67cdadf28800eb3d6b1c4e434dc9be7681baba37a',
+      'ivc root at updated topic should match',
+    )
   })
 })
 
