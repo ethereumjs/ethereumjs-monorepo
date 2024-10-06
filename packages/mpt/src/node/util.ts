@@ -9,7 +9,7 @@ import { LeafMPTNode } from './leaf.js'
 
 import type { NestedUint8Array } from '@ethereumjs/util'
 
-export function decodeRawNode(raw: Uint8Array[]) {
+export function decodeRawMPTNode(raw: Uint8Array[]) {
   if (raw.length === 17) {
     return BranchMPTNode.fromArray(raw)
   } else if (raw.length === 2) {
@@ -23,14 +23,14 @@ export function decodeRawNode(raw: Uint8Array[]) {
   }
 }
 
-export function isRawNode(n: Uint8Array | NestedUint8Array): n is Uint8Array[] {
+export function isRawMPTNode(n: Uint8Array | NestedUint8Array): n is Uint8Array[] {
   return Array.isArray(n) && !(n instanceof Uint8Array)
 }
 
-export function decodeNode(node: Uint8Array) {
+export function decodeMPTNode(node: Uint8Array) {
   const decodedNode = RLP.decode(Uint8Array.from(node))
-  if (!isRawNode(decodedNode)) {
+  if (!isRawMPTNode(decodedNode)) {
     throw new Error('Invalid node')
   }
-  return decodeRawNode(decodedNode)
+  return decodeRawMPTNode(decodedNode)
 }

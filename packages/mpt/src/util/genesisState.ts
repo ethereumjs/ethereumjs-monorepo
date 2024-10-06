@@ -15,7 +15,7 @@ import type { AccountState, GenesisState } from '@ethereumjs/util'
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations
  */
-export async function genesisStateRoot(genesisState: GenesisState) {
+export async function genesisMPTStateRoot(genesisState: GenesisState) {
   const trie = new MerklePatriciaTrie({ useKeyHashing: true })
   for (const [key, value] of Object.entries(genesisState)) {
     const address = isHexString(key) ? hexToBytes(key) : unprefixedHexToBytes(key)

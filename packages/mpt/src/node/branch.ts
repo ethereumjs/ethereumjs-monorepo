@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { BranchMPTNodeBranchValue, NodeReferenceOrRawNode } from '../types.js'
+import type { BranchMPTNodeBranchValue, NodeReferenceOrRawMPTNode } from '../types.js'
 
 export class BranchMPTNode {
   _branches: BranchMPTNodeBranchValue[]
@@ -47,8 +47,8 @@ export class BranchMPTNode {
     }
   }
 
-  getChildren(): [number, NodeReferenceOrRawNode][] {
-    const children: [number, NodeReferenceOrRawNode][] = []
+  getChildren(): [number, NodeReferenceOrRawMPTNode][] {
+    const children: [number, NodeReferenceOrRawMPTNode][] = []
     for (let i = 0; i < 16; i++) {
       const b = this._branches[i]
       if (b !== null && b.length > 0) {

@@ -12,7 +12,7 @@ import { CheckpointDB } from './db/checkpoint.js'
 import { InternalVerkleNode } from './node/internalNode.js'
 import { LeafVerkleNode } from './node/leafNode.js'
 import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
-import { createDeletedLeafVerkleValue, decodeNode, isLeafVerkleNode } from './node/util.js'
+import { createDeletedLeafVerkleValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -384,7 +384,7 @@ export class VerkleTree {
     let rawNode = await this._db.get(this.root())
     if (rawNode === undefined) throw new Error('root node should exist')
 
-    const rootNode = decodeNode(rawNode, this.verkleCrypto) as InternalVerkleNode
+    const rootNode = decodeVerkleNode(rawNode, this.verkleCrypto) as InternalVerkleNode
 
     this.DEBUG && this.debug(`Starting with Root Node: [${bytesToHex(this.root())}]`, ['find_path'])
     result.stack.push([rootNode, this.root()])
@@ -401,7 +401,7 @@ export class VerkleTree {
       rawNode = await this._db.get(this.verkleCrypto.hashCommitment(child.commitment))
       // We should always find the node if the path is specified in child.path
       if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child.path)}`)
-      const decodedNode = decodeNode(rawNode, this.verkleCrypto)
+      const decodedNode = decodeVerkleNode(rawNode, this.verkleCrypto)
 
       // Calculate the index of the last matching byte in the key
       const matchingKeyLength = matchingBytesLength(key, child.path)

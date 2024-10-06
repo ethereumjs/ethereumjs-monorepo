@@ -1,4 +1,4 @@
-import { decodeNode, verifyMPTRangeProof } from '@ethereumjs/mpt'
+import { decodeMPTNode, verifyMPTRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_NULL,
@@ -486,7 +486,7 @@ describe('[SnapProtocol]', () => {
     for (let i = 0; i < nodes.length; i++) {
       const node: Uint8Array = nodes[i]
       if (node !== null) {
-        assert.ok(decodeNode(node), 'raw node data should decode without error')
+        assert.ok(decodeMPTNode(node), 'raw node data should decode without error')
       }
     }
 

@@ -26,11 +26,11 @@ import type { Nibbles } from '../types.js'
 
 /**
  *
- * @param s byte sequence
+ * @param nibbles byte sequence
  * @returns boolean indicating if input hex nibble sequence has terminator indicating leaf-node
  *          terminator is represented with 16 because a nibble ranges from 0 - 15(f)
  */
-export const hasTerminator = (nibbles: Uint8Array) => {
+const hasTerminator = (nibbles: Uint8Array) => {
   return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
 }
 

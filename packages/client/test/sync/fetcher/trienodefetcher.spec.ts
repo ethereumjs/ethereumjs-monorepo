@@ -1,4 +1,4 @@
-import { decodeNode } from '@ethereumjs/mpt'
+import { decodeMPTNode } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
@@ -165,7 +165,7 @@ describe('[TrieNodeFetcher]', async () => {
 
     await fetcher.store(requestResult)
 
-    const rootNode = decodeNode(nodes[0] as unknown as Uint8Array) as BranchMPTNode
+    const rootNode = decodeMPTNode(nodes[0] as unknown as Uint8Array) as BranchMPTNode
     const children = rootNode.getChildren()
     assert.equal(
       children.length,

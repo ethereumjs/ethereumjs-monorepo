@@ -24,9 +24,9 @@ import {
   BranchMPTNode,
   ExtensionMPTNode,
   LeafMPTNode,
-  decodeNode,
-  decodeRawNode,
-  isRawNode,
+  decodeMPTNode,
+  decodeRawMPTNodeNode,
+  isRawMPTNode,
 } from './node/index.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
@@ -40,7 +40,7 @@ import type {
   MPTOpts,
   MPTOptsWithDefaults,
   Nibbles,
-  NodeReferenceOrRawNode,
+  NodeReferenceOrRawMPTNode,
   Path,
   TrieShallowCopyOpts,
 } from './types.js'
@@ -510,8 +510,8 @@ export class MerklePatriciaTrie {
    * Retrieves a node from db by hash.
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<MPTNode> {
-    if (isRawNode(node)) {
-      const decoded = decodeRawNode(node)
+    if (isRawMPTNode(node)) {
+      const decoded = decodeRawMPTNodeNode(node)
       this.DEBUG && this.debug(`${decoded.constructor.name}`, ['lookup_node', 'raw_node'])
       return decoded
     }
@@ -520,11 +520,11 @@ export class MerklePatriciaTrie {
     const value = (await this._db.get(key)) ?? null
 
     if (value === null) {
-      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyMerkleProof`, and `findPath`
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyMPTProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
 
-    const decoded = decodeNode(value)
+    const decoded = decodeMPTNode(value)
     this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['lookup_node', 'by_hash'])
     return decoded
   }
@@ -612,7 +612,11 @@ export class MerklePatriciaTrie {
         if (lastKey.length !== 0 || lastNode instanceof LeafMPTNode) {
           // shrinking extension or leaf
           lastNode.key(lastKey)
-          const formattedNode = this._formatNode(lastNode, false, toSave) as NodeReferenceOrRawNode
+          const formattedNode = this._formatNode(
+            lastNode,
+            false,
+            toSave,
+          ) as NodeReferenceOrRawMPTNode
           newBranchMPTNode.setBranch(branchKey, formattedNode)
         } else {
           // remove extension or attaching
@@ -731,7 +735,7 @@ export class MerklePatriciaTrie {
 
     // nodes on the branch
     // count the number of nodes on the branch
-    const branchNodes: [number, NodeReferenceOrRawNode][] = lastNode.getChildren()
+    const branchNodes: [number, NodeReferenceOrRawMPTNode][] = lastNode.getChildren()
 
     // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
@@ -750,7 +754,7 @@ export class MerklePatriciaTrie {
         // In that case, we need to serialize and hash it into a Uint8Array, otherwise the operation will throw
         opStack.push({
           type: 'del',
-          key: isRawNode(branchNode) ? this.appliedKey(RLP.encode(branchNode)) : branchNode,
+          key: isRawMPTNode(branchNode) ? this.appliedKey(RLP.encode(branchNode)) : branchNode,
         })
       }
 
@@ -820,7 +824,7 @@ export class MerklePatriciaTrie {
     topLevel: boolean,
     opStack: BatchDBOp[],
     remove: boolean = false,
-  ): Uint8Array | NodeReferenceOrRawNode | BranchMPTNodeBranchValue[] {
+  ): Uint8Array | NodeReferenceOrRawMPTNode | BranchMPTNodeBranchValue[] {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
@@ -906,7 +910,7 @@ export class MerklePatriciaTrie {
               if (
                 item !== null &&
                 bytesToUnprefixedHex(
-                  isRawNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item,
+                  isRawMPTNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item,
                 ) === dbkey
               ) {
                 found = true
@@ -988,7 +992,7 @@ export class MerklePatriciaTrie {
    */
   protected async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
-      if (isRawNode(nodeRef)) {
+      if (isRawMPTNode(nodeRef)) {
         if (node !== null) {
           walkController.allChildren(node, key)
         }

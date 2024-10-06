@@ -56,7 +56,6 @@ export async function createMPT(opts?: MPTOpts) {
  * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
  * from the root node to the leaf node storing state data.
  * @param proof an EIP-1186 proof to create trie from
- * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
  * @param trieOpts trie opts to be applied to returned trie
  * @returns new trie created from given proof
  */

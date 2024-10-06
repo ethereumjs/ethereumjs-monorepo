@@ -3,7 +3,7 @@ import {
   ExtensionMPTNode,
   LeafMPTNode,
   MerklePatriciaTrie,
-  decodeNode,
+  decodeMPTNode,
   mergeAndFormatKeyPaths,
   pathToHexKey,
 } from '@ethereumjs/mpt'
@@ -216,7 +216,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     try {
       // process received node data and request unknown child nodes
       for (const nodeData of result[0]) {
-        const node = decodeNode(nodeData as unknown as Uint8Array)
+        const node = decodeMPTNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(this.keccakFunction(nodeData as unknown as Uint8Array))
         const pathString = this.requestedNodeToPath.get(nodeHash) ?? ''
         const [accountPath, storagePath] = pathString.split('/')
@@ -340,7 +340,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const { nodeData, path, pathToStorageNode } = data
 
           // add account node data to account trie
-          const node = decodeNode(nodeData)
+          const node = decodeMPTNode(nodeData)
           if (node instanceof LeafMPTNode) {
             const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
             ops.push({
@@ -358,7 +358,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const storageTrieOps: BatchDBOp[] = []
             if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
               for (const [path, data] of pathToStorageNode) {
-                const storageNode = decodeNode(data)
+                const storageNode = decodeMPTNode(data)
                 if (storageNode instanceof LeafMPTNode) {
                   const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
                   storageTrieOps.push({

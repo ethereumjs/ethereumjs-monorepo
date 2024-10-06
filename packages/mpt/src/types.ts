@@ -17,9 +17,9 @@ export type RawLeafMPTNode = [Uint8Array, Uint8Array]
 
 // Branch and extension nodes might store
 // hash to next node, or a raw node if its length < 32
-export type NodeReferenceOrRawNode = Uint8Array | RawExtensionMPTNode | RawLeafMPTNode
+export type NodeReferenceOrRawMPTNode = Uint8Array | RawExtensionMPTNode | RawLeafMPTNode
 
-export type BranchMPTNodeBranchValue = NodeReferenceOrRawNode | null
+export type BranchMPTNodeBranchValue = NodeReferenceOrRawMPTNode | null
 
 export type Proof = Uint8Array[]
 
