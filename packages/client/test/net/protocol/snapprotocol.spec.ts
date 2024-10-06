@@ -1,4 +1,4 @@
-import { decodeMPTNode, verifyMPTRangeProof } from '@ethereumjs/mpt'
+import { decodeMPTNode, verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_NULL,
@@ -191,7 +191,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await verifyMPTRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+      await verifyMerkleRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
         useKeyHashingFunction: keccak256,
       })
     } catch (e) {
@@ -324,7 +324,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await verifyMPTRangeProof(
+      await verifyMerkleRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],

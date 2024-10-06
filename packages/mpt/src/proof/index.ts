@@ -45,7 +45,7 @@ export async function verifyMPTProof(
 //  * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
 //  * @returns a flag to indicate whether there exists more trie node in the trie
 //  */
-export function verifyMPTRangeProof(
+export function verifyMerkleRangeProof(
   rootHash: Uint8Array,
   firstKey: Uint8Array | null,
   lastKey: Uint8Array | null,
@@ -66,7 +66,7 @@ export function verifyMPTRangeProof(
 }
 
 /**
- * Creates a proof from a trie and key that can be verified using {@link verifyMPTProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+ * Creates a proof from a trie and key that can be verified using {@link verifyMerkleProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
  * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
@@ -85,6 +85,7 @@ export async function createMerkleProof(trie: MerklePatriciaTrie, key: Uint8Arra
  * Updates a trie from a proof by putting all the nodes in the proof into the trie. Pass {@param shouldVerifyRoot} as true to check
  * that root key of proof matches root of trie and throw if not.
  * An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
+ * @param trie The trie to update from the proof.
  * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof to update the trie from.
  * @param shouldVerifyRoot - defaults to false. If `true`, verifies that the root key of the proof matches the trie root and throws if not (i.e invalid proof).
  * @returns The root of the proof
