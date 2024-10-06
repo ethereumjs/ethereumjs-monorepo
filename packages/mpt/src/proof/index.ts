@@ -2,8 +2,10 @@ import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createMPTFromProof } from '../constructors.js'
-import { MerklePatriciaTrie, verifyRangeProof } from '../index.js'
+import { MerklePatriciaTrie } from '../index.js'
 import { bytesToNibbles } from '../util/nibbles.js'
+
+import { verifyRangeProof } from './range.js'
 
 import type { MPTOpts, Proof } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
@@ -169,5 +171,3 @@ export async function verifyMerkleProof(
     }
   }
 }
-
-export * from './range.js'
