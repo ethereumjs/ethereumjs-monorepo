@@ -1,7 +1,7 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, createMPT, isRawNode } from '../../src/index.js'
+import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.js'
 
 import type { BranchMPTNode } from '../../src/index.js'
 
@@ -172,8 +172,8 @@ describe('Pruned trie tests', () => {
     const path = await trie.findPath(utf8ToBytes('key1'))
     const parentBranchMPTNode = path.stack[1] as BranchMPTNode
     // Hex ASCII value for for `1` is 31, and for `2` is 32. We should expect a branching out at indexes 1 an 2.
-    assert.ok(isRawNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
-    assert.ok(isRawNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
+    assert.ok(isRawMPTNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
+    assert.ok(isRawMPTNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
 
     assert.notOk(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
 
