@@ -53,9 +53,9 @@ jobs:
         run: npm run test:node
         working-directory: packages/evm
 
-      - name: Test Trie
+      - name: Test MPT
         run: npm run test:node
-        working-directory: packages/trie
+        working-directory: packages/mpt
 
       - name: Test Tx
         run: npm run test:node

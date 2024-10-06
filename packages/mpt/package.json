@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/mpt",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",

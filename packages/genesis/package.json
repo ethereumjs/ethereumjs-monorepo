@@ -66,6 +66,6 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@ethereumjs/mpt": "^6.2.1"
+    "@ethereumjs/mpt": "^6.2.2"
   }
 }
