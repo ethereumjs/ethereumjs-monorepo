@@ -1,7 +1,7 @@
 /**
  * Run with DEBUG=ethjs,trie:* to see debug log output
  */
-import { MerklePatriciaTrie, createMerkleProof, verifyMerkleProof } from '@ethereumjs/mpt'
+import { MerklePatriciaTrie, createMerkleProof, verifyMPTWithMerkleProof } from '@ethereumjs/mpt'
 import { utf8ToBytes } from '@ethereumjs/util'
 
 const trie_entries: [string, string | null][] = [
@@ -23,7 +23,7 @@ const main = async () => {
     await trie.put(utf8ToBytes(key), value === null ? Uint8Array.from([]) : utf8ToBytes(value))
   }
   const proof = await createMerkleProof(trie, utf8ToBytes('doge'))
-  const valid = await verifyMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
+  const valid = await verifyMPTWithMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
   console.log('valid', valid)
 }
 

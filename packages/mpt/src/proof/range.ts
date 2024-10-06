@@ -321,7 +321,7 @@ async function unsetInternal(
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-async function verifyMerkleProof(
+async function verifyMPTWithMerkleProof(
   rootHash: Uint8Array,
   key: Uint8Array,
   proof: Uint8Array[],
@@ -388,6 +388,7 @@ async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<
 /**
  * verifyRangeProof checks whether the given leaf nodes and edge proof
  * can prove the given trie leaves range is matched with the specific root.
+ * Used internally by the verifyMerkleRangeProof wrapper function.
  *
  * There are four situations:
  *
@@ -454,7 +455,7 @@ export async function verifyRangeProof(
   if (proof !== null && firstKey !== null && lastKey === null) {
     // Zero element proof
     if (keys.length === 0) {
-      const { trie, value } = await verifyMerkleProof(
+      const { trie, value } = await verifyMPTWithMerkleProof(
         rootHash,
         nibblesTypeToPackedBytes(firstKey),
         proof,
@@ -477,7 +478,7 @@ export async function verifyRangeProof(
 
   // One element proof
   if (keys.length === 1 && nibblesCompare(firstKey, lastKey) === 0) {
-    const { trie, value } = await verifyMerkleProof(
+    const { trie, value } = await verifyMPTWithMerkleProof(
       rootHash,
       nibblesTypeToPackedBytes(firstKey),
       proof,

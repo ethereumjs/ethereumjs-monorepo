@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createMPTFromProof, createMerkleProof, verifyMerkleProof } from '../../src/index.js'
+import { createMPTFromProof, createMerkleProof, verifyMPTWithMerkleProof } from '../../src/index.js'
 import { MerklePatriciaTrie } from '../../src/mpt.js'
 
 describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
@@ -21,7 +21,7 @@ describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
   }
 
   const proof = await createMerkleProof(trie, utf8ToBytes('doge'))
-  const valid = await verifyMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
+  const valid = await verifyMPTWithMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
 
   it('should be valid', async () => {
     assert.deepEqual(valid, utf8ToBytes('coin'))

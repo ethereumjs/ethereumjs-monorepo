@@ -68,7 +68,7 @@ export function verifyMerkleRangeProof(
 }
 
 /**
- * Creates a proof from a trie and key that can be verified using {@link verifyMerkleProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+ * Creates a proof from a trie and key that can be verified using {@link verifyMPTWithMerkleProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
  * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
  * serialized branch, extension, and/or leaf nodes.
  * @param key key to create a proof for
@@ -125,13 +125,14 @@ export async function updateMPTFromMerkleProof(
 /**
  * Verifies a proof by putting all of its nodes into a trie and attempting to get the proven key. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof
  * contains the encoded trie nodes from the root node to the leaf node storing state data.
+ * @param trie The trie to verify the proof against
  * @param rootHash Root hash of the trie that this proof was created from and is being verified for
  * @param key Key that is being verified and that the proof is created for
  * @param proof an EIP-1186 proof to verify the key against
  * @throws If proof is found to be invalid.
  * @returns The value from the key, or null if valid proof of non-existence.
  */
-export async function verifyMerkleProof(
+export async function verifyMPTWithMerkleProof(
   trie: MerklePatriciaTrie,
   rootHash: Uint8Array,
   key: Uint8Array,
