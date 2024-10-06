@@ -25,7 +25,7 @@ import {
   ExtensionMPTNode,
   LeafMPTNode,
   decodeMPTNode,
-  decodeRawMPTNodeNode,
+  decodeRawMPTNode,
   isRawMPTNode,
 } from './node/index.js'
 import { ROOT_DB_KEY } from './types.js'
@@ -511,7 +511,7 @@ export class MerklePatriciaTrie {
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<MPTNode> {
     if (isRawMPTNode(node)) {
-      const decoded = decodeRawMPTNodeNode(node)
+      const decoded = decodeRawMPTNode(node)
       this.DEBUG && this.debug(`${decoded.constructor.name}`, ['lookup_node', 'raw_node'])
       return decoded
     }
