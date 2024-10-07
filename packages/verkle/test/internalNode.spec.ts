@@ -2,7 +2,12 @@ import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { NODE_WIDTH, VerkleNodeType, decodeNode, isInternalVerkleNode } from '../src/node/index.js'
+import {
+  NODE_WIDTH,
+  VerkleNodeType,
+  decodeVerkleNode,
+  isInternalVerkleNode,
+} from '../src/node/index.js'
 import { InternalVerkleNode } from '../src/node/internalNode.js'
 
 describe('verkle node - internal', () => {
@@ -56,7 +61,7 @@ describe('verkle node - internal', () => {
       commitment: verkleCrypto.zeroCommitment,
     })
     const serialized = node.serialize()
-    const decoded = decodeNode(serialized, verkleCrypto)
+    const decoded = decodeVerkleNode(serialized, verkleCrypto)
     assert.deepEqual((decoded as InternalVerkleNode).children[0].commitment, child.commitment)
   })
 
@@ -66,7 +71,7 @@ describe('verkle node - internal', () => {
       commitment: verkleCrypto.zeroCommitment,
     })
     const serialized = node.serialize()
-    const decoded = decodeNode(serialized, verkleCrypto)
+    const decoded = decodeVerkleNode(serialized, verkleCrypto)
     assert.equal((decoded as InternalVerkleNode).children[0], null)
   })
 })

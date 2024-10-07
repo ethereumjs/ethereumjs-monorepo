@@ -7,7 +7,7 @@ import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.js
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
+export function decodeRawVerkleNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): VerkleNode {
   const nodeType = raw[0][0]
   switch (nodeType) {
     case VerkleNodeType.Internal:
@@ -19,15 +19,15 @@ export function decodeRawNode(raw: Uint8Array[], verkleCrypto: VerkleCrypto): Ve
   }
 }
 
-export function decodeNode(raw: Uint8Array, verkleCrypto: VerkleCrypto) {
+export function decodeVerkleNode(raw: Uint8Array, verkleCrypto: VerkleCrypto) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
     throw new Error('Invalid node')
   }
-  return decodeRawNode(decoded, verkleCrypto)
+  return decodeRawVerkleNode(decoded, verkleCrypto)
 }
 
-export function isRawNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[] {
+export function isRawVerkleNode(node: Uint8Array | Uint8Array[]): node is Uint8Array[] {
   return Array.isArray(node) && !(node instanceof Uint8Array)
 }
 

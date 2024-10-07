@@ -6,7 +6,7 @@ import {
   LeafVerkleNodeValue,
   VerkleNodeType,
   createCValues,
-  decodeNode,
+  decodeVerkleNode,
   isLeafVerkleNode,
 } from '../src/node/index.js'
 import { LeafVerkleNode } from '../src/node/leafNode.js'
@@ -90,12 +90,12 @@ describe('verkle node - leaf', () => {
     const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
     const node = await LeafVerkleNode.create(stem, verkleCrypto, values)
     const serialized = node.serialize()
-    const decodedNode = decodeNode(serialized, verkleCrypto)
+    const decodedNode = decodeVerkleNode(serialized, verkleCrypto)
 
     assert.deepEqual(node, decodedNode)
 
     const defaultNode = await LeafVerkleNode.create(randomBytes(31), verkleCrypto)
 
-    assert.deepEqual(defaultNode, decodeNode(defaultNode.serialize(), verkleCrypto))
+    assert.deepEqual(defaultNode, decodeVerkleNode(defaultNode.serialize(), verkleCrypto))
   })
 })

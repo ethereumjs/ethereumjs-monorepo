@@ -8,7 +8,7 @@ import {
   LeafVerkleNodeValue,
   VerkleNodeType,
   createVerkleTree,
-  decodeNode,
+  decodeVerkleNode,
 } from '../src/index.js'
 
 import type { VerkleNode } from '../src/index.js'
@@ -139,7 +139,7 @@ describe('Verkle tree', () => {
 
     // Pull root node from DB
     const rawNode = await trie['_db'].get(trie.root())
-    const rootNode = decodeNode(rawNode!, verkleCrypto) as InternalVerkleNode
+    const rootNode = decodeVerkleNode(rawNode!, verkleCrypto) as InternalVerkleNode
     // Update root node with commitment from leaf node
     rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
     trie.root(verkleCrypto.serializeCommitment(rootNode.commitment))

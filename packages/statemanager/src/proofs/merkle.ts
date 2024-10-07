@@ -1,10 +1,10 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
+  createMPTFromProof,
   createMerkleProof,
-  createTrieFromProof,
-  updateTrieFromMerkleProof,
+  updateMPTFromMerkleProof,
   verifyMPTProof,
-} from '@ethereumjs/trie'
+} from '@ethereumjs/mpt'
+import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_NULL,
   KECCAK256_NULL_S,
@@ -96,7 +96,7 @@ export async function addMerkleStateStorageProof(
   const trie = sm['_getStorageTrie'](address)
   trie.root(hexToBytes(storageHash))
   for (let i = 0; i < storageProof.length; i++) {
-    await updateTrieFromMerkleProof(
+    await updateMPTFromMerkleProof(
       trie,
       storageProof[i].proof.map((e) => hexToBytes(e)),
       safe,
@@ -123,7 +123,7 @@ export async function fromMerkleStateProof(
     } else {
       const trie =
         opts.trie ??
-        (await createTrieFromProof(
+        (await createMPTFromProof(
           proof[0].accountProof.map((e) => hexToBytes(e)),
           { useKeyHashing: true },
         ))
@@ -161,7 +161,7 @@ export async function addMerkleStateProofData(
 ) {
   if (Array.isArray(proof)) {
     for (let i = 0; i < proof.length; i++) {
-      await updateTrieFromMerkleProof(
+      await updateMPTFromMerkleProof(
         sm['_trie'],
         proof[i].accountProof.map((e) => hexToBytes(e)),
         safe,

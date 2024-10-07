@@ -29,7 +29,7 @@ import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM, runBlock, createVM }  from './src'
-import { MerklePatriciaTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { MerkleStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
