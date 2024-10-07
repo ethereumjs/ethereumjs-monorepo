@@ -14,9 +14,17 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#](https://github.com/ethereumjs/ethereumjs-monorepo/pull/)):
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code:
 
-- TODO
+##### `account`
+
+See PR [#3524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3524):
+
+- `Account.fromAccountData()` -> `createAccount()`
+- `Account.fromRlpSerializedAccount()` -> `createAccountFromRLP()`
+- `Account.fromRlpSerializedPartialAccount()` -> `createPartialAccountFromRLP()`
+- `Account.fromValuesArray()` --> `createAccountFromBytesArray()`
+- `Account.fromPartialAccountData()` --> `createPartialAccount()`
 
 ### Other Breaking Changes
 

@@ -22,6 +22,14 @@ The static constructors for our library classes have been reworked to now be sta
 
 TODO: Add changes from https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440
 
+#### Own EVM Parameter Set
+
+HF-sensitive parameters like `maxInitCodeSize` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) paramters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsEVM`) within the paramter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
 ### Other Breaking Changes
 
 - New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)

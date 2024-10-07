@@ -12,17 +12,49 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 ### Renamings
 
+#### Transaction Classes
+
+The names for the tx classes have been shortened and simplified (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533)):
+
+- `FeeMarketEIP1559Transaction` -> `FeeMarket1559Tx`
+- `AccessListEIP2930Transaction` -> `AccessList2930Tx`
+- `BlobEIP4844Transaction` -> `Blob4844Tx`
+- `EOACodeEIP7702Transaction` -> `EOACode7702Tx`
+
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514):
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533)).
 
-##### Transaction Factory
+Here an example for the `FeeMarket1559Tx` class:
+
+- `FeeMarketEIP1559Transaction.fromTxData()` -> `createFeeMarket1559Tx()`
+- `FeeMarketEIP1559Transaction.fromSerializedTx()` -> `createFeeMarket1559TxFromRLP()`
+- `FeeMarketEIP1559Transaction.fromValuesArray()` -> `create1559FeeMarketTxFromBytesArray()`
+
+#### Transaction Factory
+
+Similar renamings have been done for the generic `TransactionFactory` (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514)):
 
 - `TransactionFactory.fromTxData()` -> `createTx()`
 - `TransactionFactory.fromSerializedData()` -> `createTxFromRLP()`
 - `TransactionFactory.fromBlockBodyData()` -> `createTxFromBlockBodyData()`
 - `TransactionFactory.fromJsonRpcProvider()` -> `createTxFromJSONRPCProvider()`
 - New: `createTxFromRPC()` (just from the data, without the provider fetch)
+
+#### Library Methods
+
+See: PR [#3535](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3535)
+
+- `*Tx.getBaseFee()` -> `*Tx.getIntrinsicGas()` (avoid confusion with 1559 base fee)
+- `*Tx.getDataFee()` -> `*Tx.getDataGas()` (be more explicit about method's gas unit)
+
+#### Own Tx Parameter Set
+
+HF-sensitive parameters like `txGas` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) paramters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsTx`) within the paramter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
 
 ## 5.4.0 - 2024-08-15
 
