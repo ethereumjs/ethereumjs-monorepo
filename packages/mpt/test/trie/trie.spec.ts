@@ -1,10 +1,14 @@
 import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   KECCAK256_RLP,
   MapDB,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   randomBytes,
   unprefixedHexToBytes,
   utf8ToBytes,
@@ -270,18 +274,68 @@ describe('keyHashingFunction', async () => {
   })
 })
 
-describe('getValueMap', () => {
+describe('getValueMap', async () => {
+  const trie = await createMPT({})
+  const entries: [Uint8Array, string][] = [
+    [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
+    [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
+    [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
+  ]
+  for (const entry of entries) {
+    await trie.put(entry[0], hexToBytes(entry[1]))
+  }
+
   it('should return a map of all hashed keys and values', async () => {
-    const trie = await createMPT({})
-    const entries: [Uint8Array, string][] = [
-      [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
-      [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
-      [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
-    ]
-    for (const entry of entries) {
-      await trie.put(entry[0], utf8ToBytes(entry[1]))
-    }
     const dump = await trie.getValueMap()
     assert.equal(Object.entries(dump.values).length, 3)
+
+    // Check if the reported values are the expected values
+    for (const entry of entries) {
+      const key = bytesToHex(entry[0])
+      const value = entry[1]
+      assert.equal(dump.values[key], value)
+    }
+
+    assert.equal(dump.nextKey, null)
+  })
+
+  it('should enforce the startKey / limit rules', async () => {
+    const tests: {
+      startKey?: bigint
+      limit?: number
+      reportedValues: number
+      nextKey: string | null
+    }[] = [
+      {
+        startKey: BIGINT_0,
+        limit: 3,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_1,
+        limit: 3,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_1,
+        limit: 1000,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_2,
+        limit: 2,
+        reportedValues: 2,
+        nextKey: null,
+      },
+    ]
+
+    for (const test of tests) {
+      const result = await trie.getValueMap(test.startKey, test.limit)
+      assert.equal(Object.entries(result.values).length, test.reportedValues)
+      assert.equal(result.nextKey, test.nextKey)
+    }
   })
 })
