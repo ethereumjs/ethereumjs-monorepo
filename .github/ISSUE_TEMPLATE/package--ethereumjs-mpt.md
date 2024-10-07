@@ -1,7 +1,7 @@
 ---
-name: 'Package: @ethereumjs/trie'
-about: Create issue for @ethereumjs/trie package
+name: 'Package: @ethereumjs/mpt'
+about: Create issue for @ethereumjs/mpt package
 title: ''
-labels: 'package: trie'
+labels: 'package: mpt'
 assignees: ''
 ---
