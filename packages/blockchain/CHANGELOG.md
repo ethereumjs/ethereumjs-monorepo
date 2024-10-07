@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 8.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#3491](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3491)):
+
+- `Blockchain.create()` -> `createBlockchain`
+- `Blockchain.fromBlocksData()` -> `createBlockchainFromBlocksData()`
+
+### No Consensus Validation by Default
+
+Along the transition to Proof-of-Stake Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.
+
+It is still easy to set up a `Clique` or `Ethash` blockchain by using the new `consensusDict` option and pass in an instantiated consensus instance, see the respective option documentation or the related [example](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/examples/clique.ts) in the blockchain `examples` folder.
+
 ## 7.3.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

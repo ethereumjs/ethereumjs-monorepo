@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#](https://github.com/ethereumjs/ethereumjs-monorepo/pull/)):
+
+TODO
+
+### New SimpleStateManager
+
+We have added a new < 200 LoC state manager `SimpleStateManager`, which has less dependencies (no tree backend) and allows for easier state reasoning and debugging, since there is no code or cache usage overhead. This new state manager is now also the default state manager for the `EVM`. Note that this state manager is meant to be used for simple use cases and should be replaced by a cache-backed state manager (in most cases atm: `MerkleStateManager`) for things like mainnet tx execution.
+
+The new state manager can be used like this:
+
+```ts
+import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+import { SimpleStateManager } from '@ethereumjs/statemanager'
+
+const main = async () => {
+  const sm = new SimpleStateManager()
+  const address = createAddressFromPrivateKey(randomBytes(32))
+  const account = new Account(0n, 0xfffffn)
+  await sm.putAccount(address, account)
+  console.log(await sm.getAccount(address))
+}
+
+void main()
+```
+
+### Other Changes
+
+- Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
+
 ## 2.4.0 - 2024-08-15
 
 ### Verkle Updates

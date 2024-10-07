@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514):
+
+##### Transaction Factory
+
+- `TransactionFactory.fromTxData()` -> `createTx()`
+- `TransactionFactory.fromSerializedData()` -> `createTxFromRLP()`
+- `TransactionFactory.fromBlockBodyData()` -> `createTxFromBlockBodyData()`
+- `TransactionFactory.fromJsonRpcProvider()` -> `createTxFromJSONRPCProvider()`
+- New: `createTxFromRPC()` (just from the data, without the provider fetch)
+
 ## 5.4.0 - 2024-08-15
 
 #### EOA Code Transaction (EIP-7702) (outdated)
