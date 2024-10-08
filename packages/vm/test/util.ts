@@ -297,6 +297,34 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   }
 }
 
+export function makeParentBlockHeader(data: any, opts: BlockOptions) {
+  const {
+    parentGasLimit,
+    parentGasUsed,
+    parentBaseFee,
+    parentDifficulty,
+    parentTimestamp,
+    parentUncleHash,
+    parentBlobGasUsed,
+    parentExcessBlobGas,
+    parentBeaconBlockRoot,
+  } = data
+  return createBlockHeader(
+    {
+      gasLimit: parentGasLimit,
+      gasUsed: parentGasUsed,
+      baseFeePerGas: parentBaseFee,
+      difficulty: parentDifficulty,
+      timestamp: parentTimestamp,
+      uncleHash: parentUncleHash,
+      blobGasUsed: parentBlobGasUsed,
+      excessBlobGas: parentExcessBlobGas,
+      parentBeaconBlockRoot,
+    },
+    { common: opts.common },
+  )
+}
+
 export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const {
     currentTimestamp,
@@ -309,9 +337,6 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentNumber,
     currentBaseFee,
     currentRandom,
-    parentGasLimit,
-    parentGasUsed,
-    parentBaseFee,
   } = data
   const headerData: any = {
     number: currentNumber,
@@ -321,17 +346,10 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
   }
+  const parentBlockHeader = makeParentBlockHeader(data, { common: opts?.common })
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = createBlockHeader(
-        {
-          gasLimit: parentGasLimit,
-          gasUsed: parentGasUsed,
-          baseFeePerGas: parentBaseFee,
-        },
-        { common: opts.common },
-      )
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
   }
@@ -344,6 +362,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   }
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
+    if (currentExcessBlobGas === undefined) {
+      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas()
+    }
   }
   return createBlockHeader(headerData, opts)
 }
