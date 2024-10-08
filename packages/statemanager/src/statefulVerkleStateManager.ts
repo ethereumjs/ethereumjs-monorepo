@@ -449,8 +449,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   getStateRoot(): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(this._trie.root())
   }
+
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
     this._trie.root(stateRoot)
     clearCache === true && this.clearCaches()

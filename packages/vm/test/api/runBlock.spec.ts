@@ -7,6 +7,7 @@ import {
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Capability,
   LegacyTx,
@@ -20,6 +21,7 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  bytesToHex,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
@@ -32,7 +34,8 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { assert, describe, it } from 'vitest'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
@@ -49,9 +52,8 @@ import type {
   RunBlockOpts,
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
+import type { NestedUint8Array, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
@@ -675,5 +677,30 @@ describe('runBlock() -> tx types', async () => {
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
     const storage = await vm.stateManager.getStorage(defaultAuthAddr, new Uint8Array(32))
     assert.ok(equalsBytes(storage, new Uint8Array([2])))
+  })
+})
+
+describe('run a verkle block statefully', () => {
+  let verkleCrypto: VerkleCrypto
+  beforeAll(async () => {
+    verkleCrypto = await loadVerkleCrypto()
+  })
+  it.only('should execute a verkle block and produce an executionWitness', async () => {
+    const verkleJson = (await import('./testdata/verkleBlock.js')).block
+
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [3607, 6800] })
+    const genesisRlp = hexToBytes(verkleJson.genesisRLP as PrefixedHexString)
+    const genesis = createBlockFromRLP(genesisRlp, { common })
+
+    const blockRlp = hexToBytes(verkleJson.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common })
+    const sm = new StatefulVerkleStateManager({ verkleCrypto })
+    await sm['_trie']['_createRootNode']()
+    const vm = await setupVM({ common, stateManager: sm })
+    await setupPreConditions(vm.stateManager, verkleJson)
+    assert.equal(
+      bytesToHex(await vm.stateManager.getStateRoot()),
+      verkleJson.genesisBlockHeader.hash,
+    )
   })
 })
