@@ -30,6 +30,7 @@ import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { AccessWitness } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
@@ -68,6 +69,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   private keccakFunction: Function
 
+  accessWitness?: AccessWitness
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -88,6 +90,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.verkleCrypto
+    this.accessWitness = new AccessWitness({ verkleCrypto: this.verkleCrypto })
   }
 
   /**

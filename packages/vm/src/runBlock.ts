@@ -2,7 +2,11 @@ import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
+import {
+  StatefulVerkleStateManager,
+  StatelessVerkleStateManager,
+  verifyVerkleStateProof,
+} from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -17,6 +21,7 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
+  decodeVerkleLeafBasicData,
   equalsBytes,
   getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
@@ -48,6 +53,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { LeafVerkleNode } from '@ethereumjs/verkle'
 
 const debug = debugDefault('vm:block')
 
@@ -134,32 +140,36 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-    }
+    // We only do these checks if operating statelessly since the execution witness is
+    // constructed during stateful execution
+    if (stateManager instanceof StatelessVerkleStateManager) {
+      if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+        throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Initializing StatelessVerkleStateManager executionWitness`)
-    }
-    if (clearCache) {
-      stateManager.clearCaches()
-    }
+      if (vm.DEBUG) {
+        debug(`Initializing StatelessVerkleStateManager executionWitness`)
+      }
+      if (clearCache) {
+        stateManager.clearCaches()
+      }
 
-    // Update the stateRoot cache
-    await stateManager.setStateRoot(block.header.stateRoot)
+      // Update the stateRoot cache
+      await stateManager.setStateRoot(block.header.stateRoot)
 
-    // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+      // Populate the execution witness
+      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (
-      stateManager instanceof StatelessVerkleStateManager &&
-      verifyVerkleStateProof(stateManager) === false
-    ) {
-      throw Error(`Verkle proof verification failed`)
-    }
+      if (
+        stateManager instanceof StatelessVerkleStateManager &&
+        verifyVerkleStateProof(stateManager) === false
+      ) {
+        throw Error(`Verkle proof verification failed`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Verkle proof verification succeeded`)
+      if (vm.DEBUG) {
+        debug(`Verkle proof verification succeeded`)
+      }
     }
   } else {
     if (typeof stateManager.initVerkleExecutionWitness === 'function') {
@@ -264,7 +274,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
-    if (!vm.common.isActivatedEIP(6800)) {
+    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
       // Only validate the following headers if verkle blocks aren't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
@@ -313,7 +323,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     } else if (vm.common.isActivatedEIP(6800)) {
-      // If verkle is activated, only validate the post-state
+      // If verkle is activated and executing statelessly, only validate the post-state
       if (vm['_opts'].stateManager!.verifyPostState!() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }

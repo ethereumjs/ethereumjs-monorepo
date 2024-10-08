@@ -383,14 +383,15 @@ export class Block {
 
     // Validation for Verkle blocks
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
-    if (this.common.isActivatedEIP(6800)) {
-      if (this.executionWitness === undefined) {
-        throw new Error(`Invalid block: missing executionWitness`)
-      }
-      if (this.executionWitness === null) {
-        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
-      }
-    }
+    // TODO: Decide if we should actually require this or not
+    // if (this.common.isActivatedEIP(6800)) {
+    //   if (this.executionWitness === undefined) {
+    //     throw new Error(`Invalid block: missing executionWitness`)
+    //   }
+    //   if (this.executionWitness === null) {
+    //     throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
+    //   }
+    // }
   }
 
   /**
