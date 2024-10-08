@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Added `eth_getBlockReceipts` method, PR [#3499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3499)
 - Added `debug` namespace methods `getRawBlock`, `getRawHeader`, `getRawReceipts` and `getRawTransaction`, PR [#3490](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3490)
 - Special-case fixes for `eth_call`, PR [#3503](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3503)
+- Add `data` field to `RPCError` / `eth_call`, PR [#3547](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3547)
 - Various RPC value format fixes, PR [#3495](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3495)
 
 ### Bugfixes

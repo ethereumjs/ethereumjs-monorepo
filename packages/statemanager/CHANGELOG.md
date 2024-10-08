@@ -40,6 +40,12 @@ const main = async () => {
 void main()
 ```
 
+### TypeScript: StateManagerInterface Refactoring/Simplification
+
+The [StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which all state managers implement, is located in the `@ethereumjs/common` package for re-usability reasons. Along the breaking release work, this interface as been strongly simplified, see PR [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543). A dedicated `EVMStateManagerInterface` has been removed, which allows for easier state manager usage within the EVM package.
+
+Somewhat non-core functionality is now marked as optional (with a `?`), so if you make custom usage of the state manager you might need to add some `!` in your TypeScript code. Have a look at the interface linked above to see what has changed.
+
 ### Other Changes
 
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)

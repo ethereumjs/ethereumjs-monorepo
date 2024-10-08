@@ -17,7 +17,16 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3515):
 
 - `Trie.create()` -> `createMPT()`
+
+#### Proof Functionality
+
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551):
+
 - `Trie.createFromProof()` -> `createMPTFromProof()`
+- `Trie.verifyProof()` -> `verifyMPTProof()`
+- `Trie.verifyRangeProof()` -> `verifyMerkleRangeProof()`
+- `Trie.createProof()` -> `createMerkleProof()`
+- `Trie.updateFromProof()` -> `updateMPTFromMerkleProof()`
 
 ### Replaced Stream Functionality
 

@@ -30,6 +30,12 @@ With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethe
 
 Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
 
+### TypeScript: Use generic StateManagerInterface
+
+The dedicated `EVMStateManagerInterface` has been removed and the EVM now uses the generic `StateManagerInterface` (located in the `@ethereumjs/util` package for re-usability reasons), see PR [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543). This comes along with some refactoring and adjustments on the interface itself (see `@ethereumjs/statemanager` release notes for more details).
+
+This simplifies the `StateManager` usage and allows for easier swapping between different state managers (statefull/stateless, Verkle/Merkle, RPC).
+
 ### Other Breaking Changes
 
 - New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)
