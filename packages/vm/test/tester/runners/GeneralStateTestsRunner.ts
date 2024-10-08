@@ -1,8 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
-import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   MapDB,

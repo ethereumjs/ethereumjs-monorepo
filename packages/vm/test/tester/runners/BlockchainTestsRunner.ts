@@ -2,9 +2,9 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
-import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
