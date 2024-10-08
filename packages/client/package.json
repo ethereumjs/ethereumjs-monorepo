@@ -104,6 +104,7 @@
     "eventsource": "^2.0.2",
     "isomorphic-ws": "^5.0.0",
     "it-pair": "^1.0.0",
+    "it-pipe": "^1.1.0",
     "it-pushable": "^1.4.2",
     "testdouble": "^3.16.6",
     "testdouble-timers": "^0.1.1",
