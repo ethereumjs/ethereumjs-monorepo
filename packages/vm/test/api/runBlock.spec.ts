@@ -700,7 +700,7 @@ describe('run a verkle block statefully', () => {
     await setupPreConditions(vm.stateManager, verkleJson)
     assert.equal(
       bytesToHex(await vm.stateManager.getStateRoot()),
-      verkleJson.genesisBlockHeader.hash,
+      verkleJson.genesisBlockHeader.stateRoot,
     )
   })
 })
