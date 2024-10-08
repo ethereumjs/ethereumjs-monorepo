@@ -1,5 +1,5 @@
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
@@ -124,8 +124,8 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
  * @param wts array of Withdrawal to compute the root of
  * @param optional emptyTrie to use to generate the root
  */
-export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
-  const trie = emptyTrie ?? new Trie()
+export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: MerklePatriciaTrie) {
+  const trie = emptyTrie ?? new MerklePatriciaTrie()
   for (const [i, wt] of wts.entries()) {
     await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
   }
@@ -137,8 +137,11 @@ export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie
  * @param txs array of TypedTransaction to compute the root of
  * @param optional emptyTrie to use to generate the root
  */
-export async function genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
-  const trie = emptyTrie ?? new Trie()
+export async function genTransactionsTrieRoot(
+  txs: TypedTransaction[],
+  emptyTrie?: MerklePatriciaTrie,
+) {
+  const trie = emptyTrie ?? new MerklePatriciaTrie()
   for (const [i, tx] of txs.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }
@@ -151,7 +154,10 @@ export async function genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */
-export async function genRequestsTrieRoot(requests: CLRequest<CLRequestType>[], emptyTrie?: Trie) {
+export async function genRequestsTrieRoot(
+  requests: CLRequest<CLRequestType>[],
+  emptyTrie?: MerklePatriciaTrie,
+) {
   // Requests should be sorted in monotonically ascending order based on type
   // and whatever internal sorting logic is defined by each request type
   if (requests.length > 1) {
@@ -160,7 +166,7 @@ export async function genRequestsTrieRoot(requests: CLRequest<CLRequestType>[], 
         throw new Error('requests are not sorted in ascending order')
     }
   }
-  const trie = emptyTrie ?? new Trie()
+  const trie = emptyTrie ?? new MerklePatriciaTrie()
   for (const [i, req] of requests.entries()) {
     await trie.put(RLP.encode(i), req.serialize())
   }

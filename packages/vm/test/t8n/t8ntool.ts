@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
@@ -12,7 +12,7 @@ import { join } from 'path'
 import { buildBlock, createVM } from '../../src/index.js'
 import { rewardAccount } from '../../src/runBlock.js'
 import { getCommon } from '../tester/config.js'
-import { makeBlockFromEnv, setupPreConditions } from '../util.js'
+import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../util.js'
 
 import { normalizeNumbers } from './helpers.js'
 import { StateTracker } from './stateTracker.js'
@@ -21,6 +21,7 @@ import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { BlockBuilder, VM } from '../../src/index.js'
 import type { AfterTxEvent } from '../../src/types.js'
 import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
+import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
@@ -80,12 +81,14 @@ export class TransitionTool {
     await this.setup(args)
 
     const block = makeBlockFromEnv(this.inputEnv, { common: this.common })
+    const parentBlockHeader = makeParentBlockHeader(this.inputEnv, { common: this.common })
+    const parentBlock = createBlock({ header: parentBlockHeader }, { common: this.common })
 
     const headerData = block.header.toJSON()
     headerData.difficulty = <PrefixedHexString>this.inputEnv.parentDifficulty
 
     const builder = await buildBlock(this.vm, {
-      parentBlock: new Block(),
+      parentBlock,
       headerData,
       blockOpts: { putBlockIntoBlockchain: false },
     })
@@ -113,6 +116,7 @@ export class TransitionTool {
 
     if (args.state.reward !== BigInt(-1)) {
       await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+      await this.vm.evm.journal.cleanup()
     }
 
     const result = await builder.build()

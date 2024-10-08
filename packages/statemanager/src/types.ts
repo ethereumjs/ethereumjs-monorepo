@@ -2,7 +2,7 @@ import { type PrefixedHexString } from '@ethereumjs/util'
 
 import type { AccessWitness, Caches } from './index.js'
 import type { Common } from '@ethereumjs/common'
-import type { Trie } from '@ethereumjs/trie'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { VerkleCrypto } from '@ethereumjs/util'
 import type { VerkleTree } from '@ethereumjs/verkle'
 /**
@@ -32,9 +32,9 @@ export interface RPCStateManagerOpts extends BaseStateManagerOpts {
  */
 export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   /**
-   * A {@link Trie} instance
+   * A {@link MerklePatriciaTrie} instance
    */
-  trie?: Trie
+  trie?: MerklePatriciaTrie
   /**
    * Option to prefix codehashes in the database. This defaults to `true`.
    * If this is disabled, note that it is possible to corrupt the trie, by deploying code

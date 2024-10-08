@@ -3,7 +3,7 @@ import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
-import { LeafNode } from '../src/index.js'
+import { LeafVerkleNode } from '../src/index.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { ProverInput, VerifierInput } from 'verkle-cryptography-wasm'
@@ -43,7 +43,7 @@ describe('lets make proofs', () => {
 
     const path = await trie.findPath(keys[0].slice(0, 31))
 
-    const leafNode = path.node! as LeafNode
+    const leafNode = path.node as LeafVerkleNode
     const valuesArray = []
     for (let x = 0; x < 256; x++) {
       let value = leafNode.getValue(x)
@@ -95,7 +95,7 @@ describe('lets make proofs', () => {
     assert.ok(res)
   })
   it.skip('should verify proof for single leaf node', async () => {
-    const node = await LeafNode.create(randomBytes(31), verkleCrypto)
+    const node = await LeafVerkleNode.create(randomBytes(31), verkleCrypto)
     node.setValue(0, setLengthRight(bigIntToBytes(1n), 32))
     const valuesArray = new Array<Uint8Array>(256)
     for (let x = 0; x < 256; x++) {

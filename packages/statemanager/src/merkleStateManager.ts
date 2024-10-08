@@ -1,6 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bytesToUnprefixedHex,
@@ -52,7 +52,7 @@ export const CODEHASH_PREFIX = utf8ToBytes('c')
  * and storage slots.
  *
  * The default state manager implementation uses a
- * `@ethereumjs/trie` trie as a data backend.
+ * `@ethereumjs/mpt` trie as a data backend.
  *
  * Note that there is a `SimpleStateManager` dependency-free state
  * manager implementation available shipped with the `@ethereumjs/statemanager`
@@ -65,8 +65,8 @@ export class MerkleStateManager implements StateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
-  protected _trie: Trie
-  protected _storageTries: { [key: string]: Trie }
+  protected _trie: MerklePatriciaTrie
+  protected _storageTries: { [key: string]: MerklePatriciaTrie }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
@@ -102,7 +102,7 @@ export class MerkleStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
+    this._trie = opts.trie ?? new MerklePatriciaTrie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
@@ -263,14 +263,14 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param  rootAccount (Optional) Account object whose 'storageRoot' is to be used as
    *   the root of the new storageTrie returned when there is no pre-existing trie.
    *   If left undefined, the EMPTY_TRIE_ROOT will be used as the root instead.
-   * @returns storage Trie object
+   * @returns storage MerklePatriciaTrie object
    * @private
    */
   // TODO PR: have a better interface for hashed address pull?
   protected _getStorageTrie(
     addressOrHash: Address | { bytes: Uint8Array } | Uint8Array,
     rootAccount?: Account,
-  ): Trie {
+  ): MerklePatriciaTrie {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
       addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
@@ -295,7 +295,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected _getAccountTrie(): Trie {
+  protected _getAccountTrie(): MerklePatriciaTrie {
     return this._trie
   }
 
@@ -347,7 +347,7 @@ export class MerkleStateManager implements StateManagerInterface {
   protected async _modifyContractStorage(
     address: Address,
     account: Account,
-    modifyTrie: (storageTrie: Trie, done: Function) => void,
+    modifyTrie: (storageTrie: MerklePatriciaTrie, done: Function) => void,
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {

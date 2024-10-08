@@ -1,6 +1,6 @@
 import { ConsensusType } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -226,7 +226,10 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.common }),
+    )
   }
 
   /**
@@ -471,7 +474,7 @@ export class Block {
     if (this.cache.withdrawalsTrieRoot === undefined) {
       this.cache.withdrawalsTrieRoot = await genWithdrawalsTrieRoot(
         this.withdrawals!,
-        new Trie({ common: this.common }),
+        new MerklePatriciaTrie({ common: this.common }),
       )
     }
     result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)

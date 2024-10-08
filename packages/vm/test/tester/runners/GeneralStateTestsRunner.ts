@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import {
   Account,
   MapDB,
@@ -84,7 +84,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   let blockchain = await createBlockchain({ genesisBlock, common })
-  let stateTree: VerkleTree | Trie
+  let stateTree: VerkleTree | MerklePatriciaTrie
   let stateManager: StateManagerInterface
   if (options.stateManager === 'verkle') {
     const verkleCrypto = await loadVerkleCrypto()
@@ -94,7 +94,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       trie: stateTree,
     })
   } else {
-    stateTree = new Trie({ useKeyHashing: true, common })
+    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
     stateManager = new MerkleStateManager({
       caches: new Caches(),
       trie: stateTree,

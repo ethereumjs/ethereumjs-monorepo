@@ -4,7 +4,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -49,7 +49,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let common = options.common.copy() as Common
   common.setHardforkBy({ blockNumber: 0 })
 
-  let stateTree: Trie | VerkleTree
+  let stateTree: MerklePatriciaTrie | VerkleTree
   let stateManager: StateManagerInterface
 
   if (options.stateManager === 'verkle') {
@@ -60,7 +60,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       trie: stateTree,
     })
   } else {
-    stateTree = new Trie({ useKeyHashing: true, common })
+    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
     stateManager = new MerkleStateManager({
       caches: new Caches(),
       trie: stateTree,

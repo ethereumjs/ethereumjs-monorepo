@@ -1,8 +1,8 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -583,9 +583,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
-  let receiptTrie: Trie | undefined = undefined
+  let receiptTrie: MerklePatriciaTrie | undefined = undefined
   if (block.transactions.length !== 0) {
-    receiptTrie = new Trie({ common: vm.common })
+    receiptTrie = new MerklePatriciaTrie({ common: vm.common })
   }
 
   const receipts: TxReceipt[] = []
@@ -801,7 +801,7 @@ async function _genTxTrie(block: Block) {
   if (block.transactions.length === 0) {
     return KECCAK256_RLP
   }
-  const trie = new Trie({ common: block.common })
+  const trie = new MerklePatriciaTrie({ common: block.common })
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }
