@@ -2,11 +2,7 @@ import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
-  verifyVerkleStateProof,
-} from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -21,7 +17,6 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
-  decodeVerkleLeafBasicData,
   equalsBytes,
   getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
@@ -53,7 +48,6 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
-import type { LeafVerkleNode } from '@ethereumjs/verkle'
 
 const debug = debugDefault('vm:block')
 
