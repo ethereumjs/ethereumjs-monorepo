@@ -26,6 +26,18 @@ See PR [#3524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3524):
 - `Account.fromValuesArray()` --> `createAccountFromBytesArray()`
 - `Account.fromPartialAccountData()` --> `createPartialAccount()`
 
+##### `address`
+
+See PR [#3544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3544):
+
+- `Address.zero()` -> `createZeroAddress()`
+- `Address.fromString()` -> `createAddressFromString()`
+- `Address.fromPublicKey()` -> `createAddressFromPublicKey()`
+- `Address.fromPrivateKey()` -> `createAddressFromPrivateKey()`
+- `Address.generate()` -> `createContractAddress()`
+- `Address.generate2()` -> `createContractAddress2()`
+- New: `createAddressFromBigInt()`
+
 ### Other Breaking Changes
 
 - `bytes`: Restrict `hexToBytes()`, `unpadHex()` and `hexToBigInt()` to accept only hex-prefixed values, PR [#3510](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3510)

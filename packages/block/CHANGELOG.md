@@ -10,6 +10,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
 
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489) and [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549)).
+
+`Block` class:
+
+- `Block.fromBlockData()` -> `createBlock()`
+- `Block.fromRLPSerializedBlock()` -> `createBlockFromRLP()`
+- `Block.fromValuesArray()` -> `createBlockFromValuesArray()`
+- `Block.fromRPC()` -> `createBlockFromRPC()`
+- `Block.fromJSONRPCProvider()` -> `createBlockFromJSONRPCProvider()`
+- `Block.fromExecutionPayload()` -> `createBlockFromExecutionPayload()`
+- `Block.fromBeaconPayloadJSON()` -> `createBlockFromBeaconPayloadJSON()`
+
+`Header` class:
+
+- `Header.fromHeaderData()` -> `createBlockHeader()`
+- `Header.fromRLPSerializedHeader()` -> `createBlockHeaderFromRLP()`
+- `Header.fromValuesArray()` -> `createBlockHeaderFromValuesArray()`
+- `Header.fromRPC()` -> `createBlockHeaderFromRPC()`
+
+Also renamed in similar way: Block trie root methods (e.g. `Block.genWithdrawalsTrieRoot()` -> `genWithdrawalsTrieRoot()`)
+
 #### Own Block Parameter Set
 
 HF-sensitive parameters like `targetBlobGasPerBlock` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
