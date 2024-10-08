@@ -280,15 +280,18 @@ describe('getValueMap', async () => {
     [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
     [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
     [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
+    [bigIntToBytes(266n), '0x' + '0d'.repeat(32)],
   ]
   for (const entry of entries) {
     await trie.put(entry[0], hexToBytes(entry[1]))
   }
+  const dump = await trie.getValueMap()
+
+  it('should return a map with the correct number of entries', async () => {
+    assert.equal(Object.entries(dump.values).length, entries.length)
+  })
 
   it('should return a map of all hashed keys and values', async () => {
-    const dump = await trie.getValueMap()
-    assert.equal(Object.entries(dump.values).length, 3)
-
     // Check if the reported values are the expected values
     for (const entry of entries) {
       const key = bytesToHex(entry[0])
