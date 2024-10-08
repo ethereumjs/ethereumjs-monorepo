@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3515):
+
+- `Trie.create()` -> `createMPT()`
+
+#### Proof Functionality
+
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551):
+
+- `Trie.createFromProof()` -> `createMPTFromProof()`
+- `Trie.verifyProof()` -> `verifyMPTProof()`
+- `Trie.verifyRangeProof()` -> `verifyMerkleRangeProof()`
+- `Trie.createProof()` -> `createMerkleProof()`
+- `Trie.updateFromProof()` -> `updateMPTFromMerkleProof()`
+
+### Replaced Stream Functionality
+
+One of the largest burdens for the trie library - dependency wise - was the `readable-stream` dependency, used for implementing a read stream for full trie dumps in a platform independent way. This dependency has a lot of downstream dependencies and posed therefore an strong and unnecessary security risk for our upstream stack.
+
+We have now removed the stream functionality and the associated dependency and replaced with a simpler async value map retrieval by using `trie.getValueMap()`, see PR [#3519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3519). For an example see the MPT [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples) folder.
+
+### Other Breaking Changes
+
+- Refactor trie util helpers, PR [#3534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3534)
+
 ## 6.2.1 - 2024-08-15
 
 ### Other Features

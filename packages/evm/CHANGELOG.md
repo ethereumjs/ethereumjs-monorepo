@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#3516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3516)):
+
+- `EVM.create()` -> `createEVM`
+
+### Mega EOF Support
+
+TODO: Add changes from https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440
+
+#### Own EVM Parameter Set
+
+HF-sensitive parameters like `maxInitCodeSize` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) paramters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsEVM`) within the paramter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### TypeScript: Use generic StateManagerInterface
+
+The dedicated `EVMStateManagerInterface` has been removed and the EVM now uses the generic `StateManagerInterface` (located in the `@ethereumjs/util` package for re-usability reasons), see PR [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543). This comes along with some refactoring and adjustments on the interface itself (see `@ethereumjs/statemanager` release notes for more details).
+
+This simplifies the `StateManager` usage and allows for easier swapping between different state managers (statefull/stateless, Verkle/Merkle, RPC).
+
+### Other Breaking Changes
+
+- New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)
+
 ## 3.1.0 - 2024-08-15
 
 ### EIP-2537 BLS Precompiles (Prague)

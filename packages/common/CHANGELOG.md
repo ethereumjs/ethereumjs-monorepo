@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#3502](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3502)):
+
+- `Common.custom()` -> `createCustomCommon()`
+- `Common.fromGethGenesis()` -> `createCommonFromGethGenesis()`
+
+### Refactoring
+
+The inner workings and mechanisms of `Common` have been substantially refactored with the goal of simplifying both usage and underlying data structures as well as making Common more lightweight and performant to put less of a burden on other integrating libraries.
+
+#### No more Topics
+
+Parameter topics like `gasConfig` or `gasPrices` have been removed leading to non-sub-structured parameter files, see PR [#3532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3532). Parameter access changes as follows:
+
+```ts
+common.param('gasConfig', 'maxblobGasPerBlock') // old
+common.param('maxblobGasPerBlock') // new
+```
+
+#### No more default Parameter Sets
+
+Parameters have been removed from `Common` - see PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) - and moved over to `params.ts` files (exposed as e.g. `paramsBlock`) within the paramter-using libaries. The removes e.g. the tx library from the burden of carrying the somewhat large EVM parameter set around without the need for using it.
+
+The libraries internally call a new `Common` method `updateParams()` and parameter sets accumulate as needed for shared `Common` instances.
+
+### Other Breaking Changes
+
+- Move HF/EIP param description string from being an object field to a comment, same for `comment`, `url` and `status` from the EIP/hardfork configuration, PRs [#3500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3500) and [#3512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3512)
+- Remove HF names from Params dict, PR [#3517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3517)
+- Remove `networkId` property from chain files (use `chainId` instead), PR [#3513](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3513)
+
 ## 4.4.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

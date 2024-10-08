@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.2.0 - [ UNPUBLISHED ]
+
+We are getting there! 😁 While still in an experimental stage this release makes a big leap towards stateful Verkle-based EVM execution, by applying various updates and aligning with a new experimental `StatefulVerkleStateManager`.
+
+- Use node hash as db key, PR [#3472](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3472)
+- Apply leaf marker on all touched values, PR [#3520](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3520)
+
 ## 0.1.0 - 2024-08-15
 
 This is the first (still experimental) Verkle library release with some basic `put()` and `get()` functionality working! 🎉 Still highly moving and evolving parts, but early experiments and feedback welcome!
