@@ -5,6 +5,7 @@ import {
   KECCAK256_RLP,
   MapDB,
   bigIntToBytes,
+  bytesToBigInt,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -277,10 +278,10 @@ describe('keyHashingFunction', async () => {
 describe('getValueMap', async () => {
   const trie = await createMPT({})
   const entries: [Uint8Array, string][] = [
-    [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
-    [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
-    [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
-    [bigIntToBytes(266n), '0x' + '0d'.repeat(32)],
+    [bigIntToBytes(0x01n), '0x' + '0a'.repeat(32)],
+    [bigIntToBytes(0x02n), '0x' + '0b'.repeat(32)],
+    [bigIntToBytes(0x03n), '0x' + '0c'.repeat(32)],
+    [bigIntToBytes(0x010an), '0x' + '0d'.repeat(32)],
   ]
   for (const entry of entries) {
     await trie.put(entry[0], hexToBytes(entry[1]))
@@ -340,5 +341,39 @@ describe('getValueMap', async () => {
       assert.equal(Object.entries(result.values).length, test.reportedValues)
       assert.equal(result.nextKey, test.nextKey)
     }
+  })
+
+  it('random key/value test', async () => {
+    // This test dumps a fixed amount of random key/values in the trie
+    // and then verifies that the complete `getValueMap` yields the same key/value pairs
+    const KEYS = 1000
+    const KEY_LEN = 3 // Keys are of equal length
+    const gotKeys = new Set()
+    const entries: [Uint8Array, string][] = []
+    for (let i = 0; i < KEYS; i++) {
+      const key = randomBytes(KEY_LEN)
+      const keyBigInt = bytesToBigInt(key)
+      if (gotKeys.has(keyBigInt)) continue
+      gotKeys.add(keyBigInt)
+      entries.push([key, bytesToHex(randomBytes(32))])
+    }
+
+    const trie = await createMPT({})
+    for (const entry of entries) {
+      await trie.put(entry[0], hexToBytes(entry[1]))
+    }
+
+    const dump = await trie.getValueMap()
+
+    // Check if the reported values are the expected values
+    for (const entry of entries) {
+      const key = bytesToHex(entry[0])
+      const value = entry[1]
+      assert.equal(dump.values[key], value)
+    }
+
+    assert.equal(dump.nextKey, null)
+
+    assert.equal(Object.entries(dump.values).length, entries.length)
   })
 })
