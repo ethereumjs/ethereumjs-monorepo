@@ -28,6 +28,7 @@ import {
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
 import {
+  accumulateIVCLogs,
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
@@ -337,6 +338,13 @@ export class BlockBuilder {
    */
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
+
+    if (this.vm.common.isActivatedEIP(6493)) {
+      for (const txReceipt of this.transactionReceipts) {
+        await accumulateIVCLogs(this.vm, txReceipt.logs)
+      }
+    }
+
     const blockOpts = this.blockOpts
     const consensusType = this.vm.common.consensusType()
 

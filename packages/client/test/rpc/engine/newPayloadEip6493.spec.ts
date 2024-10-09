@@ -142,12 +142,12 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     res = await rpc.request('eth_getStorageAt', [
       ivcContractHex,
-      '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5',
+      '0x4026bcffe6920ff0e02a91018a719f2080a2463f25b23d34d6ed73aadae3264a',
       'latest',
     ])
     assert.equal(
       res.result,
-      '0x020c33960f53470c2e7f78f67cdadf28800eb3d6b1c4e434dc9be7681baba37a',
+      '0x88cce54f379f5607098522664e399bf4fee6f3e90127f8fc88f760fd4529211b',
       'ivc root at updated topic should match',
     )
   })

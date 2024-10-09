@@ -8,7 +8,6 @@ import {
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
-  bigIntToAddressBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -17,13 +16,10 @@ import {
   equalsBytes,
   hexToBytes,
   publicToAddress,
-  setLengthLeft,
   short,
-  ssz,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -41,7 +37,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { EVM, Log } from '@ethereumjs/evm'
+import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessList,
   AccessList2930Transaction,
@@ -745,10 +741,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     blobGasPrice,
   )
 
-  if (vm.common.isActivatedEIP(6493)) {
-    await accumulateIVCLogs(vm, block?.header.number ?? DEFAULT_HEADER.number, results.receipt.logs)
-  }
-
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(receiptsLabel)
@@ -772,61 +764,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   return results
-}
-
-async function accumulateIVCLogs(vm: VM, number: bigint, logs: Log[]) {
-  // keep all declarations here for ease of movement and diff
-  const LOG_ADDRESS_STORAGE_SLOT = setLengthLeft(new Uint8Array([0]), 32)
-  const LOG_TOPICS_STORAGE_SLOT = setLengthLeft(new Uint8Array([1]), 32)
-  const LOG_ADDRESS_TOPICS_STORAGE_SLOT = setLengthLeft(new Uint8Array([2]), 32)
-
-  const commonSHA256 = vm.common.customCrypto.sha256 ?? sha256
-  const ivcContractAddress = new Address(
-    bigIntToAddressBytes(vm.common.param('ivcPredeployAddress')),
-  )
-
-  async function accumulateLog(key: Uint8Array, logRoot: Uint8Array) {
-    const prevRoot = setLengthLeft(await vm.stateManager.getStorage(ivcContractAddress, key), 32)
-    const newRoot = commonSHA256(concatBytes(logRoot, prevRoot))
-    await vm.stateManager.putStorage(ivcContractAddress, key, newRoot)
-  }
-
-  if ((await vm.stateManager.getAccount(ivcContractAddress)) === undefined) {
-    // store with nonce of 1 to prevent 158 cleanup
-    const ivcContract = new Account()
-    ivcContract.nonce = BIGINT_1
-    await vm.stateManager.putAccount(ivcContractAddress, ivcContract)
-  }
-
-  for (const log of logs) {
-    const sszLog = {
-      address: log[0],
-      topics: log[1],
-      data: log[2],
-    }
-    const logRoot = ssz.Log.hashTreeRoot(sszLog)
-
-    // Allow eth_getLogs proof via `address` filter
-    // abi.encode(log.address, LOG_ADDRESS_STORAGE_SLOT)
-    const paddedAddress = setLengthLeft(sszLog.address, 32)
-    const addressKey = keccak256(concatBytes(paddedAddress, LOG_ADDRESS_STORAGE_SLOT))
-    await accumulateLog(addressKey, logRoot)
-
-    for (const topic of sszLog.topics) {
-      // Allow eth_getLogs proof via `topics` filter
-      // abi.encode(topic, LOG_TOPICS_STORAGE_SLOT)
-      const topicKey = keccak256(concatBytes(topic, LOG_TOPICS_STORAGE_SLOT))
-      await accumulateLog(topicKey, logRoot)
-
-      // Allow eth_getLogs proof via combined `address` + `topics` filter
-      // abi.encode(log.address, topic)
-      const addressAndTopic = keccak256(concatBytes(paddedAddress, topic))
-      const addressAndTopicKey = keccak256(
-        concatBytes(addressAndTopic, LOG_ADDRESS_TOPICS_STORAGE_SLOT),
-      )
-      await accumulateLog(addressAndTopicKey, logRoot)
-    }
-  }
 }
 
 /**
