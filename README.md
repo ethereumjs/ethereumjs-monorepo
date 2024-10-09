@@ -73,12 +73,12 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    block --> ethash
    block --> vm
    blockchain --> client
-   blockchain --> vm
    mpt --> client
    mpt --> vm
    mpt --> blockchain
    mpt --> block
    mpt --> statemanager
+   util --> common
    common --> block
    common --> statemanager
    common --> tx
@@ -95,9 +95,21 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    genesis --> mpt
    tx --> block
    tx --> vm
+   tx --> client
    vm --> client
+   rlp --> vm
+   rlp --> util
+   rlp --> tx
+   rlp --> statemanager
+   rlp --> mpt
+   rlp --> ethash
+   rlp --> devp2p
+   rlp --> client
+   rlp --> blockchain
+   rlp --> block
    statemanager --> evm
    statemanager --> vm
+   statemanager --> client
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
