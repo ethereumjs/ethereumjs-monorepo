@@ -97,6 +97,7 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    tx --> vm
    tx --> client
    vm --> client
+   rlp --> util
    statemanager --> evm
    statemanager --> vm
    statemanager --> client
