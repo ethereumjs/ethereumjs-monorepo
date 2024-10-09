@@ -338,13 +338,6 @@ export class BlockBuilder {
    */
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
-
-    if (this.vm.common.isActivatedEIP(6493)) {
-      for (const txReceipt of this.transactionReceipts) {
-        await accumulateIVCLogs(this.vm, txReceipt.logs)
-      }
-    }
-
     const blockOpts = this.blockOpts
     const consensusType = this.vm.common.consensusType()
 
@@ -364,6 +357,12 @@ export class BlockBuilder {
     let blobGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844)) {
       blobGasUsed = this.blobGasUsed
+    }
+
+    if (this.vm.common.isActivatedEIP(6493)) {
+      for (const txReceipt of this.transactionReceipts) {
+        await accumulateIVCLogs(this.vm, txReceipt.logs)
+      }
     }
 
     let requests

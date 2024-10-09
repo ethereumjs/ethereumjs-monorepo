@@ -218,6 +218,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     throw err
   }
 
+  if (vm.common.isActivatedEIP(6493)) {
+    for (const txReceipt of result.receipts) {
+      await accumulateIVCLogs(vm, txReceipt.logs)
+    }
+  }
+
   let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
@@ -474,6 +480,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     }
     await vm.evm.journal.cleanup()
   }
+
   // Pay ommers and miners
   if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards(vm, block)
@@ -638,12 +645,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
-  }
-
-  if (vm.common.isActivatedEIP(6493)) {
-    for (const txReceipt of receipts) {
-      await accumulateIVCLogs(vm, txReceipt.logs)
-    }
   }
 
   if (enableProfiler) {
