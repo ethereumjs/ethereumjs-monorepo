@@ -32,11 +32,23 @@ export class Units {
     }
   }
 
+  /**
+   * Convert a number or bigint input of ether to wei
+   *
+   * @param {number | bigint} amount amount of units of ether to convert to wei
+   * @returns {bigint} amount of units in wei
+   */
   static ether(amount: number | bigint): bigint {
     Units.validateInput(amount)
     return BigInt(amount) * WEI_TO_EITHER
   }
 
+  /**
+   * Convert a number or bigint input of gwei to wei
+   *
+   * @param amount amount of units of gwei to convert to wei
+   * @returns {bigint} amount of units in wei
+   */
   static gwei(amount: number | bigint): bigint {
     Units.validateInput(amount)
     return BigInt(amount) * WIE_TO_GWEI
