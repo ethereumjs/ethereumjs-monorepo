@@ -1,6 +1,9 @@
 import { BIGINT_0, BIGINT_1 } from './constants.js'
+
 /** Easy conversion from Gwei to wei */
 export const GWEI_TO_WEI = BigInt(1000000000)
+export const WEI_TO_EITHER = BigInt(10 ** 18)
+export const WIE_TO_GWEI = BigInt(10 ** 9)
 
 export function formatBigDecimal(
   numerator: bigint,
@@ -20,19 +23,22 @@ export function formatBigDecimal(
 }
 
 export class Units {
-  static ether(amount: number | bigint): bigint {
+  static validateInput(amount: number | bigint): void {
     if (typeof amount === 'number' && !Number.isInteger(amount)) {
       throw new Error('Input must be an integer number')
     }
-    const weiPerEther = BigInt(10 ** 18)
-    return BigInt(amount) * weiPerEther
+    if (BigInt(amount) < 0) {
+      throw new Error('Input must be a positive number')
+    }
+  }
+
+  static ether(amount: number | bigint): bigint {
+    Units.validateInput(amount)
+    return BigInt(amount) * WEI_TO_EITHER
   }
 
   static gwei(amount: number | bigint): bigint {
-    if (typeof amount === 'number' && !Number.isInteger(amount)) {
-      throw new Error('Input must be an integer number')
-    }
-    const weiPerGwei = BigInt(10 ** 9)
-    return BigInt(amount) * weiPerGwei
+    Units.validateInput(amount)
+    return BigInt(amount) * WIE_TO_GWEI
   }
 }
