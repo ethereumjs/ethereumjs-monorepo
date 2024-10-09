@@ -1,6 +1,11 @@
 import type { DPT } from './dpt/index.js'
+import type { ETH } from './protocol/eth.js'
+import type { LES } from './protocol/les.js'
 import type { Protocol } from './protocol/protocol.js'
+import type { SNAP } from './protocol/snap.js'
+import type { Peer } from './rlpx/peer.js'
 import type { Common } from '@ethereumjs/common'
+import type { NestedUint8Array } from '@ethereumjs/util'
 import type { Socket } from 'net'
 
 interface ProtocolConstructor {
@@ -237,3 +242,57 @@ export interface RLPxOptions {
 }
 
 export type SendMethod = (code: number, data: Uint8Array) => any
+
+export interface RLPXEvents {
+  'peer:added': Peer
+  'peer:error': { peer: Peer; error: any }
+  'peer:removed': { peer: Peer; reason: any; disconnectWe: any }
+  error: Error
+  close: undefined
+  listening: undefined
+}
+
+export interface PeerEvents {
+  error: Error
+  connect: undefined
+  close: { reason: any; disconnectWe: any }
+}
+
+export interface ProtocolEvents {
+  message: {
+    code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES | LES.MESSAGE_CODES
+    payload: Uint8Array | NestedUint8Array
+  }
+  status:
+    | LES.Status
+    | {
+        chainId: Uint8Array | Uint8Array[]
+        td: Uint8Array
+        bestHash: Uint8Array
+        genesisHash: Uint8Array
+        forkId?: Uint8Array | Uint8Array[]
+      }
+}
+
+export interface KBucketEvents {
+  ping: { contacts: Contact[]; contact: PeerInfo }
+  updated: { incumbent: Contact; selection: Contact }
+  added: PeerInfo
+  removed: PeerInfo
+}
+
+export interface DPTEvents {
+  listening: undefined
+  close: undefined
+  error: Error
+  'peer:added': PeerInfo
+  'peer:new': PeerInfo
+  'peer:removed': PeerInfo
+}
+
+export interface ServerEvents {
+  listening: undefined
+  close: undefined
+  error: Error
+  peers: PeerInfo[]
+}

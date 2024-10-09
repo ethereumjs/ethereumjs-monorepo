@@ -126,7 +126,7 @@ export class ETH extends Protocol {
         return
     }
 
-    this.events.emit('message', code, payload)
+    this.events.emit('message', { code, payload })
   }
 
   /**

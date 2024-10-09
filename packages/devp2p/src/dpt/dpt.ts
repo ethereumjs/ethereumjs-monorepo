@@ -1,7 +1,7 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import EventEmitter from 'emittery'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import EventEmitter from 'emittery'
 
 import { DNS } from '../dns/index.js'
 import { devp2pDebug, pk2id } from '../util.js'
@@ -10,13 +10,13 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
-import type { DPTOptions, PeerInfo } from '../types.js'
+import type { DPTEvents, DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
 export class DPT {
-  public events: EventEmitter
+  public events: EventEmitter<DPTEvents>
   protected _privateKey: Uint8Array
   protected _banlist: BanList
   protected _dns: DNS
@@ -41,7 +41,7 @@ export class DPT {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<DPTEvents>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
@@ -62,7 +62,9 @@ export class DPT {
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
     this._kbucket.events.on('removed', (peer: PeerInfo) => this.events.emit('peer:removed', peer))
-    this._kbucket.events.on('ping', this._onKBucketPing.bind(this))
+    this._kbucket.events.on('ping', ({ contacts, contact }) =>
+      this._onKBucketPing(contacts, contact),
+    )
 
     this._server = new DPTServer(this, this._privateKey, {
       timeout: options.timeout,
@@ -70,8 +72,8 @@ export class DPT {
       createSocket: options.createSocket,
       common: options.common,
     })
-    this._server.events.once('listening', () => this.events.emit('listening'))
-    this._server.events.once('close', () => this.events.emit('close'))
+    void this._server.events.once('listening').then(() => this.events.emit('listening'))
+    void this._server.events.once('close').then(() => this.events.emit('close'))
     this._server.events.on('error', (err) => this.events.emit('error', err))
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     // When not using peer neighbour discovery we don't add peers here

@@ -19,7 +19,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 import { Peer } from './peer.js'
 
 import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
+import type { Capabilities, PeerInfo, RLPXEvents, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 
@@ -29,7 +29,7 @@ const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
-  public events: EventEmitter
+  public events: EventEmitter<RLPXEvents>
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger
@@ -230,16 +230,16 @@ export class RLPx {
       common: this._common,
       port: this._listenPort!,
     })
-    peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
+    peer.events.on('error', (error) => this.events.emit('peer:error', { peer, error }))
 
     // handle incoming connection
     if (peerId === null && this._getOpenSlots() === 0) {
-      peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
+      void peer.events.once('connect').then(() => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return
     }
 
-    peer.events.once('connect', () => {
+    void peer.events.once('connect').then(() => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
 
       if (peer['_eciesSession']['_gotEIP8Auth'] === true) {
@@ -267,17 +267,17 @@ export class RLPx {
       this.events.emit('peer:added', peer)
     })
 
-    peer.events.once('close', (reason, disconnectWe) => {
-      if (disconnectWe === true) {
+    void peer.events.once('close').then((event) => {
+      if (event.disconnectWe === true) {
         if (this.DEBUG) {
           this._debug(
-            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[event.reason]}`,
             `disconnect`,
           )
         }
       }
 
-      if (disconnectWe !== true && reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
+      if (event.disconnectWe !== true && event.reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
         // hack
         if (this._getOpenQueueSlots() > 0) {
           this._peersQueue.push({
@@ -295,7 +295,11 @@ export class RLPx {
       if (id) {
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
-        this.events.emit('peer:removed', peer, reason, disconnectWe)
+        this.events.emit('peer:removed', {
+          peer,
+          reason: event.reason,
+          disconnectWe: event.disconnectWe,
+        })
       }
     })
   }

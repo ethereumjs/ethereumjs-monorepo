@@ -34,8 +34,8 @@ export class KBucket {
       this.events.emit('removed', peer)
     })
 
-    this._kbucket.events.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
-      this.events.emit('ping', oldPeers, newPeer)
+    this._kbucket.events.on('ping', ({ contacts: oldPeers, contact: newPeer }) => {
+      this.events.emit('ping', { oldPeers, newPeer })
     })
   }
 

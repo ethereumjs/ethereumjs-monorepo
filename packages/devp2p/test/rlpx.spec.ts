@@ -3,8 +3,8 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import assert from 'assert'
+import EventEmitter from 'emittery'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import EventEmitter from 'events'
 import { describe, expect, it, vi } from 'vitest'
 
 import { RLPx, pk2id } from '../src/index.js'

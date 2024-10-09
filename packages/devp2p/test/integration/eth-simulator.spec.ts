@@ -23,7 +23,7 @@ const status = {
 }
 
 describe('ETH simulator tests', () => {
-  it('ETH: send status message (successful)', async () => {
+  it.only('ETH: send status message (successful)', async () => {
     await new Promise((resolve) => {
       const opts: any = {}
       opts.status0 = Object.assign({}, status)
@@ -225,6 +225,7 @@ describe('ETH simulator tests', () => {
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
+        console.log('we statused==========================')
         try {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
         } catch (err: any) {

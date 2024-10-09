@@ -113,7 +113,7 @@ export class LES extends Protocol {
         return
     }
 
-    this.events.emit('message', code, payload)
+    this.events.emit('message', { code, payload })
   }
 
   _handleStatus() {

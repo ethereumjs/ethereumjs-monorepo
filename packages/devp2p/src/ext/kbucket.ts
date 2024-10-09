@@ -35,7 +35,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import EventEmitter from 'emittery'
 
-import type { Contact, KBucketOptions, PeerInfo } from '../types.js'
+import type { Contact, KBucketEvents, KBucketOptions, PeerInfo } from '../types.js'
 
 function createNode() {
   return { contacts: [], noSplit: false, left: null, right: null }
@@ -55,7 +55,7 @@ type KBucketNode = {
  * @extends EventEmitter
  */
 export class KBucket {
-  public events: EventEmitter
+  public events: EventEmitter<KBucketEvents>
   protected _localNodeId: Uint8Array
   protected _numberOfNodesPerKBucket: number
   protected _numberOfNodesToPing: number
@@ -68,7 +68,7 @@ export class KBucket {
    * @param {KBucketOptions} options
    */
   constructor(options: KBucketOptions = {}) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<KBucketEvents>()
     this._localNodeId = options.localNodeId ?? randomBytes(20)
     this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
     this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
@@ -155,7 +155,10 @@ export class KBucket {
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
       // be added (this prevents DoS flooding with new invalid contacts)
-      this.events.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
+      this.events.emit('ping', {
+        contacts: node.contacts.slice(0, this._numberOfNodesToPing),
+        contact,
+      })
       return this
     }
 
@@ -412,6 +415,6 @@ export class KBucket {
 
     node.contacts.splice(index, 1) // remove old contact
     node.contacts.push(selection) // add more recent contact version
-    this.events.emit('updated', incumbent, selection)
+    this.events.emit('updated', { incumbent, selection })
   }
 }
