@@ -94,7 +94,6 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    genesis --> statemanager
    genesis --> mpt
    tx --> block
-   tx --> evm
    tx --> vm
    vm --> client
    statemanager --> evm
