@@ -18,3 +18,21 @@ export function formatBigDecimal(
   const zerosPostDecimal = String(maxDecimalFactor).length - 1 - String(fraction).length
   return `${full}.${'0'.repeat(zerosPostDecimal)}${fraction}`
 }
+
+export class Units {
+  static ether(amount: number | bigint): bigint {
+    if (typeof amount === 'number' && !Number.isInteger(amount)) {
+      throw new Error('Input must be an integer number')
+    }
+    const weiPerEther = BigInt(10 ** 18)
+    return BigInt(amount) * weiPerEther
+  }
+
+  static gwei(amount: number | bigint): bigint {
+    if (typeof amount === 'number' && !Number.isInteger(amount)) {
+      throw new Error('Input must be an integer number')
+    }
+    const weiPerGwei = BigInt(10 ** 9)
+    return BigInt(amount) * weiPerGwei
+  }
+}
