@@ -97,16 +97,6 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    tx --> vm
    tx --> client
    vm --> client
-   rlp --> vm
-   rlp --> util
-   rlp --> tx
-   rlp --> statemanager
-   rlp --> mpt
-   rlp --> ethash
-   rlp --> devp2p
-   rlp --> client
-   rlp --> blockchain
-   rlp --> block
    statemanager --> evm
    statemanager --> vm
    statemanager --> client
