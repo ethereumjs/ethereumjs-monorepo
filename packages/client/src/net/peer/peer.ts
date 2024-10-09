@@ -1,5 +1,5 @@
 import { BIGINT_0, short } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 
 import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
 

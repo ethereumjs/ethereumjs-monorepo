@@ -7,7 +7,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 
 import { crc32 } from './crc.js'
 import { eipsDict } from './eips.js'
@@ -146,7 +146,7 @@ export class Common {
           this._hardfork = hardfork
           this._buildParamsCache()
           this._buildActivatedEIPsCache()
-          this.events.emit('hardforkChanged', hardfork)
+          void this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
       }

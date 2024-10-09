@@ -1,7 +1,6 @@
 import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
@@ -15,6 +14,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import EventEmitter from 'emittery'
 
 import { CasperConsensus } from './consensus/casper.js'
 import {
@@ -53,7 +53,7 @@ import type { Debugger } from 'debug'
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
-  events: AsyncEventEmitter<BlockchainEvents>
+  events: EventEmitter<BlockchainEvents>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -129,7 +129,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter()
 
     this._consensusDict = {}
     this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
@@ -346,7 +346,7 @@ export class Blockchain implements BlockchainInterface {
       await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
-      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -493,7 +493,7 @@ export class Blockchain implements BlockchainInterface {
       }
     })
     if (this._deletedBlocks.length > 0) {
-      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -865,7 +865,7 @@ export class Blockchain implements BlockchainInterface {
     await this.dbManager.batch(dbOps)
 
     if (this._deletedBlocks.length > 0) {
-      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(

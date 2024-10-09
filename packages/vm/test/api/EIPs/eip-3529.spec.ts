@@ -5,7 +5,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
@@ -118,7 +117,8 @@ describe('EIP-3529 tests', () => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (event) => {
+      const step = event.data
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -184,7 +184,8 @@ describe('EIP-3529 tests', () => {
 
     let startGas: bigint
     let finalGas: bigint
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (event) => {
+      const step = event.data
       if (startGas === undefined) {
         startGas = step.gasLeft
       }

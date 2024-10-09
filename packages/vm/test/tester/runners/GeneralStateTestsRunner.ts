@@ -147,7 +147,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
-        vm.evm.events!.on('step', stepHandler)
+        vm.evm.events!.on('step', (event) => stepHandler(event.data))
         vm.events.on('afterTx', afterTxHandler)
       }
       try {
@@ -174,8 +174,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
 
-  vm.evm.events!.removeListener('step', stepHandler)
-  vm.events.removeListener('afterTx', afterTxHandler)
+  vm.evm.events!.clearListeners('step')
+  vm.events.clearListeners('afterTx')
 
   // @ts-ignore Explicitly delete objects for memory optimization (early GC)
   // TODO FIXME

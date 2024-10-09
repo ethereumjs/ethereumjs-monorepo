@@ -6,8 +6,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM } from '../../../src/index.js'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
-
 describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
   it('should return the right values', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
@@ -25,9 +23,9 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
 
     // Track stack
     let stack: any = []
-    vm.evm.events!.on('step', (iStep: InterpreterStep) => {
-      if (iStep.opcode.name === 'STOP') {
-        stack = iStep.stack
+    vm.evm.events!.on('step', (e) => {
+      if (e.data.opcode.name === 'STOP') {
+        stack = e.data.stack
       }
     })
 

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 import { pipe } from 'it-pipe'
 import pushable from 'it-pushable'
 

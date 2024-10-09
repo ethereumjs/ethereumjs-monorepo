@@ -12,8 +12,8 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeBlock', (val: any) => {
-      emitted = val
+    vm.events.on('beforeBlock', (event) => {
+      emitted = event.data
     })
 
     const block = new Block()
@@ -31,8 +31,8 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('afterBlock', (val: any) => {
-      emitted = val
+    vm.events.on('afterBlock', (event) => {
+      emitted = event.data
     })
 
     const block = new Block()
@@ -51,8 +51,8 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeTx', (val: any) => {
-      emitted = val
+    vm.events.on('beforeTx', (event) => {
+      emitted = event.data
     })
 
     const tx = createFeeMarket1559Tx({
@@ -71,8 +71,8 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.events.on('afterTx', (val: any) => {
-      emitted = val
+    vm.events.on('afterTx', (event) => {
+      emitted = event.data
     })
 
     const tx = createFeeMarket1559Tx({
@@ -92,8 +92,8 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('beforeMessage', (val: any) => {
-      emitted = val
+    vm.evm.events!.on('beforeMessage', (event) => {
+      emitted = event.data
     })
 
     const tx = createFeeMarket1559Tx({
@@ -114,8 +114,8 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('afterMessage', (val: any) => {
-      emitted = val
+    vm.evm.events!.on('afterMessage', (event) => {
+      emitted = event.data
     })
 
     const tx = createFeeMarket1559Tx({
@@ -134,8 +134,8 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let lastEmitted: any
-    vm.evm.events!.on('step', (val: any) => {
-      lastEmitted = val
+    vm.evm.events!.on('step', (event) => {
+      lastEmitted = event.data
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
@@ -156,8 +156,8 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted: any
-    vm.evm.events!.on('newContract', (val: any) => {
-      emitted = val
+    vm.evm.events!.on('newContract', (event) => {
+      emitted = event.data
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to

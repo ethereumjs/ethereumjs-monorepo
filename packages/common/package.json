@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^9.1.0",
+    "emittery": "^1.0.3",
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {

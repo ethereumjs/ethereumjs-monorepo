@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 
 import type { SyncMode } from './index.js'
 import type { Peer } from './net/peer/index.js'

@@ -98,9 +98,10 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.setHardforkBy({ blockNumber: 3n }), Hardfork.SpuriousDragon, msg)
   })
 
-  it('setHardfork(): hardforkChanged event', () => {
+  it('setHardfork(): hardforkChanged event', async () => {
     const c = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     c.events.on('hardforkChanged', (hardfork: string) => {
+      console.log(hardfork)
       assert.equal(hardfork, Hardfork.Byzantium, 'should send correct hardforkChanged event')
     })
     c.setHardfork(Hardfork.Byzantium)

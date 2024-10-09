@@ -628,8 +628,8 @@ describe('RunCall tests', () => {
     let verifyMemoryExpanded = false
 
     evm.events.on('step', (e) => {
-      assert.ok(e.memory.length <= 96)
-      if (e.memory.length > 0) {
+      assert.ok(e.data.memory.length <= 96)
+      if (e.data.memory.length > 0) {
         verifyMemoryExpanded = true
       }
     })

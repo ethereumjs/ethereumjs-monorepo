@@ -18,7 +18,8 @@ describe('EIP 2929: gas cost tests', () => {
     let i = 0
     let currentGas = initialGas
     const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step: any) {
+    vm.evm.events!.on('step', (event) => {
+      const step = event.data
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 

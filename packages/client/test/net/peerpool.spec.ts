@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.js'

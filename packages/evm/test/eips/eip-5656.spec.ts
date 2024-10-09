@@ -92,8 +92,8 @@ describe('should test mcopy', () => {
       let currentMem = ''
 
       evm.events.on('step', (e) => {
-        if (e.opcode.name === 'STOP') {
-          currentMem = bytesToHex(e.memory)
+        if (e.data.opcode.name === 'STOP') {
+          currentMem = bytesToHex(e.data.memory)
           assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
         }
       })

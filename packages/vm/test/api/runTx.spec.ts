@@ -50,7 +50,7 @@ const TRANSACTION_TYPES = [
 ]
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-common.events.setMaxListeners(100)
+
 describe('runTx() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM, msg: string) {
     for (const txType of TRANSACTION_TYPES) {

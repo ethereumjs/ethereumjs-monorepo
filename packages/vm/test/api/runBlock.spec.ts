@@ -409,12 +409,12 @@ async function runBlockAndGetAfterBlockEvent(
   }
 
   try {
-    vm.events.once('afterBlock', handler)
+    void vm.events.once('afterBlock').then((event) => handler(event.data))
     await runBlock(vm, runBlockOpts)
   } finally {
     // We need this in case `runBlock` throws before emitting the event.
     // Otherwise we'd be leaking the listener until the next call to runBlock.
-    vm.events.removeListener('afterBlock', handler)
+    vm.events.clearListeners('afterBlock')
   }
 
   return results!

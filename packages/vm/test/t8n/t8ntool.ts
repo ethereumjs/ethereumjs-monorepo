@@ -95,7 +95,7 @@ export class TransitionTool {
 
     let index = 0
 
-    this.vm.events.on('afterTx', (event) => this.afterTx(event, index, builder))
+    this.vm.events.on('afterTx', (event) => this.afterTx(event.data, index, builder))
 
     for (const txData of this.txsData) {
       try {
@@ -153,11 +153,11 @@ export class TransitionTool {
       this.vm.evm.events?.on('step', (e) => {
         // eslint-disable-next-line no-console
         console.log({
-          gasLeft: e.gasLeft.toString(),
-          stack: e.stack.map((a) => bigIntToHex(a)),
-          opName: e.opcode.name,
-          depth: e.depth,
-          address: e.address.toString(),
+          gasLeft: e.data.gasLeft.toString(),
+          stack: e.data.stack.map((a) => bigIntToHex(a)),
+          opName: e.data.opcode.name,
+          depth: e.data.depth,
+          address: e.data.address.toString(),
         })
       })
     }

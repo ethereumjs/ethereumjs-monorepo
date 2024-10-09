@@ -6,7 +6,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const GWEI = BigInt('1000000000')
@@ -81,9 +80,9 @@ describe('EIP3198 tests', () => {
     // Track stack
 
     let stack: any = []
-    vm.evm.events!.on('step', (iStep: InterpreterStep) => {
-      if (iStep.opcode.name === 'STOP') {
-        stack = iStep.stack
+    vm.evm.events!.on('step', (event) => {
+      if (event.data.opcode.name === 'STOP') {
+        stack = event.data.stack
       }
     })
 

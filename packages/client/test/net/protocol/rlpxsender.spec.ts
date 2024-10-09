@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 

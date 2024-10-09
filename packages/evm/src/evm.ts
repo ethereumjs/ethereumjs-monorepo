@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
@@ -17,6 +16,7 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import EventEmitter from 'emittery'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
@@ -93,7 +93,7 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  public readonly events: EventEmitter<EVMEvents>
 
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
@@ -141,8 +141,6 @@ export class EVM implements EVMInterface {
    */
   readonly DEBUG: boolean = false
 
-  protected readonly _emit: (topic: string, data: any) => Promise<void>
-
   private _bn254: EVMBN254Interface
 
   /**
@@ -172,7 +170,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter()
     this._optsCached = opts
 
     // Supported EIPs
@@ -219,10 +217,6 @@ export class EVM implements EVMInterface {
       this._bls.init?.()
     }
     this._bn254 = opts.bn254!
-
-    this._emit = async (topic: string, data: any): Promise<void> => {
-      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
-    }
 
     this.performanceLogger = new EVMPerformanceLogger()
 
@@ -489,7 +483,7 @@ export class EVM implements EVMInterface {
       code: message.code,
     }
 
-    await this._emit('newContract', newContractEvent)
+    await this.events.emit('newContract', { data: newContractEvent })
 
     toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
@@ -869,7 +863,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this._emit('beforeMessage', message)
+    await this.events.emit('beforeMessage', { data: message })
 
     if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
@@ -939,7 +933,7 @@ export class EVM implements EVMInterface {
         debug(`message checkpoint committed`)
       }
     }
-    await this._emit('afterMessage', result)
+    await this.events.emit('afterMessage', { data: result })
 
     if (message.depth === 0 && this._optsCached.profiler?.enabled === true) {
       this.performanceLogger.stopTimer(timer!, 0)

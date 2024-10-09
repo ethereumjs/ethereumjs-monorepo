@@ -11,11 +11,11 @@ describe('async events', () => {
     const evm = await createEVM({
       common,
     })
-    evm.events.on('step', async (event, next) => {
+    evm.events.on('step', (event) => {
       const startTime = Date.now()
       setTimeout(() => {
         assert.ok(Date.now() > startTime + 999, 'evm paused on step function for one second')
-        next?.()
+        event.resolve?.()
       }, 1000)
     })
     const runCallArgs = {

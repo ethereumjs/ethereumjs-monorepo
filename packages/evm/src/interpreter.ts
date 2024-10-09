@@ -498,7 +498,7 @@ export class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    await (this._evm as any)._emit('step', eventObj)
+    await this._evm.events.emit('step', { data: eventObj })
   }
 
   // Returns all valid jump and jumpsub destinations.

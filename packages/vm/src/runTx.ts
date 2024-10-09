@@ -208,7 +208,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * @type {Object}
    * @property {Transaction} tx emits the Transaction that is about to be processed
    */
-  await vm._emit('beforeTx', tx)
+  await vm.events.emit('beforeTx', { data: tx })
 
   const caller = tx.getSenderAddress()
   if (vm.DEBUG) {
@@ -754,7 +754,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * @property {Object} result result of the transaction
    */
   const event: AfterTxEvent = { transaction: tx, ...results }
-  await vm._emit('afterTx', event)
+  await vm.events.emit('afterTx', { data: event })
   if (vm.DEBUG) {
     debug(
       `tx run finished hash=${
