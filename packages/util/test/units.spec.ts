@@ -39,9 +39,15 @@ describe('Units', () => {
     })
 
     it('should throw error when a non-integer number is used', () => {
-      assert.throw(function () {
+      assert.throws(() => {
         Units.ether(0.5)
-      })
+      }, 'Input must be an integer number')
+    })
+
+    it('should throw error when a negative number is used', () => {
+      assert.throws(() => {
+        Units.ether(-1)
+      }, 'Input must be a positive number')
     })
 
     it('should convert a bigint amount of ether to wei', () => {
@@ -69,7 +75,13 @@ describe('Units', () => {
     it('should throw error when a non-integer number is used', () => {
       assert.throws(function () {
         Units.gwei(0.5)
-      })
+      }, 'Input must be an integer number')
+    })
+
+    it('should throw error when a negative number is used', () => {
+      assert.throws(() => {
+        Units.ether(-1)
+      }, 'Input must be a positive number')
     })
 
     it('should convert a bigint amount of gwei to wei', () => {
