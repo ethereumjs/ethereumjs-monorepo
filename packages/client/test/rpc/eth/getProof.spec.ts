@@ -6,7 +6,7 @@ import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
@@ -99,7 +99,7 @@ describe(method, async () => {
 
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')

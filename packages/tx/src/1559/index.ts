@@ -1,2 +1,2 @@
 export * from './constructors.js'
-export { FeeMarketEIP1559Transaction } from './tx.js'
+export { FeeMarket1559Tx } from './tx.js'

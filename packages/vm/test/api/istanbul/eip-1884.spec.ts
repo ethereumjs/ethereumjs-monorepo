@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 import { createAccountWithDefaults } from '../utils.js'
 
 const testCases = [
@@ -25,7 +25,7 @@ describe('Istanbul: EIP-1884', () => {
     for (const testCase of testCases) {
       const { chain, hardfork } = testCase
       const common = new Common({ chain, hardfork })
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
 
       const balance = testCase.selfbalance !== undefined ? BigInt(testCase.selfbalance) : undefined
       const account = createAccountWithDefaults(BigInt(0), balance)

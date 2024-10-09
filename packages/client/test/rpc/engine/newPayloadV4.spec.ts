@@ -1,14 +1,14 @@
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import blocks from '../../testdata/blocks/beacon.json'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { beaconData } from '../../testdata/blocks/beacon.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV4'
-const [blockData] = blocks
+const [blockData] = beaconData
 
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 const validForkChoiceState = {
@@ -30,110 +30,6 @@ const validPayload = [
     parentBeaconBlockRoot,
   },
 ]
-
-function readyPragueGenesis(genesisJSON: any) {
-  const pragueTime = 1689945325
-  // deep copy json and add shanghai and cancun to genesis to avoid contamination
-  const pragueJson = JSON.parse(JSON.stringify(genesisJSON))
-  pragueJson.config.shanghaiTime = pragueTime
-  pragueJson.config.cancunTime = pragueTime
-  pragueJson.config.pragueTime = pragueTime
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  Object.assign(pragueJson.alloc, electraGenesisContracts)
-  return { pragueJson, pragueTime }
-}
-
-describe(`${method}: call with executionPayloadV4`, () => {
-  it('valid data', async () => {
-    // get the genesis json with late enough date with respect to block data in batchBlocks
-
-    const { pragueJson, pragueTime } = readyPragueGenesis(genesisJSON)
-    const { service, server } = await setupChain(pragueJson, 'post-merge', { engine: true })
-    const rpc = getRpcClient(server)
-    let res
-
-    res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
-    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
-
-    const validBlock = {
-      ...blockData,
-      timestamp: bigIntToHex(BigInt(pragueTime)),
-      withdrawals: [],
-      blobGasUsed: '0x0',
-      excessBlobGas: '0x0',
-      depositRequests: [],
-      withdrawalRequests: [],
-      consolidationRequests: [],
-      parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-      stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
-      blockHash: '0x6b3ee4bb75e316427142bb9b48629e3e87ed8eea9f6d42b6aae296a11ec920b3',
-    }
-
-    const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
-    const expectedErrors = [
-      'NewPayloadV2 MUST be used after Shanghai is activated',
-      'NewPayloadV3 MUST be used after Cancun is activated',
-      'NewPayloadV4 MUST be used after Prague is activated',
-    ]
-    for (let index = 0; index < oldMethods.length; index++) {
-      const oldMethod = oldMethods[index]
-      const expectedError = expectedErrors[index]
-      // extra params for old methods should be auto ignored
-      res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes(expectedError))
-    }
-
-    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    assert.equal(res.result.status, 'VALID')
-
-    res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
-    const payloadId = res.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-
-    // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
-    const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const depositTx = createTxFromTxData({
-      data: '0x22895118000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001208cd4e5a69709cf8ee5b1b73d6efbf3f33bcac92fb7e4ce62b2467542fb50a72d0000000000000000000000000000000000000000000000000000000000000030ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030000000000000000000000000000000000000000000000000000000000000060a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d769',
-      value: 32000000000000000000n,
-      gasLimit: 30000000n,
-      maxFeePerGas: 100n,
-      type: 2,
-      to: '0x00000000219ab540356cBB839Cbe05303d7705Fa',
-    }).sign(pk)
-    await service.txPool.add(depositTx, true)
-
-    res = await rpc.request('engine_getPayloadV4', [payloadId])
-    const { executionPayload } = res.result
-    assert.ok(
-      executionPayload.depositRequests?.length === 1,
-      'depositRequests should have 1 deposit request',
-    )
-    assert.ok(
-      executionPayload.withdrawalRequests !== undefined,
-      'depositRequests field should be received',
-    )
-    assert.ok(
-      executionPayload.consolidationRequests !== undefined,
-      'consolidationRequests field should be received',
-    )
-
-    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])
-    assert.equal(res.result.status, 'VALID')
-
-    const newBlockHashHex = executionPayload.blockHash
-    // add this block to the blockchain
-    res = await rpc.request('engine_forkchoiceUpdatedV3', [
-      {
-        safeBlockHash: newBlockHashHex,
-        finalizedBlockHash: newBlockHashHex,
-        headBlockHash: newBlockHashHex,
-      },
-      null,
-    ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
-  })
-})
 
 const electraGenesisContracts = {
   // sender corresponding to the priv key 0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355
@@ -230,3 +126,110 @@ const electraGenesisContracts = {
     },
   },
 }
+
+function readyPragueGenesis() {
+  const pragueTime = 1689945325
+  // add shanghai and cancun to genesis
+  const pragueGenesis = {
+    ...postMergeData,
+    config: {
+      ...postMergeData.config,
+      shanghaiTime: pragueTime,
+      cancunTime: pragueTime,
+      pragueTime,
+    },
+  }
+  Object.assign(pragueGenesis.alloc, electraGenesisContracts)
+  return { pragueGenesis, pragueTime }
+}
+
+describe(`${method}: call with executionPayloadV4`, () => {
+  it('valid data', async () => {
+    // get the genesis with late enough date with respect to block data in batchBlocks
+    const { pragueGenesis, pragueTime } = readyPragueGenesis()
+    const { service, server } = await setupChain(pragueGenesis, 'post-merge', { engine: true })
+    const rpc = getRPCClient(server)
+    let res
+
+    res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
+    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
+
+    const validBlock = {
+      ...blockData,
+      timestamp: bigIntToHex(BigInt(pragueTime)),
+      withdrawals: [],
+      blobGasUsed: '0x0',
+      excessBlobGas: '0x0',
+      depositRequests: [],
+      withdrawalRequests: [],
+      consolidationRequests: [],
+      parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
+      stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
+      blockHash: '0x6b3ee4bb75e316427142bb9b48629e3e87ed8eea9f6d42b6aae296a11ec920b3',
+    }
+
+    const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
+    const expectedErrors = [
+      'NewPayloadV2 MUST be used after Shanghai is activated',
+      'NewPayloadV3 MUST be used after Cancun is activated',
+      'NewPayloadV4 MUST be used after Prague is activated',
+    ]
+    for (let index = 0; index < oldMethods.length; index++) {
+      const oldMethod = oldMethods[index]
+      const expectedError = expectedErrors[index]
+      // extra params for old methods should be auto ignored
+      res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
+      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.ok(res.error.message.includes(expectedError))
+    }
+
+    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    assert.equal(res.result.status, 'VALID')
+
+    res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
+    const payloadId = res.result.payloadId
+    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+
+    // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
+    const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+    const depositTx = createTx({
+      data: '0x22895118000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001208cd4e5a69709cf8ee5b1b73d6efbf3f33bcac92fb7e4ce62b2467542fb50a72d0000000000000000000000000000000000000000000000000000000000000030ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030000000000000000000000000000000000000000000000000000000000000060a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d769',
+      value: 32000000000000000000n,
+      gasLimit: 30000000n,
+      maxFeePerGas: 100n,
+      type: 2,
+      to: '0x00000000219ab540356cBB839Cbe05303d7705Fa',
+    }).sign(pk)
+    await service.txPool.add(depositTx, true)
+
+    res = await rpc.request('engine_getPayloadV4', [payloadId])
+    const { executionPayload } = res.result
+    assert.ok(
+      executionPayload.depositRequests?.length === 1,
+      'depositRequests should have 1 deposit request',
+    )
+    assert.ok(
+      executionPayload.withdrawalRequests !== undefined,
+      'depositRequests field should be received',
+    )
+    assert.ok(
+      executionPayload.consolidationRequests !== undefined,
+      'consolidationRequests field should be received',
+    )
+
+    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])
+    assert.equal(res.result.status, 'VALID')
+
+    const newBlockHashHex = executionPayload.blockHash
+    // add this block to the blockchain
+    res = await rpc.request('engine_forkchoiceUpdatedV3', [
+      {
+        safeBlockHash: newBlockHashHex,
+        finalizedBlockHash: newBlockHashHex,
+        headBlockHash: newBlockHashHex,
+      },
+      null,
+    ])
+    assert.equal(res.result.payloadStatus.status, 'VALID')
+  })
+})

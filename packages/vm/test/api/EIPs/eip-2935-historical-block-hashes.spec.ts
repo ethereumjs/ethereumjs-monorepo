@@ -15,15 +15,15 @@ import {
   generateAddress,
   privateToAddress,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'
 import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { VM, buildBlock, paramsVM, runBlock, runTx } from '../../../src/index.js'
+import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -137,8 +137,8 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.stateManager.putCode(historyAddress, contract2935Code)
 
       const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
-      const blockHashi = result.execResult.returnValue
-      return blockHashi
+      const blockHash = result.execResult.returnValue
+      return blockHash
     }
 
     it(`should validate the deployment tx`, async () => {
@@ -176,11 +176,13 @@ describe('EIP 2935: historical block hashes', () => {
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common: commonGenesis, blockchain })
+      const vm = await createVM({ common: commonGenesis, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
-      const genesis = await vm.blockchain.getBlock(0)
+      const genesis = (await vm.blockchain.getBlock(0)) as Block
       const block = await (
         await buildBlock(vm, {
           parentBlock: genesis,
@@ -214,8 +216,10 @@ describe('EIP 2935: historical block hashes', () => {
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common, blockchain })
-      let lastBlock = await vm.blockchain.getBlock(0)
+      const vm = await createVM({ common, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
+      let lastBlock = (await vm.blockchain.getBlock(0)) as Block
       for (let i = 1; i <= blocksToBuild; i++) {
         lastBlock = await (
           await buildBlock(vm, {
@@ -264,7 +268,7 @@ describe('EIP 2935: historical block hashes', () => {
           block: lastBlock,
         })
 
-        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 thresholded by
+        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 threshold by
         // historyServeWindow window
         if (
           i >= blocksActivation - 1 &&
@@ -275,10 +279,10 @@ describe('EIP 2935: historical block hashes', () => {
           if (i >= blocksToBuild - 256) {
             assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
           } else {
-            assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+            assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
           }
         } else {
-          assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+          assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
         }
       }
 
@@ -296,15 +300,15 @@ describe('EIP 2935: historical block hashes', () => {
 
       // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards
       for (const i of [blocksActivation - 1, blocksActivation, blocksToBuild - 1]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        const blocki = await blockchain.getBlock(i)
-        assert.ok(equalsBytes(blockHashi, blocki.hash()))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        const blockI = await blockchain.getBlock(i)
+        assert.ok(equalsBytes(blockHashI, blockI.hash()))
       }
 
       // should be able to return 0 if input >= current block
       for (const i of [blocksToBuild, blocksToBuild + 100]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        assert.ok(equalsBytes(blockHashi, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        assert.ok(equalsBytes(blockHashI, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
       }
     })
   }

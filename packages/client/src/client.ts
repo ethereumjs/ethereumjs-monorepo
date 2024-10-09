@@ -30,7 +30,7 @@ export interface EthereumClientOptions {
    * Database to store the state.
    * Should be an abstract-leveldown compliant store.
    *
-   * Default: Database created by the Trie class
+   * Default: Database created by the MerklePatriciaTrie class
    */
   stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
@@ -126,14 +126,14 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
-    const packageJson = JSON.parse(
+    const packageJSON = JSON.parse(
       readFileSync(
         '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
         'utf-8',
       ),
     )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`,
+      `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {

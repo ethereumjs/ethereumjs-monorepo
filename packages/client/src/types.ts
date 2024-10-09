@@ -4,7 +4,7 @@ import type { SyncMode } from './index.js'
 import type { Peer } from './net/peer/index.js'
 import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type * as promClient from 'prom-client'
@@ -41,7 +41,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: DefaultStateManager]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: MerkleStateManager]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -126,7 +126,7 @@ export interface ClientOpts {
   wsEngineAddr?: string
   rpcEngineAuth?: boolean
   jwtSecret?: string
-  helpRpc?: boolean
+  helpRPC?: boolean
   logLevel?: string
   logFile?: boolean | string
   logLevelFile?: string

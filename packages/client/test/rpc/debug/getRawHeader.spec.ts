@@ -1,21 +1,21 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
+import { createBlob4844Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
-
-const kzg = await loadKZG()
+import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
+const kzg = new microEthKZG(trustedSetup)
 
 const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
 common.setHardfork('cancun')
 const mockedTx1 = createLegacyTx({}).sign(dummy.privKey)
 const mockedTx2 = createLegacyTx({ nonce: 1 }).sign(dummy.privKey)
-const mockedBlobTx3 = create4844BlobTx(
+const mockedBlobTx3 = createBlob4844Tx(
   { nonce: 2, blobsData: ['0x1234'], to: createZeroAddress() },
   { common },
 ).sign(dummy.privKey)
@@ -69,7 +69,7 @@ const method = 'debug_getRawHeader'
 describe(method, async () => {
   it('call with valid arguments', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(
@@ -81,7 +81,7 @@ describe(method, async () => {
 
   it('call with earliest param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest'])
     assert.equal(
@@ -93,7 +93,7 @@ describe(method, async () => {
 
   it('call with latest param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest'])
     assert.equal(res.result, bytesToHex(block.header.serialize()), 'should return block 1 RLP')
@@ -101,7 +101,7 @@ describe(method, async () => {
 
   it('call with unimplemented pending param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['pending'])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('"pending" is not yet supported'))
@@ -109,7 +109,7 @@ describe(method, async () => {
 
   it('call with non-string block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, [10])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('invalid argument 0: argument must be a string'))
@@ -117,7 +117,7 @@ describe(method, async () => {
 
   it('call with invalid block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER'])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
@@ -138,7 +138,7 @@ describe('call with block with blob txs', () => {
       { common },
     )
     const manager = createManager(await createClient({ chain: createChain(block1 as any) }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest'])
 
     assert.equal(

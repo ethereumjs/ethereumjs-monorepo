@@ -33,7 +33,7 @@ import {
   utf8ToBytes,
 } from '../src/index.js'
 
-import eip1014Testdata from './testdata/eip1014Examples.json'
+import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
 
 import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.js'
 import type { Input } from '@ethereumjs/rlp'
@@ -278,13 +278,13 @@ describe('Utility Functions', () => {
     )
     assert.ok(
       isValidPublic(pubKey, true),
-      "shouldn't fail on SEC1 key wt.testh sant.testize enabled",
+      "shouldn't fail on SEC1 key wt.testh sant.testize enabled", // cspell:disable-line
     )
 
     pubKey = hexToBytes(
       '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key')
+    assert.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key') // cspell:disable-line
 
     pubKey = hexToBytes('0x03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f')
     assert.notOk(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
@@ -302,13 +302,13 @@ describe('Utility Functions', () => {
     pubKey = hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a')
     assert.ok(
       isValidPublic(pubKey, true),
-      'should work wt.testh compressed keys wt.testh sant.testize enabled',
+      'should work wt.testh compressed keys wt.testh sant.testize enabled', // cspell:disable-line
     )
 
     pubKey = hexToBytes(
       '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.ok(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled')
+    assert.ok(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled') // cspell:disable-line
 
     pubKey = hexToBytes(
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
@@ -340,7 +340,7 @@ describe('Utility Functions', () => {
         ),
       ),
       pubKey,
-      'should work wt.testh an Ethereum public key',
+      'should work wt.testh an Ethereum public key', // cspell:disable-line
     )
 
     assert.equal(
@@ -352,7 +352,7 @@ describe('Utility Functions', () => {
         ),
       ),
       pubKey,
-      'should work wt.testh uncompressed SEC1 keys',
+      'should work wt.testh uncompressed SEC1 keys', // cspell:disable-line
     )
 
     assert.equal(
@@ -362,7 +362,7 @@ describe('Utility Functions', () => {
         ),
       ),
       pubKey,
-      'should work wt.testh compressed SEC1 keys',
+      'should work wt.testh compressed SEC1 keys', // cspell:disable-line
     )
 
     assert.throws(
@@ -498,7 +498,9 @@ describe('Utility Functions', () => {
     )
   })
 
+  // cspell:disable
   it('generateAddress wt.testh nonce 0 (special case)', () => {
+    // cspell:enable
     const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
     assert.equal(
       bytesToHex(addr),
@@ -507,7 +509,9 @@ describe('Utility Functions', () => {
     )
   })
 
+  // cspell:disable
   it('generateAddress wt.testh non-buffer inputs', () => {
+    // cspell:enable
     assert.throws(
       function () {
         generateAddress(
@@ -534,7 +538,7 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress2: EIP-1014 testdata examples', () => {
-    for (const testdata of eip1014Testdata) {
+    for (const testdata of eip1404ExamplesData) {
       const { address, comment, result, salt, initCode } = testdata
       const addr = generateAddress2(
         hexToBytes(address as PrefixedHexString),
@@ -546,7 +550,7 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress2: non-buffer inputs', () => {
-    const { address, salt, initCode } = eip1014Testdata[0]
+    const { address, salt, initCode } = eip1404ExamplesData[0]
 
     assert.throws(
       function () {
@@ -602,7 +606,7 @@ describe('Utility Functions', () => {
     '0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb',
   ]
 
-  const eip1191ChecksummAddresses = {
+  const eip1191ChecksumAddresses = {
     1: [
       '0x88021160c5C792225E4E5452585947470010289d',
       '0x27b1FdB04752bBc536007a920D24ACB045561c26',
@@ -651,7 +655,7 @@ describe('Utility Functions', () => {
 
     describe('EIP1191', () => {
       it('Should encode the example addresses correctly', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
             assert.equal(
@@ -712,7 +716,7 @@ describe('Utility Functions', () => {
 
     describe('EIP1191', () => {
       it('Should return true for the example addresses', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.ok(isValidChecksumAddress(addr, Number(chainId)))
             assert.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
@@ -734,7 +738,7 @@ describe('Utility Functions', () => {
       })
 
       it('Should return false if the wrong chain id is used', () => {
-        for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
+        for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
             assert.notOk(isValidChecksumAddress(addr, Number(chainId) + 1))
           }

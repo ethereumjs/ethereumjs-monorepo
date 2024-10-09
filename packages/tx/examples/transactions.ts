@@ -22,7 +22,7 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 const signedTx = tx.sign(privateKey)
 
 // We have a signed transaction.
-// Now for it to be fully fundable the account that we signed it with needs to have a certain amount of wei in to.
+// In order to send the transaction, the account that we signed it with needs to have a certain amount of wei in to.
 // To see how much this account needs we can use the getUpfrontCost() method.
 const feeCost = signedTx.getUpfrontCost()
 console.log('Total Amount of wei needed:' + feeCost.toString())

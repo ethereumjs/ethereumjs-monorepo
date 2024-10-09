@@ -26,7 +26,14 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EOFEnv, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type {
+  Block,
+  EOFEnv,
+  EVMMockBlockchainInterface,
+  EVMProfilerOpts,
+  EVMResult,
+  Log,
+} from './types.js'
 import type { AccessWitnessInterface, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
@@ -69,7 +76,7 @@ export interface Env {
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
-  blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
+  blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitnessInterface
   chargeCodeAccesses?: boolean
@@ -87,13 +94,12 @@ export interface RunState {
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   cachedPushes: { [pc: number]: bigint }
   stateManager: StateManagerInterface
-  blockchain: Blockchain
+  blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
-  auth?: Address /** EIP-3074 AUTH parameter */
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
@@ -148,7 +154,7 @@ export class Interpreter {
   constructor(
     evm: EVM,
     stateManager: StateManagerInterface,
-    blockchain: Blockchain,
+    blockchain: EVMMockBlockchainInterface,
     env: Env,
     gasLeft: bigint,
     journal: Journal,
@@ -158,6 +164,15 @@ export class Interpreter {
     this._evm = evm
     this._stateManager = stateManager
     this.common = this._evm.common
+
+    if (
+      this.common.consensusType() === 'poa' &&
+      this._evm['_optsCached'].cliqueSigner === undefined
+    )
+      throw new Error(
+        'Must include cliqueSigner function if clique/poa is being used for consensus type',
+      )
+
     this._runState = {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
@@ -266,7 +281,9 @@ export class Interpreter {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
-          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDestinations(
+            this._runState.code,
+          )
           this._runState.validJumps = jumps
           this._runState.cachedPushes = pushes
           this._runState.shouldDoJumpAnalysis = false
@@ -279,7 +296,7 @@ export class Interpreter {
       }
 
       // if its an invalid opcode with verkle activated, then check if its because of a missing code
-      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
         this.common.isActivatedEIP(6800) &&
@@ -485,8 +502,8 @@ export class Interpreter {
   }
 
   // Returns all valid jump and jumpsub destinations.
-  _getValidJumpDests(code: Uint8Array) {
-    const jumps = new Uint8Array(code.length).fill(0)
+  _getValidJumpDestinations(code: Uint8Array) {
+    const jumps = new Uint8Array(code.length)
     const pushes: { [pc: number]: bigint } = {}
 
     const opcodesCached = Array(code.length)
@@ -519,13 +536,13 @@ export class Interpreter {
   useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      let tstr = ''
+      let tempString = ''
       if (typeof context === 'string') {
-        tstr = context + ': '
+        tempString = context + ': '
       } else if (context !== undefined) {
-        tstr = `${context.name} fee: `
+        tempString = `${context.name} fee: `
       }
-      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
+      debugGas(`${tempString}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
     if (this._runState.gasLeft < BIGINT_0) {
       this._runState.gasLeft = BIGINT_0
@@ -781,7 +798,7 @@ export class Interpreter {
   getBlockCoinbase(): bigint {
     let coinbase: Address
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      coinbase = this._env.block.header.cliqueSigner()
+      coinbase = this._evm['_optsCached'].cliqueSigner!(this._env.block.header)
     } else {
       coinbase = this._env.block.header.coinbase
     }
@@ -860,31 +877,6 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      blobVersionedHashes: this._env.blobVersionedHashes,
-      accessWitness: this._env.accessWitness,
-    })
-
-    return this._baseCall(msg)
-  }
-
-  /**
-   * Sends a message with arbitrary data to a given address path.
-   */
-  async authcall(
-    gasLimit: bigint,
-    address: Address,
-    value: bigint,
-    data: Uint8Array,
-  ): Promise<bigint> {
-    const msg = new Message({
-      caller: this._runState.auth,
-      gasLimit,
-      to: address,
-      value,
-      data,
-      isStatic: this._env.isStatic,
-      depth: this._env.depth + 1,
-      authcallOrigin: this._env.address,
       blobVersionedHashes: this._env.blobVersionedHashes,
       accessWitness: this._env.accessWitness,
     })

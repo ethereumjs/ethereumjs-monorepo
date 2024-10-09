@@ -7,7 +7,7 @@
  * module dependencies
  */
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import { base64url, base64urlnopad } from '@scure/base'
+import { base64url, base64urlnopad } from '@scure/base' // cspell:disable-line
 import crypto from 'crypto'
 
 /**

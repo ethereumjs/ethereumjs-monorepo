@@ -1,13 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'net_peerCount'
 
 describe(method, () => {
   it('call', async () => {
     const manager = createManager(await createClient({ opened: true }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 

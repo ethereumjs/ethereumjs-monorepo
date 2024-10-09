@@ -13,7 +13,6 @@ import {
   intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
-  zeros,
 } from './bytes.js'
 import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
@@ -117,7 +116,7 @@ export class Account {
     if (this._codeSize !== null) {
       return this._codeSize
     } else {
-      throw Error(`codeHash=${this._codeSize} not loaded`)
+      throw Error(`codeSize=${this._codeSize} not loaded`)
     }
   }
   set codeSize(_codeSize: number) {
@@ -134,7 +133,7 @@ export class Account {
     balance: bigint | null = BIGINT_0,
     storageRoot: Uint8Array | null = KECCAK256_RLP,
     codeHash: Uint8Array | null = KECCAK256_NULL,
-    codeSize: number | null = null,
+    codeSize: number | null = 0,
     version: number | null = 0,
   ) {
     this._nonce = nonce
@@ -612,10 +611,8 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 /**
  * Returns the zero address.
  */
-export const zeroAddress = function (): string {
-  const addressLength = 20
-  const addr = zeros(addressLength)
-  return bytesToHex(addr)
+export const zeroAddress = function (): PrefixedHexString {
+  return bytesToHex(new Uint8Array(20))
 }
 
 /**

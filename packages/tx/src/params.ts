@@ -43,4 +43,13 @@ export const paramsTx: ParamsDict = {
   4844: {
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
   },
+  /**
+.  * Set EOA account code for one transaction
+.  */
+  7702: {
+    // TODO: Set correct minimum hardfork
+    // gasPrices
+    perAuthBaseGas: 2500, // Gas cost of each authority item, provided the authority exists in the trie
+    perEmptyAccountCost: 25000, // Gas cost of each authority item, in case the authority does not exist in the trie
+  },
 }

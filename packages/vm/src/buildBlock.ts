@@ -1,13 +1,14 @@
 import {
   createBlock,
+  createSealedCliqueBlock,
   genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
-import { BlobEIP4844Transaction, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -16,11 +17,10 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
-  Withdrawal,
+  createWithdrawal,
   createZeroAddress,
   toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
@@ -39,6 +39,7 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Withdrawal } from '@ethereumjs/util'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -61,7 +62,7 @@ export class BlockBuilder {
   blobGasUsed = BIGINT_0
   /**
    * Value of the block, represented by the final transaction fees
-   * acruing to the miner.
+   * accruing to the miner.
    */
   private _minerValue = BIGINT_0
 
@@ -88,12 +89,12 @@ export class BlockBuilder {
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.parentBlock.hash(),
+      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BIGINT_1,
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
-    this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.withdrawals = opts.withdrawals?.map(createWithdrawal)
 
     if (
       this.vm.common.isActivatedEIP(1559) &&
@@ -142,7 +143,10 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.vm.common }),
+    )
   }
 
   /**
@@ -164,7 +168,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie({ common: this.vm.common })
+    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -211,7 +215,10 @@ export class BlockBuilder {
    */
   async addTransaction(
     tx: TypedTransaction,
-    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {},
+    {
+      skipHardForkValidation,
+      allowNoBlobs,
+    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
   ) {
     this.checkStatus()
 
@@ -232,15 +239,19 @@ export class BlockBuilder {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
     let blobGasUsed = undefined
-    if (tx instanceof BlobEIP4844Transaction) {
+    if (tx instanceof Blob4844Tx) {
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
-      const blobTx = tx as BlobEIP4844Transaction
+      const blobTx = tx as Blob4844Tx
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
-        throw new Error('blobs missing for 4844 transaction')
+        // TODO: verify if we want this, do we want to allow the block builder to accept blob txs without the actual blobs?
+        // (these must have at least one `blobVersionedHashes`, this is verified at tx-level)
+        if (allowNoBlobs !== true) {
+          throw new Error('blobs missing for 4844 transaction')
+        }
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
@@ -262,8 +273,8 @@ export class BlockBuilder {
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
-    if (tx instanceof BlobEIP4844Transaction) {
-      const txData = tx as BlobEIP4844Transaction
+    if (tx instanceof Blob4844Tx) {
+      const txData = tx as Blob4844Tx
       this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
       tx = createMinimal4844TxFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
@@ -314,7 +325,10 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(
+          this.withdrawals,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
@@ -363,7 +377,13 @@ export class BlockBuilder {
       requests,
     }
 
-    const block = createBlock(blockData, blockOpts)
+    let block
+    const cs = this.blockOpts.cliqueSigner
+    if (cs !== undefined) {
+      block = createSealedCliqueBlock(blockData, cs, this.blockOpts)
+    } else {
+      block = createBlock(blockData, blockOpts)
+    }
 
     if (this.blockOpts.putBlockIntoBlockchain === true) {
       await this.vm.blockchain.putBlock(block)
@@ -389,7 +409,7 @@ export class BlockBuilder {
       // timestamp should already be set in constructor
       const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
       const parentBeaconBlockRootBuf =
-        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
     }
@@ -402,7 +422,7 @@ export class BlockBuilder {
       const { parentHash, number } = this.headerData
       // timestamp should already be set in constructor
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
-      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
+      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
     }

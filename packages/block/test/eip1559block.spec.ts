@@ -1,14 +1,14 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create1559FeeMarketTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/constructors.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
 import { paramsBlock } from '../src/params.js'
 
-import * as eip1559BaseFee from './testdata/eip1559baseFee.json'
+import { eip1559baseFeeData } from './testdata/eip1559baseFee.js'
 
 const common = new Common({
   eips: [1559],
@@ -408,7 +408,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> validateTransactions() -> tx', async () => {
-    const transaction = create1559FeeMarketTx(
+    const transaction = createFeeMarket1559Tx(
       {
         maxFeePerGas: BigInt(0),
         maxPriorityFeePerGas: BigInt(0),
@@ -450,8 +450,8 @@ describe('EIP1559 tests', () => {
   })
 
   it('Header -> calcNextBaseFee()', () => {
-    for (let index = 0; index < eip1559BaseFee.length; index++) {
-      const item = eip1559BaseFee[index]
+    for (let index = 0; index < eip1559baseFeeData.length; index++) {
+      const item = eip1559baseFeeData[index]
       const result = createBlockHeader(
         {
           baseFeePerGas: BigInt(item.parentBaseFee),

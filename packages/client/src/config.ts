@@ -276,7 +276,7 @@ export interface ConfigOptions {
 
   /**
    * If there is a reorg, this is a safe distance from which
-   * to try to refetch and refeed the blocks.
+   * to try to refetch and re-feed the blocks.
    */
   safeReorgDistance?: number
 
@@ -338,7 +338,11 @@ export interface ConfigOptions {
   statelessVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean
-  initialVerkleStateRoot?: Uint8Array
+
+  /**
+   * The cache for blobs and proofs to support CL import blocks
+   */
+  blobsAndProofsCacheBlocks?: number
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -386,13 +390,16 @@ export class Config {
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
-  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_PARENT_LOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
+
+  // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
+  public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -451,10 +458,11 @@ export class Config {
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
-  public readonly initialVerkleStateRoot: Uint8Array
+
+  public readonly blobsAndProofsCacheBlocks: number
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -527,7 +535,7 @@ export class Config {
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
-      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENT_LOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
@@ -545,7 +553,6 @@ export class Config {
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
     this.metrics = options.prometheusMetrics
-    this.initialVerkleStateRoot = options.initialVerkleStateRoot ?? new Uint8Array()
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -555,6 +562,9 @@ export class Config {
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.Chainstart })
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
+
+    this.blobsAndProofsCacheBlocks =
+      options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
 
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
@@ -628,7 +638,7 @@ export class Config {
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
@@ -636,7 +646,7 @@ export class Config {
           (Date.now() - this.lastSyncDate) / 1000
         } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 

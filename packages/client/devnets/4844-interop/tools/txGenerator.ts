@@ -1,6 +1,6 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { createCommonFromGethGenesis, Hardfork } from '@ethereumjs/common'
-import { createTxFromTxData, TransactionType, TxData } from '@ethereumjs/tx'
+import { createTx, TransactionType, TxData } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
@@ -12,12 +12,14 @@ import {
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+const kzg = new microEthKZG(trustedSetup)
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
-const genesisJson = require(process.argv[4]) // Genesis parameters
+const genesisJSON = require(process.argv[4]) // Genesis parameters
 const pkey = hexToBytes(`0x${process.argv[5]}`) // private key of tx sender as unprefixed hex string (unprefixed in args)
 const sender = createAddressFromPrivateKey(pkey)
 
@@ -27,10 +29,8 @@ async function getNonce(client: Client, account: string) {
 }
 
 async function run(data: any) {
-  const kzg = await loadKZG()
-
-  const common = createCommonFromGethGenesis(genesisJson, {
-    chain: genesisJson.ChainName ?? 'devnet',
+  const common = createCommonFromGethGenesis(genesisJSON, {
+    chain: genesisJSON.ChainName ?? 'devnet',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
@@ -62,7 +62,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = createTxFromTxData<TransactionType.BlobEIP4844>(txData, { common }).sign(pkey)
+  const blobTx = createTx<TransactionType.BlobEIP4844>(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

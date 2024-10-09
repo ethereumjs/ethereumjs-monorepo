@@ -1,5 +1,4 @@
-import { CacheType } from '@ethereumjs/common'
-import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT, createMPTFromProof } from '@ethereumjs/mpt'
 import {
   Account,
   KECCAK256_RLP,
@@ -15,7 +14,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DefaultStateManager } from '../src/index.js'
+import { CacheType, Caches, MerkleStateManager } from '../src/index.js'
+import {
+  addMerkleStateProofData,
+  fromMerkleStateProof,
+  getMerkleStateProof,
+} from '../src/proofs/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -37,15 +41,26 @@ function verifyAccount(
 
 describe('StateManager -> General', () => {
   it(`should instantiate`, async () => {
-    const sm = new DefaultStateManager()
+    const sm = new MerkleStateManager()
 
     assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })
 
+  it('should not throw on getContractStorage() on non-existing accounts', async () => {
+    const sm = new MerkleStateManager()
+
+    try {
+      const storage = await sm.getStorage(createZeroAddress(), new Uint8Array(32))
+      assert.ok(equalsBytes(storage, new Uint8Array()))
+    } catch {
+      assert.fail('should not throw')
+    }
+  })
+
   it(`should clear contract storage`, async () => {
-    const sm = new DefaultStateManager()
+    const sm = new MerkleStateManager()
 
     const contractAddress = createAddressFromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
     const contractCode = Uint8Array.from([0, 1, 2, 3])
@@ -68,8 +83,8 @@ describe('StateManager -> General', () => {
   })
 
   it(`copy()`, async () => {
-    const trie = new Trie({ cacheSize: 1000 })
-    let sm = new DefaultStateManager({
+    const trie = new MerklePatriciaTrie({ cacheSize: 1000 })
+    let sm = new MerkleStateManager({
       trie,
       prefixCodeHashes: false,
     })
@@ -81,24 +96,26 @@ describe('StateManager -> General', () => {
       'should retain non-default values',
     )
 
-    sm = new DefaultStateManager({
+    sm = new MerkleStateManager({
       trie,
-      accountCacheOpts: {
-        type: CacheType.LRU,
-      },
-      storageCacheOpts: {
-        type: CacheType.LRU,
-      },
+      caches: new Caches({
+        account: {
+          type: CacheType.LRU,
+        },
+        storage: {
+          type: CacheType.LRU,
+        },
+      }),
     })
 
     smCopy = sm.shallowCopy()
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
     )
@@ -106,12 +123,12 @@ describe('StateManager -> General', () => {
 
     smCopy = sm.shallowCopy(false)
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      smCopy['_caches']?.settings.account.type,
       CacheType.LRU,
       'should retain account cache type when deactivate cache downleveling',
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      smCopy['_caches']?.settings.storage.type,
       CacheType.LRU,
       'should retain storage cache type when deactivate cache downleveling',
     )
@@ -184,7 +201,7 @@ describe('StateManager -> General', () => {
     const state1 = stateSetup[address1Str] as MakeNonOptional<StateEntry>
     const state2 = stateSetup[address2Str] as MakeNonOptional<StateEntry>
 
-    const stateManager = new DefaultStateManager()
+    const stateManager = new MerkleStateManager()
 
     for (const [addressStr, entry] of Object.entries(stateSetup)) {
       const address = createAddressFromString(addressStr)
@@ -201,15 +218,15 @@ describe('StateManager -> General', () => {
       stateSetup[addressStr].storageRoot = (await stateManager.getAccount(address)!)?.storageRoot
     }
 
-    const proof1 = await stateManager.getProof(address1)
+    const proof1 = await getMerkleStateProof(stateManager, address1)
 
-    const partialStateManager = await DefaultStateManager.fromProof(proof1)
+    const partialStateManager = await fromMerkleStateProof(proof1)
     let account1 = await partialStateManager.getAccount(address1)!
 
     verifyAccount(account1!, state1)
 
-    const proof2 = await stateManager.getProof(address2)
-    await partialStateManager.addProofData(proof2)
+    const proof2 = await getMerkleStateProof(stateManager, address2)
+    await addMerkleStateProofData(partialStateManager, proof2)
 
     let account2 = await partialStateManager.getAccount(address2)
     verifyAccount(account2!, state2)
@@ -218,8 +235,11 @@ describe('StateManager -> General', () => {
     assert.ok(account3 === undefined)
 
     // Input proofs
-    const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
-    await partialStateManager.addProofData(stProof)
+    const stProof = await getMerkleStateProof(stateManager, address1, [
+      state1.keys[0],
+      state1.keys[1],
+    ])
+    await addMerkleStateProofData(partialStateManager, stProof)
 
     let stSlot1_0 = await partialStateManager.getStorage(address1, state1.keys[0])
     assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
@@ -231,9 +251,9 @@ describe('StateManager -> General', () => {
     assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
 
     // Check Array support as input
-    const newPartialStateManager = await DefaultStateManager.fromProof([proof2, stProof])
+    const newPartialStateManager = await fromMerkleStateProof([proof2, stProof])
 
-    async function postVerify(sm: DefaultStateManager) {
+    async function postVerify(sm: MerkleStateManager) {
       account1 = await sm.getAccount(address1)
       verifyAccount(account1!, state1)
 
@@ -256,31 +276,31 @@ describe('StateManager -> General', () => {
     await postVerify(newPartialStateManager)
 
     // Check: empty proof input
-    const newPartialStateManager2 = await DefaultStateManager.fromProof([])
+    const newPartialStateManager2 = await fromMerkleStateProof([])
 
     try {
-      await newPartialStateManager2.addProofData([proof2, stProof], true)
+      await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 
-    await newPartialStateManager2.addProofData([proof2, stProof])
+    await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
     await newPartialStateManager2.setStateRoot(await partialStateManager.getStateRoot())
     await postVerify(newPartialStateManager2)
 
     const zeroAddressNonce = BigInt(100)
     await stateManager.putAccount(createZeroAddress(), new Account(zeroAddressNonce))
-    const zeroAddressProof = await stateManager.getProof(createZeroAddress())
+    const zeroAddressProof = await getMerkleStateProof(stateManager, createZeroAddress())
 
     try {
-      await DefaultStateManager.fromProof([proof1, zeroAddressProof], true)
+      await fromMerkleStateProof([proof1, zeroAddressProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 
-    await newPartialStateManager2.addProofData(zeroAddressProof)
+    await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)
 
     let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
     assert.ok(zeroAccount === undefined)
@@ -292,8 +312,8 @@ describe('StateManager -> General', () => {
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
     async () => {
-      const trie = await createTrie({ useKeyHashing: false })
-      const sm = new DefaultStateManager({ trie })
+      const trie = await createMPT({ useKeyHashing: false })
+      const sm = new MerkleStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
       const address = createAddressFromPrivateKey(pk)
@@ -305,16 +325,17 @@ describe('StateManager -> General', () => {
       await sm.putStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
       const storage = await sm.dumpStorage(address)
       const keys = Object.keys(storage) as PrefixedHexString[]
-      const proof = await sm.getProof(
+      const proof = await getMerkleStateProof(
+        sm,
         address,
         keys.map((key) => hexToBytes(key)),
       )
-      const proof2 = await sm.getProof(address2)
-      const newTrie = await createTrieFromProof(
+      const proof2 = await getMerkleStateProof(sm, address2)
+      const newTrie = await createMPTFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
         { useKeyHashing: false },
       )
-      const partialSM = await DefaultStateManager.fromProof([proof, proof2], true, {
+      const partialSM = await fromMerkleStateProof([proof, proof2], true, {
         trie: newTrie,
       })
       assert.equal(
@@ -324,10 +345,10 @@ describe('StateManager -> General', () => {
       )
       assert.deepEqual(intToBytes(32), await partialSM.getStorage(address, hexToBytes(keys[0])))
       assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
-      const partialSM2 = await DefaultStateManager.fromProof(proof, true, {
+      const partialSM2 = await fromMerkleStateProof(proof, true, {
         trie: newTrie,
       })
-      await partialSM2.addProofData(proof2, true)
+      await addMerkleStateProofData(partialSM2, proof2, true)
       assert.equal(
         partialSM2['_trie']['_opts'].useKeyHashing,
         false,

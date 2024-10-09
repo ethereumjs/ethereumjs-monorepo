@@ -52,7 +52,7 @@ export enum EOFError {
   // Dangling Bytes
   DanglingBytes = 'got dangling bytes in body',
 
-  // Code verifcation
+  // Code verification
   InvalidOpcode = 'invalid opcode',
   InvalidTerminator = 'invalid terminating opcode',
   OpcodeIntermediatesOOB = 'invalid opcode: intermediates out-of-bounds',

@@ -1,7 +1,7 @@
 import {
   BlockHeader,
   createBlockFromExecutionPayload,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   executionPayloadFromBeaconPayload,
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
@@ -9,12 +9,12 @@ import { readFileSync } from 'fs'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import blocks from '../../testdata/blocks/kaustinen4.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen6.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.js'
+import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain/index.js'
-import type { BeaconPayloadJson } from '@ethereumjs/block'
+import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
 import type { HttpClient } from 'jayson/promise'
@@ -32,7 +32,7 @@ const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11f
  *   a. On the saved blocks, comma separated (were produced for kaustinen4 )
  *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen5.spec.ts`
  *   b. Geth produced testvectors (were produced for kaustinen5)
- *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts`
+ *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts` // cspell:disable-line
  */
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
@@ -40,8 +40,8 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
   slot: number | string,
-): Promise<BeaconPayloadJson | undefined> {
-  let beaconPayload: BeaconPayloadJson | undefined = undefined
+): Promise<BeaconPayloadJSON | undefined> {
+  let beaconPayload: BeaconPayloadJSON | undefined = undefined
   try {
     const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
     beaconPayload = beaconBlock.data.message.body.execution_payload
@@ -77,11 +77,11 @@ async function runBlock(
 }
 
 describe(`valid verkle network setup`, async () => {
-  const { server, chain, common } = await setupChain(genesisJSON, 'post-merge', {
+  const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
   })
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
@@ -105,7 +105,7 @@ describe(`valid verkle network setup`, async () => {
         testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
-        testData = blocks[testCase as keyof typeof blocks]
+        testData = kaustinen4Data[testCase as keyof typeof kaustinen4Data]
         isBeaconData = true
       }
       if (testData === undefined) {
@@ -146,10 +146,10 @@ describe(`valid verkle network setup`, async () => {
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const gethVecs = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
-    let parent = gethVecs[0]
-    for (let i = 1; i < gethVecs.length; i++) {
-      const execute = gethVecs[i]
+    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
+    let parent = gethVectors[0]
+    for (let i = 1; i < gethVectors.length; i++) {
+      const execute = gethVectors[i]
       it(`run geth vector: ${execute.blockNumber}`, async (context) => {
         await runBlock({ common, chain, rpc }, { parent, execute }, false, context)
         parent = execute
@@ -166,9 +166,10 @@ describe(`valid verkle network setup`, async () => {
 
 async function loadGethVectors(vectorsDirPath: string, opts: { common: Common }) {
   // set chain id to 1 for geth vectors
-  opts.common['_chainParams'].chainId = BigInt(1)
+  opts.common['_chainParams'].chainId = 1
   const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`, 'utf8'))
   const executionWitness0: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: [],
     verkleProof: {
       commitmentsByPath: [],
@@ -184,6 +185,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
   }
 
   const executionWitness1: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: stateDiffVec[0],
     verkleProof: {
       commitmentsByPath: [],
@@ -199,6 +201,7 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
   }
 
   const executionWitness2: VerkleExecutionWitness = {
+    parentStateRoot: '0x',
     stateDiff: stateDiffVec[1],
     verkleProof: {
       commitmentsByPath: [],
@@ -213,21 +216,21 @@ async function loadGethVectors(vectorsDirPath: string, opts: { common: Common })
     },
   }
   const block0RlpHex = readFileSync(`${vectorsDirPath}/block0.rlp.hex`, 'utf8').trim()
-  const block0 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block0RlpHex}`), {
+  const block0 = createBlockFromRLP(hexToBytes(`0x${block0RlpHex}`), {
     ...opts,
     executionWitness: executionWitness0,
   })
   const _block0Payload = block0.toExecutionPayload()
 
   const block1RlpHex = readFileSync(`${vectorsDirPath}/block1.rlp.hex`, 'utf8').trim()
-  const block1 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block1RlpHex}`), {
+  const block1 = createBlockFromRLP(hexToBytes(`0x${block1RlpHex}`), {
     ...opts,
     executionWitness: executionWitness1,
   })
   const block1Payload = block1.toExecutionPayload()
 
   const block2RlpHex = readFileSync(`${vectorsDirPath}/block2.rlp.hex`, 'utf8').trim()
-  const block2 = createBlockFromRLPSerializedBlock(hexToBytes(`0x${block2RlpHex}`), {
+  const block2 = createBlockFromRLP(hexToBytes(`0x${block2RlpHex}`), {
     ...opts,
     executionWitness: executionWitness2,
   })

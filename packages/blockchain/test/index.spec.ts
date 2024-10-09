@@ -1,8 +1,8 @@
 import {
   createBlock,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createBlockHeader,
-  createBlockHeaderFromValuesArray,
+  createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
 import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
@@ -10,11 +10,11 @@ import { assert, describe, it } from 'vitest'
 
 import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
 
-import blocksData from './testdata/blocks_mainnet.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import { blocksMainnetData } from './testdata/blocks_mainnet.js'
+import { preLondonData } from './testdata/testdata_pre-london.js'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
-import type { Block, BlockData, BlockOptions } from '@ethereumjs/block'
+import type { Block, BlockOptions } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
@@ -60,7 +60,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with createBlockchainFromBlocksData()', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchainFromBlocksData(blocksData as BlockData[], {
+    const blockchain = await createBlockchainFromBlocksData(blocksMainnetData, {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -444,11 +444,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
   })
 
@@ -469,11 +469,11 @@ describe('blockchain test', () => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeaderHash
+    blockchain._heads['staleTest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
-    assert.deepEqual(blockchain._heads['staletest'], blocks[14].hash(), 'should update stale head')
+    assert.deepEqual(blockchain._heads['staleTest'], blocks[14].hash(), 'should update stale head')
     assert.deepEqual(blockchain._headBlockHash, blocks[14].hash(), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
@@ -531,13 +531,13 @@ describe('blockchain test', () => {
     const block2HeaderValuesArray = blocks[2].header.raw()
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
-    const block2Header = createBlockHeaderFromValuesArray(block2HeaderValuesArray, {
+    const block2Header = createBlockHeaderFromBytesArray(block2HeaderValuesArray, {
       common: blocks[2].common,
     })
     await blockchain.putHeader(block2Header)
     try {
       await blockchain.getBlock(BigInt(2))
-      assert.fail('block should not be constucted')
+      assert.fail('block should not be constructed')
     } catch (e: any) {
       assert.equal(
         e.message,
@@ -579,16 +579,16 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
-    const genesisBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const genesisRlp = hexToBytes(preLondonData.genesisRLP as PrefixedHexString)
+    const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
-    const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+    const blockRlp = hexToBytes(preLondonData.blocks[0].rlp as PrefixedHexString)
+    const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })
 

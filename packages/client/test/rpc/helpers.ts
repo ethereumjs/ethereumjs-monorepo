@@ -1,4 +1,4 @@
-import { createBlockHeader } from '@ethereumjs/block'
+import { createBlockHeader, paramsBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
@@ -82,7 +82,7 @@ export function startRPC(
 
 /** Returns a basic RPC client with no authentication */
 
-export function getRpcClient(server: HttpServer) {
+export function getRPCClient(server: HttpServer) {
   const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
   return rpc
 }
@@ -227,6 +227,7 @@ export async function baseSetup(clientOpts: any = {}) {
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
+// TODO: Improve the params typing
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
@@ -234,6 +235,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const common = createCommonFromGethGenesis(genesisFile, {
     chain: chainName,
     customCrypto: clientOpts.customCrypto,
+    params: paramsBlock,
   })
   common.setHardforkBy({
     blockNumber: 0,

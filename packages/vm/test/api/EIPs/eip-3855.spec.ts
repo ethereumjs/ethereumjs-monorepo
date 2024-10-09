@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 
@@ -16,7 +16,7 @@ describe('EIP 3855 tests', () => {
   })
 
   it('should correctly use push0 opcode', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     let stack: bigint[]
     vm.evm.events!.on('step', (e: InterpreterStep) => {
       stack = e.stack
@@ -33,7 +33,7 @@ describe('EIP 3855 tests', () => {
   })
 
   it('should correctly use push0 to create a stack with stack limit length', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     let stack: bigint[] = []
     vm.evm.events!.on('step', (e: InterpreterStep) => {
       stack = e.stack
@@ -56,7 +56,7 @@ describe('EIP 3855 tests', () => {
   })
 
   it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const depth = Number(common.param('stackLimit')!) + 1
 
@@ -69,7 +69,7 @@ describe('EIP 3855 tests', () => {
   })
 
   it('push0 is not available if EIP3855 is not activated', async () => {
-    const vm = await VM.create({ common: commonNoEIP3855 })
+    const vm = await createVM({ common: commonNoEIP3855 })
 
     const result = await vm.evm.runCode!({
       code: hexToBytes('0x5F'),

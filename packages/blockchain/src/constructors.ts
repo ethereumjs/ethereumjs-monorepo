@@ -1,5 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
-import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import {
   Blockchain,
@@ -13,6 +14,10 @@ import {
 import type { BlockchainOptions, DBOp } from './index.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
+
+const DEBUG =
+  typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+const debug = debugDefault('blockchain:#')
 
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)
@@ -80,6 +85,8 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
     const latestHeader = await blockchain['_getHeader'](blockchain['_headHeaderHash'])
     await blockchain.checkAndTransitionHardForkByNumber(latestHeader.number, latestHeader.timestamp)
   }
+
+  DEBUG && debug(`genesis block initialized with hash ${bytesToHex(genesisHash!)}`)
 
   return blockchain
 }

@@ -1,9 +1,9 @@
 import {
-  BlobEIP4844Transaction,
+  Blob4844Tx,
   Capability,
-  isAccessListEIP2930Tx,
-  isBlobEIP4844Tx,
-  isFeeMarketEIP1559Tx,
+  isAccessList2930Tx,
+  isBlob4844Tx,
+  isFeeMarket1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
 import {
@@ -25,11 +25,8 @@ import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
 import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 // Configuration constants
@@ -106,6 +103,10 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  public blobsAndProofsByHash: Map<
+    PrefixedHexString,
+    { blob: PrefixedHexString; proof: PrefixedHexString }
+  >
 
   /**
    * The number of txs currently in the pool
@@ -171,6 +172,10 @@ export class TxPool {
     this.service = options.service
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.blobsAndProofsByHash = new Map<
+      PrefixedHexString,
+      { blob: PrefixedHexString; proof: PrefixedHexString }
+    >()
     this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -246,7 +251,7 @@ export class TxPool {
       )
     }
 
-    if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
+    if (addedTx instanceof Blob4844Tx && existingTx instanceof Blob4844Tx) {
       const minblobGasFee =
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
@@ -368,18 +373,46 @@ export class TxPool {
       if (isLegacyTx(tx)) {
         this.config.metrics?.legacyTxGauge?.inc()
       }
-      if (isAccessListEIP2930Tx(tx)) {
+      if (isAccessList2930Tx(tx)) {
         this.config.metrics?.accessListEIP2930TxGauge?.inc()
       }
-      if (isFeeMarketEIP1559Tx(tx)) {
+      if (isFeeMarket1559Tx(tx)) {
         this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
       }
-      if (isBlobEIP4844Tx(tx)) {
+      if (isBlob4844Tx(tx)) {
+        // add to blobs and proofs cache
+        if (tx.blobs !== undefined && tx.kzgProofs !== undefined) {
+          for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
+            const blob = tx.blobs![i]
+            const proof = tx.kzgProofs![i]
+            this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+          }
+          this.pruneBlobsAndProofsCache()
+        }
+
         this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
+    }
+  }
+
+  pruneBlobsAndProofsCache() {
+    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
+    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+
+    const pruneLength =
+      this.blobsAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
+    let pruned = 0
+    // since keys() is sorted by insertion order this prunes the oldest data in cache
+    for (const versionedHash of this.blobsAndProofsByHash.keys()) {
+      if (pruned >= pruneLength) {
+        break
+      }
+      this.blobsAndProofsByHash.delete(versionedHash)
+      pruned++
     }
   }
 
@@ -419,13 +452,13 @@ export class TxPool {
     if (isLegacyTx(tx)) {
       this.config.metrics?.legacyTxGauge?.dec()
     }
-    if (isAccessListEIP2930Tx(tx)) {
+    if (isAccessList2930Tx(tx)) {
       this.config.metrics?.accessListEIP2930TxGauge?.dec()
     }
-    if (isFeeMarketEIP1559Tx(tx)) {
+    if (isFeeMarket1559Tx(tx)) {
       this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
     }
-    if (isBlobEIP4844Tx(tx)) {
+    if (isBlob4844Tx(tx)) {
       this.config.metrics?.blobEIP4844TxGauge?.dec()
     }
 
@@ -707,15 +740,15 @@ export class TxPool {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
     if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
       if (supports1559) {
-        return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        return (tx as FeeMarket1559Tx).maxPriorityFeePerGas
       } else {
-        return (tx as LegacyTransaction).gasPrice - baseFee
+        return (tx as LegacyTx).gasPrice - baseFee
       }
     } else {
       if (supports1559) {
-        return (tx as FeeMarketEIP1559Transaction).maxFeePerGas
+        return (tx as FeeMarket1559Tx).maxFeePerGas
       } else {
-        return (tx as LegacyTransaction).gasPrice
+        return (tx as LegacyTx).gasPrice
       }
     }
   }
@@ -732,14 +765,14 @@ export class TxPool {
       }
     }
 
-    if (isAccessListEIP2930Tx(tx)) {
+    if (isAccessList2930Tx(tx)) {
       return {
         maxFee: tx.gasPrice,
         tip: tx.gasPrice,
       }
     }
 
-    if (isFeeMarketEIP1559Tx(tx) || isBlobEIP4844Tx(tx)) {
+    if (isFeeMarket1559Tx(tx) || isBlob4844Tx(tx)) {
       return {
         maxFee: tx.maxFeePerGas,
         tip: tx.maxPriorityFeePerGas,
@@ -825,9 +858,9 @@ export class TxPool {
       //   ii) or there is no blobs limit provided
       //   iii) or blobs are still within limit if this best tx's blobs are included
       if (
-        !(best instanceof BlobEIP4844Transaction) ||
+        !(best instanceof Blob4844Tx) ||
         allowedBlobs === undefined ||
-        ((best as BlobEIP4844Transaction).blobs ?? []).length + blobsCount <= allowedBlobs
+        ((best as Blob4844Tx).blobs ?? []).length + blobsCount <= allowedBlobs
       ) {
         if (accTxs.length > 0) {
           byPrice.insert(accTxs[0])
@@ -835,8 +868,8 @@ export class TxPool {
         }
         // Accumulate the best priced transaction and increment blobs count
         txs.push(best)
-        if (best instanceof BlobEIP4844Transaction) {
-          blobsCount += ((best as BlobEIP4844Transaction).blobs ?? []).length
+        if (best instanceof Blob4844Tx) {
+          blobsCount += ((best as Blob4844Tx).blobs ?? []).length
         }
       } else {
         // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
@@ -888,7 +921,7 @@ export class TxPool {
       broadcasterrors += sendobjects.filter((sendobject) => sendobject.error !== undefined).length
       knownpeers++
     }
-    // Get avergae
+    // Get average
     if (knownpeers > 0) {
       broadcasts = broadcasts / knownpeers
       broadcasterrors = broadcasterrors / knownpeers

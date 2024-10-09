@@ -94,6 +94,7 @@ describe('toType', () => {
     assert.deepEqual(result, toBytes(num))
 
     assert.throws(() => {
+      //@ts-expect-error
       toType('1', TypeOutput.Number)
     }, /^A string must be provided with a 0x-prefix, given: 1$/)
   })

@@ -1,10 +1,10 @@
-import { CacheType } from '@ethereumjs/common'
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
+import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
@@ -133,7 +133,7 @@ export class CodeCache extends Cache {
       })
     }
 
-    this._stats.dels += 1
+    this._stats.deletions += 1
   }
 
   /**
@@ -252,7 +252,7 @@ export class CodeCache extends Cache {
         reads: 0,
         hits: 0,
         writes: 0,
-        dels: 0,
+        deletions: 0,
       }
     }
     return stats

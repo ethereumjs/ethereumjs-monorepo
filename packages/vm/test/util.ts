@@ -2,15 +2,16 @@ import { Block, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  create1559FeeMarketTx,
-  create2930AccessListTx,
-  create4844BlobTx,
-  create7702EOACodeTx,
+  createAccessList2930Tx,
+  createBlob4844Tx,
+  createEOACode7702Tx,
+  createFeeMarket1559Tx,
   createLegacyTx,
 } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -21,6 +22,7 @@ import {
   isHexString,
   setLengthLeft,
   toBytes,
+  toType,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -28,11 +30,11 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { BlockOptions } from '@ethereumjs/block'
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type {
-  AccessListEIP2930Transaction,
-  BlobEIP4844Transaction,
-  EOACodeEIP7702Transaction,
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
+  AccessList2930Transaction,
+  Blob4844Tx,
+  EOACode7702Transaction,
+  FeeMarket1559Tx,
+  LegacyTx,
   TxOptions,
 } from '@ethereumjs/tx'
 import type * as tape from 'tape'
@@ -121,17 +123,12 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to runTx() function
+ * @returns {Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx} Transaction to be passed to runTx() function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions,
-):
-  | EOACodeEIP7702Transaction
-  | BlobEIP4844Transaction
-  | FeeMarketEIP1559Transaction
-  | AccessListEIP2930Transaction
-  | LegacyTransaction {
+): EOACode7702Transaction | Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx {
   let tx
   if (txData.authorizationList !== undefined) {
     // Convert `v` keys to `yParity`
@@ -143,13 +140,13 @@ export function makeTx(
         signature.nonce[0] = '0x'
       }
     }
-    tx = create7702EOACodeTx(txData, opts)
+    tx = createEOACode7702Tx(txData, opts)
   } else if (txData.blobVersionedHashes !== undefined) {
-    tx = create4844BlobTx(txData, opts)
+    tx = createBlob4844Tx(txData, opts)
   } else if (txData.maxFeePerGas !== undefined) {
-    tx = create1559FeeMarketTx(txData, opts)
+    tx = createFeeMarket1559Tx(txData, opts)
   } else if (txData.accessLists !== undefined) {
-    tx = create2930AccessListTx(txData, opts)
+    tx = createAccessList2930Tx(txData, opts)
   } else {
     tx = createLegacyTx(txData, opts)
   }
@@ -300,49 +297,74 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   }
 }
 
+export function makeParentBlockHeader(data: any, opts: BlockOptions) {
+  const {
+    parentGasLimit,
+    parentGasUsed,
+    parentBaseFee,
+    parentDifficulty,
+    parentTimestamp,
+    parentUncleHash,
+    parentBlobGasUsed,
+    parentExcessBlobGas,
+    parentBeaconBlockRoot,
+  } = data
+  return createBlockHeader(
+    {
+      gasLimit: parentGasLimit,
+      gasUsed: parentGasUsed,
+      baseFeePerGas: parentBaseFee,
+      difficulty: parentDifficulty,
+      timestamp: parentTimestamp,
+      uncleHash: parentUncleHash,
+      blobGasUsed: parentBlobGasUsed,
+      excessBlobGas: parentExcessBlobGas,
+      parentBeaconBlockRoot,
+    },
+    { common: opts.common },
+  )
+}
+
 export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const {
     currentTimestamp,
     currentGasLimit,
     previousHash,
+    parentHash,
     currentCoinbase,
     currentDifficulty,
     currentExcessBlobGas,
     currentNumber,
     currentBaseFee,
     currentRandom,
-    parentGasLimit,
-    parentGasUsed,
-    parentBaseFee,
   } = data
   const headerData: any = {
     number: currentNumber,
     coinbase: currentCoinbase,
-    parentHash: previousHash,
+    parentHash: previousHash ?? parentHash,
     difficulty: currentDifficulty,
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
   }
+  const parentBlockHeader = makeParentBlockHeader(data, { common: opts?.common })
   if (opts?.common && opts.common.gteHardfork('london')) {
     headerData['baseFeePerGas'] = currentBaseFee
     if (currentBaseFee === undefined) {
-      const parentBlockHeader = createBlockHeader(
-        {
-          gasLimit: parentGasLimit,
-          gasUsed: parentGasUsed,
-          baseFeePerGas: parentBaseFee,
-        },
-        { common: opts.common },
-      )
       headerData['baseFeePerGas'] = parentBlockHeader.calcNextBaseFee()
     }
   }
   if (opts?.common && opts.common.gteHardfork('paris')) {
-    headerData['mixHash'] = currentRandom
+    headerData['mixHash'] = setLengthLeft(
+      <Uint8Array>toType(currentRandom, TypeOutput.Uint8Array)!,
+      32,
+    )
     headerData['difficulty'] = 0
   }
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
+    if (currentExcessBlobGas === undefined) {
+      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas()
+    }
   }
   return createBlockHeader(headerData, opts)
 }

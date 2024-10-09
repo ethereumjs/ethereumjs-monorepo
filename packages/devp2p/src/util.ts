@@ -7,7 +7,7 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import type { ETH } from './protocol/eth.js'
 import type { LES } from './protocol/les.js'
 
-export const devp2pDebug = debug('devp2p')
+export const devp2pDebug = debug('devp2p:#')
 
 export function genPrivateKey(): Uint8Array {
   const privateKey = secp256k1.utils.randomPrivateKey()

@@ -7,29 +7,22 @@ import {
   publicToAddress,
   setLengthLeft,
   setLengthRight,
-  short,
 } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
+
+import { gasLimitCheck } from './util.js'
+
+import { getPrecompileName } from './index.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
+  const pName = getPrecompileName('01')
   const ecrecoverFunction = opts.common.customCrypto.ecrecover ?? ecrecover
   const gasUsed = opts.common.param('ecRecoverGas')
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run ECRECOVER (0x01) precompile data=${short(opts.data)} length=${
-        opts.data.length
-      } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`ECRECOVER (0x01) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -44,7 +37,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   // However, this should throw, only 27 and 28 is allowed as input
   if (vBigInt !== BIGINT_27 && vBigInt !== BIGINT_28) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECRECOVER (0x01) failed: v neither 27 nor 28`)
+      opts._debug(`${pName} failed: v neither 27 nor 28`)
     }
     return {
       executionGasUsed: gasUsed,
@@ -59,7 +52,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   try {
     if (opts._debug !== undefined) {
       opts._debug(
-        `ECRECOVER (0x01): PK recovery with msgHash=${bytesToHex(msgHash)} v=${bytesToHex(
+        `${pName}: PK recovery with msgHash=${bytesToHex(msgHash)} v=${bytesToHex(
           v,
         )} r=${bytesToHex(r)}s=${bytesToHex(s)}}`,
       )
@@ -67,7 +60,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     publicKey = ecrecoverFunction(msgHash, bytesToBigInt(v), r, s)
   } catch (e: any) {
     if (opts._debug !== undefined) {
-      opts._debug(`ECRECOVER (0x01) failed: PK recovery failed`)
+      opts._debug(`${pName} failed: PK recovery failed`)
     }
     return {
       executionGasUsed: gasUsed,
@@ -76,7 +69,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   }
   const address = setLengthLeft(publicToAddress(publicKey), 32)
   if (opts._debug !== undefined) {
-    opts._debug(`ECRECOVER (0x01) return address=${bytesToHex(address)}`)
+    opts._debug(`${pName} return address=${bytesToHex(address)}`)
   }
   return {
     executionGasUsed: gasUsed,

@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { createLegacyTx, createTxFromTxData } from '@ethereumjs/tx'
+import { createLegacyTx, createTx } from '@ethereumjs/tx'
 import {
   Account,
   createAddressFromPrivateKey,
@@ -13,7 +13,7 @@ import {
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
@@ -32,7 +32,7 @@ describe(method, () => {
 
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -87,7 +87,7 @@ describe(method, () => {
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
     const address = createAddressFromPrivateKey(pk)
@@ -95,7 +95,7 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData({
+    const tx = createTx({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,

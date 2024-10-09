@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { cliqueSigner, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -168,7 +168,7 @@ describe('reorg tests', () => {
       !signerVotes.find(
         (v: any) =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(block1_low.header.cliqueSigner()) &&
+          v[1][0].equal(cliqueSigner(block1_low.header)) &&
           v[1][1].equal(beneficiary1) &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
@@ -178,7 +178,7 @@ describe('reorg tests', () => {
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !blockSigners.find(
-        (s: any) => s[0] === BigInt(1) && s[1].equal(block1_low.header.cliqueSigner()),
+        (s: any) => s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1_low.header)),
       ),
       'should not find reorged block signer',
     )
@@ -197,7 +197,7 @@ describe('reorg tests', () => {
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !!blockSigners.find(
-        (s: any) => s[0] === BigInt(3) && s[1].equals(block3_high.header.cliqueSigner()),
+        (s: any) => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),
       'should find reorged block signer',
     )

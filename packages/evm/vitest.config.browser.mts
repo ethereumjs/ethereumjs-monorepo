@@ -6,11 +6,11 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      exclude:      [
+      exclude: [
         ...configDefaults.exclude,
         // readDirSync method not provided fs mock for vite
         'test/precompiles/eip-2537-bls.spec.ts',
       ]
-    }
+    },
   })
 )

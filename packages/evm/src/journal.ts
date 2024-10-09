@@ -53,7 +53,7 @@ export class Journal {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault('statemanager:statemanager')
+    this._debug = debugDefault('evm:journal')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()

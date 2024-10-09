@@ -1,22 +1,23 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  DepositRequest,
   KECCAK256_RLP,
-  WithdrawalRequest,
   bytesToBigInt,
+  createDepositRequest,
+  createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import {
-  createBlock,
-  createBlockFromRPC,
-  createBlockFromValuesArray,
-  createBlockHeader,
-} from '../src/constructors.js'
 import { genRequestsTrieRoot } from '../src/helpers.js'
-import { Block } from '../src/index.js'
+import {
+  Block,
+  createBlock,
+  createBlockFromBytesArray,
+  createBlockFromRPC,
+  createBlockHeader,
+} from '../src/index.js'
 
+import type { JSONRPCBlock } from '../src/index.js'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
@@ -27,7 +28,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
     signature: randomBytes(96),
     index: bytesToBigInt(randomBytes(8)),
   }
-  return DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
 }
 
 function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
@@ -36,7 +37,7 @@ function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
     validatorPubkey: randomBytes(48),
     amount: bytesToBigInt(randomBytes(8)),
   }
-  return WithdrawalRequest.fromRequestData(withdrawalRequestData) as CLRequest<CLRequestType>
+  return createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
 }
 
 const common = new Common({
@@ -109,9 +110,9 @@ describe('7685 tests', () => {
   })
 })
 
-describe('fromValuesArray tests', () => {
+describe('createWithdrawalFromBytesArray tests', () => {
   it('should construct a block with empty requests root', () => {
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({}, { common }).raw(), [], [], [], []],
       {
         common,
@@ -127,7 +128,7 @@ describe('fromValuesArray tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
@@ -147,15 +148,15 @@ describe('fromRPC tests', () => {
     const requestsRoot = await genRequestsTrieRoot(requests)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
-    const block = createBlockFromValuesArray(
+    const block = createBlockFromBytesArray(
       [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
       },
     )
-    const jsonBlock = block.toJSON()
-    const rpcBlock: any = { ...jsonBlock.header, requests: jsonBlock.requests }
-    const createBlockFromJson = createBlockFromRPC(rpcBlock, undefined, { common })
-    assert.deepEqual(block.hash(), createBlockFromJson.hash())
+    const JSONBlock = block.toJSON()
+    const RPCBlock = { ...JSONBlock.header, requests: JSONBlock.requests }
+    const createBlockFromJSON = createBlockFromRPC(RPCBlock as JSONRPCBlock, undefined, { common })
+    assert.deepEqual(block.hash(), createBlockFromJSON.hash())
   })
 })

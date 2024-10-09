@@ -2,7 +2,7 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullSynchronizer } from '../../../src/sync/index.js'
 
@@ -12,7 +12,7 @@ describe(method, () => {
   it('should return false when the client is synchronized', async () => {
     const client = await createClient()
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
@@ -27,7 +27,7 @@ describe(method, () => {
     const client = await createClient({ noPeers: true })
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
-    const rpc = getRpcClient(rpcServer)
+    const rpc = getRPCClient(rpcServer)
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
@@ -41,7 +41,7 @@ describe(method, () => {
     const client = await createClient()
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
-    const rpc = getRpcClient(rpcServer)
+    const rpc = getRPCClient(rpcServer)
     const sync = client.services[0].synchronizer!
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
@@ -63,7 +63,7 @@ describe(method, () => {
     const client = await createClient()
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
-    const rpc = getRpcClient(rpcServer)
+    const rpc = getRPCClient(rpcServer)
     const sync = client.services[0].synchronizer as FullSynchronizer
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({

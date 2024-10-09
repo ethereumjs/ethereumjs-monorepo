@@ -1,5 +1,5 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create1559FeeMarketTx, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToHex,
@@ -7,24 +7,27 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
-  getRpcClient,
+  getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
 } from '../helpers.js'
 
-const method = 'eth_getTransactionReceipt'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
+const method = 'eth_getTransactionReceipt'
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with legacy tx', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     // construct tx
     const tx = createLegacyTx(
       {
@@ -44,12 +47,12 @@ describe(method, () => {
 
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
     )
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct tx
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
@@ -69,8 +72,8 @@ describe(method, () => {
   })
 
   it('call with unknown tx hash', async () => {
-    const { server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
@@ -83,28 +86,28 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
+      const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
-      const kzg = await loadKZG()
-
-      const common = createCommonFromGethGenesis(gethGenesis, {
+      const common = createCommonFromGethGenesis(hardfork4844Data, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain', {
+      const { chain, execution, server } = await setupChain(hardfork4844Data, 'customChain', {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)
-      const rpc = getRpcClient(server)
+      const rpc = getRPCClient(server)
 
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-      const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
-      const tx = create4844BlobTx(
+      const proofs = blobs.map((blob, ctx) =>
+        kzg.computeBlobProof(blob, commitments[ctx]),
+      ) as PrefixedHexString[]
+      const tx = createBlob4844Tx(
         {
           blobVersionedHashes,
           blobs,

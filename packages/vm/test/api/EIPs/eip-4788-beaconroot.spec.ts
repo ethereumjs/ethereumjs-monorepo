@@ -11,7 +11,7 @@
 
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -19,12 +19,12 @@ import {
   hexToBytes,
   setLengthLeft,
   setLengthRight,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
 
+import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
@@ -45,7 +45,7 @@ function beaconrootBlock(
   const newTxData = []
 
   for (const txData of transactions) {
-    const tx = createTxFromTxData({
+    const tx = createTx({
       gasPrice: 7,
       gasLimit: 100000,
       ...txData,
@@ -101,7 +101,7 @@ const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`)
  * @returns Two fields: block return status, and callStatus (field saved in the contract)
  */
 async function runBlock(block: Block) {
-  const vm = await VM.create({
+  const vm = await createVM({
     common,
   })
 
@@ -122,7 +122,7 @@ async function runBlock(block: Block) {
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
+  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
   return bytesToBigInt(stat)
 }
 
@@ -135,7 +135,7 @@ async function runBlockTest(input: {
   timestampBlock: bigint // Timestamp of the block (this is saved in the precompile)
   blockRoot: bigint // Blockroot of the block (also saved in the precompile)
   extLeft?: number // Extend length left of the input (defaults to 32)
-  extRight?: number // Extend lenght right of the input (defaults to 32) - happens after extendLeft
+  extRight?: number // Extend length right of the input (defaults to 32) - happens after extendLeft
   expRet: bigint // Expected return value
   expCallStatus: bigint // Expected call status (either 0 or 1)
 }) {

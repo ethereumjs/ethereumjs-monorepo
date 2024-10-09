@@ -1,5 +1,5 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   bytesToHex,
@@ -8,8 +8,9 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
@@ -25,16 +26,14 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = createAddressFromPrivateKey(pkey)
-
-const kzg = await loadKZG()
-
+const kzg = new microEthKZG(trustedSetup)
 function get_padded(data: any, blobs_len: number) {
-  const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  const datalen = (data as Uint8Array).byteLength
-  pdata.fill(data, 0, datalen)
+  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
+  const dataLen = (data as Uint8Array).byteLength
+  pData.fill(data, 0, dataLen)
   // TODO: if data already fits in a pad, then ka-boom
-  pdata[datalen] = 0x80
-  return pdata
+  pData[dataLen] = 0x80
+  return pData
 }
 
 function get_blob(data: any) {
@@ -61,11 +60,11 @@ function get_blobs(data: any) {
 
   const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
 
-  const pdata = get_padded(data, blobs_len)
+  const pData = get_padded(data, blobs_len)
 
   const blobs: Uint8Array[] = []
   for (let i = 0; i < blobs_len; i++) {
-    const chunk = pdata.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
+    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
     const blob = get_blob(chunk)
     blobs.push(blob)
   }
@@ -96,7 +95,7 @@ async function run(data: any) {
     await sleep(1000)
   }
 
-  const blobs = get_blobs(data)
+  const blobs = get_blobs(data).map((blob) => bytesToHex(blob))
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
@@ -121,7 +120,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = create4844BlobTx(txData).sign(pkey)
+  const blobTx = createBlob4844Tx(txData).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -165,8 +164,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = bytesToHex(blobTx.kzgCommitments![0])
-  if (blob_kzg !== bytesToHex(blobTx.kzgCommitments![0])) {
+  const expected_kzgs = blobTx.kzgCommitments![0]
+  if (blob_kzg !== blobTx.kzgCommitments![0]) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

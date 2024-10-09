@@ -175,7 +175,7 @@ export interface BlockchainOptions extends GenesisOptions {
 
   /**
    * Validate the consensus with the respective consensus implementation passed
-   * to `consensusDict` (see respective option) `CapserConsensus` (which effectively
+   * to `consensusDict` (see respective option) `CasperConsensus` (which effectively
    * does nothing) is available by default.
    *
    * For the build-in validation classes the following validations take place.
@@ -191,7 +191,7 @@ export interface BlockchainOptions extends GenesisOptions {
    *
    * Since consensus validation moved to the Ethereum consensus layer with Proof-of-Stake
    * consensus is not validated by default. For `ConsensusAlgorithm.Ethash` and
-   * `ConsensusAlgorith.Clique` consensus validation can be activated by passing in the
+   * `ConsensusAlgorithm.Clique` consensus validation can be activated by passing in the
    * respective consensus validation objects `EthashConsensus` or `CliqueConsensus`.
    *
    * ```ts

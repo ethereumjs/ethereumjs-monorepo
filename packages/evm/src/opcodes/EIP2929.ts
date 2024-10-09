@@ -18,7 +18,7 @@ export function accessAddressEIP2929(
   address: Uint8Array,
   common: Common,
   chargeGas = true,
-  isSelfdestructOrAuthcall = false,
+  isSelfdestruct = false,
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BIGINT_0
 
@@ -33,7 +33,7 @@ export function accessAddressEIP2929(
       return common.param('coldaccountaccessGas')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
-  } else if (chargeGas && !isSelfdestructOrAuthcall) {
+  } else if (chargeGas && !isSelfdestruct) {
     return common.param('warmstoragereadGas')
   }
   return BIGINT_0

@@ -379,7 +379,7 @@ export const validators = {
   },
 
   /**
-   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * validator to ensure required withdrawal fields are present, and checks for valid address and hex values
    * for the other quantity based fields
    * @param requiredFields array of required fields
    * @returns validator function with params:
@@ -677,7 +677,7 @@ export const validators = {
   /**
    * Verification of rewardPercentiles array
    *
-   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the corresponding effective tip for the percentile will be determined, accounting for gas consumed.
    *  type: array
    *    items: rewardPercentile value
    *

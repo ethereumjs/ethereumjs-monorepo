@@ -1,10 +1,10 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create2930AccessListTx, createLegacyTx } from '@ethereumjs/tx'
+import { createAccessList2930Tx, createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
 
 import type { BlockData } from '@ethereumjs/block'
-import type { AccessListEIP2930TxData, TransactionType, TxData } from '@ethereumjs/tx'
+import type { AccessList2930TxData, TransactionType, TxData } from '@ethereumjs/tx'
 
 describe('[Types]', () => {
   it('should ensure that the actual objects can be safely used as their data types', () => {
@@ -21,10 +21,10 @@ describe('[Types]', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
     // Block
-    const block: Omit<Required<BlockData>, 'withdrawals' | 'executionWitness'> = createBlock(
-      {},
-      { common },
-    )
+    const block = createBlock({}, { common }) as Omit<
+      Required<BlockData>,
+      'withdrawals' | 'executionWitness'
+    >
     assert.ok(block, 'block')
 
     // Transactions
@@ -36,8 +36,8 @@ describe('[Types]', () => {
     assert.ok(legacyTx, 'legacy tx')
 
     // Access List tx
-    const accessListTx: RequiredExceptOptionals<AccessListEIP2930TxData, OptionalTxFields> =
-      create2930AccessListTx({}, { common })
+    const accessListTx: RequiredExceptOptionals<AccessList2930TxData, OptionalTxFields> =
+      createAccessList2930Tx({}, { common })
     assert.ok(accessListTx, 'accessList tx')
   })
 })

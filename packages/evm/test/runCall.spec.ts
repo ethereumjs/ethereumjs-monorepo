@@ -12,12 +12,11 @@ import {
   hexToBytes,
   padToEven,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+import { eip4844Data } from '../../client/test/testdata/geth-genesis/eip4844.js'
 import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
 import { createEVM } from '../src/index.js'
@@ -544,7 +543,7 @@ describe('RunCall tests', () => {
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -555,7 +554,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes('0x60004960005260206000F3'),
-      blobVersionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: ['0xab'],
     }
     const res = await evm.runCall(runCallArgs)
     assert.equal(
@@ -569,7 +568,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
       data: hexToBytes('0x60014960005260206000F3'),
-      blobVersionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: ['0xab'],
     }
     const res2 = await evm.runCall(runCall2Args)
     assert.equal(
@@ -581,7 +580,7 @@ describe('RunCall tests', () => {
 
   it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -695,7 +694,7 @@ describe('RunCall tests', () => {
       ['f1', 36600 + 7 * 3, '0x01'], // 36600 is CALL fee + 7 * 3 gas for 7 PUSH opcodes
       ['f2', 11600 + 7 * 3, '0x01'], // 11600 is CALLCODE fee + 7 * 3 gas for 7 PUSH opcodes
     ]) {
-      // Code to either CALL or CALLCODE into AACC empty contract, with value 1
+      // Code to either CALL or CALLCODE into AACC empty contract, with value 1 // cspell:disable-line
       // If enough gas is provided, then since nonzero value is sent, the gas limit
       // in the call(coded) contract will get the "bonus gas" stipend of 2300
       // Previously, we added this gas stipend to the current gas available (which is wrong)
@@ -717,7 +716,7 @@ describe('RunCall tests', () => {
       const gasLimit = gas.toString(16).padStart(4, '0')
 
       /***
-       * Bytecode for AAAB contract (used to call contract AAAA and stores result of call execution)
+       * Bytecode for AAAB contract (used to call contract AAAA and stores result of call execution) // cspell:disable-line
        * PUSH1 0x00
        * DUP1
        * DUP1
@@ -744,7 +743,9 @@ describe('RunCall tests', () => {
       }
       await evm.runCall(runCallArgs)
 
-      const callResult = bytesToHex(await evm.stateManager.getStorage(callerAddress, zeros(32)))
+      const callResult = bytesToHex(
+        await evm.stateManager.getStorage(callerAddress, new Uint8Array(32)),
+      )
       // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame
       assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)

@@ -2,12 +2,12 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
@@ -25,7 +25,7 @@ describe(method, () => {
 
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
@@ -73,7 +73,7 @@ describe(method, () => {
     await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     ;(service.txPool as any).validate = () => {}
-    await service.txPool.add(createTxFromTxData({ type: 2 }, {}).sign(randomBytes(32)))
+    await service.txPool.add(createTx({ type: 2 }, {}).sign(randomBytes(32)))
 
     const res = await rpc.request(method, [])
     assert.equal(

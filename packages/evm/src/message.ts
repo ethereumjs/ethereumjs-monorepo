@@ -38,9 +38,8 @@ interface MessageOpts {
    */
   createdAddresses?: Set<PrefixedHexString>
   delegatecall?: boolean
-  authcallOrigin?: Address
   gasRefund?: bigint
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: AccessWitnessInterface
 }
 
@@ -69,16 +68,11 @@ export class Message {
    */
   createdAddresses?: Set<PrefixedHexString>
   delegatecall: boolean
-  /**
-   * This is used to store the origin of the AUTHCALL,
-   * the purpose is to figure out where `value` should be taken from (not from `caller`)
-   */
-  authcallOrigin?: Address
   gasRefund: bigint // Keeps track of the gasRefund at the start of the frame (used for journaling purposes)
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: AccessWitnessInterface
 
   constructor(opts: MessageOpts) {
@@ -97,7 +91,6 @@ export class Message {
     this.selfdestruct = opts.selfdestruct
     this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
-    this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
     this.blobVersionedHashes = opts.blobVersionedHashes
     this.accessWitness = opts.accessWitness

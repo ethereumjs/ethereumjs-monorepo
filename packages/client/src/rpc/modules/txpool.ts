@@ -1,4 +1,4 @@
-import { callWithStackTrace, jsonRpcTx } from '../helpers.js'
+import { callWithStackTrace, toJSONRPCTx } from '../helpers.js'
 import { middleware } from '../validation.js'
 
 import type { EthereumClient } from '../../index.js'
@@ -37,7 +37,7 @@ export class TxPool {
     for (const pool of this._txpool.pool) {
       const pendingForAcct = new Map<bigint, any>()
       for (const tx of pool[1]) {
-        pendingForAcct.set(tx.tx.nonce, jsonRpcTx(tx.tx))
+        pendingForAcct.set(tx.tx.nonce, toJSONRPCTx(tx.tx))
       }
       if (pendingForAcct.size > 0) pending.set('0x' + pool[0], Object.fromEntries(pendingForAcct))
     }

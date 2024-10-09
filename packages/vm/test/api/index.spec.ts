@@ -3,13 +3,12 @@ import { EVM, createEVM } from '@ethereumjs/evm'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { type VMOpts, paramsVM } from '../../src/index.js'
-import { VM } from '../../src/vm.js'
+import { type VMOpts, createVM, paramsVM } from '../../src/index.js'
 
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { testnetMergeData } from './testdata/testnetMerge.js'
 import { setupVM } from './utils.js'
 
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 /**
  * Tests for the main constructor API and
@@ -28,20 +27,20 @@ import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 describe('VM -> basic instantiation / boolean switches', () => {
   it('should instantiate without params', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     assert.ok(vm.stateManager)
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )
-    assert.equal(vm.common.hardfork(), Hardfork.Shanghai, 'it has correct default HF')
+    assert.equal(vm.common.hardfork(), Hardfork.Cancun, 'it has correct default HF')
   })
 
   it('should be able to activate precompiles', async () => {
-    const vm = await VM.create({ activatePrecompiles: true })
+    const vm = await createVM({ activatePrecompiles: true })
     assert.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has different root',
     )
@@ -50,13 +49,13 @@ describe('VM -> basic instantiation / boolean switches', () => {
 
 describe('VM -> Default EVM / Custom EVM Opts', () => {
   it('Default EVM should have correct default EVM opts', async () => {
-    const vm = await VM.create()
+    const vm = await createVM()
     assert.isFalse((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=false')
   })
 
   it('should throw if evm and evmOpts are both used', async () => {
     try {
-      await VM.create({ evmOpts: {}, evm: await createEVM() })
+      await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok('correctly thrown')
@@ -64,7 +63,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   })
 
   it('Default EVM should use custom EVM opts', async () => {
-    const vm = await VM.create({ evmOpts: { allowUnlimitedContractSize: true } })
+    const vm = await createVM({ evmOpts: { allowUnlimitedContractSize: true } })
     assert.isTrue((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=true')
     const copiedVM = await vm.shallowCopy()
     assert.isTrue(
@@ -75,27 +74,27 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
 
   it('Default EVM should use VM common', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
-    const vm = await VM.create({ common })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from VM common')
+    const vm = await createVM({ common })
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from VM common')
 
     const copiedVM = await vm.shallowCopy()
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from VM common (for shallowCopied VM)',
+      'use modified HF from VM common (for shallowCopied VM)',
     )
   })
 
   it('Default EVM should prefer common from evmOpts if provided (same logic for blockchain, statemanager)', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
-    const vm = await VM.create({ evmOpts: { common } })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modfied HF from evmOpts')
+    const vm = await createVM({ evmOpts: { common } })
+    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from evmOpts')
 
     const copiedVM = await vm.shallowCopy()
     assert.equal(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
-      'use modfied HF from evmOpts (for shallowCopied VM)',
+      'use modified HF from evmOpts (for shallowCopied VM)',
     )
   })
 })
@@ -123,7 +122,7 @@ describe('VM -> supportedHardforks', () => {
       Hardfork.Paris,
     ]
     try {
-      await VM.create({ common })
+      await createVM({ common })
       assert.fail('should have failed for unsupported hardfork')
     } catch (e: any) {
       assert.ok(e.message.includes('supportedHardforks'))
@@ -134,12 +133,12 @@ describe('VM -> supportedHardforks', () => {
 
   it('should succeed when common is set to a supported hardfork', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
   })
 
   it('should overwrite parameters when param option is used', async () => {
-    let vm = await VM.create()
+    let vm = await createVM()
     assert.equal(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
@@ -148,14 +147,14 @@ describe('VM -> supportedHardforks', () => {
 
     const params = JSON.parse(JSON.stringify(paramsVM))
     params['1559']['elasticityMultiplier'] = 10 // 2
-    vm = await VM.create({ params })
+    vm = await createVM({ params })
     assert.equal(
       vm.common.param('elasticityMultiplier'),
       BigInt(10),
       'should use custom parameters provided',
     )
 
-    vm = await VM.create()
+    vm = await createVM()
     assert.equal(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
@@ -168,10 +167,10 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should accept a common object as option', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-    let vm = await VM.create({ common })
+    let vm = await createVM({ common })
     assert.equal(vm.common, common)
 
-    vm = await VM.create()
+    vm = await createVM()
     assert.equal(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
@@ -182,12 +181,12 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should only accept valid chain and fork', async () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
-    let vm = await VM.create({ common })
-    assert.equal(vm.common.param('ecAddGas'), BigInt(500))
+    let vm = await createVM({ common })
+    assert.equal(vm.common.param('bn254AddGas'), BigInt(500))
 
     try {
       common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
-      vm = await VM.create({ common })
+      vm = await createVM({ common })
       assert.fail('should have failed for invalid chain')
     } catch (e: any) {
       assert.ok(e.message.includes('not supported'))
@@ -197,7 +196,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   it('should accept a supported EIP', async () => {
     const common = new Common({ chain: Mainnet, eips: [2537] })
     try {
-      await VM.create({ common })
+      await createVM({ common })
       assert.ok(true, 'did not throw')
     } catch (error) {
       assert.fail('should not have thrown')
@@ -210,30 +209,28 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
       hardfork: 'byzantium',
     })
 
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     assert.equal(vm.common, common)
   })
 })
 
-describe('VM -> setHardfork, state (deprecated), blockchain', () => {
+describe('VM -> setHardfork, blockchain', () => {
   it('setHardfork', async () => {
-    // @ts-ignore PrefixedHexString type is too strict
-    const common = createCustomCommon(testnetMerge.default, Mainnet, {
-      name: 'testnetMerge',
+    const common = createCustomCommon(testnetMergeData, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
-    let vm = await VM.create({ common, setHardfork: true })
+    let vm = await createVM({ common, setHardfork: true })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, setHardfork: 5001 })
+    vm = await createVM({ common, setHardfork: 5001 })
     assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 
   it('should instantiate', async () => {
     const vm = await setupVM()
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)['_trie'].root(),
+      (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )
@@ -257,7 +254,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       setHardfork: true,
     }
 
-    let vm = await VM.create(opts)
+    let vm = await createVM(opts)
     let vmCopy = await vm.shallowCopy()
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
@@ -275,7 +272,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
     opts = {
       setHardfork: BigInt(5001),
     }
-    vm = await VM.create(opts)
+    vm = await createVM(opts)
     vmCopy = await vm.shallowCopy()
     assert.deepEqual(
       (vmCopy as any)._setHardfork,
@@ -295,8 +292,8 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       const contractAddress = createAddressFromString('0x00000000000000000000000000000000000000ff') // contract address
       // setup the vm
       const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-      const vmNotActivated = await VM.create({ common })
-      const vmActivated = await VM.create({ common, activatePrecompiles: true })
+      const vmNotActivated = await createVM({ common })
+      const vmActivated = await createVM({ common, activatePrecompiles: true })
       const code = '0x6000808080347300000000000000000000000000000000000000045AF100'
       /*
         idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this

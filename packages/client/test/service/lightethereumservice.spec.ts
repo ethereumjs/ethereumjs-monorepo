@@ -60,7 +60,7 @@ describe('should open', async () => {
     expect(server.addProtocols).toBeCalled()
   })
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok(true, 'synchronized')
     })
   })

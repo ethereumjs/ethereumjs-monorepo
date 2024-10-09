@@ -1,4 +1,4 @@
-import { createBlockFromValuesArray, createBlockHeaderFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_RLP,
@@ -107,7 +107,7 @@ export class DBManager {
     let body = await this.getBody(hash, number)
 
     // be backward compatible where we didn't use to store a body with no txs, uncles, withdrawals
-    // otherwise the body is never partially stored and if we have some body, its in entirity
+    // otherwise the body is never partially stored and if we have some body, its in entirety
     if (body === undefined) {
       body = [[], []] as BlockBodyBytes
       // Do extra validations on the header since we are assuming empty transactions and uncles
@@ -141,7 +141,7 @@ export class DBManager {
 
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this.common, setHardfork: true }
-    return createBlockFromValuesArray(blockData, opts)
+    return createBlockFromBytesArray(blockData, opts)
   }
 
   /**
@@ -160,7 +160,7 @@ export class DBManager {
     const headerValues = RLP.decode(encodedHeader)
 
     const opts: BlockOptions = { common: this.common, setHardfork: true }
-    return createBlockHeaderFromValuesArray(headerValues as Uint8Array[], opts)
+    return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
   /**

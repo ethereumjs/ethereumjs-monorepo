@@ -1,21 +1,21 @@
 import { createBlock } from '@ethereumjs/block'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
-import { toRpcTx } from '../../../src/rpc/types.js'
-import genesisJSON from '../../testdata/geth-genesis/debug.json'
+import { toRPCTx } from '../../../src/rpc/types.js'
+import { debugData } from '../../testdata/geth-genesis/debug.js'
 import {
   createClient,
   createManager,
   dummy,
-  getRpcClient,
+  getRPCClient,
   runBlockWithTxs,
   setupChain,
   startRPC,
 } from '../helpers.js'
 
-import type { RpcTx } from '../../../src/rpc/types.js'
+import type { RPCTx } from '../../../src/rpc/types.js'
 
 const method = 'debug_traceCall'
 
@@ -23,7 +23,7 @@ describe(method, async () => {
   const manager = createManager(await createClient({ opened: true }))
   const methods = manager.getMethods()
   const server = startRPC(methods)
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
 
   it('debug_traceCall method exists', async () => {
     expect(Object.keys(methods)).toContain(method)
@@ -46,12 +46,12 @@ describe(method, async () => {
 })
 
 describe('trace a call', async () => {
-  const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+  const { chain, common, execution, server } = await setupChain(debugData, 'post-merge', {
     txLookupLimit: 0,
   })
-  const rpc = getRpcClient(server)
+  const rpc = getRPCClient(server)
   // construct block with tx
-  const tx = createTxFromTxData(
+  const tx = createTx(
     {
       type: 0x2,
       gasLimit: 0xfffff,
@@ -71,10 +71,10 @@ describe('trace a call', async () => {
 
   it('call debug_traceCall with valid parameters', async () => {
     const rpcTxReq = await rpc.request('eth_getTransactionByHash', [bytesToHex(tx.hash())])
-    let rpcTx: RpcTx = {}
+    let rpcTx: RPCTx = {}
 
     const t = rpcTxReq.result
-    rpcTx = toRpcTx(t)
+    rpcTx = toRPCTx(t)
 
     const res2 = await rpc.request('debug_traceCall', [rpcTx, '0x1', {}])
     expectTypeOf(res2.result)

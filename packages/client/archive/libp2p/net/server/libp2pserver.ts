@@ -1,4 +1,5 @@
 //@ts-nocheck
+// cspell:ignore pnode addrs
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
 import { multiaddr } from '@multiformats/multiaddr'

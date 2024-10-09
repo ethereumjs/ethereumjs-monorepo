@@ -12,10 +12,13 @@ import {
   bytesToHex,
   setLengthLeft,
   setLengthRight,
-  short,
 } from '@ethereumjs/util'
 
 import { OOGResult } from '../evm.js'
+
+import { gasLimitCheck } from './util.js'
+
+import { getPrecompileName } from './index.js'
 
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
@@ -31,7 +34,7 @@ const BIGINT_199680 = BigInt(199680)
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
 const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
-function multComplexity(x: bigint): bigint {
+function multiplicationComplexity(x: bigint): bigint {
   let fac1
   let fac2
   if (x <= BIGINT_64) {
@@ -49,7 +52,7 @@ function multComplexity(x: bigint): bigint {
   }
 }
 
-function multComplexityEIP2565(x: bigint): bigint {
+function multiplicationComplexityEIP2565(x: bigint): bigint {
   const words = (x + BIGINT_7) / BIGINT_8
   return words * words
 }
@@ -89,7 +92,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   return adjustedExpLen
 }
 
-export function expmod(a: bigint, power: bigint, modulo: bigint) {
+export function expMod(a: bigint, power: bigint, modulo: bigint) {
   if (power === BIGINT_0) {
     return BIGINT_1 % modulo
   }
@@ -103,6 +106,7 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
+  const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
@@ -129,25 +133,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mEnd = mStart + mLen
 
   if (!opts.common.isActivatedEIP(2565)) {
-    gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   } else {
-    gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor
+    gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
     if (gasUsed < BIGINT_200) {
       gasUsed = BIGINT_200
     }
   }
-  if (opts._debug !== undefined) {
-    opts._debug(
-      `Run MODEXP (0x05) precompile data=${short(opts.data)} length=${opts.data.length} gasLimit=${
-        opts.gasLimit
-      } gasUsed=${gasUsed}`,
-    )
-  }
-
-  if (opts.gasLimit < gasUsed) {
-    if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
-    }
+  if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -160,14 +153,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
+      opts._debug(`${pName} failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
+      opts._debug(`${pName} failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
@@ -180,7 +173,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (M === BIGINT_0) {
     R = new Uint8Array()
   } else {
-    R = expmod(B, E, M)
+    R = expMod(B, E, M)
     if (R === BIGINT_0) {
       R = new Uint8Array()
     } else {
@@ -190,7 +183,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   const res = setLengthLeft(R, Number(mLen))
   if (opts._debug !== undefined) {
-    opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
+    opts._debug(`${pName} return value=${bytesToHex(res)}`)
   }
 
   return {

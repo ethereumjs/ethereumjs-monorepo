@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { validateNoLeadingZeroes } from '@ethereumjs/util'
 
-import { LegacyTransaction } from './tx.js'
+import { LegacyTx } from './tx.js'
 
 import type { TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
@@ -15,7 +15,7 @@ import type { TxData, TxValuesArray } from './tx.js'
  * - All parameters are optional and have some basic default values
  */
 export function createLegacyTx(txData: TxData, opts: TxOptions = {}) {
-  return new LegacyTransaction(txData, opts)
+  return new LegacyTx(txData, opts)
 }
 
 /**
@@ -36,7 +36,7 @@ export function createLegacyTxFromBytesArray(values: TxValuesArray, opts: TxOpti
 
   validateNoLeadingZeroes({ nonce, gasPrice, gasLimit, value, v, r, s })
 
-  return new LegacyTransaction(
+  return new LegacyTx(
     {
       nonce,
       gasPrice,

@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Blob4844Tx } from '@ethereumjs/tx'
 import {
   BIGINT_1,
   BIGINT_2,
@@ -11,7 +11,6 @@ import {
   equalsBytes,
   toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -20,7 +19,7 @@ import type { Config } from '../config.js'
 import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
+import type { PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
@@ -35,9 +34,9 @@ interface PendingBlockOpts {
 }
 
 export interface BlobsBundle {
-  blobs: Uint8Array[]
-  commitments: Uint8Array[]
-  proofs: Uint8Array[]
+  blobs: PrefixedHexString[]
+  commitments: PrefixedHexString[]
+  proofs: PrefixedHexString[]
 }
 /**
  * In the future this class should build a pending block by keeping the
@@ -104,9 +103,6 @@ export class PendingBlock {
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
     let { gasLimit } = parentBlock.header
 
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
     vm.common.setHardforkBy({
       blockNumber: number,
       timestamp,
@@ -124,12 +120,12 @@ export class PendingBlock {
     // potentially included in the fcU in future and can be safely added in uniqueness calc
     const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
-    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
     const parentBeaconBlockRootBuf =
-      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
-    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
+      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
+    const coinbaseBuf = toType(coinbase ?? new Uint8Array(20), TypeOutput.Uint8Array)
 
-    let withdrawalsBuf = zeros(0)
+    let withdrawalsBuf = new Uint8Array()
 
     if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []
@@ -322,7 +318,7 @@ export class PendingBlock {
       switch (addTxResult) {
         case AddTxResult.Success:
           // Push the tx in blobTxs only after successful addTransaction
-          if (tx instanceof BlobEIP4844Transaction) blobTxs.push(tx)
+          if (tx instanceof Blob4844Tx) blobTxs.push(tx)
           break
 
         case AddTxResult.BlockFull:
@@ -382,13 +378,13 @@ export class PendingBlock {
   /**
    * An internal helper for storing the blob bundle associated with each transaction in an EIP4844 world
    * @param payloadId the payload Id of the pending block
-   * @param txs an array of {@BlobEIP4844Transaction } transactions
+   * @param txs an array of {@Blob4844Tx } transactions
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
-  private constructBlobsBundle = (payloadId: string, txs: BlobEIP4844Transaction[]) => {
-    let blobs: Uint8Array[] = []
-    let commitments: Uint8Array[] = []
-    let proofs: Uint8Array[] = []
+  private constructBlobsBundle = (payloadId: string, txs: Blob4844Tx[]) => {
+    let blobs: PrefixedHexString[] = []
+    let commitments: PrefixedHexString[] = []
+    let proofs: PrefixedHexString[] = []
     const bundle = this.blobsBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs
@@ -397,7 +393,7 @@ export class PendingBlock {
     }
 
     for (let tx of txs) {
-      tx = tx as BlobEIP4844Transaction
+      tx = tx as Blob4844Tx
       if (tx.blobs !== undefined && tx.blobs.length > 0) {
         blobs = blobs.concat(tx.blobs)
         commitments = commitments.concat(tx.kzgCommitments!)

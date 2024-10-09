@@ -10,17 +10,42 @@ import {
   getPresetChainConfig,
 } from '../src/index.js'
 
+import type { ChainConfig } from '../src/index.js'
+
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {
     const c = new Common({ chain: Mainnet })
     assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Shanghai, 'should set hardfork to current default hardfork')
+    assert.equal(c.hardfork(), Hardfork.Cancun, 'should set hardfork to current default hardfork')
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
       'should set hardfork to hardfork set as DEFAULT_HARDFORK',
     )
+  })
+
+  it('Deep copied common object should have parameters that are independent of the original copy', async () => {
+    let chainConfig: ChainConfig
+    let c: Common
+    const setCommon = async () => {
+      chainConfig = JSON.parse(JSON.stringify(Mainnet))
+      c = new Common({ chain: chainConfig })
+      assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
+      assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
+    }
+
+    const resetCommon = async () => {
+      // modify chain config
+      const cCopy = c.copy()
+      chainConfig.chainId = 2
+      chainConfig.name = 'testnet'
+      assert.equal(cCopy.chainName(), 'mainnet', 'should return original chain name')
+      assert.equal(cCopy.chainId(), BigInt(1), 'should return original chain Id')
+    }
+
+    await setCommon()
+    await resetCommon()
   })
 
   it('Should initialize with chain provided by chain name or network Id', () => {
@@ -47,7 +72,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
 
   it('Should handle initialization errors', () => {
     const f = function () {
-      new Common({ chain: Mainnet, hardfork: 'hardforknotexisting' })
+      new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
     const msg = 'should throw an exception on non-existing hardfork'
     assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new

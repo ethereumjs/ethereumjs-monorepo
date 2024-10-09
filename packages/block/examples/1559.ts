@@ -1,5 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createTx } from '@ethereumjs/tx'
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const block = createBlock(
@@ -31,3 +32,19 @@ const blockWithMatchingBaseFee = createBlock(
 )
 
 console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
+
+// successful validation does not throw error
+await blockWithMatchingBaseFee.validateData()
+
+// failed validation throws error
+const tx = createTx(
+  { type: 2, maxFeePerGas: BigInt(20) },
+  { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
+)
+blockWithMatchingBaseFee.transactions.push(tx)
+console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
+try {
+  await blockWithMatchingBaseFee.validateData()
+} catch (err) {
+  console.log(err) // block validation fails
+}

@@ -1,5 +1,5 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
@@ -23,8 +23,8 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
-const shardingJson = require(`./configs/${network}.json`)
-const common = createCommonFromGethGenesis(shardingJson, { chain: network })
+const shardingJSON = require(`./configs/${network}.json`)
+const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 
 export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -97,7 +97,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
 
     assert.equal(
       eth2kzgs[0],
-      bytesToHex(txResult.tx.kzgCommitments![0]),
+      txResult.tx.kzgCommitments![0],
       'found expected blob commitments on CL',
     )
   }, 60_000)
@@ -187,7 +187,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       maxPriorityFeePerGas: 0xf,
     }
 
-    const tx = createTxFromTxData({ type: 2, ...txData }, { common }).sign(pkey)
+    const tx = createTx({ type: 2, ...txData }, { common }).sign(pkey)
 
     const txResult = await client.request(
       'eth_sendRawTransaction',

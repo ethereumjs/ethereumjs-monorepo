@@ -9,11 +9,11 @@ import {
   createCustomCommon,
 } from '../src/index.js'
 
-import * as timestampJson from './data/shanghai-time.json'
+import { shanghaiTimeData } from './data/shanghai-time.js'
 
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {
-    const c = createCommonFromGethGenesis(timestampJson, {
+    const c = createCommonFromGethGenesis(shanghaiTimeData, {
       chain: 'withdrawals',
     })
     assert.equal(
@@ -34,11 +34,11 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding on shanghai-time', () => {
-    const config = Object.assign({}, timestampJson.config, {
-      cancunTime: timestampJson.config.shanghaiTime,
+    const config = Object.assign({}, shanghaiTimeData.config, {
+      cancunTime: shanghaiTimeData.config.shanghaiTime,
     })
-    const modifiedJson = Object.assign({}, timestampJson, { config })
-    const c = createCommonFromGethGenesis(modifiedJson, {
+    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
     assert.equal(
@@ -54,11 +54,11 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding post shanghai-time', () => {
-    const config = Object.assign({}, timestampJson.config, {
-      cancunTime: timestampJson.config.shanghaiTime + 1000,
+    const config = Object.assign({}, shanghaiTimeData.config, {
+      cancunTime: shanghaiTimeData.config.shanghaiTime + 1000,
     })
-    const modifiedJson = Object.assign({}, timestampJson, { config })
-    const c = createCommonFromGethGenesis(modifiedJson, {
+    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
     assert.equal(

@@ -164,7 +164,7 @@ describe('EIP 3860 tests', () => {
     const result = await evm.runCall(runCallArgs)
     assert.ok(
       result.execResult.exceptionError === undefined,
-      'succesfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active',
+      'successfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active',
     )
   })
 
@@ -194,7 +194,7 @@ describe('EIP 3860 tests', () => {
       // Attempts to create a contract of X size
       // (the initcode of this contract is just zeros, so STOP opcode
       // It stores the topmost stack item of this CREATE(2) at slot 0
-      // This is either the contract address if it was succesful, or 0 in case of error
+      // This is either the contract address if it was successful, or 0 in case of error
       const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
 
       await evm.stateManager.putCode(contractFactory, factoryCode)

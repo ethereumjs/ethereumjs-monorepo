@@ -3,11 +3,13 @@ import {
   BIGINT_0,
   BIGINT_27,
   MAX_INTEGER,
+  TypeOutput,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
+  hexToBytes,
   toBytes,
+  toType,
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from '../baseTransaction.js'
@@ -20,16 +22,17 @@ import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
-import { create4844BlobTx } from './constructors.js'
+import { createBlob4844Tx } from './constructors.js'
 
 import type {
   AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  JsonTx,
+  JSONTx,
   TxOptions,
 } from '../types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
@@ -40,7 +43,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
+export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -49,10 +52,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   public readonly maxFeePerBlobGas: bigint
 
   public readonly common: Common
-  public blobVersionedHashes: Uint8Array[]
-  blobs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: Uint8Array[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  public blobVersionedHashes: PrefixedHexString[]
+  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -116,16 +119,20 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
     )
 
-    this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) => toBytes(vh))
+    this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) =>
+      toType(vh, TypeOutput.PrefixedHexString),
+    )
     EIP2718.validateYParity(this)
     Legacy.validateHighS(this)
 
     for (const hash of this.blobVersionedHashes) {
-      if (hash.length !== 32) {
+      if (hash.length !== 66) {
+        // 66 is the length of a 32 byte hash as a PrefixedHexString
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (BigInt(hash[0]) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
+        // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -144,9 +151,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw new Error(msg)
     }
 
-    this.blobs = txData.blobs?.map((blob) => toBytes(blob))
-    this.kzgCommitments = txData.kzgCommitments?.map((commitment) => toBytes(commitment))
-    this.kzgProofs = txData.kzgProofs?.map((proof) => toBytes(proof))
+    this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
+    this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
+      toType(commitment, TypeOutput.PrefixedHexString),
+    )
+    this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -182,12 +191,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Format: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
    *
-   * Use {@link BlobEIP4844Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromValuesArray}.
+   * Use {@link Blob4844Tx.serialize} to add a transaction to a block
+   * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link BlobEIP4844Transaction.getMessageToSign}.
+   * representation for external signing use {@link Blob4844Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -201,7 +210,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       this.data,
       this.accessList,
       bigIntToUnpaddedBytes(this.maxFeePerBlobGas),
-      this.blobVersionedHashes,
+      this.blobVersionedHashes.map((hash) => hexToBytes(hash)),
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
@@ -269,7 +278,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link Blob4844Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -286,18 +295,18 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     return Legacy.getSenderPublicKey(this)
   }
 
-  toJSON(): JsonTx {
+  toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJson = super.toJSON()
+    const baseJSON = super.toJSON()
 
     return {
-      ...baseJson,
+      ...baseJSON,
       chainId: bigIntToHex(this.chainId),
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
       maxFeePerBlobGas: bigIntToHex(this.maxFeePerBlobGas),
-      blobVersionedHashes: this.blobVersionedHashes.map((hash) => bytesToHex(hash)),
+      blobVersionedHashes: this.blobVersionedHashes,
     }
   }
 
@@ -306,12 +315,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): BlobEIP4844Transaction {
+  ): Blob4844Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
-    return create4844BlobTx(
+    return createBlob4844Tx(
       {
         chainId: this.chainId,
         nonce: this.nonce,

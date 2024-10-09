@@ -132,10 +132,10 @@ class StreamReader {
  * The EOFHeader, describing the header of the EOF container
  */
 class EOFHeader {
-  typeSize: number // Size of the types section
-  codeSizes: number[] // Sizes of the code sections
-  containerSizes: number[] // Sizes of the containers
-  dataSize: number // Size of the data section
+  typeSize: number // Size of types section
+  codeSizes: number[] // Sizes of code sections
+  containerSizes: number[] // Sizes of containers
+  dataSize: number // Size of data section
   dataSizePtr: number // Used to edit the dataSize in RETURNCONTRACT
   buffer: Uint8Array // The raw buffer of the entire header
 
@@ -143,7 +143,7 @@ class EOFHeader {
 
   /**
    * Create an EOF header. Performs various validation checks inside the constructor
-   * @param input The input should either be a raw header, or a complete container
+   * @param input either a raw header or a complete container
    */
   constructor(input: Uint8Array) {
     if (input.length > MAX_HEADER_SIZE) {
@@ -157,7 +157,7 @@ class EOFHeader {
     if (input.length < 15) {
       throw new Error('err: container size less than minimum valid size')
     }
-    // Verify that the types section is present, and verify that the type section length is valid
+    // Verify that the types section is present and its length is valid
     stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
     const typeSize = stream.readUint16(EOFError.TypeSize)
     if (typeSize < TYPE_MIN) {
@@ -169,7 +169,7 @@ class EOFHeader {
     if (typeSize > TYPE_MAX) {
       throw new Error(`err: number of code sections must not exceed 1024 (got ${typeSize})`)
     }
-    // Verify that the code section is present, and verify that the code section size is valid
+    // Verify that the code section is present and its size is valid
     stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)
     const codeSize = stream.readUint16(EOFError.CodeSize)
     if (codeSize < CODE_MIN) {
@@ -178,7 +178,7 @@ class EOFHeader {
     if (codeSize !== typeSize / TYPE_DIVISOR) {
       validationError(EOFError.TypeSections, typeSize / TYPE_DIVISOR, codeSize)
     }
-    // Read the actual code sizes in the code section, and verify that each code section has the minimum size
+    // Read the actual code sizes in the code section and verify that each section has the minimum size
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
       const codeSectionSize = stream.readUint16(EOFError.CodeSection)
@@ -202,7 +202,7 @@ class EOFHeader {
         validationError(EOFError.ContainerSectionSize)
       }
 
-      // Read the actual container sections, and validate that each container section has the minimum size
+      // Read the actual container sections and validate that each section has the minimum size
       for (let i = 0; i < containerSectionSize; i++) {
         const containerSize = stream.readUint16(EOFError.ContainerSection)
 
@@ -277,19 +277,19 @@ export interface TypeSection {
  */
 class EOFBody {
   typeSections: TypeSection[] // Array of type sections, used to index the inputs/outputs/max stack height of each section
-  codeSections: Uint8Array[] // The bytecode of each code section
-  containerSections: Uint8Array[] // The raw container bytes of each subcontainer
+  codeSections: Uint8Array[] // Bytecode of each code section
+  containerSections: Uint8Array[] // Raw container bytes of each subcontainer
   entireCode: Uint8Array // The `entireCode` are all code sections concatenated
-  dataSection: Uint8Array // The bytes of the data section
-  buffer: Uint8Array // The raw bytes of the body
+  dataSection: Uint8Array // Bytes of the data section
+  buffer: Uint8Array // Raw bytes of the body
 
   txCallData?: Uint8Array // Only available in TxInitmode. The `txCallData` are the dangling bytes after parsing the container,
   // and these are used for the CALLDATA in the EVM when trying to create a contract via a transaction, and the deployment code is an EOF container
 
   constructor(
-    buf: Uint8Array, // The buffer of the body. This should be the entire body. It is not valid to pass an entire EOF container in here
-    header: EOFHeader, // The EOFHeader corresponding to this body
-    eofMode: EOFContainerMode = EOFContainerMode.Default, // The container mode of EOF
+    buf: Uint8Array, // Buffer of the body. This should be the entire body. It is not valid to pass an entire EOF container in here
+    header: EOFHeader, // EOFHeader corresponding to this body
+    eofMode: EOFContainerMode = EOFContainerMode.Default, // Container mode of EOF
     dataSectionAllowedSmaller = false, // Only for validation: Deployment containers are allowed to have smaller data section size
   ) {
     const stream = new StreamReader(buf)

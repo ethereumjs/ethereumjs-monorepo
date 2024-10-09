@@ -1,3 +1,4 @@
+// cspell:ignore ivsize cryptojs
 import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
@@ -44,12 +45,12 @@ function mergeEvpKdfOptsWithDefaults(opts?: Partial<EvpKdfOpts>): EvpKdfOpts {
  *
  * Algorithm form https://www.openssl.org/docs/manmaster/crypto/EVP_BytesToKey.html
  *
- * FIXME: not optimised at all
+ * FIXME: not optimized at all
  */
 function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>) {
   const params = mergeEvpKdfOptsWithDefaults(opts)
 
-  // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
+  // A single EVP iteration, returns `D_i`, where block equals to `D_(i-1)`
   function iter(block: Uint8Array) {
     if (params.digest !== 'md5') throw new Error('Only md5 is supported in evp_kdf')
     let hash = md5.create()
@@ -149,7 +150,7 @@ export async function fromEtherWallet(
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     const evp = evp_kdf(utf8ToBytes(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    const pr = await decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
+    const pr = decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
     privateKey = unprefixedHexToBytes(bytesToUtf8(pr))

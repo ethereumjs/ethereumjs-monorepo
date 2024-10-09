@@ -1,8 +1,13 @@
 import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
-import type { EVMInterface, EVMOpts, EVMResult, Log } from '@ethereumjs/evm'
+import type {
+  EVMInterface,
+  EVMMockBlockchainInterface,
+  EVMOpts,
+  EVMResult,
+  Log,
+} from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
@@ -64,7 +69,7 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   /**
    * blob gas price for block transaction was included in
    *
-   * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
+   * Note: This values is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
    */
   blobGasPrice: bigint
@@ -121,7 +126,7 @@ export interface VMOpts {
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
-  blockchain?: BlockchainInterface
+  blockchain?: EVMMockBlockchainInterface
   /**
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
@@ -195,6 +200,11 @@ export interface BuilderOpts extends BlockOptions {
    * Default: true
    */
   putBlockIntoBlockchain?: boolean
+  /**
+   * Provide a clique signer's privateKey to seal this block.
+   * Will throw if provided on a non-PoA chain.
+   */
+  cliqueSigner?: Uint8Array
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { create2930AccessListTx } from '@ethereumjs/tx'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
 import {
   Address,
   bytesToHex,
@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -32,7 +32,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         storageKeys: [bytesToHex(validSlot)],
       },
     ]
-    const txnWithAccessList = create2930AccessListTx(
+    const txnWithAccessList = createAccessList2930Tx(
       {
         accessList: access,
         chainId: BigInt(1),
@@ -41,7 +41,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       },
       { common },
     ).sign(privateKey)
-    const txnWithoutAccessList = create2930AccessListTx(
+    const txnWithoutAccessList = createAccessList2930Tx(
       {
         accessList: [],
         chainId: BigInt(1),
@@ -51,7 +51,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       { common },
     ).sign(privateKey)
 
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
     await vm.stateManager.putCode(contractAddress, hexToBytes('0x60005400'))

@@ -5,14 +5,12 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src/block.js'
-import { createBlock, createBlockHeader } from '../src/constructors.js'
+import { Block, createBlock, createBlockHeader } from '../src/index.js'
 
-import type { BlockHeader } from '../src/header.js'
+import type { BlockHeader } from '../src/index.js'
 
 const common = new Common({
   chain: Mainnet,
@@ -20,13 +18,13 @@ const common = new Common({
 })
 
 function validateMergeHeader(header: BlockHeader) {
-  assert.ok(equalsBytes(header.parentHash, zeros(32)), 'parentHash')
+  assert.ok(equalsBytes(header.parentHash, new Uint8Array(32)), 'parentHash')
   assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
   assert.ok(header.coinbase.equals(createZeroAddress()), 'coinbase')
-  assert.ok(equalsBytes(header.stateRoot, zeros(32)), 'stateRoot')
+  assert.ok(equalsBytes(header.stateRoot, new Uint8Array(32)), 'stateRoot')
   assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
   assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
-  assert.ok(equalsBytes(header.logsBloom, zeros(256)), 'logsBloom')
+  assert.ok(equalsBytes(header.logsBloom, new Uint8Array(256)), 'logsBloom')
   assert.equal(header.difficulty, BigInt(0), 'difficulty')
   assert.equal(header.number, BigInt(0), 'number')
   assert.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
@@ -34,7 +32,7 @@ function validateMergeHeader(header: BlockHeader) {
   assert.equal(header.timestamp, BigInt(0), 'timestamp')
   assert.ok(header.extraData.length <= 32, 'extraData')
   assert.equal(header.mixHash.length, 32, 'mixHash')
-  assert.ok(equalsBytes(header.nonce, zeros(8)), 'nonce')
+  assert.ok(equalsBytes(header.nonce, new Uint8Array(8)), 'nonce')
 }
 
 describe('[Header]: Casper PoS / The Merge Functionality', () => {
@@ -113,7 +111,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     }
   })
 
-  it('EIP-4399: prevRando should return mixHash value', () => {
+  it('EIP-4399: prevRandao should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
     let block = createBlock({ header: { mixHash } }, { common })
     assert.ok(

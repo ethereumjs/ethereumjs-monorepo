@@ -44,7 +44,7 @@ describe('[Logging]', () => {
     }) as any
     assert.equal(
       message,
-      'test \x1B[38;2;0;128;0mkey\x1B[39m=value ',
+      'test \x1B[38;2;0;128;0mkey\x1B[39m=value ', // cspell:disable-line
       'key=value pairs should be colorized',
     )
   })

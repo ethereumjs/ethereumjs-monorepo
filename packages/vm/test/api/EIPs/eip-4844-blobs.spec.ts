@@ -1,7 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   blobsToProofs,
@@ -11,29 +11,28 @@ import {
   getBlobs,
   hexToBytes,
   privateToAddress,
-  zeros,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
-import { VM, buildBlock, runBlock } from '../../../src/index.js'
+import { eip4844Data } from '../../../../client/test/testdata/geth-genesis/eip4844.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setBalance } from '../utils.js'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
+  const kzg = new microEthKZG(trustedSetup)
   it('should build a block correctly with blobs', async () => {
-    const kzg = await loadKZG()
-
-    const common = createCommonFromGethGenesis(genesisJSON, {
+    const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
     const genesisBlock = createBlock(
-      { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
+      { header: { gasLimit: 50000, parentBeaconBlockRoot: new Uint8Array(32) } },
       { common },
     )
     const blockchain = await createBlockchain({
@@ -42,7 +41,7 @@ describe('EIP4844 tests', () => {
       validateBlocks: false,
       validateConsensus: false,
     })
-    const vm = await VM.create({ common, blockchain })
+    const vm = await createVM({ common, blockchain })
 
     const address = createAddressFromString(sender)
     await setBalance(vm, address, 14680063125000000000n)
@@ -65,7 +64,7 @@ describe('EIP4844 tests', () => {
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(kzg, blobs, commitments)
-    const unsignedTx = create4844BlobTx(
+    const unsignedTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,

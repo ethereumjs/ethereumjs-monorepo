@@ -1,7 +1,7 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { create1559FeeMarketTxFromRLP, create4844BlobTx, createLegacyTx } from '@ethereumjs/tx'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -11,25 +11,34 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
 import { baseSetup } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
+    // Unschedule any timestamp since tests are not configured for timestamps
+    Mainnet.hardforks
+      .filter((hf) => hf.timestamp !== undefined)
+      .map((hf) => {
+        hf.timestamp = undefined
+      })
     const common = new Common({ chain: Mainnet })
     common
       .hardforks()
@@ -44,7 +53,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = create1559FeeMarketTxFromRLP(hexToBytes(txData))
+    const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
     await vm.stateManager.putAccount(address, new Account())
@@ -60,14 +69,14 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('send local tx with gasprice lower than minimum', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Mainnet }).hardforkBlock(Hardfork.London)
     const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -88,13 +97,13 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 
   it('call with invalid arguments: not enough balance', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Mainnet }).hardforkBlock(Hardfork.London)
     const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
@@ -107,7 +116,7 @@ describe(method, () => {
     assert.ok(res.error.message.includes('insufficient balance'))
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 
   it('call with sync target height not set yet', async () => {
@@ -148,7 +157,7 @@ describe(method, () => {
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const tx = create1559FeeMarketTxFromRLP(hexToBytes(txData), {
+    const tx = createFeeMarket1559TxFromRLP(hexToBytes(txData), {
       common,
       freeze: false,
     })
@@ -164,10 +173,10 @@ describe(method, () => {
 
   it('call with no peers', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
@@ -183,7 +192,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = create1559FeeMarketTxFromRLP(hexToBytes(txData))
+    const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
@@ -198,30 +207,30 @@ describe(method, () => {
     assert.ok(res.error.message.includes('no peer connection available'))
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('blob EIP 4844 transaction', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
+    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
 
-    const kzg = await loadKZG()
-
-    const common = createCommonFromGethGenesis(gethGenesis, {
+    const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
+      params: paramsBlock,
     })
+
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({
       commonChain: common,
@@ -231,9 +240,11 @@ describe(method, () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+    const proofs = blobs.map((blob, ctx) =>
+      kzg.computeBlobProof(blob, commitments[ctx]),
+    ) as PrefixedHexString[]
     const pk = randomBytes(32)
-    const tx = create4844BlobTx(
+    const tx = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -248,7 +259,7 @@ describe(method, () => {
       { common },
     ).sign(pk)
 
-    const replacementTx = create4844BlobTx(
+    const replacementTx = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -269,6 +280,7 @@ describe(method, () => {
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
     const res = await rpc.request(method, [bytesToHex(tx.serializeNetworkWrapper())])
+
     const res2 = await rpc.request(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
 
     assert.equal(res.error, undefined, 'initial blob transaction accepted')
@@ -277,8 +289,8 @@ describe(method, () => {
     assert.ok(res2.error.message.includes('replacement blob gas too low'))
 
     // Restore stubbed out functionality
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
     BlockHeader.prototype['_consensusFormatValidation'] = consensusFormatValidation
   })
 })

@@ -1,7 +1,7 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createTx } from '@ethereumjs/tx'
 import {
   Account,
   bytesToHex,
@@ -12,9 +12,9 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
-import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import preShanghaiGenesisJson from '../../testdata/geth-genesis/post-merge.json'
-import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
 const method = 'engine_getPayloadBodiesByHashV1'
 
@@ -32,17 +32,17 @@ describe(method, () => {
 
   it('call with valid parameters', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
+    const { chain, service, server, common } = await setupChain(eip4844Data, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
     })
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = createAddressFromPrivateKey(pkey)
@@ -51,7 +51,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -61,7 +61,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const tx2 = createTxFromTxData(
+    const tx2 = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -108,27 +108,23 @@ describe(method, () => {
     assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('call with valid parameters on pre-Shanghai block', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.shallowCopy = function () {
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = function (): any {}
+    MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(
-      preShanghaiGenesisJson,
-      'post-merge',
-      {
-        engine: true,
-        hardfork: Hardfork.London,
-      },
-    )
-    const rpc = getRpcClient(server)
+    const { chain, service, server, common } = await setupChain(postMergeData, 'post-merge', {
+      engine: true,
+      hardfork: Hardfork.London,
+    })
+    const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.London)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = createAddressFromPrivateKey(pkey)
@@ -137,7 +133,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -147,7 +143,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pkey)
-    const tx2 = createTxFromTxData(
+    const tx2 = createTx(
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
@@ -192,7 +188,7 @@ describe(method, () => {
     )
 
     // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })

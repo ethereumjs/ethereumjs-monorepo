@@ -1,8 +1,17 @@
 import {
+  BIGINT_0,
+  BIGINT_1,
+  MAX_INTEGER,
+  MAX_UINT64,
   type PrefixedHexString,
+  SECP256K1_ORDER_DIV_2,
+  TypeOutput,
+  bytesToBigInt,
   bytesToHex,
   hexToBytes,
   setLengthLeft,
+  toBytes,
+  toType,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
@@ -14,9 +23,11 @@ import type {
   AccessListItem,
   AuthorizationList,
   AuthorizationListBytes,
+  AuthorizationListItem,
   TransactionType,
+  TypedTxData,
 } from './types.js'
-import type { AuthorizationListItem, Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('maxInitCodeSize')
@@ -141,22 +152,18 @@ export class AuthorizationLists {
       for (let i = 0; i < authorizationList.length; i++) {
         const item: AuthorizationListItem = authorizationList[i]
         for (const key of jsonItems) {
-          // @ts-ignore TODO why does TsScript fail here?
-          if (item[key] === undefined) {
+          if (item[key as keyof typeof item] === undefined) {
             throw new Error(`EIP-7702 authorization list invalid: ${key} is not defined`)
           }
         }
         const chainId = hexToBytes(item.chainId)
         const addressBytes = hexToBytes(item.address)
-        const nonceList = []
-        for (let j = 0; j < item.nonce.length; j++) {
-          nonceList.push(hexToBytes(item.nonce[j]))
-        }
+        const nonce = hexToBytes(item.nonce)
         const yParity = hexToBytes(item.yParity)
         const r = hexToBytes(item.r)
         const s = hexToBytes(item.s)
 
-        newAuthorizationList.push([chainId, addressBytes, nonceList, yParity, r, s])
+        newAuthorizationList.push([chainId, addressBytes, nonce, yParity, r, s])
       }
       bufferAuthorizationList = newAuthorizationList
     } else {
@@ -167,18 +174,14 @@ export class AuthorizationLists {
         const data = bufferAuthorizationList[i]
         const chainId = bytesToHex(data[0])
         const address = bytesToHex(data[1])
-        const nonces = data[2]
-        const nonceList: PrefixedHexString[] = []
-        for (let j = 0; j < nonces.length; j++) {
-          nonceList.push(bytesToHex(nonces[j]))
-        }
+        const nonce = bytesToHex(data[2])
         const yParity = bytesToHex(data[3])
         const r = bytesToHex(data[4])
         const s = bytesToHex(data[5])
         const jsonItem: AuthorizationListItem = {
           chainId,
           address,
-          nonce: nonceList,
+          nonce,
           yParity,
           r,
           s,
@@ -195,21 +198,36 @@ export class AuthorizationLists {
   }
 
   public static verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
+    if (authorizationList.length === 0) {
+      throw new Error('Invalid EIP-7702 transaction: authorization list is empty')
+    }
     for (let key = 0; key < authorizationList.length; key++) {
       const authorizationListItem = authorizationList[key]
+      const chainId = authorizationListItem[0]
       const address = authorizationListItem[1]
-      const nonceList = authorizationListItem[2]
+      const nonce = authorizationListItem[2]
       const yParity = authorizationListItem[3]
       const r = authorizationListItem[4]
       const s = authorizationListItem[5]
-      validateNoLeadingZeroes({ yParity, r, s })
+      validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
       if (address.length !== 20) {
         throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
       }
-      if (nonceList.length > 1) {
-        throw new Error('Invalid EIP-7702 transaction: nonce list should consist of at most 1 item')
-      } else if (nonceList.length === 1) {
-        validateNoLeadingZeroes({ nonce: nonceList[0] })
+      if (bytesToBigInt(chainId) > MAX_INTEGER) {
+        throw new Error('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
+      }
+      if (bytesToBigInt(nonce) > MAX_UINT64) {
+        throw new Error('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
+      }
+      const yParityBigInt = bytesToBigInt(yParity)
+      if (yParityBigInt !== BIGINT_0 && yParityBigInt !== BIGINT_1) {
+        throw new Error('Invalid EIP-7702 transaction: yParity should be 0 or 1')
+      }
+      if (bytesToBigInt(r) > MAX_INTEGER) {
+        throw new Error('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
+      }
+      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
+        throw new Error('Invalid EIP-7702 transaction: s > secp256k1n/2')
       }
     }
   }
@@ -247,4 +265,43 @@ export function validateNotArray(values: { [key: string]: any }) {
       }
     }
   }
+}
+
+/**
+ * Normalizes values for transactions that are received from an RPC provider to be properly usable within
+ * the ethereumjs context
+ * @param txParamsFromRPC a transaction in the standard JSON-RPC format
+ * @returns a normalized {@link TypedTxData} object with valid values
+ */
+export const normalizeTxParams = (txParamsFromRPC: any): TypedTxData => {
+  const txParams = Object.assign({}, txParamsFromRPC)
+
+  txParams.gasLimit = toType(txParams.gasLimit ?? txParams.gas, TypeOutput.BigInt)
+  txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
+  // check and convert gasPrice and value params
+  txParams.gasPrice = txParams.gasPrice !== undefined ? BigInt(txParams.gasPrice) : undefined
+  txParams.value = txParams.value !== undefined ? BigInt(txParams.value) : undefined
+
+  // strict byte length checking
+  txParams.to =
+    txParams.to !== null && txParams.to !== undefined
+      ? setLengthLeft(toBytes(txParams.to), 20)
+      : null
+
+  // Normalize the v/r/s values. If RPC returns '0x0', ensure v/r/s are set to `undefined` in the tx.
+  // If this is not done, then the transaction creation will throw, because `v` is `0`.
+  // Note: this still means that `isSigned` will return `false`.
+  // v/r/s values are `0x0` on networks like Optimism, where the tx is a system tx.
+  // For instance: https://optimistic.etherscan.io/tx/0xf4304cb09b3f58a8e5d20fec5f393c96ccffe0269aaf632cb2be7a8a0f0c91cc
+
+  txParams.v = txParams.v === '0x0' ? '0x' : txParams.v
+  txParams.r = txParams.r === '0x0' ? '0x' : txParams.r
+  txParams.s = txParams.s === '0x0' ? '0x' : txParams.s
+
+  if (txParams.v !== '0x' || txParams.r !== '0x' || txParams.s !== '0x') {
+    txParams.v = toType(txParams.v, TypeOutput.BigInt)
+  }
+
+  return txParams
 }

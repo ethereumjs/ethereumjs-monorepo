@@ -60,8 +60,8 @@ export class Common {
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter()
 
-    this._chainParams = opts.chain
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
+    this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name,
@@ -69,7 +69,7 @@ export class Common {
         (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
-    this._params = { ...(opts.params ?? {}) } // copy
+    this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
 
     if (opts.hardfork !== undefined) {
       this.setHardfork(opts.hardfork)
@@ -87,7 +87,7 @@ export class Common {
 
   /**
    * Update the internal Common EIP params set. Existing values
-   * will get preserved unless there is a new value for a paramter
+   * will get preserved unless there is a new value for a parameter
    * provided with params.
    *
    * Example Format:
@@ -105,9 +105,9 @@ export class Common {
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
       if (!(eip in this._params)) {
-        this._params[eip] = { ...paramsConfig } // copy
+        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)) // copy
       } else {
-        this._params[eip] = { ...this._params[eip], ...params[eip] }
+        this._params[eip] = JSON.parse(JSON.stringify({ ...this._params[eip], ...params[eip] })) // copy
       }
     }
 
@@ -130,7 +130,7 @@ export class Common {
    * @param params
    */
   resetParams(params: ParamsDict) {
-    this._params = { ...params } // copy
+    this._params = JSON.parse(JSON.stringify(params)) // copy
     this._buildParamsCache()
   }
 
@@ -157,7 +157,7 @@ export class Common {
   }
 
   /**
-   * Returns the hardfork either based on block numer (older HFs) or
+   * Returns the hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
    * @param Opts Block number or timestamp
@@ -240,7 +240,7 @@ export class Common {
   }
 
   /**
-   * Sets a new hardfork either based on block numer (older HFs) or
+   * Sets a new hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
    * @param Opts Block number or timestamp
@@ -811,7 +811,7 @@ export class Common {
    * parameters based on the consensus algorithm
    *
    * Expected returns (parameters must be present in
-   * the respective chain json files):
+   * the respective chain JSON files):
    *
    * ethash: empty object
    * clique: period, epoch

@@ -59,7 +59,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
         const { ip6, port } = matchip6.groups!
         return multiaddr(`/ip6/${ip6}/tcp/${port}`)
       }
-      // parse using WHATWG URL API
+      // parse using WHATWG URL API // cspell:disable-line
       const { hostname: ip, port } = new URL(s)
       if (ip && port) {
         return multiaddr(`/ip4/${ip}/tcp/${port}`)

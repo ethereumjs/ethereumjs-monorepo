@@ -4,7 +4,7 @@ import { equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { dummy } from './helpers.js'
 
-import type { LegacyTransaction } from '@ethereumjs/tx'
+import type { LegacyTx } from '@ethereumjs/tx'
 
 export function mockBlockchain(options: any = {}) {
   const number = options.number ?? '0x444444'
@@ -21,7 +21,7 @@ export function mockBlockchain(options: any = {}) {
     toJSON: () => ({
       ...createBlock({ header: { number } }).toJSON(),
       hash: options.hash ?? blockHash,
-      transactions: transactions.map((t: LegacyTransaction) => t.toJSON()),
+      transactions: transactions.map((t: LegacyTx) => t.toJSON()),
     }),
     transactions,
     uncleHeaders: [],

@@ -2,7 +2,7 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -31,7 +31,9 @@ export interface StorageRange {
   nextKey: string | null
 }
 
-export type AccountFields = Partial<Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash'>>
+export type AccountFields = Partial<
+  Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
+>
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -48,46 +50,6 @@ export type Proof = {
   accountProof: PrefixedHexString[]
   storageProof: StorageProof[]
 }
-
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
- */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString[]
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array[],
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
 
 /**
  * Verkle related
@@ -185,10 +147,9 @@ export interface StateManagerInterface {
    * Extra Functionality
    *
    * Optional non-essential methods, these methods should always be guarded
-   * on usage (check for existance)
+   * on usage (check for existence)
    */
   // Client RPC
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   dumpStorage?(address: Address): Promise<StorageDump>
   dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
 
@@ -201,6 +162,13 @@ export interface StateManagerInterface {
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
   // only Verkle/EIP-6800 (experimental)
+  accessWitness?: AccessWitnessInterface
+  initVerkleExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitnessInterface,
+  ): void
+  verifyPostState?(): boolean
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
@@ -209,35 +177,4 @@ export interface StateManagerInterface {
    */
   clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-
-  /*
-   * Cache properties
-   */
-  _accountCache?: Cache
-  _storageCache?: Cache
-  _codeCache?: Cache
-
-  _accountCacheSettings?: CacheSettings
-  _storageCacheSettings?: CacheSettings
-  _codeCacheSettings?: CacheSettings
-}
-
-/**
- * Cache related
- */
-export enum CacheType {
-  LRU = 'lru',
-  ORDERED_MAP = 'ordered_map',
-}
-
-export type CacheSettings = {
-  deactivate: boolean
-  type: CacheType
-  size: number
-}
-
-interface Cache {
-  checkpoint(): void
-  commit(): void
-  revert(): void
 }

@@ -3,12 +3,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { create1559FeeMarketTx } from '../src/index.js'
+import { createFeeMarket1559Tx } from '../src/index.js'
 
-import testdata from './json/eip1559.json' // Source: Besu
+import { eip1559Data } from './testData/eip1559.js' // Source: Besu
 
-import type { FeeMarketEIP1559TxData, JsonTx } from '../src/index.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { JSONTx } from '../src/index.js'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)
 common.setHardfork(Hardfork.London)
@@ -17,7 +16,7 @@ const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
 const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(4)
 
-describe('[FeeMarketEIP1559Transaction]', () => {
+describe('[FeeMarket1559Tx]', () => {
   it(`cannot input decimal or negative values`, () => {
     const values = [
       'maxFeePerGas',
@@ -60,7 +59,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         ) {
           txData[value] = testCase
           assert.throws(() => {
-            create1559FeeMarketTx(txData)
+            createFeeMarket1559Tx(txData)
           })
         }
       }
@@ -68,7 +67,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('getUpfrontCost()', () => {
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
@@ -89,7 +88,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('getEffectivePriorityFee()', () => {
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
@@ -106,22 +105,22 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('sign()', () => {
-    for (let index = 0; index < testdata.length; index++) {
-      const data = testdata[index]
-      const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-      const txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, { common })
+    for (let index = 0; index < eip1559Data.length; index++) {
+      const data = eip1559Data[index]
+      const pkey = hexToBytes(data.privateKey)
+      const txn = createFeeMarket1559Tx(data, { common })
       const signed = txn.sign(pkey)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
-        equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP as PrefixedHexString)),
+        equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
         'Should sign txs correctly',
       )
     }
   })
 
   it('addSignature() -> correctly adds correct signature values', () => {
-    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = create1559FeeMarketTx({})
+    const privKey = hexToBytes(eip1559Data[0].privateKey)
+    const tx = createFeeMarket1559Tx({})
     const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
@@ -129,8 +128,8 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('addSignature() -> correctly converts raw ecrecover values', () => {
-    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = create1559FeeMarketTx({})
+    const privKey = hexToBytes(eip1559Data[0].privateKey)
+    const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -142,8 +141,8 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('addSignature() -> throws when adding the wrong v value', () => {
-    const privKey = hexToBytes(testdata[0].privateKey as PrefixedHexString)
-    const tx = create1559FeeMarketTx({})
+    const privKey = hexToBytes(eip1559Data[0].privateKey)
+    const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -155,9 +154,9 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('hash()', () => {
-    const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    let txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, { common })
+    const data = eip1559Data[0]
+    const pkey = hexToBytes(data.privateKey)
+    let txn = createFeeMarket1559Tx(data, { common })
     let signed = txn.sign(pkey)
     const expectedHash = hexToBytes(
       '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
@@ -166,7 +165,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when frozen',
     )
-    txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, {
+    txn = createFeeMarket1559Tx(data, {
       common,
       freeze: false,
     })
@@ -178,9 +177,9 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
-    const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, {
+    const data = eip1559Data[0]
+    const pkey = hexToBytes(data.privateKey)
+    const txn = createFeeMarket1559Tx(data, {
       common,
       freeze: false,
     })
@@ -190,9 +189,9 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, {
+    const data = eip1559Data[0]
+    const pkey = hexToBytes(data.privateKey)
+    const txn = createFeeMarket1559Tx(data, {
       common,
       freeze: false,
     })
@@ -214,7 +213,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('unsigned tx -> getMessageToSign()/getHashedMessageToSign()', () => {
-    const unsignedTx = create1559FeeMarketTx(
+    const unsignedTx = createFeeMarket1559Tx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
@@ -239,13 +238,13 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   })
 
   it('toJSON()', () => {
-    const data = testdata[0]
-    const pkey = hexToBytes(data.privateKey as PrefixedHexString)
-    const txn = create1559FeeMarketTx(data as FeeMarketEIP1559TxData, { common })
+    const data = eip1559Data[0]
+    const pkey = hexToBytes(data.privateKey)
+    const txn = createFeeMarket1559Tx(data, { common })
     const signed = txn.sign(pkey)
 
     const json = signed.toJSON()
-    const expectedJSON: JsonTx = {
+    const expectedJSON: JSONTx = {
       type: '0x2',
       chainId: '0x4',
       nonce: '0x333',
@@ -266,7 +265,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('Fee validation', () => {
     assert.doesNotThrow(() => {
-      create1559FeeMarketTx(
+      createFeeMarket1559Tx(
         {
           maxFeePerGas: TWO_POW256 - BigInt(1),
           maxPriorityFeePerGas: 100,
@@ -278,7 +277,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     }, 'fee can be 2^256 - 1')
     assert.throws(
       () => {
-        create1559FeeMarketTx(
+        createFeeMarket1559Tx(
           {
             maxFeePerGas: TWO_POW256 - BigInt(1),
             maxPriorityFeePerGas: 100,
@@ -294,7 +293,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     )
     assert.throws(
       () => {
-        create1559FeeMarketTx(
+        createFeeMarket1559Tx(
           {
             maxFeePerGas: 1,
             maxPriorityFeePerGas: 2,

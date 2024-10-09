@@ -90,8 +90,8 @@ export class Server {
   async ping(peer: PeerInfo): Promise<any> {
     this._isAliveCheck()
 
-    const rckey = `${peer.address}:${peer.udpPort}`
-    const promise = this._requestsCache.get(rckey)
+    const rcKey = `${peer.address}:${peer.udpPort}`
+    const promise = this._requestsCache.get(rcKey)
     if (promise !== undefined) return promise
 
     const hash = this._send(peer, 'ping', {
@@ -101,12 +101,12 @@ export class Server {
     })
 
     const deferred = createDeferred()
-    const rkey = bytesToUnprefixedHex(hash)
-    this._requests.set(rkey, {
+    const rKey = bytesToUnprefixedHex(hash)
+    this._requests.set(rKey, {
       peer,
       deferred,
       timeoutId: setTimeout(() => {
-        if (this._requests.get(rkey) !== undefined) {
+        if (this._requests.get(rKey) !== undefined) {
           if (this.DEBUG) {
             this._debug(
               `ping timeout: ${peer.address}:${peer.udpPort} ${
@@ -114,14 +114,14 @@ export class Server {
               }`,
             )
           }
-          this._requests.delete(rkey)
+          this._requests.delete(rKey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
           return deferred.promise
         }
       }, this._timeout),
     })
-    this._requestsCache.set(rckey, deferred.promise)
+    this._requestsCache.set(rcKey, deferred.promise)
     return deferred.promise
   }
 
@@ -189,10 +189,10 @@ export class Server {
       }
 
       case 'pong': {
-        const rkey = bytesToUnprefixedHex(info.data.hash)
-        const request = this._requests.get(rkey)
+        const rKey = bytesToUnprefixedHex(info.data.hash)
+        const request = this._requests.get(rKey)
         if (request !== undefined) {
-          this._requests.delete(rkey)
+          this._requests.delete(rKey)
           request.deferred.resolve({
             id: peerId,
             address: request.peer.address,

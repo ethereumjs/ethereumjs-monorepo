@@ -1,8 +1,8 @@
 import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -18,7 +18,7 @@ import {
   concatBytes,
   createAddressFromString,
   equalsBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -134,12 +134,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    if (!(stateManager instanceof StatelessVerkleStateManager)) {
+    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-    }
-
-    if (opts.parentStateRoot === undefined) {
-      throw Error(`Parent state root is required for StatelessVerkleStateManager execution`)
     }
 
     if (vm.DEBUG) {
@@ -153,9 +149,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(block.header.stateRoot)
 
     // Populate the execution witness
-    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
+    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager.verifyProof(opts.parentStateRoot) === false) {
+    if (
+      stateManager instanceof StatelessVerkleStateManager &&
+      verifyVerkleStateProof(stateManager) === false
+    ) {
       throw Error(`Verkle proof verification failed`)
     }
 
@@ -163,7 +162,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       debug(`Verkle proof verification succeeded`)
     }
   } else {
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
@@ -315,7 +314,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     } else if (vm.common.isActivatedEIP(6800)) {
       // If verkle is activated, only validate the post-state
-      if ((vm['_opts'].stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)
@@ -497,16 +496,14 @@ export async function accumulateParentBlockHash(
   const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
-  // getAccount with historyAddress will throw error as witnesses are not bundeled
+  // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
-  try {
-    if ((await vm.stateManager.getAccount(historyAddress)) === undefined) {
-      const emptyHistoryAcc = new Account(BigInt(1))
-      await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
-    }
-  } catch (_e) {
-    const emptyHistoryAcc = new Account(BigInt(1))
-    await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
+  const code = await vm.stateManager.getCode(historyAddress)
+
+  if (code.length === 0) {
+    // Exit early, system contract has no code so no storage is written
+    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
+    return
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
@@ -515,11 +512,13 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(ringKey)
+      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
-      ;(
-        vm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+      vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
+        historyAddress,
+        treeIndex,
+        subIndex,
+      )
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -540,23 +539,16 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
   const timestampExtended = timestampIndex + historicalRootsLength
 
   /**
-   * Note: (by Jochem)
-   * If we don't do vm (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
-   * vm is hence (for me) again a reason why it should /not/ throw if the address does not exist
-   * All ethereum accounts have empty storage by default
-   */
-
-  /**
    * Note: (by Gabriel)
    * Get account will throw an error in stateless execution b/c witnesses are not bundled
    * But we do need an account so we are able to put the storage
    */
-  try {
-    if ((await vm.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-      await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
-    }
-  } catch (_) {
-    await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
+  const code = await vm.stateManager.getCode(parentBeaconBlockRootAddress)
+
+  if (code.length === 0) {
+    // Exit early, system contract has no code so no storage is written
+    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
+    return
   }
 
   await vm.stateManager.putStorage(
@@ -591,9 +583,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
-  let receiptTrie: Trie | undefined = undefined
+  let receiptTrie: MerklePatriciaTrie | undefined = undefined
   if (block.transactions.length !== 0) {
-    receiptTrie = new Trie({ common: vm.common })
+    receiptTrie = new MerklePatriciaTrie({ common: vm.common })
   }
 
   const receipts: TxReceipt[] = []
@@ -734,9 +726,7 @@ export async function rewardAccount(
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common?.isActivatedEIP(6800) === true) {
-      ;(
-        evm.stateManager as StatelessVerkleStateManager
-      ).accessWitness!.touchAndChargeProofOfAbsence(address)
+      evm.stateManager.accessWitness!.touchAndChargeProofOfAbsence(address)
     }
     account = new Account()
   }
@@ -745,10 +735,7 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use vm utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
-      address,
-      { sendsValue: true },
-    )
+    evm.stateManager.accessWitness!.touchTxTargetAndComputeGas(address, { sendsValue: true })
   }
   return account
 }
@@ -814,7 +801,7 @@ async function _genTxTrie(block: Block) {
   if (block.transactions.length === 0) {
     return KECCAK256_RLP
   }
-  const trie = new Trie({ common: block.common })
+  const trie = new MerklePatriciaTrie({ common: block.common })
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createBlockFromValuesArray } from '@ethereumjs/block'
+import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Chain,
@@ -28,6 +28,7 @@ import {
   setLengthLeft,
   short,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -41,8 +42,8 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
-import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as promClient from 'prom-client'
@@ -59,12 +60,12 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import { helprpc, startRPCServers } from './startRpc.js'
+import { helpRPC, startRPCServers } from './startRPC.js'
 
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
-import type { RPCArgs } from './startRpc.js'
+import type { RPCArgs } from './startRPC.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { CustomCrypto } from '@ethereumjs/common'
@@ -226,7 +227,7 @@ const args: ClientOpts = yargs
     describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
   })
-  .option('helpRpc', {
+  .option('helpRPC', {
     describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
     boolean: true,
   })
@@ -430,7 +431,7 @@ const args: ClientOpts = yargs
   })
   .option('isSingleNode', {
     describe:
-      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
     boolean: true,
   })
   .option('vmProfileBlocks', {
@@ -460,7 +461,7 @@ const args: ClientOpts = yargs
   })
   .option('engineNewpayloadMaxExecute', {
     describe:
-      'Number of unexecuted blocks (including ancestors) that can be blockingly executed in engine`s new payload (if required and possible) to determine the validity of the block',
+      'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
     number: true,
   })
   .option('skipEngineExec', {
@@ -470,15 +471,9 @@ const args: ClientOpts = yargs
   })
   .option('ignoreStatelessInvalidExecs', {
     describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
     boolean: true,
     hidden: true,
-  })
-  .option('initialVerkleStateRoot', {
-    describe:
-      'Provides an initial stateRoot to start the StatelessVerkleStateManager. This is required to bootstrap verkle witness proof verification, since they depend on the stateRoot of the parent block',
-    string: true,
-    coerce: (initialVerkleStateRoot: PrefixedHexString) => hexToBytes(initialVerkleStateRoot),
   })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
@@ -685,7 +680,7 @@ async function startClient(
       let buf = RLP.decode(blockRlp, true)
       while (buf.data?.length > 0 || buf.remainder?.length > 0) {
         try {
-          const block = createBlockFromValuesArray(buf.data as BlockBytes, {
+          const block = createBlockFromBytesArray(buf.data as BlockBytes, {
             common: config.chainCommon,
             setHardfork: true,
           })
@@ -928,20 +923,18 @@ const stopClient = async (
  * Main entry point to start a client
  */
 async function run() {
-  if (args.helpRpc === true) {
+  if (args.helpRPC === true) {
     // Output RPC help and exit
-    return helprpc()
+    return helpRPC()
   }
 
-  // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
-  // loaded and initialized on the sharding hardfork activation
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
   const chain = getPresetChainConfig(chainName)
   const cryptoFunctions: CustomCrypto = {}
-  const kzg = await loadKZG()
 
+  const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
     await waitReadyPolkadotSha256()
@@ -1122,10 +1115,16 @@ async function run() {
       const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
       const route = reqUrl.pathname
 
-      if (route === '/metrics') {
-        // Return all metrics in the Prometheus exposition format
-        res.setHeader('Content-Type', register.contentType)
-        res.end(await register.metrics())
+      switch (route) {
+        case '/metrics':
+          // Return all metrics in the Prometheus exposition format
+          res.setHeader('Content-Type', register.contentType)
+          res.end(await register.metrics())
+          break
+        default:
+          res.statusCode = 404
+          res.end('Not found')
+          return
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics

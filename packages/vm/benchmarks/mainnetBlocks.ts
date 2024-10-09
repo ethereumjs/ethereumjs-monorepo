@@ -1,6 +1,6 @@
 import { Block, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { runBlock as runBlockVM, VM } from '@ethereumjs/vm'
+import { createVM, runBlock as runBlockVM, VM } from '@ethereumjs/vm'
 import Benchmark from 'benchmark'
 import { readFileSync } from 'fs'
 import { getBlockchain, getPreState, verifyResult } from './util.js'
@@ -42,7 +42,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
 
     const stateManager = await getPreState(preState, common)
     const blockchain = getBlockchain(blockhashes) as any
-    const vm = await VM.create({ stateManager, common, blockchain })
+    const vm = await createVM({ stateManager, common, blockchain })
 
     if (suite) {
       suite.add(`Block ${blockNumber}`, async () => {

@@ -60,7 +60,7 @@ export async function setup(
     safeReorgDistance: 0,
   })
   // attach server to centralized event bus
-  ;(server.config as any).events = serviceConfig.events
+  server.config.events = serviceConfig.events
   const serviceOpts = {
     config: serviceConfig,
     chain,

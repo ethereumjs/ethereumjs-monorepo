@@ -1,10 +1,10 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { FeeMarket1559Tx } from '@ethereumjs/tx'
 import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -62,7 +62,7 @@ describe('EIP3198 tests', () => {
   it('test EIP3198 gas fee and correct value', async () => {
     // Initial base fee for EIP1559
     const fee = BigInt(1000000000)
-    const tx = new FeeMarketEIP1559Transaction(
+    const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: GWEI * BigInt(5),
         maxPriorityFeePerGas: GWEI * BigInt(2),
@@ -75,15 +75,15 @@ describe('EIP3198 tests', () => {
       },
     )
     const block = makeBlock(fee, tx)
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
     await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
 
     // Track stack
 
     let stack: any = []
-    vm.evm.events!.on('step', (istep: InterpreterStep) => {
-      if (istep.opcode.name === 'STOP') {
-        stack = istep.stack
+    vm.evm.events!.on('step', (iStep: InterpreterStep) => {
+      if (iStep.opcode.name === 'STOP') {
+        stack = iStep.stack
       }
     })
 

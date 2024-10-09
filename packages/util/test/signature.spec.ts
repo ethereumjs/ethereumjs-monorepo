@@ -5,23 +5,23 @@ import {
   bytesToBigInt,
   ecrecover,
   ecsign,
-  fromRpcSig,
+  fromRPCSig,
   hashPersonalMessage,
   hexToBytes,
   isValidSignature,
   privateToPublic,
   toCompactSig,
-  toRpcSig,
+  toRPCSig,
   utf8ToBytes,
 } from '../src/index.js'
 
-const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
-const ecprivkey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
+const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const ecPrivKey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
 const chainId = BigInt(3) // ropsten
 
 describe('ecsign', () => {
   it('should produce a signature', () => {
-    const sig = ecsign(echash, ecprivkey)
+    const sig = ecsign(ecHash, ecPrivKey)
     assert.deepEqual(
       sig.r,
       hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'),
@@ -34,7 +34,7 @@ describe('ecsign', () => {
   })
 
   it('should produce a signature for Ropsten testnet', () => {
-    const sig = ecsign(echash, ecprivkey, chainId)
+    const sig = ecsign(ecHash, ecPrivKey, chainId)
     assert.deepEqual(
       sig.r,
       hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'),
@@ -54,7 +54,7 @@ describe('ecsign', () => {
       '0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
     )
 
-    const sig = ecsign(echash, ecprivkey, BigInt(150))
+    const sig = ecsign(ecHash, ecPrivKey, BigInt(150))
     assert.deepEqual(sig.r, expectedSigR)
     assert.deepEqual(sig.s, expectedSigS)
     assert.equal(sig.v, BigInt(150 * 2 + 35))
@@ -70,7 +70,7 @@ describe('ecsign', () => {
     )
     const expectedSigV = BigInt('68361967398315795')
 
-    const sigBuffer = ecsign(echash, ecprivkey, bytesToBigInt(chainIDBuffer))
+    const sigBuffer = ecsign(ecHash, ecPrivKey, bytesToBigInt(chainIDBuffer))
     assert.deepEqual(sigBuffer.r, expectedSigR)
     assert.deepEqual(sigBuffer.s, expectedSigS)
     assert.equal(sigBuffer.v, expectedSigV)
@@ -82,50 +82,50 @@ describe('ecrecover', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
-    const pubkey = ecrecover(echash, v, r, s)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    const pubkey = ecrecover(ecHash, v, r, s)
+    assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
   it('should recover a public key (chainId = 3)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(41)
-    const pubkey = ecrecover(echash, v, r, s, chainId)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    const pubkey = ecrecover(ecHash, v, r, s, chainId)
+    assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
   it('should recover a public key (chainId = 150)', () => {
     const chainId = BigInt(150)
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
-    const pubkey = ecrecover(echash, v, r, s, chainId)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    const pubkey = ecrecover(ecHash, v, r, s, chainId)
+    assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
   it('should recover a public key (v = 0)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(0)
-    const pubkey = ecrecover(echash, v, r, s)
-    assert.deepEqual(pubkey, privateToPublic(ecprivkey))
+    const pubkey = ecrecover(ecHash, v, r, s)
+    assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
   it('should fail on an invalid signature (v = 21)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
-      ecrecover(echash, BigInt(21), r, s)
+      ecrecover(ecHash, BigInt(21), r, s)
     })
   })
   it('should fail on an invalid signature (v = 29)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
-      ecrecover(echash, BigInt(29), r, s)
+      ecrecover(ecHash, BigInt(29), r, s)
     })
   })
   it('should fail on an invalid signature (swapped points)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
-      ecrecover(echash, BigInt(27), s, r)
+      ecrecover(ecHash, BigInt(27), s, r)
     })
   })
   it('should return the right sender when using very high chain id / v values', () => {
@@ -257,8 +257,8 @@ describe('message sig', () => {
   it('should return hex strings that the RPC can use', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    assert.equal(toRpcSig(BigInt(27), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.equal(toRPCSig(BigInt(27), r, s), sig)
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -269,7 +269,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(27), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -280,7 +280,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(0), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
       s,
@@ -291,7 +291,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(28), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
       s,
@@ -302,7 +302,7 @@ describe('message sig', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.equal(toCompactSig(BigInt(1), r, s), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
       s,
@@ -314,8 +314,8 @@ describe('message sig', () => {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
-    assert.equal(toRpcSig(v, r, s, chainId), sig)
-    assert.deepEqual(fromRpcSig(sig), {
+    assert.equal(toRPCSig(v, r, s, chainId), sig)
+    assert.deepEqual(fromRPCSig(sig), {
       v,
       r,
       s,
@@ -327,15 +327,15 @@ describe('message sig', () => {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
     const chainID = BigInt('34180983699157880')
     const v = BigInt('68361967398315796')
-    assert.deepEqual(toRpcSig(v, r, s, chainID), sig)
+    assert.deepEqual(toRPCSig(v, r, s, chainID), sig)
   })
 
   it('should throw on shorter length', () => {
     assert.throws(function () {
-      fromRpcSig('0x')
+      fromRPCSig('0x')
     })
     assert.throws(function () {
-      fromRpcSig(
+      fromRPCSig(
         '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca',
       )
     })
@@ -343,14 +343,14 @@ describe('message sig', () => {
 
   it('pad short r and s values', () => {
     assert.equal(
-      toRpcSig(BigInt(27), r.slice(20), s.slice(20)),
+      toRPCSig(BigInt(27), r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b',
     )
   })
 
   it('should throw on invalid v value', () => {
     assert.throws(function () {
-      toRpcSig(BigInt(2), r, s)
+      toRPCSig(BigInt(2), r, s)
     })
   })
 })

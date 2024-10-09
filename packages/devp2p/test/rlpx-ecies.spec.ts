@@ -6,7 +6,7 @@ import { assert, it } from 'vitest'
 import { ECIES } from '../src/rlpx/ecies.js'
 import * as util from '../src/util.js'
 
-import * as testdata from './testdata.json'
+import { testData } from './testdata.js'
 
 export interface EciesTestContext {
   context: {
@@ -34,12 +34,12 @@ function randomBefore(fn: Function) {
 
 function testdataBefore(fn: Function) {
   return (t: EciesTestContext) => {
-    const v = testdata.eip8Values
+    const v = testData.eip8Values
     const keyA = unprefixedHexToBytes(v.keyA)
     const keyB = unprefixedHexToBytes(v.keyB)
     const pubA = unprefixedHexToBytes(v.pubA)
     const pubB = unprefixedHexToBytes(v.pubB)
-    const h = testdata.eip8Handshakes
+    const h = testData.eip8Handshakes
 
     t.context = {
       a: new ECIES(keyA, util.pk2id(pubA), util.pk2id(pubB)),

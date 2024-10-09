@@ -14,7 +14,7 @@ export const BLS_G2_INFINITY_POINT_BYTES = new Uint8Array(BLS_G2_POINT_BYTE_LENG
 export const BLS_ZERO_BUFFER = new Uint8Array(32)
 export const BLS_ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
-// gas discount pairs taken from EIP-2537 `Bls12381MultiExpGasDiscount` parameter
+// gas discount pairs taken from EIP-2537 `bls12381MultiExpGasDiscount` parameter
 export const BLS_GAS_DISCOUNT_PAIRS = [
   [1, 1200],
   [2, 888],

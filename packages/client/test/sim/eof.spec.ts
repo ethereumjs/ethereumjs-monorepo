@@ -18,8 +18,8 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'eof'
-const eofJson = require(`./configs/${network}.json`)
-const common = createCommonFromGethGenesis(eofJson, { chain: network })
+const eofJSON = require(`./configs/${network}.json`)
+const common = createCommonFromGethGenesis(eofJSON, { chain: network })
 
 export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)

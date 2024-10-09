@@ -1,5 +1,3 @@
-import { zeros } from '@ethereumjs/util'
-
 import type { EOFContainer } from './eof/container.js'
 import type { EvmError } from './exceptions.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
@@ -85,7 +83,7 @@ interface EVMRunOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {
@@ -188,10 +186,9 @@ export interface EVMOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565) - Transaction Types
-   * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
+   * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
-   * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
@@ -207,11 +204,17 @@ export interface EVMOpts {
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
    * - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
+   * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
+   * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
+   * - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
    * - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+   * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
+   * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
    * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+   * - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
    *
    * *Annotations:*
    *
@@ -246,7 +249,7 @@ export interface EVMOpts {
    *
    * ```ts
    * const params = JSON.parse(JSON.stringify(paramsEVM))
-   * params['1679']['ecAddGas'] = 100 // 150
+   * params['1679']['bn254AddGas'] = 100 // 150
    * ```
    */
   params?: ParamsDict
@@ -282,9 +285,9 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /**
-   * For the EIP-2935 BLS precompiles, the native JS `@noble/curves`
-   * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
-   * is used (see `noble.ts` file in the `precompiles` folder).
+   * For the EIP-2537 BLS Precompiles, the native JS `ethereum-cryptography` (`@noble/curves`)
+   * https://github.com/ethereum/js-ethereum-cryptography BLS12-381 curve implementation
+   * is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
    *
    * To use an alternative implementation this option can be used by passing
    * in a wrapper implementation integrating the desired library and adhering
@@ -303,6 +306,29 @@ export interface EVMOpts {
    */
   bls?: EVMBLSInterface
 
+  /**
+   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `ethereum-cryptography`
+   * (`@noble/curves`) https://github.com/ethereum/js-ethereum-cryptography BN254 curve implementation
+   * is used (see `noble.ts` file in the `precompiles/bn254/` folder).
+   *
+   * To use an alternative implementation this option can be used by passing
+   * in a wrapper implementation integrating the desired library and adhering
+   * to the `EVMBN254Interface` specification.
+   *
+   * An interface for a WASM wrapper https://github.com/ethereumjs/rustbn.js around the
+   * Parity fork of the Zcash bn pairing cryptography library is shipped with this library
+   * which can be used as follows (with `rustbn.js` being explicitly added to the set of
+   * dependencies):
+   *
+   * ```ts
+   * import { initRustBN } from 'rustbn-wasm'
+   *
+   * const bn254 = await initRustBN()
+   * const evm = await createEVM({ bn254: new RustBN254(bn254) })
+   * ```
+   */
+  bn254?: EVMBN254Interface
+
   /*
    * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
    * which serves most code execution use cases and which is included in the
@@ -315,14 +341,25 @@ export interface EVMOpts {
   stateManager?: StateManagerInterface
 
   /**
+   * The EVM comes with a basic mock blockchain interface and implementation for
+   * non-block containing use cases.
    *
+   * For block-containing setups use the full blockchain implementation from the
+   * `@ethereumjs/blockchain package.
    */
-  blockchain?: Blockchain
+  blockchain?: EVMMockBlockchainInterface
 
   /**
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
+   * must be provided along with a `BlockHeader` so that the coinbase can be correctly retrieved when the
+   * `Interpreter.getBlockCoinbase` method is called.
+   */
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
@@ -382,6 +419,10 @@ export interface ExecResult {
   blobGasUsed?: bigint
 }
 
+/**
+ * High level wrapper for BLS libraries used
+ * for the BLS precompiles
+ */
 export type EVMBLSInterface = {
   init?(): void
   addG1(input: Uint8Array): Uint8Array
@@ -396,6 +437,16 @@ export type EVMBLSInterface = {
 }
 
 /**
+ * High level wrapper for BN254 (alt_BN128) libraries
+ * used for the BN254 (alt_BN128) EC precompiles
+ */
+export type EVMBN254Interface = {
+  add: (input: Uint8Array) => Uint8Array
+  mul: (input: Uint8Array) => Uint8Array
+  pairing: (input: Uint8Array) => Uint8Array
+}
+
+/**
  * Log that the contract emits.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
@@ -403,7 +454,6 @@ export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 export type Block = {
   header: {
     number: bigint
-    cliqueSigner(): Address
     coinbase: Address
     timestamp: bigint
     difficulty: bigint
@@ -424,35 +474,28 @@ export interface TransientStorageInterface {
   clear(): void
 }
 
-type MockBlock = {
+export type EVMMockBlock = {
   hash(): Uint8Array
 }
 
-export interface Blockchain {
-  getBlock(blockId: number): Promise<MockBlock>
-  shallowCopy(): Blockchain
+export interface EVMMockBlockchainInterface {
+  getBlock(blockId: number): Promise<EVMMockBlock>
+  putBlock(block: EVMMockBlock): Promise<void>
+  shallowCopy(): EVMMockBlockchainInterface
 }
 
-export class DefaultBlockchain implements Blockchain {
+export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
       hash() {
-        return zeros(32)
+        return new Uint8Array(32)
       },
     }
   }
+  async putBlock() {}
   shallowCopy() {
     return this
   }
-}
-
-/**
- * The BN128 curve package (`rustbn-wasm`)
- */
-export interface bn128 {
-  ec_pairing: (input_str: string) => PrefixedHexString
-  ec_add: (input_str: string) => PrefixedHexString
-  ec_mul: (input_hex: string) => PrefixedHexString
 }
 
 // EOF type which holds the execution-related data for EOF
@@ -462,3 +505,6 @@ export type EOFEnv = {
     returnStack: number[]
   }
 }
+
+// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+export const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])

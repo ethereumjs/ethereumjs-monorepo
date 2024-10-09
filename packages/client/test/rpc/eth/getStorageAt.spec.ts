@@ -5,8 +5,8 @@ import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import pow from '../../testdata/geth-genesis/pow.json'
-import { getRpcClient, setupChain } from '../helpers.js'
+import { powData } from '../../testdata/geth-genesis/pow.js'
+import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -17,8 +17,8 @@ describe(method, async () => {
     const address = createAddressFromString(`0x${'11'.repeat(20)}`)
     const emptySlotStr = `0x${'00'.repeat(32)}`
 
-    const { execution, common, server, chain } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { execution, common, server, chain } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     let res = await rpc.request(method, [address.toString(), '0x0', 'latest'])
     assert.equal(res.result, emptySlotStr, 'should return the empty slot for nonexistent account')
 

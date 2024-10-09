@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.js'
 
 const testCases = [
   { chain: Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },
@@ -23,7 +23,7 @@ describe('Istanbul: EIP-1344', () => {
     for (const testCase of testCases) {
       const { chain, hardfork } = testCase
       const common = new Common({ chain, hardfork })
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
         if (testCase.err !== undefined) {

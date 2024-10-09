@@ -1,9 +1,14 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import {
+  MerkleStateManager,
+  addMerkleStateProofData,
+  fromMerkleStateProof,
+  getMerkleStateProof,
+} from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   // setup `stateManager` with some existing address
-  const stateManager = new DefaultStateManager()
+  const stateManager = new MerkleStateManager()
   const contractAddress = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const byteCode = hexToBytes('0x67ffffffffffffffff600160006000fb')
   const storageKey1 = hexToBytes(
@@ -19,12 +24,15 @@ const main = async () => {
   await stateManager.putStorage(contractAddress, storageKey1, storageValue1)
   await stateManager.putStorage(contractAddress, storageKey2, storageValue2)
 
-  const proof = await stateManager.getProof(contractAddress)
-  const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
-  const partialStateManager = await DefaultStateManager.fromProof(proof)
+  const proof = await getMerkleStateProof(stateManager, contractAddress)
+  const proofWithStorage = await getMerkleStateProof(stateManager, contractAddress, [
+    storageKey1,
+    storageKey2,
+  ])
+  const partialStateManager = await fromMerkleStateProof(proof)
 
-  // To add more proof data, use `addProofData`
-  await partialStateManager.addProofData(proofWithStorage)
+  // To add more proof data, use `addMerkleStateProofData`
+  await addMerkleStateProofData(partialStateManager, proofWithStorage)
   console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
   console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1) // should match
   console.log(await partialStateManager.getStorage(contractAddress, storageKey2), storageValue2) // should match

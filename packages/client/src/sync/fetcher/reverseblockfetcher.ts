@@ -36,25 +36,27 @@ export class ReverseBlockFetcher extends BlockFetcher {
   async store(blocks: Block[]) {
     try {
       const num = await this.skeleton.putBlocks(blocks)
-      this.debug(
-        `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
-          blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number})`,
-      )
+      this.DEBUG &&
+        this.debug(
+          `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
+            blocks[0]?.header.number
+          } last=${blocks[blocks.length - 1]?.header.number})`,
+        )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
       if (e === errSyncMerged) {
         // Tear down the syncer to restart from new subchain segments
-        this.debug('Skeleton subchains merged, restarting sync')
+        this.DEBUG && this.debug('Skeleton subchains merged, restarting sync')
         this.running = false
         this.clear()
         this.destroy()
       } else {
-        this.debug(
-          `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${
-            blocks[0]?.header.number
-          } last=${blocks[blocks.length - 1]?.header.number}): ${e}`,
-        )
+        this.DEBUG &&
+          this.debug(
+            `Error storing fetcher results in skeleton chain (blocks num=${blocks.length} first=${
+              blocks[0]?.header.number
+            } last=${blocks[blocks.length - 1]?.header.number}): ${e}`,
+          )
         throw e
       }
     }

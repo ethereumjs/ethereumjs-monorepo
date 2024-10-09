@@ -1,23 +1,22 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
-  Account,
   BIGINT_0,
   BIGINT_1,
   BIGINT_3,
   BIGINT_31,
   BIGINT_32,
   BIGINT_64,
-  VERKLE_BALANCE_LEAF_KEY,
+  VERKLE_BASIC_DATA_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
-  VERKLE_CODE_SIZE_LEAF_KEY,
-  VERKLE_VERSION_LEAF_KEY,
   bigIntToBytes,
-  getVerkleTreeIndexesForStorageSlot,
+  equalsBytes,
+  getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
 } from '@ethereumjs/util'
 
 import { EOFError } from '../eof/errors.js'
 import { ERROR } from '../exceptions.js'
+import { DELEGATION_7702_FLAG } from '../types.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.js'
 import { updateSstoreGasEIP2200 } from './EIP2200.js'
@@ -34,8 +33,22 @@ import {
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
+
+async function eip7702GasCost(
+  runState: RunState,
+  common: Common,
+  address: Address,
+  charge2929Gas: boolean,
+) {
+  const code = await runState.stateManager.getCode(address)
+  if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+    return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
+  }
+  return BIGINT_0
+}
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -96,7 +109,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_BALANCE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -166,12 +179,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY,
-          )
-          coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-            address,
-            0,
-            VERKLE_CODE_SIZE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -181,6 +189,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         return gas
@@ -204,12 +216,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
-            VERKLE_VERSION_LEAF_KEY,
-          )
-          coldAccessGas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-            address,
-            0,
-            VERKLE_CODE_SIZE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
 
           gas += coldAccessGas
@@ -219,6 +226,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         if (dataLength !== BIGINT_0) {
@@ -286,6 +297,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
+        }
+
         return gas
       },
     ],
@@ -326,7 +341,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const address = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
@@ -394,7 +409,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const contract = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getVerkleTreeIndexesForStorageSlot(key)
+          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(key)
           const coldAccessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
@@ -586,6 +601,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, toAddress.bytes, common, charge2929Gas)
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+        }
+
         if (value !== BIGINT_0 && !common.isActivatedEIP(6800)) {
           gas += common.param('callValueTransferGas')
         }
@@ -660,6 +679,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+        }
+
         if (value !== BIGINT_0) {
           gas += common.param('callValueTransferGas')
         }
@@ -721,6 +744,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+        }
+
         const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
@@ -766,78 +793,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
-        return gas
-      },
-    ],
-    [
-      /* AUTH */
-      0xf6,
-      async function (runState, gas, common): Promise<bigint> {
-        const [address, memOffset, memLength] = runState.stack.peek(3)
-        // Note: 2929 is always active if AUTH can be reached,
-        // since it needs London as minimum hardfork
-        gas += accessAddressEIP2929(runState, bigIntToBytes(address), common)
-        gas += subMemUsage(runState, memOffset, memLength, common)
-        return gas
-      },
-    ],
-    [
-      /* AUTHCALL */
-      0xf7,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.auth === undefined) {
-          trap(ERROR.AUTHCALL_UNSET)
-        }
-
-        const [currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
-          runState.stack.peek(7)
-
-        const toAddress = createAddressFromStackBigInt(addr)
-
-        gas += common.param('warmstoragereadGas')
-
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common, true, true)
-
-        gas += subMemUsage(runState, argsOffset, argsLength, common)
-        gas += subMemUsage(runState, retOffset, retLength, common)
-
-        if (value > BIGINT_0) {
-          gas += common.param('authcallValueTransferGas')
-          const account = await runState.stateManager.getAccount(toAddress)
-          if (!account) {
-            gas += common.param('callNewAccountGas')
-          }
-        }
-
-        let gasLimit = maxCallGas(
-          runState.interpreter.getGasLeft() - gas,
-          runState.interpreter.getGasLeft() - gas,
-          runState,
-          common,
-        )
-        if (currentGasLimit !== BIGINT_0) {
-          if (currentGasLimit > gasLimit) {
-            trap(ERROR.OUT_OF_GAS)
-          }
-          gasLimit = currentGasLimit
-        }
-
-        runState.messageGasLimit = gasLimit
-
-        if (value > BIGINT_0) {
-          const account = (await runState.stateManager.getAccount(runState.auth!)) ?? new Account()
-          if (account.balance < value) {
-            trap(ERROR.OUT_OF_GAS)
-          }
-          account.balance -= value
-
-          const toAddr = createAddressFromStackBigInt(addr)
-          const target = (await runState.stateManager.getAccount(toAddr)) ?? new Account()
-          target.balance += value
-
-          await runState.stateManager.putAccount(toAddr, target)
-        }
-
         return gas
       },
     ],
@@ -992,6 +947,15 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        if (common.isActivatedEIP(7702)) {
+          gas += await eip7702GasCost(
+            runState,
+            common,
+            createAddressFromStackBigInt(toAddr),
+            charge2929Gas,
+          )
+        }
+
         const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
@@ -1099,30 +1063,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         let selfDestructToCharge2929Gas = true
         if (common.isActivatedEIP(6800)) {
-          // read accesses for version and code size
-          if (runState.interpreter._evm.getPrecompile(contractAddress) === undefined) {
-            gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-              contractAddress,
-              0,
-              VERKLE_VERSION_LEAF_KEY,
-            )
-            gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-              contractAddress,
-              0,
-              VERKLE_CODE_SIZE_LEAF_KEY,
-            )
-          }
-
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             contractAddress,
             0,
-            VERKLE_BALANCE_LEAF_KEY,
+            VERKLE_BASIC_DATA_LEAF_KEY,
           )
           if (balance > BIGINT_0) {
             gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
               contractAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY,
+              VERKLE_BASIC_DATA_LEAF_KEY,
             )
           }
 
@@ -1130,14 +1080,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               selfdestructToAddress,
               0,
-              VERKLE_BALANCE_LEAF_KEY,
+              VERKLE_BASIC_DATA_LEAF_KEY,
             )
           if (balance > BIGINT_0) {
             selfDestructToColdAccessGas +=
               runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
                 selfdestructToAddress,
                 0,
-                VERKLE_BALANCE_LEAF_KEY,
+                VERKLE_BASIC_DATA_LEAF_KEY,
               )
           }
 

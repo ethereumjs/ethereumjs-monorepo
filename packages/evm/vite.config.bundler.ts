@@ -11,7 +11,7 @@ export default defineConfig({
       treeshake: 'safest',
     },
     lib: {
-      entry: '../tx/examples/londonTx.ts',
+      entry: './src/',
       name: '@ethereumjs/evm',
       fileName: (format) => `ethereumjs-evm-bundle.${format}.js`,
       // only build for es

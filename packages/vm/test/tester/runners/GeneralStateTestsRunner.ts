@@ -1,8 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   bytesToHex,
@@ -11,7 +11,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
@@ -79,16 +79,18 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await createBlockchain({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true, common })
-  const stateManager = new DefaultStateManager({
+  const state = new MerklePatriciaTrie({ useKeyHashing: true, common })
+  const stateManager = new MerkleStateManager({
+    caches: new Caches(),
     trie: state,
     common,
   })
 
   const evmOpts = {
     bls: options.bls,
+    bn254: options.bn254,
   }
-  const vm = await VM.create({
+  const vm = await createVM({
     stateManager,
     common,
     blockchain,

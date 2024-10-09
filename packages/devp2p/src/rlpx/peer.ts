@@ -151,9 +151,10 @@ export class Peer {
    */
   _sendAuth() {
     if (this._closed) return
-    this._logger(
-      `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-    )
+    this.DEBUG &&
+      this._logger(
+        `Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+      )
     if (this._EIP8 === true) {
       const authEIP8 = this._eciesSession.createAuthEIP8()
       if (!authEIP8) return
@@ -172,9 +173,10 @@ export class Peer {
    */
   _sendAck() {
     if (this._closed) return
-    this._logger(
-      `Send ack (EIP8: ${this._eciesSession['_gotEIP8Auth']}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-    )
+    this.DEBUG &&
+      this._logger(
+        `Send ack (EIP8: ${this._eciesSession['_gotEIP8Auth']}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+      )
 
     if (this._eciesSession['_gotEIP8Auth']) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
@@ -339,9 +341,10 @@ export class Peer {
     if (!this._eciesSession['_gotEIP8Ack']) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
-        this._logger(
-          `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-        )
+        this.DEBUG &&
+          this._logger(
+            `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+          )
       } else {
         this._eciesSession['_gotEIP8Ack'] = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
@@ -349,9 +352,10 @@ export class Peer {
       }
     } else {
       this._eciesSession.parseAckEIP8(parseData)
-      this._logger(
-        `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-      )
+      this.DEBUG &&
+        this._logger(
+          `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+        )
     }
     this._state = 'Header'
     this._nextPacketSize = 32
@@ -507,10 +511,11 @@ export class Peer {
   _handleHeader() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
-    this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    this.DEBUG &&
+      this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const size = this._eciesSession.parseHeader(parseData)
     if (size === undefined) {
-      this._logger('invalid header size!')
+      this.DEBUG && this._logger('invalid header size!')
       return
     }
 
@@ -528,15 +533,16 @@ export class Peer {
     const parseData = this._socketData.subarray(0, bytesCount)
     const body = this._eciesSession.parseBody(parseData)
     if (!body) {
-      this._logger('empty body!')
+      this.DEBUG && this._logger('empty body!')
       return
     }
-    this._logger(
-      `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
-        bytesToHex(body),
-        verbose,
-      )}`,
-    )
+    this.DEBUG &&
+      this._logger(
+        `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
+          bytesToHex(body),
+          verbose,
+        )}`,
+      )
     this._state = 'Header'
     this._nextPacketSize = 32
 
@@ -562,7 +568,7 @@ export class Peer {
         this.debug(messageName, `Received ${messageName} message ${postAdd}`)
       }
     } else {
-      this._logger(`Received ${protocolName} subprotocol message ${postAdd}`)
+      this.DEBUG && this._logger(`Received ${protocolName} subprotocol message ${postAdd}`)
     }
 
     try {
@@ -607,7 +613,7 @@ export class Peer {
       protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
-      this._logger(`Error on peer subprotocol message handling: ${err}`)
+      this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.events.emit('error', err)
     }
     this._socketData = this._socketData.subarray(bytesCount)
@@ -639,7 +645,7 @@ export class Peer {
       }
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
-      this._logger(`Error on peer socket data handling: ${err}`)
+      this.DEBUG && this._logger(`Error on peer socket data handling: ${err}`)
       this.events.emit('error', err)
     }
   }

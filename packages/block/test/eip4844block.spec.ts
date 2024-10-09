@@ -1,34 +1,30 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/constructors.js'
 import { fakeExponential, getNumBlobs } from '../src/helpers.js'
+import { createBlock, createBlockHeader } from '../src/index.js'
 import { paramsBlock } from '../src/params.js'
 
-import gethGenesis from './testdata/4844-hardfork.json'
+import { hardfork4844Data } from './testdata/4844-hardfork.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { Kzg } from '@ethereumjs/util'
 
 describe('EIP4844 header tests', () => {
-  let common: Common
+  const kzg = new microEthKZG(trustedSetup)
 
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-
-    common = createCommonFromGethGenesis(gethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
   })
 
   it('should work', () => {
@@ -98,20 +94,21 @@ describe('EIP4844 header tests', () => {
 })
 
 describe('blob gas tests', () => {
-  let common: Common
-  let blobGasPerBlob: bigint
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsBlock,
-      customCrypto: { kzg },
-    })
-    blobGasPerBlob = common.param('blobGasPerBlob')
+  const kzg = new microEthKZG(trustedSetup)
+
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsBlock,
+    customCrypto: { kzg },
   })
+  const blobGasPerBlob = common.param('blobGasPerBlob')
+
   it('should work', () => {
-    const preShardingHeader = createBlockHeader({})
+    const preShardingHeader = createBlockHeader(
+      {},
+      { common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }) },
+    )
 
     let excessBlobGas = preShardingHeader.calcNextExcessBlobGas()
     assert.equal(
@@ -155,25 +152,22 @@ describe('blob gas tests', () => {
 })
 
 describe('transaction validation tests', () => {
-  let kzg: Kzg
-  let common: Common
-  let blobGasPerBlob: bigint
-  beforeAll(async () => {
-    kzg = await loadKZG()
-    common = createCommonFromGethGenesis(gethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      params: paramsBlock,
-      customCrypto: { kzg },
-    })
-    blobGasPerBlob = common.param('blobGasPerBlob')
+  const kzg = new microEthKZG(trustedSetup)
+
+  const common = createCommonFromGethGenesis(hardfork4844Data, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    params: paramsBlock,
+    customCrypto: { kzg },
   })
+  const blobGasPerBlob = common.param('blobGasPerBlob')
+
   it('should work', () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
-    const tx1 = create4844BlobTx(
+    const tx1 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -184,7 +178,7 @@ describe('transaction validation tests', () => {
       },
       { common },
     ).sign(randomBytes(32))
-    const tx2 = create4844BlobTx(
+    const tx2 = createBlob4844Tx(
       {
         blobVersionedHashes,
         blobs,
@@ -232,9 +226,10 @@ describe('transaction validation tests', () => {
       () => blockWithValidTx.validateBlobTransactions(parentHeader),
       'does not throw when all tx maxFeePerBlobGas are >= to block blob gas fee',
     )
-    const blockJson = blockWithValidTx.toJSON()
-    blockJson.header!.blobGasUsed = '0x0'
-    const blockWithInvalidHeader = createBlock(blockJson, { common })
+    const blockJSON = blockWithValidTx.toJSON()
+    blockJSON.header!.blobGasUsed = '0x0'
+    // @ts-expect-error
+    const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
       'block blobGasUsed mismatch',
@@ -266,7 +261,7 @@ describe('transaction validation tests', () => {
         .getTransactionsValidationErrors()
         .join(' ')
         .includes('exceed maximum blob gas per block'),
-      'tx erros includes correct error message when too many blobs in a block',
+      'tx errors includes correct error message when too many blobs in a block',
     )
   })
 })

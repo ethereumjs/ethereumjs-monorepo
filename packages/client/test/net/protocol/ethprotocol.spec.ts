@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky } from '@ethereumjs/common'
-import { TransactionType, create1559FeeMarketTx, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createFeeMarket1559Tx, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -8,12 +8,14 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain.js'
 import { Config } from '../../../src/config.js'
 import { EthProtocol } from '../../../src/net/protocol/index.js'
+const kzg = new microEthKZG(trustedSetup)
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {
@@ -68,7 +70,7 @@ describe('[EthProtocol]', () => {
       'encode status',
     )
     const status = p.decodeStatus({
-      chainId: [0x01],
+      chainId: Uint8Array.from([0x01]),
       td: hexToBytes('0x64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
@@ -128,7 +130,7 @@ describe('[EthProtocol]', () => {
     const p = new EthProtocol({ config, chain })
 
     chain.config.chainCommon.setHardfork(Hardfork.London)
-    const tx = create1559FeeMarketTx(
+    const tx = createFeeMarket1559Tx(
       {
         maxFeePerGas: 10,
         maxPriorityFeePerGas: 8,
@@ -209,7 +211,6 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that Transactions handler encodes/decodes correctly', async () => {
-    const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
         chain: Holesky,
@@ -226,10 +227,10 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = createTxFromTxData({ type: 0 }, { common: config.chainCommon })
-    const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
-    const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
-    const blobTx = createTxFromTxData(
+    const legacyTx = createTx({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = createTx({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = createTx({ type: 2 }, { common: config.chainCommon })
+    const blobTx = createTx(
       {
         type: 3,
         to: createZeroAddress(),
@@ -265,7 +266,7 @@ describe('[EthProtocol]', () => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeTx = createTxFromTxData({}).sign(randomBytes(32))
+    const fakeTx = createTx({}).sign(randomBytes(32))
     const fakeHash = fakeTx.hash()
     const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],

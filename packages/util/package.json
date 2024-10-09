@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "9.0.3",
+  "version": "9.1.0",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -93,10 +93,13 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^5.0.2",
-    "ethereum-cryptography": "^2.2.1"
+    "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
-    "kzg-wasm": "^0.4.0"
+    "@paulmillr/trusted-setups": "^0.1.2",
+    "kzg-wasm": "^0.5.0",
+    "micro-eth-signer": "^0.11.0",
+    "verkle-cryptography-wasm": "^0.4.8"
   },
   "engines": {
     "node": ">=18"

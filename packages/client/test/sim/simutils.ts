@@ -1,6 +1,6 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { create1559FeeMarketTx, create4844BlobTx } from '@ethereumjs/tx'
+import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   BIGINT_1,
   blobsToCommitments,
@@ -12,9 +12,10 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
-import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
@@ -30,8 +31,7 @@ import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
-
-const kzg = await loadKZG()
+const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // This function switches between the native web implementation and a nodejs implementation
@@ -240,10 +240,10 @@ export function runNetwork(
       throw Error('network is killed before end of test')
     }
     console.log('Killing network process', runProc.pid)
-    execSync(`pkill -15 -P ${runProc.pid}`)
+    execSync(`pkill -15 -P ${runProc.pid}`) // cspell:disable-line pkill
     if (peerRunProc !== undefined) {
       console.log('Killing peer network process', peerRunProc.pid)
-      execSync(`pkill -15 -P ${peerRunProc.pid}`)
+      execSync(`pkill -15 -P ${peerRunProc.pid}`) // cspell:disable-line pkill
     }
     // Wait for the P2P to be offline
     await waitForELOffline()
@@ -279,7 +279,7 @@ export async function runTxHelper(
   const block = await client.request('eth_getBlockByNumber', ['latest', false])
   const baseFeePerGas = BigInt(block.result.baseFeePerGas) * 100n
   const maxPriorityFeePerGas = 100000000n
-  const tx = create1559FeeMarketTx(
+  const tx = createFeeMarket1559Tx(
     {
       data,
       gasLimit: 1000000,
@@ -346,7 +346,7 @@ export const runBlobTx = async (
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData.nonce = BigInt(nonce.result)
-  const blobTx = create4844BlobTx(txData, opts).sign(pkey)
+  const blobTx = createBlob4844Tx(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
@@ -407,7 +407,7 @@ export const createBlobTxs = async (
       gas: undefined,
     }
 
-    const blobTx = create4844BlobTx(txData, opts).sign(pkey)
+    const blobTx = createBlob4844Tx(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
     await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')
@@ -608,7 +608,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
   }
 }
 
-// To minimise noise on the spec run, selective filteration is applied to let the important events
+// To minimize noise on the spec run, selective filtering is applied to let the important events
 // of the testnet log to show up in the spec log
 export const filterKeywords = [
   'warn',

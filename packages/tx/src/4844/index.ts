@@ -1,2 +1,2 @@
 export * from './constructors.js'
-export { BlobEIP4844Transaction } from './tx.js'
+export { Blob4844Tx } from './tx.js'

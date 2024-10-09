@@ -1,6 +1,6 @@
-import type { BlockHeader } from './header.js'
+import type { BlockHeader } from './index.js'
 import type { Common, ParamsDict } from '@ethereumjs/common'
-import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
+import type { JSONRPCTx, JSONTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
   BigIntLike,
@@ -9,7 +9,8 @@ import type {
   CLRequestType,
   ConsolidationRequestV1,
   DepositRequestV1,
-  JsonRpcWithdrawal,
+  JSONRPCWithdrawal,
+  NumericString,
   PrefixedHexString,
   RequestBytes,
   VerkleExecutionWitness,
@@ -81,11 +82,6 @@ export interface BlockOptions {
    * Default: true
    */
   freeze?: boolean
-  /**
-   * Provide a clique signer's privateKey to seal this block.
-   * Will throw if provided on a non-PoA chain.
-   */
-  cliqueSigner?: Uint8Array
   /**
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
@@ -164,7 +160,7 @@ export type BlockBodyBytes = [
   TransactionsBytes,
   UncleHeadersBytes,
   WithdrawalsBytes?,
-  RequestBytes?,
+  RequestsBytes?,
 ]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
@@ -175,14 +171,14 @@ export type UncleHeadersBytes = Uint8Array[][]
 /**
  * An object with the block's data represented as strings.
  */
-export interface JsonBlock {
+export interface JSONBlock {
   /**
    * Header data for the block
    */
-  header?: JsonHeader
-  transactions?: JsonTx[]
-  uncleHeaders?: JsonHeader[]
-  withdrawals?: JsonRpcWithdrawal[]
+  header?: JSONHeader
+  transactions?: JSONTx[]
+  uncleHeaders?: JSONHeader[]
+  withdrawals?: JSONRPCWithdrawal[]
   requests?: PrefixedHexString[] | null
   executionWitness?: VerkleExecutionWitness | null
 }
@@ -190,7 +186,7 @@ export interface JsonBlock {
 /**
  * An object with the block header's data represented as 0x-prefixed hex strings.
  */
-export interface JsonHeader {
+export interface JSONHeader {
   parentHash?: PrefixedHexString
   uncleHash?: PrefixedHexString
   coinbase?: PrefixedHexString
@@ -217,7 +213,7 @@ export interface JsonHeader {
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
-export interface JsonRpcBlock {
+export interface JSONRPCBlock {
   number: PrefixedHexString // the block number.
   hash: PrefixedHexString // hash of the block.
   parentHash: PrefixedHexString // hash of the parent block.
@@ -229,17 +225,17 @@ export interface JsonRpcBlock {
   stateRoot: PrefixedHexString // the root of the final state trie of the block.
   receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
   miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: PrefixedHexString // integer of the difficulty for this block.
+  difficulty: PrefixedHexString | NumericString // integer of the difficulty for this block. Can be a 0x-prefixed hex string or a string integer
   totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
   extraData: PrefixedHexString // the “extra data” field of this block.
   size: PrefixedHexString // integer the size of this block in bytes.
   gasLimit: PrefixedHexString // the maximum gas allowed in this block.
   gasUsed: PrefixedHexString // the total used gas by all transactions in this block.
   timestamp: PrefixedHexString // the unix timestamp for when the block was collated.
-  transactions: Array<JsonRpcTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  transactions: Array<JSONRPCTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
   uncles: PrefixedHexString[] // Array of uncle hashes
   baseFeePerGas?: PrefixedHexString // If EIP-1559 is enabled for this block, returns the base fee per gas
-  withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
+  withdrawals?: Array<JSONRPCWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: PrefixedHexString // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
   blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block

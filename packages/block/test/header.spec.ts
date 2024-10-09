@@ -8,45 +8,44 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
+  Block,
   createBlock,
-  createBlockFromRLPSerializedBlock,
+  createBlockFromRLP,
   createBlockHeader,
+  createBlockHeaderFromBytesArray,
   createBlockHeaderFromRLP,
-  createBlockHeaderFromValuesArray,
-} from '../src/constructors.js'
-import { Block } from '../src/index.js'
+} from '../src/index.js'
 
-import * as testData from './testdata/bcBlockGasLimitTest.json'
-import * as blocksGoerli from './testdata/blocks_goerli.json'
-import * as blocksMainnet from './testdata/blocks_mainnet.json'
+import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.js'
+import { blocksGoerliData } from './testdata/blocks_goerli.js'
+import { blocksMainnetData } from './testdata/blocks_mainnet.js'
 
-import type { BlockHeader } from '../src/header.js'
+import type { BlockHeader } from '../src/index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
-      assert.ok(equalsBytes(header.parentHash, zeros(32)))
+      assert.ok(equalsBytes(header.parentHash, new Uint8Array(32)))
       assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
       assert.ok(header.coinbase.equals(createZeroAddress()))
-      assert.ok(equalsBytes(header.stateRoot, zeros(32)))
+      assert.ok(equalsBytes(header.stateRoot, new Uint8Array(32)))
       assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
       assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.logsBloom, zeros(256)))
+      assert.ok(equalsBytes(header.logsBloom, new Uint8Array(256)))
       assert.equal(header.difficulty, BigInt(0))
       assert.equal(header.number, BigInt(0))
       assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
       assert.equal(header.gasUsed, BigInt(0))
       assert.equal(header.timestamp, BigInt(0))
       assert.ok(equalsBytes(header.extraData, new Uint8Array(0)))
-      assert.ok(equalsBytes(header.mixHash, zeros(32)))
-      assert.ok(equalsBytes(header.nonce, zeros(8)))
+      assert.ok(equalsBytes(header.mixHash, new Uint8Array(32)))
+      assert.ok(equalsBytes(header.nonce, new Uint8Array(8)))
     }
 
     const header = createBlockHeader()
@@ -129,7 +128,7 @@ describe('[Block]: Header functions', () => {
     }
   })
 
-  it('Initialization -> fromValuesArray()', () => {
+  it('Initialization -> createWithdrawalFromBytesArray()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const zero = new Uint8Array(0)
     const headerArray = []
@@ -137,46 +136,46 @@ describe('[Block]: Header functions', () => {
       headerArray.push(zero)
     }
 
-    // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) //parentHash
-    headerArray[2] = zeros(20) //coinbase
-    headerArray[3] = zeros(32) //stateRoot
-    headerArray[4] = zeros(32) //transactionsTrie
-    headerArray[5] = zeros(32) //receiptTrie
-    headerArray[13] = zeros(32) // mixHash
-    headerArray[14] = zeros(8) // nonce
+    // mock header data (if set to new Uint8Array() header throws)
+    headerArray[0] = new Uint8Array(32) //parentHash
+    headerArray[2] = new Uint8Array(20) //coinbase
+    headerArray[3] = new Uint8Array(32) //stateRoot
+    headerArray[4] = new Uint8Array(32) //transactionsTrie
+    headerArray[5] = new Uint8Array(32) //receiptTrie
+    headerArray[13] = new Uint8Array(32) // mixHash
+    headerArray[14] = new Uint8Array(8) // nonce
 
-    let header = createBlockHeaderFromValuesArray(headerArray, { common })
+    let header = createBlockHeaderFromBytesArray(headerArray, { common })
     assert.ok(Object.isFrozen(header), 'block should be frozen by default')
 
-    header = createBlockHeaderFromValuesArray(headerArray, { common, freeze: false })
+    header = createBlockHeaderFromBytesArray(headerArray, { common, freeze: false })
     assert.ok(
       !Object.isFrozen(header),
       'block should not be frozen when freeze deactivated in options',
     )
   })
 
-  it('Initialization -> fromValuesArray() -> error cases', () => {
+  it('Initialization -> createWithdrawalFromBytesArray() -> error cases', () => {
     const headerArray = Array(22).fill(new Uint8Array(0))
 
-    // mock header data (if set to zeros(0) header throws)
-    headerArray[0] = zeros(32) //parentHash
-    headerArray[2] = zeros(20) //coinbase
-    headerArray[3] = zeros(32) //stateRoot
-    headerArray[4] = zeros(32) //transactionsTrie
-    headerArray[5] = zeros(32) //receiptTrie
-    headerArray[13] = zeros(32) // mixHash
-    headerArray[14] = zeros(8) // nonce
-    headerArray[15] = zeros(4) // bad data
+    // mock header data (if set to new Uint8Array() header throws)
+    headerArray[0] = new Uint8Array(32) //parentHash
+    headerArray[2] = new Uint8Array(20) //coinbase
+    headerArray[3] = new Uint8Array(32) //stateRoot
+    headerArray[4] = new Uint8Array(32) //transactionsTrie
+    headerArray[5] = new Uint8Array(32) //receiptTrie
+    headerArray[13] = new Uint8Array(32) // mixHash
+    headerArray[14] = new Uint8Array(8) // nonce
+    headerArray[15] = new Uint8Array(4) // bad data
     try {
-      createBlockHeaderFromValuesArray(headerArray)
+      createBlockHeaderFromBytesArray(headerArray)
     } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
-      createBlockHeaderFromValuesArray(headerArray.slice(0, 5))
+      createBlockHeaderFromBytesArray(headerArray.slice(0, 5))
     } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
       assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
@@ -344,7 +343,7 @@ describe('[Block]: Header functions', () => {
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
-    const block = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+    const block = createBlockFromRLP(genesisRlp, { common })
     await blockchain.putBlock(block)
 
     headerData.number = 1
@@ -424,7 +423,7 @@ describe('[Block]: Header functions', () => {
     const cliqueSigner = hexToBytes(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
     )
-    const poaBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common, cliqueSigner })
+    const poaBlock = createBlockFromRLP(genesisRlp, { common, cliqueSigner })
     await poaBlockchain.putBlock(poaBlock)
 
     header = createBlockHeader(headerData, { common, cliqueSigner })
@@ -449,19 +448,17 @@ describe('[Block]: Header functions', () => {
 */
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const bcBlockGasLimitTestData = testData.default.tests.BlockGasLimit2p63m1
+    const testData = bcBlockGasLimitTestData.tests.BlockGasLimit2p63m1
 
-    for (const key of Object.keys(bcBlockGasLimitTestData)) {
+    for (const key of Object.keys(testData)) {
       const genesisRlp = hexToBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData]
-          .genesisRLP as PrefixedHexString,
+        testData[key as keyof typeof testData].genesisRLP as PrefixedHexString,
       )
-      const parentBlock = createBlockFromRLPSerializedBlock(genesisRlp, { common })
+      const parentBlock = createBlockFromRLP(genesisRlp, { common })
       const blockRlp = hexToBytes(
-        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0]
-          .rlp as PrefixedHexString,
+        testData[key as keyof typeof testData].blocks[0].rlp as PrefixedHexString,
       )
-      const block = createBlockFromRLPSerializedBlock(blockRlp, { common })
+      const block = createBlockFromRLP(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }
   })
@@ -476,7 +473,7 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = createBlockHeader((blocksMainnet as any).default[0]['header'], { common })
+    let header = createBlockHeader(blocksMainnetData[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
@@ -484,7 +481,7 @@ describe('[Block]: Header functions', () => {
     )
 
     common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    header = createBlockHeader((blocksGoerli as any).default[0]['header'], { common })
+    header = createBlockHeader(blocksGoerliData[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',

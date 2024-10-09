@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -114,7 +114,7 @@ describe('EIP-3529 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
   it('should verify EIP test cases', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     let gasRefund: bigint
     let gasLeft: bigint
@@ -158,7 +158,7 @@ describe('EIP-3529 tests', () => {
   })
 
   it('should not refund selfdestructs', async () => {
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     const tx = createLegacyTx({
       data: '0x6000ff',
@@ -180,7 +180,7 @@ describe('EIP-3529 tests', () => {
      * Then, it resets all these 100 slots back to 0. This is to check if the
      * max gas refund is respected.
      */
-    const vm = await VM.create({ common })
+    const vm = await createVM({ common })
 
     let startGas: bigint
     let finalGas: bigint

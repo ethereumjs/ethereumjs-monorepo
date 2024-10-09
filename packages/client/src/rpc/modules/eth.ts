@@ -1,10 +1,16 @@
 import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
+  MerkleStateManager,
+  StatelessVerkleStateManager,
+  getMerkleStateProof,
+  getVerkleStateProof,
+} from '@ethereumjs/statemanager'
+import {
   Capability,
-  create4844BlobTxFromSerializedNetworkWrapper,
-  createTxFromSerializedData,
-  createTxFromTxData,
+  createBlob4844TxFromSerializedNetworkWrapper,
+  createTx,
+  createTxFromRLP,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -35,7 +41,7 @@ import {
 } from '@ethereumjs/vm'
 
 import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers.js'
+import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
@@ -43,15 +49,11 @@ import type { ReceiptsManager } from '../../execution/receipt.js'
 import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
-import type { RpcTx } from '../types.js'
-import type { Block, JsonRpcBlock } from '@ethereumjs/block'
-import type { Proof } from '@ethereumjs/common'
+import type { RPCTx } from '../types.js'
+import type { Block, JSONRPCBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
-import type {
-  FeeMarketEIP1559Transaction,
-  LegacyTransaction,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+import type { Proof } from '@ethereumjs/statemanager'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
@@ -69,7 +71,7 @@ type GetLogsParams = {
   // neither fromBlock nor toBlock are allowed.
 }
 
-type JsonRpcReceipt = {
+type JSONRPCReceipt = {
   transactionHash: string // DATA, 32 Bytes - hash of the transaction.
   transactionIndex: string // QUANTITY - integer of the transactions index position in the block.
   blockHash: string // DATA, 32 Bytes - hash of the block where this transaction was in.
@@ -80,7 +82,7 @@ type JsonRpcReceipt = {
   effectiveGasPrice: string // QUANTITY - The final gas price per gas paid by the sender in wei.
   gasUsed: string // QUANTITY - The amount of gas used by this specific transaction alone.
   contractAddress: string | null // DATA, 20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null.
-  logs: JsonRpcLog[] // Array - Array of log objects, which this transaction generated.
+  logs: JSONRPCLog[] // Array - Array of log objects, which this transaction generated.
   logsBloom: string // DATA, 256 Bytes - Bloom filter for light clients to quickly retrieve related logs.
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
@@ -89,7 +91,7 @@ type JsonRpcReceipt = {
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
   type: string // QUANTITY, transaction type
 }
-type JsonRpcLog = {
+type JSONRPCLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
   logIndex: string | null // QUANTITY - integer of the log index position in the block. null when it's pending.
   transactionIndex: string | null // QUANTITY - integer of the transactions index position log was created from. null when it's pending.
@@ -106,15 +108,15 @@ type JsonRpcLog = {
 /**
  * Returns block formatted to the standard JSON-RPC fields
  */
-const jsonRpcBlock = async (
+const toJSONRPCBlock = async (
   block: Block,
   chain: Chain,
   includeTransactions: boolean,
-): Promise<JsonRpcBlock> => {
+): Promise<JSONRPCBlock> => {
   const json = block.toJSON()
   const header = json!.header!
   const transactions = block.transactions.map((tx, txIndex) =>
-    includeTransactions ? jsonRpcTx(tx, block, txIndex) : bytesToHex(tx.hash()),
+    includeTransactions ? toJSONRPCTx(tx, block, txIndex) : bytesToHex(tx.hash()),
   )
   const withdrawalsAttr =
     header.withdrawalsRoot !== undefined
@@ -158,13 +160,13 @@ const jsonRpcBlock = async (
 /**
  * Returns log formatted to the standard JSON-RPC fields
  */
-const jsonRpcLog = async (
+const toJSONRPCLog = async (
   log: Log,
   block?: Block,
   tx?: TypedTransaction,
   txIndex?: number,
   logIndex?: number,
-): Promise<JsonRpcLog> => ({
+): Promise<JSONRPCLog> => ({
   removed: false, // TODO implement
   logIndex: logIndex !== undefined ? intToHex(logIndex) : null,
   transactionIndex: txIndex !== undefined ? intToHex(txIndex) : null,
@@ -179,7 +181,7 @@ const jsonRpcLog = async (
 /**
  * Returns receipt formatted to the standard JSON-RPC fields
  */
-const jsonRpcReceipt = async (
+const toJSONRPCReceipt = async (
   receipt: TxReceipt,
   gasUsed: bigint,
   effectiveGasPrice: bigint,
@@ -190,7 +192,7 @@ const jsonRpcReceipt = async (
   contractAddress?: Address,
   blobGasUsed?: bigint,
   blobGasPrice?: bigint,
-): Promise<JsonRpcReceipt> => ({
+): Promise<JSONRPCReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
   blockHash: bytesToHex(block.hash()),
@@ -202,7 +204,7 @@ const jsonRpcReceipt = async (
   gasUsed: bigIntToHex(gasUsed),
   contractAddress: contractAddress?.toString() ?? null,
   logs: await Promise.all(
-    receipt.logs.map((l, i) => jsonRpcLog(l, block, tx, txIndex, logIndex + i)),
+    receipt.logs.map((l, i) => toJSONRPCLog(l, block, tx, txIndex, logIndex + i)),
   ),
   logsBloom: bytesToHex(receipt.bitvector),
   root:
@@ -502,7 +504,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending"
    * @returns The return value of the executed contract.
    */
-  async call(params: [RpcTx, string]) {
+  async call(params: [RPCTx, string]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
 
@@ -563,7 +565,7 @@ export class Eth {
    *   2. integer block number, or the string "latest", "earliest" or "pending" (optional)
    * @returns The amount of gas used.
    */
-  async estimateGas(params: [RpcTx, string?]) {
+  async estimateGas(params: [RPCTx, string?]) {
     const [transaction, blockOpt] = params
     const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
@@ -612,7 +614,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTx(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -684,7 +686,7 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
-      return await jsonRpcBlock(block, this._chain, includeTransactions)
+      return await toJSONRPCBlock(block, this._chain, includeTransactions)
     } catch (error) {
       return null
     }
@@ -706,7 +708,7 @@ export class Eth {
     }
     try {
       const block = await getBlockByOption(blockOpt, this._chain)
-      const response = await jsonRpcBlock(block, this._chain, includeTransactions)
+      const response = await toJSONRPCBlock(block, this._chain, includeTransactions)
       return response
     } catch {
       return null
@@ -816,7 +818,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -841,7 +843,7 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
+      return toJSONRPCTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -863,7 +865,7 @@ export class Eth {
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
-    return jsonRpcTx(tx, block, txIndex)
+    return toJSONRPCTx(tx, block, txIndex)
   }
 
   /**
@@ -965,15 +967,15 @@ export class Eth {
         const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[i] as EIP4844BlobTxReceipt
         const effectiveGasPrice =
           tx.supports(Capability.EIP1559FeeMarket) === true
-            ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-              (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-              ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-              : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+            ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+              (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+              ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+              : (tx as FeeMarket1559Tx).maxFeePerGas -
                 block.header.baseFeePerGas! +
                 block.header.baseFeePerGas!
-            : (tx as LegacyTransaction).gasPrice
+            : (tx as LegacyTx).gasPrice
 
-        return jsonRpcReceipt(
+        return toJSONRPCReceipt(
           r,
           totalGasSpent,
           effectiveGasPrice,
@@ -1016,13 +1018,13 @@ export class Eth {
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
     const tx = block.transactions[txIndex]
     const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
-      ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-        (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+      ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas <
+        (tx as FeeMarket1559Tx).maxFeePerGas - block.header.baseFeePerGas!
+        ? (tx as FeeMarket1559Tx).maxPriorityFeePerGas
+        : (tx as FeeMarket1559Tx).maxFeePerGas -
           block.header.baseFeePerGas! +
           block.header.baseFeePerGas!
-      : (tx as LegacyTransaction).gasPrice
+      : (tx as LegacyTx).gasPrice
 
     const vmCopy = await this._vm!.shallowCopy()
     vmCopy.common.setHardfork(tx.common.hardfork())
@@ -1035,7 +1037,7 @@ export class Eth {
 
     const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
     const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
-    return jsonRpcReceipt(
+    return toJSONRPCReceipt(
       receipt,
       totalGasSpent,
       effectiveGasPrice,
@@ -1134,7 +1136,7 @@ export class Eth {
     const logs = await this.receiptsManager.getLogs(from, to, addressBytes, formattedTopics)
     return Promise.all(
       logs.map(({ log, block, tx, txIndex, logIndex }) =>
-        jsonRpcLog(log, block, tx, txIndex, logIndex),
+        toJSONRPCLog(log, block, tx, txIndex, logIndex),
       ),
     )
   }
@@ -1172,7 +1174,7 @@ export class Eth {
       const txBuf = hexToBytes(serializedTx)
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
-        tx = create4844BlobTxFromSerializedNetworkWrapper(txBuf, { common })
+        tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
         const blobGasLimit = tx.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
@@ -1185,7 +1187,7 @@ export class Eth {
           )
         }
       } else {
-        tx = createTxFromSerializedData(txBuf, { common })
+        tx = createTxFromRLP(txBuf, { common })
       }
     } catch (e: any) {
       throw {
@@ -1250,14 +1252,19 @@ export class Eth {
 
     const vm = await this._vm.shallowCopy()
 
-    if (!('getProof' in vm.stateManager)) {
-      throw new Error('getProof RPC method not supported with the StateManager provided')
-    }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = createAddressFromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
-    const proof = await vm.stateManager.getProof!(address, slots)
+    let proof: Proof
+    if (vm.stateManager instanceof MerkleStateManager) {
+      proof = await getMerkleStateProof(vm.stateManager, address, slots)
+    } else if (vm.stateManager instanceof StatelessVerkleStateManager) {
+      proof = await getVerkleStateProof(vm.stateManager, address, slots)
+    } else {
+      throw new Error('getProof RPC method not supported with the StateManager provided')
+    }
+
     for (const p of proof.storageProof) {
       p.key = bigIntToHex(BigInt(p.key))
     }
@@ -1341,7 +1348,7 @@ export class Eth {
       let priorityFee = BIGINT_0
       const block = await this._chain.getBlock(latest.number)
       for (const tx of block.transactions) {
-        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        const maxPriorityFeePerGas = (tx as FeeMarket1559Tx).maxPriorityFeePerGas
         priorityFee += maxPriorityFeePerGas
       }
 
@@ -1360,7 +1367,7 @@ export class Eth {
         }
 
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as LegacyTransaction).gasPrice
+          const txGasPrice = (tx as LegacyTx).gasPrice
           gasPrice += txGasPrice
           txCount++
         }
