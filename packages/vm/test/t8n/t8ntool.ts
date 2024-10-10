@@ -74,7 +74,9 @@ export class TransitionTool {
 
   private async run(args: T8NOptions) {
     await this.setup(args)
-
+    // HACK: fix me!
+    this.inputEnv.parentUncleHash =
+      '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
     const block = makeBlockFromEnv(this.inputEnv, { common: this.common })
     const parentBlockHeader = makeParentBlockHeader(this.inputEnv, { common: this.common })
     const parentBlock = createBlock({ header: parentBlockHeader }, { common: this.common })
