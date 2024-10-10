@@ -23,7 +23,7 @@ export class RlpxSender extends Sender {
       this.status = status
     })
     this.sender.events.on('message', (code: number, payload: any) => {
-      this.emit('message', { code, payload })
+      void this.emit('message', { code, payload })
     })
   }
 
@@ -35,7 +35,7 @@ export class RlpxSender extends Sender {
     try {
       this.sender.sendStatus(status)
     } catch (err: any) {
-      this.emit('error', err)
+      void this.emit('error', err)
     }
   }
 
@@ -49,7 +49,7 @@ export class RlpxSender extends Sender {
       //@ts-ignore "type number is not assignable to type never"
       this.sender.sendMessage(code, data)
     } catch (err: any) {
-      this.emit('error', err)
+      void this.emit('error', err)
     }
   }
 }

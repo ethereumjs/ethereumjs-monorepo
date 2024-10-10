@@ -122,9 +122,9 @@ export class PeerPool {
    * Close pool
    */
   async close() {
-    this.config.events.removeAllListeners(Event.PEER_CONNECTED)
-    this.config.events.removeAllListeners(Event.PEER_DISCONNECTED)
-    this.config.events.removeAllListeners(Event.PEER_ERROR)
+    this.config.events.clearListeners(Event.PEER_CONNECTED)
+    this.config.events.clearListeners(Event.PEER_DISCONNECTED)
+    this.config.events.clearListeners(Event.PEER_ERROR)
     this.pool.clear()
     this.opened = false
   }
