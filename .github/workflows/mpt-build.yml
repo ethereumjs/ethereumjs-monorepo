@@ -54,11 +54,18 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+      # - uses: codecov/codecov-action@v3
+      #   with:
+      #     files: ${{ env.cwd }}/coverage/lcov.info
+      #     flags: mpt
+      #     token: ${{ secrets.CODECOV_TOKEN }} # required
+
+      - uses: codecov/codecov-action@v4
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
           token: ${{ secrets.CODECOV_TOKEN }} # required
+          verbose: true
 
   # mpt-benchmarks:
   #   runs-on: ubuntu-latest
