@@ -60,6 +60,15 @@ jobs:
       #     flags: mpt
       #     token: ${{ secrets.CODECOV_TOKEN }} # required
 
+      - name: Check if Codecov token exists
+        run: |
+          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
+            echo "Codecov token is not set."
+            exit 1
+          else
+            echo "Codecov token is available."
+          fi
+          
       - uses: codecov/codecov-action@v4
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
