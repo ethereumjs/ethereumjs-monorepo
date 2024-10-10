@@ -1,7 +1,7 @@
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
+import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
-import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
+import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -12,9 +12,9 @@ import { BlockBuilder } from '../../dist/cjs/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 
 const yargs = require('yargs/yargs')
 
@@ -55,8 +55,8 @@ async function runTransition(argsIn: any) {
       nonce: '0x0000000000000000',
       extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
     }
-    const genesis = Block.fromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
-    blockchain = await Blockchain.create({ common, genesisBlock: genesis })
+    const genesis = createBlockFromBlockData({ header: BlockHeader.fromHeaderData(genesisBlockData) })
+    blockchain = await createBlockchain({ common, genesisBlock: genesis })
   }
   const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
   await setupPreConditions(vm.stateManager, { pre: alloc })
@@ -107,9 +107,9 @@ async function runTransition(argsIn: any) {
     try {
       let tx: TypedTransaction
       if (txData instanceof Uint8Array) {
-        tx = TransactionFactory.fromSerializedData(txData as Uint8Array, { common })
+        tx = createTxFromSerializedData(txData as Uint8Array, { common })
       } else {
-        tx = LegacyTransaction.fromValuesArray(txData as Uint8Array[], { common })
+        tx = createLegacyTxFromBytesArray(txData as Uint8Array[], { common })
       }
       await builder.addTransaction(tx)
     } catch (e: any) {

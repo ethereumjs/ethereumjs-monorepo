@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,7 +11,7 @@ import type { Capabilities } from '../../src/index.js'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(
-  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
 )
 
 const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
@@ -49,8 +49,8 @@ describe('ETH simulator tests', () => {
         resolve(undefined)
       }
 
-      const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
+      const c1 = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 27126)
     })
   })
@@ -98,7 +98,7 @@ describe('ETH simulator tests', () => {
     t: typeof it,
     version: number,
     cap: Capabilities[],
-    expectedCode: ETH.MESSAGE_CODES
+    expectedCode: ETH.MESSAGE_CODES,
   ) {
     await new Promise((resolve) => {
       const opts: any = {}
@@ -128,7 +128,7 @@ describe('ETH simulator tests', () => {
     async () => {
       await new Promise((resolve) => {
         const cap = [devp2p.ETH.eth65]
-        const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+        const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
         const status0: any = Object.assign({}, status)
         status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
 
@@ -142,7 +142,7 @@ describe('ETH simulator tests', () => {
           resolve(undefined)
         })
       })
-    }
+    },
   )
 
   it('ETH: send not-allowed eth67', async () => {
@@ -163,7 +163,7 @@ describe('ETH simulator tests', () => {
     await new Promise((resolve) => {
       const opts: any = {}
       const cap = [devp2p.ETH.eth64]
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
+      const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
       const status0: any = Object.assign({}, status)
       // Take a latest block > next mainnet fork block (constantinople)
       // to trigger validation condition

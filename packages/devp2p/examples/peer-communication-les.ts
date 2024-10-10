@@ -1,20 +1,21 @@
-import { bytesToInt, intToBytes, randomBytes, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { Block, BlockHeader } from '@ethereumjs/block'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import * as devp2p from '@ethereumjs/devp2p'
+import { bytesToHex, bytesToInt, hexToBytes, intToBytes, randomBytes } from '@ethereumjs/util'
 import chalk from 'chalk'
 import ms from 'ms'
 
-import * as devp2p from '@ethereumjs/devp2p'
-import { ETH, Peer } from '@ethereumjs/devp2p'
+import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Peer } from '@ethereumjs/devp2p'
 
 const PRIVATE_KEY = randomBytes(32)
 
 const GENESIS_TD = 1
 const GENESIS_HASH = hexToBytes(
-  '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'
+  '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177',
 )
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -72,8 +73,8 @@ rlpx.events.on('peer:added', (peer) => {
   const clientId = peer.getHelloMessage().clientId
   console.log(
     chalk.green(
-      `Add peer: ${addr} ${clientId} (les${les.getVersion()}) (total: ${rlpx.getPeers().length})`
-    )
+      `Add peer: ${addr} ${clientId} (les${les.getVersion()}) (total: ${rlpx.getPeers().length})`,
+    ),
   )
 
   les.sendStatus({
@@ -104,11 +105,11 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
         if (payload[2].length > 1) {
           console.log(
-            `${addr} not more than one block header expected (received: ${payload[2].length})`
+            `${addr} not more than one block header expected (received: ${payload[2].length})`,
           )
           break
         }
-        const header = BlockHeader.fromValuesArray(payload[2][0], { common })
+        const header = createBlockHeaderFromBytesArray(payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [
@@ -123,7 +124,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.LES.MESSAGE_CODES.BLOCK_BODIES: {
         if (payload[2].length !== 1) {
           console.log(
-            `${addr} not more than one block body expected (received: ${payload[2].length})`
+            `${addr} not more than one block body expected (received: ${payload[2].length})`,
           )
           break
         }
@@ -131,7 +132,7 @@ rlpx.events.on('peer:added', (peer) => {
         const header2 = requests.bodies.shift()
         const txs = payload[2][0][0]
         const uncleHeaders = payload[2][0][1]
-        const block = Block.fromValuesArray([header2.raw(), txs, uncleHeaders], { common })
+        const block = createBlockFromBytesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
         if (isValid) {
@@ -155,9 +156,9 @@ rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   console.log(
     chalk.yellow(
       `Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(
-        reasonCode
-      )} (${String(reasonCode)}) (total: ${total})`
-    )
+        reasonCode,
+      )} (${String(reasonCode)}) (total: ${total})`,
+    ),
   )
 })
 
@@ -203,11 +204,11 @@ function onNewBlock(block: Block, peer: Peer) {
   const blockNumber = block.header.number
 
   console.log(
-    `----------------------------------------------------------------------------------------------------------`
+    `----------------------------------------------------------------------------------------------------------`,
   )
   console.log(`block ${blockNumber} received: ${blockHashHex} (from ${getPeerAddr(peer)})`)
   console.log(
-    `----------------------------------------------------------------------------------------------------------`
+    `----------------------------------------------------------------------------------------------------------`,
   )
 }
 
@@ -229,7 +230,7 @@ setInterval(() => {
 
   console.log(
     chalk.yellow(
-      `Total nodes in DPT: ${peersCount}, open slots: ${openSlots}, queue: ${queueLength} / ${queueLength2}`
-    )
+      `Total nodes in DPT: ${peersCount}, open slots: ${openSlots}, queue: ${queueLength} / ${queueLength2}`,
+    ),
   )
 }, ms('30s'))

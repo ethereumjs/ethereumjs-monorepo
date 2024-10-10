@@ -1,13 +1,15 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bigIntToHex } from '@ethereumjs/util'
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
+import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_getProof'
@@ -24,7 +26,7 @@ const expectedProof = {
   ],
   storageProof: [
     {
-      key: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      key: '0x0',
       value: '0x04d2',
       proof: [
         '0xf8518080a036bb5f2fd6f99b186600638644e2f0396989955e201672f7e81e8c8f466ed5b9a010859880cfb38603690e8c4dfcc5595c203de6b901a503f944ef21a6120926a680808080808080808080808080',
@@ -41,7 +43,6 @@ const expectedProof = {
 const testnetData = {
   name: 'testnet2',
   chainId: 12345,
-  networkId: 12345,
   defaultHardfork: 'istanbul',
   consensus: {
     type: 'pow',
@@ -86,11 +87,11 @@ const testnetData = {
   bootstrapNodes: [],
 }
 
-const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
+const common = createCustomCommon({ ...testnetData }, Mainnet)
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
       validateConsensus: false,
@@ -98,14 +99,14 @@ describe(method, async () => {
 
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
     // genesis address with balance
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
     /*
@@ -126,12 +127,12 @@ describe(method, async () => {
 
     // construct block with tx
     const gasLimit = 2000000
-    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    const tx = createLegacyTx({ gasLimit, data }, { common, freeze: false })
     tx.getSenderAddress = () => {
       return address
     }
     const parent = await blockchain.getCanonicalHeadHeader()
-    const block = Block.fromBlockData(
+    const block = createBlock(
       {
         header: {
           parentHash: parent.hash(),
@@ -139,14 +140,14 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: parent }
+      { common, calcDifficultyFromHeader: parent },
     )
     block.transactions[0] = tx
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
 
@@ -159,11 +160,11 @@ describe(method, async () => {
       gasLimit: bigIntToHex(BigInt(530000)),
       nonce: 1,
     }
-    const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
+    const storeTx = createLegacyTx(storeTxData, { common, freeze: false })
     storeTx.getSenderAddress = () => {
       return address
     }
-    const block2 = Block.fromBlockData(
+    const block2 = createBlock(
       {
         header: {
           parentHash: ranBlock!.hash(),
@@ -171,14 +172,14 @@ describe(method, async () => {
           gasLimit,
         },
       },
-      { common, calcDifficultyFromHeader: block.header }
+      { common, calcDifficultyFromHeader: block.header },
     )
     block2.transactions[0] = storeTx
 
     // run block
     let ranBlock2: Block | undefined = undefined
     vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
-    await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
+    await runBlock(vm, { block: block2, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate

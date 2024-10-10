@@ -6,7 +6,62 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.3.0 - 2024-03-05
+## 5.4.0 - 2024-08-15
+
+#### EOA Code Transaction (EIP-7702) (outdated)
+
+This release introduces support for a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = EOACodeEIP7702Transaction.fromTxData(
+  {
+    authorizationList: [
+      {
+        chainId: '0x1',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common },
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`,
+)
+```
+
+Note: Things move fast with `EIP-7702` and the released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+
+### Verkle Updates
+
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+
+### Other Features
+
+- Extend `BlobEIP4844Transaction.networkWrapperToJson()` to also include the 4844 fields, PR [#3365](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3365)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fix bug in generic error message regarding chain ID reporting, PR [#3386](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3386)
+
+## 5.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
@@ -150,7 +205,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -241,7 +296,7 @@ const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
     gasLimit: 0xffffffn,
     to: 0x1122334455667788991011121314151617181920,
   },
-  { common }
+  { common },
 )
 ```
 
@@ -525,7 +580,7 @@ const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -535,7 +590,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -543,7 +598,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -597,7 +652,7 @@ const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -724,7 +779,7 @@ Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx
 
 The extended errors give substantial more object and chain context and should ease debugging.
 
-**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
 ## Other Changes
 
@@ -806,7 +861,7 @@ if (tx.supports(Capability.EIP2930AccessLists)) {
 The following capabilities are currently supported:
 
 ```ts
-enum Capabilitiy {
+enum Capability {
   EIP155ReplayProtection: 155, // Only for legacy txs
   EIP1559FeeMarket: 1559,
   EIP2718TypedTransaction: 2718, // Use for a typed-tx-or-not switch
@@ -1086,9 +1141,9 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
+The returned transaction is now frozen and immutable. To work with a mutable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
 
-If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
+If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modify its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### from
 
@@ -1100,19 +1155,19 @@ Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.
 
 #### Fake Transaction
 
-The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake transaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
 
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1199,7 +1254,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`.
+The returned transaction is now frozen and immutable. To work with a mutable transaction, copy it with `const fakeTx = Object.create(tx)`.
 
 #### from
 
@@ -1211,12 +1266,12 @@ Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.
 
 #### Fake Transaction
 
-The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake transaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
 
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
@@ -1228,7 +1283,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1324,7 +1379,7 @@ see PRs [#153](https://github.com/ethereumjs/ethereumjs-tx/pull/153),
 [#147](https://github.com/ethereumjs/ethereumjs-tx/pull/147) and
 [#143](https://github.com/ethereumjs/ethereumjs-tx/pull/143).
 
-This comes with some changes in how different `v` values passed on instantation
+This comes with some changes in how different `v` values passed on instantiation
 or changed on runtime are handled:
 
 - The constructor throws if the `v` value is present, indicates that `EIP-155`
@@ -1347,7 +1402,7 @@ pre-`Spurious Dragon` hardfork option.
 
 ## [1.3.6] - 2018-07-02
 
-- Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero adress any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
+- Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero address any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
 - Added additional tests to cover issue described above
 
 [1.3.6]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.5...%40ethereumjs%2Ftx%401.3.6

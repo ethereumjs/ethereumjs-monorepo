@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { getCommon } from '../../tester/config'
+import { getCommon } from '../../tester/config.js'
 
-describe('bloom', () => {
+describe('test runner config tests', () => {
   it('should initialize common with the right hardfork', () => {
     const common = getCommon('byzantium')
     assert.ok(common.hardfork() === Hardfork.Byzantium)
   })
-  it('should initialize common with the right hardfork uppercased', () => {
+  it('should initialize common with the right hardfork upper-cased', () => {
     let common = getCommon('Byzantium')
     assert.ok(common.hardfork() === Hardfork.Byzantium)
     common = getCommon('BYZANTIUM')
@@ -42,7 +42,6 @@ describe('bloom', () => {
       const str = testCase.hf + 'ToMergeAtDiff' + testCase.TTD.toString(16)
       const common = getCommon(str)
       assert.ok(common.hardfork() === testCase.hf)
-      assert.ok(common.hardforkTTD('paris') === BigInt(testCase.TTD))
     })
   })
   it('should throw on a non-existing fork', () => {

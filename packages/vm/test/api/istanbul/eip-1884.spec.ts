@@ -1,14 +1,14 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
 import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
-import { createAccount } from '../utils'
+import { createVM } from '../../../src/index.js'
+import { createAccountWithDefaults } from '../utils.js'
 
 const testCases = [
-  { chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
-  { chain: Chain.Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessage.INVALID_OPCODE },
+  { chain: Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
+  { chain: Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessage.INVALID_OPCODE },
 ]
 
 // SELFBALANCE PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
@@ -25,10 +25,10 @@ describe('Istanbul: EIP-1884', () => {
     for (const testCase of testCases) {
       const { chain, hardfork } = testCase
       const common = new Common({ chain, hardfork })
-      const vm = await VM.create({ common })
+      const vm = await createVM({ common })
 
       const balance = testCase.selfbalance !== undefined ? BigInt(testCase.selfbalance) : undefined
-      const account = createAccount(BigInt(0), balance)
+      const account = createAccountWithDefaults(BigInt(0), balance)
 
       await vm.stateManager.putAccount(addr, account)
 

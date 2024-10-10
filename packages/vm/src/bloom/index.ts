@@ -1,4 +1,3 @@
-import { zeros } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import type { Common } from '@ethereumjs/common'
@@ -19,7 +18,7 @@ export class Bloom {
       this.keccakFunction = keccak256
     }
     if (!bitvector) {
-      this.bitvector = zeros(BYTE_SIZE)
+      this.bitvector = new Uint8Array(BYTE_SIZE)
     } else {
       if (bitvector.length !== BYTE_SIZE) throw new Error('bitvectors must be 2048 bits long')
       this.bitvector = bitvector

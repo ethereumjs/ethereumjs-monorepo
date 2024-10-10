@@ -1,0 +1,23 @@
+name: lockfile-lint
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'package-lock.json'
+      - if: steps.changes.outputs.src == 'true'
+        run: npx lockfile-lint --path="package-lock.json" --allowed-hosts=npm --allowed-schemes "file:" "https:" "npm:"

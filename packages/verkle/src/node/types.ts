@@ -1,49 +1,53 @@
-import type { Point } from '../types.js'
-import type { InternalNode } from './internalNode.js'
-import type { LeafNode } from './leafNode.js'
+import { type VerkleCrypto } from '@ethereumjs/util'
+
+import type { InternalVerkleNode } from './internalNode.js'
+import type { LeafVerkleNode } from './leafNode.js'
 
 export enum VerkleNodeType {
   Internal,
   Leaf,
 }
 
+export interface ChildNode {
+  commitment: Uint8Array // 64 byte commitment to child node
+  path: Uint8Array // path/partial stem to child node (used as DB key)
+}
 export interface TypedVerkleNode {
-  [VerkleNodeType.Internal]: InternalNode
-  [VerkleNodeType.Leaf]: LeafNode
+  [VerkleNodeType.Internal]: InternalVerkleNode
+  [VerkleNodeType.Leaf]: LeafVerkleNode
 }
 
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
-  commit(): Uint8Array
-  hash(): any
+  hash(): Uint8Array
   serialize(): Uint8Array
 }
 
 interface BaseVerkleNodeOptions {
-  // Value of the commitment
   commitment: Uint8Array
-  depth: number
+  verkleCrypto: VerkleCrypto
 }
 
-interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
+interface InternalVerkleNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: VerkleNode[]
-
-  // Values of the child commitments before the tree is modified by inserts.
-  // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
-  copyOnWrite?: Record<string, Uint8Array>
+  children?: (ChildNode | null)[]
 }
-interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
+
+export enum LeafVerkleNodeValue {
+  Untouched = 0,
+  Deleted = 1,
+}
+interface LeafVerkleNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
-  values: Uint8Array[]
-  c1: Point
-  c2: Point
+  values?: (Uint8Array | LeafVerkleNodeValue)[]
+  c1?: Uint8Array
+  c2?: Uint8Array
 }
 
 export interface VerkleNodeOptions {
-  [VerkleNodeType.Internal]: VerkleInternalNodeOptions
-  [VerkleNodeType.Leaf]: VerkleLeafNodeOptions
+  [VerkleNodeType.Internal]: InternalVerkleNodeOptions
+  [VerkleNodeType.Leaf]: LeafVerkleNodeOptions
 }
 
 export const NODE_WIDTH = 256

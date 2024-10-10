@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import * as testdata from '../testdata.json'
+import { testData } from '../testdata.js'
 
 import * as util from './util.js'
 
@@ -37,7 +37,7 @@ describe('DPT simulator tests', () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)
@@ -60,7 +60,7 @@ describe('DPT simulator tests', () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)
@@ -134,7 +134,7 @@ describe('DPT simulator tests', () => {
 
     const mockDns = {
       resolve: () => {
-        return [[testdata.dns.enr]]
+        return [[testData.dns.enr]]
       },
     }
     dpts[0]._addPeerBatch = () => {

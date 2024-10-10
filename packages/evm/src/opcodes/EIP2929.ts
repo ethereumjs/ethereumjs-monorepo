@@ -18,9 +18,9 @@ export function accessAddressEIP2929(
   address: Uint8Array,
   common: Common,
   chargeGas = true,
-  isSelfdestructOrAuthcall = false
+  isSelfdestruct = false,
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BIGINT_0
+  if (!common.isActivatedEIP(2929)) return BIGINT_0
 
   // Cold
   if (!runState.interpreter.journal.isWarmedAddress(address)) {
@@ -29,12 +29,12 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
-    if (chargeGas && common.isActivatedEIP(6800) === false) {
-      return common.param('gasPrices', 'coldaccountaccess')
+    if (chargeGas && !common.isActivatedEIP(6800)) {
+      return common.param('coldaccountaccessGas')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
-  } else if (chargeGas && !isSelfdestructOrAuthcall) {
-    return common.param('gasPrices', 'warmstorageread')
+  } else if (chargeGas && !isSelfdestruct) {
+    return common.param('warmstoragereadGas')
   }
   return BIGINT_0
 }
@@ -52,9 +52,9 @@ export function accessStorageEIP2929(
   key: Uint8Array,
   isSstore: boolean,
   common: Common,
-  chargeGas = true
+  chargeGas = true,
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BIGINT_0
+  if (!common.isActivatedEIP(2929)) return BIGINT_0
 
   const address = runState.interpreter.getAddress().bytes
   const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
@@ -62,11 +62,11 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
-    if (chargeGas && common.isActivatedEIP(6800) === false) {
-      return common.param('gasPrices', 'coldsload')
+    if (chargeGas && !common.isActivatedEIP(6800)) {
+      return common.param('coldsloadGas')
     }
-  } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800) === true)) {
-    return common.param('gasPrices', 'warmstorageread')
+  } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800))) {
+    return common.param('warmstoragereadGas')
   }
   return BIGINT_0
 }
@@ -86,22 +86,22 @@ export function adjustSstoreGasEIP2929(
   key: Uint8Array,
   defaultCost: bigint,
   costName: string,
-  common: Common
+  common: Common,
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return defaultCost
+  if (!common.isActivatedEIP(2929)) return defaultCost
 
   const address = runState.interpreter.getAddress().bytes
-  const warmRead = common.param('gasPrices', 'warmstorageread')
-  const coldSload = common.param('gasPrices', 'coldsload')
+  const warmRead = common.param('warmstoragereadGas')
+  const coldSload = common.param('coldsloadGas')
 
   if (runState.interpreter.journal.isWarmedStorage(address, key)) {
     switch (costName) {
       case 'noop':
         return warmRead
       case 'initRefund':
-        return common.param('gasPrices', 'sstoreInitGasEIP2200') - warmRead
+        return common.param('sstoreInitEIP2200Gas') - warmRead
       case 'cleanRefund':
-        return common.param('gasPrices', 'sstoreReset') - coldSload - warmRead
+        return common.param('sstoreResetGas') - coldSload - warmRead
     }
   }
 

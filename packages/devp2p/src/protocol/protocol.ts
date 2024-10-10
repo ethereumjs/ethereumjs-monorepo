@@ -7,7 +7,6 @@ import { devp2pDebug } from '../util.js'
 import type { Peer } from '../rlpx/peer.js'
 import type { SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type MessageCodes = { [key: number | string]: number | string }
 
@@ -35,7 +34,7 @@ export abstract class Protocol {
     send: SendMethod,
     protocol: ProtocolType,
     version: number,
-    messageCodes: MessageCodes
+    messageCodes: MessageCodes,
   ) {
     this.events = new EventEmitter()
     this._peer = peer
@@ -50,13 +49,13 @@ export abstract class Protocol {
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)
-    this._verbose = createDebugLogger('verbose').enabled
+    this._verbose = debugDefault('verbose').enabled
     this.initMsgDebuggers(protocol)
   }
 
   private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
-      (value) => typeof value === 'string'
+      (value) => typeof value === 'string',
     ) as string[]
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)

@@ -34,7 +34,7 @@ export class LES extends Protocol {
     }, 5000) // 5 sec * 1000
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
@@ -50,7 +50,7 @@ export class LES extends Protocol {
           this.getMsgPrefix(code),
           `${`Received ${this.getMsgPrefix(code)} message from ${
             this._peer['_socket'].remoteAddress
-          }:${this._peer['_socket'].remotePort}`}: ${logData}`
+          }:${this._peer['_socket'].remotePort}`}: ${logData}`,
         )
       }
     }
@@ -61,7 +61,7 @@ export class LES extends Protocol {
           null,
           'Uncontrolled status message',
           this.debug.bind(this),
-          'STATUS'
+          'STATUS',
         )
         const status: LES.Status = Object.assign({})
         for (const value of payload as NestedUint8Array) {
@@ -73,7 +73,7 @@ export class LES extends Protocol {
             this.getMsgPrefix(code),
             `${`Received ${this.getMsgPrefix(code)} message from ${
               this._peer['_socket'].remoteAddress
-            }:${this._peer['_socket'].remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+            }:${this._peer['_socket'].remotePort}`}: ${this._getStatusString(this._peerStatus)}`,
           )
         }
         this._handleStatus()
@@ -124,21 +124,21 @@ export class LES extends Protocol {
       this._peerStatus['protocolVersion'],
       'Protocol version mismatch',
       this.debug.bind(this),
-      'STATUS'
+      'STATUS',
     )
     assertEq(
-      this._status['networkId'],
-      this._peerStatus['networkId'],
+      this._status['chainId'],
+      this._peerStatus['chainId'],
       'NetworkId mismatch',
       this.debug.bind(this),
-      'STATUS'
+      'STATUS',
     )
     assertEq(
       this._status['genesisHash'],
       this._peerStatus['genesisHash'],
       'Genesis block mismatch',
       this.debug.bind(this),
-      'STATUS'
+      'STATUS',
     )
 
     this.events.emit('status', this._peerStatus)
@@ -153,8 +153,8 @@ export class LES extends Protocol {
 
   _getStatusString(status: LES.Status) {
     let sStr = `[V:${bytesToInt(status['protocolVersion'])}, `
-    sStr += `NID:${bytesToInt(status['networkId'] as Uint8Array)}, HTD:${bytesToInt(
-      status['headTd']
+    sStr += `NID:${bytesToInt(status['chainId'] as Uint8Array)}, HTD:${bytesToInt(
+      status['headTd'],
     )}, `
     sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytesToInt(status['headNum'])}, `
     sStr += `GenH:${bytesToHex(status['genesisHash'])}`
@@ -169,7 +169,7 @@ export class LES extends Protocol {
     if (status['flowControl/MRC)'] !== undefined) sStr += `, flowControl/MRC set`
     if (status['forkID'] !== undefined)
       sStr += `, forkID: [crc32: ${bytesToHex(status['forkID'][0])}, nextFork: ${bytesToInt(
-        status['forkID'][1]
+        status['forkID'][1],
       )}]`
     if (status['recentTxLookup'] !== undefined)
       sStr += `, recentTxLookup: ${bytesToInt(status['recentTxLookup'])}`
@@ -184,7 +184,7 @@ export class LES extends Protocol {
       status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = intToBytes(this._version)
-    status['networkId'] = bigIntToBytes(this._peer.common.chainId())
+    status['chainId'] = bigIntToBytes(this._peer.common.chainId())
 
     this._status = status
 
@@ -198,7 +198,7 @@ export class LES extends Protocol {
         'STATUS',
         `Send STATUS message to ${this._peer['_socket'].remoteAddress}:${
           this._peer['_socket'].remotePort
-        } (les${this._version}): ${this._getStatusString(this._status)}`
+        } (les${this._version}): ${this._getStatusString(this._status)}`,
       )
     }
 
@@ -224,7 +224,7 @@ export class LES extends Protocol {
         this.getMsgPrefix(code),
         `Send ${this.getMsgPrefix(code)} message to ${this._peer['_socket'].remoteAddress}:${
           this._peer['_socket'].remotePort
-        }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
+        }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`,
       )
     }
 
@@ -284,7 +284,7 @@ export namespace LES {
   export interface Status {
     [key: string]: any
     protocolVersion: Uint8Array
-    networkId: Uint8Array
+    chainId: Uint8Array
     headTd: Uint8Array
     headHash: Uint8Array
     headNum: Uint8Array

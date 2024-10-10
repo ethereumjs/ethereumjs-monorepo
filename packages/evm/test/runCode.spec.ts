@@ -1,7 +1,7 @@
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 
 const PUSH1 = '60'
 const STOP = '00'
@@ -21,7 +21,7 @@ const testCases = [
 
 describe('VM.runCode: initial program counter', () => {
   it('should work', async () => {
-    const evm = await EVM.create()
+    const evm = await createEVM()
 
     for (const [i, testData] of testCases.entries()) {
       const runCodeArgs = {
@@ -37,7 +37,7 @@ describe('VM.runCode: initial program counter', () => {
           assert.equal(
             result.runState?.programCounter,
             testData.resultPC,
-            `should start the execution at the specified pc or 0, testCases[${i}]`
+            `should start the execution at the specified pc or 0, testCases[${i}]`,
           )
         }
       } catch (e: any) {
@@ -57,7 +57,7 @@ describe('VM.runCode: initial program counter', () => {
 
 describe('VM.runCode: interpreter', () => {
   it('should return a EvmError as an exceptionError on the result', async () => {
-    const evm = await EVM.create()
+    const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -76,15 +76,15 @@ describe('VM.runCode: interpreter', () => {
   })
 
   it('should throw on non-EvmError', async () => {
-    const evm = await EVM.create()
-    // NOTE: due to now throwing on `getContractStorage` if account does not exist
+    const evm = await createEVM()
+    // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
     // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
     // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,
     // then re-put the account after (if account === undefined put empty account, such that the account exists))
-    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    const address = createAddressFromString(`0x${'00'.repeat(20)}`)
     await evm.stateManager.putAccount(address, new Account())
-    evm.stateManager.putContractStorage = (..._args) => {
+    evm.stateManager.putStorage = (..._args) => {
       throw new Error('Test')
     }
 
@@ -105,7 +105,7 @@ describe('VM.runCode: interpreter', () => {
 
 describe('VM.runCode: RunCodeOptions', () => {
   it('should throw on negative value args', async () => {
-    const evm = await EVM.create()
+    const evm = await createEVM()
 
     const runCodeArgs = {
       value: BigInt(-10),
@@ -118,7 +118,7 @@ describe('VM.runCode: RunCodeOptions', () => {
     } catch (err: any) {
       assert.ok(
         err.message.includes('value field cannot be negative'),
-        'throws on negative call value'
+        'throws on negative call value',
       )
     }
   })

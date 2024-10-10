@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -15,96 +15,106 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessListEIP2930Transaction,
-  FeeMarketEIP1559Transaction,
+  AccessList2930Transaction,
+  FeeMarket1559Tx,
   TransactionType,
+  createAccessList2930Tx,
+  createAccessList2930TxFromBytesArray,
+  createAccessList2930TxFromRLP,
+  createFeeMarket1559Tx,
+  createFeeMarket1559TxFromRLP,
+  paramsTx,
 } from '../src/index.js'
 
-import type { AccessList, AccessListBytesItem, JsonTx } from '../src/index.js'
+import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.js'
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)
 
 const common = new Common({
-  chain: Chain.Mainnet,
+  chain: Mainnet,
   hardfork: Hardfork.London,
+  params: paramsTx,
 })
 
 const txTypes = [
   {
-    class: AccessListEIP2930Transaction,
-    name: 'AccessListEIP2930Transaction',
+    class: AccessList2930Transaction,
+    name: 'AccessList2930Transaction',
     type: TransactionType.AccessListEIP2930,
+    create: {
+      txData: createAccessList2930Tx,
+      rlp: createAccessList2930TxFromRLP,
+    },
   },
   {
-    class: FeeMarketEIP1559Transaction,
-    name: 'FeeMarketEIP1559Transaction',
+    class: FeeMarket1559Tx,
+    name: 'FeeMarket1559Tx',
     type: TransactionType.FeeMarketEIP1559,
+    create: {
+      txData: createFeeMarket1559Tx,
+      rlp: createFeeMarket1559TxFromRLP,
+    },
   },
 ]
 
 const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
 const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
-const chainId = BigInt(Chain.Mainnet)
+const chainId = 1
 
-describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility', () => {
+describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibility', () => {
   it('Initialization / Getter -> fromTxData()', () => {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData({}, { common })
+      let tx = txType.create.txData({}, { common })
       assert.ok(tx, `should initialize correctly (${txType.name})`)
 
-      tx = txType.class.fromTxData({
-        chainId: Chain.Goerli,
-      })
+      tx = txType.create.txData(
+        {
+          chainId: 5,
+        },
+        { common: new Common({ chain: Goerli }) },
+      )
       assert.ok(
         tx.common.chainId() === BigInt(5),
-        'should initialize Common with chain ID provided (supported chain ID)'
+        'should initialize Common with chain ID provided (supported chain ID)',
       )
 
-      tx = txType.class.fromTxData({
-        chainId: 99999,
-      })
-      assert.ok(
-        tx.common.chainId() === BigInt(99999),
-        'should initialize Common with chain ID provided (unsupported chain ID)'
-      )
-
-      const nonEIP2930Common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
       assert.throws(
         () => {
-          txType.class.fromTxData({}, { common: nonEIP2930Common })
+          txType.create.txData({}, { common: nonEIP2930Common })
         },
         undefined,
         undefined,
-        `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`
+        `should throw on a pre-Berlin Hardfork (EIP-2930 not activated) (${txType.name})`,
       )
 
       assert.throws(
         () => {
-          txType.class.fromTxData(
+          txType.create.txData(
             {
-              chainId: chainId + BigInt(1),
+              chainId: chainId + 1,
             },
-            { common }
+            { common },
           )
         },
         undefined,
         undefined,
-        `should reject transactions with wrong chain ID (${txType.name})`
+        `should reject transactions with wrong chain ID (${txType.name})`,
       )
 
       assert.throws(
         () => {
-          txType.class.fromTxData(
+          txType.create.txData(
             {
               v: 2,
             },
-            { common }
+            { common },
           )
         },
         undefined,
         undefined,
-        `should reject transactions with invalid yParity (v) values (${txType.name})`
+        `should reject transactions with invalid yParity (v) values (${txType.name})`,
       )
     }
   })
@@ -141,7 +151,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         ) {
           txData[value] = testCase
           assert.throws(() => {
-            AccessListEIP2930Transaction.fromTxData(txData)
+            createAccessList2930Tx(txData)
           })
         }
       }
@@ -151,33 +161,33 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
   it('Initialization / Getter -> fromSerializedTx()', () => {
     for (const txType of txTypes) {
       try {
-        txType.class.fromSerializedTx(new Uint8Array([99]), {})
+        txType.create.rlp(new Uint8Array([99]), {})
       } catch (e: any) {
         assert.ok(
           e.message.includes('wrong tx type'),
-          `should throw on wrong tx type (${txType.name})`
+          `should throw on wrong tx type (${txType.name})`,
         )
       }
 
       try {
         // Correct tx type + RLP-encoded 5
         const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
-        txType.class.fromSerializedTx(serialized, {})
+        txType.create.rlp(serialized, {})
       } catch (e: any) {
         assert.ok(
           e.message.includes('must be array'),
-          `should throw when RLP payload not an array (${txType.name})`
+          `should throw when RLP payload not an array (${txType.name})`,
         )
       }
 
       try {
         // Correct tx type + RLP-encoded empty list
         const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
-        txType.class.fromSerializedTx(serialized, {})
+        txType.create.rlp(serialized, {})
       } catch (e: any) {
         assert.ok(
           e.message.includes('values (for unsigned tx)'),
-          `should throw with invalid number of values (${txType.name})`
+          `should throw with invalid number of values (${txType.name})`,
         )
       }
     }
@@ -191,12 +201,12 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
           storageKeys: [bytesToHex(validSlot)],
         },
       ]
-      const txn = txType.class.fromTxData(
+      const txn = txType.create.txData(
         {
           accessList: access,
-          chainId: Chain.Mainnet,
+          chainId: 1,
         },
-        { common }
+        { common },
       )
 
       // Check if everything is converted
@@ -211,12 +221,12 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
       // also verify that we can always get the json access list, even if we don't provide one.
 
-      const txnRaw = txType.class.fromTxData(
+      const txnRaw = txType.create.txData(
         {
           accessList: bytes,
-          chainId: Chain.Mainnet,
+          chainId: 1,
         },
-        { common }
+        { common },
       )
 
       const JSONRaw = txnRaw.AccessListJSON
@@ -236,11 +246,11 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
 
       accessList = [
@@ -254,89 +264,89 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
 
       accessList = [[]] // Address does not exist
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
 
       accessList = [[validAddress]] // Slots does not exist
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
 
       accessList = [[validAddress, validSlot]] // Slots is not an array
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
 
       accessList = [[validAddress, [], []]] // 3 items where 2 are expected
 
       assert.throws(
         () => {
-          txType.class.fromTxData({ chainId, accessList }, { common })
+          txType.create.txData({ chainId, accessList }, { common })
         },
         undefined,
         undefined,
-        txType.name
+        txType.name,
       )
     }
   })
 
   it('sign()', () => {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData(
+      let tx = txType.create.txData(
         {
           data: hexToBytes('0x010200'),
           to: validAddress,
           accessList: [[validAddress, [validSlot]]],
           chainId,
         },
-        { common }
+        { common },
       )
       let signed = tx.sign(pKey)
       const signedAddress = signed.getSenderAddress()
       assert.ok(
         equalsBytes(signedAddress.bytes, address),
-        `should sign a transaction (${txType.name})`
+        `should sign a transaction (${txType.name})`,
       )
       signed.verifySignature() // If this throws, test will not end.
 
-      tx = txType.class.fromTxData({}, { common })
+      tx = txType.create.txData({}, { common })
       signed = tx.sign(pKey)
 
       assert.deepEqual(
         tx.accessList,
         [],
-        `should create and sign transactions without passing access list value (${txType.name})`
+        `should create and sign transactions without passing access list value (${txType.name})`,
       )
       assert.deepEqual(signed.accessList, [])
 
-      tx = txType.class.fromTxData({}, { common })
+      tx = txType.create.txData({}, { common })
 
       assert.throws(
         () => {
@@ -344,7 +354,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         },
         undefined,
         undefined,
-        `should throw calling hash with unsigned tx (${txType.name})`
+        `should throw calling hash with unsigned tx (${txType.name})`,
       )
 
       assert.throws(() => {
@@ -354,20 +364,20 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
       assert.throws(
         () => {
           const high = SECP256K1_ORDER_DIV_2 + BigInt(1)
-          const tx = txType.class.fromTxData({ s: high, r: 1, v: 1 }, { common })
+          const tx = txType.create.txData({ s: high, r: 1, v: 1 }, { common })
           const signed = tx.sign(pKey)
           signed.getSenderPublicKey()
         },
         undefined,
         undefined,
-        `should throw with invalid s value (${txType.name})`
+        `should throw with invalid s value (${txType.name})`,
       )
     }
   })
 
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = createAccessList2930Tx({})
     const signedTx = tx.sign(privateKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
@@ -376,7 +386,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
   it('addSignature() -> correctly converts raw ecrecover values', () => {
     const privKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -389,7 +399,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
 
   it('addSignature() -> throws when adding the wrong v value', () => {
     const privKey = pKey
-    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey)
@@ -400,35 +410,35 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
     })
   })
 
-  it('getDataFee()', () => {
+  it('getDataGas()', () => {
     for (const txType of txTypes) {
-      let tx = txType.class.fromTxData({}, { common })
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when frozen')
+      let tx = txType.create.txData({}, { common })
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when frozen')
 
-      tx = txType.class.fromTxData({}, { common, freeze: false })
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should return data fee when not frozen')
+      tx = txType.create.txData({}, { common, freeze: false })
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when not frozen')
 
-      const mutableCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      tx = txType.class.fromTxData({}, { common: mutableCommon })
+      const mutableCommon = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+      tx = txType.create.txData({}, { common: mutableCommon })
       tx.common.setHardfork(Hardfork.Istanbul)
-      assert.equal(tx.getDataFee(), BigInt(0), 'Should invalidate cached value on hardfork change')
+      assert.equal(tx.getDataGas(), BigInt(0), 'Should invalidate cached value on hardfork change')
     }
   })
 })
 
-describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
+describe('[AccessList2930Transaction] -> Class Specific Tests', () => {
   it(`Initialization`, () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { common })
+    const tx = createAccessList2930Tx({}, { common })
     assert.ok(
-      AccessListEIP2930Transaction.fromTxData(tx, { common }),
-      'should initialize correctly from its own data'
+      createAccessList2930Tx(tx, { common }),
+      'should initialize correctly from its own data',
     )
 
     const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
     const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
     const chainId = BigInt(1)
     try {
-      AccessListEIP2930Transaction.fromTxData(
+      createAccessList2930Tx(
         {
           data: hexToBytes('0x010200'),
           to: validAddress,
@@ -437,12 +447,12 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
           gasLimit: MAX_UINT64,
           gasPrice: MAX_INTEGER,
         },
-        { common }
+        { common },
       )
     } catch (err: any) {
       assert.ok(
         err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
-        'throws when gasLimit * gasPrice exceeds MAX_INTEGER'
+        'throws when gasLimit * gasPrice exceeds MAX_INTEGER',
       )
     }
   })
@@ -453,72 +463,70 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       const address = new Uint8Array(0)
       const storageKeys = [new Uint8Array(0), new Uint8Array(0)]
       const aclBytes: AccessListBytesItem = [address, storageKeys]
-      AccessListEIP2930Transaction.fromValuesArray(
+      createAccessList2930TxFromBytesArray(
         [bytes, bytes, bytes, bytes, bytes, bytes, bytes, [aclBytes], bytes],
-        {}
+        {},
       )
     },
     undefined,
     undefined,
-    'should throw with values array with length different than 8 or 11'
+    'should throw with values array with length different than 8 or 11',
   )
 
   it(`should return right upfront cost`, () => {
-    let tx = AccessListEIP2930Transaction.fromTxData(
+    let tx = createAccessList2930Tx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
-      { common }
+      { common },
     )
     // Cost should be:
     // Base fee + 2*TxDataNonZero + TxDataZero + AccessListAddressCost + AccessListSlotCost
-    const txDataZero: number = Number(common.param('gasPrices', 'txDataZero'))
-    const txDataNonZero: number = Number(common.param('gasPrices', 'txDataNonZero'))
-    const accessListStorageKeyCost: number = Number(
-      common.param('gasPrices', 'accessListStorageKeyCost')
-    )
-    const accessListAddressCost: number = Number(common.param('gasPrices', 'accessListAddressCost'))
-    const baseFee: number = Number(common.param('gasPrices', 'tx'))
-    const creationFee: number = Number(common.param('gasPrices', 'txCreation'))
+    const txDataZero: number = Number(common.param('txDataZeroGas'))
+    const txDataNonZero: number = Number(common.param('txDataNonZeroGas'))
+    const accessListStorageKeyCost: number = Number(common.param('accessListStorageKeyGas'))
+    const accessListAddressCost: number = Number(common.param('accessListAddressGas'))
+    const baseFee: number = Number(common.param('txGas'))
+    const creationFee: number = Number(common.param('txCreationGas'))
 
     assert.ok(
-      tx.getBaseFee() ===
+      tx.getIntrinsicGas() ===
         BigInt(
           txDataNonZero * 2 +
             txDataZero +
             baseFee +
             accessListAddressCost +
-            accessListStorageKeyCost
-        )
+            accessListStorageKeyCost,
+        ),
     )
 
     // In this Tx, `to` is `undefined`, so we should charge homestead creation gas.
-    tx = AccessListEIP2930Transaction.fromTxData(
+    tx = createAccessList2930Tx(
       {
         data: hexToBytes('0x010200'),
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
-      { common }
+      { common },
     )
 
     assert.ok(
-      tx.getBaseFee() ===
+      tx.getIntrinsicGas() ===
         BigInt(
           txDataNonZero * 2 +
             txDataZero +
             creationFee +
             baseFee +
             accessListAddressCost +
-            accessListStorageKeyCost
-        )
+            accessListStorageKeyCost,
+        ),
     )
 
     // Explicitly check that even if we have duplicates in our list, we still charge for those
-    tx = AccessListEIP2930Transaction.fromTxData(
+    tx = createAccessList2930Tx(
       {
         to: validAddress,
         accessList: [
@@ -527,16 +535,17 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
         ],
         chainId,
       },
-      { common }
+      { common },
     )
 
     assert.ok(
-      tx.getBaseFee() === BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3)
+      tx.getIntrinsicGas() ===
+        BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3),
     )
   })
 
   it('getEffectivePriorityFee() -> should return correct values', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({
+    const tx = createAccessList2930Tx({
       gasPrice: BigInt(100),
     })
 
@@ -547,39 +556,39 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
   })
 
   it('getUpfrontCost() -> should return upfront cost', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData(
+    const tx = createAccessList2930Tx(
       {
         gasPrice: 1000,
         gasLimit: 10000000,
         value: 42,
       },
-      { common }
+      { common },
     )
     assert.equal(tx.getUpfrontCost(), BigInt(10000000042))
   })
 
   it('unsigned tx -> getHashedMessageToSign()/getMessageToSign()', () => {
-    const unsignedTx = AccessListEIP2930Transaction.fromTxData(
+    const unsignedTx = createAccessList2930Tx(
       {
         data: hexToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
-      { common }
+      { common },
     )
     const expectedHash = hexToBytes(
-      '0x78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b'
+      '0x78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b',
     )
     assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
     const expectedSerialization = hexToBytes(
-      '0x01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
+      '0x01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',
     )
     assert.deepEqual(
       unsignedTx.getMessageToSign(),
       expectedSerialization,
-      'correct serialized unhashed version'
+      'correct serialized unhashed version',
     )
   })
 
@@ -602,40 +611,39 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
 
     const customChainParams = {
       name: 'custom',
-      chainId: txData.chainId,
+      chainId: txData.chainId.toString(),
       eips: [2718, 2929, 2930],
     }
-    const usedCommon = Common.custom(customChainParams, {
-      baseChain: Chain.Mainnet,
+    const usedCommon = createCustomCommon(customChainParams, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     usedCommon.setEIPs([2718, 2929, 2930])
 
     const expectedUnsignedRaw = hexToBytes(
-      '0x01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080'
+      '0x01f86587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a00000000000000000000000000000000000000000000000000000000000000000808080',
     )
     const pkey = hexToBytes('0xfad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19')
     const expectedSigned = hexToBytes(
-      '0x01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d'
+      '0x01f8a587796f6c6f76337880843b9aca008262d494df0a88b2b68c673713a8ec826003676f272e35730180f838f7940000000000000000000000000000000000001337e1a0000000000000000000000000000000000000000000000000000000000000000080a0294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938da00be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d',
     )
     const expectedHash = hexToBytes(
-      '0xbbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec'
+      '0xbbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec',
     )
     const v = BigInt(0)
     const r = bytesToBigInt(
-      hexToBytes('0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d')
+      hexToBytes('0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d'),
     )
     const s = bytesToBigInt(
-      hexToBytes('0x0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d')
+      hexToBytes('0x0be950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d'),
     )
 
-    const unsignedTx = AccessListEIP2930Transaction.fromTxData(txData, { common: usedCommon })
+    const unsignedTx = createAccessList2930Tx(txData, { common: usedCommon })
 
     const serializedMessageRaw = unsignedTx.serialize()
 
     assert.ok(
       equalsBytes(expectedUnsignedRaw, serializedMessageRaw),
-      'serialized unsigned message correct'
+      'serialized unsigned message correct',
     )
 
     const signed = unsignedTx.sign(pkey)
@@ -646,7 +654,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
     assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
-    const expectedJSON: JsonTx = {
+    const expectedJSON: JSONTx = {
       type: '0x1',
       chainId: '0x796f6c6f763378',
       nonce: '0x0',
@@ -664,21 +672,22 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       v: '0x0',
       r: '0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d',
       s: '0xbe950468ba1c25a5cb50e9f6d8aa13c8cd21f24ba909402775b262ac76d374d',
+      yParity: '0x0',
     }
 
     assert.deepEqual(signed.toJSON(), expectedJSON)
   })
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
-    const tx = AccessListEIP2930Transaction.fromTxData({}, { freeze: false })
+    const tx = createAccessList2930Tx({}, { freeze: false })
     assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
     const signedTxn = tx.sign(pKey)
     assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
-    const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+    const txn = createAccessList2930Tx({}, { common, freeze: false })
+    const newCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {
@@ -688,7 +697,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     const signedTxn = txn.sign(pKey)
     assert.ok(
       signedTxn.common.hardfork() === Hardfork.Paris,
-      'signed tx common is taken from tx.common'
+      'signed tx common is taken from tx.common',
     )
   })
 })

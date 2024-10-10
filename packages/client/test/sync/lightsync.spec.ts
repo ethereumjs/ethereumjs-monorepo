@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -7,6 +7,8 @@ import { Config } from '../../src/config.js'
 import { Peer } from '../../src/net/peer/peer.js'
 import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher.js'
 import { Event } from '../../src/types.js'
+
+import type { BlockHeader } from '@ethereumjs/block'
 
 class PeerPool {
   open() {}
@@ -75,7 +77,7 @@ describe('[LightSynchronizer]', async () => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -118,7 +120,7 @@ describe('sync errors', async () => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -130,7 +132,7 @@ describe('sync errors', async () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[])
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[]),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('No headers fetched are applicable for import')) {
@@ -168,7 +170,7 @@ describe('import headers', () => {
       pool,
       chain,
     })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -180,7 +182,7 @@ describe('import headers', () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [createBlockHeader({})]),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {

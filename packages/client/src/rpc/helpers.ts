@@ -4,12 +4,13 @@ import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
 
 import type { Chain } from '../blockchain/index.js'
 import type { Block } from '@ethereumjs/block'
-import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+import type { JSONRPCTx, TypedTransaction } from '@ethereumjs/tx'
 
-type RpcError = {
+type RPCError = {
   code: number
   message: string
   trace?: string
+  data?: string
 }
 
 export function callWithStackTrace(handler: Function, debug: boolean) {
@@ -18,12 +19,13 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
       const res = await handler(...args)
       return res
     } catch (error: any) {
-      const e: RpcError = {
+      const e: RPCError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
+        data: error.data,
       }
       if (debug === true) {
-        e['trace'] = error.stack ?? 'Stack trace is not available'
+        e['trace'] = error.stack
       }
 
       throw e
@@ -34,7 +36,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
 /**
  * Returns tx formatted to the standard JSON-RPC fields
  */
-export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JsonRpcTx => {
+export const toJSONRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JSONRPCTx => {
   const txJSON = tx.toJSON()
   return {
     blockHash: block ? bytesToHex(block.hash()) : null,
@@ -58,6 +60,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
     blobVersionedHashes: txJSON.blobVersionedHashes,
+    yParity: txJSON.yParity,
   }
 }
 

@@ -64,7 +64,7 @@ export function createStream(id: string, location: string, protocols: string[]) 
   servers[location].streams[id] = stream
   setTimeout(
     () => servers[location].server.emit('connection', { id, stream: stream.local(id) }),
-    10
+    10,
   )
   return stream.remote(location)
 }

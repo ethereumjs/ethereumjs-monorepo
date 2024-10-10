@@ -176,19 +176,19 @@ export class RlpxPeer extends Peer {
               const snapProtocol =
                 snapRlpxProtocol !== undefined
                   ? this.protocols.find(
-                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
+                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase(),
                     )
                   : undefined
               if (snapProtocol !== undefined) {
                 const snapSender = new RlpxSender(
-                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
+                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP,
                 )
                 return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })
         }
-      })
+      }),
     )
     this.connected = true
   }

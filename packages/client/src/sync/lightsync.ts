@@ -142,12 +142,11 @@ export class LightSynchronizer extends Synchronizer {
     }
     const first = headers[0].number
     const hash = short(headers[0].hash())
-    const baseFeeAdd =
-      this.config.chainCommon.gteHardfork(Hardfork.London) === true
-        ? `baseFee=${headers[0].baseFeePerGas} `
-        : ''
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${headers[0].baseFeePerGas} `
+      : ''
     this.config.logger.info(
-      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`,
     )
   }
 

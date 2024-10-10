@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
-  bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
@@ -11,10 +10,9 @@ import {
 import debugDefault from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
-import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Account, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
 type SlotString = string
@@ -34,7 +32,7 @@ type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>,
 type JournalHeight = number
 
 export class Journal {
-  private stateManager: EVMStateManagerInterface
+  private stateManager: StateManagerInterface
   private common: Common
   private DEBUG: boolean
   private _debug: Debugger
@@ -49,13 +47,13 @@ export class Journal {
   public accessList?: Map<AddressString, Set<SlotString>>
   public preimages?: Map<PrefixedHexString, Uint8Array>
 
-  constructor(stateManager: EVMStateManagerInterface, common: Common) {
+  constructor(stateManager: StateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = createDebugLogger('statemanager:statemanager')
+    this._debug = debugDefault('evm:journal')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
@@ -102,7 +100,7 @@ export class Journal {
       const bytesAddress = unprefixedHexToBytes(address)
       if (this.stateManager.getAppliedKey === undefined) {
         throw new Error(
-          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled'
+          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
         )
       }
       const hashedKey = this.stateManager.getAppliedKey(bytesAddress)
@@ -193,18 +191,11 @@ export class Journal {
    * Also cleanups any other internal fields
    */
   async cleanup(): Promise<void> {
-    if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
+    if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       for (const addressHex of this.touched) {
         const address = new Address(hexToBytes(`0x${addressHex}`))
         const account = await this.stateManager.getAccount(address)
         if (account === undefined || account.isEmpty()) {
-          if (this.common.isActivatedEIP(2935)) {
-            // The history storage address is exempt of state clearing by EIP-158 if the EIP is activated
-            const addr = bigIntToHex(this.common.param('vm', 'historyStorageAddress')).slice(2)
-            if (addressHex === addr) {
-              continue
-            }
-          }
           await this.deleteAccount(address)
           if (this.DEBUG) {
             this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)

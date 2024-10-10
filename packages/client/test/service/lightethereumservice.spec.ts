@@ -1,6 +1,6 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain'
+import { Chain } from '../../src/blockchain/chain.js'
 import { Config } from '../../src/config.js'
 import { LesProtocol } from '../../src/net/protocol/index.js'
 import { RlpxServer } from '../../src/net/server/index.js'
@@ -60,7 +60,7 @@ describe('should open', async () => {
     expect(server.addProtocols).toBeCalled()
   })
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should syncronize', () => {
+    it('should synchronize', () => {
       assert.ok(true, 'synchronized')
     })
   })

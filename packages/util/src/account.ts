@@ -13,7 +13,6 @@ import {
   intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
-  zeros,
 } from './bytes.js'
 import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
@@ -84,7 +83,7 @@ export class Account {
     if (this._balance !== null) {
       return this._balance
     } else {
-      throw Error(`bonce=${this._balance} not loaded`)
+      throw Error(`balance=${this._balance} not loaded`)
     }
   }
   set balance(_balance: bigint) {
@@ -117,153 +116,11 @@ export class Account {
     if (this._codeSize !== null) {
       return this._codeSize
     } else {
-      throw Error(`codeHash=${this._codeSize} not loaded`)
+      throw Error(`codeSize=${this._codeSize} not loaded`)
     }
   }
   set codeSize(_codeSize: number) {
     this._codeSize = _codeSize
-  }
-
-  static fromAccountData(accountData: AccountData) {
-    const { nonce, balance, storageRoot, codeHash } = accountData
-    if (nonce === null || balance === null || storageRoot === null || codeHash === null) {
-      throw Error(`Partial fields not supported in fromAccountData`)
-    }
-
-    return new Account(
-      nonce !== undefined ? bytesToBigInt(toBytes(nonce)) : undefined,
-      balance !== undefined ? bytesToBigInt(toBytes(balance)) : undefined,
-      storageRoot !== undefined ? toBytes(storageRoot) : undefined,
-      codeHash !== undefined ? toBytes(codeHash) : undefined
-    )
-  }
-
-  static fromPartialAccountData(partialAccountData: PartialAccountData) {
-    const { nonce, balance, storageRoot, codeHash, codeSize, version } = partialAccountData
-
-    if (
-      nonce === null &&
-      balance === null &&
-      storageRoot === null &&
-      codeHash === null &&
-      codeSize === null &&
-      version === null
-    ) {
-      throw Error(`All partial fields null`)
-    }
-
-    return new Account(
-      nonce !== undefined && nonce !== null ? bytesToBigInt(toBytes(nonce)) : nonce,
-      balance !== undefined && balance !== null ? bytesToBigInt(toBytes(balance)) : balance,
-      storageRoot !== undefined && storageRoot !== null ? toBytes(storageRoot) : storageRoot,
-      codeHash !== undefined && codeHash !== null ? toBytes(codeHash) : codeHash,
-      codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(codeSize)) : codeSize,
-      version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version
-    )
-  }
-
-  public static fromRlpSerializedAccount(serialized: Uint8Array) {
-    const values = RLP.decode(serialized) as Uint8Array[]
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized account input. Must be array')
-    }
-
-    return this.fromValuesArray(values)
-  }
-
-  public static fromRlpSerializedPartialAccount(serialized: Uint8Array) {
-    const values = RLP.decode(serialized) as Uint8Array[][]
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized account input. Must be array')
-    }
-
-    let nonce = null
-    if (!Array.isArray(values[0])) {
-      throw new Error('Invalid partial nonce encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[0][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
-      }
-      if (isNotNullIndicator === 1) {
-        nonce = bytesToBigInt(values[0][1])
-      }
-    }
-
-    let balance = null
-    if (!Array.isArray(values[1])) {
-      throw new Error('Invalid partial balance encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[1][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
-      }
-      if (isNotNullIndicator === 1) {
-        balance = bytesToBigInt(values[1][1])
-      }
-    }
-
-    let storageRoot = null
-    if (!Array.isArray(values[2])) {
-      throw new Error('Invalid partial storageRoot encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[2][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for storageRoot`)
-      }
-      if (isNotNullIndicator === 1) {
-        storageRoot = values[2][1]
-      }
-    }
-
-    let codeHash = null
-    if (!Array.isArray(values[3])) {
-      throw new Error('Invalid partial codeHash encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[3][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
-      }
-      if (isNotNullIndicator === 1) {
-        codeHash = values[3][1]
-      }
-    }
-
-    let codeSize = null
-    if (!Array.isArray(values[4])) {
-      throw new Error('Invalid partial codeSize encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[4][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
-      }
-      if (isNotNullIndicator === 1) {
-        codeSize = bytesToInt(values[4][1])
-      }
-    }
-
-    let version = null
-    if (!Array.isArray(values[5])) {
-      throw new Error('Invalid partial version encoding. Must be array')
-    } else {
-      const isNotNullIndicator = bytesToInt(values[5][0])
-      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
-      }
-      if (isNotNullIndicator === 1) {
-        version = bytesToInt(values[5][1])
-      }
-    }
-
-    return this.fromPartialAccountData({ balance, nonce, storageRoot, codeHash, codeSize, version })
-  }
-
-  public static fromValuesArray(values: Uint8Array[]) {
-    const [nonce, balance, storageRoot, codeHash] = values
-
-    return new Account(bytesToBigInt(nonce), bytesToBigInt(balance), storageRoot, codeHash)
   }
 
   /**
@@ -276,8 +133,8 @@ export class Account {
     balance: bigint | null = BIGINT_0,
     storageRoot: Uint8Array | null = KECCAK256_RLP,
     codeHash: Uint8Array | null = KECCAK256_NULL,
-    codeSize: number | null = null,
-    version: number | null = 0
+    codeSize: number | null = 0,
+    version: number | null = 0,
   ) {
     this._nonce = nonce
     this._balance = balance
@@ -393,12 +250,165 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
+    // helpful for determination in partial accounts
+    if (
+      (this._balance !== null && this.balance !== BIGINT_0) ||
+      (this._nonce === null && this.nonce !== BIGINT_0) ||
+      (this._codeHash !== null && !equalsBytes(this.codeHash, KECCAK256_NULL))
+    ) {
+      return false
+    }
+
     return (
       this.balance === BIGINT_0 &&
       this.nonce === BIGINT_0 &&
       equalsBytes(this.codeHash, KECCAK256_NULL)
     )
   }
+}
+
+// Account constructors
+
+export function createAccount(accountData: AccountData) {
+  const { nonce, balance, storageRoot, codeHash } = accountData
+  if (nonce === null || balance === null || storageRoot === null || codeHash === null) {
+    throw Error(`Partial fields not supported in fromAccountData`)
+  }
+
+  return new Account(
+    nonce !== undefined ? bytesToBigInt(toBytes(nonce)) : undefined,
+    balance !== undefined ? bytesToBigInt(toBytes(balance)) : undefined,
+    storageRoot !== undefined ? toBytes(storageRoot) : undefined,
+    codeHash !== undefined ? toBytes(codeHash) : undefined,
+  )
+}
+
+export function createAccountFromBytesArray(values: Uint8Array[]) {
+  const [nonce, balance, storageRoot, codeHash] = values
+
+  return new Account(bytesToBigInt(nonce), bytesToBigInt(balance), storageRoot, codeHash)
+}
+
+export function createPartialAccount(partialAccountData: PartialAccountData) {
+  const { nonce, balance, storageRoot, codeHash, codeSize, version } = partialAccountData
+
+  if (
+    nonce === null &&
+    balance === null &&
+    storageRoot === null &&
+    codeHash === null &&
+    codeSize === null &&
+    version === null
+  ) {
+    throw Error(`All partial fields null`)
+  }
+
+  return new Account(
+    nonce !== undefined && nonce !== null ? bytesToBigInt(toBytes(nonce)) : nonce,
+    balance !== undefined && balance !== null ? bytesToBigInt(toBytes(balance)) : balance,
+    storageRoot !== undefined && storageRoot !== null ? toBytes(storageRoot) : storageRoot,
+    codeHash !== undefined && codeHash !== null ? toBytes(codeHash) : codeHash,
+    codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(codeSize)) : codeSize,
+    version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version,
+  )
+}
+
+export function createAccountFromRLP(serialized: Uint8Array) {
+  const values = RLP.decode(serialized) as Uint8Array[]
+
+  if (!Array.isArray(values)) {
+    throw new Error('Invalid serialized account input. Must be array')
+  }
+
+  return createAccountFromBytesArray(values)
+}
+
+export function createPartialAccountFromRLP(serialized: Uint8Array) {
+  const values = RLP.decode(serialized) as Uint8Array[][]
+
+  if (!Array.isArray(values)) {
+    throw new Error('Invalid serialized account input. Must be array')
+  }
+
+  let nonce = null
+  if (!Array.isArray(values[0])) {
+    throw new Error('Invalid partial nonce encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[0][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
+    }
+    if (isNotNullIndicator === 1) {
+      nonce = bytesToBigInt(values[0][1])
+    }
+  }
+
+  let balance = null
+  if (!Array.isArray(values[1])) {
+    throw new Error('Invalid partial balance encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[1][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
+    }
+    if (isNotNullIndicator === 1) {
+      balance = bytesToBigInt(values[1][1])
+    }
+  }
+
+  let storageRoot = null
+  if (!Array.isArray(values[2])) {
+    throw new Error('Invalid partial storageRoot encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[2][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for storageRoot`)
+    }
+    if (isNotNullIndicator === 1) {
+      storageRoot = values[2][1]
+    }
+  }
+
+  let codeHash = null
+  if (!Array.isArray(values[3])) {
+    throw new Error('Invalid partial codeHash encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[3][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
+    }
+    if (isNotNullIndicator === 1) {
+      codeHash = values[3][1]
+    }
+  }
+
+  let codeSize = null
+  if (!Array.isArray(values[4])) {
+    throw new Error('Invalid partial codeSize encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[4][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
+    }
+    if (isNotNullIndicator === 1) {
+      codeSize = bytesToInt(values[4][1])
+    }
+  }
+
+  let version = null
+  if (!Array.isArray(values[5])) {
+    throw new Error('Invalid partial version encoding. Must be array')
+  } else {
+    const isNotNullIndicator = bytesToInt(values[5][0])
+    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+      throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
+    }
+    if (isNotNullIndicator === 1) {
+      version = bytesToInt(values[5][1])
+    }
+  }
+
+  return createPartialAccount({ balance, nonce, storageRoot, codeHash, codeSize, version })
 }
 
 /**
@@ -428,7 +438,7 @@ export const isValidAddress = function (hexAddress: string): hexAddress is Prefi
  */
 export const toChecksumAddress = function (
   hexAddress: string,
-  eip1191ChainId?: BigIntLike
+  eip1191ChainId?: BigIntLike,
 ): PrefixedHexString {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
@@ -461,7 +471,7 @@ export const toChecksumAddress = function (
  */
 export const isValidChecksumAddress = function (
   hexAddress: string,
-  eip1191ChainId?: BigIntLike
+  eip1191ChainId?: BigIntLike,
 ): boolean {
   return isValidAddress(hexAddress) && toChecksumAddress(hexAddress, eip1191ChainId) === hexAddress
 }
@@ -494,7 +504,7 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
 export const generateAddress2 = function (
   from: Uint8Array,
   salt: Uint8Array,
-  initCode: Uint8Array
+  initCode: Uint8Array,
 ): Uint8Array {
   assertIsBytes(from)
   assertIsBytes(salt)
@@ -601,10 +611,8 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 /**
  * Returns the zero address.
  */
-export const zeroAddress = function (): string {
-  const addressLength = 20
-  const addr = zeros(addressLength)
-  return bytesToHex(addr)
+export const zeroAddress = function (): PrefixedHexString {
+  return bytesToHex(new Uint8Array(20))
 }
 
 /**

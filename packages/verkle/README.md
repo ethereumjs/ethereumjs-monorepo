@@ -80,6 +80,54 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking, which CJS cannot provide.
 
+## Debugging
+
+This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
+
+The `Verkle` class features optional debug logging. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
+
+The following options are available:
+
+| Logger                | Description                          |
+| --------------------- | ------------------------------------ |
+| `verkle:#`            | a core verkle operation has occurred |
+| `verkle:#:put`        | a verkle put operation has occurred  |
+| `verkle:#:get`        | a verkle get operation has occurred  |
+| `verkle:#:del`        | a verkle del operation has occurred  |
+| `verkle:#:find_path`  | a node is being searched for         |
+| `verkle:#:initialize` | a verkle object has been initialized |
+
+To observe the logging in action at different levels:
+
+Run with minimal logging:
+
+```shell
+DEBUG=ethjs,verkle npx vitest test/verkle.spec.ts
+```
+
+Run with **put** method logging:
+
+```shell
+DEBUG=ethjs,verkle:put npx vitest test/verkle.spec.ts
+```
+
+Run with **verkle** + **put**/**get**/**del** logging:
+
+```shell
+DEBUG=ethjs,verkle,verkle:put,verkle:get,verkle:del npx vitest test/verkle.spec.ts
+```
+
+Run with max logging:
+
+```shell
+DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
+```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
+
 ## References
 
 - Wiki

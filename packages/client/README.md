@@ -71,7 +71,7 @@ A Docker image is built nightly from the current master branch and can be retrie
 docker pull ethpandaops/ethereumjs:master
 ```
 
-Alternatively, an image from the most recent stable releast can be accessed via:
+Alternatively, an image from the most recent stable release can be accessed via:
 
 ```sh
 docker pull ethpandaops/ethereumjs:stable
@@ -307,8 +307,8 @@ dist/bin/cli.js --d
 
 ## Metrics
 
-The client can optionally collect metrics using the Prometheus metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
-The current metrics that are reported by the client can be found [here](./src/util//metrics.ts).
+The client can optionally collect metrics using the [Prometheus](https://github.com/prometheus/prometheus) metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
+The current metrics that are reported by the client can be found at the default port and route: `localhost:8000/metrics`.
 
 ```sh
 # npm installation
@@ -317,8 +317,6 @@ ethereumjs --prometheus
 # source installation
 npm run client:start:ts -- --prometheus --prometheusPort=9123
 ```
-
-Note: The Prometheus endpoint runs on port 8000 by default
 
 ## API
 
@@ -459,11 +457,27 @@ For more in-depth debugging on networking the underlying [devp2p](../devp2p) lib
 DEBUG=ethjs,*,-babel [CLIENT_START_COMMAND]
 ```
 
-The above command outputs the log messages from all `devp2p` debug loggers available. For a more targeted logging the different loggers can also be activated separately, e.g.:
+The above command outputs the log messages from all `devp2p` debug loggers available. For more targeted logging, the different loggers can also be activated separately, e.g.:
 
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+
+The following options are available:
+
+| Logger              | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `client:fetcher:#`            | This option enables logging for core fetcher operations such as job scheduling   |
+| `client:fetcher:bytecode`   | This option enables logging for the snap sync bytecode fetcher         |
+| `client:fetcher:storage`    | This option enables logging for the snap sync storage fetcher  |
+| `client:fetcher:trienode`   | This option enables logging for the snap sync trienode fetcher      |
+| `client:fetcher:account`    | This option enables logging for the snap sync account fetcher      |
+
 ```
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,client:fetcher:*,devp2p:eth npm run client:start`
 
 #### Hive testing
 

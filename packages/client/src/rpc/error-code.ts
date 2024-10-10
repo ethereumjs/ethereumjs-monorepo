@@ -8,6 +8,7 @@ export const INTERNAL_ERROR = -32603
 export const TOO_LARGE_REQUEST = -38004
 export const UNSUPPORTED_FORK = -38005
 export const UNKNOWN_PAYLOAD = -32001
+export const INVALID_HEX_STRING = -32000
 
 export const validEngineCodes = [
   PARSE_ERROR,

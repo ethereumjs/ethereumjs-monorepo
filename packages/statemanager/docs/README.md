@@ -40,7 +40,7 @@
 
 - [BALANCE\_LEAF\_KEY](README.md#balance_leaf_key)
 - [CODEHASH\_PREFIX](README.md#codehash_prefix)
-- [CODE\_KECCAK\_LEAF\_KEY](README.md#code_keccak_leaf_key)
+- [CODE\_KECCAK\_LEAF\_KEY](README.md#CODE_HASH_leaf_key)
 - [CODE\_OFFSET](README.md#code_offset)
 - [CODE\_SIZE\_LEAF\_KEY](README.md#code_size_leaf_key)
 - [HEADER\_STORAGE\_OFFSET](README.md#header_storage_offset)

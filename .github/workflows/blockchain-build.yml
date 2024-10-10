@@ -1,11 +1,18 @@
 name: Blockchain
 on:
-  push:
-    branches: [master, develop]
-    tags: ['*']
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_call:
+    inputs:
+      dep-cache-key:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
+      submodule-cache-key:
+        required: false
+        default: 'none'
 
 env:
   cwd: ${{github.workspace}}/packages/blockchain
@@ -15,28 +22,35 @@ defaults:
     working-directory: packages/blockchain
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-blockchain
   cancel-in-progress: true
 
 jobs:
   test-blockchain:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18]
     steps:
-      - uses: actions/checkout@v4
+      # We clone the repo and submodules if triggered from work-flow dispatch
+      - if: inputs.submodule-cache-key == 'none'
+        uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)  
+      - uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
+  
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
-      - run: npm ci --omit=peer
-        working-directory: ${{github.workspace}}
-
-      - run: npm run lint
+      - name: Install Dependencies (if called from workflow_dispatch)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+            
       - run: npm run coverage
       - uses: codecov/codecov-action@v3
         with:

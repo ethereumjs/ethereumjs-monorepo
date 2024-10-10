@@ -2,7 +2,7 @@ import { assert, beforeAll, describe, it } from 'vitest'
 
 import { RLP } from '../src/index.js'
 
-import * as official from './fixture/rlptest.json'
+import { rlpTestData } from './fixture/rlptest.js'
 import { bytesToUtf8 } from './utils.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -30,7 +30,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
   it(
     'should return valid values for official tests',
     async () => {
-      for (const [testName, test] of Object.entries(official.tests)) {
+      for (const [testName, test] of Object.entries(rlpTestData.tests)) {
         const { in: incoming, out } = test
 
         // skip if testing a big number
@@ -44,7 +44,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
         assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
       }
     },
-    { timeout: 10000 }
+    { timeout: 10000 },
   )
 })
 
@@ -54,9 +54,9 @@ describe.skipIf(isBrowser)('Cross-frame', () => {
     assert.deepEqual(
       vm.runInNewContext(
         "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
-        { RLP }
+        { RLP },
       ),
-      'cc83646f6783676f6483636174'
+      'cc83646f6783676f6483636174',
     )
   })
 })

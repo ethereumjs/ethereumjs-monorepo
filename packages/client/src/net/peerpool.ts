@@ -91,13 +91,13 @@ export class PeerPool {
     this._statusCheckInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._statusCheck.bind(this),
-      this.DEFAULT_STATUS_CHECK_INTERVAL
+      this.DEFAULT_STATUS_CHECK_INTERVAL,
     )
 
     this._peerBestHeaderUpdateInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._peerBestHeaderUpdate.bind(this),
-      this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL
+      this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL,
     )
 
     this.running = true

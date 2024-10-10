@@ -1,12 +1,12 @@
-import { loadKZG } from 'kzg-wasm'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
-
+  const kzg = new microEthKZG(trustedSetup)
   // Instantiate `common`
   const common = new Common({
-    chain: Chain.Mainnet,
+    chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
@@ -14,4 +14,4 @@ const main = async () => {
   console.log(common.customCrypto.kzg) // should output the KZG API as an object
 }
 
-main()
+void main()

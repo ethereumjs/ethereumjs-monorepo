@@ -19,8 +19,8 @@ describe('[EthereumClient]', async () => {
   FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
   vi.doMock('../src/service/index.js', () => {
-    {
-      FullEthereumService
+    return {
+      FullEthereumService,
     }
   })
 
@@ -35,8 +35,8 @@ describe('[EthereumClient]', async () => {
   Server.prototype.stop = vi.fn().mockResolvedValue(null)
   Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
   vi.doMock('../src/net/server/server.js', () => {
-    {
-      Server
+    return {
+      Server,
     }
   })
 

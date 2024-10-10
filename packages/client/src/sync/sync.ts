@@ -116,20 +116,20 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       return false
     }
     this.running = true
 
     this._syncedStatusCheckInterval = setInterval(
       this._syncedStatusCheck.bind(this),
-      this.SYNCED_STATE_REMOVAL_PERIOD
+      this.SYNCED_STATE_REMOVAL_PERIOD,
     )
 
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Paris) === false) {
+    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -161,7 +161,7 @@ export abstract class Synchronizer {
       return this.resolveSync()
     } catch (error: any) {
       this.config.logger.error(
-        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )
       this.clearFetcher()
       throw error

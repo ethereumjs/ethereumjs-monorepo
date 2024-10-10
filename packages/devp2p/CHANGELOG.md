@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 6.1.2 - 2024-03-05
+## 6.1.3 - 2024-08-15
+
+Maintenance release with downstream dependency updates, see PR [#3527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3527)
+
+## 6.1.2 - 2024-03-18
 
 - Fix a type error related to the `lru-cache` dependency, PR [#3285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3285)
 - Downstream dependency updates, see PR [#3297](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3297)
@@ -89,7 +93,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -312,7 +316,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -320,7 +324,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -464,7 +468,7 @@ DNS discovery can be activated in the `DPT` module with the `shouldGetDnsPeers` 
 - `maxPeers`, `dpt`, and `listenPort` are now optional in `RLPxOptions`, PR [#1019](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1019)
 - New `DPTOptions` interface, `DPT` type improvements, PR [#1029](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1029)
 - Improved `RLPx` disconnect reason debug output, PR [#1031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1031)
-- `LES`: unifiy `ETH` and `LES` `sendMessage()` signature by somewhat change payload semantics and pass in `reqId` along, PR [#1087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1087)
+- `LES`: unify `ETH` and `LES` `sendMessage()` signature by somewhat change payload semantics and pass in `reqId` along, PR [#1087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1087)
 - `RLPx`: limit connection refill debug logging to a restarted interval log message to not bloat logging too much, PR [#1087](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1087)
 
 ### Connection Reliability / Bug Fixes

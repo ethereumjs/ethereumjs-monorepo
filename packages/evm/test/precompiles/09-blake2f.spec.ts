@@ -1,9 +1,10 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { EVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.js'
 
+import type { EVM } from '../../src/index.js'
 import type { PrecompileFunc } from '../../src/precompiles/types.js'
 
 const validCases = [
@@ -81,11 +82,11 @@ describe('Precompiles: BLAKE2F', () => {
   let addressStr: string
   let BLAKE2F: PrecompileFunc
   beforeAll(async () => {
-    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
     //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 
-    evm = await EVM.create({
+    evm = await createEVM({
       common,
     })
     addressStr = '0000000000000000000000000000000000000009'
@@ -104,7 +105,7 @@ describe('Precompiles: BLAKE2F', () => {
       assert.equal(
         bytesToHex(result.returnValue),
         `0x${t.expected}`,
-        'should generate expected value'
+        'should generate expected value',
       )
       assert.deepEqual(result.executionGasUsed, BigInt(t.gas), 'should use expected amount of gas')
     })
@@ -124,7 +125,7 @@ describe('Precompiles: BLAKE2F', () => {
   }
 
   it('should also work on non-zero aligned inputs', async () => {
-    const addr = Address.zero()
+    const addr = createZeroAddress()
     // Blake2f calldata from https://etherscan.io/tx/0x4f2e13a0a3f14033630ab2b8cdad09d316826375f761ded5b31253bb42e0a476
     // (This tx calls into Blake2f multiple times, but one of them is taken)
     const calldata =
@@ -135,7 +136,7 @@ describe('Precompiles: BLAKE2F', () => {
     // -> Calls Blake2F with this data (so, with the calldata)
     // -> Returns the data from Blake2F
     const code = `0x366000602037600080366020600060095AF1593D6000593E3D90F3`
-    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+    await evm.stateManager.putCode(addr, hexToBytes(code))
 
     const res = await evm.runCall({
       data: hexToBytes(calldata),

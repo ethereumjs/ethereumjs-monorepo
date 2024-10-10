@@ -7,6 +7,6 @@ import type { EIP2930CompatibleTx } from '../types.js'
 /**
  * The amount of gas paid for the data in this tx
  */
-export function getDataFee(tx: EIP2930CompatibleTx): bigint {
-  return Legacy.getDataFee(tx, BigInt(AccessLists.getDataFeeEIP2930(tx.accessList, tx.common)))
+export function getDataGas(tx: EIP2930CompatibleTx): bigint {
+  return Legacy.getDataGas(tx, BigInt(AccessLists.getDataGasEIP2930(tx.accessList, tx.common)))
 }

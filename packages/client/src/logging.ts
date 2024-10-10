@@ -86,7 +86,7 @@ function logFormat(colors = false) {
 
       const msg = `[${info.timestamp}] ${level} ${CLLog}${HFLog}${info.message}`
       return msg
-    }
+    },
   )
 }
 
@@ -99,7 +99,7 @@ function formatConfig(colors = false) {
     format.splat(),
     label({ label: 'ethereumjs' }),
     timestamp({ format: 'MM-DD|HH:mm:ss' }),
-    logFormat(colors)
+    logFormat(colors),
   )
 }
 

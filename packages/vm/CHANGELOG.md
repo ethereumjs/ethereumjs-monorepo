@@ -6,11 +6,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 8.0.0 - 2024-03-05
+## 8.1.0 - 2024-08-15
+
+### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)
+
+This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390), `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) and `EIP-7251` consolidation requests, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
+
+These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
+
+### EIP-2935 Serve Historical Block Hashes from State (Prague)
+
+Starting with this release the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integration PR (while work on this has already been done in previous PRs).
+
+This EIP will be activated along the Prague hardfork. Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in the following Osaka hardfork.
+
+### Verkle Dependency Decoupling
+
+We have relatively light-heartedly added a new `@ethereumjs/verkle` main dependency to the VM/EVM stack in the `v7.2.1` release, which added an additional burden to the bundle size by several hundred KB and additionally draws in unnecessary WASM code. Coupling with Verkle has been refactored in PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462) and the direct dependency has been removed again.
+
+An update to this release is therefore strongly recommended even if other fixes or features are not that relevant for you right now.
+
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Kaustinen5 related fixes, PR [#3343](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3343)
+- Kaustinen6 adjustments, `verkle-cryptography-wasm` migration, PRs [#3355](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3355) and [#3356](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3356)
+- Missing beaconroot account verkle fix, PR [#3421](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3421)
+- Remove the hacks to prevent account cleanups of system contracts, PR [#3418](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3418)
+- Updates EIP-2935 tests with the new proposed bytecode and corresponding config, PR [#3438](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3438)
+- Fix EIP-2935 address conversion issues, PR [#3447](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3447)
+- Remove backfill of block hashes on EIP-2935 activation, PR [#3478](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3478)
+
+### Other Features
+
+- Add `evmOpts` to the VM opts to allow for options chaining to the underlying EVM, PR [#3481](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3481)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Removes support for [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) simple subroutines for EVM (deprecated with an alternative version integrated into EOF), PR [#3342](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3342)
+- Small clean-up to `VM._emit()`, PR [#3396](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3396)
+- Update `mcl-wasm` Dependency (Esbuild Issue), PR [#3461](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3461)
+
+### Bugfixes
+
+- Fix block building with blocks including CL requests, PR [#3413](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3413)
+- Ensure system address is not created if it is empty, PR [#3400](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3400)
+
+## 8.0.0 - 2024-03-18
 
 ### New EVM.create() Async Static Constructor / Mandatory VM.create() Constructor
 
-This is an in-between breaking release on both the EVM and VM packages due to a problematic top level await() discovery in the underlying `rustbn-wasm` library (see issue [#10](https://github.com/ethereumjs/rustbn-wasm/issues/10)) generally affecting the compatiblity of our libraries.
+This is an in-between breaking release on both the EVM and VM packages due to a problematic top level await() discovery in the underlying `rustbn-wasm` library (see issue [#10](https://github.com/ethereumjs/rustbn-wasm/issues/10)) generally affecting the compatibility of our libraries.
 
 The `EVM` direct constructor initialization with `new EVM()` now has been deprecated and replaced by an async static `create()` constructor, as it is already done in various other libraries in the EthereumJS monorepo, see PRs [#3304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3304/) and [#3315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3315). If you pass in a custom `EVM` along your `VM` initialization you **need to update your EVM initialization**.
 
@@ -69,7 +116,7 @@ Since this fits well also to be placed here relatively prominently for awareness
 
 ## 7.2.1 - 2024-02-08
 
-- Hotfix release moving the `@ethereumjs/verkle` dependency for `@ethereumjs/statemanager` from a peer dependency to the main dependencis (note that this decision might be temporary)
+- Hotfix release moving the `@ethereumjs/verkle` dependency for `@ethereumjs/statemanager` from a peer dependency to the main dependencies (note that this decision might be temporary)
 
 ## 7.2.0 - 2023-02-01
 
@@ -176,7 +223,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -282,7 +329,7 @@ The `0x44` (old `DIFFICULTY`) opcode - is now named `PREVRANDAO` - starting with
 
 Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
 
-With this release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not neceesary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+With this release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
 
 This goes along with some changes in Blockchain and VM API:
 
@@ -482,7 +529,7 @@ The VM library is now ready to work with hardforks triggered by timestamp, which
 
 ### Bug Fixes and Other Changes
 
-- More correctly timed `nonce` updates in `VM.runTx()` to avoid certain consensus-critical `nonce`/`account` update constallations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
+- More correctly timed `nonce` updates in `VM.runTx()` to avoid certain consensus-critical `nonce`/`account` update constellations. PR [#2404](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2404)
 
 A reminder: This package does not contain the core EVM code any more. For EVM related bugfixes see the associated [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) `v1.2.3` release.
 
@@ -547,7 +594,7 @@ This is the biggest VM change in this release. The inheritance structure of both
 
 This allows for an easier typing of the inner `EVM` and makes the core VM/EVM classes leaner and not overloaded with various other partly unused properties. The new `events` property is optional.
 
-Usage code of events needs to be slighly adopted and updated from:
+Usage code of events needs to be slightly adopted and updated from:
 
 ```ts
 vm.on('beforeBlock', (val) => {
@@ -572,7 +619,7 @@ vm.evm.events!.on('step', (e) => {
 ### Other Changes
 
 - Made `touchAccount` of `VMState` public, PR [#2183](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2183)
-- **Pontentially breaking:** Removed `common` option from underlying `StateManager`, PR [#2197](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2197)
+- **Potentially breaking:** Removed `common` option from underlying `StateManager`, PR [#2197](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2197)
 - Reworked/adjusted underlying EVM `skipBalance` option semantics, PR [#2138](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2138)
 - Fixed an underlying EVM event signature typing bug, PR [#2184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2184)
 
@@ -618,7 +665,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -626,7 +673,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -874,7 +921,7 @@ Note that state in the VM is not activated by default (this also goes for accoun
 
 ### L2 Support: Custom Opcodes Option
 
-There is now a new option `customOpcodes` for the VM which allows to add custom opcodes to the VM, see PR [#1705](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1705). This should be useful for L2s and other EVM based side chains if they come with a slighly different opcode set for bytecode execution.
+There is now a new option `customOpcodes` for the VM which allows to add custom opcodes to the VM, see PR [#1705](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1705). This should be useful for L2s and other EVM based side chains if they come with a slightly different opcode set for bytecode execution.
 
 New opcodes can be passed in with its own logic function and an additional function for gas calculation. Additionally the new option allows for overwriting and/or deleting existing opcodes.
 
@@ -961,7 +1008,7 @@ invalid receiptTrie (vm hf=berlin -> block number=1 hash=0x8e368301586b53e30c58d
 
 The extended errors give substantial more object and chain context and should ease debugging.
 
-**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
 ### Other Changes
 
@@ -1080,7 +1127,7 @@ There is a new EVM Object Format (EOF) in preparation which will allow to valida
 
 ### StateManager: Preserve State History
 
-This VM release bumps the `merkle-patricia-tree` dependeny to `v4.2.0`, which is used as a datastore for the default `StateManager` implementation. The new MPT version switches to a default behavior to not delete any trie nodes on checkpoint commits, which has implications on the `StateManager.commit()` function which internally calls the MPT commit. This allows to go back to older trie states by setting a new (old) state root with `StateManager.setStateRoot()`. The trie state is now guaranteed to still be consistent and complete, which has not been the case before and lead to erraneous behaviour in certain usage scenarios (e.g. reported by HardHat).
+This VM release bumps the `merkle-patricia-tree` dependency to `v4.2.0`, which is used as a datastore for the default `StateManager` implementation. The new MPT version switches to a default behavior to not delete any trie nodes on checkpoint commits, which has implications on the `StateManager.commit()` function which internally calls the MPT commit. This allows to go back to older trie states by setting a new (old) state root with `StateManager.setStateRoot()`. The trie state is now guaranteed to still be consistent and complete, which has not been the case before and lead to erroneous behaviour in certain usage scenarios (e.g. reported by HardHat).
 
 See PR [#1262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1262)
 
@@ -1101,7 +1148,7 @@ See PR [#1168](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1168)
 
 ## 5.3.2 - 2021-04-12
 
-This is a hot-fix performance release, removing the `debug` functionality from PR [#1080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1080) and follow-up PRs. While highly useful for debugging, this feature side-introduced a siginficant reduction in VM performance which went along unnoticed. For now we will remove since upstream dependencies are awaiting a new release before the `Belin` HF happening. We will try to re-introduce in a performance friendly manner in some subsequent release (we cannot promise on that though).
+This is a hot-fix performance release, removing the `debug` functionality from PR [#1080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1080) and follow-up PRs. While highly useful for debugging, this feature side-introduced a significant reduction in VM performance which went along unnoticed. For now we will remove since upstream dependencies are awaiting a new release before the `Berlin` HF happening. We will try to re-introduce in a performance friendly manner in some subsequent release (we cannot promise on that though).
 
 See PR [#1198](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1198).
 
@@ -1215,7 +1262,7 @@ If you are using this library in conjunction with other EthereumJS libraries mak
 ### Other Features
 
 - `{ stateRoot, gasUsed, logsBloom, receiptRoot }` have been added to `RunBlockResult` and will be emitted with `afterBlock`, PR [#853](https://github.com/ethereumjs/ethereumjs-monorepo/pull/853)
-- Added `vm:eei:gas` EEI gas debug looger, PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
+- Added `vm:eei:gas` EEI gas debug logger, PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
 
 ### Other Fixes
 
@@ -1342,7 +1389,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
 const vm = new VM({ common })
 ```
 
-**Breaking**: The default HF from the VM has been updated from `petersburg` to `istanbul`. The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
+**Breaking**: The default HF from the VM has been updated from `petersburg` to `istanbul`. The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
 **Breaking**: Please note that the options to directly pass in `chain` and `hardfork` strings have been removed to simplify the API. Providing a `Common` instance is now the only way to change the chain setup, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863)
 
@@ -1395,7 +1442,7 @@ The Util package also introduces a new [Address class](https://github.com/ethere
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1496,7 +1543,7 @@ const vm = new VM({ common })
 ```
 
 **Breaking**: The default HF from the VM has been updated from `petersburg` to `istanbul`.
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`,
 see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
 **Breaking**: Please note that the options to directly pass in
@@ -1585,7 +1632,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1878,7 +1925,7 @@ These will be the main release notes for the `v4` feature updates, subsequent
 `beta` releases and the final release will just publish the delta changes and
 point here for reference.
 
-Breaking changes in the release notes are preeceeded with `[BREAKING]`, do a
+Breaking changes in the release notes are preceded with `[BREAKING]`, do a
 search for an overview.
 
 The outstanding work of [@s1na](https://github.com/s1na) has to be mentioned
@@ -2034,7 +2081,7 @@ vm.runTx(
       // Handle errors appropriately
     }
     // Do something with the result
-  }
+  },
 )
 ```
 
@@ -2284,7 +2331,7 @@ The `StateManager` (`lib/stateManager.js`) - providing a high-level interface to
 
 This comes along with larger refactoring work throughout more-or-less the whole code base and the `StateManager` now completely encapsulates the trie structure and the cache backend used, see issue [#268](https://github.com/ethereumjs/ethereumjs-monorepo/issues/268) and associated PRs for reference. This will make it much easier in the future to bring along an own state manager serving special needs (optimized for memory and performance, run on mobile,...) by e.g. using a different trie implementation, cache or underlying storage or database backend.
 
-We plan to completely separate the currently still integrated state manager into its own repository in one of the next releases, this will then be a breaking `v3.0.0` release. Discussion around a finalized interface (we might e.g. drop all genesis-releated methods respectively methods implemented in the `DefaultStateManager`) is still ongoing and you are very much invited to jump in and articulate your needs, just take e.g. the issue mentioned above as an entry point.
+We plan to completely separate the currently still integrated state manager into its own repository in one of the next releases, this will then be a breaking `v3.0.0` release. Discussion around a finalized interface (we might e.g. drop all genesis-related methods respectively methods implemented in the `DefaultStateManager`) is still ongoing and you are very much invited to jump in and articulate your needs, just take e.g. the issue mentioned above as an entry point.
 
 Change related to the new `StateManager` interface:
 
@@ -2350,7 +2397,7 @@ making the start being introduced in the `v2.4.0` release.
 
 Since both the scope of the `Constantinople` hardfork as well as the state of at least some of the EIPs
 to be included are not yet finalized, this is only meant for `EXPERIMENTAL` purposes, e.g. for developer
-tools to give users early access and make themself familiar with dedicated features.
+tools to give users early access and make themselves familiar with dedicated features.
 
 Once scope and EIPs from `Constantinople` are final we will target a `v2.5.0` release which will officially
 introduce `Constantinople` support with all the changes bundled together.
@@ -2367,7 +2414,7 @@ All the changes from this release:
 **FEATURES/FUNCTIONALITY**
 
 - Improved chain and fork support, see PR [#304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/304)
-- Support for the `Constantinople` bitwise shifiting instructions `SHL`, `SHR` and `SAR`, see PR [#251](https://github.com/ethereumjs/ethereumjs-monorepo/pull/251)
+- Support for the `Constantinople` bitwise shifting instructions `SHL`, `SHR` and `SAR`, see PR [#251](https://github.com/ethereumjs/ethereumjs-monorepo/pull/251)
 - New `newContract` event which can be used to do interrupting tasks on contract/address creation, see PR [#306](https://github.com/ethereumjs/ethereumjs-monorepo/pull/306)
 - Alignment of behavior of bloom filter hashing to go along with mainnet compatible clients _BREAKING_, see PR [#295](https://github.com/ethereumjs/ethereumjs-monorepo/pull/295)
 

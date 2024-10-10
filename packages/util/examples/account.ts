@@ -1,6 +1,6 @@
-import { Account } from '@ethereumjs/util'
+import { createAccount } from '@ethereumjs/util'
 
-const account = Account.fromAccountData({
+const account = createAccount({
   nonce: '0x02',
   balance: '0x0384',
   storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
