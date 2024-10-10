@@ -12,10 +12,7 @@ import {
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
-  createConsolidationRequestFromJSON,
-  createDepositRequestFromJSON,
   createWithdrawal,
-  createWithdrawalRequestFromJSON,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -23,9 +20,10 @@ import {
   intToHex,
   isHexString,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { genRequestsTrieRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
+import { genRequestsRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
 import {
   Block,
   createBlockHeader,
@@ -48,8 +46,6 @@ import type {
 } from '../types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type {
-  CLRequest,
-  CLRequestType,
   EthersProvider,
   PrefixedHexString,
   RequestBytes,
@@ -382,9 +378,7 @@ export async function createBlockFromExecutionPayload(
     feeRecipient: coinbase,
     transactions,
     withdrawals: withdrawalsData,
-    depositRequests,
-    withdrawalRequests,
-    consolidationRequests,
+    executionRequests,
     executionWitness,
   } = payload
 
@@ -410,35 +404,11 @@ export async function createBlockFromExecutionPayload(
     ? await genWithdrawalsTrieRoot(withdrawals, new MerklePatriciaTrie({ common: opts?.common }))
     : undefined
 
-  const hasDepositRequests = depositRequests !== undefined && depositRequests !== null
-  const hasWithdrawalRequests = withdrawalRequests !== undefined && withdrawalRequests !== null
-  const hasConsolidationRequests =
-    consolidationRequests !== undefined && consolidationRequests !== null
-
-  const requests =
-    hasDepositRequests || hasWithdrawalRequests || hasConsolidationRequests
-      ? ([] as CLRequest<CLRequestType>[])
-      : undefined
-
-  if (depositRequests !== undefined && depositRequests !== null) {
-    for (const dJSON of depositRequests) {
-      requests!.push(createDepositRequestFromJSON(dJSON))
-    }
-  }
-  if (withdrawalRequests !== undefined && withdrawalRequests !== null) {
-    for (const wJSON of withdrawalRequests) {
-      requests!.push(createWithdrawalRequestFromJSON(wJSON))
-    }
-  }
-  if (consolidationRequests !== undefined && consolidationRequests !== null) {
-    for (const cJSON of consolidationRequests) {
-      requests!.push(createConsolidationRequestFromJSON(cJSON))
-    }
-  }
-
-  const requestsRoot = requests
-    ? await genRequestsTrieRoot(requests, new MerklePatriciaTrie({ common: opts?.common }))
-    : undefined
+  const requests = executionRequests?.map((req) =>
+    CLRequestFactory.fromSerializedRequest(hexToBytes(req)),
+  )
+  const sha256Function = opts?.common?.customCrypto.sha256 ?? keccak256
+  const requestsRoot = requests ? await genRequestsRoot(requests, sha256Function) : undefined
 
   const header: HeaderData = {
     ...payload,

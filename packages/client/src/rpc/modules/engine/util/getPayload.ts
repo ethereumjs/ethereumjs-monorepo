@@ -13,10 +13,21 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   if (executionPayload.parentBeaconBlockRoot !== undefined) {
     delete executionPayload.parentBeaconBlockRoot
   }
+  const { executionRequests } = executionPayload
+  if (executionPayload.executionRequests !== undefined) {
+    delete executionPayload.executionRequests
+  }
+
   const blobsBundle: BlobsBundleV1 | undefined = bundle ? bundle : undefined
 
   // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks
   const shouldOverrideBuilder = false
-  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }
+  return {
+    executionPayload,
+    executionRequests,
+    blockValue: bigIntToHex(value),
+    blobsBundle,
+    shouldOverrideBuilder,
+  }
 }

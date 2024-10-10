@@ -1,15 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { concatBytes } from 'ethereum-cryptography/utils'
 
-import {
-  bigIntToBytes,
-  bigIntToHex,
-  bytesToBigInt,
-  bytesToHex,
-  hexToBigInt,
-  hexToBytes,
-} from './bytes.js'
-import { BIGINT_0 } from './constants.js'
+import { bytesToHex, hexToBytes } from './bytes.js'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -50,15 +42,18 @@ export interface RequestJSON {
 export type DepositRequestData = {
   pubkey: Uint8Array
   withdrawalCredentials: Uint8Array
-  amount: bigint
+  // 8 bytes uint64 LE
+  amount: Uint8Array
   signature: Uint8Array
-  index: bigint
+  // 8 bytes uint64 LE
+  index: Uint8Array
 }
 
 export type WithdrawalRequestData = {
   sourceAddress: Uint8Array
   validatorPubkey: Uint8Array
-  amount: bigint
+  // 8 bytes uint64 LE
+  amount: Uint8Array
 }
 
 export type ConsolidationRequestData = {
@@ -94,27 +89,23 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
   constructor(
     public readonly pubkey: Uint8Array,
     public readonly withdrawalCredentials: Uint8Array,
-    public readonly amount: bigint,
+    // 8 bytes uint64 LE
+    public readonly amount: Uint8Array,
     public readonly signature: Uint8Array,
-    public readonly index: bigint,
+    // 8 bytes uint64 LE
+    public readonly index: Uint8Array,
   ) {
     super(CLRequestType.Deposit)
   }
 
   serialize() {
-    const indexBytes = this.index === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.index)
-
-    const amountBytes = this.amount === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.amount)
-
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([
-        this.pubkey,
-        this.withdrawalCredentials,
-        amountBytes,
-        this.signature,
-        indexBytes,
-      ]),
+      this.pubkey,
+      this.withdrawalCredentials,
+      this.amount,
+      this.signature,
+      this.index,
     )
   }
 
@@ -122,9 +113,9 @@ export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
     return {
       pubkey: bytesToHex(this.pubkey),
       withdrawalCredentials: bytesToHex(this.withdrawalCredentials),
-      amount: bigIntToHex(this.amount),
+      amount: bytesToHex(this.amount),
       signature: bytesToHex(this.signature),
-      index: bigIntToHex(this.index),
+      index: bytesToHex(this.index),
     }
   }
 }
@@ -133,17 +124,18 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
   constructor(
     public readonly sourceAddress: Uint8Array,
     public readonly validatorPubkey: Uint8Array,
-    public readonly amount: bigint,
+    // 8 bytes uint64 LE
+    public readonly amount: Uint8Array,
   ) {
     super(CLRequestType.Withdrawal)
   }
 
   serialize() {
-    const amountBytes = this.amount === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this.amount)
-
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([this.sourceAddress, this.validatorPubkey, amountBytes]),
+      this.sourceAddress,
+      this.validatorPubkey,
+      this.amount,
     )
   }
 
@@ -151,7 +143,7 @@ export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
     return {
       sourceAddress: bytesToHex(this.sourceAddress),
       validatorPubkey: bytesToHex(this.validatorPubkey),
-      amount: bigIntToHex(this.amount),
+      amount: bytesToHex(this.amount),
     }
   }
 }
@@ -168,7 +160,9 @@ export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation>
   serialize() {
     return concatBytes(
       Uint8Array.from([this.type]),
-      RLP.encode([this.sourceAddress, this.sourcePubkey, this.targetPubkey]),
+      this.sourceAddress,
+      this.sourcePubkey,
+      this.targetPubkey,
     )
   }
 
@@ -191,26 +185,23 @@ export function createDepositRequestFromJSON(jsonData: DepositRequestV1): Deposi
   return createDepositRequest({
     pubkey: hexToBytes(pubkey),
     withdrawalCredentials: hexToBytes(withdrawalCredentials),
-    amount: hexToBigInt(amount),
+    amount: hexToBytes(amount),
     signature: hexToBytes(signature),
-    index: hexToBigInt(index),
+    index: hexToBytes(index),
   })
 }
 
-export function createDepositRequestFromRLP(bytes: Uint8Array): DepositRequest {
-  const [pubkey, withdrawalCredentials, amount, signature, index] = RLP.decode(bytes) as [
-    Uint8Array,
-    Uint8Array,
-    Uint8Array,
-    Uint8Array,
-    Uint8Array,
-  ]
+export function createDepositRequestFromFlatData(bytes: Uint8Array): DepositRequest {
+  if (bytes.length !== 48 + 32 + 8 + 96) {
+    throw Error(`Invalid bytes=${bytes.length} for deposit request data`)
+  }
+
   return createDepositRequest({
-    pubkey,
-    withdrawalCredentials,
-    amount: bytesToBigInt(amount),
-    signature,
-    index: bytesToBigInt(index),
+    pubkey: bytes.subarray(0, 48),
+    withdrawalCredentials: bytes.subarray(48, 48 + 32),
+    amount: bytes.subarray(48 + 32, 48 + 32 + 8),
+    signature: bytes.subarray(48 + 32 + 8, 48 + 32 + 8 + 96),
+    index: bytes.subarray(48 + 32 + 8 + 96),
   })
 }
 
@@ -224,20 +215,18 @@ export function createWithdrawalRequestFromJSON(jsonData: WithdrawalRequestV1): 
   return createWithdrawalRequest({
     sourceAddress: hexToBytes(sourceAddress),
     validatorPubkey: hexToBytes(validatorPubkey),
-    amount: hexToBigInt(amount),
+    amount: hexToBytes(amount),
   })
 }
 
-export function createWithdrawalRequestFromRLP(bytes: Uint8Array): WithdrawalRequest {
-  const [sourceAddress, validatorPubkey, amount] = RLP.decode(bytes) as [
-    Uint8Array,
-    Uint8Array,
-    Uint8Array,
-  ]
+export function createWithdrawalRequestFromFlatData(bytes: Uint8Array): WithdrawalRequest {
+  if (bytes.length !== 20 + 48 + 8) {
+    throw Error(`Invalid bytes=${bytes.length} for withdrawal request data`)
+  }
   return createWithdrawalRequest({
-    sourceAddress,
-    validatorPubkey,
-    amount: bytesToBigInt(amount),
+    sourceAddress: bytes.subarray(0, 20),
+    validatorPubkey: bytes.subarray(20, 20 + 48),
+    amount: bytes.subarray(20 + 48),
   })
 }
 
@@ -259,7 +248,7 @@ export function createConsolidationRequestFromJSON(
   })
 }
 
-export function createConsolidationRequestFromRLP(bytes: Uint8Array): ConsolidationRequest {
+export function createConsolidationRequestFromFlatData(bytes: Uint8Array): ConsolidationRequest {
   const [sourceAddress, sourcePubkey, targetPubkey] = RLP.decode(bytes) as [
     Uint8Array,
     Uint8Array,
@@ -276,11 +265,11 @@ export class CLRequestFactory {
   public static fromSerializedRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
     switch (bytes[0]) {
       case CLRequestType.Deposit:
-        return createDepositRequestFromRLP(bytes.subarray(1))
+        return createDepositRequestFromFlatData(bytes.subarray(1))
       case CLRequestType.Withdrawal:
-        return createWithdrawalRequestFromRLP(bytes.subarray(1))
+        return createWithdrawalRequestFromFlatData(bytes.subarray(1))
       case CLRequestType.Consolidation:
-        return createConsolidationRequestFromRLP(bytes.subarray(1))
+        return createConsolidationRequestFromFlatData(bytes.subarray(1))
       default:
         throw Error(`Invalid request type=${bytes[0]}`)
     }

@@ -4,13 +4,13 @@ import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequestType,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
@@ -19,7 +19,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   BlockHeader,
@@ -35,14 +35,7 @@ import {
 import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type {
-  CLRequest,
-  ConsolidationRequest,
-  DepositRequest,
-  VerkleExecutionWitness,
-  Withdrawal,
-  WithdrawalRequest,
-} from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -68,6 +61,7 @@ export class Block {
   public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected sha256Function: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -100,6 +94,7 @@ export class Block {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
@@ -264,11 +259,11 @@ export class Block {
 
     if (requestsInput === undefined) {
       if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsTrieRoot(this.requests!)
+        this.cache.requestsRoot = await genRequestsRoot(this.requests!, this.sha256Function)
       }
       return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
     } else {
-      const reportedRoot = await genRequestsTrieRoot(requests)
+      const reportedRoot = await genRequestsRoot(requests, this.sha256Function)
       return equalsBytes(reportedRoot, this.header.requestsRoot!)
     }
   }
@@ -548,6 +543,10 @@ export class Block {
     const header = blockJSON.header!
     const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
     const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
+    const executionRequestsArr =
+      this.requests !== undefined
+        ? { executionRequests: this.requests.map((req) => bytesToHex(req.serialize())) }
+        : undefined
 
     const executionPayload: ExecutionPayload = {
       blockNumber: header.number!,
@@ -569,35 +568,7 @@ export class Block {
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       executionWitness: this.executionWitness,
-
-      // lets add the  request fields first and then iterate over requests to fill them up
-      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
-      withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
-      consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
-    }
-
-    if (this.requests !== undefined) {
-      for (const request of this.requests) {
-        switch (request.type) {
-          case CLRequestType.Deposit:
-            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
-            continue
-
-          case CLRequestType.Withdrawal:
-            executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
-            continue
-
-          case CLRequestType.Consolidation:
-            executionPayload.consolidationRequests!.push((request as ConsolidationRequest).toJSON())
-            continue
-        }
-      }
-    } else if (
-      executionPayload.depositRequests !== undefined ||
-      executionPayload.withdrawalRequests !== undefined ||
-      executionPayload.consolidationRequests !== undefined
-    ) {
-      throw Error(`Undefined requests for activated deposit or withdrawal requests`)
+      ...executionRequestsArr,
     }
 
     return executionPayload

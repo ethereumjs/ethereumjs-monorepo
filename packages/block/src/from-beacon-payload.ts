@@ -10,26 +10,6 @@ type BeaconWithdrawal = {
   amount: PrefixedHexString
 }
 
-type BeaconDepositRequest = {
-  pubkey: PrefixedHexString
-  withdrawal_credentials: PrefixedHexString
-  amount: PrefixedHexString
-  signature: PrefixedHexString
-  index: PrefixedHexString
-}
-
-type BeaconWithdrawalRequest = {
-  source_address: PrefixedHexString
-  validator_pubkey: PrefixedHexString
-  amount: PrefixedHexString
-}
-
-type BeaconConsolidationRequest = {
-  source_address: PrefixedHexString
-  source_pubkey: PrefixedHexString
-  target_pubkey: PrefixedHexString
-}
-
 // Payload JSON that one gets using the beacon apis
 // curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
 export type BeaconPayloadJSON = {
@@ -52,10 +32,7 @@ export type BeaconPayloadJSON = {
   excess_blob_gas?: NumericString
   parent_beacon_block_root?: PrefixedHexString
   // requests data
-  deposit_requests?: BeaconDepositRequest[]
-  withdrawal_requests?: BeaconWithdrawalRequest[]
-  consolidation_requests?: BeaconConsolidationRequest[]
-
+  execution_requests?: PrefixedHexString[]
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
 }
@@ -158,30 +135,8 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): E
   }
 
   // requests
-  if (payload.deposit_requests !== undefined && payload.deposit_requests !== null) {
-    executionPayload.depositRequests = payload.deposit_requests.map((beaconRequest) => ({
-      pubkey: beaconRequest.pubkey,
-      withdrawalCredentials: beaconRequest.withdrawal_credentials,
-      amount: beaconRequest.amount,
-      signature: beaconRequest.signature,
-      index: beaconRequest.index,
-    }))
-  }
-  if (payload.withdrawal_requests !== undefined && payload.withdrawal_requests !== null) {
-    executionPayload.withdrawalRequests = payload.withdrawal_requests.map((beaconRequest) => ({
-      sourceAddress: beaconRequest.source_address,
-      validatorPubkey: beaconRequest.validator_pubkey,
-      amount: beaconRequest.amount,
-    }))
-  }
-  if (payload.consolidation_requests !== undefined && payload.consolidation_requests !== null) {
-    executionPayload.consolidationRequests = payload.consolidation_requests.map(
-      (beaconRequest) => ({
-        sourceAddress: beaconRequest.source_address,
-        sourcePubkey: beaconRequest.source_pubkey,
-        targetPubkey: beaconRequest.target_pubkey,
-      }),
-    )
+  if (payload.execution_requests !== undefined && payload.execution_requests !== null) {
+    executionPayload.executionRequests = payload.execution_requests
   }
 
   if (payload.execution_witness !== undefined && payload.execution_witness !== null) {

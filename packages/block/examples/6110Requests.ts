@@ -1,4 +1,4 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -7,6 +7,7 @@ import {
   createDepositRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -17,13 +18,13 @@ const main = async () => {
   const depositRequestData = {
     pubkey: randomBytes(48),
     withdrawalCredentials: randomBytes(32),
-    amount: bytesToBigInt(randomBytes(8)),
+    amount: randomBytes(8),
     signature: randomBytes(96),
-    index: bytesToBigInt(randomBytes(8)),
+    index: randomBytes(8),
   }
   const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = await genRequestsRoot(requests, keccak256)
 
   const block = createBlock(
     {

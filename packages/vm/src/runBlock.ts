@@ -1,4 +1,4 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
@@ -26,6 +26,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -215,8 +217,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
+    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsTrieRoot(requests)
+    requestsRoot = await genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -253,7 +256,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     if (vm.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(requests)
       if (!valid) {
-        const validRoot = await genRequestsTrieRoot(requests!)
+        const keccakFunction = vm.common.customCrypto.keccak256 ?? keccak256
+        const validRoot = await genRequestsRoot(requests!, keccakFunction)
         if (vm.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
