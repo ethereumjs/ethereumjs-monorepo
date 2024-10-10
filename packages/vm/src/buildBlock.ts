@@ -22,7 +22,7 @@ import {
   toBytes,
   toType,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -345,9 +345,9 @@ export class BlockBuilder {
     let requests
     let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {
-      const keccakFunction = this.vm.common.customCrypto.keccak256 ?? keccak256
+      const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsRoot(requests, keccakFunction)
+      requestsRoot = await genRequestsRoot(requests, sha256Function)
       // Do other validations per request type
     }
 

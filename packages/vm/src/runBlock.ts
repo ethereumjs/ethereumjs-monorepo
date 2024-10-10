@@ -27,6 +27,7 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -216,9 +217,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requestsRoot: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    const keccakFunction = vm.common.customCrypto.keccak256 ?? keccak256
+    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsRoot(requests, keccakFunction)
+    requestsRoot = await genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
