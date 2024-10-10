@@ -58,6 +58,7 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
+          token: ${{ secrets.CODECOV_TOKEN }} # required
 
   # mpt-benchmarks:
   #   runs-on: ubuntu-latest
