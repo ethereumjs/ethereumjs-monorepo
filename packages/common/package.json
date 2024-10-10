@@ -57,8 +57,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.1.0",
-    "ethereum-cryptography": "^3.0.0"
+    "@ethereumjs/util": "^9.1.0"
   },
   "devDependencies": {
     "@polkadot/util": "^12.6.2",
