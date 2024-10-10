@@ -1,8 +1,4 @@
-import type {
-  ConsolidationRequestV1,
-  DepositRequestV1,
-  WithdrawalRequestV1,
-} from '@ethereumjs/util'
+import type { CLRequestType, RequestJSON } from '@ethereumjs/util'
 
 export type T8NOptions = {
   state: {
@@ -73,10 +69,8 @@ export type T8NOutput = {
   withdrawalsRoot?: string
   blobGasUsed?: string
   currentExcessBlobGas?: string
-  requestsRoot?: string
-  depositRequests?: DepositRequestV1[]
-  withdrawalRequests?: WithdrawalRequestV1[]
-  consolidationRequests?: ConsolidationRequestV1[]
+  requestsHash?: string
+  requests?: RequestJSON[CLRequestType][]
   rejected?: T8NRejectedTx[]
 }
 
