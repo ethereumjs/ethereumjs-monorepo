@@ -16,6 +16,7 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
+  ssz,
   toType,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -29,6 +30,9 @@ import { fakeExponential } from '../helpers.js'
 import { paramsBlock } from '../params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.js'
+import type { ValueOf } from '@chainsafe/ssz'
+
+export type SSZHeaderType = ValueOf<typeof ssz.BlockHeader>
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -632,17 +636,55 @@ export class BlockHeader {
     return rawItems
   }
 
+  sszRaw(): SSZHeaderType {
+    const header = {
+      parentHash: this.parentHash,
+      coinbase: this.coinbase.bytes,
+      stateRoot: this.stateRoot,
+      transactionsTrie: this.transactionsTrie,
+      receiptsTrie: this.receiptTrie,
+      number: this.number,
+      gasLimits: {
+        regular: this.gasLimit,
+        blob: this.common.isActivatedEIP(4844) ? this.common.param('maxblobGasPerBlock') : null,
+      },
+      gasUsed: { regular: this.gasUsed, blob: this.blobGasUsed ?? null },
+      timestamp: this.timestamp,
+      extraData: this.extraData,
+      mixHash: this.mixHash,
+      baseFeePerGas: {
+        regular: this.baseFeePerGas ?? null,
+        blob: this.common.isActivatedEIP(4844) ? this.getBlobGasPrice() : null,
+      },
+      withdrawalsRoot: this.withdrawalsRoot ?? null,
+      excessGas: { regular: null, blob: this.excessBlobGas ?? null },
+      parentBeaconBlockRoot: this.parentBeaconBlockRoot ?? null,
+      requestsRoot: this.requestsRoot ?? null,
+    }
+
+    return header
+  }
+
+  calcHash(): Uint8Array {
+    if (this.common.isActivatedEIP(6493)) {
+      const hash = ssz.BlockHeader.hashTreeRoot(this.sszRaw())
+      return hash
+    } else {
+      return this.keccakFunction(RLP.encode(this.raw()))
+    }
+  }
+
   /**
    * Returns the hash of the block header.
    */
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
+        this.cache.hash = this.calcHash()
       }
       return this.cache.hash
     }
-    return this.keccakFunction(RLP.encode(this.raw()))
+    return this.calcHash()
   }
 
   /**

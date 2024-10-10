@@ -1,10 +1,15 @@
 import { RLP } from '@ethereumjs/rlp'
-import { validateNoLeadingZeroes } from '@ethereumjs/util'
+import { BIGINT_2, bytesToBigInt, validateNoLeadingZeroes } from '@ethereumjs/util'
 
 import { LegacyTx } from './tx.js'
 
 import type { TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { ssz } from '@ethereumjs/util'
+
+export type ReplayableTransactionType = ValueOf<typeof ssz.ReplayableTransaction>
+export type LegacyTransactionType = ValueOf<typeof ssz.LegacyTransaction>
 
 /**
  * Instantiate a transaction from a data dictionary.
@@ -66,4 +71,38 @@ export function createLegacyTxFromRLP(serialized: Uint8Array, opts: TxOptions = 
   }
 
   return createLegacyTxFromBytesArray(values as TxValuesArray, opts)
+}
+
+export function createLegacyTxFromSszTx(
+  sszWrappedTx: ReplayableTransactionType | LegacyTransactionType,
+  opts: TxOptions = {},
+) {
+  const {
+    payload: {
+      nonce,
+      chainId,
+      maxFeesPerGas: { regular: gasPrice },
+      gas: gasLimit,
+      to,
+      value,
+      input: data,
+    },
+    signature: { secp256k1 },
+  } = sszWrappedTx as LegacyTransactionType
+
+  const r = bytesToBigInt(secp256k1.slice(0, 32))
+  const s = bytesToBigInt(secp256k1.slice(32, 64))
+  const yParity = bytesToBigInt(secp256k1.slice(64))
+
+  let v
+  if (chainId !== null && chainId !== undefined) {
+    v = yParity + BIGINT_2 * chainId + BigInt(35)
+  } else {
+    v = yParity + BigInt(27)
+  }
+
+  return createLegacyTxFromBytesArray(
+    [nonce, gasPrice, gasLimit, to, value, data, v, r, s] as TxValuesArray,
+    opts,
+  )
 }

@@ -17,6 +17,7 @@ import type {
   WithdrawalBytes,
   WithdrawalData,
   WithdrawalRequestV1,
+  ssz,
 } from '@ethereumjs/util'
 
 /**
@@ -267,7 +268,7 @@ export type ExecutionPayload = {
   extraData: PrefixedHexString // DATA, 0 to 32 Bytes
   baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
   blockHash: PrefixedHexString // DATA, 32 Bytes
-  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
+  transactions: PrefixedHexString[] | ssz.TransactionV1[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits

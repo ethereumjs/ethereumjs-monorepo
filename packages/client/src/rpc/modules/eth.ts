@@ -28,6 +28,7 @@ import {
   intToHex,
   isHexString,
   setLengthLeft,
+  ssz,
   toType,
 } from '@ethereumjs/util'
 import {
@@ -818,7 +819,18 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return toJSONRPCTx(tx, block, txIndex)
+      let inclusionProof = undefined
+      if (block.common.isActivatedEIP(6493)) {
+        inclusionProof = inclusionProof = {
+          transactionsRoot: block.header.transactionsTrie,
+          ...ssz.computeTransactionInclusionProof(
+            block.transactions.map((tx) => tx.sszRaw()),
+            txIndex,
+          ),
+        }
+      }
+
+      return toJSONRPCTx(tx, block, txIndex, inclusionProof)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -843,7 +855,18 @@ export class Eth {
       }
 
       const tx = block.transactions[txIndex]
-      return toJSONRPCTx(tx, block, txIndex)
+      let inclusionProof = undefined
+      if (block.common.isActivatedEIP(6493)) {
+        inclusionProof = inclusionProof = {
+          transactionsRoot: block.header.transactionsTrie,
+          ...ssz.computeTransactionInclusionProof(
+            block.transactions.map((tx) => tx.sszRaw()),
+            txIndex,
+          ),
+        }
+      }
+
+      return toJSONRPCTx(tx, block, txIndex, inclusionProof)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
@@ -864,8 +887,20 @@ export class Eth {
     if (!result) return null
     const [_receipt, blockHash, txIndex] = result
     const block = await this._chain.getBlock(blockHash)
+
     const tx = block.transactions[txIndex]
-    return toJSONRPCTx(tx, block, txIndex)
+    let inclusionProof = undefined
+    if (block.common.isActivatedEIP(6493)) {
+      inclusionProof = {
+        transactionsRoot: block.header.transactionsTrie,
+        ...ssz.computeTransactionInclusionProof(
+          block.transactions.map((tx) => tx.sszRaw()),
+          txIndex,
+        ),
+      }
+    }
+
+    return toJSONRPCTx(tx, block, txIndex, inclusionProof)
   }
 
   /**

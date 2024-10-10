@@ -808,6 +808,8 @@ export async function generateTxReceipt(
     cumulativeBlockGasUsed: cumulativeGasUsed,
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
+    contractAddress: txResult.createdAddress,
+    authorities: txResult.authorities,
   }
 
   let receipt

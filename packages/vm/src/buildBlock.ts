@@ -2,7 +2,9 @@ import {
   createBlock,
   createSealedCliqueBlock,
   genRequestsTrieRoot,
+  genTransactionsSszRoot,
   genTransactionsTrieRoot,
+  genWithdrawalsSszRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -15,10 +17,10 @@ import {
   BIGINT_1,
   BIGINT_2,
   GWEI_TO_WEI,
-  KECCAK256_RLP,
   TypeOutput,
   createWithdrawal,
   createZeroAddress,
+  ssz,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -26,15 +28,18 @@ import {
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
 import {
+  accumulateIVCLogs,
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
+  encodeSszReceipt,
   rewardAccount,
 } from './runBlock.js'
 
 import { runTx } from './index.js'
 
+import type { SSZReceiptType } from './runBlock.js'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
@@ -143,10 +148,22 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(
-      this.transactions,
-      new MerklePatriciaTrie({ common: this.vm.common }),
-    )
+    return this.vm.common.isActivatedEIP(6493)
+      ? genTransactionsSszRoot(this.transactions)
+      : genTransactionsTrieRoot(
+          this.transactions,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
+  }
+
+  public async withdrawalsTrie() {
+    if (this.withdrawals === undefined) {
+      return
+    }
+
+    return this.vm.common.isActivatedEIP(6493)
+      ? genWithdrawalsSszRoot(this.withdrawals)
+      : genWithdrawalsTrieRoot(this.withdrawals, new MerklePatriciaTrie({ common: this.vm.common }))
   }
 
   /**
@@ -165,16 +182,22 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   public async receiptTrie() {
-    if (this.transactionResults.length === 0) {
-      return KECCAK256_RLP
+    if (this.vm.common.isActivatedEIP(6493)) {
+      const sszReceipts: SSZReceiptType[] = []
+      for (const [i, txResult] of this.transactionResults.entries()) {
+        const tx = this.transactions[i]
+        sszReceipts.push(encodeSszReceipt(txResult.receipt, tx.type))
+      }
+      return ssz.Receipts.hashTreeRoot(sszReceipts)
+    } else {
+      const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
+      for (const [i, txResult] of this.transactionResults.entries()) {
+        const tx = this.transactions[i]
+        const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
+        await receiptTrie.put(RLP.encode(i), encodedReceipt)
+      }
+      return receiptTrie.root()
     }
-    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
-    for (const [i, txResult] of this.transactionResults.entries()) {
-      const tx = this.transactions[i]
-      const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(RLP.encode(i), encodedReceipt)
-    }
-    return receiptTrie.root()
   }
 
   /**
@@ -324,12 +347,7 @@ export class BlockBuilder {
     await this.processWithdrawals()
 
     const transactionsTrie = await this.transactionsTrie()
-    const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(
-          this.withdrawals,
-          new MerklePatriciaTrie({ common: this.vm.common }),
-        )
-      : undefined
+    const withdrawalsRoot = await this.withdrawalsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
@@ -339,6 +357,12 @@ export class BlockBuilder {
     let blobGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844)) {
       blobGasUsed = this.blobGasUsed
+    }
+
+    if (this.vm.common.isActivatedEIP(6493)) {
+      for (const txReceipt of this.transactionReceipts) {
+        await accumulateIVCLogs(this.vm, txReceipt.logs)
+      }
     }
 
     let requests

@@ -199,10 +199,15 @@ export class PendingBlock {
       allowedBlobs = 0
     }
     // Add current txs in pool
-    const txs = await this.txPool.txsByPriceAndNonce(vm, {
-      baseFee: baseFeePerGas,
-      allowedBlobs,
-    })
+    const txs = await this.txPool
+      .txsByPriceAndNonce(vm, {
+        baseFee: baseFeePerGas,
+        allowedBlobs,
+      })
+      .catch((e) => {
+        console.log('txsByPriceAndNonce', e)
+        return []
+      })
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
     )
@@ -270,10 +275,15 @@ export class PendingBlock {
 
     // Add new txs that the pool received
     const txs = (
-      await this.txPool.txsByPriceAndNonce(vm, {
-        baseFee: headerData.baseFeePerGas! as bigint,
-        allowedBlobs,
-      })
+      await this.txPool
+        .txsByPriceAndNonce(vm, {
+          baseFee: headerData.baseFeePerGas! as bigint,
+          allowedBlobs,
+        })
+        .catch((e) => {
+          console.log('txsByPriceAndNonce', e)
+          return []
+        })
     ).filter(
       (tx) =>
         (builder as any).transactions.some((t: TypedTransaction) =>
@@ -325,6 +335,7 @@ export class PendingBlock {
           blockFull = true
         // Falls through
         default:
+          console.log({ addTxResult })
           skippedByAddErrors++
       }
       index++
@@ -347,6 +358,7 @@ export class PendingBlock {
       })
       addTxResult = AddTxResult.Success
     } catch (error: any) {
+      console.log('addTransaction', error)
       if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
         if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
           // If block has less than 21000 gas remaining, consider it full
@@ -363,8 +375,9 @@ export class PendingBlock {
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
+        console.log(error)
         // If there is an error adding a tx, it will be skipped
-        this.config.logger.debug(
+        this.config.logger.warn(
           `Pending: Skipping tx ${bytesToHex(
             tx.hash(),
           )}, error encountered when trying to add tx:\n${error}`,
