@@ -30,7 +30,7 @@ export interface EthereumClientOptions {
    * Database to store the state.
    * Should be an abstract-leveldown compliant store.
    *
-   * Default: Database created by the Trie class
+   * Default: Database created by the MerklePatriciaTrie class
    */
   stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 

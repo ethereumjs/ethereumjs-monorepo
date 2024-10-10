@@ -6,7 +6,6 @@ import {
   createWithdrawalFromBytesArray,
   hexToBytes,
   randomBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -57,7 +56,7 @@ describe('EIP4895 tests', () => {
       () => {
         createBlockHeader(
           {
-            withdrawalsRoot: zeros(32),
+            withdrawalsRoot: new Uint8Array(32),
           },
           {
             common: earlyCommon,
@@ -79,7 +78,7 @@ describe('EIP4895 tests', () => {
     assert.doesNotThrow(() => {
       createBlockHeader(
         {
-          withdrawalsRoot: zeros(32),
+          withdrawalsRoot: new Uint8Array(32),
         },
         {
           common,
@@ -116,7 +115,7 @@ describe('EIP4895 tests', () => {
       createBlock(
         {
           header: {
-            withdrawalsRoot: zeros(32),
+            withdrawalsRoot: new Uint8Array(32),
           },
           withdrawals: [],
         },
@@ -128,7 +127,7 @@ describe('EIP4895 tests', () => {
     const block = createBlock(
       {
         header: {
-          withdrawalsRoot: zeros(32),
+          withdrawalsRoot: new Uint8Array(32),
         },
         withdrawals: [],
       },

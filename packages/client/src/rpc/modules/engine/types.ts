@@ -20,8 +20,7 @@ export enum Status {
 export type Bytes8 = PrefixedHexString
 export type Bytes20 = PrefixedHexString
 export type Bytes32 = PrefixedHexString
-// type Root = Bytes32
-export type Blob = Bytes32
+export type Blob = PrefixedHexString
 export type Bytes48 = PrefixedHexString
 export type Uint64 = PrefixedHexString
 export type Uint256 = PrefixedHexString
@@ -79,6 +78,11 @@ export type BlobsBundleV1 = {
 export type ExecutionPayloadBodyV1 = {
   transactions: string[]
   withdrawals: WithdrawalV1[] | null
+}
+
+export type BlobAndProofV1 = {
+  blob: PrefixedHexString
+  proof: PrefixedHexString
 }
 
 export type ChainCache = {

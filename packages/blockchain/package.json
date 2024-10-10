@@ -50,11 +50,9 @@
     "@ethereumjs/block": "^5.3.0",
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/trie": "^6.2.1",
-    "@ethereumjs/tx": "^5.4.0",
+    "@ethereumjs/mpt": "^6.2.2",
     "@ethereumjs/util": "^9.1.0",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0",
     "lru-cache": "10.1.0"
   },
   "devDependencies": {

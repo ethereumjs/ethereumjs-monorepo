@@ -1,6 +1,9 @@
 import { BIGINT_0, BIGINT_1 } from './constants.js'
+
 /** Easy conversion from Gwei to wei */
 export const GWEI_TO_WEI = BigInt(1000000000)
+export const WEI_TO_EITHER = BigInt(10 ** 18)
+export const WIE_TO_GWEI = BigInt(10 ** 9)
 
 export function formatBigDecimal(
   numerator: bigint,
@@ -17,4 +20,37 @@ export function formatBigDecimal(
   // zeros to be added post decimal are number of zeros in maxDecimalFactor - number of digits in fraction
   const zerosPostDecimal = String(maxDecimalFactor).length - 1 - String(fraction).length
   return `${full}.${'0'.repeat(zerosPostDecimal)}${fraction}`
+}
+
+export class Units {
+  static validateInput(amount: number | bigint): void {
+    if (typeof amount === 'number' && !Number.isInteger(amount)) {
+      throw new Error('Input must be an integer number')
+    }
+    if (BigInt(amount) < 0) {
+      throw new Error('Input must be a positive number')
+    }
+  }
+
+  /**
+   * Convert a number or bigint input of ether to wei
+   *
+   * @param {number | bigint} amount amount of units of ether to convert to wei
+   * @returns {bigint} amount of units in wei
+   */
+  static ether(amount: number | bigint): bigint {
+    Units.validateInput(amount)
+    return BigInt(amount) * WEI_TO_EITHER
+  }
+
+  /**
+   * Convert a number or bigint input of gwei to wei
+   *
+   * @param amount amount of units of gwei to convert to wei
+   * @returns {bigint} amount of units in wei
+   */
+  static gwei(amount: number | bigint): bigint {
+    Units.validateInput(amount)
+    return BigInt(amount) * WIE_TO_GWEI
+  }
 }

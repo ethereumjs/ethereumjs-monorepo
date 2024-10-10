@@ -1,4 +1,4 @@
-import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
+import { AbiCoder, Interface } from 'ethers' // cspell:disable-line
 
 import type { LegacyTxData } from '@ethereumjs/tx'
 
@@ -11,8 +11,8 @@ export const encodeFunction = (
 ): string => {
   const parameters = params?.types ?? []
   const methodWithParameters = `function ${method}(${parameters.join(',')})`
-  const signatureHash = new Interface([methodWithParameters]).getSighash(method)
-  const encodedArgs = AbiCoder.encode(parameters, params?.values ?? [])
+  const signatureHash = new Interface([methodWithParameters]).getFunction(method)?.selector
+  const encodedArgs = new AbiCoder().encode(parameters, params?.values ?? [])
 
   return signatureHash + encodedArgs.slice(2)
 }
@@ -26,7 +26,7 @@ export const encodeDeployment = (
 ) => {
   const deploymentData = '0x' + bytecode
   if (params) {
-    const argumentsEncoded = AbiCoder.encode(params.types, params.values)
+    const argumentsEncoded = new AbiCoder().encode(params.types, params.values)
     return deploymentData + argumentsEncoded.slice(2)
   }
   return deploymentData

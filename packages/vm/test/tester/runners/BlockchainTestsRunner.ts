@@ -2,9 +2,9 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -47,7 +47,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true, common })
+  let state = new MerklePatriciaTrie({ useKeyHashing: true, common })
   let stateManager = new MerkleStateManager({
     caches: new Caches(),
     trie: state,

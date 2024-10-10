@@ -1,8 +1,8 @@
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bytesToHex,
@@ -79,7 +79,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await createBlockchain({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true, common })
+  const state = new MerklePatriciaTrie({ useKeyHashing: true, common })
   const stateManager = new MerkleStateManager({
     caches: new Caches(),
     trie: state,

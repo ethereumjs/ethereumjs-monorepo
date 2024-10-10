@@ -1,5 +1,5 @@
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import {
   type TxOptions,
   createTx,
@@ -395,10 +395,13 @@ export async function createBlockFromExecutionPayload(
     }
   }
 
-  const transactionsTrie = await genTransactionsTrieRoot(txs, new Trie({ common: opts?.common }))
+  const transactionsTrie = await genTransactionsTrieRoot(
+    txs,
+    new MerklePatriciaTrie({ common: opts?.common }),
+  )
   const withdrawals = withdrawalsData?.map((wData) => createWithdrawal(wData))
   const withdrawalsRoot = withdrawals
-    ? await genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
+    ? await genWithdrawalsTrieRoot(withdrawals, new MerklePatriciaTrie({ common: opts?.common }))
     : undefined
 
   const requests = executionRequests?.map((req) =>

@@ -65,7 +65,7 @@
     "@ethereumjs/evm": "2.1.0",
     "@ethereumjs/rlp": "5.0.1",
     "@ethereumjs/statemanager": "2.1.0",
-    "@ethereumjs/trie": "6.0.1",
+    "@ethereumjs/mpt": "6.2.2",
     "@ethereumjs/tx": "5.1.0",
     "@ethereumjs/util": "9.0.1",
     "@ethereumjs/vm": "7.1.0",

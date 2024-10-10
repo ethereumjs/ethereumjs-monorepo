@@ -27,9 +27,10 @@ describe('[fromJSONRPCProvider]', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const provider = 'https://my.json.rpc.provider.com:8545'
 
-    const realFetch = global.fetch
+    const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global values
-    global.fetch = async (_url: string, req: any) => {
+    // eslint-disable-next-line no-global-assign
+    fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0') {
         const { rpcTxData } = await import(`./testData/rpcTx.js`)
@@ -67,7 +68,9 @@ describe('[fromJSONRPCProvider]', () => {
         'throws correct error when no tx returned',
       )
     }
-    global.fetch = realFetch
+    //@ts-expect-error
+    // eslint-disable-next-line no-global-assign
+    fetch = realFetch
   })
 })
 

@@ -5,7 +5,7 @@ import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { ChildNode, VerkleNodeOptions } from './types.js'
 
-export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
+export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
   public children: Array<ChildNode>
   public type = VerkleNodeType.Internal
@@ -37,7 +37,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     )
   }
 
-  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalNode {
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalVerkleNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
       throw new Error('Invalid node type')
@@ -56,14 +56,14 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       if (commitment.length > 0) return { commitment, path: childrenPaths[idx] }
       return null
     })
-    return new InternalNode({ commitment, verkleCrypto, children })
+    return new InternalVerkleNode({ commitment, verkleCrypto, children })
   }
 
   /**
    * Generates a new Internal node with default commitment
    */
-  static create(verkleCrypto: VerkleCrypto): InternalNode {
-    const node = new InternalNode({
+  static create(verkleCrypto: VerkleCrypto): InternalVerkleNode {
+    const node = new InternalVerkleNode({
       commitment: verkleCrypto.zeroCommitment,
       verkleCrypto,
     })
