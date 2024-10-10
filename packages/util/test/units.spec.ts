@@ -80,7 +80,7 @@ describe('Units', () => {
 
     it('should throw error when a negative number is used', () => {
       assert.throws(() => {
-        Units.ether(-1)
+        Units.gwei(-1)
       }, 'Input must be a positive number')
     })
 
