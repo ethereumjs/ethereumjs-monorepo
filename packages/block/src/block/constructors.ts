@@ -407,8 +407,8 @@ export async function createBlockFromExecutionPayload(
   const requests = executionRequests?.map((req) =>
     CLRequestFactory.fromSerializedRequest(hexToBytes(req)),
   )
-  const keccakFunction = opts?.common?.customCrypto.keccak256 ?? keccak256
-  const requestsRoot = requests ? await genRequestsRoot(requests, keccakFunction) : undefined
+  const sha256Function = opts?.common?.customCrypto.sha256 ?? keccak256
+  const requestsRoot = requests ? await genRequestsRoot(requests, sha256Function) : undefined
 
   const header: HeaderData = {
     ...payload,

@@ -2,6 +2,7 @@ import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
+import { concatBytes } from 'ethereum-cryptography/utils'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -156,7 +157,7 @@ export async function genTransactionsTrieRoot(
  */
 export async function genRequestsRoot(
   requests: CLRequest<CLRequestType>[],
-  keccakFunction: (msg: Uint8Array) => Uint8Array,
+  sha256Function: (msg: Uint8Array) => Uint8Array,
 ) {
   // Requests should be sorted in monotonically ascending order based on type
   // and whatever internal sorting logic is defined by each request type
@@ -170,10 +171,10 @@ export async function genRequestsRoot(
   // def compute_requests_hash(list):
   //    return keccak256(rlp.encode([rlp.encode(req) for req in list]))
 
-  const encodedRequests = []
+  let flatRequests = new Uint8Array()
   for (const req of requests) {
-    encodedRequests.push(RLP.encode(req.serialize()))
+    flatRequests = concatBytes(flatRequests, sha256Function(req.serialize()))
   }
 
-  return keccakFunction(RLP.encode(encodedRequests))
+  return sha256Function(flatRequests)
 }

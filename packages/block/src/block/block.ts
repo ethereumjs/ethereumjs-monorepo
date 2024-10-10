@@ -10,6 +10,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
@@ -60,6 +61,7 @@ export class Block {
   public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected sha256Function: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -92,6 +94,7 @@ export class Block {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
@@ -256,11 +259,11 @@ export class Block {
 
     if (requestsInput === undefined) {
       if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsRoot(this.requests!, this.keccakFunction)
+        this.cache.requestsRoot = await genRequestsRoot(this.requests!, this.sha256Function)
       }
       return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
     } else {
-      const reportedRoot = await genRequestsRoot(requests, this.keccakFunction)
+      const reportedRoot = await genRequestsRoot(requests, this.sha256Function)
       return equalsBytes(reportedRoot, this.header.requestsRoot!)
     }
   }

@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
-import { CLRequestType, bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -25,12 +25,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
-import type {
-  ConsolidationRequestV1,
-  DepositRequestV1,
-  PrefixedHexString,
-  WithdrawalRequestV1,
-} from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 const kzg = new microEthKZG(trustedSetup)
 
 /**
@@ -226,31 +221,11 @@ export class TransitionTool {
     }
 
     if (block.header.requestsRoot !== undefined) {
-      output.requestsRoot = bytesToHex(block.header.requestsRoot)
+      output.requestsHash = bytesToHex(block.header.requestsRoot)
     }
 
     if (block.requests !== undefined) {
-      if (this.common.isActivatedEIP(6110)) {
-        output.depositRequests = []
-      }
-
-      if (this.common.isActivatedEIP(7002)) {
-        output.withdrawalRequests = []
-      }
-
-      if (this.common.isActivatedEIP(7251)) {
-        output.consolidationRequests = []
-      }
-
-      for (const request of block.requests) {
-        if (request.type === CLRequestType.Deposit) {
-          output.depositRequests!.push(<DepositRequestV1>request.toJSON())
-        } else if (request.type === CLRequestType.Withdrawal) {
-          output.withdrawalRequests!.push(<WithdrawalRequestV1>request.toJSON())
-        } else if (request.type === CLRequestType.Consolidation) {
-          output.consolidationRequests!.push(<ConsolidationRequestV1>request.toJSON())
-        }
-      }
+      output.requests = block.requests.map((request) => request.toJSON())
     }
 
     if (this.rejected.length > 0) {
