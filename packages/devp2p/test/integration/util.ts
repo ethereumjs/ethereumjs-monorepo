@@ -1,9 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { assert } from 'vitest'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
 import { testData } from '../testdata.js'
 
 import type { Capabilities } from '../../src/index.js'
+import type { it } from 'vitest'
 
 export const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))
@@ -115,4 +117,41 @@ export function destroyRLPXs(rlpxs: any) {
     rlpx._dpt.destroy()
     rlpx.destroy()
   }
+}
+
+/**
+ * @param {Test} t
+ * @param {Array} capabilities Capabilities
+ * @param {Object} opts
+ * @param {Function} opts.onSendMessage (rlpxs, protocol) Optional handler function
+ * @param {Function} opts.onPeerError0 (err, rlpxs) Optional handler function
+ * @param {Function} opts.onPeerError1 (err, rlpxs) Optional handler function
+ * @param {Function} opts.onReceiveMessage (rlpxs, protocol, code, payload) Optional handler function
+ */
+export function twoPeerMsgExchange3(
+  t: typeof it,
+  opts: any,
+  capabilities?: any,
+  common?: Object | Common,
+  basePort = 30306,
+) {
+  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
+  rlpxs[0].events.on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    opts.sendMessage(rlpxs, protocol)
+  })
+
+  rlpxs[1].events.on('peer:added', function (peer: any) {
+    const protocol = peer.getProtocols()[0]
+    protocol.events.on('message', async (code: any, payload: any) => {
+      opts.receiveMessage(rlpxs, protocol, code, payload)
+    })
+    peer.events.on('error', (err: any) => {
+      if (opts.onPeerError1 !== false) {
+        opts.onPeerError1(err, rlpxs)
+      } else {
+        assert.fail(`Unexpected peer 1 error: ${err}`)
+      }
+    })
+  })
 }
