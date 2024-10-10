@@ -1,12 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { error } from 'console'
-import { assert } from 'vitest'
 
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
 import { testData } from '../testdata.js'
 
-import type { Capabilities, Peer } from '../../src/index.js'
-import type { it } from 'vitest'
+import type { Capabilities } from '../../src/index.js'
 
 export const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))
@@ -112,159 +109,10 @@ export function initTwoPeerRLPXSetup(
   return rlpxs
 }
 
-/**
- * @param {Test} t
- * @param {Array} capabilities Capabilities
- * @param {Object} opts
- * @param {Dictionary} opts.status0 Status values requested by protocol
- * @param {Dictionary} opts.status1 Status values requested by protocol
- * @param {Function} opts.onOnceStatus0 (rlpxs, protocol) Optional handler function
- * @param {Function} opts.onPeerError0 (err, rlpxs) Optional handler function
- * @param {Function} opts.onPeerError1 (err, rlpxs) Optional handler function
- * @param {Function} opts.onOnMsg0 (rlpxs, protocol, code, payload) Optional handler function
- * @param {Function} opts.onOnMsg1 (rlpxs, protocol, code, payload) Optional handler function
- */
-export function twoPeerMsgExchange(
-  t: typeof it,
-  opts: any,
-  capabilities?: Capabilities[],
-  common?: Object | Common,
-  basePort = 30306,
-) {
-  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].events.on('peer:added', function (peer: Peer) {
-    const protocol = peer.getProtocols()[0] as ETH
-    protocol.sendStatus(opts.status0) // (1 ->)
-    protocol.events.once('status').then(() => {
-      if (opts.onOnceStatus0 !== undefined) opts.onOnceStatus0(rlpxs, protocol)
-    })
-    // (-> 2)
-    protocol.events.on('message', async ({ code, payload }) => {
-      if (opts.onOnMsg0 !== undefined) opts.onOnMsg0(rlpxs, protocol, code, payload)
-    })
-    peer.events.on('error', (err: Error) => {
-      if (opts.onPeerError0 !== undefined) {
-        opts.onPeerError0(err, rlpxs)
-      } else {
-        assert.fail(`Unexpected peer 0 error: ${err}`)
-      }
-    }) // (-> 2)
-  })
-
-  rlpxs[1].events.on('peer:added', function (peer: Peer) {
-    const protocol = peer.getProtocols()[0] as ETH
-    protocol.events.on('message', async ({ code, payload }) => {
-      switch (code) {
-        // Comfortability hack, use constants like devp2p.ETH.MESSAGE_CODES.STATUS
-        // in production use
-        case 0x00: // (-> 1)
-          assert.ok(true, 'should receive initial status message')
-          try {
-            protocol.sendStatus(opts.status1) // (2 ->)
-          } catch {
-            // Silently handle error conditions that are tested via events
-          }
-          break
-      }
-      if (opts.onOnMsg1 !== undefined) opts.onOnMsg1(rlpxs, protocol, code, payload)
-    })
-    peer.events.on('error', (err: any) => {
-      if (opts.onPeerError1 !== undefined) {
-        opts.onPeerError1(err, rlpxs)
-      } else {
-        assert.fail(`Unexpected peer 1 error: ${err}`)
-      }
-    })
-  })
-}
-
 export function destroyRLPXs(rlpxs: any) {
   for (const rlpx of rlpxs) {
     // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
     rlpx._dpt.destroy()
     rlpx.destroy()
   }
-}
-
-export async function twoPeerMsgExchange2(
-  t: typeof it,
-  opts: any,
-  capabilities?: any,
-  common?: Object | Common,
-  basePort = 30306,
-) {
-  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].events.on('peer:added', function (peer: Peer) {
-    const protocol = peer.getProtocols()[0] as ETH
-    const v4Hello = {
-      protocolVersion: 4,
-      clientId: 'fakePeer',
-      capabilities: [ETH.eth66],
-      port: 30303,
-      id: new Uint8Array(12),
-    }
-    // Set peer's devp2p protocol version to 4
-    protocol['_peer']['_hello'] = v4Hello
-    protocol.sendStatus(opts.status0)
-    peer.events.on('error', (err: Error) => {
-      assert.fail(`Unexpected peer 0 error: ${err}`)
-    })
-  })
-
-  rlpxs[1].events.on('peer:added', function (peer: Peer) {
-    const protocol = peer.getProtocols()[0] as ETH
-    protocol.events.once('message').then(async ({ code, payload }) => {
-      switch (code) {
-        case ETH.MESSAGE_CODES.STATUS:
-          assert.fail('should not have been able to process status message')
-          break
-      }
-    })
-    peer.events.once('error').then((err) => {
-      assert.equal(
-        err.message,
-        'Invalid Snappy bitstream',
-        'unable to process snappy compressed message',
-      )
-      destroyRLPXs(rlpxs)
-      opts.promise(undefined)
-    })
-  })
-}
-
-/**
- * @param {Test} t
- * @param {Array} capabilities Capabilities
- * @param {Object} opts
- * @param {Function} opts.onSendMessage (rlpxs, protocol) Optional handler function
- * @param {Function} opts.onPeerError0 (err, rlpxs) Optional handler function
- * @param {Function} opts.onPeerError1 (err, rlpxs) Optional handler function
- * @param {Function} opts.onReceiveMessage (rlpxs, protocol, code, payload) Optional handler function
- */
-export function twoPeerMsgExchange3(
-  t: typeof it,
-  opts: any,
-  capabilities?: any,
-  common?: Object | Common,
-  basePort = 30306,
-) {
-  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].events.on('peer:added', function (peer: any) {
-    const protocol = peer.getProtocols()[0]
-    opts.sendMessage(rlpxs, protocol)
-  })
-
-  rlpxs[1].events.on('peer:added', function (peer: any) {
-    const protocol = peer.getProtocols()[0]
-    protocol.events.on('message', async (code: any, payload: any) => {
-      opts.receiveMessage(rlpxs, protocol, code, payload)
-    })
-    peer.events.on('error', (err: any) => {
-      if (opts.onPeerError1 !== false) {
-        opts.onPeerError1(err, rlpxs)
-      } else {
-        assert.fail(`Unexpected peer 1 error: ${err}`)
-      }
-    })
-  })
 }
