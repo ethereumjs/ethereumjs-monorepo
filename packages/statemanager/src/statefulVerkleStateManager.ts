@@ -30,6 +30,7 @@ import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { AccessWitness } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
@@ -68,6 +69,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   private keccakFunction: Function
 
+  accessWitness?: AccessWitness
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -88,6 +90,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.verkleCrypto
+    this.accessWitness = new AccessWitness({ verkleCrypto: this.verkleCrypto })
   }
 
   /**
@@ -147,7 +150,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   putAccount = async (address: Address, account?: Account): Promise<void> => {
     if (this.DEBUG) {
       this._debug(
-        `Save account address=${address} nonce=${account?.nonce} balance=${
+        `putAccount address=${address} nonce=${account?.nonce} balance=${
           account?.balance
         } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
           account && account.isEmpty() ? 'yes' : 'no'
@@ -446,10 +449,13 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   getStateRoot(): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(this._trie.root())
   }
-  setStateRoot(_stateRoot: Uint8Array, _clearCache?: boolean): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
+    this._trie.root(stateRoot)
+    clearCache === true && this.clearCaches()
+    return Promise.resolve()
   }
   hasStateRoot(_root: Uint8Array): Promise<boolean> {
     throw new Error('Method not implemented.')
@@ -461,7 +467,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     throw new Error('Method not implemented.')
   }
   clearCaches(): void {
-    throw new Error('Method not implemented.')
+    this._caches?.clear()
   }
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
     throw new Error('Method not implemented.')
