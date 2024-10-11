@@ -79,6 +79,7 @@ jobs:
   block:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/block-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
@@ -86,6 +87,7 @@ jobs:
   blockchain:
     needs: build
     uses: ./.github/workflows/blockchain-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
@@ -99,30 +101,35 @@ jobs:
   client:
     needs: build
     uses: ./.github/workflows/client-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   common:
     needs: build
     uses: ./.github/workflows/common-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   devp2p:
     needs: build
     uses: ./.github/workflows/devp2p-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   ethash:
     needs: build
     uses: ./.github/workflows/ethash-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   evm:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/evm-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
@@ -136,30 +143,35 @@ jobs:
   genesis:
     needs: build
     uses: ./.github/workflows/genesis-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   mpt:
     needs: build
     uses: ./.github/workflows/mpt-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   rlp:
     needs: build
     uses: ./.github/workflows/rlp-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   statemanager:
     needs: build
     uses: ./.github/workflows/statemanager-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   tx:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/tx-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
@@ -167,6 +179,7 @@ jobs:
   util:
     needs: build
     uses: ./.github/workflows/util-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
@@ -179,6 +192,7 @@ jobs:
   vm-pr:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/vm-pr.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
@@ -186,6 +200,7 @@ jobs:
   wallet:
     needs: build
     uses: ./.github/workflows/wallet-build.yml
+    secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 

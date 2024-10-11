@@ -67,7 +67,8 @@ jobs:
           fail-on-cache-miss: true
 
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ github.workspace}}/packages/block/coverage/lcov.info
           flags: block
