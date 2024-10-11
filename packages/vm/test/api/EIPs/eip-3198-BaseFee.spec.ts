@@ -1,16 +1,13 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { FeeMarket1559Tx } from '@ethereumjs/tx'
-import { Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Address, Units, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
-
-const GWEI = BigInt('1000000000')
-const ETHER = GWEI * GWEI
 
 const common = new Common({
   eips: [1559, 2718, 2930, 3198],
@@ -64,8 +61,8 @@ describe('EIP3198 tests', () => {
     const fee = BigInt(1000000000)
     const tx = new FeeMarket1559Tx(
       {
-        maxFeePerGas: GWEI * BigInt(5),
-        maxPriorityFeePerGas: GWEI * BigInt(2),
+        maxFeePerGas: Units.gwei(5),
+        maxPriorityFeePerGas: Units.gwei(2),
         to: undefined, // Create contract
         gasLimit: BigInt(210000),
         data: '0x4800',
@@ -76,7 +73,7 @@ describe('EIP3198 tests', () => {
     )
     const block = makeBlock(fee, tx)
     const vm = await createVM({ common })
-    await vm.stateManager.modifyAccountFields(sender, { balance: ETHER })
+    await vm.stateManager.modifyAccountFields(sender, { balance: Units.ether(1) })
 
     // Track stack
 

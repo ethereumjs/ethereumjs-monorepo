@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Account, Address, Units, bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
@@ -32,7 +32,7 @@ describe('EIP 3860 tests', () => {
         data: `0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3${bytesToHex(
           bytes,
         ).slice(2)}`,
-        gasLimit: 100000000000,
+        gasLimit: Units.gwei(100),
         maxFeePerGas: 7,
         nonce: 0,
       },
