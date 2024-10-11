@@ -31,8 +31,6 @@ export type BeaconPayloadJSON = {
   blob_gas_used?: NumericString
   excess_blob_gas?: NumericString
   parent_beacon_block_root?: PrefixedHexString
-  // requests data
-  execution_requests?: PrefixedHexString[]
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
 }
@@ -132,11 +130,6 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): E
   }
   if (payload.parent_beacon_block_root !== undefined && payload.parent_beacon_block_root !== null) {
     executionPayload.parentBeaconBlockRoot = payload.parent_beacon_block_root
-  }
-
-  // requests
-  if (payload.execution_requests !== undefined && payload.execution_requests !== null) {
-    executionPayload.executionRequests = payload.execution_requests
   }
 
   if (payload.execution_witness !== undefined && payload.execution_witness !== null) {

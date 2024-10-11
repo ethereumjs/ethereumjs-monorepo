@@ -73,7 +73,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
         `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`,
       )
     const blocks: Block[] = []
-    for (const [i, [txsData, unclesData, withdrawalsData, requestsData]] of bodies.entries()) {
+    for (const [i, [txsData, unclesData, withdrawalsData]] of bodies.entries()) {
       const header = headers[i]
       if (
         (!equalsBytes(header.transactionsTrie, KECCAK256_RLP) && txsData.length === 0) ||
@@ -91,9 +91,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       const values: BlockBytes = [headers[i].raw(), txsData, unclesData]
       if (withdrawalsData !== undefined) {
         values.push(withdrawalsData)
-      }
-      if (requestsData !== undefined) {
-        values.push(requestsData)
       }
       // Supply the common from the corresponding block header already set on correct fork
       const block = createBlockFromBytesArray(values, { common: headers[i].common })

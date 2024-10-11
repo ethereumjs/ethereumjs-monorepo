@@ -155,7 +155,7 @@ export async function genTransactionsTrieRoot(
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */
-export async function genRequestsRoot(
+export function genRequestsRoot(
   requests: CLRequest<CLRequestType>[],
   sha256Function: (msg: Uint8Array) => Uint8Array,
 ) {
@@ -173,7 +173,7 @@ export async function genRequestsRoot(
 
   let flatRequests = new Uint8Array()
   for (const req of requests) {
-    flatRequests = concatBytes(flatRequests, sha256Function(req.serialize()))
+    flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
   }
 
   return sha256Function(flatRequests)

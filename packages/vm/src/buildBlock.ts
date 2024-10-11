@@ -347,8 +347,7 @@ export class BlockBuilder {
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsRoot(requests, sha256Function)
-      // Do other validations per request type
+      requestsRoot = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -376,7 +375,6 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
-      requests,
     }
 
     let block
@@ -397,7 +395,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return block
+    return { block, requests }
   }
 
   async initState() {

@@ -161,6 +161,8 @@ export class BlockHeader {
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
+      // TODO: not sure what the default should be here becuase it would depends on activated EIPs
+      // as even empty requests will produce data to sha hash
       requestsRoot: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
     }
 

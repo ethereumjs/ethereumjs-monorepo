@@ -3,13 +3,12 @@ import {
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
-  bytesToInt,
   createAddressFromString,
-  createConsolidationRequest,
-  createDepositRequest,
-  createWithdrawalRequest,
   setLengthLeft,
 } from '@ethereumjs/util'
+
+import { concatBytes } from '../../util/src/bytes.js'
+import { ConsolidationRequest, DepositRequest, WithdrawalRequest } from '../../util/src/request.js'
 
 import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
@@ -33,30 +32,27 @@ export const accumulateRequests = async (
       vm.common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
     if (depositContractAddress === undefined)
       throw new Error('deposit contract address required with EIP 6110')
-    await accumulateDeposits(depositContractAddress, txResults, requests)
+    const depositsRequest = accumulateDepositsRequest(depositContractAddress, txResults)
+    requests.push(depositsRequest)
   }
 
   if (common.isActivatedEIP(7002)) {
-    await accumulateEIP7002Requests(vm, requests)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm)
+    requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    await accumulateEIP7251Requests(vm, requests)
+    const consolidationsRequest = await accumulateConsolidationsRequest(vm)
+    requests.push(consolidationsRequest)
   }
 
-  if (requests.length > 1) {
-    for (let x = 1; x < requests.length; x++) {
-      if (requests[x].type < requests[x - 1].type)
-        throw new Error('requests are not in ascending order')
-    }
-  }
+  // requests are already type byte ordered by construction
   return requests
 }
 
-const accumulateEIP7002Requests = async (
+const accumulateWithdrawalsRequest = async (
   vm: VM,
-  requests: CLRequest<CLRequestType>[],
-): Promise<void> => {
+): Promise<CLRequest<CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
@@ -71,7 +67,7 @@ const accumulateEIP7002Requests = async (
   const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
   if (originalAccount === undefined) {
-    return
+    return new WithdrawalRequest(new Uint8Array())
   }
 
   const results = await vm.evm.runCall({
@@ -87,22 +83,12 @@ const accumulateEIP7002Requests = async (
   }
 
   const resultsBytes = results.execResult.returnValue
-  if (resultsBytes.length > 0) {
-    // Each request is 76 bytes
-    for (let startByte = 0; startByte < resultsBytes.length; startByte += 76) {
-      const slicedBytes = resultsBytes.slice(startByte, startByte + 76)
-      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
-      const validatorPubkey = slicedBytes.slice(20, 68) // 48 Bytes
-      const amount = slicedBytes.slice(68, 76) // 8 Bytes / Uint64 LE
-      requests.push(createWithdrawalRequest({ sourceAddress, validatorPubkey, amount }))
-    }
-  }
+  return new WithdrawalRequest(resultsBytes)
 }
 
-const accumulateEIP7251Requests = async (
+const accumulateConsolidationsRequest = async (
   vm: VM,
-  requests: CLRequest<CLRequestType>[],
-): Promise<void> => {
+): Promise<CLRequest<CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
@@ -117,7 +103,7 @@ const accumulateEIP7251Requests = async (
   const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
 
   if (originalAccount === undefined) {
-    return
+    return new ConsolidationRequest(new Uint8Array(0))
   }
 
   const results = await vm.evm.runCall({
@@ -133,67 +119,22 @@ const accumulateEIP7251Requests = async (
   }
 
   const resultsBytes = results.execResult.returnValue
-  if (resultsBytes.length > 0) {
-    // Each request is 116 bytes
-    for (let startByte = 0; startByte < resultsBytes.length; startByte += 116) {
-      const slicedBytes = resultsBytes.slice(startByte, startByte + 116)
-      const sourceAddress = slicedBytes.slice(0, 20) // 20 Bytes
-      const sourcePubkey = slicedBytes.slice(20, 68) // 48 Bytes
-      const targetPubkey = slicedBytes.slice(68, 116) // 48 bytes
-      requests.push(createConsolidationRequest({ sourceAddress, sourcePubkey, targetPubkey }))
-    }
-  }
+  return new ConsolidationRequest(resultsBytes)
 }
 
-const accumulateDeposits = async (
+const accumulateDepositsRequest = (
   depositContractAddress: string,
   txResults: RunTxResult[],
-  requests: CLRequest<CLRequestType>[],
-) => {
+): CLRequest<CLRequestType.Deposit> => {
+  let resultsBytes = new Uint8Array(0)
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
       const log = tx.receipt.logs[i]
       if (bytesToHex(log[0]).toLowerCase() === depositContractAddress.toLowerCase()) {
-        // Extracts validator pubkey, withdrawal credential, deposit amount, signature,
-        // and validator index from Deposit Event log.
-        // The event fields are non-indexed so contained in one byte array (log[2]) so parsing is as follows:
-        // 1. Read the first 32 bytes to get the starting position of the first field.
-        // 2. Continue reading the byte array in 32 byte increments to get all the field starting positions
-        // 3. Read 32 bytes starting with the first field position to get the size of the first field
-        // 4. Read the bytes from first field position + 32 + the size of the first field to get the first field value
-        // 5. Repeat steps 3-4 for each field
-        const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
-        const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
-        const withdrawalCreditsIdx = bytesToInt(log[2].slice(32, 64))
-        const withdrawalCreditsSize = bytesToInt(
-          log[2].slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
-        )
-        const amountIdx = bytesToInt(log[2].slice(64, 96))
-        const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
-        const sigIdx = bytesToInt(log[2].slice(96, 128))
-        const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
-        const indexIdx = bytesToInt(log[2].slice(128, 160))
-        const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
-
-        const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
-        const withdrawalCredentials = log[2].slice(
-          withdrawalCreditsIdx + 32,
-          withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
-        )
-        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
-        const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
-        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
-
-        requests.push(
-          createDepositRequest({
-            pubkey,
-            withdrawalCredentials,
-            amount,
-            signature,
-            index,
-          }),
-        )
+        resultsBytes = concatBytes(resultsBytes, log[2])
       }
     }
   }
+
+  return new DepositRequest(resultsBytes)
 }

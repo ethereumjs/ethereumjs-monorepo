@@ -32,7 +32,6 @@ import {
   recursivelyFindParents,
   validExecutedChainBlock,
   validHash,
-  validate4844BlobVersionedHashes,
   validateHardforkRange,
 } from './util/index.js'
 import {
@@ -374,6 +373,9 @@ export class Engine {
         ...payload,
         // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
+      },
+      {
+        blobVersionedHashes: blobVersionedHashes ?? undefined,
         executionRequests: executionRequests ?? undefined,
       },
       this.chain,
@@ -391,41 +393,6 @@ export class Engine {
         )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
-      // skip marking the block invalid as this is more of a data issue from CL
-      return response
-    }
-
-    /**
-     * Validate blob versioned hashes in the context of EIP-4844 blob transactions
-     */
-    if (headBlock.common.isActivatedEIP(4844)) {
-      let validationError: string | null = null
-      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
-        validationError = `Error verifying blobVersionedHashes: received none`
-      } else {
-        validationError = validate4844BlobVersionedHashes(headBlock, blobVersionedHashes)
-      }
-
-      // if there was a validation error return invalid
-      if (validationError !== null) {
-        this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(
-          hexToBytes(parentHash as PrefixedHexString),
-          this.chain,
-          this.chainCache,
-        )
-        const response = { status: Status.INVALID, latestValidHash, validationError }
-        // skip marking the block invalid as this is more of a data issue from CL
-        return response
-      }
-    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
-      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(
-        hexToBytes(parentHash as PrefixedHexString),
-        this.chain,
-        this.chainCache,
-      )
-      const response = { status: Status.INVALID, latestValidHash, validationError }
       // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
@@ -1341,7 +1308,7 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value, blobs] = built
+      const [block, receipts, value, blobs, requests] = built
 
       // do a blocking call even if execution might be busy for the moment and skip putting
       // it into chain till CL confirms with full data via new payload like versioned hashes
@@ -1355,7 +1322,7 @@ export class Engine {
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned
        */
-      const executionPayload = blockToExecutionPayload(block, value, blobs)
+      const executionPayload = blockToExecutionPayload(block, value, blobs, requests)
 
       let checkNotBeforeHf: Hardfork | null
       let checkNotAfterHf: Hardfork | null
