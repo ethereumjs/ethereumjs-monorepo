@@ -55,7 +55,7 @@ jobs:
 
       - run: npm run coverage
       - uses: codecov/codecov-action@@v3
-        if: env.CODECOV_TOKEN != null
+        if: secrets.CODECOV_TOKEN != null
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # required
           files: ${{ env.cwd }}/coverage/lcov.info
