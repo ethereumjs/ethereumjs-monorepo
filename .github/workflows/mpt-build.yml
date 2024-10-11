@@ -1,9 +1,6 @@
 name: MPT
 on:
   workflow_call:
-    secrets:
-      CODECOV_TOKEN:
-        required: true
     inputs:
       dep-cache-key:
         required: true
@@ -58,6 +55,7 @@ jobs:
 
       - run: npm run coverage
       - uses: codecov/codecov-action@v4
+        secrets: inherit
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
