@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### 10-30x Decode Speedup
 
-The `RLP.decode()` method has been optimized (thanks @wemeetagain for the contribution! ❤️) which results in a reproduceable 10-30x speedup for JS native decoding 🎉, see PR [#3243](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3243).
+The `RLP.decode()` method has been optimized (thanks @wemeetagain for the contribution! ❤️) which results in a reproducible 10-30x speedup for JS native decoding 🎉, see PR [#3243](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3243).
 
 ### Self-Contained (and Working 🙂) README Examples
 
@@ -110,7 +110,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 

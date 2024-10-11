@@ -6,7 +6,7 @@ import { assert, it } from 'vitest'
 import { ECIES } from '../src/rlpx/ecies.js'
 import * as util from '../src/util.js'
 
-import * as testdata from './testdata.json'
+import { testData } from './testdata.js'
 
 export interface EciesTestContext {
   context: {
@@ -34,12 +34,12 @@ function randomBefore(fn: Function) {
 
 function testdataBefore(fn: Function) {
   return (t: EciesTestContext) => {
-    const v = testdata.eip8Values
+    const v = testData.eip8Values
     const keyA = unprefixedHexToBytes(v.keyA)
     const keyB = unprefixedHexToBytes(v.keyB)
     const pubA = unprefixedHexToBytes(v.pubA)
     const pubB = unprefixedHexToBytes(v.pubB)
-    const h = testdata.eip8Handshakes
+    const h = testData.eip8Handshakes
 
     t.context = {
       a: new ECIES(keyA, util.pk2id(pubA), util.pk2id(pubB)),
@@ -64,7 +64,7 @@ it(
     const encrypted = t.context.a._encryptMessage(message)
     const decrypted = t.context.b._decryptMessage(encrypted as Uint8Array)
     assert.deepEqual(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
-  })
+  }),
 )
 
 it(
@@ -84,12 +84,12 @@ it(
 
     const body = getRandomBytesSync(600)
 
-    const header = t.context.b.parseHeader(t.context.a.createHeader(body.length) as Uint8Array)
-    assert.equal(header, body.length, 'createHeader -> parseHeader should lead to same')
+    const header = t.context.b.parseHeader(t.context.a.createBlockHeader(body.length) as Uint8Array)
+    assert.equal(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
 
     const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Uint8Array)
     assert.deepEqual(parsedBody, body, 'createBody -> parseBody should lead to same')
-  })
+  }),
 )
 
 it(
@@ -106,7 +106,7 @@ it(
       t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
-  })
+  }),
 )
 
 it(
@@ -122,7 +122,7 @@ it(
       t.context.a['_gotEIP8Ack'] = false
       t.context.a.parseAckPlain(t.context.h0?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-  })
+  }),
 )
 
 it(
@@ -137,5 +137,5 @@ it(
       t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(t.context.h1?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
-  })
+  }),
 )

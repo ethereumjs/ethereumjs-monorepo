@@ -1,17 +1,19 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { removeSync } from 'fs-extra'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createAddressFromPrivateKey, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src'
-import { createInlineClient } from '../sim/simutils'
+import { Config } from '../../src/index.js'
+import { createInlineClient } from '../sim/simutils.js'
+
+import type { Address } from '@ethereumjs/util'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
-const minerAddress = Address.fromPrivateKey(pk)
+const minerAddress = createAddressFromPrivateKey(pk)
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   if (cleanStart) {
-    removeSync(`datadir/devnet`)
+    rmSync(`datadir/devnet`, { recursive: true, force: true })
   }
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
@@ -49,7 +51,10 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+  const common = createCommonFromGethGenesis(chainData, {
+    chain: 'devnet',
+    hardfork: Hardfork.London,
+  })
   const customGenesisState = parseGethGenesisState(chainData)
 
   const config = new Config({
@@ -77,7 +82,7 @@ describe('PoW client test', async () => {
     assert.ok(started, 'client started successfully')
   }, 60000)
   const message: string = await new Promise((resolve) => {
-    client.config.logger.on('data', (data) => {
+    client.config.logger.on('data', (data: any) => {
       if (data.message.includes('Miner: Found PoW solution') === true) {
         resolve(data.message)
       }
@@ -88,6 +93,6 @@ describe('PoW client test', async () => {
   })
   await client.stop()
   it('should stop client', () => {
-    assert.ok(!client.started, 'client stopped successfully')
+    assert.ok(client.started === false, 'client stopped successfully')
   })
 })

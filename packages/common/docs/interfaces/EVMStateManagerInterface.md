@@ -24,6 +24,7 @@
 - [dumpStorageRange](EVMStateManagerInterface.md#dumpstoragerange)
 - [generateCanonicalGenesis](EVMStateManagerInterface.md#generatecanonicalgenesis)
 - [getAccount](EVMStateManagerInterface.md#getaccount)
+- [getAppliedKey](EVMStateManagerInterface.md#getappliedkey)
 - [getContractCode](EVMStateManagerInterface.md#getcontractcode)
 - [getContractStorage](EVMStateManagerInterface.md#getcontractstorage)
 - [getProof](EVMStateManagerInterface.md#getproof)
@@ -52,7 +53,7 @@
 
 #### Defined in
 
-[interfaces.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L89)
+[interfaces.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L90)
 
 ## Methods
 
@@ -156,7 +157,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L94)
+[interfaces.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L95)
 
 ___
 
@@ -178,7 +179,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L95)
+[interfaces.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L96)
 
 ___
 
@@ -198,7 +199,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L96)
+[interfaces.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L97)
 
 ___
 
@@ -223,6 +224,30 @@ ___
 #### Defined in
 
 [interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
+
+___
+
+### getAppliedKey
+
+▸ `Optional` **getAppliedKey**(`address`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Inherited from
+
+[StateManagerInterface](StateManagerInterface.md).[getAppliedKey](StateManagerInterface.md#getappliedkey)
+
+#### Defined in
+
+[interfaces.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L86)
 
 ___
 
@@ -296,7 +321,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L97)
+[interfaces.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L98)
 
 ___
 
@@ -506,4 +531,4 @@ ___
 
 #### Defined in
 
-[interfaces.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L99)
+[interfaces.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L100)

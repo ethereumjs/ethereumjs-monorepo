@@ -28,4 +28,4 @@
 
 #### Defined in
 
-[index.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L41)
+[index.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L42)

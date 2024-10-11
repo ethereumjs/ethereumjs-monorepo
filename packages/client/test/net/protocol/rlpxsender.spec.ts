@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { RlpxSender } from '../../../src/net/protocol'
+import { RlpxSender } from '../../../src/net/protocol/index.js'
 
 import type { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 

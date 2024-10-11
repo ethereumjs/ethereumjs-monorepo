@@ -1,4 +1,4 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -8,7 +8,7 @@ import * as util from './util.js'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(
-  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
 )
 
 const capabilities = [devp2p.LES.les4]
@@ -63,8 +63,8 @@ describe('LES simulator tests', () => {
         resolve(undefined)
       }
 
-      const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
+      const c1 = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41599)
     })
   })

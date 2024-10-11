@@ -1,5 +1,5 @@
 import { randomBytes } from '@ethereumjs/util'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Sepolia } from '@ethereumjs/common'
 import * as devp2p from '../dist/cjs/index.js'
 
 const PEER_ADDRESS = '[ADD_REMOTE_PEER_IP]'
@@ -8,7 +8,7 @@ const ETH_PROTOCOL = devp2p.ETH.eth66
 
 const PRIVATE_KEY = randomBytes(32)
 
-const common = new Common({ chain: Chain.Sepolia })
+const common = new Common({ chain: Sepolia })
 
 const dpt = new devp2p.DPT(PRIVATE_KEY, {
   refreshInterval: 30000,

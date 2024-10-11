@@ -14,7 +14,7 @@ describe(method, () => {
     assert.equal(
       res.result.findIndex((el: string) => el === 'engine_exchangeCapabilities'),
       -1,
-      'should not include engine_exchangeCapabilities in response'
+      'should not include engine_exchangeCapabilities in response',
     )
   })
 })

@@ -1,4 +1,4 @@
-import type { Peer } from '../peer/peer'
+import type { Peer } from '../peer/peer.js'
 
 interface Mrc {
   [key: string]: {
@@ -27,7 +27,7 @@ export class FlowControl {
   readonly bl: number
   readonly mrc: Mrc
   readonly mrr: number
-  readonly out: Map<string, FlowParams>;
+  readonly out: Map<string, FlowParams>
   readonly in: Map<string, FlowParams>
 
   constructor(options?: FlowControlOptions) {

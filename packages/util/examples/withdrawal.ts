@@ -1,6 +1,6 @@
-import { Withdrawal } from '@ethereumjs/util'
+import { createWithdrawal } from '@ethereumjs/util'
 
-const withdrawal = Withdrawal.fromWithdrawalData({
+const withdrawal = createWithdrawal({
   index: 0n,
   validatorIndex: 65535n,
   address: '0x0000000000000000000000000000000000000000',

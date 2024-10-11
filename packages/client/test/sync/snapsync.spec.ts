@@ -1,8 +1,8 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { createBlockHeader } from '@ethereumjs/block'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
 
 describe('[SnapSynchronizer]', async () => {
   class PeerPool {
@@ -33,19 +33,19 @@ describe('[SnapSynchronizer]', async () => {
   AccountFetcher.prototype.fetch = vi.fn()
   AccountFetcher.prototype.clear = vi.fn()
   AccountFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher', () => {
+  vi.doMock('../../src/sync/fetcher/index.js', () => {
     return {
       default: () => AccountFetcher,
     }
   })
 
-  const { SnapSynchronizer } = await import('../../src/sync/snapsync')
+  const { SnapSynchronizer } = await import('../../src/sync/snapsync.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
-    const sync = new SnapSynchronizer({ config, pool, chain })
+    const sync = new SnapSynchronizer({ config, pool, chain } as any)
     assert.equal(sync.type, 'snap', 'snap type')
   })
 
@@ -53,7 +53,7 @@ describe('[SnapSynchronizer]', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
-    const sync = new SnapSynchronizer({ config, pool, chain })
+    const sync = new SnapSynchronizer({ config, pool, chain } as any)
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
@@ -70,24 +70,36 @@ describe('[SnapSynchronizer]', async () => {
       interval: 1,
       pool,
       chain,
-    })
+    } as any)
     ;(sync as any).chain = { blocks: { height: 1 } }
     const getBlockHeaders1 = vi
       .fn()
-      .mockReturnValue([BigInt(1), [BlockHeader.fromHeaderData({ number: 1 })]])
+      .mockReturnValue([BigInt(1), [createBlockHeader({ number: 1 })]])
     const getBlockHeaders2 = vi
       .fn()
-      .mockReturnValue([BigInt(2), [BlockHeader.fromHeaderData({ number: 2 })]])
+      .mockReturnValue([BigInt(2), [createBlockHeader({ number: 2 })]])
     const peers = [
       {
         snap: {},
         eth: { status: { bestHash: '0xaa' }, getBlockHeaders: getBlockHeaders1 },
         inbound: false,
+        latest: () => {
+          return {
+            number: BigInt(1),
+            hash: () => new Uint8Array(0),
+          }
+        },
       },
       {
         snap: {},
         eth: { status: { bestHash: '0xbb' }, getBlockHeaders: getBlockHeaders2 },
         inbound: false,
+        latest: () => {
+          return {
+            number: BigInt(2),
+            hash: () => new Uint8Array(0),
+          }
+        },
       },
     ]
     ;(sync as any).pool = { peers }

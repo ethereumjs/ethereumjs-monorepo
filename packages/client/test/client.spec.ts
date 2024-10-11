@@ -1,10 +1,10 @@
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { EthereumClient } from '../src/client'
-import { Config } from '../src/config'
-import { PeerPool } from '../src/net/peerpool'
-import { RlpxServer } from '../src/net/server'
+import { EthereumClient } from '../src/client.js'
+import { Config } from '../src/config.js'
+import { PeerPool } from '../src/net/peerpool.js'
+import { RlpxServer } from '../src/net/server/index.js'
 
 describe('[EthereumClient]', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -18,9 +18,9 @@ describe('[EthereumClient]', async () => {
   FullEthereumService.prototype.open = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/service', () => {
-    {
-      FullEthereumService
+  vi.doMock('../src/service/index.js', () => {
+    return {
+      FullEthereumService,
     }
   })
 
@@ -34,9 +34,9 @@ describe('[EthereumClient]', async () => {
   Server.prototype.start = vi.fn().mockResolvedValue(null)
   Server.prototype.stop = vi.fn().mockResolvedValue(null)
   Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/net/server/server', () => {
-    {
-      Server
+  vi.doMock('../src/net/server/server.js', () => {
+    return {
+      Server,
     }
   })
 

@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import * as testdata from '../testdata.json'
+import { testData } from '../testdata.js'
 
 import * as util from './util.js'
 
@@ -37,7 +37,7 @@ describe('DPT simulator tests', () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)
@@ -56,12 +56,11 @@ describe('DPT simulator tests', () => {
         dpts[0].banPeer(peer)
       })
       dpts[0].events.once('peer:removed', async (peer) => {
-        // @ts-ignore
-        assert.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
+        assert.equal(dpts[0]['_banlist'].has(peer), true, 'ban-list should contain peer')
         assert.equal(
           dpts[0].getPeers().length,
           0,
-          'should have removed peer from k-bucket on peer:removed'
+          'should have removed peer from k-bucket on peer:removed',
         )
         await util.delay(500)
         util.destroyDPTs(dpts)
@@ -135,15 +134,14 @@ describe('DPT simulator tests', () => {
 
     const mockDns = {
       resolve: () => {
-        return [[testdata.dns.enr]]
+        return [[testData.dns.enr]]
       },
     }
     dpts[0]._addPeerBatch = () => {
       dpts[0].destroy()
       assert.ok(true, 'got peer from DNS')
     }
-    // @ts-ignore
-    dpts[0]._dns.__setNativeDNSModuleResolve(mockDns)
+    dpts[0]['_dns'].__setNativeDNSModuleResolve(mockDns)
     await dpts[0].refresh()
   })
 })

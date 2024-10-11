@@ -17,6 +17,9 @@
 - [JsonBlock](interfaces/JsonBlock.md)
 - [JsonHeader](interfaces/JsonHeader.md)
 - [JsonRpcBlock](interfaces/JsonRpcBlock.md)
+- [VerkleExecutionWitness](interfaces/VerkleExecutionWitness.md)
+- [VerkleProof](interfaces/VerkleProof.md)
+- [VerkleStateDiff](interfaces/VerkleStateDiff.md)
 
 ### Type Aliases
 
@@ -24,6 +27,7 @@
 - [BlockBytes](README.md#blockbytes)
 - [BlockHeaderBytes](README.md#blockheaderbytes)
 - [ExecutionPayload](README.md#executionpayload)
+- [ExecutionWitnessBytes](README.md#executionwitnessbytes)
 - [TransactionsBytes](README.md#transactionsbytes)
 - [UncleHeadersBytes](README.md#uncleheadersbytes)
 - [WithdrawalV1](README.md#withdrawalv1)
@@ -41,17 +45,17 @@
 
 #### Defined in
 
-[types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
+[types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L174)
 
 ___
 
 ### BlockBytes
 
-Ƭ **BlockBytes**: [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes)]
+Ƭ **BlockBytes**: [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes), [`ExecutionWitnessBytes`](README.md#executionwitnessbytes)]
 
 #### Defined in
 
-[types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L115)
+[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
 
 ___
 
@@ -59,9 +63,11 @@ ___
 
 Ƭ **BlockHeaderBytes**: `Uint8Array`[]
 
+BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
+
 #### Defined in
 
-[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
+[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L173)
 
 ___
 
@@ -78,6 +84,7 @@ ___
 | `blockHash` | `PrefixedHexString` |
 | `blockNumber` | `PrefixedHexString` |
 | `excessBlobGas?` | `PrefixedHexString` |
+| `executionWitness?` | [`VerkleExecutionWitness`](interfaces/VerkleExecutionWitness.md) \| ``null`` |
 | `extraData` | `PrefixedHexString` |
 | `feeRecipient` | `PrefixedHexString` |
 | `gasLimit` | `PrefixedHexString` |
@@ -94,7 +101,17 @@ ___
 
 #### Defined in
 
-[types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L206)
+[types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L263)
+
+___
+
+### ExecutionWitnessBytes
+
+Ƭ **ExecutionWitnessBytes**: `Uint8Array`
+
+#### Defined in
+
+[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L157)
 
 ___
 
@@ -106,7 +123,7 @@ TransactionsBytes can be an array of serialized txs for Typed Transactions or an
 
 #### Defined in
 
-[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L123)
+[types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L178)
 
 ___
 
@@ -116,7 +133,7 @@ ___
 
 #### Defined in
 
-[types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
+[types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L179)
 
 ___
 
@@ -135,7 +152,7 @@ ___
 
 #### Defined in
 
-[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L198)
+[types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L255)
 
 ___
 
@@ -145,7 +162,7 @@ ___
 
 #### Defined in
 
-[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L113)
+[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L156)
 
 ## Functions
 
@@ -168,4 +185,4 @@ The JSON data can be retrieved from a consensus layer (CL) client on this Beacon
 
 #### Defined in
 
-[from-beacon-payload.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L39)
+[from-beacon-payload.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L41)

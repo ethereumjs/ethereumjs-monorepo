@@ -1,10 +1,10 @@
 import { assert, describe, it } from 'vitest'
 
-import { EthereumClient } from '../../src/client'
-import { Config, SyncMode } from '../../src/config'
-import { Event } from '../../src/types'
+import { EthereumClient } from '../../src/client.js'
+import { Config, SyncMode } from '../../src/config.js'
+import { Event } from '../../src/types.js'
 
-import { MockServer } from './mocks/mockserver'
+import { MockServer } from './mocks/mockserver.js'
 
 const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
 const server = new MockServer({ config: serverConfig }) as any

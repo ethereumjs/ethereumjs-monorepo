@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
 
-import { Event } from '../types'
-import { short } from '../util'
+import { Event } from '../types.js'
+import { short } from '../util/index.js'
 
-import { HeaderFetcher } from './fetcher'
-import { Synchronizer } from './sync'
+import { HeaderFetcher } from './fetcher/index.js'
+import { Synchronizer } from './sync.js'
 
-import type { Peer } from '../net/peer/peer'
-import type { SynchronizerOptions } from './sync'
+import type { Peer } from '../net/peer/peer.js'
+import type { SynchronizerOptions } from './sync.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
 /**
@@ -85,23 +85,12 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.les?.getBlockHeaders({
-      block: peer.les!.status.headHash,
-      max: 1,
-    })
-    return result?.headers[0]
-  }
-
-  /**
    * Called from `sync()` to sync headers and state from peer starting from current height.
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
@@ -153,12 +142,11 @@ export class LightSynchronizer extends Synchronizer {
     }
     const first = headers[0].number
     const hash = short(headers[0].hash())
-    const baseFeeAdd =
-      this.config.chainCommon.gteHardfork(Hardfork.London) === true
-        ? `baseFee=${headers[0].baseFeePerGas} `
-        : ''
+    const baseFeeAdd = this.config.chainCommon.gteHardfork(Hardfork.London)
+      ? `baseFee=${headers[0].baseFeePerGas} `
+      : ''
     this.config.logger.info(
-      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`
+      `Imported headers count=${headers.length} number=${first} hash=${hash} ${baseFeeAdd}peers=${this.pool.size}`,
     )
   }
 

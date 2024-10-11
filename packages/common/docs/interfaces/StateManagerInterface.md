@@ -17,6 +17,7 @@
 - [commit](StateManagerInterface.md#commit)
 - [deleteAccount](StateManagerInterface.md#deleteaccount)
 - [getAccount](StateManagerInterface.md#getaccount)
+- [getAppliedKey](StateManagerInterface.md#getappliedkey)
 - [getContractCode](StateManagerInterface.md#getcontractcode)
 - [getContractStorage](StateManagerInterface.md#getcontractstorage)
 - [getProof](StateManagerInterface.md#getproof)
@@ -117,6 +118,26 @@ ___
 #### Defined in
 
 [interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
+
+___
+
+### getAppliedKey
+
+▸ `Optional` **getAppliedKey**(`address`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[interfaces.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L86)
 
 ___
 

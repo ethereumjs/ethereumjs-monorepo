@@ -1,5 +1,5 @@
 import { Chain, ChainGenesis } from '@ethereumjs/common'
-import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisMPTStateRoot } from '@ethereumjs/mpt'
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -10,22 +10,22 @@ describe('genesis test', () => {
     const chainIds = Object.keys(ChainGenesis)
     for (const chainId of chainIds) {
       // Kaustinen can have an empty genesis state since verkle blocks contain their pre-state
-      if (Number(chainId) === Chain.Kaustinen) continue
+      if (Number(chainId) === Chain.Kaustinen6) continue
 
       const { name, stateRoot: expectedRoot } = ChainGenesis[chainId as unknown as Chain]
 
       const genesisState = getGenesis(Number(chainId))
       assert.ok(
         genesisState !== undefined,
-        `network=${name} chainId=${chainId} genesis should be found`
+        `network=${name} chainId=${chainId} genesis should be found`,
       )
 
-      const stateRoot = await genGenesisStateRoot(genesisState!)
+      const stateRoot = await genesisMPTStateRoot(genesisState!)
       assert.ok(
         equalsBytes(expectedRoot, stateRoot),
         `network=${name} chainId=${chainId} stateRoot should match expected=${bytesToHex(
-          expectedRoot
-        )} actual=${bytesToHex(stateRoot)}`
+          expectedRoot,
+        )} actual=${bytesToHex(stateRoot)}`,
       )
     }
   })

@@ -2,5 +2,5 @@
  * @module execution
  */
 
-export * from './execution'
-export * from './vmexecution'
+export * from './execution.js'
+export * from './vmexecution.js'

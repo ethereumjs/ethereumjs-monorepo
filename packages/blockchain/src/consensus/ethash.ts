@@ -1,9 +1,16 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { Ethash } from '@ethereumjs/ethash'
+import { bytesToHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Debugger } from 'debug'
+
+type MinimalEthashInterface = {
+  cacheDB?: any
+  verifyPOW(block: Block): Promise<boolean>
+}
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
@@ -11,20 +18,29 @@ import type { Block, BlockHeader } from '@ethereumjs/block'
 export class EthashConsensus implements Consensus {
   blockchain: Blockchain | undefined
   algorithm: ConsensusAlgorithm
-  _ethash: Ethash | undefined
+  _ethash: MinimalEthashInterface
 
-  constructor() {
+  private DEBUG: boolean // Guard for debug logs
+  private _debug: Debugger
+
+  constructor(ethash: MinimalEthashInterface) {
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this._debug = debugDefault('blockchain:ethash')
+
     this.algorithm = ConsensusAlgorithm.Ethash
+    this._ethash = ethash
   }
 
   async validateConsensus(block: Block): Promise<void> {
-    if (!this._ethash) {
-      throw new Error('blockchain not provided')
-    }
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
       throw new Error('invalid POW')
     }
+    this.DEBUG &&
+      this._debug(
+        `valid PoW consensus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
+      )
   }
 
   /**
@@ -35,16 +51,20 @@ export class EthashConsensus implements Consensus {
     if (!this.blockchain) {
       throw new Error('blockchain not provided')
     }
-    const parentHeader = (await this.blockchain.getBlock(header.parentHash)).header
+    const parentHeader = await this.blockchain['_getHeader'](header.parentHash)
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
       throw new Error(`invalid difficulty ${header.errorStr()}`)
     }
+    this.DEBUG &&
+      this._debug(
+        `valid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
+      )
   }
 
   public async genesisInit(): Promise<void> {}
   public async setup({ blockchain }: ConsensusOptions): Promise<void> {
     this.blockchain = blockchain
-    this._ethash = new Ethash(this.blockchain.db as any)
+    this._ethash.cacheDB = this.blockchain.db
   }
   public async newBlock(): Promise<void> {}
 }

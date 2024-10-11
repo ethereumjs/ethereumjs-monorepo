@@ -23,42 +23,43 @@ npm install @ethereumjs/tx
 
 ### KZG Setup
 
-This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
+This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
 
 For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-#### Manual Installation
+Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
 
-The following two manual installation steps for a KZG library and the trusted setup are needed.
-
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
+This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
 
 #### KZG Initialization
 
-Initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
+
+Initialization can then be done like the following:
 
 ```ts
 // ./examples/initKzg.ts
 
-import * as kzg from 'c-kzg'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { loadKZG } from 'kzg-wasm'
 
-// Instantiate KZG
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const main = async () => {
+  const kzg = await loadKZG()
 
-// Instantiate `common`
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg },
-})
+  // Instantiate `common`
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
 
-console.log(common.customCrypto.kzg) // should output the KZG API as an object
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
+
+void main()
 ```
 
-At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library which can hopefully be released soon [TM].
+Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
 
 ## Usage
 
@@ -101,6 +102,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
+- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
 - `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
@@ -122,41 +124,45 @@ See the following code snipped for an example on how to instantiate (using the `
 ```ts
 // ./examples/blobTx.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+const main = async () => {
+  const kzg = await loadKZG()
 
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Shanghai,
-  eips: [4844],
-  customCrypto: { kzg },
-})
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Shanghai,
+    eips: [4844],
+    customCrypto: { kzg },
+  })
 
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  maxPriorityFeePerGas: '0x01',
-  maxFeePerGas: '0xff',
-  maxFeePerDataGas: '0xfff',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [],
-  type: '0x05',
-  blobsData: ['abcd'],
+  const txData = {
+    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    gasLimit: '0x02625a00',
+    maxPriorityFeePerGas: '0x01',
+    maxFeePerGas: '0xff',
+    maxFeePerDataGas: '0xfff',
+    nonce: '0x00',
+    to: '0xcccccccccccccccccccccccccccccccccccccccc',
+    value: '0x0186a0',
+    v: '0x01',
+    r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+    s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+    chainId: '0x01',
+    accessList: [],
+    type: '0x05',
+    blobsData: ['abcd'],
+  }
+
+  const tx = createBlob4844Tx(txData, { common })
+
+  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
 
-const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
-
-console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+void main()
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
@@ -176,11 +182,11 @@ This is the recommended tx type starting with the activation of the `london` HF,
 ```ts
 // ./examples/londonTx.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -198,9 +204,53 @@ const txData = {
   type: '0x02',
 }
 
-const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+const tx = createFeeMarket1559Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
+
+#### EOA Code Transaction (EIP-7702) (outdated)
+
+- Class: `EOACodeEIP7702Transaction`
+- Activation: `prague` (or per EIP setting)
+- Type: `4`
+
+This library supports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = createEOACode7702Tx(
+  {
+    authorizationList: [
+      {
+        chainId: '0x2',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common },
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`,
+)
+```
+
+Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
 
 #### Access List Transactions (EIP-2930)
 
@@ -213,11 +263,11 @@ This transaction type has been introduced along the `berlin` HF. See the followi
 ```ts
 // ./examples/accessListTx.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -242,7 +292,7 @@ const txData = {
   type: '0x01',
 }
 
-const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+const tx = createAccessList2930Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
 ```
 
@@ -261,12 +311,13 @@ See this [example script](./examples/transactions.ts) or the following code exam
 ```ts
 // ./examples/legacyTx.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 const txParams = {
-  nonce: '0x00',
+  nonce: '0x0',
   gasPrice: '0x09184e72a000',
   gasLimit: '0x2710',
   to: '0x0000000000000000000000000000000000000000',
@@ -274,17 +325,14 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-const tx = LegacyTransaction.fromTxData(txParams, { common })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+const tx = createLegacyTx(txParams, { common })
 
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 const signedTx = tx.sign(privateKey)
 
-const serializedTx = signedTx.serialize()
+const _serializedTx = signedTx.serialize()
 console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
 ```
 
@@ -295,17 +343,19 @@ If you only know on runtime which tx type will be used within your code or if yo
 ```ts
 // ./examples/txFactory.ts
 
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Capability, createTxFromTxData } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+import type { EIP1559CompatibleTx } from '@ethereumjs/tx'
 
-const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
-const tx = TransactionFactory.fromTxData(txData, { common })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transaction
+const tx = createTxFromTxData(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {
   console.log(
-    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`,
   )
 }
 ```
@@ -328,13 +378,14 @@ This library has been tested to work with various L2 networks (`v3.3.0`+). All p
 ```ts
 // ./examples/l2tx.ts
 
-import { Common, CustomChain } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 
 const pk = hexToBytes('0x076247989df60a82f6e86e58104368676096f84e60972282ee00d4673a2bc9b9')
-const to = Address.fromString('0x256e8f0ba532ad83a0debde7501669511a41a1f3')
-const common = Common.custom(CustomChain.xDaiChain)
+// xDai chain ID
+const common = createCustomCommon({ chainId: 100 }, Mainnet)
+const to = createAddressFromString('0x256e8f0ba532ad83a0debde7501669511a41a1f3')
 
 const txData = {
   nonce: 0,
@@ -344,7 +395,7 @@ const txData = {
   value: 1,
 }
 
-const tx = LegacyTransaction.fromTxData(txData, { common })
+const tx = createLegacyTx(txData, { common })
 const signedTx = tx.sign(pk)
 console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```

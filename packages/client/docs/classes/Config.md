@@ -10,65 +10,106 @@
 
 ### Properties
 
+- [accountCache](Config.md#accountcache)
 - [accounts](Config.md#accounts)
 - [bootnodes](Config.md#bootnodes)
 - [chainCommon](Config.md#chaincommon)
+- [codeCache](Config.md#codecache)
 - [datadir](Config.md#datadir)
 - [debugCode](Config.md#debugcode)
-- [disableBeaconSync](Config.md#disablebeaconsync)
-- [disableSnapSync](Config.md#disablesnapsync)
 - [discDns](Config.md#discdns)
 - [discV4](Config.md#discv4)
 - [dnsAddr](Config.md#dnsaddr)
+- [enableSnapSync](Config.md#enablesnapsync)
+- [engineNewpayloadMaxExecute](Config.md#enginenewpayloadmaxexecute)
+- [engineNewpayloadMaxTxsExecute](Config.md#enginenewpayloadmaxtxsexecute)
+- [engineParentLookupMaxDepth](Config.md#engineparentlookupmaxdepth)
 - [events](Config.md#events)
 - [execCommon](Config.md#execcommon)
+- [execution](Config.md#execution)
 - [extIP](Config.md#extip)
-- [forceSnapSync](Config.md#forcesnapsync)
+- [isSingleNode](Config.md#issinglenode)
 - [key](Config.md#key)
 - [lastSyncDate](Config.md#lastsyncdate)
+- [lastsyncronized](Config.md#lastsyncronized)
 - [lightserv](Config.md#lightserv)
 - [logger](Config.md#logger)
+- [maxAccountRange](Config.md#maxaccountrange)
 - [maxFetcherJobs](Config.md#maxfetcherjobs)
+- [maxFetcherRequests](Config.md#maxfetcherrequests)
+- [maxInvalidBlocksErrorCache](Config.md#maxinvalidblockserrorcache)
 - [maxPeers](Config.md#maxpeers)
 - [maxPerRequest](Config.md#maxperrequest)
+- [maxRangeBytes](Config.md#maxrangebytes)
+- [maxStorageRange](Config.md#maxstoragerange)
 - [minPeers](Config.md#minpeers)
 - [mine](Config.md#mine)
 - [minerCoinbase](Config.md#minercoinbase)
 - [multiaddrs](Config.md#multiaddrs)
+- [numBlocksPerIteration](Config.md#numblocksperiteration)
 - [port](Config.md#port)
+- [prefixStorageTrieKeys](Config.md#prefixstoragetriekeys)
+- [pruneEngineCache](Config.md#pruneenginecache)
 - [safeReorgDistance](Config.md#safereorgdistance)
+- [savePreimages](Config.md#savepreimages)
 - [saveReceipts](Config.md#savereceipts)
-- [servers](Config.md#servers)
+- [server](Config.md#server)
+- [shutdown](Config.md#shutdown)
 - [skeletonFillCanonicalBackStep](Config.md#skeletonfillcanonicalbackstep)
 - [skeletonSubchainMergeMinimum](Config.md#skeletonsubchainmergeminimum)
+- [snapAvailabilityDepth](Config.md#snapavailabilitydepth)
+- [snapTransitionSafeDepth](Config.md#snaptransitionsafedepth)
+- [statelessVerkle](Config.md#statelessverkle)
+- [storageCache](Config.md#storagecache)
 - [syncTargetHeight](Config.md#synctargetheight)
+- [syncedStateRemovalPeriod](Config.md#syncedstateremovalperiod)
 - [synchronized](Config.md#synchronized)
 - [syncmode](Config.md#syncmode)
-- [transports](Config.md#transports)
+- [trieCache](Config.md#triecache)
 - [txLookupLimit](Config.md#txlookuplimit)
+- [useStringValueTrieDB](Config.md#usestringvaluetriedb)
 - [vm](Config.md#vm)
+- [vmProfilerOpts](Config.md#vmprofileropts)
+- [ACCOUNT\_CACHE](Config.md#account_cache)
 - [CHAIN\_DEFAULT](Config.md#chain_default)
+- [CODE\_CACHE](Config.md#code_cache)
 - [DATADIR\_DEFAULT](Config.md#datadir_default)
 - [DEBUGCODE\_DEFAULT](Config.md#debugcode_default)
 - [DNSADDR\_DEFAULT](Config.md#dnsaddr_default)
+- [ENGINE\_NEWPAYLOAD\_MAX\_EXECUTE](Config.md#engine_newpayload_max_execute)
+- [ENGINE\_NEWPAYLOAD\_MAX\_TXS\_EXECUTE](Config.md#engine_newpayload_max_txs_execute)
+- [ENGINE\_PARENTLOOKUP\_MAX\_DEPTH](Config.md#engine_parentlookup_max_depth)
+- [EXECUTION](Config.md#execution-1)
 - [LIGHTSERV\_DEFAULT](Config.md#lightserv_default)
 - [MAXFETCHERJOBS\_DEFAULT](Config.md#maxfetcherjobs_default)
+- [MAXFETCHERREQUESTS\_DEFAULT](Config.md#maxfetcherrequests_default)
 - [MAXPEERS\_DEFAULT](Config.md#maxpeers_default)
 - [MAXPERREQUEST\_DEFAULT](Config.md#maxperrequest_default)
+- [MAX\_ACCOUNT\_RANGE](Config.md#max_account_range)
+- [MAX\_INVALID\_BLOCKS\_ERROR\_CACHE](Config.md#max_invalid_blocks_error_cache)
+- [MAX\_RANGE\_BYTES](Config.md#max_range_bytes)
+- [MAX\_STORAGE\_RANGE](Config.md#max_storage_range)
 - [MINPEERS\_DEFAULT](Config.md#minpeers_default)
+- [NUM\_BLOCKS\_PER\_ITERATION](Config.md#num_blocks_per_iteration)
 - [PORT\_DEFAULT](Config.md#port_default)
+- [PRUNE\_ENGINE\_CACHE](Config.md#prune_engine_cache)
 - [SAFE\_REORG\_DISTANCE](Config.md#safe_reorg_distance)
 - [SKELETON\_FILL\_CANONICAL\_BACKSTEP](Config.md#skeleton_fill_canonical_backstep)
 - [SKELETON\_SUBCHAIN\_MERGE\_MINIMUM](Config.md#skeleton_subchain_merge_minimum)
+- [SNAP\_AVAILABILITY\_DEPTH](Config.md#snap_availability_depth)
+- [SNAP\_TRANSITION\_SAFE\_DEPTH](Config.md#snap_transition_safe_depth)
+- [STORAGE\_CACHE](Config.md#storage_cache)
+- [SYNCED\_STATE\_REMOVAL\_PERIOD](Config.md#synced_state_removal_period)
 - [SYNCMODE\_DEFAULT](Config.md#syncmode_default)
-- [TRANSPORTS\_DEFAULT](Config.md#transports_default)
+- [TRIE\_CACHE](Config.md#trie_cache)
 
 ### Methods
 
 - [getDataDirectory](Config.md#getdatadirectory)
 - [getDnsDiscovery](Config.md#getdnsdiscovery)
 - [getNetworkDirectory](Config.md#getnetworkdirectory)
-- [getV4Discovery](Config.md#getv4discovery)
+- [superMsg](Config.md#supermsg)
+- [updateSynchronizedState](Config.md#updatesynchronizedstate)
 - [getClientKey](Config.md#getclientkey)
 - [getConfigDB](Config.md#getconfigdb)
 
@@ -86,17 +127,27 @@
 
 #### Defined in
 
-[config.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L316)
+[config.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L460)
 
 ## Properties
 
-### accounts
+### accountCache
 
-• `Readonly` **accounts**: [address: Address, privKey: Buffer][]
+• `Readonly` **accountCache**: `number`
 
 #### Defined in
 
-[config.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L295)
+[config.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L410)
+
+___
+
+### accounts
+
+• `Readonly` **accounts**: [address: Address, privKey: Uint8Array][]
+
+#### Defined in
+
+[config.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L419)
 
 ___
 
@@ -106,7 +157,7 @@ ___
 
 #### Defined in
 
-[config.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L280)
+[config.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L396)
 
 ___
 
@@ -116,7 +167,17 @@ ___
 
 #### Defined in
 
-[config.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L311)
+[config.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L455)
+
+___
+
+### codeCache
+
+• `Readonly` **codeCache**: `number`
+
+#### Defined in
+
+[config.ts:412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L412)
 
 ___
 
@@ -126,7 +187,7 @@ ___
 
 #### Defined in
 
-[config.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L277)
+[config.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L394)
 
 ___
 
@@ -136,27 +197,7 @@ ___
 
 #### Defined in
 
-[config.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L291)
-
-___
-
-### disableBeaconSync
-
-• `Readonly` **disableBeaconSync**: `boolean`
-
-#### Defined in
-
-[config.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L301)
-
-___
-
-### disableSnapSync
-
-• `Readonly` **disableSnapSync**: `boolean` = `false`
-
-#### Defined in
-
-[config.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L304)
+[config.ts:414](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L414)
 
 ___
 
@@ -166,7 +207,7 @@ ___
 
 #### Defined in
 
-[config.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L292)
+[config.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L415)
 
 ___
 
@@ -176,7 +217,7 @@ ___
 
 #### Defined in
 
-[config.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L293)
+[config.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L416)
 
 ___
 
@@ -186,7 +227,47 @@ ___
 
 #### Defined in
 
-[config.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L290)
+[config.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L407)
+
+___
+
+### enableSnapSync
+
+• `Readonly` **enableSnapSync**: `boolean`
+
+#### Defined in
+
+[config.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L440)
+
+___
+
+### engineNewpayloadMaxExecute
+
+• `Readonly` **engineNewpayloadMaxExecute**: `number`
+
+#### Defined in
+
+[config.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L433)
+
+___
+
+### engineNewpayloadMaxTxsExecute
+
+• `Readonly` **engineNewpayloadMaxTxsExecute**: `number`
+
+#### Defined in
+
+[config.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L434)
+
+___
+
+### engineParentLookupMaxDepth
+
+• `Readonly` **engineParentLookupMaxDepth**: `number`
+
+#### Defined in
+
+[config.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L432)
 
 ___
 
@@ -199,7 +280,7 @@ components of the client
 
 #### Defined in
 
-[config.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L255)
+[config.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L346)
 
 ___
 
@@ -209,7 +290,17 @@ ___
 
 #### Defined in
 
-[config.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L312)
+[config.ts:456](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L456)
+
+___
+
+### execution
+
+• `Readonly` **execution**: `boolean`
+
+#### Defined in
+
+[config.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L408)
 
 ___
 
@@ -219,27 +310,27 @@ ___
 
 #### Defined in
 
-[config.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L282)
+[config.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L398)
 
 ___
 
-### forceSnapSync
+### isSingleNode
 
-• `Readonly` **forceSnapSync**: `boolean`
+• `Readonly` **isSingleNode**: `boolean`
 
 #### Defined in
 
-[config.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L302)
+[config.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L418)
 
 ___
 
 ### key
 
-• `Readonly` **key**: `Buffer`
+• `Readonly` **key**: `Uint8Array`
 
 #### Defined in
 
-[config.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L278)
+[config.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L395)
 
 ___
 
@@ -247,9 +338,21 @@ ___
 
 • **lastSyncDate**: `number`
 
+lastSyncDate in ms
+
 #### Defined in
 
-[config.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L307)
+[config.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L449)
+
+___
+
+### lastsyncronized
+
+• `Optional` **lastsyncronized**: `boolean`
+
+#### Defined in
+
+[config.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L447)
 
 ___
 
@@ -259,7 +362,7 @@ ___
 
 #### Defined in
 
-[config.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L276)
+[config.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L393)
 
 ___
 
@@ -269,7 +372,17 @@ ___
 
 #### Defined in
 
-[config.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L273)
+[config.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L390)
+
+___
+
+### maxAccountRange
+
+• `Readonly` **maxAccountRange**: `bigint`
+
+#### Defined in
+
+[config.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L427)
 
 ___
 
@@ -279,7 +392,27 @@ ___
 
 #### Defined in
 
-[config.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L287)
+[config.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L403)
+
+___
+
+### maxFetcherRequests
+
+• `Readonly` **maxFetcherRequests**: `number`
+
+#### Defined in
+
+[config.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L404)
+
+___
+
+### maxInvalidBlocksErrorCache
+
+• `Readonly` **maxInvalidBlocksErrorCache**: `number`
+
+#### Defined in
+
+[config.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L429)
 
 ___
 
@@ -289,7 +422,7 @@ ___
 
 #### Defined in
 
-[config.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L289)
+[config.ts:406](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L406)
 
 ___
 
@@ -299,7 +432,27 @@ ___
 
 #### Defined in
 
-[config.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L286)
+[config.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L402)
+
+___
+
+### maxRangeBytes
+
+• `Readonly` **maxRangeBytes**: `number`
+
+#### Defined in
+
+[config.ts:426](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L426)
+
+___
+
+### maxStorageRange
+
+• `Readonly` **maxStorageRange**: `bigint`
+
+#### Defined in
+
+[config.ts:428](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L428)
 
 ___
 
@@ -309,7 +462,7 @@ ___
 
 #### Defined in
 
-[config.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L288)
+[config.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L405)
 
 ___
 
@@ -319,7 +472,7 @@ ___
 
 #### Defined in
 
-[config.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L294)
+[config.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L417)
 
 ___
 
@@ -329,7 +482,7 @@ ___
 
 #### Defined in
 
-[config.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L296)
+[config.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L420)
 
 ___
 
@@ -339,7 +492,17 @@ ___
 
 #### Defined in
 
-[config.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L283)
+[config.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L399)
+
+___
+
+### numBlocksPerIteration
+
+• `Readonly` **numBlocksPerIteration**: `number`
+
+#### Defined in
+
+[config.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L409)
 
 ___
 
@@ -349,7 +512,27 @@ ___
 
 #### Defined in
 
-[config.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L281)
+[config.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L397)
+
+___
+
+### prefixStorageTrieKeys
+
+• `Readonly` **prefixStorageTrieKeys**: `boolean`
+
+#### Defined in
+
+[config.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L438)
+
+___
+
+### pruneEngineCache
+
+• `Readonly` **pruneEngineCache**: `boolean`
+
+#### Defined in
+
+[config.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L430)
 
 ___
 
@@ -359,7 +542,17 @@ ___
 
 #### Defined in
 
-[config.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L298)
+[config.ts:423](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L423)
+
+___
+
+### savePreimages
+
+• `Readonly` **savePreimages**: `boolean`
+
+#### Defined in
+
+[config.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L442)
 
 ___
 
@@ -369,17 +562,29 @@ ___
 
 #### Defined in
 
-[config.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L284)
+[config.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L400)
 
 ___
 
-### servers
+### server
 
-• `Readonly` **servers**: (`Libp2pServer` \| `RlpxServer`)[] = `[]`
+• `Readonly` **server**: `undefined` \| `RlpxServer` = `undefined`
 
 #### Defined in
 
-[config.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L314)
+[config.ts:458](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L458)
+
+___
+
+### shutdown
+
+• **shutdown**: `boolean` = `false`
+
+Client is in the process of shutting down
+
+#### Defined in
+
+[config.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L453)
 
 ___
 
@@ -389,7 +594,7 @@ ___
 
 #### Defined in
 
-[config.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L299)
+[config.ts:424](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L424)
 
 ___
 
@@ -399,7 +604,47 @@ ___
 
 #### Defined in
 
-[config.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L300)
+[config.ts:425](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L425)
+
+___
+
+### snapAvailabilityDepth
+
+• `Readonly` **snapAvailabilityDepth**: `bigint`
+
+#### Defined in
+
+[config.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L435)
+
+___
+
+### snapTransitionSafeDepth
+
+• `Readonly` **snapTransitionSafeDepth**: `bigint`
+
+#### Defined in
+
+[config.ts:436](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L436)
+
+___
+
+### statelessVerkle
+
+• `Readonly` **statelessVerkle**: `boolean`
+
+#### Defined in
+
+[config.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L444)
+
+___
+
+### storageCache
+
+• `Readonly` **storageCache**: `number`
+
+#### Defined in
+
+[config.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L411)
 
 ___
 
@@ -411,7 +656,17 @@ Best known block height
 
 #### Defined in
 
-[config.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L309)
+[config.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L451)
+
+___
+
+### syncedStateRemovalPeriod
+
+• `Readonly` **syncedStateRemovalPeriod**: `number`
+
+#### Defined in
+
+[config.ts:431](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L431)
 
 ___
 
@@ -421,7 +676,7 @@ ___
 
 #### Defined in
 
-[config.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L306)
+[config.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L446)
 
 ___
 
@@ -431,17 +686,17 @@ ___
 
 #### Defined in
 
-[config.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L274)
+[config.ts:391](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L391)
 
 ___
 
-### transports
+### trieCache
 
-• `Readonly` **transports**: `string`[]
+• `Readonly` **trieCache**: `number`
 
 #### Defined in
 
-[config.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L279)
+[config.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L413)
 
 ___
 
@@ -451,7 +706,17 @@ ___
 
 #### Defined in
 
-[config.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L285)
+[config.ts:401](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L401)
+
+___
+
+### useStringValueTrieDB
+
+• `Readonly` **useStringValueTrieDB**: `boolean`
+
+#### Defined in
+
+[config.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L441)
 
 ___
 
@@ -461,7 +726,27 @@ ___
 
 #### Defined in
 
-[config.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L275)
+[config.ts:392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L392)
+
+___
+
+### vmProfilerOpts
+
+• `Optional` `Readonly` **vmProfilerOpts**: `VMProfilerOpts`
+
+#### Defined in
+
+[config.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L421)
+
+___
+
+### ACCOUNT\_CACHE
+
+▪ `Static` `Readonly` **ACCOUNT\_CACHE**: ``400000``
+
+#### Defined in
+
+[config.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L361)
 
 ___
 
@@ -471,7 +756,17 @@ ___
 
 #### Defined in
 
-[config.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L257)
+[config.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L348)
+
+___
+
+### CODE\_CACHE
+
+▪ `Static` `Readonly` **CODE\_CACHE**: ``200000``
+
+#### Defined in
+
+[config.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L363)
 
 ___
 
@@ -481,7 +776,7 @@ ___
 
 #### Defined in
 
-[config.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L260)
+[config.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L351)
 
 ___
 
@@ -491,7 +786,7 @@ ___
 
 #### Defined in
 
-[config.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L268)
+[config.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L365)
 
 ___
 
@@ -501,7 +796,47 @@ ___
 
 #### Defined in
 
-[config.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L267)
+[config.ts:358](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L358)
+
+___
+
+### ENGINE\_NEWPAYLOAD\_MAX\_EXECUTE
+
+▪ `Static` `Readonly` **ENGINE\_NEWPAYLOAD\_MAX\_EXECUTE**: ``2``
+
+#### Defined in
+
+[config.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L382)
+
+___
+
+### ENGINE\_NEWPAYLOAD\_MAX\_TXS\_EXECUTE
+
+▪ `Static` `Readonly` **ENGINE\_NEWPAYLOAD\_MAX\_TXS\_EXECUTE**: ``100``
+
+#### Defined in
+
+[config.ts:384](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L384)
+
+___
+
+### ENGINE\_PARENTLOOKUP\_MAX\_DEPTH
+
+▪ `Static` `Readonly` **ENGINE\_PARENTLOOKUP\_MAX\_DEPTH**: ``128``
+
+#### Defined in
+
+[config.ts:381](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L381)
+
+___
+
+### EXECUTION
+
+▪ `Static` `Readonly` **EXECUTION**: ``true``
+
+#### Defined in
+
+[config.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L359)
 
 ___
 
@@ -511,7 +846,7 @@ ___
 
 #### Defined in
 
-[config.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L259)
+[config.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L350)
 
 ___
 
@@ -521,7 +856,17 @@ ___
 
 #### Defined in
 
-[config.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L264)
+[config.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L354)
+
+___
+
+### MAXFETCHERREQUESTS\_DEFAULT
+
+▪ `Static` `Readonly` **MAXFETCHERREQUESTS\_DEFAULT**: ``5``
+
+#### Defined in
+
+[config.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L355)
 
 ___
 
@@ -531,17 +876,57 @@ ___
 
 #### Defined in
 
-[config.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L266)
+[config.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L357)
 
 ___
 
 ### MAXPERREQUEST\_DEFAULT
 
-▪ `Static` `Readonly` **MAXPERREQUEST\_DEFAULT**: ``50``
+▪ `Static` `Readonly` **MAXPERREQUEST\_DEFAULT**: ``100``
 
 #### Defined in
 
-[config.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L263)
+[config.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L353)
+
+___
+
+### MAX\_ACCOUNT\_RANGE
+
+▪ `Static` `Readonly` **MAX\_ACCOUNT\_RANGE**: `bigint`
+
+#### Defined in
+
+[config.ts:372](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L372)
+
+___
+
+### MAX\_INVALID\_BLOCKS\_ERROR\_CACHE
+
+▪ `Static` `Readonly` **MAX\_INVALID\_BLOCKS\_ERROR\_CACHE**: ``128``
+
+#### Defined in
+
+[config.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L376)
+
+___
+
+### MAX\_RANGE\_BYTES
+
+▪ `Static` `Readonly` **MAX\_RANGE\_BYTES**: ``50000``
+
+#### Defined in
+
+[config.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L370)
+
+___
+
+### MAX\_STORAGE\_RANGE
+
+▪ `Static` `Readonly` **MAX\_STORAGE\_RANGE**: `bigint`
+
+#### Defined in
+
+[config.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L374)
 
 ___
 
@@ -551,7 +936,17 @@ ___
 
 #### Defined in
 
-[config.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L265)
+[config.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L356)
+
+___
+
+### NUM\_BLOCKS\_PER\_ITERATION
+
+▪ `Static` `Readonly` **NUM\_BLOCKS\_PER\_ITERATION**: ``100``
+
+#### Defined in
+
+[config.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L360)
 
 ___
 
@@ -561,7 +956,17 @@ ___
 
 #### Defined in
 
-[config.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L262)
+[config.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L352)
+
+___
+
+### PRUNE\_ENGINE\_CACHE
+
+▪ `Static` `Readonly` **PRUNE\_ENGINE\_CACHE**: ``true``
+
+#### Defined in
+
+[config.ts:377](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L377)
 
 ___
 
@@ -571,7 +976,7 @@ ___
 
 #### Defined in
 
-[config.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L269)
+[config.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L366)
 
 ___
 
@@ -581,7 +986,7 @@ ___
 
 #### Defined in
 
-[config.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L270)
+[config.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L367)
 
 ___
 
@@ -591,7 +996,47 @@ ___
 
 #### Defined in
 
-[config.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L271)
+[config.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L368)
+
+___
+
+### SNAP\_AVAILABILITY\_DEPTH
+
+▪ `Static` `Readonly` **SNAP\_AVAILABILITY\_DEPTH**: `bigint`
+
+#### Defined in
+
+[config.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L385)
+
+___
+
+### SNAP\_TRANSITION\_SAFE\_DEPTH
+
+▪ `Static` `Readonly` **SNAP\_TRANSITION\_SAFE\_DEPTH**: `bigint`
+
+#### Defined in
+
+[config.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L388)
+
+___
+
+### STORAGE\_CACHE
+
+▪ `Static` `Readonly` **STORAGE\_CACHE**: ``200000``
+
+#### Defined in
+
+[config.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L362)
+
+___
+
+### SYNCED\_STATE\_REMOVAL\_PERIOD
+
+▪ `Static` `Readonly` **SYNCED\_STATE\_REMOVAL\_PERIOD**: ``60000``
+
+#### Defined in
+
+[config.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L379)
 
 ___
 
@@ -601,17 +1046,17 @@ ___
 
 #### Defined in
 
-[config.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L258)
+[config.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L349)
 
 ___
 
-### TRANSPORTS\_DEFAULT
+### TRIE\_CACHE
 
-▪ `Static` `Readonly` **TRANSPORTS\_DEFAULT**: `string`[]
+▪ `Static` `Readonly` **TRIE\_CACHE**: ``200000``
 
 #### Defined in
 
-[config.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L261)
+[config.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L364)
 
 ## Methods
 
@@ -633,7 +1078,7 @@ Returns the location for each [DataDirectory](../enums/DataDirectory.md)
 
 #### Defined in
 
-[config.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L398)
+[config.ts:637](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L637)
 
 ___
 
@@ -656,7 +1101,7 @@ is enabled based on chainName. `true` for goerli
 
 #### Defined in
 
-[config.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L444)
+[config.ts:698](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L698)
 
 ___
 
@@ -672,36 +1117,61 @@ Returns the network directory for the chain.
 
 #### Defined in
 
-[config.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L390)
+[config.ts:629](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L629)
 
 ___
 
-### getV4Discovery
+### superMsg
 
-▸ **getV4Discovery**(`option`): `boolean`
-
-Returns specified option or the default setting for whether v4 peer discovery
-is enabled based on chainName. `true` for `mainnet`
+▸ **superMsg**(`msgs`, `meta?`): `void`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `option` | `undefined` \| `boolean` |
+| `msgs` | `string` \| `string`[] |
+| `meta?` | `any` |
 
 #### Returns
 
-`boolean`
+`void`
 
 #### Defined in
 
-[config.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L454)
+[config.ts:679](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L679)
+
+___
+
+### updateSynchronizedState
+
+▸ **updateSynchronizedState**(`latest?`, `emitSyncEvent?`): `void`
+
+Update the synchronized state of the chain
+
+**`Emits`**
+
+Event.SYNC_SYNCHRONIZED
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `latest?` | ``null`` \| `BlockHeader` |
+| `emitSyncEvent?` | `boolean` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[config.ts:570](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L570)
 
 ___
 
 ### getClientKey
 
-▸ `Static` **getClientKey**(`datadir`, `common`): `Promise`<`undefined` \| `Buffer`\>
+▸ `Static` **getClientKey**(`datadir`, `common`): `Promise`<`undefined` \| `Uint8Array`\>
 
 Gets the client private key from the config db.
 
@@ -714,17 +1184,17 @@ Gets the client private key from the config db.
 
 #### Returns
 
-`Promise`<`undefined` \| `Buffer`\>
+`Promise`<`undefined` \| `Uint8Array`\>
 
 #### Defined in
 
-[config.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L422)
+[config.ts:661](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L661)
 
 ___
 
 ### getConfigDB
 
-▸ `Static` **getConfigDB**(`networkDir`): `Level`<`string` \| `Buffer`, `Buffer`\>
+▸ `Static` **getConfigDB**(`networkDir`): `Level`<`string` \| `Uint8Array`, `Uint8Array`\>
 
 Returns the config level db.
 
@@ -736,8 +1206,8 @@ Returns the config level db.
 
 #### Returns
 
-`Level`<`string` \| `Buffer`, `Buffer`\>
+`Level`<`string` \| `Uint8Array`, `Uint8Array`\>
 
 #### Defined in
 
-[config.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L415)
+[config.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L654)

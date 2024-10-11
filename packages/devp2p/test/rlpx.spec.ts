@@ -1,6 +1,6 @@
 // Tests written with help from CodiumAI
 
-import { Common } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import assert from 'assert'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
@@ -19,7 +19,7 @@ describe('RLPx', () => {
       maxPeers: 10,
       clientId: new Uint8Array([6, 7, 8, 9, 10]),
       capabilities: [],
-      common: new Common({ chain: 1 }),
+      common: new Common({ chain: Mainnet }),
     }
 
     const rlpx = new RLPx(privateKey, options)
@@ -48,7 +48,7 @@ describe('RLPx', () => {
       maxPeers: 10,
       clientId: new Uint8Array([6, 7, 8, 9, 10]),
       capabilities: [],
-      common: new Common({ chain: 1 }),
+      common: new Common({ chain: Mainnet }),
     }
 
     const rlpx = new RLPx(privateKey, options)
@@ -104,7 +104,7 @@ describe('RLPx', () => {
       maxPeers: 10,
       clientId: new Uint8Array([6, 7, 8, 9, 10]),
       capabilities: [],
-      common: new Common({ chain: 1 }),
+      common: new Common({ chain: Mainnet }),
     }
 
     const rlpx = new RLPx(privateKey, options)
@@ -134,7 +134,7 @@ describe('RLPx', () => {
       maxPeers: 10,
       clientId: new Uint8Array([6, 7, 8, 9, 10]),
       capabilities: [],
-      common: new Common({ chain: 1 }),
+      common: new Common({ chain: Mainnet }),
     }
     const rlpx = new RLPx(privateKey, options)
     const mockPeer = {
@@ -158,19 +158,19 @@ describe('RLPx', () => {
       maxPeers: 10,
       clientId: new Uint8Array([6, 7, 8, 9, 10]),
       capabilities: [],
-      common: new Common({ chain: 1 }),
+      common: new Common({ chain: Mainnet }),
     }
     const rlpx = new RLPx(privateKey, options)
 
     assert.equal(
       rlpx['_getOpenSlots'](),
       10,
-      'returns default number of open slots (i.e. `max_peers`) on startup'
+      'returns default number of open slots (i.e. `max_peers`) on startup',
     )
     assert.equal(
       rlpx['_getOpenQueueSlots'](),
       20,
-      'returns default number of open queue slots on startup'
+      'returns default number of open queue slots on startup',
     )
   })
 })

@@ -1,14 +1,14 @@
-import { Block } from '@ethereumjs/block'
+import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { KECCAK256_RLP, KECCAK256_RLP_ARRAY, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
+import { Event } from '../../types.js'
 
-import { BlockFetcherBase } from './blockfetcherbase'
+import { BlockFetcherBase } from './blockfetcherbase.js'
 
-import type { Peer } from '../../net/peer'
-import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
-import type { Job } from './types'
-import type { BlockBytes } from '@ethereumjs/block'
+import type { Peer } from '../../net/peer/index.js'
+import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
+import type { Job } from './types.js'
+import type { Block, BlockBytes } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher
@@ -28,6 +28,12 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    */
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer, partialResult } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     let { first, count } = task
     if (partialResult) {
       first = !this.reverse
@@ -47,7 +53,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
     })
     if (!Array.isArray(headersResult) || headersResult[1].length === 0) {
       // Catch occasional null or empty responses
-      this.debug(`Peer ${peerInfo} returned no headers for blocks=${blocksRange}`)
+      this.DEBUG && this.debug(`Peer ${peerInfo} returned no headers for blocks=${blocksRange}`)
       return []
     }
     const headers = headersResult[1]
@@ -58,15 +64,16 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       bodiesResult[1].length === 0
     ) {
       // Catch occasional null or empty responses
-      this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
+      this.DEBUG && this.debug(`Peer ${peerInfo} returned no bodies for blocks=${blocksRange}`)
       return []
     }
     const bodies = bodiesResult[1]
-    this.debug(
-      `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
-    )
+    this.DEBUG &&
+      this.debug(
+        `Requested blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`,
+      )
     const blocks: Block[] = []
-    for (const [i, [txsData, unclesData, withdrawalsData]] of bodies.entries()) {
+    for (const [i, [txsData, unclesData, withdrawalsData, requestsData]] of bodies.entries()) {
       const header = headers[i]
       if (
         (!equalsBytes(header.transactionsTrie, KECCAK256_RLP) && txsData.length === 0) ||
@@ -75,17 +82,21 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
           !equalsBytes(header.withdrawalsRoot, KECCAK256_RLP) &&
           (withdrawalsData?.length ?? 0) === 0)
       ) {
-        this.debug(
-          `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs=${txsData.length} or uncles=${unclesData.length} or withdrawals=${withdrawalsData?.length}`
-        )
+        this.DEBUG &&
+          this.debug(
+            `Requested block=${headers[i].number}} from peer ${peerInfo} missing non-empty txs=${txsData.length} or uncles=${unclesData.length} or withdrawals=${withdrawalsData?.length}`,
+          )
         return []
       }
       const values: BlockBytes = [headers[i].raw(), txsData, unclesData]
       if (withdrawalsData !== undefined) {
         values.push(withdrawalsData)
       }
+      if (requestsData !== undefined) {
+        values.push(requestsData)
+      }
       // Supply the common from the corresponding block header already set on correct fork
-      const block = Block.fromValuesArray(values, { common: headers[i].common })
+      const block = createBlockFromBytesArray(values, { common: headers[i].common })
       // Only validate the data integrity
       // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
       // In ReverseBlockFetcher we do not need to validate the entire block, since CL
@@ -93,9 +104,10 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       await block.validateData(false, false)
       blocks.push(block)
     }
-    this.debug(
-      `Returning blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`
-    )
+    this.DEBUG &&
+      this.debug(
+        `Returning blocks=${blocksRange} from ${peerInfo} (received: ${headers.length} headers / ${bodies.length} bodies)`,
+      )
     return blocks
   }
 
@@ -114,7 +126,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       } else if (result.length > 0 && result.length < job.task.count) {
         // Save partial result to re-request missing items.
         job.partialResult = result
-        this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
+        this.DEBUG &&
+          this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
       }
     }
     return
@@ -127,18 +140,20 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   async store(blocks: Block[]) {
     try {
       const num = await this.chain.putBlocks(blocks)
-      this.debug(
-        `Fetcher results stored in blockchain (blocks num=${blocks.length} first=${
-          blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number})`
-      )
+      this.DEBUG &&
+        this.debug(
+          `Fetcher results stored in blockchain (blocks num=${blocks.length} first=${
+            blocks[0]?.header.number
+          } last=${blocks[blocks.length - 1]?.header.number})`,
+        )
       this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
     } catch (e: any) {
-      this.debug(
-        `Error storing fetcher results in blockchain (blocks num=${blocks.length} first=${
-          blocks[0]?.header.number
-        } last=${blocks[blocks.length - 1]?.header.number}): ${e}`
-      )
+      this.DEBUG &&
+        this.debug(
+          `Error storing fetcher results in blockchain (blocks num=${blocks.length} first=${
+            blocks[0]?.header.number
+          } last=${blocks[blocks.length - 1]?.header.number}): ${e}`,
+        )
       throw e
     }
   }

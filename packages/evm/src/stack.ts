@@ -38,7 +38,7 @@ export class Stack {
     // Length is checked above, so pop shouldn't return undefined
     // First decrease current length, then read the item and return it
     // Note: this does thus not delete the item from the internal array
-    // However, the length is decreased, so it is not accessible to external observors
+    // However, the length is decreased, so it is not accessible to external observers
     return this._store[--this._len]
   }
 
@@ -125,6 +125,26 @@ export class Stack {
 
     const i = len - position
     this._store[this._len++] = this._store[i]
+  }
+
+  /**
+   * Swap number 1 with number 2 on the stack
+   * @param swap1
+   * @param swap2
+   */
+  exchange(swap1: number, swap2: number) {
+    const headIndex = this._len - 1
+    const exchangeIndex1 = headIndex - swap1
+    const exchangeIndex2 = headIndex - swap2
+
+    // Stack underflow is not possible in EOF
+    if (exchangeIndex1 < 0 || exchangeIndex2 < 0) {
+      throw new EvmError(ERROR.STACK_UNDERFLOW)
+    }
+
+    const cache = this._store[exchangeIndex2]
+    this._store[exchangeIndex2] = this._store[exchangeIndex1]
+    this._store[exchangeIndex1] = cache
   }
 
   /**
