@@ -19,7 +19,6 @@ import { sha256 } from 'ethereum-cryptography/sha256'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   BlockHeader,
@@ -35,7 +34,7 @@ import {
 import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { CLRequest, CLRequestType, VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
+import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -58,7 +57,6 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
   protected sha256Function: (msg: Uint8Array) => Uint8Array
@@ -73,7 +71,6 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
-    requestsRoot?: Uint8Array
   } = {}
 
   /**
@@ -88,7 +85,6 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null,
   ) {
     this.header = header ?? new BlockHeader({}, opts)
@@ -99,7 +95,6 @@ export class Block {
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.executionWitness = executionWitness
-    this.requests = requests ?? (this.common.isActivatedEIP(7685) ? [] : undefined)
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
@@ -150,18 +145,6 @@ export class Block {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
-    if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
-      throw new Error(`Cannot have requests field if EIP 7685 is not active`)
-    }
-
-    // Requests should be sorted in monotonically ascending order based on type
-    // and whatever internal sorting logic is defined by each request type
-    if (requests !== undefined && requests.length > 1) {
-      for (let x = 1; x < requests.length; x++) {
-        if (requests[x].type < requests[x - 1].type)
-          throw new Error('requests are not sorted in ascending order')
-      }
-    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -182,11 +165,6 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
-    }
-
-    const requestsRaw = this.requests?.map((req) => req.serialize())
-    if (requestsRaw) {
-      bytesArray.push(requestsRaw)
     }
 
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
@@ -246,27 +224,6 @@ export class Block {
     return result
   }
 
-  async requestsTrieIsValid(requestsInput?: CLRequest<CLRequestType>[]): Promise<boolean> {
-    if (!this.common.isActivatedEIP(7685)) {
-      throw new Error('EIP 7685 is not activated')
-    }
-
-    const requests = requestsInput ?? this.requests!
-
-    if (requests!.length === 0) {
-      return equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
-    }
-
-    if (requestsInput === undefined) {
-      if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsRoot(this.requests!, this.sha256Function)
-      }
-      return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
-    } else {
-      const reportedRoot = await genRequestsRoot(requests, this.sha256Function)
-      return equalsBytes(reportedRoot, this.header.requestsRoot!)
-    }
-  }
   /**
    * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings
@@ -528,7 +485,6 @@ export class Block {
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
-      requests: this.requests?.map((req) => bytesToHex(req.serialize())),
     }
   }
 
@@ -543,10 +499,6 @@ export class Block {
     const header = blockJSON.header!
     const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
     const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
-    const executionRequestsArr =
-      this.requests !== undefined
-        ? { executionRequests: this.requests.map((req) => bytesToHex(req.serialize())) }
-        : undefined
 
     const executionPayload: ExecutionPayload = {
       blockNumber: header.number!,
@@ -568,7 +520,6 @@ export class Block {
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       executionWitness: this.executionWitness,
-      ...executionRequestsArr,
     }
 
     return executionPayload

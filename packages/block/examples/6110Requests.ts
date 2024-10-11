@@ -7,7 +7,7 @@ import {
   createDepositRequest,
   randomBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -24,7 +24,7 @@ const main = async () => {
   }
   const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsRoot(requests, keccak256)
+  const requestsRoot = genRequestsRoot(requests, sha256)
 
   const block = createBlock(
     {

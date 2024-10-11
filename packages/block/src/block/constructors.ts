@@ -8,7 +8,6 @@ import {
   normalizeTxParams,
 } from '@ethereumjs/tx'
 import {
-  CLRequestFactory,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
@@ -20,10 +19,9 @@ import {
   intToHex,
   isHexString,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { genRequestsRoot, genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
+import { genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
 import {
   Block,
   createBlockHeader,
@@ -41,16 +39,10 @@ import type {
   ExecutionWitnessBytes,
   HeaderData,
   JSONRPCBlock,
-  RequestsBytes,
   WithdrawalsBytes,
 } from '../types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type {
-  EthersProvider,
-  PrefixedHexString,
-  RequestBytes,
-  WithdrawalBytes,
-} from '@ethereumjs/util'
+import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * Static constructor to create a block from a block data dictionary
@@ -65,7 +57,6 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
     uncleHeaders: uhsData,
     withdrawals: withdrawalsData,
     executionWitness: executionWitnessData,
-    requests: clRequests,
   } = blockData
 
   const header = createBlockHeader(headerData, opts)
@@ -104,15 +95,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
   // stub till that time
   const executionWitness = executionWitnessData
 
-  return new Block(
-    header,
-    transactions,
-    uncleHeaders,
-    withdrawals,
-    opts,
-    clRequests,
-    executionWitness,
-  )
+  return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
 }
 
 /**
@@ -147,9 +130,6 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
   const withdrawalBytes = header.common.isActivatedEIP(4895)
     ? (valuesTail.splice(0, 1)[0] as WithdrawalsBytes)
     : undefined
-  const requestBytes = header.common.isActivatedEIP(7685)
-    ? (valuesTail.splice(0, 1)[0] as RequestsBytes)
-    : undefined
   // if witness bytes are not present that we should assume that witness has not been provided
   // in that scenario pass null as undefined is used for default witness assignment
   const executionWitnessBytes = header.common.isActivatedEIP(6800)
@@ -162,15 +142,6 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
   ) {
     throw new Error(
       'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array',
-    )
-  }
-
-  if (
-    header.common.isActivatedEIP(7685) &&
-    (requestBytes === undefined || !Array.isArray(requestBytes))
-  ) {
-    throw new Error(
-      'Invalid serialized block input: EIP-7685 is active, and no requestBytes were provided as array',
     )
   }
 
@@ -218,12 +189,6 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     }))
     ?.map(createWithdrawal)
 
-  let requests
-  if (header.common.isActivatedEIP(7685)) {
-    requests = (requestBytes as RequestBytes[]).map((bytes) =>
-      CLRequestFactory.fromSerializedRequest(bytes),
-    )
-  }
   // executionWitness are not part of the EL fetched blocks via eth_ bodies method
   // they are currently only available via the engine api constructed blocks
   let executionWitness
@@ -239,15 +204,7 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     }
   }
 
-  return new Block(
-    header,
-    transactions,
-    uncleHeaders,
-    withdrawals,
-    opts,
-    requests,
-    executionWitness,
-  )
+  return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
 }
 
 /**
@@ -290,12 +247,8 @@ export function createBlockFromRPC(
 
   const uncleHeaders = uncles.map((uh) => createBlockHeaderFromRPC(uh, options))
 
-  const requests = blockParams.requests?.map((req) => {
-    const bytes = hexToBytes(req as PrefixedHexString)
-    return CLRequestFactory.fromSerializedRequest(bytes)
-  })
   return createBlock(
-    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals, requests },
+    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals },
     options,
   )
 }
@@ -378,7 +331,6 @@ export async function createBlockFromExecutionPayload(
     feeRecipient: coinbase,
     transactions,
     withdrawals: withdrawalsData,
-    executionRequests,
     executionWitness,
   } = payload
 
@@ -404,12 +356,6 @@ export async function createBlockFromExecutionPayload(
     ? await genWithdrawalsTrieRoot(withdrawals, new MerklePatriciaTrie({ common: opts?.common }))
     : undefined
 
-  const requests = executionRequests?.map((req) =>
-    CLRequestFactory.fromSerializedRequest(hexToBytes(req)),
-  )
-  const sha256Function = opts?.common?.customCrypto.sha256 ?? keccak256
-  const requestsRoot = requests ? await genRequestsRoot(requests, sha256Function) : undefined
-
   const header: HeaderData = {
     ...payload,
     number,
@@ -418,14 +364,10 @@ export async function createBlockFromExecutionPayload(
     withdrawalsRoot,
     mixHash,
     coinbase,
-    requestsRoot,
   }
 
   // we are not setting setHardfork as common is already set to the correct hf
-  const block = createBlock(
-    { header, transactions: txs, withdrawals, executionWitness, requests },
-    opts,
-  )
+  const block = createBlock({ header, transactions: txs, withdrawals, executionWitness }, opts)
   if (
     block.common.isActivatedEIP(6800) &&
     (executionWitness === undefined || executionWitness === null)
