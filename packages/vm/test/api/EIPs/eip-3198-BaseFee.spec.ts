@@ -9,9 +9,6 @@ import { createVM, runTx } from '../../../src/index.js'
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
-const GWEI = BigInt('1000000000')
-const ETHER = GWEI * GWEI
-
 const common = new Common({
   eips: [1559, 2718, 2930, 3198],
   chain: Mainnet,

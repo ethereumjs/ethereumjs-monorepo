@@ -17,8 +17,6 @@ import { createVM, runTx } from '../../../src/index.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
-const GWEI = BigInt('1000000000')
-
 const common = new Common({
   eips: [1559, 2718, 2930],
   chain: Mainnet,

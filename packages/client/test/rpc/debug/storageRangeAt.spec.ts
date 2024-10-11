@@ -1,11 +1,11 @@
 import { createTx } from '@ethereumjs/tx'
 import {
+  Units,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   hexToBytes,
   setLengthLeft,
-  Units,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'

@@ -6,6 +6,7 @@ import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethere
 import {
   Account,
   Address,
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -14,7 +15,6 @@ import {
   hexToBytes,
   intToHex,
   randomBytes,
-  Units,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
