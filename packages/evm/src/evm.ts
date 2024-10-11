@@ -483,7 +483,7 @@ export class EVM implements EVMInterface {
       code: message.code,
     }
 
-    await this.events.emit('newContract', { data: newContractEvent })
+    await this.events.emit('newContract', { step: newContractEvent })
 
     toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
@@ -863,7 +863,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    await this.events.emit('beforeMessage', { data: message })
+    await this.events.emit('beforeMessage', { step: message })
 
     if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
@@ -933,7 +933,7 @@ export class EVM implements EVMInterface {
         debug(`message checkpoint committed`)
       }
     }
-    await this.events.emit('afterMessage', { data: result })
+    await this.events.emit('afterMessage', { step: result })
 
     if (message.depth === 0 && this._optsCached.profiler?.enabled === true) {
       this.performanceLogger.stopTimer(timer!, 0)

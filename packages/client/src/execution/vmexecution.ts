@@ -120,18 +120,15 @@ export class VMExecution extends Execution {
           metaDB: this.metaDB,
         })
         this.pendingReceipts = new Map()
-        this.chain.blockchain.events.addListener(
-          'deletedCanonicalBlocks',
-          async (blocks, resolve) => {
-            // Once a block gets deleted from the chain, delete the receipts also
-            for (const block of blocks) {
-              await this.receiptsManager?.deleteReceipts(block)
-            }
-            if (resolve !== undefined) {
-              resolve()
-            }
-          },
-        )
+        this.chain.blockchain.events.on('deletedCanonicalBlocks', async ({ blocks, resolve }) => {
+          // Once a block gets deleted from the chain, delete the receipts also
+          for (const block of blocks) {
+            await this.receiptsManager?.deleteReceipts(block)
+          }
+          if (resolve !== undefined) {
+            resolve()
+          }
+        })
       }
       if (this.config.savePreimages) {
         this.preimagesManager = new PreimagesManager({
@@ -831,7 +828,7 @@ export class VMExecution extends Execution {
                 if (this.config.debugCode) {
                   await debugCodeReplayBlock(this, errorBlock)
                 }
-                this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
+                await this.config.events.emit(Event.SYNC_EXECUTION_VM_ERROR, error)
                 const actualExecuted = Number(
                   errorBlock.header.number - startHeadBlock.header.number,
                 )

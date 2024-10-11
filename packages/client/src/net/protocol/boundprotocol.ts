@@ -76,15 +76,24 @@ export class BoundProtocol {
           // so this adds a guard here if something goes wrong
           if (this.messageQueue.length >= 50) {
             const error = new Error('unexpected message queue growth for peer')
-            this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+            void this.config.events.emit(Event.PROTOCOL_ERROR, {
+              boundProtocolError: error,
+              peerCausingError: this.peer,
+            })
           }
         }
       } catch (error: any) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+        void this.config.events.emit(Event.PROTOCOL_ERROR, {
+          boundProtocolError: error,
+          peerCausingError: this.peer,
+        })
       }
     })
     this.sender.on('error', (error: Error) =>
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer),
+      this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      }),
     )
   }
 
@@ -131,14 +140,16 @@ export class BoundProtocol {
       }
     } else {
       if (error) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+        void this.config.events.emit(Event.PROTOCOL_ERROR, {
+          boundProtocolError: error,
+          peerCausingError: this.peer,
+        })
       } else {
-        this.config.events.emit(
-          Event.PROTOCOL_MESSAGE,
-          { name: message.name, data },
-          this.protocol.name,
-          this.peer,
-        )
+        void this.config.events.emit(Event.PROTOCOL_MESSAGE, {
+          messageDetails: { name: message.name, data },
+          protocolName: this.protocol.name,
+          sendingPeer: this.peer,
+        })
       }
     }
   }
@@ -229,7 +240,10 @@ export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethod
     reverse?: boolean | undefined
   }): Promise<[bigint, BlockHeader[]]> {
     return this.request('GetBlockHeaders', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -238,7 +252,10 @@ export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethod
     hashes: Uint8Array[]
   }): Promise<[bigint, BlockBodyBytes[]]> {
     return this.request('GetBlockBodies', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -247,7 +264,10 @@ export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethod
     hashes: Uint8Array[]
   }): Promise<[bigint, TypedTransaction[]]> {
     return this.request('GetPooledTransactions', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -256,7 +276,10 @@ export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethod
     hashes: Uint8Array[]
   }): Promise<[bigint, TxReceipt[]]> {
     return this.request('GetReceipts', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -276,7 +299,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     bytes: bigint
   }): Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }> {
     return this.request('GetAccountRange', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -293,7 +319,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     proof: Uint8Array[]
   }> {
     return this.request('GetStorageRanges', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -303,7 +332,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     bytes: bigint
   }): Promise<{ reqId: bigint; codes: Uint8Array[] }> {
     return this.request('GetByteCodes', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -315,7 +347,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     bytes: bigint
   }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
     return this.request('GetTrieNodes', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }
@@ -336,7 +371,10 @@ export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethod
     reverse?: boolean | undefined
   }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
     return this.request('GetBlockHeaders', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      void this.config.events.emit(Event.PROTOCOL_ERROR, {
+        boundProtocolError: error,
+        peerCausingError: this.peer,
+      })
       return undefined
     })
   }

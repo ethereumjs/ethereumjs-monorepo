@@ -429,7 +429,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   error(error: Error, job?: Job<JobTask, JobResult, StorageItem>, irrecoverable?: boolean) {
     if (this.running) {
-      this.config.events.emit(Event.SYNC_FETCHER_ERROR, error, job?.task, job?.peer)
+      void this.config.events.emit(Event.SYNC_FETCHER_ERROR, {
+        fetchError: error,
+        task: job?.task,
+        peer: job?.peer,
+      })
     }
     if (irrecoverable === true) {
       this.running = false

@@ -68,7 +68,9 @@ export class BeaconSynchronizer extends Synchronizer {
     await this.pool.open()
     await this.skeleton.open()
 
-    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
+    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, ({ blocks }) =>
+      this.processSkeletonBlocks(blocks),
+    )
     if (this.config.execution) {
       this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
     }
@@ -143,7 +145,7 @@ export class BeaconSynchronizer extends Synchronizer {
           await this.sync()
         } catch (error: any) {
           this.config.logger.error(`Beacon sync error: ${error.message}`)
-          this.config.events.emit(Event.SYNC_ERROR, error)
+          await this.config.events.emit(Event.SYNC_ERROR, error)
         }
         await new Promise((resolve) => setTimeout(resolve, this.interval))
       }
@@ -312,9 +314,11 @@ export class BeaconSynchronizer extends Synchronizer {
    */
   async close() {
     if (!this.opened) return
-    this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processSkeletonBlocks)
+    this.config.events.off(Event.SYNC_FETCHED_BLOCKS, ({ blocks }) =>
+      this.processSkeletonBlocks(blocks),
+    )
     if (this.config.execution) {
-      this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+      this.config.events.off(Event.CHAIN_UPDATED, this.runExecution)
     }
     await super.close()
   }

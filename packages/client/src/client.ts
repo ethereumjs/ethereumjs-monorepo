@@ -137,7 +137,9 @@ export class EthereumClient {
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
-      this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
+      this.config.logger.warn(
+        `Server error: ${error.serverError.name} - ${error.serverError.message}`,
+      )
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       this.config.logger.info(
@@ -174,7 +176,7 @@ export class EthereumClient {
     if (!this.started) {
       return false
     }
-    this.config.events.emit(Event.CLIENT_SHUTDOWN)
+    await this.config.events.emit(Event.CLIENT_SHUTDOWN)
     await Promise.all(this.services.map((s) => s.stop()))
     this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false

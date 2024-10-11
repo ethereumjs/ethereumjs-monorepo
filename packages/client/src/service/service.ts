@@ -80,17 +80,20 @@ export class Service {
       config: this.config,
     })
 
-    this.config.events.on(Event.PROTOCOL_MESSAGE, async (message, protocol, peer) => {
-      if (this.running) {
-        try {
-          await this.handle(message, protocol, peer)
-        } catch (error: any) {
-          this.config.logger.debug(
-            `Error handling message (${protocol}:${message.name}): ${error.message}`,
-          )
+    this.config.events.on(
+      Event.PROTOCOL_MESSAGE,
+      async ({ messageDetails, protocolName, sendingPeer }) => {
+        if (this.running) {
+          try {
+            await this.handle(messageDetails, protocolName, sendingPeer)
+          } catch (error: any) {
+            this.config.logger.debug(
+              `Error handling message (${protocolName}:${messageDetails.name}): ${error.message}`,
+            )
+          }
         }
-      }
-    })
+      },
+    )
 
     this.flow = new FlowControl()
     // @ts-ignore TODO replace with async create constructor
@@ -125,15 +128,15 @@ export class Service {
     const protocols = this.protocols
     this.config.server && this.config.server.addProtocols(protocols)
 
-    this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      this.config.logger.debug(`Peer banned: ${peer}`),
-    )
-    this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
-      this.config.logger.debug(`Peer added: ${peer}`),
-    )
-    this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      this.config.logger.debug(`Peer removed: ${peer}`),
-    )
+    this.config.events.on(Event.POOL_PEER_BANNED, ({ bannedPeer }) => {
+      this.config.logger.debug(`Peer banned: ${bannedPeer}`)
+    })
+    this.config.events.on(Event.POOL_PEER_ADDED, ({ addedPeer }) => {
+      this.config.logger.debug(`Peer added: ${addedPeer}`)
+    })
+    this.config.events.on(Event.POOL_PEER_REMOVED, ({ removedPeer }) => {
+      this.config.logger.debug(`Peer removed: ${removedPeer}`)
+    })
 
     await this.pool.open()
     await this.chain.open()

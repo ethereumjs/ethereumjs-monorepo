@@ -807,6 +807,7 @@ async function inputAccounts() {
     // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
     // TODO: See whether package needs to be updated or not
     input: process.stdin,
+    // @ts-ignore
     output: process.stdout,
   })
 

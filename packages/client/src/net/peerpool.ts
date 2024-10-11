@@ -66,16 +66,16 @@ export class PeerPool {
     if (this.opened) {
       return false
     }
-    this.config.events.on(Event.PEER_CONNECTED, (peer) => {
-      this.connected(peer)
+    this.config.events.on(Event.PEER_CONNECTED, ({ connectedPeer }) => {
+      this.connected(connectedPeer)
     })
-    this.config.events.on(Event.PEER_DISCONNECTED, (peer) => {
-      this.disconnected(peer)
+    this.config.events.on(Event.PEER_DISCONNECTED, ({ disconnectedPeer }) => {
+      this.disconnected(disconnectedPeer)
     })
-    this.config.events.on(Event.PEER_ERROR, (error, peer) => {
-      if (this.pool.get(peer.id)) {
-        this.config.logger.warn(`Peer error: ${error} ${peer}`)
-        this.ban(peer)
+    this.config.events.on(Event.PEER_ERROR, ({ error, peerCausingError }) => {
+      if (this.pool.get(peerCausingError.id)) {
+        this.config.logger.warn(`Peer error: ${error} ${peerCausingError}`)
+        this.ban(peerCausingError)
       }
     })
     this.opened = true
@@ -198,7 +198,7 @@ export class PeerPool {
     }
     peer.server.ban(peer.id, maxAge)
     this.remove(peer)
-    this.config.events.emit(Event.POOL_PEER_BANNED, peer)
+    void this.config.events.emit(Event.POOL_PEER_BANNED, { bannedPeer: peer })
 
     // Reconnect to peer after ban period if pool is empty
     this._reconnectTimeout = setTimeout(async () => {
@@ -218,7 +218,7 @@ export class PeerPool {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       peer.pooled = true
-      this.config.events.emit(Event.POOL_PEER_ADDED, peer)
+      void this.config.events.emit(Event.POOL_PEER_ADDED, { addedPeer: peer })
     }
   }
 
@@ -231,7 +231,7 @@ export class PeerPool {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
         peer.pooled = false
-        this.config.events.emit(Event.POOL_PEER_REMOVED, peer)
+        void this.config.events.emit(Event.POOL_PEER_REMOVED, { removedPeer: peer })
       }
     }
   }

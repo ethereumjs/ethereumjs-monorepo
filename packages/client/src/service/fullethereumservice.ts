@@ -180,7 +180,7 @@ export class FullEthereumService extends Service {
           txs[2].push(hexToBytes(`0x${tx.hash}`))
         }
       }
-      if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])
+      if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer.addedPeer])
     })
 
     // skeleton needs to be opened before synchronizers are opened

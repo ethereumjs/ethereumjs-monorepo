@@ -137,10 +137,10 @@ interface NewContractEvent {
 }
 
 export interface EVMEvent {
-  newContract: { data: NewContractEvent; resolve?: (result?: any) => void }
-  beforeMessage: { data: Message; resolve?: (result?: any) => void }
-  afterMessage: { data: EVMResult; resolve?: (result?: any) => void }
-  step: { data: InterpreterStep; resolve?: (result?: any) => void }
+  newContract: { step: NewContractEvent; next?: (result?: any) => void }
+  beforeMessage: { step: Message; next?: (result?: any) => void }
+  afterMessage: { step: EVMResult; next?: (result?: any) => void }
+  step: { step: InterpreterStep; next?: (result?: any) => void }
 }
 
 export interface EVMInterface {

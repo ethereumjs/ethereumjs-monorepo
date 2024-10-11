@@ -22,7 +22,7 @@ export class RlpxSender extends Sender {
     this.sender.events.on('status', (status: any) => {
       this.status = status
     })
-    this.sender.events.on('message', (code: number, payload: any) => {
+    this.sender.events.on('message', ({ code, payload }) => {
       void this.emit('message', { code, payload })
     })
   }

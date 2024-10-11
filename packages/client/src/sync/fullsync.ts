@@ -70,8 +70,8 @@ export class FullSynchronizer extends Synchronizer {
     const syncEvent: Promise<boolean> = new Promise((resolve) => {
       // This event listener listens for other instances of the fetcher that might be syncing from a different peer
       // and reach the head of the chain before the current fetcher.
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
-        this.resolveSync(height)
+      void this.config.events.once(Event.SYNC_SYNCHRONIZED).then((chainHeight) => {
+        this.resolveSync(Number(chainHeight))
         resolve(true)
       })
     })
@@ -89,8 +89,13 @@ export class FullSynchronizer extends Synchronizer {
     await super.open()
     await this.chain.open()
 
-    this.config.events.on(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
-    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
+    this.config.events.on(
+      Event.SYNC_FETCHED_BLOCKS,
+      ({ blocks }) => void this.processBlocks(blocks),
+    )
+    this.config.events.on(Event.SYNC_EXECUTION_VM_ERROR, async () => {
+      await this.stop()
+    })
     if (this.config.execution) {
       this.config.events.on(Event.CHAIN_UPDATED, this.runExecution)
     }
@@ -397,10 +402,15 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   async stop(): Promise<boolean> {
-    this.config.events.removeListener(Event.SYNC_FETCHED_BLOCKS, this.processBlocks)
-    this.config.events.removeListener(Event.SYNC_EXECUTION_VM_ERROR, this.stop)
+    this.config.events.off(
+      Event.SYNC_FETCHED_BLOCKS,
+      ({ blocks }) => void this.processBlocks(blocks),
+    )
+    this.config.events.off(Event.SYNC_EXECUTION_VM_ERROR, async () => {
+      await this.stop()
+    })
     if (this.config.execution) {
-      this.config.events.removeListener(Event.CHAIN_UPDATED, this.runExecution)
+      this.config.events.off(Event.CHAIN_UPDATED, this.runExecution)
     }
     return super.stop()
   }
