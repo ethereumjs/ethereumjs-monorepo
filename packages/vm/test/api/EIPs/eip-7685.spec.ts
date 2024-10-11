@@ -1,8 +1,8 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { KECCAK256_RLP, createDepositRequest, hexToBytes, randomBytes } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/keccak.js'
+import { createCLRequest, hexToBytes } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256'
 import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
@@ -14,14 +14,10 @@ const invalidRequestsRoot = hexToBytes(
   '0xc98048d6605eb79ecc08d90b8817f44911ec474acd8d11688453d2c6ef743bc5',
 )
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
-  const depositRequestData = {
-    pubkey: randomBytes(48),
-    withdrawalCredentials: randomBytes(32),
-    amount: randomBytes(8),
-    signature: randomBytes(96),
-    index: randomBytes(8),
-  }
-  return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+  const sampleDepositRequest = hexToBytes(
+    '0x0000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000030ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c303000000000000000000000000000000000000000000000000000000000000000800405973070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d76900000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000',
+  )
+  return createCLRequest(sampleDepositRequest)
 }
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
@@ -52,19 +48,19 @@ describe('EIP-7685 runBlock tests', () => {
     const requestsRoot = genRequestsRoot([request], sha256)
     const block = createBlock(
       {
-        requests: [request],
         header: { requestsRoot },
       },
       { common },
     )
     await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsRoot/)
   })
+
+  // TODO: no way to test this without running block, why check why does this test pass
+  // as it should not throw on some random request root
   it('should error when requestsRoot does not match requests provided', async () => {
     const vm = await setupVM({ common })
-    const request = getRandomDepositRequest()
     const block = createBlock(
       {
-        requests: [request],
         header: { requestsRoot: invalidRequestsRoot },
       },
       { common },
@@ -91,8 +87,11 @@ describe('EIP 7685 buildBlock tests', () => {
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
 
-    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
+    assert.deepEqual(
+      block.header.requestsRoot,
+      hexToBytes('0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'),
+    )
   })
 })
