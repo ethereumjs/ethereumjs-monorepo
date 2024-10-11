@@ -45,7 +45,7 @@ describe('EIP4844 tests', () => {
     const vm = await createVM({ common, blockchain })
 
     const address = createAddressFromString(sender)
-    await setBalance(vm, address, 14680063125000000000n)
+    await setBalance(vm, address, Units.gwei(14680063125))
     const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await buildBlock(vm, {
