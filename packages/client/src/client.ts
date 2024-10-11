@@ -133,8 +133,15 @@ export class EthereumClient {
       ),
     )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
+      `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}}}`,
     )
+    if (this.config.portal !== undefined) {
+      this.config.logger.info(
+        `Portal Client Started. enr=${this.config.portal.discv5.enr.encodeTxt()} nodeId=0x${
+          this.config.portal.discv5.enr.nodeId
+        } networks=${[...this.config.portal.networks.values()].map((n) => n.constructor.name)}`,
+      )
+    }
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
