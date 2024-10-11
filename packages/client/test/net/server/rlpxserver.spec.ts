@@ -17,13 +17,16 @@ class RlpxPeer extends EventEmitter {
   static capabilities(_: any) {
     return []
   }
+  getProtocols() {
+    return []
+  }
   _socket = { remoteAddress: 'mock', remotePort: 101 }
 }
 RlpxPeer.prototype.accept = vi.fn((input: object) => {
   if (!(input instanceof RlpxPeer)) throw Error('expected RlpxPeer type as input')
 })
 RlpxPeer.capabilities = vi.fn()
-vi.doMock('../../../src/net/peer/rlpxpeer', () => {
+vi.doMock('../../../src/net/peer/rlpxpeer.js', () => {
   return {
     RlpxPeer,
   }
@@ -213,7 +216,7 @@ describe('should return rlpx server info with ip6', async () => {
 
   config.events.on(Event.SERVER_ERROR, (err) => {
     it('should error', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.equal(err.serverError.message, 'err0', 'got error')
     })
   })
   await server.start()
@@ -240,8 +243,8 @@ describe('should handle errors', () => {
   server.config.events.on(Event.SERVER_ERROR, (err) => {
     count = count + 1
     it('should handle rlpx error', async () => {
-      if (err.message === 'err0') assert.ok(true, 'got server error - err0')
-      if (err.message === 'err1') assert.ok(true, 'got peer error - err1')
+      if (err.serverError.message === 'err0') assert.ok(true, 'got server error - err0')
+      if (err.serverError.message === 'err1') assert.ok(true, 'got peer error - err1')
     })
   })
   server['error'](new Error('EPIPE'))
@@ -278,10 +281,10 @@ describe('should init dpt', async () => {
   })
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.equal(err.serverError.message, 'err0', 'got error')
     }),
   )
-  server['dpt']?.events.emit('error', new Error('err0'))
+  await server['dpt']?.events.emit('error', new Error('err0'))
 })
 describe('should handles errors from id-less peers', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -300,10 +303,10 @@ describe('should handles errors from id-less peers', async () => {
   })
   config.events.on(Event.SERVER_ERROR, (err) => {
     it('should throw', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.equal(err.serverError.message, 'err0', 'got error')
     })
   })
-  server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+  await server.rlpx!.events.emit('peer:error', { peer: rlpxPeer as any, error: new Error('err0') })
 })
 describe('should init rlpx', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -323,17 +326,17 @@ describe('should init rlpx', async () => {
   })
   config.events.on(Event.PEER_CONNECTED, (peer) =>
     it('should connect', async () => {
-      assert.ok(peer instanceof RlpxPeer, 'connected')
+      assert.ok(peer.connectedPeer.connected, 'connected')
     }),
   )
   config.events.on(Event.PEER_DISCONNECTED, (peer) =>
     it('should disconnect', async () => {
-      assert.equal(peer.id, '01', 'disconnected')
+      assert.equal(peer.disconnectedPeer.id, '01', 'disconnected')
     }),
   )
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw error', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.equal(err.serverError.message, 'err0', 'got error')
     }),
   )
   config.events.on(Event.SERVER_LISTENING, (info) =>
@@ -341,10 +344,14 @@ describe('should init rlpx', async () => {
       assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
     }),
   )
-  server.rlpx!.events.emit('peer:added', rlpxPeer)
+  await server.rlpx!.events.emit('peer:added', rlpxPeer as any)
   ;(server as any).peers.set('01', { id: '01' } as any)
-  server.rlpx!.events.emit('peer:removed', rlpxPeer)
-  server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+  await server.rlpx!.events.emit('peer:removed', {
+    peer: rlpxPeer as any,
+    reason: undefined,
+    disconnectWe: undefined,
+  })
+  await server.rlpx!.events.emit('peer:error', { peer: rlpxPeer as any, error: new Error('err0') })
   ;(server.rlpx!.id as any) = hexToBytes('0xff')
-  server.rlpx!.events.emit('listening')
+  await server.rlpx!.events.emit('listening')
 })

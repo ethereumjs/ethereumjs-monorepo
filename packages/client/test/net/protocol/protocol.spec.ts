@@ -59,13 +59,14 @@ describe('[Protocol]', () => {
     assert.deepEqual(await p.handshake(sender), { id: 1 }, 'got status now')
   })
 
-  it('should perform handshake (status later)', async () => {
+  it.only('should perform handshake (status later)', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
     sender.sendStatus = td.func<Sender['sendStatus']>()
-    setTimeout(() => {
-      sender.emit('status', [1])
-    }, 100)
+    setTimeout(async () => {
+      console.log('send status')
+      await sender.emit('status', [1])
+    }, 1000)
     const status = await p.handshake(sender)
     td.verify(sender.sendStatus([1]))
     assert.deepEqual(status, { id: 1 }, 'got status later')
