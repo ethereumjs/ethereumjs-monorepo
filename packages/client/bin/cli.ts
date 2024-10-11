@@ -480,6 +480,42 @@ const args: ClientOpts = yargs
     boolean: true,
     default: false,
   })
+  .option('enablePortal', {
+    describe: 'Start Portal Network client',
+    boolean: true,
+    default: false,
+  })
+  .option('portalNetworks', {
+    describe: 'List of Portal Networks to connect to',
+    string: true,
+    default: 'history,state,beacon',
+  })
+  .option('portalStorage', {
+    describe: 'Max Storage (in MB) allocated to the DB for each portal network',
+    string: true,
+    default: '1024,1024,1024',
+  })
+  .option('portalPrivateKey', {
+    describe: 'base64 string encoded protobuf serialized private key',
+    optional: true,
+    string: true,
+  })
+  .option('portalBootnodes', {
+    describe: 'path to a .txt file containing a list of bootnode ENRs',
+    optional: true,
+    string: true,
+  })
+  .option('portalDataDir', {
+    describe: 'data directory where content is stored',
+    string: true,
+    optional: true,
+  })
+  .option('trustedBlockRoot', {
+    describe: 'a trusted block root to start portal client syncing of the beacon chain',
+    string: true,
+    optional: true,
+  })
+
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict()
