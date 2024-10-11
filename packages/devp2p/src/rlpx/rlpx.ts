@@ -19,7 +19,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 import { Peer } from './peer.js'
 
 import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPXEvents, RLPxOptions } from '../types.js'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 
@@ -29,7 +29,7 @@ const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
-  public events: EventEmitter<RLPXEvents>
+  public events: EventEmitter<RLPxEvent>
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger

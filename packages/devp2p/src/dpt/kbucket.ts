@@ -3,13 +3,13 @@ import EventEmitter from 'emittery'
 
 import { KBucket as _KBucket } from '../ext/index.js'
 
-import type { PeerInfo } from '../types.js'
+import type { KBucketEvent, PeerInfo } from '../types.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
 export class KBucket {
-  public events: EventEmitter
+  public events: EventEmitter<KBucketEvent>
   protected _peers: Map<string, PeerInfo> = new Map()
   protected _kbucket: _KBucket
   constructor(localNodeId: Uint8Array) {
@@ -35,7 +35,7 @@ export class KBucket {
     })
 
     this._kbucket.events.on('ping', ({ contacts: oldPeers, contact: newPeer }) => {
-      this.events.emit('ping', { oldPeers, newPeer })
+      this.events.emit('ping', { contacts: oldPeers, contact: newPeer })
     })
   }
 

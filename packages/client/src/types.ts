@@ -32,7 +32,7 @@ export enum Event {
   PROTOCOL_ERROR = 'protocol:error',
   PROTOCOL_MESSAGE = 'protocol:message',
 }
-export interface ClientEventParams {
+export interface ClientEvent {
   [Event.CHAIN_UPDATED]: undefined
   [Event.CLIENT_SHUTDOWN]: undefined
   [Event.SYNC_EXECUTION_VM_ERROR]: { vmError: Error }

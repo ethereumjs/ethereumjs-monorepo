@@ -19,7 +19,7 @@ import { devp2pDebug, formatLogData } from '../util.js'
 import { ECIES } from './ecies.js'
 
 import type { Protocol } from '../protocol/protocol.js'
-import type { Capabilities, PeerEvents, PeerOptions } from '../types.js'
+import type { Capabilities, PeerEvent, PeerOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
@@ -63,7 +63,7 @@ interface Hello {
 }
 
 export class Peer {
-  public events: EventEmitter<PeerEvents>
+  public events: EventEmitter<PeerEvent>
   public readonly clientId: Uint8Array
   protected _capabilities?: Capabilities[]
   public common: Common

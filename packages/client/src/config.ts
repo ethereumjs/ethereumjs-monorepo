@@ -10,7 +10,7 @@ import { Event } from './types.js'
 import { isBrowser, short } from './util/index.js'
 
 import type { Logger } from './logging.js'
-import type { ClientEventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
+import type { ClientEvent, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -356,7 +356,7 @@ export class Config {
    * Central event bus for events emitted by the different
    * components of the client
    */
-  public readonly events: EventEmitter<ClientEventParams>
+  public readonly events: EventEmitter<ClientEvent>
 
   public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
@@ -479,7 +479,7 @@ export class Config {
   public readonly metrics: PrometheusMetrics | undefined
 
   constructor(options: ConfigOptions = {}) {
-    this.events = new EventEmitter<ClientEventParams>()
+    this.events = new EventEmitter<ClientEvent>()
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm

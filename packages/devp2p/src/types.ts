@@ -243,7 +243,7 @@ export interface RLPxOptions {
 
 export type SendMethod = (code: number, data: Uint8Array) => any
 
-export interface RLPXEvents {
+export interface RLPxEvent {
   'peer:added': Peer
   'peer:error': { peer: Peer; error: any }
   'peer:removed': { peer: Peer; reason: any; disconnectWe: any }
@@ -252,7 +252,7 @@ export interface RLPXEvents {
   listening: undefined
 }
 
-export interface PeerEvents {
+export interface PeerEvent {
   error: Error
   connect: undefined
   close: { reason: any; disconnectWe: any }
