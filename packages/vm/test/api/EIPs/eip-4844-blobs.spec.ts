@@ -3,6 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -70,7 +71,7 @@ describe('EIP4844 tests', () => {
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),
