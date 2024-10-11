@@ -53,30 +53,39 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - run: npm run coverage
-      # - uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ${{ env.cwd }}/coverage/lcov.info
-      #     flags: mpt
-      #     token: ${{ secrets.CODECOV_TOKEN }} # required
+
+      - name: Check if Github token exists
+        run: |
+          if [ -z "${{ secrets.GITHUB_TOKEN }}" ]; then
+            echo "Github token is not set."
+          else
+            echo "Github token is available."
+          fi
 
       - name: Check if Codecov token exists
         run: |
           if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
             echo "Codecov token is not set."
-            exit 1
           else
             echo "Codecov token is available."
           fi
-          
-      - uses: codecov/codecov-action@v4
+
+
+      - run: npm run coverage
+      - uses: codecov/codecov-action@e0b68c6749509c5f83f984dd99a76a1c1a231044
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
           token: ${{ secrets.CODECOV_TOKEN }} # required
-          verbose: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
+      # - uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ${{ env.cwd }}/coverage/lcov.info
+      #     flags: mpt
+      #     token: ${{ secrets.CODECOV_TOKEN }} # required
+      #     verbose: true
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # mpt-benchmarks:
   #   runs-on: ubuntu-latest
