@@ -5,7 +5,7 @@ import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type EventEmitter from 'emittery'
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
-export type BlockchainEvents = {
+export type BlockchainEvent = {
   deletedCanonicalBlocks: Block[]
 }
 
@@ -87,7 +87,7 @@ export interface BlockchainInterface {
   /**
    * Optional events emitter
    */
-  events?: EventEmitter<BlockchainEvents>
+  events?: EventEmitter<BlockchainEvent>
 }
 
 export interface GenesisOptions {

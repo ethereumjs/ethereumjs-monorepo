@@ -1,15 +1,16 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
+import EventEmitter from 'emittery'
 import { Level } from 'level'
 
 import { getLogger } from './logging.js'
 import { RlpxServer } from './net/server/index.js'
-import { Event, EventBus } from './types.js'
+import { Event } from './types.js'
 import { isBrowser, short } from './util/index.js'
 
 import type { Logger } from './logging.js'
-import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
+import type { ClientEventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -355,7 +356,7 @@ export class Config {
    * Central event bus for events emitted by the different
    * components of the client
    */
-  public readonly events: EventBusType
+  public readonly events: EventEmitter<ClientEventParams>
 
   public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
@@ -478,7 +479,7 @@ export class Config {
   public readonly metrics: PrometheusMetrics | undefined
 
   constructor(options: ConfigOptions = {}) {
-    this.events = new EventBus() as EventBusType
+    this.events = new EventEmitter<ClientEventParams>()
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
@@ -584,7 +585,7 @@ export class Config {
       }
     }
 
-    this.events.once(Event.CLIENT_SHUTDOWN, () => {
+    void this.events.once(Event.CLIENT_SHUTDOWN).then(() => {
       this.shutdown = true
     })
   }
@@ -622,7 +623,7 @@ export class Config {
           }
 
           if (emitSyncEvent === true) {
-            this.events.emit(Event.SYNC_SYNCHRONIZED, height)
+            void this.events.emit(Event.SYNC_SYNCHRONIZED, height)
           }
         }
       }

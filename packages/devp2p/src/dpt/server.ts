@@ -8,7 +8,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { decode, encode } from './message.js'
 
-import type { DPTServerOptions, PeerInfo, ServerEvents } from '../types.js'
+import type { DPTServerOptions, PeerInfo, ServerEvent } from '../types.js'
 import type { DPT } from './dpt.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
@@ -20,7 +20,7 @@ const verbose = debugDefault('verbose').enabled
 const VERSION = 0x04
 
 export class Server {
-  public events: EventEmitter<ServerEvents>
+  public events: EventEmitter<ServerEvent>
   protected _dpt: DPT
   protected _privateKey: Uint8Array
   protected _timeout: number
@@ -35,7 +35,7 @@ export class Server {
   private DEBUG: boolean
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
-    this.events = new EventEmitter<ServerEvents>()
+    this.events = new EventEmitter<ServerEvent>()
     this._dpt = dpt
     this._privateKey = privateKey
 

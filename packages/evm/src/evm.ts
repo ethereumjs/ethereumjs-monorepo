@@ -35,7 +35,7 @@ import {
   DELEGATION_7702_FLAG,
   type EVMBLSInterface,
   type EVMBN254Interface,
-  type EVMEvents,
+  type EVMEvent,
   type EVMInterface,
   type EVMMockBlockchainInterface,
   type EVMOpts,
@@ -93,7 +93,7 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
-  public readonly events: EventEmitter<EVMEvents>
+  public readonly events: EventEmitter<EVMEvent>
 
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface

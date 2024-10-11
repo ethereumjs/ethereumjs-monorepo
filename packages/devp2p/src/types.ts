@@ -258,7 +258,7 @@ export interface PeerEvents {
   close: { reason: any; disconnectWe: any }
 }
 
-export interface ProtocolEvents {
+export interface ProtocolEvent {
   message: {
     code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES | LES.MESSAGE_CODES
     payload: Uint8Array | NestedUint8Array
@@ -274,14 +274,14 @@ export interface ProtocolEvents {
       }
 }
 
-export interface KBucketEvents {
+export interface KBucketEvent {
   ping: { contacts: Contact[]; contact: PeerInfo }
   updated: { incumbent: Contact; selection: Contact }
   added: PeerInfo
   removed: PeerInfo
 }
 
-export interface DPTEvents {
+export interface DPTEvent {
   listening: undefined
   close: undefined
   error: Error
@@ -290,7 +290,7 @@ export interface DPTEvents {
   'peer:removed': PeerInfo
 }
 
-export interface ServerEvents {
+export interface ServerEvent {
   listening: undefined
   close: undefined
   error: Error

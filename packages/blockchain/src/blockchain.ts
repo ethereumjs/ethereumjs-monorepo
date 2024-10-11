@@ -28,7 +28,7 @@ import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
 import type {
-  BlockchainEvents,
+  BlockchainEvent,
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
@@ -53,7 +53,7 @@ import type { Debugger } from 'debug'
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
-  events: EventEmitter<BlockchainEvents>
+  events: EventEmitter<BlockchainEvent>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -129,7 +129,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new EventEmitter<BlockchainEvents>()
+    this.events = new EventEmitter<BlockchainEvent>()
 
     this._consensusDict = {}
     this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()

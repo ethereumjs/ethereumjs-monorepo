@@ -1,5 +1,3 @@
-import EventEmitter from 'emittery'
-
 import type { SyncMode } from './index.js'
 import type { Peer } from './net/peer/index.js'
 import type { Server } from './net/server/index.js'
@@ -34,15 +32,15 @@ export enum Event {
   PROTOCOL_ERROR = 'protocol:error',
   PROTOCOL_MESSAGE = 'protocol:message',
 }
-export interface EventParams {
-  [Event.CHAIN_UPDATED]: []
-  [Event.CLIENT_SHUTDOWN]: []
-  [Event.SYNC_EXECUTION_VM_ERROR]: [vmError: Error]
-  [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
-  [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
-  [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: MerkleStateManager]
-  [Event.SYNC_ERROR]: [syncError: Error]
+export interface ClientEventParams {
+  [Event.CHAIN_UPDATED]: undefined
+  [Event.CLIENT_SHUTDOWN]: undefined
+  [Event.SYNC_EXECUTION_VM_ERROR]: { vmError: Error }
+  [Event.SYNC_FETCHED_BLOCKS]: { blocks: Block[] }
+  [Event.SYNC_FETCHED_HEADERS]: { headers: BlockHeader[] }
+  [Event.SYNC_SYNCHRONIZED]: { chainHeight: bigint }
+  [Event.SYNC_SNAPSYNC_COMPLETE]: { stateRoot: Uint8Array; stateManager: MerkleStateManager }
+  [Event.SYNC_ERROR]: { syncError: Error }
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
   [Event.PEER_DISCONNECTED]: [disconnectedPeer: Peer]
@@ -55,33 +53,6 @@ export interface EventParams {
   [Event.PROTOCOL_ERROR]: [boundProtocolError: Error, peerCausingError: Peer]
   [Event.PROTOCOL_MESSAGE]: [messageDetails: any, protocolName: string, sendingPeer: Peer]
 }
-
-export declare interface EventBus<T extends Event> {
-  emit(event: T, ...args: EventParams[T]): boolean
-  on(event: T, listener: (...args: EventParams[T]) => void): this
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class EventBus<T extends Event> extends EventEmitter {}
-export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
-  EventBus<Event.CLIENT_SHUTDOWN> &
-  EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
-  EventBus<Event.SYNC_FETCHED_BLOCKS> &
-  EventBus<Event.SYNC_FETCHED_HEADERS> &
-  EventBus<Event.SYNC_SYNCHRONIZED> &
-  EventBus<Event.SYNC_SNAPSYNC_COMPLETE> &
-  EventBus<Event.SYNC_FETCHER_ERROR> &
-  EventBus<Event.PEER_CONNECTED> &
-  EventBus<Event.PEER_DISCONNECTED> &
-  EventBus<Event.PEER_ERROR> &
-  EventBus<Event.SERVER_LISTENING> &
-  EventBus<Event.SERVER_ERROR> &
-  EventBus<Event.SYNC_ERROR> &
-  EventBus<Event.POOL_PEER_ADDED> &
-  EventBus<Event.POOL_PEER_REMOVED> &
-  EventBus<Event.POOL_PEER_BANNED> &
-  EventBus<Event.PROTOCOL_ERROR> &
-  EventBus<Event.PROTOCOL_MESSAGE>
 
 /**
  * Like types

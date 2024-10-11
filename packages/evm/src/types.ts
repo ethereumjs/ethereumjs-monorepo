@@ -136,7 +136,7 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
-export interface EVMEvents {
+export interface EVMEvent {
   newContract: { data: NewContractEvent; resolve?: (result?: any) => void }
   beforeMessage: { data: Message; resolve?: (result?: any) => void }
   afterMessage: { data: EVMResult; resolve?: (result?: any) => void }
@@ -164,7 +164,7 @@ export interface EVMInterface {
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
-  events?: EventEmitter<EVMEvents>
+  events?: EventEmitter<EVMEvent>
 }
 
 export type EVMProfilerOpts = {
