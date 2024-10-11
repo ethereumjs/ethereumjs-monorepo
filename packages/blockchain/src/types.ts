@@ -6,7 +6,7 @@ import type EventEmitter from 'emittery'
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export type BlockchainEvent = {
-  deletedCanonicalBlocks: Block[]
+  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
 }
 
 export interface BlockchainInterface {

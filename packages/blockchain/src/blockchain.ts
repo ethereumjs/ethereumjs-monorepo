@@ -346,7 +346,7 @@ export class Blockchain implements BlockchainInterface {
       await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
-      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -493,7 +493,7 @@ export class Blockchain implements BlockchainInterface {
       }
     })
     if (this._deletedBlocks.length > 0) {
-      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -865,7 +865,7 @@ export class Blockchain implements BlockchainInterface {
     await this.dbManager.batch(dbOps)
 
     if (this._deletedBlocks.length > 0) {
-      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
