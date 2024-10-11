@@ -57,6 +57,7 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          version: v3.0.0
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
           verbose: true 
