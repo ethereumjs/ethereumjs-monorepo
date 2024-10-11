@@ -46,6 +46,7 @@ import { Level } from 'level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { homedir } from 'os'
 import * as path from 'path'
+import { PortalNetwork, cliConfig } from 'portalnetwork'
 import * as promClient from 'prom-client'
 import * as readline from 'readline'
 import * as url from 'url'
@@ -72,6 +73,7 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
+import type { PortalClientOpts } from 'portalnetwork'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -930,6 +932,7 @@ const stopClient = async (
 ) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
+  await config.portal?.stop()
   let timeoutHandle
   if (clientStartPromise?.toString().includes('Promise') === true)
     // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
@@ -1168,6 +1171,26 @@ async function run() {
     metricsServer.listen(args.prometheusPort)
   }
 
+  let portal
+  if (args.enablePortal === true) {
+    if (args.portalNetworks.length > 0) {
+      const portalOpts: PortalClientOpts = {
+        networks: args.portalNetworks,
+        storage: args.portalStorage,
+        bindAddress: args.extIP ?? '0.0.0.0',
+        bootnodeList: args.portalBootnodes,
+        pk: args.portalPrivateKey,
+        dataDir: args.portalDataDir ?? datadir,
+      }
+      const portalConfig = await cliConfig(portalOpts)
+      logger.info(
+        `Starting Portal client. bindAddress=${portalOpts.bindAddress}  Networks=${portalOpts.networks} DataDir=${portalOpts.dataDir}`,
+      )
+      portal = await PortalNetwork.create(portalConfig)
+      void portal.start()
+    }
+  }
+
   const config = new Config({
     accounts,
     bootnodes,
@@ -1214,6 +1237,7 @@ async function run() {
         : args.engineNewpayloadMaxExecute,
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
     prometheusMetrics,
+    portal,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
