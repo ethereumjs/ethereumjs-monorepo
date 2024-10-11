@@ -3,6 +3,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
+  Units,
   blobsToCommitments,
   blobsToProofs,
   commitmentsToVersionedHashes,
@@ -101,7 +102,7 @@ describe(method, () => {
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         to: createZeroAddress(),

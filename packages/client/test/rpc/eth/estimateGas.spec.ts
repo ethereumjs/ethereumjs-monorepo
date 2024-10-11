@@ -153,7 +153,7 @@ describe(
 
       // Test EIP1559 tx
       const EIP1559res = await rpc.request(method, [
-        { ...estimateTxData, type: 2, maxFeePerGas: '0x' + 10000000000n.toString(16) },
+        { ...estimateTxData, type: 2, maxFeePerGas: Units.gwei(10) },
       ])
       assert.equal(
         EIP1559res.result,
