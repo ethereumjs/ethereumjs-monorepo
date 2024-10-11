@@ -181,3 +181,7 @@ export type ParamsDict = {
 export type HardforksDict = {
   [key: string]: HardforkConfig
 }
+
+export interface CommonEvents {
+  hardforkChanged: string
+}

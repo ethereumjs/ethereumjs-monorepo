@@ -20,6 +20,7 @@ import type {
   CasperConfig,
   ChainConfig,
   CliqueConfig,
+  CommonEvents,
   CommonOpts,
   CustomCrypto,
   EthashConfig,
@@ -55,10 +56,10 @@ export class Common {
 
   protected HARDFORK_CHANGES: [string, HardforkConfig][]
 
-  public events: EventEmitter
+  public events: EventEmitter<CommonEvents>
 
   constructor(opts: CommonOpts) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<CommonEvents>()
 
     this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
@@ -842,7 +843,7 @@ export class Common {
    */
   copy(): Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
-    copy.events = new EventEmitter()
+    copy.events = new EventEmitter<CommonEvents>()
     return copy
   }
 }
