@@ -1,6 +1,9 @@
 name: MPT
 on:
   workflow_call:
+    secrets:
+      codecov_token:
+        required: true
     inputs:
       dep-cache-key:
         required: true
@@ -54,10 +57,9 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          version: v3.0.0
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
           verbose: true 
