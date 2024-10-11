@@ -1,21 +1,23 @@
-import { bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
 
 import type { BlobsBundle } from '../../../../miner/index.js'
 import type { BlobsBundleV1 } from '../types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
-export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: BlobsBundle) => {
+export const blockToExecutionPayload = (
+  block: Block,
+  value: bigint,
+  bundle?: BlobsBundle,
+  requests?: CLRequest<CLRequestType>[],
+) => {
   const executionPayload: ExecutionPayload = block.toExecutionPayload()
   // parentBeaconBlockRoot is not part of the CL payload
   if (executionPayload.parentBeaconBlockRoot !== undefined) {
     delete executionPayload.parentBeaconBlockRoot
-  }
-  const { executionRequests } = executionPayload
-  if (executionPayload.executionRequests !== undefined) {
-    delete executionPayload.executionRequests
   }
 
   const blobsBundle: BlobsBundleV1 | undefined = bundle ? bundle : undefined
@@ -25,7 +27,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   const shouldOverrideBuilder = false
   return {
     executionPayload,
-    executionRequests,
+    executionRequests: requests?.map((req) => bytesToHex(req.bytes)),
     blockValue: bigIntToHex(value),
     blobsBundle,
     shouldOverrideBuilder,
