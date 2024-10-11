@@ -129,7 +129,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<BlockchainEvents>()
 
     this._consensusDict = {}
     this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
@@ -346,7 +346,7 @@ export class Blockchain implements BlockchainInterface {
       await this.checkAndTransitionHardForkByNumber(canonicalHead, header.timestamp)
     })
     if (this._deletedBlocks.length > 0) {
-      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
+      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -493,7 +493,7 @@ export class Blockchain implements BlockchainInterface {
       }
     })
     if (this._deletedBlocks.length > 0) {
-      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
+      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
@@ -865,7 +865,7 @@ export class Blockchain implements BlockchainInterface {
     await this.dbManager.batch(dbOps)
 
     if (this._deletedBlocks.length > 0) {
-      void this.events.emit('deletedCanonicalBlocks', () => this._deletedBlocks)
+      await this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
       for (const block of this._deletedBlocks)
         this.DEBUG &&
           this._debug(
