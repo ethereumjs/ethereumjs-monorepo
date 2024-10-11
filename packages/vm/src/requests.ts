@@ -3,6 +3,7 @@ import {
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
+  bytesToInt,
   createAddressFromString,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -127,11 +128,59 @@ const accumulateDepositsRequest = (
   txResults: RunTxResult[],
 ): CLRequest<CLRequestType.Deposit> => {
   let resultsBytes = new Uint8Array(0)
+  const depositContractAddressLowerCase = depositContractAddress.toLowerCase()
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
       const log = tx.receipt.logs[i]
-      if (bytesToHex(log[0]).toLowerCase() === depositContractAddress.toLowerCase()) {
-        resultsBytes = concatBytes(resultsBytes, log[2])
+      if (bytesToHex(log[0]).toLowerCase() === depositContractAddressLowerCase) {
+        // Extracts validator pubkey, withdrawal credential, deposit amount, signature,
+        // and validator index from Deposit Event log.
+        // The event fields are non-indexed so contained in one byte array (log[2]) so parsing is as follows:
+        // 1. Read the first 32 bytes to get the starting position of the first field.
+        // 2. Continue reading the byte array in 32 byte increments to get all the field starting positions
+        // 3. Read 32 bytes starting with the first field position to get the size of the first field
+        // 4. Read the bytes from first field position + 32 + the size of the first field to get the first field value
+        // 5. Repeat steps 3-4 for each field
+        // This is equivalent to ABI-decoding the event:
+        // event DepositEvent(
+        //  bytes pubkey,
+        //  bytes withdrawal_credentials,
+        //  bytes amount,
+        //  bytes signature,
+        //  bytes index
+        //);
+
+        const pubKeyIdx = bytesToInt(log[2].slice(0, 32))
+        const pubKeySize = bytesToInt(log[2].slice(pubKeyIdx, pubKeyIdx + 32))
+        const withdrawalCreditsIdx = bytesToInt(log[2].slice(32, 64))
+        const withdrawalCreditsSize = bytesToInt(
+          log[2].slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
+        )
+        const amountIdx = bytesToInt(log[2].slice(64, 96))
+        const amountSize = bytesToInt(log[2].slice(amountIdx, amountIdx + 32))
+        const sigIdx = bytesToInt(log[2].slice(96, 128))
+        const sigSize = bytesToInt(log[2].slice(sigIdx, sigIdx + 32))
+        const indexIdx = bytesToInt(log[2].slice(128, 160))
+        const indexSize = bytesToInt(log[2].slice(indexIdx, indexIdx + 32))
+
+        const pubkey = log[2].slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
+        const withdrawalCredentials = log[2].slice(
+          withdrawalCreditsIdx + 32,
+          withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
+        )
+        const amount = log[2].slice(amountIdx + 32, amountIdx + 32 + amountSize)
+        const signature = log[2].slice(sigIdx + 32, sigIdx + 32 + sigSize)
+        const index = log[2].slice(indexIdx + 32, indexIdx + 32 + indexSize)
+
+        const depositRequestBytes = concatBytes(
+          pubkey,
+          withdrawalCredentials,
+          amount,
+          signature,
+          index,
+        )
+
+        resultsBytes = concatBytes(resultsBytes, depositRequestBytes)
       }
     }
   }
