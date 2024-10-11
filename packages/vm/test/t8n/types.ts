@@ -1,5 +1,3 @@
-import type { CLRequestType, RequestJSON } from '@ethereumjs/util'
-
 export type T8NOptions = {
   state: {
     fork: string
@@ -70,7 +68,7 @@ export type T8NOutput = {
   blobGasUsed?: string
   currentExcessBlobGas?: string
   requestsHash?: string
-  requests?: RequestJSON[CLRequestType][]
+  requests?: string[]
   rejected?: T8NRejectedTx[]
 }
 

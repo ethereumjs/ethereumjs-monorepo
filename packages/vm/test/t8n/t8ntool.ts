@@ -25,7 +25,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 const kzg = new microEthKZG(trustedSetup)
 
 /**
@@ -118,7 +118,7 @@ export class TransitionTool {
 
     const result = await builder.build()
 
-    const convertedOutput = this.getOutput(result)
+    const convertedOutput = this.getOutput(result.block, result.requests)
     const alloc = await this.stateTracker.dumpAlloc()
 
     this.writeOutput(args, convertedOutput, alloc)
@@ -195,7 +195,7 @@ export class TransitionTool {
     })
   }
 
-  private getOutput(block: Block): T8NOutput {
+  private getOutput(block: Block, requests?: CLRequest<CLRequestType>[]): T8NOutput {
     const output: T8NOutput = {
       stateRoot: bytesToHex(block.header.stateRoot),
       txRoot: bytesToHex(block.header.transactionsTrie),
@@ -226,8 +226,9 @@ export class TransitionTool {
       output.requestsHash = bytesToHex(block.header.requestsRoot)
     }
 
-    if (block.requests !== undefined) {
-      output.requests = block.requests.map((request) => request.toJSON())
+    if (requests !== undefined) {
+      // NOTE: EEST currently wants the raw request bytes, **excluding** the type
+      output.requests = requests.map((request) => bytesToHex(request.bytes.slice(1)))
     }
 
     if (this.rejected.length > 0) {
