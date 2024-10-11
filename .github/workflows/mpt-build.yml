@@ -54,18 +54,21 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - run: npm run coverage
+      - uses: actions/checkout@master
       - uses: codecov/codecov-action@@v3
         if: secrets.CODECOV_TOKEN != null
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # required
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: mpt
+          verbose: true 
+      
       
       # - uses: codecov/codecov-action@v4
       #   with:
       #     files: ${{ env.cwd }}/coverage/lcov.info
       #     flags: mpt
-      #     token: ${{ secrets.CODECOV_TOKEN }} # required
+      #     token: ${{ secrets.CODECOV_TOKEN }}
       #     verbose: true
       #   env:
       #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
