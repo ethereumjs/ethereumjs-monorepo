@@ -26,7 +26,6 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
@@ -219,7 +218,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsRoot(requests, sha256Function)
+    requestsRoot = genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -234,13 +233,13 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   // values to the current block, or validate the resulting
   // header values against the current block.
   if (generateFields) {
-    const bloom = result.bloom.bitvector
+    const logsBloom = result.bloom.bitvector
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = {
       stateRoot,
-      bloom,
+      logsBloom,
       gasUsed,
       receiptTrie,
       transactionsTrie,
@@ -254,20 +253,21 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid(requests)
-      if (!valid) {
-        const keccakFunction = vm.common.customCrypto.keccak256 ?? keccak256
-        const validRoot = await genRequestsRoot(requests!, keccakFunction)
+      const sha256Function = vm.common.customCrypto.sha256 ?? sha256
+      const requestsRoot = genRequestsRoot(requests!, sha256Function)
+
+      if (!equalsBytes(block.header.requestsRoot!, requestsRoot)) {
         if (vm.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
               block.header.requestsRoot!,
-            )} expected=${bytesToHex(validRoot)}`,
+            )} expected=${bytesToHex(requestsRoot)}`,
           )
         const msg = _errorMsg('invalid requestsRoot', vm, block)
         throw new Error(msg)
       }
     }
+
     if (!vm.common.isActivatedEIP(6800)) {
       // Only validate the following headers if verkle blocks aren't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
