@@ -2,7 +2,7 @@ name: MPT
 on:
   workflow_call:
     secrets:
-      codecov_token:
+      CODECOV_TOKEN:
         required: true
     inputs:
       dep-cache-key:
