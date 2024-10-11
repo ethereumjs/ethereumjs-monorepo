@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
+import { Units, bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -133,7 +133,7 @@ describe(
         {
           header: createBlockHeader(
             {
-              baseFeePerGas: 1000000000n,
+              baseFeePerGas: Units.gwei(1),
               number: 2n,
               parentHash: headBlock.header.hash(),
             },
