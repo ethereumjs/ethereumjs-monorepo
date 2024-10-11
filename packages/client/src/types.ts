@@ -177,6 +177,14 @@ export interface ClientOpts {
   skipEngineExec?: boolean
   ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
+  // PortalNetwork client options
+  enablePortal: boolean
+  portalNetworks: string
+  portalStorage: string
+  portalPrivateKey?: string
+  portalBootnodes?: string
+  portalDataDir?: string
+  trustedBlockRoot?: string
 }
 
 export type PrometheusMetrics = {
