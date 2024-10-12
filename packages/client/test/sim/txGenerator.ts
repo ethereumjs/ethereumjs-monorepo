@@ -1,6 +1,7 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
+  Units,
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
@@ -114,7 +115,7 @@ async function run(data: any) {
     gasLimit: undefined,
   }
 
-  txData.maxFeePerGas = BigInt(1000000000)
+  txData.maxFeePerGas = Units.gwei(1)
   txData.maxPriorityFeePerGas = BigInt(100000000)
   txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(28000000)

@@ -1,5 +1,12 @@
 import { createTx } from '@ethereumjs/tx'
-import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Units,
+  bigIntToHex,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
@@ -93,7 +100,7 @@ describe(method, () => {
       {
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         data: storageBytecode,
@@ -121,7 +128,7 @@ describe(method, () => {
         to: result.createdAddress,
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         nonce: 1,
@@ -136,7 +143,7 @@ describe(method, () => {
       {
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         nonce: 2,

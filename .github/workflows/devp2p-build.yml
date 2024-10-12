@@ -49,8 +49,9 @@ jobs:
               
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/devp2p
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
           flags: devp2p
 
