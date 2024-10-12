@@ -2,9 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, getPresetChainConfig } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import {
-  bytesToBigInt,
   bytesToHex,
-  bytesToInt,
   createAccount,
   createAddressFromPrivateKey,
   createAddressFromString,
@@ -108,60 +106,11 @@ describe('EIP-7685 buildBlock tests', () => {
 })
 
 function parseDepositRequest(requestData: Uint8Array) {
-  // Extracts validator pubkey, withdrawal credential, deposit amount, signature,
-  // and validator index from Deposit Event log.
-  // The event fields are non-indexed so contained in one byte array (log[2]) so parsing is as follows:
-  // 1. Read the first 32 bytes to get the starting position of the first field.
-  // 2. Continue reading the byte array in 32 byte increments to get all the field starting positions
-  // 3. Read 32 bytes starting with the first field position to get the size of the first field
-  // 4. Read the bytes from first field position + 32 + the size of the first field to get the first field value
-  // 5. Repeat steps 3-4 for each field
-  const pubKeyIdx = bytesToInt(requestData.slice(0, 32))
-  const pubKeySize = bytesToInt(requestData.slice(pubKeyIdx, pubKeyIdx + 32))
-  const withdrawalCreditsIdx = bytesToInt(requestData.slice(32, 64))
-  const withdrawalCreditsSize = bytesToInt(
-    requestData.slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
-  )
-  const amountIdx = bytesToInt(requestData.slice(64, 96))
-  const amountSize = bytesToInt(requestData.slice(amountIdx, amountIdx + 32))
-  const sigIdx = bytesToInt(requestData.slice(96, 128))
-  const sigSize = bytesToInt(requestData.slice(sigIdx, sigIdx + 32))
-  const indexIdx = bytesToInt(requestData.slice(128, 160))
-  const indexSize = bytesToInt(requestData.slice(indexIdx, indexIdx + 32))
-  const pubkey = requestData.slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
-  const withdrawalCredentials = requestData.slice(
-    withdrawalCreditsIdx + 32,
-    withdrawalCreditsIdx + 32 + withdrawalCreditsSize,
-  )
-  const amountBytes = requestData.slice(amountIdx + 32, amountIdx + 32 + amountSize)
-  const amountBytesBigEndian = new Uint8Array([
-    amountBytes[7],
-    amountBytes[6],
-    amountBytes[5],
-    amountBytes[4],
-    amountBytes[3],
-    amountBytes[2],
-    amountBytes[1],
-    amountBytes[0],
-  ])
-  const amount = bytesToBigInt(amountBytesBigEndian)
-
-  const signature = requestData.slice(sigIdx + 32, sigIdx + 32 + sigSize)
-
-  const indexBytes = requestData.slice(indexIdx + 32, indexIdx + 32 + indexSize)
-
-  // Convert the little-endian array to big-endian array
-  const indexBytesBigEndian = new Uint8Array([
-    indexBytes[7],
-    indexBytes[6],
-    indexBytes[5],
-    indexBytes[4],
-    indexBytes[3],
-    indexBytes[2],
-    indexBytes[1],
-    indexBytes[0],
-  ])
-  const index = bytesToBigInt(indexBytesBigEndian)
+  const pubkey = requestData.subarray(0, 48)
+  const withdrawalCredentials = requestData.subarray(48, 48 + 32)
+  const amount = requestData.subarray(48 + 32, 48 + 32 + 8)
+  const signature = requestData.subarray(48 + 32 + 8, 48 + 32 + 8 + 96)
+  const index = requestData.subarray(48 + 32 + 8 + 96, 48 + 32 + 8 + 96 + 8)
 
   return {
     pubkey,

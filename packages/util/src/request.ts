@@ -70,11 +70,16 @@ export class CLRequest<T extends CLRequestType> {
   // for easy use
   public readonly bytes: Uint8Array
 
-  constructor(
-    public readonly type: T,
-    public readonly data: Uint8Array,
-  ) {
-    this.bytes = concatBytes(new Uint8Array([this.type]), data)
+  get type() {
+    return this.bytes[0] as T
+  }
+
+  get data() {
+    return this.bytes.subarray(1)
+  }
+
+  constructor(requestType: T, requestData: Uint8Array) {
+    this.bytes = concatBytes(new Uint8Array([requestType]), requestData)
   }
 }
 
