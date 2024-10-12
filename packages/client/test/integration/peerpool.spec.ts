@@ -83,13 +83,21 @@ describe('should handle peer messages', async () => {
       assert.equal(peer.id, 'peer0', 'added peer')
     }),
   )
-  config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {
+  config.events.on(Event.PROTOCOL_MESSAGE, ({ messageDetails, protocolName, sendingPeer }) => {
     it('should get message', () => {
-      assert.deepEqual([msg, proto, peer.id], ['msg0', 'proto0', 'peer0'], 'got message')
+      assert.deepEqual(
+        [messageDetails, protocolName, sendingPeer.id],
+        ['msg0', 'proto0', 'peer0'],
+        'got message',
+      )
     })
   })
   pool.add(await server.accept('peer0'))
   await wait(100)
-  config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', pool.peers[0])
+  await config.events.emit(Event.PROTOCOL_MESSAGE, {
+    messageDetails: 'msg0',
+    protocolName: 'proto0',
+    sendingPeer: pool.peers[0],
+  })
   await destroy(server, pool)
 })

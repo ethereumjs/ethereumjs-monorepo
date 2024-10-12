@@ -63,7 +63,7 @@ describe(
       assert.deepEqual(bodies, [[[], []]], 'handled GetBlockBodies')
     })
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
-      switch (msg.name) {
+      switch (msg.messageDetails) {
         case 'NewBlockHashes': {
           it('should handle newBlockHashes', () => {
             assert.ok(true, 'handled NewBlockHashes')
