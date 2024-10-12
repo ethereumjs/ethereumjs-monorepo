@@ -28,14 +28,14 @@ async function destroy(server: MockServer, pool: PeerPool) {
 
 describe('should open', async () => {
   const [server, pool] = await setup()
-  pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
+  pool.config.events.on(Event.POOL_PEER_ADDED, ({ addedPeer }) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.equal(addedPeer.id, 'peer0', 'added peer')
     })
   })
-  pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) => {
+  pool.config.events.on(Event.POOL_PEER_REMOVED, ({ removedPeer }) => {
     it('should remove peer', () => {
-      assert.equal(peer.id, 'peer0', 'removed peer')
+      assert.equal(removedPeer.id, 'peer0', 'removed peer')
     })
   })
   const peer0 = await server.accept('peer0')
@@ -47,14 +47,14 @@ describe('should open', async () => {
 
 describe('should ban peer', async () => {
   const [server, pool] = await setup()
-  pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
+  pool.config.events.on(Event.POOL_PEER_ADDED, ({ addedPeer }) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.equal(addedPeer.id, 'peer0', 'added peer')
     })
   })
-  pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) => {
+  pool.config.events.on(Event.POOL_PEER_BANNED, ({ bannedPeer }) => {
     it('should ban peer', () => {
-      assert.equal(peer.id, 'peer0', 'banned peer')
+      assert.equal(bannedPeer.id, 'peer0', 'banned peer')
     })
   })
   pool.add(await server.accept('peer0'))
