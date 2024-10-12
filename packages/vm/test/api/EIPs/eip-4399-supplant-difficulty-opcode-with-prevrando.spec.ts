@@ -24,8 +24,8 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
     // Track stack
     let stack: any = []
     vm.evm.events!.on('step', (e) => {
-      if (e.data.opcode.name === 'STOP') {
-        stack = e.data.stack
+      if (e.step.opcode.name === 'STOP') {
+        stack = e.step.stack
       }
     })
 

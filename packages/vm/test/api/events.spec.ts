@@ -5,6 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock, runTx } from '../../src/index.js'
 
+import type { Address } from '@ethereumjs/util'
+
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
@@ -93,7 +95,7 @@ describe('VM events', () => {
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('beforeMessage', (event) => {
-      emitted = event.data
+      emitted = event.step
     })
 
     const tx = createFeeMarket1559Tx({
@@ -115,7 +117,7 @@ describe('VM events', () => {
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('afterMessage', (event) => {
-      emitted = event.data
+      emitted = event.step
     })
 
     const tx = createFeeMarket1559Tx({
@@ -135,7 +137,7 @@ describe('VM events', () => {
 
     let lastEmitted: any
     vm.evm.events!.on('step', (event) => {
-      lastEmitted = event.data
+      lastEmitted = event.step
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
@@ -155,9 +157,13 @@ describe('VM events', () => {
   it('should emit a NewContractEvent on new contracts', async () => {
     const vm = await createVM()
 
-    let emitted: any
+    let emitted: {
+      address: Address
+      code: Uint8Array
+    }
+
     vm.evm.events!.on('newContract', (event) => {
-      emitted = event.data
+      emitted = event.step
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
@@ -172,7 +178,7 @@ describe('VM events', () => {
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(
-      bytesToHex(emitted.code),
+      bytesToHex(emitted!.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     )
   })

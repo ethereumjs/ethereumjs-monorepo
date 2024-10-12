@@ -71,8 +71,8 @@ describe('EIP 3541 tests', () => {
     const vm = await createVM({ common })
     let address: Address
     vm.evm.events!.on('step', (event) => {
-      if (event.data.depth === 1) {
-        address = event.data.address
+      if (event.step.depth === 1) {
+        address = event.step.address
       }
     })
 
@@ -106,8 +106,8 @@ describe('EIP 3541 tests', () => {
     const vm = await createVM({ common })
     let address: Address
     vm.evm.events!.on('step', (event) => {
-      if (event.data.depth === 1) {
-        address = event.data.address
+      if (event.step.depth === 1) {
+        address = event.step.address
       }
     })
 

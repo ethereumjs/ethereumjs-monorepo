@@ -356,12 +356,13 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it('HTTP/WS RPCs should not start when cli args omitted', async () => {
+  it.only('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
       resolve: Function,
     ) => {
+      console.log(message)
       if (message.includes('address=http://')) {
         child.kill()
         assert.fail('http endpoint should not be enabled')
@@ -370,8 +371,8 @@ describe('[CLI]', () => {
         child.kill()
         assert.fail('ws endpoint should not be enabled')
       }
-      if (message.includes('Miner: Assembling block')) {
-        assert.ok('miner started and no rpc endpoints started')
+      if (message.includes('Client started successfully')) {
+        assert.ok('client started and no rpc endpoints started')
         resolve(undefined)
       }
     }

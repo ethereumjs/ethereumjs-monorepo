@@ -17,7 +17,7 @@ describe('EIP 3855 tests', () => {
     const vm = await createVM({ common })
     let stack: bigint[]
     vm.evm.events!.on('step', (e) => {
-      stack = e.data.stack
+      stack = e.step.stack
     })
 
     const result = await vm.evm.runCode!({
@@ -34,7 +34,7 @@ describe('EIP 3855 tests', () => {
     const vm = await createVM({ common })
     let stack: bigint[] = []
     vm.evm.events!.on('step', (e) => {
-      stack = e.data.stack
+      stack = e.step.stack
     })
 
     const depth = Number(common.param('stackLimit'))

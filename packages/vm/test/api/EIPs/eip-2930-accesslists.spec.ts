@@ -68,7 +68,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     let trace: any = []
 
     vm.evm.events!.on('step', (o) => {
-      trace.push([o.data.opcode.name, o.data.gasLeft])
+      trace.push([o.step.opcode.name, o.step.gasLeft])
     })
 
     await runTx(vm, { tx: txnWithAccessList })

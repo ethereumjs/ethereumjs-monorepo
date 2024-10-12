@@ -29,8 +29,8 @@ describe('VM: custom opcodes', () => {
     const gas = 123456
     let correctOpcodeName = false
     evm.events.on('step', (e) => {
-      if (e.data.pc === 0) {
-        correctOpcodeName = e.data.opcode.name === testOpcode.opcodeName
+      if (e.step.pc === 0) {
+        correctOpcodeName = e.step.opcode.name === testOpcode.opcodeName
       }
     })
     const res = await evm.runCode({

@@ -118,7 +118,7 @@ describe('EIP-3529 tests', () => {
     let gasRefund: bigint
     let gasLeft: bigint
     vm.evm.events!.on('step', (event) => {
-      const step = event.data
+      const step = event.step
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
@@ -185,7 +185,7 @@ describe('EIP-3529 tests', () => {
     let startGas: bigint
     let finalGas: bigint
     vm.evm.events!.on('step', (event) => {
-      const step = event.data
+      const step = event.step
       if (startGas === undefined) {
         startGas = step.gasLeft
       }

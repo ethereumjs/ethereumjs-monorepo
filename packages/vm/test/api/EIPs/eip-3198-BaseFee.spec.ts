@@ -78,8 +78,8 @@ describe('EIP3198 tests', () => {
 
     let stack: any = []
     vm.evm.events!.on('step', (event) => {
-      if (event.data.opcode.name === 'STOP') {
-        stack = event.data.stack
+      if (event.step.opcode.name === 'STOP') {
+        stack = event.step.stack
       }
     })
 

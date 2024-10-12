@@ -102,17 +102,20 @@ describe('should open', async () => {
   })
   service.config.events.on(Event.SYNC_ERROR, (err) => {
     it('should get error', () => {
-      assert.equal(err.message, 'error0', 'got error 1')
+      assert.equal(err.syncError.message, 'error0', 'got error 1')
     })
   })
-  service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
-  service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
+  await service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
+  await service.config.events.emit(Event.SYNC_ERROR, { syncError: new Error('error0') })
   service.config.events.on(Event.SERVER_ERROR, (err) => {
     it('should get error', () => {
-      assert.equal(err.message, 'error1')
+      assert.equal(err.serverError.message, 'error1')
     })
   })
-  service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+  await service.config.events.emit(Event.SERVER_ERROR, {
+    serverError: new Error('error1'),
+    serverCausingError: server,
+  })
   await service.close()
 })
 

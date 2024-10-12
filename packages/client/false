@@ -1,0 +1,14 @@
+[10-12|10:51:35] INFO Sync Mode full
+[10-12|10:51:35] INFO Reading custom genesis state accounts=1
+[10-12|10:51:35] INFO Data directory: /home/jim/Library/Ethereum/ethereumjs
+[10-12|10:51:35] INFO Full sync mode
+[10-12|10:51:35] INFO Initializing Ethereumjs client version=v0.10.2 network=devnet chainId=123456
+[10-12|10:51:35] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[10-12|10:51:35] DEBUG Read SYNCING linked=false subchains= reset=false el=0 hash=0x48b3…0331
+[10-12|10:51:35] INFO Latest local block number=0 td=1 hash=0x48b3…0331 hardfork=london
+[10-12|10:51:35] INFO Initializing VM merkle statemanager genesis hardfork=london
+[10-12|10:51:35] INFO Setting up merkleVM
+[10-12|10:51:35] INFO Initializing account cache size=400000
+[10-12|10:51:35] INFO Initializing storage cache size=200000
+[10-12|10:51:35] INFO Initializing code cache size=200000
+[10-12|10:51:35] INFO Initializing trie cache size=200000
