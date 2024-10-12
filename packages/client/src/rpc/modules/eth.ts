@@ -688,6 +688,15 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await toJSONRPCBlock(block, this._chain, includeTransactions)
     } catch (error) {
+      if (this.client.config.portal !== undefined) {
+        const block = await this.client.config.portal.ETH.getBlockByHash(
+          hexToBytes(blockHash),
+          includeTransactions,
+        )
+        if (block !== undefined) {
+          return toJSONRPCBlock(block, this._chain, includeTransactions)
+        }
+      }
       return null
     }
   }
@@ -711,6 +720,15 @@ export class Eth {
       const response = await toJSONRPCBlock(block, this._chain, includeTransactions)
       return response
     } catch {
+      if (this.client.config.portal !== undefined) {
+        const block = await this.client.config.portal.ETH.getBlockByNumber(
+          parseInt(blockOpt, 16),
+          includeTransactions,
+        )
+        if (block !== undefined) {
+          return toJSONRPCBlock(block, this._chain, includeTransactions)
+        }
+      }
       return null
     }
   }
@@ -725,6 +743,15 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
     } catch (error) {
+      if (this.client.config.portal !== undefined) {
+        const block = await this.client.config.portal.ETH.getBlockByHash(
+          hexToBytes(blockHash),
+          true,
+        )
+        if (block !== undefined) {
+          return intToHex(block.transactions.length)
+        }
+      }
       throw {
         code: INVALID_PARAMS,
         message: 'Unknown block',
