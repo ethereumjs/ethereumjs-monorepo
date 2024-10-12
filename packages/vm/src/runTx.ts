@@ -11,6 +11,7 @@ import {
   BIGINT_1,
   KECCAK256_NULL,
   MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -462,9 +463,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         // EIPs PR: https://github.com/ethereum/EIPs/pull/8938
         continue
       }
+      const s = data[5]
+      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
+        // Malleability protection to avoid "flipping" a valid signature to get
+        // another valid signature (which yields the same account on `ecrecover`)
+        // This is invalid, so skip this auth tuple
+        continue
+      }
       const yParity = bytesToBigInt(data[3])
       const r = data[4]
-      const s = data[5]
 
       const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
