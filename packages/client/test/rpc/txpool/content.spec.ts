@@ -44,7 +44,7 @@ describe(method, () => {
     )
 
     let ranBlock: Block | undefined = undefined
-    vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    void vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
     await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     const service = client.services[0] as FullEthereumService
@@ -69,7 +69,7 @@ describe(method, () => {
       { common: service.chain.config.chainCommon },
     )
 
-    vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    void vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
     await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
     ;(service.txPool as any).validate = () => {}
