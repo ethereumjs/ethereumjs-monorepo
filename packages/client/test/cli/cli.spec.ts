@@ -362,7 +362,6 @@ describe('[CLI]', () => {
       child: ChildProcessWithoutNullStreams,
       resolve: Function,
     ) => {
-      console.log(message)
       if (message.includes('address=http://')) {
         child.kill()
         assert.fail('http endpoint should not be enabled')
