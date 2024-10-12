@@ -22,7 +22,7 @@ export class Sender extends EventEmitter {
 
   set status(status: any) {
     this._status = status
-    this.emit('status', status)
+    void this.emit('status', status)
   }
 
   /**

@@ -77,7 +77,9 @@ export class Protocol {
       if (sender.status !== undefined && sender.status !== null && sender.status !== 0) {
         handleStatus(sender.status)
       } else {
-        void sender.once('status').then(() => handleStatus)
+        void sender.once('status').then((status) => {
+          handleStatus(status)
+        })
       }
     })
   }

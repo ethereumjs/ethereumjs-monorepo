@@ -22,7 +22,7 @@ describe('should initialize', () => {
     })
     await pool.open()
     config.events.on(Event.PEER_CONNECTED, (peer) => {
-      if (pool.contains(peer.id)) assert.ok(true, 'peer connected')
+      if (pool.contains(peer.connectedPeer.id)) assert.ok(true, 'peer connected')
     })
     config.events.on(Event.POOL_PEER_REMOVED, () => {
       if (!pool.contains('peer')) assert.ok(true, 'peer disconnected')
@@ -42,13 +42,23 @@ describe('should connect/disconnect peer', () => {
   ;(peer as any).id = 'abc'
   ;(peer as any).handleMessageQueue = vi.fn()
   ;(pool as any).connected(peer)
-  pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
+  pool.config.events.on(Event.PROTOCOL_MESSAGE, ({ messageDetails, protocolName, sendingPeer }) => {
     it('should get message', () => {
-      assert.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
+      assert.ok(
+        messageDetails === 'msg0' && protocolName === 'proto0' && sendingPeer === peer,
+        'got message',
+      )
     })
   })
-  config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
-  pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
+  void config.events.emit(Event.PROTOCOL_MESSAGE, {
+    messageDetails: 'msg0',
+    protocolName: 'proto0',
+    sendingPeer: peer,
+  })
+  void pool.config.events.emit(Event.PEER_ERROR, {
+    error: new Error('err0'),
+    peerCausingError: peer,
+  })
   ;(pool as any).disconnected(peer)
   assert.notOk((pool as any).pool.get('abc'), 'peer removed')
 })
@@ -93,12 +103,12 @@ describe('should ban peer', () => {
   const pool = new PeerPool({ config })
   pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => {
     it('should ban peer', () => {
-      assert.equal(peer, peers[1] as any, 'banned peer')
+      assert.equal(peer.bannedPeer, peers[1] as any, 'banned peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) => {
     it('should remove peer', () => {
-      assert.equal(peer, peers[1] as any, 'removed peer')
+      assert.equal(peer.removedPeer, peers[1] as any, 'removed peer')
       assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
     })
   })

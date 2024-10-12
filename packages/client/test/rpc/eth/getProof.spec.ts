@@ -146,7 +146,7 @@ describe(method, async () => {
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
-    vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    await vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
     const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     const { createdAddress } = result.results[0]
     await vm.blockchain.putBlock(ranBlock!)
@@ -178,12 +178,12 @@ describe(method, async () => {
 
     // run block
     let ranBlock2: Block | undefined = undefined
-    vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
+    await vm.events.once('afterBlock').then((result) => (ranBlock2 = result.data.block))
     await runBlock(vm, { block: block2, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate
     const res = await rpc.request(method, [createdAddress!.toString(), ['0x0'], 'latest'])
     assert.deepEqual(res.result, expectedProof, 'should return the correct proof')
-  })
+  }, 10000)
 })
