@@ -28,13 +28,13 @@ The inner workings and mechanisms of `Common` have been substantially refactored
 Parameter topics like `gasConfig` or `gasPrices` have been removed leading to non-sub-structured parameter files, see PR [#3532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3532). Parameter access changes as follows:
 
 ```ts
-common.param('gasConfig', 'maxblobGasPerBlock') // old
-common.param('maxblobGasPerBlock') // new
+common.param('gasPrices', 'ecAddGas') // old
+common.param('ecAddGas') // new
 ```
 
 #### No more default Parameter Sets
 
-Parameters have been removed from `Common` - see PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) - and moved over to `params.ts` files (exposed as e.g. `paramsBlock`) within the paramter-using libaries. The removes e.g. the tx library from the burden of carrying the somewhat large EVM parameter set around without the need for using it.
+Parameters have been removed from `Common` - see PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) - and moved over to `params.ts` files (exposed as e.g. `paramsBlock`) within the parameter-using libraries. The removes e.g. the tx library from the burden of carrying the somewhat large EVM parameter set around without the need for using it.
 
 The libraries internally call a new `Common` method `updateParams()` and parameter sets accumulate as needed for shared `Common` instances.
 
