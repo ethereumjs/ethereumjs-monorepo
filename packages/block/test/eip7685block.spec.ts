@@ -49,30 +49,30 @@ const common = new Common({
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
     const block = createBlock({}, { common })
-    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
+    assert.deepEqual(block.header.requestsHash, KECCAK256_RLP)
     const block2 = new Block(undefined, undefined, undefined, undefined, { common })
-    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
+    assert.deepEqual(block.header.requestsHash, KECCAK256_RLP)
     assert.equal(block2.requests?.length, 0)
   })
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
-    const requestsRoot = genRequestsRoot([request], sha256)
+    const requestsHash = genRequestsRoot([request], sha256)
     const block = createBlock(
       {
         requests: [request],
-        header: { requestsRoot },
+        header: { requestsHash },
       },
       { common },
     )
     assert.equal(block.requests?.length, 1)
-    assert.deepEqual(block.header.requestsRoot, requestsRoot)
+    assert.deepEqual(block.header.requestsHash, requestsHash)
   })
-  it('RequestsRootIsValid should return false when requestsRoot is invalid', async () => {
+  it('RequestsRootIsValid should return false when requestsHash is invalid', async () => {
     const request = getRandomDepositRequest()
     const block = createBlock(
       {
         requests: [request],
-        header: { requestsRoot: randomBytes(32) },
+        header: { requestsHash: randomBytes(32) },
       },
       { common },
     )
@@ -84,14 +84,14 @@ describe('7685 tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = genRequestsRoot(requests, sha256)
+    const requestsHash = genRequestsRoot(requests, sha256)
 
     // Construct block with requests in correct order
 
     const block = createBlock(
       {
         requests,
-        header: { requestsRoot },
+        header: { requestsHash },
       },
       { common },
     )
@@ -103,7 +103,7 @@ describe('7685 tests', () => {
       createBlock(
         {
           requests: [request1, request3, request2],
-          header: { requestsRoot },
+          header: { requestsHash },
         },
         { common },
       ),
@@ -119,23 +119,23 @@ describe('createWithdrawalFromBytesArray tests', () => {
         common,
       },
     )
-    assert.deepEqual(block.header.requestsRoot, KECCAK256_RLP)
+    assert.deepEqual(block.header.requestsHash, KECCAK256_RLP)
   })
   it('should construct a block with a valid requests array', async () => {
     const request1 = getRandomDepositRequest()
     const request2 = getRandomWithdrawalRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = genRequestsRoot(requests, sha256)
+    const requestsHash = genRequestsRoot(requests, sha256)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromBytesArray(
-      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
+      [createBlockHeader({ requestsHash }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
       },
     )
-    assert.deepEqual(block.header.requestsRoot, requestsRoot)
+    assert.deepEqual(block.header.requestsHash, requestsHash)
     assert.equal(block.requests?.length, 3)
   })
 })
@@ -146,11 +146,11 @@ describe('fromRPC tests', () => {
     const request2 = getRandomDepositRequest()
     const request3 = getRandomWithdrawalRequest()
     const requests = [request1, request2, request3]
-    const requestsRoot = genRequestsRoot(requests, sha256)
+    const requestsHash = genRequestsRoot(requests, sha256)
     const serializedRequests = [request1.serialize(), request2.serialize(), request3.serialize()]
 
     const block = createBlockFromBytesArray(
-      [createBlockHeader({ requestsRoot }, { common }).raw(), [], [], [], serializedRequests],
+      [createBlockHeader({ requestsHash }, { common }).raw(), [], [], [], serializedRequests],
       {
         common,
       },

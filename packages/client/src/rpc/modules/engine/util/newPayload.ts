@@ -140,12 +140,12 @@ export const validate7685ExecutionRequests = (
   // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
   const requests = executionRequests.map((req) => createCLRequest(hexToBytes(req)))
   const sha256Function = headBlock.common.customCrypto.sha256 ?? sha256
-  const requestsRoot = genRequestsRoot(requests, sha256Function)
+  const requestsHash = genRequestsRoot(requests, sha256Function)
 
-  if (!equalsBytes(requestsRoot, headBlock.header.requestsRoot!)) {
-    validationError = `Invalid requestsRoot received=${bytesToHex(
-      headBlock.header.requestsRoot!,
-    )} expected=${bytesToHex(requestsRoot)}`
+  if (!equalsBytes(requestsHash, headBlock.header.requestsHash!)) {
+    validationError = `Invalid requestsHash received=${bytesToHex(
+      headBlock.header.requestsHash!,
+    )} expected=${bytesToHex(requestsHash)}`
   }
   return validationError
 }

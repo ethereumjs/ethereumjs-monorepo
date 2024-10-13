@@ -343,11 +343,11 @@ export class BlockBuilder {
     }
 
     let requests
-    let requestsRoot
+    let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = genRequestsRoot(requests, sha256Function)
+      requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -363,7 +363,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
-      requestsRoot,
+      requestsHash,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
