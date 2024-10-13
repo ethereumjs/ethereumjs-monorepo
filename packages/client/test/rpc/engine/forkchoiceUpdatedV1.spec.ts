@@ -3,7 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { INVALID_FORKCHOICE_STATE, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
 import { beaconData } from '../../testdata/blocks/beacon.js'
 import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
@@ -183,7 +183,7 @@ describe(method, () => {
         finalizedBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
       },
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
     assert.ok(res.error.message.includes('finalized block not available in canonical chain'))
   })
 
@@ -196,7 +196,7 @@ describe(method, () => {
         safeBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
       },
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
     assert.ok(res.error.message.includes('safe block not available'))
   })
 
@@ -277,7 +277,7 @@ describe(method, () => {
       },
     ])
 
-    assert.equal(res.error.code, -32602)
+    assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
     assert.ok(res.error.message.includes('safe'))
     assert.ok(res.error.message.includes('canonical'))
   })
@@ -317,7 +317,7 @@ describe(method, () => {
       },
     ])
 
-    assert.equal(res.error.code, -32602)
+    assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
     assert.ok(res.error.message.includes('finalized'))
     assert.ok(res.error.message.includes('canonical'))
   })
