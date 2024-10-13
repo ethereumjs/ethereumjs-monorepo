@@ -581,8 +581,8 @@ export class Blockchain implements BlockchainInterface {
     }
 
     if (header.common.isActivatedEIP(7685)) {
-      if (header.requestsRoot === undefined) {
-        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
+      if (header.requestsHash === undefined) {
+        throw new Error(`requestsHash must be provided when EIP-7685 is active`)
       }
     }
   }

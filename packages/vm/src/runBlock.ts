@@ -213,12 +213,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     throw err
   }
 
-  let requestsRoot: Uint8Array | undefined
+  let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = genRequestsRoot(requests, sha256Function)
+    requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -243,7 +243,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       gasUsed,
       receiptTrie,
       transactionsTrie,
-      requestsRoot,
+      requestsHash,
     }
     const blockData = {
       ...block,
@@ -254,16 +254,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   } else {
     if (vm.common.isActivatedEIP(7685)) {
       const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-      const requestsRoot = genRequestsRoot(requests!, sha256Function)
+      const requestsHash = genRequestsRoot(requests!, sha256Function)
 
-      if (!equalsBytes(block.header.requestsRoot!, requestsRoot)) {
+      if (!equalsBytes(block.header.requestsHash!, requestsHash)) {
         if (vm.DEBUG)
           debug(
-            `Invalid requestsRoot received=${bytesToHex(
-              block.header.requestsRoot!,
-            )} expected=${bytesToHex(requestsRoot)}`,
+            `Invalid requestsHash received=${bytesToHex(
+              block.header.requestsHash!,
+            )} expected=${bytesToHex(requestsHash)}`,
           )
-        const msg = _errorMsg('invalid requestsRoot', vm, block)
+        const msg = _errorMsg('invalid requestsHash', vm, block)
         throw new Error(msg)
       }
     }
@@ -338,7 +338,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
-    requestsRoot,
+    requestsHash,
     requests,
   }
 

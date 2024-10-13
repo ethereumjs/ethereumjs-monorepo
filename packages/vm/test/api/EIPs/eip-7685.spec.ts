@@ -23,7 +23,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
 
 describe('EIP-7685 runBlock tests', () => {
-  it('should not error when a valid requestsRoot is provided', async () => {
+  it('should not error when a valid requestsHash is provided', async () => {
     const vm = await setupVM({ common })
     const emptyBlock = createBlock({}, { common })
     const res = await runBlock(vm, {
@@ -32,45 +32,45 @@ describe('EIP-7685 runBlock tests', () => {
     })
     assert.equal(res.gasUsed, 0n)
   })
-  it('should error when an invalid requestsRoot is provided', async () => {
+  it('should error when an invalid requestsHash is provided', async () => {
     const vm = await setupVM({ common })
 
-    const emptyBlock = createBlock({ header: { requestsRoot: invalidRequestsRoot } }, { common })
+    const emptyBlock = createBlock({ header: { requestsHash: invalidRequestsRoot } }, { common })
     await expect(async () =>
       runBlock(vm, {
         block: emptyBlock,
       }),
-    ).rejects.toThrow('invalid requestsRoot')
+    ).rejects.toThrow('invalid requestsHash')
   })
-  it('should not throw invalid requestsRoot error when valid requests are provided', async () => {
+  it('should not throw invalid requestsHash error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
-    const requestsRoot = genRequestsRoot([request], sha256)
+    const requestsHash = genRequestsRoot([request], sha256)
     const block = createBlock(
       {
-        header: { requestsRoot },
+        header: { requestsHash },
       },
       { common },
     )
-    await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsRoot/)
+    await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsHash/)
   })
 
   // TODO: no way to test this without running block, why check why does this test pass
   // as it should not throw on some random request root
-  it('should error when requestsRoot does not match requests provided', async () => {
+  it('should error when requestsHash does not match requests provided', async () => {
     const vm = await setupVM({ common })
     const block = createBlock(
       {
-        header: { requestsRoot: invalidRequestsRoot },
+        header: { requestsHash: invalidRequestsRoot },
       },
       { common },
     )
-    await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsRoot')
+    await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsHash')
   })
 })
 
 describe('EIP 7685 buildBlock tests', () => {
-  it('should build a block without a request and a valid requestsRoot', async () => {
+  it('should build a block without a request and a valid requestsHash', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Cancun,
@@ -90,7 +90,7 @@ describe('EIP 7685 buildBlock tests', () => {
     const { block } = await blockBuilder.build()
 
     assert.deepEqual(
-      block.header.requestsRoot,
+      block.header.requestsHash,
       hexToBytes('0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'),
     )
   })

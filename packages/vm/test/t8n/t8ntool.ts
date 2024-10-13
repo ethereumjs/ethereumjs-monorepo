@@ -222,8 +222,8 @@ export class TransitionTool {
       output.currentExcessBlobGas = bigIntToHex(block.header.excessBlobGas)
     }
 
-    if (block.header.requestsRoot !== undefined) {
-      output.requestsHash = bytesToHex(block.header.requestsRoot)
+    if (block.header.requestsHash !== undefined) {
+      output.requestsHash = bytesToHex(block.header.requestsHash)
     }
 
     if (requests !== undefined) {
