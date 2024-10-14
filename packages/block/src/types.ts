@@ -255,6 +255,7 @@ export type ExecutionPayload = {
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
+  requestsHash?: PrefixedHexString
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
 }

@@ -1,6 +1,12 @@
 import { createBlockFromExecutionPayload, genRequestsRoot } from '@ethereumjs/block'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex, createCLRequest, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  ConsolidationRequest,
+  DepositRequest,
+  WithdrawalRequest,
+  bytesToHex,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { short } from '../../../../util/index.js'
@@ -11,9 +17,11 @@ import { validHash } from './generic.js'
 import type { Chain } from '../../../../blockchain/index.js'
 import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Common } from '@ethereumjs/common'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
-type CLValidationData = {
+type CLData = {
+  parentBeaconBlockRoot?: PrefixedHexString
   blobVersionedHashes?: PrefixedHexString[]
   executionRequests?: PrefixedHexString[]
 }
@@ -23,25 +31,34 @@ type CLValidationData = {
  * If errors, returns {@link PayloadStatusV1}
  */
 export const assembleBlock = async (
-  payload: ExecutionPayload,
-  clValidationData: CLValidationData,
+  payload: Omit<ExecutionPayload, 'requestsHash' | 'parentBeaconBlockRoot'>,
+  clValidationData: CLData,
   chain: Chain,
   chainCache: ChainCache,
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const { blockNumber, timestamp } = payload
   const { config } = chain
   const common = config.chainCommon.copy()
-
   common.setHardforkBy({ blockNumber, timestamp })
 
   try {
-    const block = await createBlockFromExecutionPayload(payload, { common })
+    // Validate CL data to see if it matches with the assembled block
+    const { blobVersionedHashes, executionRequests, parentBeaconBlockRoot } = clValidationData
+
+    let requestsHash
+    if (executionRequests !== undefined) {
+      requestsHash = validateAndGen7685RequestsHash(common, executionRequests)
+    } else if (common.isActivatedEIP(7685)) {
+      throw `Invalid executionRequests=undefined for EIP-7685 activated block`
+    }
+
+    const block = await createBlockFromExecutionPayload(
+      { ...payload, parentBeaconBlockRoot, requestsHash },
+      { common },
+    )
     // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized
     // by removing/skipping block data validation from there
     await block.validateData()
-
-    // Validate CL data to see if it matches with the assembled block
-    const { blobVersionedHashes, executionRequests } = clValidationData
 
     /**
      * Validate blob versioned hashes in the context of EIP-4844 blob transactions
@@ -60,23 +77,6 @@ export const assembleBlock = async (
       }
     } else if (blobVersionedHashes !== undefined) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      throw validationError
-    }
-
-    if (block.common.isActivatedEIP(7685)) {
-      let validationError: string | null = null
-      if (executionRequests === undefined) {
-        validationError = `Error verifying executionRequests: received none`
-      } else {
-        validationError = validate7685ExecutionRequests(block, executionRequests)
-      }
-
-      // if there was a validation error return invalid
-      if (validationError !== null) {
-        throw validationError
-      }
-    } else if (executionRequests !== undefined) {
-      const validationError = `Invalid executionRequests before EIP-7685 is activated`
       throw validationError
     }
 
@@ -131,21 +131,34 @@ export const validate4844BlobVersionedHashes = (
   return validationError
 }
 
-export const validate7685ExecutionRequests = (
-  headBlock: Block,
+export const validateAndGen7685RequestsHash = (
+  common: Common,
   executionRequests: PrefixedHexString[],
-): string | null => {
+): PrefixedHexString => {
   let validationError: string | null = null
 
-  // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
-  const requests = executionRequests.map((req) => createCLRequest(hexToBytes(req)))
-  const sha256Function = headBlock.common.customCrypto.sha256 ?? sha256
+  const requests: CLRequest<CLRequestType>[] = []
+  let requestIndex = 0
+  if (common.isActivatedEIP(6110)) {
+    requests.push(new DepositRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+  if (common.isActivatedEIP(7002)) {
+    requests.push(new WithdrawalRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+  if (common.isActivatedEIP(7251)) {
+    requests.push(new ConsolidationRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+
+  if (requestIndex !== executionRequests.length) {
+    validationError = `Invalid executionRequests=${executionRequests.length} expected=${requestIndex}`
+    throw validationError
+  }
+
+  const sha256Function = common.customCrypto.sha256 ?? sha256
   const requestsHash = genRequestsRoot(requests, sha256Function)
 
-  if (!equalsBytes(requestsHash, headBlock.header.requestsHash!)) {
-    validationError = `Invalid requestsHash received=${bytesToHex(
-      headBlock.header.requestsHash!,
-    )} expected=${bytesToHex(requestsHash)}`
-  }
-  return validationError
+  return bytesToHex(requestsHash)
 }

@@ -38,7 +38,6 @@ import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
-  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
@@ -58,7 +57,6 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
-  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -206,9 +204,9 @@ export class Engine {
     this.newPayloadV4 = cmMiddleware(
       middleware(
         callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
-        3,
+        4,
         [
-          [validators.object(executionPayloadV4FieldValidators)],
+          [validators.object(executionPayloadV3FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
           [validators.array(validators.hex)],
@@ -369,12 +367,9 @@ export class Engine {
      */
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
+      payload,
       {
-        ...payload,
-        // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
-      },
-      {
         blobVersionedHashes: blobVersionedHashes ?? undefined,
         executionRequests: executionRequests ?? undefined,
       },
@@ -826,7 +821,9 @@ export class Engine {
     return newPayloadRes
   }
 
-  async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
+  async newPayloadV4(
+    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+  ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
     if (pragueTimestamp === null || ts < pragueTimestamp) {

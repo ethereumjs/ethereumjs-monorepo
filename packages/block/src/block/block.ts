@@ -519,6 +519,7 @@ export class Block {
       transactions,
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
+      requestsHash: header.requestsHash,
       executionWitness: this.executionWitness,
     }
 
