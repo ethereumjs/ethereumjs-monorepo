@@ -27,7 +27,7 @@ export const blockToExecutionPayload = (
   const shouldOverrideBuilder = false
   return {
     executionPayload,
-    executionRequests: requests?.map((req) => bytesToHex(req.bytes)),
+    executionRequests: requests?.map((req) => bytesToHex(req.data)),
     blockValue: bigIntToHex(value),
     blobsBundle,
     shouldOverrideBuilder,
