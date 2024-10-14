@@ -18,6 +18,20 @@ The static constructors for our library classes have been reworked to now be sta
 
 TODO
 
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
 ### New SimpleStateManager
 
 We have added a new < 200 LoC state manager `SimpleStateManager`, which has less dependencies (no tree backend) and allows for easier state reasoning and debugging, since there is no code or cache usage overhead. This new state manager is now also the default state manager for the `EVM`. Note that this state manager is meant to be used for simple use cases and should be replaced by a cache-backed state manager (in most cases atm: `MerkleStateManager`) for things like mainnet tx execution.
@@ -48,6 +62,7 @@ Somewhat non-core functionality is now marked as optional (with a `?`), so if yo
 
 ### Other Changes
 
+- Internal cache-related code refactorings/simplifications, PR [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554)
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
 
 ## 2.4.0 - 2024-08-15

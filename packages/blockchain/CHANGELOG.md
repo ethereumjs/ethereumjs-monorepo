@@ -19,6 +19,20 @@ The static constructors for our library classes have been reworked to now be sta
 - `Blockchain.create()` -> `createBlockchain`
 - `Blockchain.fromBlocksData()` -> `createBlockchainFromBlocksData()`
 
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
 ### No Consensus Validation by Default
 
 Along the transition to Proof-of-Stake Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.

@@ -18,11 +18,26 @@ The static constructors for our library classes have been reworked to now be sta
 
 - `EVM.create()` -> `createEVM`
 
-### Mega EOF Support (Experimental)
+### Pure JavaScript EVM (no default WASM)
 
-This is one of the few big EIP additions within this breaking release series: Jochem has re-taken upon EOF and fully implemented the new Mega EOF specification, see [#3440](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440) and [#3553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3553)! ❤️ Note that - while most code should be there in its final form - the implementation is still marked as `experimental` - since there are still various moving parts within EOF.
+This is the first EthereumJS EVM release where we could realize a fully WASM-free EVM by default! 🤩 We were finally able to replace all crypto primitives which still relied on Web Assembly code with pure JavaScript/TypeScript pendants, thanks a lot to @paulmillr from Noble for the cooperation on this! ❤️
 
-It would get too extensive to fully recite the functional changes here. If you are interested in EOF please have a look at the above linked core implementation PR and see the EVM [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples) folder for EOF usage examples.
+Together with a strong dependency reduction being accomplished along this release this opens up for new use cases for the JavaScript EVM in more security sensitive contexts. The code of the EVM is now that compact that it gets fully auditable (and we plan an EVM audit for 2025), see e.g. [here](https://gist.github.com/holgerd77/2c032488196b4afee5d976dc85ee70eb) for an EVM bundle snapshot including _all_ dependencies!
+
+So, what changed?
+
+#### Generic BN254 (alt_BN128) Interface for Precompiles
+
+The previously WASM-backed `BN254` (or previously called `alt_BN128`) precompile implementations have first decoupled from the WASM-backend by introducing a generic interface `EVMBN254Interface`, see PR [#3564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3564). Then the WASM version - using the [rustbn-wasm](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3564) binding library to the [BN](https://github.com/paritytech/bn) Rust library - has been replaced by using the corresponding JS functionality from [noble-curves](https://github.com/paulmillr/noble-curves).
+
+It is still possible to use the WASM version (if more performance is needed) like this using the `bn254` constructor option:
+
+```ts
+import { initRustBN } from 'rustbn-wasm'
+
+const bn254 = await initRustBN()
+const evm = await createEVM({ bn254: new RustBN254(bn254) })
+```
 
 #### Own EVM Parameter Set
 
@@ -31,6 +46,26 @@ HF-sensitive parameters like `maxInitCodeSize` were previously by design all pro
 With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsEVM`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
 
 Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### Mega EOF Support (Experimental)
+
+This is one of the few big EIP additions within this breaking release series: Jochem has re-taken upon EOF and fully implemented the new Mega EOF specification, see [#3440](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440) and [#3553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3553)! ❤️ Note that - while most code should be there in its final form - the implementation is still marked as `experimental` - since there are still various moving parts within EOF.
+
+It would get too extensive to fully recite the functional changes here. If you are interested in EOF please have a look at the above linked core implementation PR and see the EVM [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples) folder for EOF usage examples.
 
 ### TypeScript: Use generic StateManagerInterface
 

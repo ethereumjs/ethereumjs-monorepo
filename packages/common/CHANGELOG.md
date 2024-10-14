@@ -23,6 +23,22 @@ The static constructors for our library classes have been reworked to now be sta
 
 The inner workings and mechanisms of `Common` have been substantially refactored with the goal of simplifying both usage and underlying data structures as well as making Common more lightweight and performant to put less of a burden on other integrating libraries.
 
+#### Direct Chain Passing
+
+The `Common` constructor has been simplified and instead of passing in a chain enum value like `Chain.Mainnet` the respective chain configuration is passed in directly, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). With this the `Common` initialization changes as follows:
+
+```ts
+// old
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+This allows to tree-shake out other chain configurations and simplifies custom chain usage.
+
 #### No more Topics
 
 Parameter topics like `gasConfig` or `gasPrices` have been removed leading to non-sub-structured parameter files, see PR [#3532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3532). Parameter access changes as follows:
@@ -55,6 +71,9 @@ For this library this means:
 - Move HF/EIP param description string from being an object field to a comment, same for `comment`, `url` and `status` from the EIP/hardfork configuration, PRs [#3500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3500) and [#3512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3512)
 - Remove HF names from Params dict, PR [#3517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3517)
 - Remove `networkId` property from chain files (use `chainId` instead), PR [#3513](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3513)
+- No more `BigInt` for chainID in chain config (use string), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- The `customChains` constructor option has been removed, PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- More straightforward `createCustomCommon()` API (e.g. `createCustomCommon({chainId: 123}, Mainnet)`), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
 
 ## 4.4.0 - 2024-08-15
 
