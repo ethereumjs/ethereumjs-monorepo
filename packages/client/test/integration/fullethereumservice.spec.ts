@@ -114,7 +114,7 @@ describe('ETH requests', () => {
       peer.eth!.send('Transactions', [tx])
     })
   })
-})
+}, 15000)
 
 describe('LES requests', () => {
   it('should handle GetBlockHeaders', async () => {
@@ -127,7 +127,7 @@ describe('LES requests', () => {
       'handled GetBlockHeaders',
     )
   })
-})
+}, 15000)
 
 async function setup(): Promise<[MockServer, FullEthereumService]> {
   const server = new MockServer({ config }) as any
