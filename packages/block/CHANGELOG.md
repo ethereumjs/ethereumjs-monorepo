@@ -59,7 +59,7 @@ const common = new Common({ chain: Mainnet })
 
 ### Clique/Ethash Logic Extraction
 
-Since downgraded in importance and otherwise bloating the core `Block` class too much, most clique and ethash consensus related functionality has been taken out of the core class implementation and moved to standalong methods, see PR [#3571](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3571/).
+Since downgraded in importance and otherwise bloating the core `Block` class too much, most clique and ethash consensus related functionality has been taken out of the core class implementation and moved to standalone methods, see PR [#3571](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3571/).
 
 Both clique and ethash blocks can still be created though and used within the wider EthereumJS stack. For clique, the `cliqueSigner` option has been removed. Instead there is a dedicated static constructor/standalone method to create a clique block:
 
