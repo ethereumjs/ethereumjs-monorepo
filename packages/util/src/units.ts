@@ -1,9 +1,8 @@
 import { BIGINT_0, BIGINT_1 } from './constants.js'
 
-/** Easy conversion from Gwei to wei */
-export const GWEI_TO_WEI = BigInt(1000000000)
-export const WEI_TO_EITHER = BigInt(10 ** 18)
-export const WIE_TO_GWEI = BigInt(10 ** 9)
+/** Conversion constants to wei */
+export const GWEI_TO_WEI = BigInt(10 ** 9) // Multiplier to convert from Gwei to Wei
+export const ETHER_TO_WEI = BigInt(10 ** 18) // Multiplier to convert from Ether to Wei
 
 export function formatBigDecimal(
   numerator: bigint,
@@ -40,7 +39,7 @@ export class Units {
    */
   static ether(amount: number | bigint): bigint {
     Units.validateInput(amount)
-    return BigInt(amount) * WEI_TO_EITHER
+    return BigInt(amount) * ETHER_TO_WEI
   }
 
   /**
@@ -51,6 +50,6 @@ export class Units {
    */
   static gwei(amount: number | bigint): bigint {
     Units.validateInput(amount)
-    return BigInt(amount) * WIE_TO_GWEI
+    return BigInt(amount) * GWEI_TO_WEI
   }
 }
