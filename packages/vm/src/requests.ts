@@ -1,15 +1,16 @@
 import { Mainnet } from '@ethereumjs/common'
 import {
+  ConsolidationRequest,
+  DepositRequest,
+  WithdrawalRequest,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
   bytesToInt,
+  concatBytes,
   createAddressFromString,
   setLengthLeft,
 } from '@ethereumjs/util'
-
-import { concatBytes } from '../../util/src/bytes.js'
-import { ConsolidationRequest, DepositRequest, WithdrawalRequest } from '../../util/src/request.js'
 
 import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
