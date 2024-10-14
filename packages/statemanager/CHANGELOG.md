@@ -54,6 +54,20 @@ const main = async () => {
 void main()
 ```
 
+### Cache API Refactor
+
+There is a new abstraction layer for the account, code and storage caches for all state managers, called `Caches`, see PRs [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554) and [#3569](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3569).
+
+This allows for a cleaner separation of cache and pure state access code and also enables tree shaking for use cases where the caches are not needed.
+
+The API along cache initialization slightly changes along with this. There is a new `caches` option and a a `Caches` object must be created and passed in explicitly along state manager initialization if caches should be used:
+
+```ts
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
+
+const sm = new MerkleStateManager({ caches: new Caches() })
+```
+
 ### TypeScript: StateManagerInterface Refactoring/Simplification
 
 The [StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which all state managers implement, is located in the `@ethereumjs/common` package for re-usability reasons. Along the breaking release work, this interface as been strongly simplified, see PR [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543). A dedicated `EVMStateManagerInterface` has been removed, which allows for easier state manager usage within the EVM package.
@@ -62,7 +76,6 @@ Somewhat non-core functionality is now marked as optional (with a `?`), so if yo
 
 ### Other Changes
 
-- Internal cache-related code refactorings/simplifications, PR [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554)
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
 
 ## 2.4.0 - 2024-08-15

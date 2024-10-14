@@ -77,6 +77,7 @@ This simplifies the `StateManager` usage and allows for easier swapping between 
 
 - New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- Removed `EIP-3074` (AUTH / AUTHCALL opcodes) support, since superseded by `EIP-7702`, PR [#3582](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3582)
 
 ## 3.1.0 - 2024-08-15
 
