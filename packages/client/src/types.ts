@@ -42,9 +42,9 @@ export interface ClientEvent {
   [Event.SYNC_SNAPSYNC_COMPLETE]: { stateRoot: Uint8Array; stateManager: MerkleStateManager }
   [Event.SYNC_ERROR]: { syncError: Error }
   [Event.SYNC_FETCHER_ERROR]: { fetchError: Error; task: any; peer: Peer | null | undefined }
-  [Event.PEER_CONNECTED]: { connectedPeer: RlpxPeer }
-  [Event.PEER_DISCONNECTED]: { disconnectedPeer: RlpxPeer }
-  [Event.PEER_ERROR]: { error: Error; peerCausingError: RlpxPeer }
+  [Event.PEER_CONNECTED]: { connectedPeer: Peer }
+  [Event.PEER_DISCONNECTED]: { disconnectedPeer: Peer }
+  [Event.PEER_ERROR]: { error: Error; peerCausingError: Peer }
   [Event.SERVER_LISTENING]: { transport: string; url: string }
   [Event.SERVER_ERROR]: { serverError: Error; serverCausingError: Server }
   [Event.POOL_PEER_ADDED]: { addedPeer: Peer }

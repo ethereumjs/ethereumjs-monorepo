@@ -38,7 +38,7 @@ export class MockPeer extends Peer {
       return
     }
     await this.createStream(this.location)
-    this.config.events.emit(Event.PEER_CONNECTED, this)
+    this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: this as any })
   }
 
   async latest(): Promise<BlockHeader | undefined> {

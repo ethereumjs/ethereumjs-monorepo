@@ -434,7 +434,6 @@ export async function createInlineClient(
   customGenesisState: any,
   datadir: any = Config.DATADIR_DEFAULT,
 ) {
-  config.events.setMaxListeners(50)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`,
   )
@@ -576,12 +575,12 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
         if (waitForStates.includes(syncState)) {
           console.log('resolving sync', { syncState })
           cleanUpPoll()
-          client.config.events.removeListener(Event.CHAIN_UPDATED, resolveOnSynced)
+          client.config.events.off(Event.CHAIN_UPDATED, resolveOnSynced)
           resolve({ syncState })
         } else if (syncState === 'INVALID' || syncState === 'CLOSED') {
           console.log('rejecting sync', { syncState })
           cleanUpPoll()
-          client.config.events.removeListener(Event.CHAIN_UPDATED, resolveOnSynced)
+          client.config.events.off(Event.CHAIN_UPDATED, resolveOnSynced)
           reject(Error(errorMessage ?? `exiting syncState check syncState=${syncState}`))
         }
       }
