@@ -648,7 +648,7 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7685)) {
       rawItems.push(this.requestsRoot!)
     }
-    if (this.common.isActivatedEIP(7685)) {
+    if (this.common.isActivatedEIP(6493)) {
       rawItems.push(this.systemLogsRoot!)
     }
 

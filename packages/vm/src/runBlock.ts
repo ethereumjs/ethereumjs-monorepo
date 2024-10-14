@@ -268,6 +268,19 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
+    if(vm.common.isActivatedEIP(6493)){
+      if(!equalsBytes(systemLogsRoot!, block.header.systemLogsRoot!)){
+        if (vm.DEBUG) {
+          debug(
+            `Invalid systemLogsRoot received=${bytesToHex(systemLogsRoot!)} expected=${bytesToHex(
+              block.header.systemLogsRoot!,
+            )}`,
+          )
+        }
+        const msg = _errorMsg('invalid systemLogsRoot', vm, block)
+        throw new Error(msg)
+      }
+    }
     if (vm.common.isActivatedEIP(7685)) {
       const valid = await block.requestsTrieIsValid(result.requests)
       if (!valid) {

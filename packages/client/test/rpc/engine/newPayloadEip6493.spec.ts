@@ -60,10 +60,11 @@ describe(`${method}: call with executionPayloadV4`, () => {
       depositRequests: [],
       withdrawalRequests: [],
       consolidationRequests: [],
+      systemLogsRoot: "0x7eb7361dbf56cbb93e71275f214be5686dc18a0be0b32beda3abed277cac9795",
       receiptsRoot: '0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1',
       parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-      stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
-      blockHash: '0x5e9dcd3f3e55e9dde218cad2958ef3f0f1c263a85d923d1e1d3821f96510e1dc',
+      stateRoot: '0xfa0e24c691687e8b30347365ae10e2e7cd1f6ee8a702a008a637b54b56fbdeae',
+      blockHash: '0x052a6f779247de67b476f024b8b98373870777561b9c6fa000a873506e073ee9',
     }
     let res
 
@@ -71,6 +72,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
     assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    console.log(res)
     assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
@@ -123,6 +125,8 @@ describe(`${method}: call with executionPayloadV4`, () => {
       'depositRequests field should be received',
     )
 
+    console.log(executionPayload)
+
     res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])
     assert.equal(res.result.status, 'VALID')
 
@@ -136,6 +140,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       },
       null,
     ])
+    console.log(res)
     assert.equal(res.result.payloadStatus.status, 'VALID')
 
     const ivcContractHex = bytesToHex(bigIntToAddressBytes(common.param('ivcPredeployAddress')))

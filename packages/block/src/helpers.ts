@@ -53,7 +53,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     systemLogsRoot,
   ] = values
 
-  if (values.length > 21) {
+  if (values.length > 22) {
     throw new Error(
       `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
     )

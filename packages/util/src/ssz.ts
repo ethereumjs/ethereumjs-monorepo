@@ -448,6 +448,7 @@ export const BlockHeader = new StableContainerType(
     excessGas: new OptionalType(FeesPerGas),
     parentBeaconBlockRoot: new OptionalType(Bytes32),
     requestsRoot: new OptionalType(Bytes32),
+    systemLogsRoot: new OptionalType(Bytes32),
   },
   MAX_BLOCKHEADER_FIELDS,
   { typeName: 'BlockHeader', jsonCase: 'eth2' },
