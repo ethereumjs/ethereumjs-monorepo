@@ -35,13 +35,21 @@ The static constructors for our library classes have been reworked to now be sta
 
 Also renamed in similar way: Block trie root methods (e.g. `Block.genWithdrawalsTrieRoot()` -> `genWithdrawalsTrieRoot()`)
 
-#### Own Block Parameter Set
+### Own Block Parameter Set
 
 HF-sensitive parameters like `targetBlobGasPerBlock` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
 
 With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsBlock`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
 
 Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This mean that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For this library this means:
+
+- The `setHardfork` constructor option is simplified to only accept a `boolean` and no `BigIntLike` for an eventual TD value anymore
 
 ## 5.3.0 - 2024-08-15
 

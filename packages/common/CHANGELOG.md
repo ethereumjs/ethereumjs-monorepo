@@ -38,6 +38,17 @@ Parameters have been removed from `Common` - see PR [#3537](https://github.com/e
 
 The libraries internally call a new `Common` method `updateParams()` and parameter sets accumulate as needed for shared `Common` instances.
 
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This mean that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For this library this means:
+
+- `ttd` in chain configurations (e.g. `Mainnet`) has been removed
+- Passing `td` in `getHardforkBy()`, `setHardforkBy()` and `paramByBlock()` has been removed
+- The `hardforkTTD()` method has been removed
+- The `mergeForkIdPostMerge` option in `createCommonFromGethGenesis()` has been removed
+
 ### Other Breaking Changes
 
 - Move HF/EIP param description string from being an object field to a comment, same for `comment`, `url` and `status` from the EIP/hardfork configuration, PRs [#3500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3500) and [#3512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3512)
