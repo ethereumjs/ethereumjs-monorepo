@@ -52,6 +52,42 @@ Together with a strong dependency reduction being accomplished along this releas
 
 See EVM release notes for a detailed breakdown of the changes!
 
+### Mega-EOF Support (experimental)
+
+The underlying EVM now supports Mega-EOF in an experimental form! 🎉 See EVM release notes for more details.
+
+### EIP-7702 EOA Account Abstraction Support (experimental)
+
+The VM now experimentally supports running [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs with `runTx()` (or `runBlock()`) and along transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470) and [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577).
+
+The following is an example on how to create an EIP-7702 tx (note that you need to replace the `authorizationList` parameters with real-world tx and signature values):
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = createEOACode7702Tx(
+  {
+    authorizationList: [
+      {
+        chainId: '0x2',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: '0x1',
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
+  },
+  { common },
+)
+```
+
 ### Removal of TTD Logic (live-Merge Transition Support)
 
 Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This mean that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
