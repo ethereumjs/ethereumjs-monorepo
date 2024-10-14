@@ -19,7 +19,7 @@ import {
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CheckpointDB } from './checkpointDB.js'
+import { CheckpointDB } from './db/checkpointDB.js'
 import {
   BranchMPTNode,
   ExtensionMPTNode,
