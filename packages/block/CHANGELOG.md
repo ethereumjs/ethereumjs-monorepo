@@ -57,6 +57,23 @@ import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereum
 const common = new Common({ chain: Mainnet })
 ```
 
+### Clique/Ethash Logic Extraction
+
+Since downgraded in importance and otherwise bloating the core `Block` class too much, most clique and ethash consensus related functionality has been taken out of the core class implementation and moved to standalong methods, see PR [#3571](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3571/).
+
+Both clique and ethash blocks can still be created though and used within the wider EthereumJS stack. For clique, the `cliqueSigner` option has been removed. Instead there is a dedicated static constructor/standalone method to create a clique block:
+
+```ts
+let block = createSealedCliqueBlock({ /* ... */ }
+```
+
+Most clique methods are now invoked in a standalone-way, e.g.:
+
+```ts
+header.cliqueEpochTransitionSigners(), // old
+  cliqueEpochTransitionSigners(header) // new
+```
+
 ### Removal of TTD Logic (live-Merge Transition Support)
 
 Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This mean that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
@@ -68,6 +85,7 @@ For this library this means:
 ### Other Breaking Changes
 
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- The `normalizeTxParams()` helper method moved over to the tx library, PR [#3588](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3588)
 
 ## 5.3.0 - 2024-08-15
 

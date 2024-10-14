@@ -12,11 +12,16 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 ### Renamings
 
-#### Static Constructors
+#### Core State get/put Methods
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#](https://github.com/ethereumjs/ethereumjs-monorepo/pull/)):
+The names for the core state manager methods to access and write state have been simplified, see PR [#3541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3541):
 
-TODO
+- `getContractCode()` -> `getCode()`
+- `putContractCode()` -> `putCode()`
+- `getContractCodeSize()` -> `getCodeSize()`
+- `getContractStorage()` -> `getStorage()`
+- `putContractStorage()` -> `putStorage()`
+- `clearContractStorage()` -> `clearStorage()`
 
 ### New Common API
 
@@ -56,7 +61,7 @@ void main()
 
 ### Cache API Refactor
 
-There is a new abstraction layer for the account, code and storage caches for all state managers, called `Caches`, see PRs [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554) and [#3569](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3569).
+There is a new abstraction layer for the account, code and storage caches for all state managers, called `Caches`, see PRs [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554), [#3569](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3569) and [#3596](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3596).
 
 This allows for a cleaner separation of cache and pure state access code and also enables tree shaking for use cases where the caches are not needed.
 
@@ -70,9 +75,13 @@ const sm = new MerkleStateManager({ caches: new Caches() })
 
 ### TypeScript: StateManagerInterface Refactoring/Simplification
 
-The [StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which all state managers implement, is located in the `@ethereumjs/common` package for re-usability reasons. Along the breaking release work, this interface as been strongly simplified, see PR [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543). A dedicated `EVMStateManagerInterface` has been removed, which allows for easier state manager usage within the EVM package.
+The [StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which all state managers implement, is located in the `@ethereumjs/common` package for re-usability reasons. Along the breaking release work, this interface as been strongly simplified, see PRs [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543) and [#3541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3541). A dedicated `EVMStateManagerInterface` has been removed, which allows for easier state manager usage within the EVM package.
 
 Somewhat non-core functionality is now marked as optional (with a `?`), so if you make custom usage of the state manager you might need to add some `!` in your TypeScript code. Have a look at the interface linked above to see what has changed.
+
+### Other Breaking Changes
+
+- Do not throw calling `getContractStorage()` on non-existing accounts, PR [#3536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3536)
 
 ### Other Changes
 

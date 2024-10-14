@@ -23,13 +23,19 @@ The names for the tx classes have been shortened and simplified (see PRs [#3533]
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533)).
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533) and [#3597](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3597)).
 
 Here an example for the `FeeMarket1559Tx` class:
 
 - `FeeMarketEIP1559Transaction.fromTxData()` -> `createFeeMarket1559Tx()`
 - `FeeMarketEIP1559Transaction.fromSerializedTx()` -> `createFeeMarket1559TxFromRLP()`
 - `FeeMarketEIP1559Transaction.fromValuesArray()` -> `create1559FeeMarketTxFromBytesArray()`
+
+New names from other tx types, to grasp the scheme:
+
+- `createBlob4844Tx()`
+- `createAccessList2930Tx()`
+- `createEOACode7702Tx()`
 
 #### Transaction Factory
 
