@@ -20,7 +20,7 @@ The static constructors for our library classes have been reworked to now be sta
 
 #### Proof Functionality
 
-Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551):
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PR [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557):
 
 - `Trie.createFromProof()` -> `createMPTFromProof()`
 - `Trie.verifyProof()` -> `verifyMPTProof()`

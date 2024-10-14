@@ -14,7 +14,7 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489) and [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549)).
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489), [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549) and [#3558](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3558)).
 
 `Block` class:
 
@@ -50,6 +50,10 @@ Total terminal difficulty (TTD) logic related to fork switching has been removed
 For this library this means:
 
 - The `setHardfork` constructor option is simplified to only accept a `boolean` and no `BigIntLike` for an eventual TD value anymore
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
 
 ## 5.3.0 - 2024-08-15
 

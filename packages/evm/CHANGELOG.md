@@ -18,9 +18,11 @@ The static constructors for our library classes have been reworked to now be sta
 
 - `EVM.create()` -> `createEVM`
 
-### Mega EOF Support
+### Mega EOF Support (Experimental)
 
-TODO: Add changes from https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440
+This is one of the few big EIP additions within this breaking release series: Jochem has re-taken upon EOF and fully implemented the new Mega EOF specification, see [#3440](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3440) and [#3553](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3553)! ❤️ Note that - while most code should be there in its final form - the implementation is still marked as `experimental` - since there are still various moving parts within EOF.
+
+It would get too extensive to fully recite the functional changes here. If you are interested in EOF please have a look at the above linked core implementation PR and see the EVM [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples) folder for EOF usage examples.
 
 #### Own EVM Parameter Set
 
@@ -39,6 +41,7 @@ This simplifies the `StateManager` usage and allows for easier swapping between 
 ### Other Breaking Changes
 
 - New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
 
 ## 3.1.0 - 2024-08-15
 

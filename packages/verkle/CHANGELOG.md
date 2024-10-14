@@ -12,6 +12,7 @@ We are getting there! 😁 While still in an experimental stage this release mak
 
 - Use node hash as db key, PR [#3472](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3472)
 - Apply leaf marker on all touched values, PR [#3520](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3520)
+- Proof function renaming (e.g. `createProof()` -> `createVerkleProof()`), PR [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557)
 
 ## 0.1.0 - 2024-08-15
 

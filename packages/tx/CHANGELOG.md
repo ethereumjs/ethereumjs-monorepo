@@ -56,6 +56,10 @@ With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethe
 
 Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
 
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+
 ## 5.4.0 - 2024-08-15
 
 #### EOA Code Transaction (EIP-7702) (outdated)
