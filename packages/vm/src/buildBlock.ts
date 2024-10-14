@@ -43,6 +43,7 @@ import type { SSZReceiptType } from './runBlock.js'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
 
@@ -322,6 +323,35 @@ export class BlockBuilder {
     this.blockStatus = { status: BuildStatus.Reverted }
   }
 
+  async finishBlockBuild() {
+    const consensusType = this.vm.common.consensusType()
+
+    if (consensusType === ConsensusType.ProofOfWork) {
+      await this.rewardMiner()
+    }
+    await this.processWithdrawals()
+    let requests
+    if (this.vm.common.isActivatedEIP(7685)) {
+      requests = await accumulateRequests(this.vm, this.transactionResults)
+    }
+
+    let systemLogs: Log[] | undefined
+    if (this.vm.common.isActivatedEIP(6493)) {
+      // dummy assignment
+      systemLogs = [] as Log[]
+    }
+
+    if (this.vm.common.isActivatedEIP(6493)) {
+      for (const txReceipt of this.transactionReceipts) {
+        await accumulateIVCLogs(this.vm, txReceipt.logs)
+      }
+
+      await accumulateIVCLogs(this.vm, systemLogs!)
+    }
+
+    return { requests, systemLogs }
+  }
+
   /**
    * This method constructs the finalized block, including withdrawals and any CLRequests.
    * It also:
@@ -341,10 +371,23 @@ export class BlockBuilder {
     const blockOpts = this.blockOpts
     const consensusType = this.vm.common.consensusType()
 
-    if (consensusType === ConsensusType.ProofOfWork) {
-      await this.rewardMiner()
+    const { requests, systemLogs } = await this.finishBlockBuild()
+
+    let requestsRoot
+    if (this.vm.common.isActivatedEIP(7685)) {
+      requestsRoot = await genRequestsTrieRoot(requests!)
     }
-    await this.processWithdrawals()
+
+    let systemLogsRoot
+    if (this.vm.common.isActivatedEIP(6493)) {
+      systemLogsRoot = ssz.LogList.hashTreeRoot(
+        systemLogs!.map((log) => ({
+          address: log[0],
+          topics: log[1],
+          data: log[2],
+        })),
+      )
+    }
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = await this.withdrawalsTrie()
@@ -357,20 +400,6 @@ export class BlockBuilder {
     let blobGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844)) {
       blobGasUsed = this.blobGasUsed
-    }
-
-    if (this.vm.common.isActivatedEIP(6493)) {
-      for (const txReceipt of this.transactionReceipts) {
-        await accumulateIVCLogs(this.vm, txReceipt.logs)
-      }
-    }
-
-    let requests
-    let requestsRoot
-    if (this.vm.common.isActivatedEIP(7685)) {
-      requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsTrieRoot(requests)
-      // Do other validations per request type
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -387,6 +416,7 @@ export class BlockBuilder {
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
       requestsRoot,
+      systemLogsRoot,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {

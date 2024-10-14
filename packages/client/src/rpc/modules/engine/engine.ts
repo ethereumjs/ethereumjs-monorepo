@@ -1356,7 +1356,7 @@ export class Engine {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }
 
-      this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+      // this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned
        */

@@ -69,6 +69,7 @@ export const executionPayloadV4FieldValidators = {
   depositRequests: validators.array(validators.depositRequest()),
   withdrawalRequests: validators.array(validators.withdrawalRequest()),
   consolidationRequests: validators.array(validators.consolidationRequest()),
+  systemLogsRoot: validators.bytes32,
 }
 
 export const forkchoiceFieldValidators = {

@@ -106,6 +106,7 @@ export type BeaconPayloadJSON = {
   deposit_requests?: BeaconDepositRequest[]
   withdrawal_requests?: BeaconWithdrawalRequest[]
   consolidation_requests?: BeaconConsolidationRequest[]
+  system_logs_root?: PrefixedHexString
 
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
@@ -275,6 +276,10 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): E
         targetPubkey: beaconRequest.target_pubkey,
       }),
     )
+  }
+
+  if (payload.system_logs_root !== undefined && payload.system_logs_root !== null) {
+    executionPayload.systemLogsRoot = payload.system_logs_root
   }
 
   if (payload.execution_witness !== undefined && payload.execution_witness !== null) {

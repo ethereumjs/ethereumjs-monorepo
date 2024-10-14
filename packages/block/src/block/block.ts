@@ -569,6 +569,7 @@ export class Block {
       depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
       withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
       consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
+      systemLogsRoot: this.common.isActivatedEIP(6493) ? header.systemLogsRoot : undefined,
     }
 
     if (this.requests !== undefined) {

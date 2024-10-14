@@ -352,6 +352,11 @@ export interface ApplyBlockResult {
    * Preimages mapping of the touched accounts from the block (see reportPreimages option)
    */
   preimages?: Map<PrefixedHexString, Uint8Array>
+  /**
+   * Any CL requests that were processed in the course of this block
+   */
+  requests?: CLRequest<CLRequestType>[]
+  systemLogs?: Log[]
 }
 
 /**
@@ -371,10 +376,6 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    * The requestsRoot for any CL requests in the block
    */
   requestsRoot?: Uint8Array
-  /**
-   * Any CL requests that were processed in the course of this block
-   */
-  requests?: CLRequest<CLRequestType>[]
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

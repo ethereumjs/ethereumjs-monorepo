@@ -65,6 +65,7 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsRoot?: Uint8Array
+  public readonly systemLogsRoot?: Uint8Array
 
   public readonly common: Common
 
@@ -166,6 +167,7 @@ export class BlockHeader {
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
       requestsRoot: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
+      systemLogsRoot: this.common.isActivatedEIP(6493) ? KECCAK256_RLP : undefined,
     }
 
     const baseFeePerGas =
@@ -181,6 +183,8 @@ export class BlockHeader {
       hardforkDefaults.parentBeaconBlockRoot
     const requestsRoot =
       toType(headerData.requestsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsRoot
+    const systemLogsRoot =
+      toType(headerData.systemLogsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.systemLogsRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -212,6 +216,10 @@ export class BlockHeader {
       throw new Error('requestsRoot can only be provided with EIP 7685 activated')
     }
 
+    if (!this.common.isActivatedEIP(6493) && systemLogsRoot !== undefined) {
+      throw new Error('systemLogsRoot can only be provided with EIP 6493 activated')
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -233,6 +241,7 @@ export class BlockHeader {
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this.requestsRoot = requestsRoot
+    this.systemLogsRoot = systemLogsRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -350,6 +359,13 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7685)) {
       if (this.requestsRoot === undefined) {
         const msg = this._errorMsg('EIP7685 block has no requestsRoot field')
+        throw new Error(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(6493)) {
+      if (this.systemLogsRoot === undefined) {
+        const msg = this._errorMsg('EIP6493 block has no systemLogsRoot field')
         throw new Error(msg)
       }
     }
@@ -632,6 +648,9 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7685)) {
       rawItems.push(this.requestsRoot!)
     }
+    if (this.common.isActivatedEIP(7685)) {
+      rawItems.push(this.systemLogsRoot!)
+    }
 
     return rawItems
   }
@@ -660,6 +679,7 @@ export class BlockHeader {
       excessGas: { regular: null, blob: this.excessBlobGas ?? null },
       parentBeaconBlockRoot: this.parentBeaconBlockRoot ?? null,
       requestsRoot: this.requestsRoot ?? null,
+      systemLogsRoot: this.systemLogsRoot ?? null,
     }
 
     return header
@@ -811,6 +831,9 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(7685)) {
       JSONDict.requestsRoot = bytesToHex(this.requestsRoot!)
+    }
+    if (this.common.isActivatedEIP(6493)) {
+      JSONDict.systemLogsRoot = bytesToHex(this.systemLogsRoot!)
     }
     return JSONDict
   }

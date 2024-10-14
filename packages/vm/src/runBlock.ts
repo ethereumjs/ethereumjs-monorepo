@@ -51,7 +51,7 @@ import type { ValueOf } from '@chainsafe/ssz'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface, Log } from '@ethereumjs/evm'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type SSZReceiptType = ValueOf<typeof ssz.Receipt>
 
@@ -218,17 +218,22 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     throw err
   }
 
-  if (vm.common.isActivatedEIP(6493)) {
-    for (const txReceipt of result.receipts) {
-      await accumulateIVCLogs(vm, txReceipt.logs)
-    }
+  let requestsRoot: Uint8Array | undefined
+  if (block.common.isActivatedEIP(7685)) {
+    requestsRoot = await genRequestsTrieRoot(result.requests!)
   }
 
-  let requestsRoot: Uint8Array | undefined
-  let requests: CLRequest<CLRequestType>[] | undefined
-  if (block.common.isActivatedEIP(7685)) {
-    requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsTrieRoot(requests)
+  let systemLogsRoot: Uint8Array | undefined
+  if (block.common.isActivatedEIP(6493)) {
+    // dummy for time being
+    const systemLogs = result.systemLogs ?? []
+    systemLogsRoot = ssz.LogList.hashTreeRoot(
+      systemLogs!.map((log) => ({
+        address: log[0],
+        topics: log[1],
+        data: log[2],
+      })),
+    )
   }
 
   // Persist state
@@ -254,18 +259,19 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       receiptTrie,
       transactionsTrie,
       requestsRoot,
+      systemLogsRoot,
     }
     const blockData = {
       ...block,
-      requests,
+      requests: result.requests,
       header: { ...block.header, ...generatedFields },
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid(requests)
+      const valid = await block.requestsTrieIsValid(result.requests)
       if (!valid) {
-        const validRoot = await genRequestsTrieRoot(requests!)
+        const validRoot = await genRequestsTrieRoot(result.requests!)
         if (vm.DEBUG)
           debug(
             `Invalid requestsRoot received=${bytesToHex(
@@ -347,7 +353,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
     requestsRoot,
-    requests,
+    requests: result.requests,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -486,7 +492,26 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
-  return blockResults
+  const result = { ...blockResults } as ApplyBlockResult
+
+  if (block.common.isActivatedEIP(7685)) {
+    result.requests = await accumulateRequests(vm, blockResults.results)
+  }
+
+  if (vm.common.isActivatedEIP(6493)) {
+    // dummy assignment
+    result.systemLogs = [] as Log[]
+  }
+
+  if (vm.common.isActivatedEIP(6493)) {
+    for (const txReceipt of result.receipts) {
+      await accumulateIVCLogs(vm, txReceipt.logs)
+    }
+
+    await accumulateIVCLogs(vm, result.systemLogs!)
+  }
+
+  return result
 }
 
 /**
@@ -819,6 +844,7 @@ export async function accumulateIVCLogs(vm: VM, logs: Log[]) {
   async function accumulateLog(key: Uint8Array, logRoot: Uint8Array) {
     const prevRoot = setLengthLeft(await vm.stateManager.getStorage(ivcContractAddress, key), 32)
     const newRoot = commonSHA256(concatBytes(logRoot, prevRoot))
+    console.trace({ key: bytesToHex(key), newRoot: bytesToHex(newRoot) })
     await vm.stateManager.putStorage(ivcContractAddress, key, newRoot)
   }
 

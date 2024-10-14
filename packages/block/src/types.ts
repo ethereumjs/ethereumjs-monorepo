@@ -116,6 +116,7 @@ export interface HeaderData {
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
   requestsRoot?: BytesLike
+  systemLogsRoot?: BytesLike
 }
 
 /**
@@ -209,6 +210,7 @@ export interface JSONHeader {
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
   requestsRoot?: PrefixedHexString
+  systemLogsRoot?: PrefixedHexString
 }
 
 /*
@@ -243,6 +245,7 @@ export interface JSONRPCBlock {
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
   requestsRoot?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  systemLogsRoot?: PrefixedHexString
   requests?: Array<PrefixedHexString> // If EIP-7685 is enabled for this block, array of serialized CL requests
 }
 
@@ -278,4 +281,5 @@ export type ExecutionPayload = {
   depositRequests?: DepositRequestV1[] // Array of 6110 deposit requests
   withdrawalRequests?: WithdrawalRequestV1[] // Array of 7002 withdrawal requests
   consolidationRequests?: ConsolidationRequestV1[] // Array of 7251 consolidation requests
+  systemLogsRoot?: PrefixedHexString
 }
