@@ -10,61 +10,10 @@ export enum CLRequestType {
   Consolidation = 0x02,
 }
 
-export type DepositRequestV1 = {
-  pubkey: PrefixedHexString // DATA 48 bytes
-  withdrawalCredentials: PrefixedHexString // DATA 32 bytes
-  amount: PrefixedHexString // QUANTITY 8 bytes in gwei
-  signature: PrefixedHexString // DATA 96 bytes
-  index: PrefixedHexString // QUANTITY 8 bytes
-}
-
-export type WithdrawalRequestV1 = {
-  sourceAddress: PrefixedHexString // DATA 20 bytes
-  validatorPubkey: PrefixedHexString // DATA 48 bytes
-  amount: PrefixedHexString // QUANTITY 8 bytes in gwei
-}
-
-export type ConsolidationRequestV1 = {
-  sourceAddress: PrefixedHexString // DATA 20 bytes
-  sourcePubkey: PrefixedHexString // DATA 48 bytes
-  targetPubkey: PrefixedHexString // DATA 48 bytes
-}
-
 export interface RequestJSON {
   type: PrefixedHexString
   data: PrefixedHexString
 }
-
-export type DepositRequestData = {
-  pubkey: Uint8Array
-  withdrawalCredentials: Uint8Array
-  // 8 bytes uint64 LE
-  amount: Uint8Array
-  signature: Uint8Array
-  // 8 bytes uint64 LE
-  index: Uint8Array
-}
-
-export type WithdrawalRequestData = {
-  sourceAddress: Uint8Array
-  validatorPubkey: Uint8Array
-  // 8 bytes uint64 LE
-  amount: Uint8Array
-}
-
-export type ConsolidationRequestData = {
-  sourceAddress: Uint8Array
-  sourcePubkey: Uint8Array
-  targetPubkey: Uint8Array
-}
-
-export interface RequestData {
-  [CLRequestType.Deposit]: DepositRequestData
-  [CLRequestType.Withdrawal]: WithdrawalRequestData
-  [CLRequestType.Consolidation]: ConsolidationRequestData
-}
-
-export type TypedRequestData = RequestData[CLRequestType]
 
 export class CLRequest<T extends CLRequestType> {
   // for easy use
