@@ -108,10 +108,9 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
           await destroy(server, service)
           await destroy(remoteServer, remoteService)
           resolve(undefined)
-
-          void remoteService.synchronizer!.start()
         }
       })
+      void remoteService.synchronizer!.start()
     })
   }, 30000)
 })
