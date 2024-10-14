@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.2.0 - [ UNPUBLISHED ]
+## 0.2.0-alpha.1 - [ UNPUBLISHED ]
 
 We are getting there! 😁 While still in an experimental stage this release makes a big leap towards stateful Verkle-based EVM execution, by applying various updates and aligning with a new experimental `StatefulVerkleStateManager`.
 
@@ -14,6 +14,7 @@ We are getting there! 😁 While still in an experimental stage this release mak
 - Apply leaf marker on all touched values, PR [#3520](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3520)
 - Proof function renaming (e.g. `createProof()` -> `createVerkleProof()`), PR [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557)
 - Refactor trie and verkle utils, PR [#3600](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3600)
+- Add and integrate `StatefulVerkleStateManager`, PR [#3628](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3628)
 
 ## 0.1.0 - 2024-08-15
 

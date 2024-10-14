@@ -74,6 +74,11 @@ For this library this means:
 - No more `BigInt` for chainID in chain config (use string), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
 - The `customChains` constructor option has been removed, PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
 - More straightforward `createCustomCommon()` API (e.g. `createCustomCommon({chainId: 123}, Mainnet)`), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 
 ## 4.4.0 - 2024-08-15
 

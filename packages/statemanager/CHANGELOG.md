@@ -82,9 +82,12 @@ Somewhat non-core functionality is now marked as optional (with a `?`), so if yo
 ### Other Breaking Changes
 
 - Do not throw calling `getContractStorage()` on non-existing accounts, PR [#3536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3536)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
 
 ### Other Changes
 
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
 
 ## 2.4.0 - 2024-08-15

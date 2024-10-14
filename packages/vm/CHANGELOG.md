@@ -14,9 +14,13 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#3530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3530)):
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PR [#3618](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3618)):
+
+- `VM.create()` -> `createVM`
 
 ##### Core Procedural Methods
+
+See: PR [#3530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3530)
 
 - `VM.runTx()` -> `runTx()`
 - `VM.runBlock()` -> `runBlock()`
@@ -99,6 +103,13 @@ For this library this means:
 ### Other Breaking Changes
 
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- VM is now by default initialized without state manager caches (tree shaking), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+- VM uses `EVMMockBlockchain` as blockchain default (tree shaking), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Exit early on non-existing system contracts, PR [#3614](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3614)
 
 ## 8.1.0 - 2024-08-15
 

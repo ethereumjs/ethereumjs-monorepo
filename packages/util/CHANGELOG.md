@@ -38,9 +38,32 @@ See PR [#3544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3544):
 - `Address.generate2()` -> `createContractAddress2()`
 - New: `createAddressFromBigInt()`
 
+##### `withdrawal`
+
+See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
+
+- `Withdrawal.fromWithdrawalData()` -> `createWithdrawal()`
+- `Withdrawal.fromValuesArray()` -> `createWithdrawalFromBytesArray()`
+- `Withdrawal.toBytesArray()` -> `withdrawalToBytesArray()`
+
+##### `request`
+
+See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
+
+- `*Request.fromRequestData()` -> `create*Request()`
+- `*Request.fromJSON()` -> `create*RequestFromJSON()`
+- `*Request.deserialize()` -> `create*RequestFromRLP()`
+
 ### Other Breaking Changes
 
 - `bytes`: Restrict `hexToBytes()`, `unpadHex()` and `hexToBigInt()` to accept only hex-prefixed values, PR [#3510](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3510)
+- Remove deprecated `initKZG()` method, PR [#3635](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3635)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 
 ## 9.1.0 - 2024-08-15
 

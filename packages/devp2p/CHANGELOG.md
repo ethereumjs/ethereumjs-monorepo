@@ -22,6 +22,10 @@ import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereum
 const common = new Common({ chain: Mainnet })
 ```
 
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+
 ## 6.1.3 - 2024-08-15
 
 Maintenance release with downstream dependency updates, see PR [#3527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3527)

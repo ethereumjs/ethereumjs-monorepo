@@ -14,7 +14,7 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489), [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549) and [#3558](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3558)).
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489), [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549), [#3550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3550), [#3558](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3558) and [#3586](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3586)).
 
 `Block` class:
 
@@ -86,6 +86,13 @@ For this library this means:
 
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
 - The `normalizeTxParams()` helper method moved over to the tx library, PR [#3588](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3588)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- New `createEmptyBlock()` constructor (tree shaking advantages), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+- kaustinen7 verkle testnet preparation (removes the stateRoot handling and caching for the previous block), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 
 ## 5.3.0 - 2024-08-15
 

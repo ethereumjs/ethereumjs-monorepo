@@ -79,6 +79,12 @@ This simplifies the `StateManager` usage and allows for easier swapping between 
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
 - Removed `EIP-3074` (AUTH / AUTHCALL opcodes) support, since superseded by `EIP-7702`, PR [#3582](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3582)
 
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Fix BLS usage for BLS12-381 precompiles, PR [#3623](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3623)
+- kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
+
 ## 3.1.0 - 2024-08-15
 
 ### EIP-2537 BLS Precompiles (Prague)

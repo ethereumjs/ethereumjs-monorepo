@@ -45,6 +45,10 @@ Total terminal difficulty (TTD) logic related to fork switching has been removed
 
 For the `Blockchain` library this means that it is not supported to operate on a PoW/PoS hybrid blockchain where the transition from PoW -> PoS happens solely by TTD.
 
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+
 ## 7.3.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

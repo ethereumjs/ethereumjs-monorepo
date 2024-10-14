@@ -38,6 +38,11 @@ We have now removed the stream functionality and the associated dependency and r
 
 - Refactor trie util helpers, PR [#3534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3534)
 
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Address type issues and type-related improvements, PR [#3624](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3624)
+
 ## 6.2.1 - 2024-08-15
 
 ### Other Features
