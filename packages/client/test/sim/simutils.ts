@@ -1,5 +1,6 @@
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { CliqueConsensus, ConsensusDict, createBlockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   BIGINT_1,
@@ -15,6 +16,7 @@ import {
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
+import { MemoryLevel } from 'memory-level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
@@ -26,12 +28,12 @@ import { LevelDB } from '../../src/execution/level.js'
 import { RPCManager } from '../../src/rpc/index.js'
 import { Event } from '../../src/types.js'
 
-import { ConsensusAlgorithm, type Common } from '@ethereumjs/common'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
-import { MemoryLevel } from 'memory-level'
+
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))

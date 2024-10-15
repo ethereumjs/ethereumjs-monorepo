@@ -1,5 +1,4 @@
-import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm, Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Address,
   bytesToHex,
@@ -8,20 +7,14 @@ import {
   parseGethGenesisState,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
-import { createInlineClient } from '../sim/simutils.js'
-import { Chain } from '../../src/blockchain/index.js'
+
 import { Config } from '../../src/config.js'
-import { FullEthereumService } from '../../src/service/index.js'
-import { Event } from '../../src/types.js'
-
-import { MockServer } from './mocks/mockserver.js'
-import { destroy, setup } from './util.js'
-
-import type { ConsensusDict } from '@ethereumjs/blockchain'
-import { create } from 'domain'
-import { parseMultiaddrs } from '../../src/util/parse.js'
-import { EthereumClient } from '../../src/index.js'
 import { getLogger } from '../../src/logging.js'
+import { Event } from '../../src/types.js'
+import { parseMultiaddrs } from '../../src/util/parse.js'
+import { createInlineClient } from '../sim/simutils.js'
+
+import type { EthereumClient } from '../../src/index.js'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
@@ -88,7 +81,7 @@ async function minerSetup(): Promise<EthereumClient[]> {
     accountCache: 10000,
     storageCache: 1000,
     mine: true,
-    accounts: accounts,
+    accounts,
     logger: getLogger({ logLevel: 'debug' }),
   })
 

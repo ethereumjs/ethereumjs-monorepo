@@ -5,7 +5,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
 import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
-import { assert, describe, it, beforeAll, afterAll } from 'vitest'
+import { afterAll, assert, beforeAll, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.js'
 import { FullEthereumService } from '../../src/service/index.js'

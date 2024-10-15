@@ -91,18 +91,18 @@ describe('[RlpxPeer]', async () => {
     })
     await peer.connect()
     config.events.on(Event.PEER_ERROR, (error) => {
-      if (error.message === 'err0') assert.ok(true, 'got err0')
+      if (error.error.message === 'err0') assert.ok(true, 'got err0')
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
-      assert.equal(peer.id, 'abcdef0123', 'got connected'),
+      assert.equal(peer.connectedPeer.id, 'abcdef0123', 'got connected'),
     )
-    peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
-      assert.equal(rlpxPeer.pooled, false, 'got disconnected'),
+    peer.config.events.on(Event.PEER_DISCONNECTED, ({ disconnectedPeer }) =>
+      assert.equal(disconnectedPeer.pooled, false, 'got disconnected'),
     )
-    peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+    peer.rlpx!.events.emit('peer:error', { peer: rlpxPeer, error: new Error('err0') })
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', { peer: rlpxPeer, reason: 'reason', disconnectWe: true })
     ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
@@ -112,11 +112,11 @@ describe('[RlpxPeer]', async () => {
     await peer.connect()
 
     peer.config.events.on(Event.PEER_ERROR, (err) => {
-      if (err.message === 'err1') assert.ok(true, 'got err1')
-      if (err.message === 'err2') assert.ok(true, 'got err2')
+      if (err.error.message === 'err1') assert.ok(true, 'got err1')
+      if (err.error.message === 'err2') assert.ok(true, 'got err2')
     })
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', { peer: rlpxPeer, reason: 'reason', disconnectWe: true })
   })
 
   it('should accept peer connection', async () => {

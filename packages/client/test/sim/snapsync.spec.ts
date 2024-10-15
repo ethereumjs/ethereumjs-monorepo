@@ -266,14 +266,12 @@ async function createSnapClient(
     maxFetcherJobs: 10,
   })
   const peerConnectedPromise = new Promise((resolve) => {
-    config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
+    config.events.once(Event.PEER_CONNECTED).then((peer) => resolve(peer.connectedPeer))
   })
   const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events.once(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      (stateRoot: Uint8Array, stateManager: MerkleStateManager) =>
-        resolve([stateRoot, stateManager]),
-    )
+    config.events
+      .once(Event.SYNC_SNAPSYNC_COMPLETE)
+      .then(({ stateRoot, stateManager }) => resolve([stateRoot, stateManager]))
   })
 
   const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)
@@ -282,7 +280,7 @@ async function createSnapClient(
   return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
 }
 
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })
