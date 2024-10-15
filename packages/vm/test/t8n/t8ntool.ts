@@ -150,7 +150,7 @@ export class TransitionTool {
         // eslint-disable-next-line no-console
         console.log('Done processing transaction (system operations might follow next)')
       })
-      this.vm.evm.events?.on('step', ({ step, next }) => {
+      this.vm.evm.events?.on('step', ({ step }) => {
         // eslint-disable-next-line no-console
         console.log({
           gasLeft: step.gasLeft.toString(),

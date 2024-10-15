@@ -35,12 +35,12 @@ export class MockServer extends Server {
     await this.wait(1)
 
     this.server = createServer(this.location) as any
-    this.config.events.emit(Event.SERVER_LISTENING, {
+    await this.config.events.emit(Event.SERVER_LISTENING, {
       transport: this.name,
       url: `mock://${this.location}`,
     })
-    ;(this.server as any).on('connection', async ({ id, stream }: { id: string; stream: any }) => {
-      await this.connect(id, stream)
+    this.server!.config.events.on(Event.PEER_CONNECTED, async (eventData) => {
+      await this.connect(eventData.connectedPeer.id, (eventData.connectedPeer as any).stream)
     })
     return true
   }
@@ -61,7 +61,7 @@ export class MockServer extends Server {
     const peer = new MockPeer({ id, location, protocols: Array.from(this.protocols), ...opts })
     await peer.connect()
     this.peers[id] = peer
-    this.config.events.emit(Event.POOL_PEER_ADDED, { addedPeer: peer })
+    await this.config.events.emit(Event.POOL_PEER_ADDED, { addedPeer: peer })
     return peer
   }
 
@@ -83,13 +83,13 @@ export class MockServer extends Server {
     })
     await peer.bindProtocols(stream)
     this.peers[id] = peer
-    this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: peer as any })
+    await this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: peer as any })
   }
 
   disconnect(id: string) {
     const peer = this.peers[id]
     if (peer !== undefined)
-      this.config.events.emit(Event.PEER_DISCONNECTED, { disconnectedPeer: peer as any })
+      void this.config.events.emit(Event.PEER_DISCONNECTED, { disconnectedPeer: peer as any })
   }
 
   async wait(delay?: number) {

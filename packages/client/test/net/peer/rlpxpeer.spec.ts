@@ -100,9 +100,13 @@ describe('[RlpxPeer]', async () => {
     peer.config.events.on(Event.PEER_DISCONNECTED, ({ disconnectedPeer }) =>
       assert.equal(disconnectedPeer.pooled, false, 'got disconnected'),
     )
-    peer.rlpx!.events.emit('peer:error', { peer: rlpxPeer, error: new Error('err0') })
-    peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', { peer: rlpxPeer, reason: 'reason', disconnectWe: true })
+    await peer.rlpx!.events.emit('peer:error', { peer: rlpxPeer, error: new Error('err0') })
+    await peer.rlpx!.events.emit('peer:added', rlpxPeer)
+    await peer.rlpx!.events.emit('peer:removed', {
+      peer: rlpxPeer,
+      reason: 'reason',
+      disconnectWe: true,
+    })
     ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
@@ -115,8 +119,12 @@ describe('[RlpxPeer]', async () => {
       if (err.error.message === 'err1') assert.ok(true, 'got err1')
       if (err.error.message === 'err2') assert.ok(true, 'got err2')
     })
-    peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', { peer: rlpxPeer, reason: 'reason', disconnectWe: true })
+    await peer.rlpx!.events.emit('peer:added', rlpxPeer)
+    await peer.rlpx!.events.emit('peer:removed', {
+      peer: rlpxPeer,
+      reason: 'reason',
+      disconnectWe: true,
+    })
   })
 
   it('should accept peer connection', async () => {

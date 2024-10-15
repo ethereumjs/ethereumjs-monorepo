@@ -3,9 +3,9 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
-import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
+import { Account, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
-import { afterAll, assert, beforeAll, describe, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.js'
 import { FullEthereumService } from '../../src/service/index.js'
@@ -13,14 +13,34 @@ import { Event } from '../../src/types.js'
 
 import { MockChain } from './mocks/mockchain.js'
 import { MockServer } from './mocks/mockserver.js'
-import { destroy } from './util.js'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
+async function setup(): Promise<[MockServer, FullEthereumService]> {
+  const server = new MockServer({ config }) as any
+  const blockchain = await createBlockchain({
+    common: config.chainCommon,
+    validateBlocks: false,
+    validateConsensus: false,
+  })
+  const chain = new MockChain({ config, blockchain })
+  const serviceConfig = new Config({ server, lightserv: true })
+  const service = new FullEthereumService({
+    config: serviceConfig,
+    chain,
+  })
+
+  await service.open()
+  await server.start()
+  await service.start()
+  service.txPool.start()
+  return [server, service]
+}
+
 // Stub out setStateRoot since correct state root doesn't exist in mock state.
-const ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
+const _ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
 MerkleStateManager.prototype.setStateRoot = (): any => {}
-const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+const _originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
 MerkleStateManager.prototype.shallowCopy = function () {
   return this
 }
@@ -109,24 +129,3 @@ describe('ETH requests', () => {
     })
   })
 }, 25000)
-
-async function setup(): Promise<[MockServer, FullEthereumService]> {
-  const server = new MockServer({ config }) as any
-  const blockchain = await createBlockchain({
-    common: config.chainCommon,
-    validateBlocks: false,
-    validateConsensus: false,
-  })
-  const chain = new MockChain({ config, blockchain })
-  const serviceConfig = new Config({ server, lightserv: true })
-  const service = new FullEthereumService({
-    config: serviceConfig,
-    chain,
-  })
-
-  await service.open()
-  await server.start()
-  await service.start()
-  service.txPool.start()
-  return [server, service]
-}

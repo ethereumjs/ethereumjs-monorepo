@@ -1,11 +1,11 @@
+import type { SyncMode } from './index.js'
+import type { Peer, RlpxPeer } from './net/peer/index.js'
+import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type * as promClient from 'prom-client'
-import type { SyncMode } from './index.js'
-import type { Peer, RlpxPeer } from './net/peer/index.js'
-import type { Server } from './net/server/index.js'
 
 /**
  * Types for the central event bus, emitted

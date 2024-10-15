@@ -104,7 +104,7 @@ async function minerSetup(): Promise<EthereumClient[]> {
 
 describe('should mine blocks while a peer stays connected to tip of chain', () => {
   it('should work', async () => {
-    const [miner, follower] = await minerSetup()
+    const [follower] = await minerSetup()
 
     const targetHeight = BigInt(5)
     await new Promise((resolve) => {

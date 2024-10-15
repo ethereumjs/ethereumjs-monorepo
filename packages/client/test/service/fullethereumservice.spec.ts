@@ -1,13 +1,6 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionType, createTx } from '@ethereumjs/tx'
-import {
-  Address,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  randomBytes,
-  zeroAddress,
-} from '@ethereumjs/util'
+import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'

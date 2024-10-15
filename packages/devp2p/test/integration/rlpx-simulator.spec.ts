@@ -54,7 +54,7 @@ describe('RLPx simulator tests', () => {
       rlpxs[0].events.once('peer:added').then((peer) => {
         rlpxs[0].disconnect(peer['_remoteId'])
       })
-      rlpxs[0].events.once('peer:removed').then(async ({ peer, reason }) => {
+      rlpxs[0].events.once('peer:removed').then(async ({ reason }) => {
         assert.equal(
           reason,
           DISCONNECT_REASON.CLIENT_QUITTING,

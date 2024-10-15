@@ -9,7 +9,6 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
-  NestedUint8Array,
   randomBytes,
 } from '@ethereumjs/util'
 import chalk from 'chalk'
@@ -19,6 +18,7 @@ import ms from 'ms'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ETH, Peer } from '@ethereumjs/devp2p'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { NestedUint8Array } from '@ethereumjs/util'
 
 const PRIVATE_KEY = randomBytes(32)
 

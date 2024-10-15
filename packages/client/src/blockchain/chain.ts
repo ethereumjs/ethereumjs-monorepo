@@ -343,7 +343,7 @@ export class Chain {
     })
 
     if (emit) {
-      this.config.events.emit(Event.CHAIN_UPDATED)
+      await this.config.events.emit(Event.CHAIN_UPDATED)
     }
   }
 

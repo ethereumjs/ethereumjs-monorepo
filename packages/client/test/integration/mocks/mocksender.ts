@@ -23,7 +23,7 @@ export class MockSender extends Sender {
       if (code === 0) {
         this.status = payload
       } else {
-        this.emit('message', { code, payload })
+        void this.emit('message', { code, payload })
       }
     })
   }

@@ -266,10 +266,10 @@ async function createSnapClient(
     maxFetcherJobs: 10,
   })
   const peerConnectedPromise = new Promise((resolve) => {
-    config.events.once(Event.PEER_CONNECTED).then((peer) => resolve(peer.connectedPeer))
+    void config.events.once(Event.PEER_CONNECTED).then((peer) => resolve(peer.connectedPeer))
   })
   const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events
+    void config.events
       .once(Event.SYNC_SNAPSYNC_COMPLETE)
       .then(({ stateRoot, stateManager }) => resolve([stateRoot, stateManager]))
   })

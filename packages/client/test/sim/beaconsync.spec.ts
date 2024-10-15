@@ -217,7 +217,7 @@ async function createBeaconSyncClient(
     maxFetcherJobs: 10,
   })
   const peerConnectedPromise = new Promise((resolve) => {
-    config.events.once(Event.PEER_CONNECTED).then((peer) => resolve(peer.connectedPeer))
+    void config.events.once(Event.PEER_CONNECTED).then((peer) => resolve(peer.connectedPeer))
   })
 
   const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)

@@ -88,7 +88,7 @@ export async function destroy(
   server: MockServer,
   service: FullEthereumService | LightEthereumService,
 ): Promise<void> {
-  service.config.events.emit(Event.CLIENT_SHUTDOWN)
+  void service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()
   await service.stop()
 }
