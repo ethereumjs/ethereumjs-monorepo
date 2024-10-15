@@ -239,7 +239,6 @@ export class Miner {
     let difficulty
     let cliqueSigner
     let inTurn
-    this.config.logger.info('in turn')
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
@@ -248,7 +247,6 @@ export class Miner {
         (vmCopy.blockchain as Blockchain).consensus as CliqueConsensus
       ).cliqueSignerInTurn(signerAddress, number)
       difficulty = inTurn ? 2 : 1
-      this.config.logger.info('we am difficulty')
     }
 
     let baseFeePerGas

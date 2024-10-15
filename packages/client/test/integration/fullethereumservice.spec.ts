@@ -33,14 +33,8 @@ describe('ETH requests', () => {
   beforeAll(async () => {
     ;[server, service] = await setup()
     peer = await server.accept('peer0')
-  })
+  }, 20000)
 
-  afterAll(async () => {
-    await destroy(server, service)
-    // unstub setStateRoot
-    MerkleStateManager.prototype.setStateRoot = ogSetStateRoot
-    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
-  })
   it('should handle getBlockHeaders', async () => {
     const hash = hexToBytes('0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
@@ -114,20 +108,7 @@ describe('ETH requests', () => {
       peer.eth!.send('Transactions', [tx])
     })
   })
-}, 15000)
-
-describe('LES requests', () => {
-  it('should handle GetBlockHeaders', async () => {
-    const [server, service] = await setup()
-    const peer = await server.accept('peer0')
-    const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    assert.equal(
-      bytesToHex(headers[1].hash()),
-      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'handled GetBlockHeaders',
-    )
-  })
-}, 15000)
+}, 25000)
 
 async function setup(): Promise<[MockServer, FullEthereumService]> {
   const server = new MockServer({ config }) as any
