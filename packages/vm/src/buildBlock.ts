@@ -357,8 +357,7 @@ export class BlockBuilder {
         address: systemAddressBytes,
         // operation, from, to
         topics: [
-          keccak256(utf8ToBytes('PriorityFee(address,uint256)')),
-          setLengthLeft(systemAddressBytes, 32),
+          keccak256(utf8ToBytes('PriorityRewards(address,uint256)')),
           setLengthLeft(coinbase.toBytes(), 32),
         ],
         // amount be uint256

@@ -626,12 +626,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
     const logData = {
       address: systemAddressBytes,
-      // operation, from, to
-      topics: [
-        keccak256(utf8ToBytes('Fee(address,uint256)')),
-        setLengthLeft(caller.toBytes(), 32),
-        setLengthLeft(systemAddressBytes, 32),
-      ],
+      // operation, to
+      topics: [keccak256(utf8ToBytes('Fee(address,uint256)')), setLengthLeft(caller.toBytes(), 32)],
       // amount be uint256
       data: setLengthLeft(bigIntToBytes(actualTxCost), 32),
     }

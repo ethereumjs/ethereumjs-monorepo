@@ -524,8 +524,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
       address: systemAddressBytes,
       // operation, from, to
       topics: [
-        keccak256(utf8ToBytes('PriorityFee(address,uint256)')),
-        setLengthLeft(systemAddressBytes, 32),
+        keccak256(utf8ToBytes('PriorityRewards(address,uint256)')),
         setLengthLeft(block.header.coinbase.toBytes(), 32),
       ],
       // amount be uint256
