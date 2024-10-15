@@ -105,7 +105,6 @@ export class Miner {
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
       const parentBlock = this.service.chain.blocks.latest!
-      //eslint-disable-next-line
       const number = parentBlock.header.number + BIGINT_1
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress,
@@ -198,7 +197,7 @@ export class Miner {
       this.config.events.off(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
     }
     _boundSetInterruptHandler = setInterrupt.bind(this)
-    await this.config.events.once(Event.CHAIN_UPDATED).then(() => _boundSetInterruptHandler)
+    void this.config.events.once(Event.CHAIN_UPDATED).then(() => _boundSetInterruptHandler)
 
     const parentBlock = this.service.chain.blocks.latest!
     //eslint-disable-next-line
@@ -240,6 +239,7 @@ export class Miner {
     let difficulty
     let cliqueSigner
     let inTurn
+    this.config.logger.info('in turn')
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfAuthority) {
       const [signerAddress, signerPrivKey] = this.config.accounts[0]
       cliqueSigner = signerPrivKey
@@ -248,6 +248,7 @@ export class Miner {
         (vmCopy.blockchain as Blockchain).consensus as CliqueConsensus
       ).cliqueSignerInTurn(signerAddress, number)
       difficulty = inTurn ? 2 : 1
+      this.config.logger.info('we am difficulty')
     }
 
     let baseFeePerGas

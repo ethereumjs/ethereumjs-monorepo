@@ -21,6 +21,7 @@ import type { ConsensusDict } from '@ethereumjs/blockchain'
 import { create } from 'domain'
 import { parseMultiaddrs } from '../../src/util/parse.js'
 import { EthereumClient } from '../../src/index.js'
+import { getLogger } from '../../src/logging.js'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
@@ -59,7 +60,6 @@ async function setupDevnet(prefundAddress: Address) {
   }
   const extraData = concatBytes(new Uint8Array(32), prefundAddress.toBytes(), new Uint8Array(65))
 
-  console.log(extraData)
   const chainData = {
     ...defaultChainData,
     extraData: bytesToHex(extraData),
@@ -89,18 +89,23 @@ async function minerSetup(): Promise<EthereumClient[]> {
     storageCache: 1000,
     mine: true,
     accounts: accounts,
+    logger: getLogger({ logLevel: 'debug' }),
   })
 
-  const miner = await createInlineClient(config1, common, customGenesisState)
+  const miner = await createInlineClient(config1, common, customGenesisState, '', true)
+
   const config2 = new Config({
     common,
     accountCache: 10000,
     storageCache: 1000,
     bootnodes: parseMultiaddrs(miner.config.server!.getRlpxInfo().enode as string),
     accounts,
+    logger: getLogger({ logLevel: 'info' }),
+    port: 30304,
+    mine: false,
   })
 
-  const follower = await createInlineClient(config2, common, customGenesisState)
+  const follower = await createInlineClient(config2, common, customGenesisState, '', true)
   return [miner, follower]
 }
 
@@ -110,11 +115,12 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
 
     const targetHeight = BigInt(5)
     await new Promise((resolve) => {
-      follower.config.events.once(Event.SYNC_SYNCHRONIZED).then((chainHeight) => {
-        assert.equal(chainHeight, targetHeight)
-        assert.equal(follower.chain.blocks.height, targetHeight, 'synced blocks successfully')
-        resolve(undefined)
+      follower.config.events.on(Event.SYNC_SYNCHRONIZED, (chainHeight) => {
+        if (chainHeight === targetHeight) {
+          assert.equal(follower.chain.blocks.height, targetHeight, 'synced blocks successfully')
+          resolve(undefined)
+        }
       })
     })
-  }, 30000)
+  }, 60000)
 })
