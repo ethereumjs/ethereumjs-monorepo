@@ -15,8 +15,10 @@ import pectra3Json from './configs/pectra3.json'
 //   waitForELStart,
 // } from './simutils.js'
 
-import type { Peer } from '@ethereumjs/devp2p'
-const STATIC_ID = hexToBytes('0x' + '0'.repeat(64))
+import { Peer } from '@ethereumjs/devp2p'
+const STATIC_ID = hexToBytes(
+  '0x' + 'a9faec679fb6d5a68dc7f0301e4e13f35747f74d25e80edbc8768c24f43b128b',
+)
 
 let rlpx: RLPx
 
@@ -31,35 +33,49 @@ describe('simple mainnet test run', async () => {
         const privateKey = hexToBytes(
           '0xdc6457099f127cf0bac78de8b297df04951281909db4f58b43def7c7151e765d',
         )
-        const peerHost = '0.0.0.0' // IP address of the devp2p server
+        const peerHost = '127.0.0.1' // IP address of the devp2p server
         const peerPort = 30303 // devp2p server port
-
+        const dpt = new DPT(privateKey, {
+          // Disable discovery, only connect to peers manually
+          shouldFindNeighbours: false,
+        })
         rlpx = new RLPx(privateKey, {
-          dpt: new DPT(privateKey, {
-            // Disable discovery, only connect to peers manually
-            shouldFindNeighbours: false,
-          }),
+          dpt,
           maxPeers: 25,
           capabilities: [ETH.eth65, ETH.eth64, SNAP.snap],
           listenPort: null,
           common,
         })
 
-        await rlpx.connect({
-          id: STATIC_ID,
-          address: peerHost,
-          tcpPort: peerPort,
-        })
-        rlpx.events.on('peer:added', (peer: Peer) => {
-          console.log('Connected to peer', peer)
-          // Send payload to the peer here
-          // const payload = Buffer.from([0x01, 0x02, 0x03]) // Example payload
-          // peer.sendMessage(protocol, messageCode, payload)
-        })
+        await dpt
+          .addPeer({ address: peerHost, udpPort: peerPort, tcpPort: peerPort })
+          .then((peer) => {
+            // return rlpx.connect({
+            //   id: peer.id,
+            //   address: peer.address,
+            //   tcpPort: peer.tcpPort,
+            //   udpPort: peer.tcpPort
+            // })
+            // console.log(peer)
+            // console.log(bytesToHex(peer.id))
+            console.log(rlpx)
+            // const p = rlpx._peers.get(bytesToHex(peer.id).slice(2))
+            // console.log(p)
+            rlpx.events.on('peer:added', (peer: Peer) => {
+              console.log('Connected to peer', peer)
+              // Send payload to the peer here
+              // const payload = Buffer.from([0x01, 0x02, 0x03]) // Example payload
+              // peer.sendMessage(protocol, messageCode, payload)
+            })
 
-        rlpx.events.on('peer:removed', (peer, reasonCode, disconnectMessage) => {
-          console.log('Disconnected from peer', reasonCode, disconnectMessage)
-        })
+            rlpx.events.on('peer:removed', (peer, reasonCode, disconnectMessage) => {
+              console.log('Disconnected from peer', reasonCode, disconnectMessage)
+            })
+          })
+          .catch((err) => {
+            console.log(`error on connection to local node: ${err.stack ?? err}`)
+            rlpx.destroy()
+          })
       } catch (error) {
         console.log(error)
       }
