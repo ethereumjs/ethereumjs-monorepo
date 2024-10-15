@@ -9,7 +9,9 @@ import {
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
   VerkleLeafType,
+  bigIntToBytes,
   bytesToBigInt,
+  bytesToHex,
   chunkifyCode,
   createAddressFromString,
   createPartialAccount,
@@ -22,6 +24,9 @@ import {
   getVerkleStem,
   getVerkleTreeKeyForStorageSlot,
   hexToBytes,
+  padToEven,
+  setLengthLeft,
+  setLengthRight,
   short,
   unpadBytes,
   unprefixedHexToBytes,
@@ -30,20 +35,23 @@ import { VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccessWitness } from './accessWitness.js'
+import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
+import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/caches.js'
-import type { StatefulVerkleStateManagerOpts } from './types.js'
+import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 import type {
   AccountFields,
   StateManagerInterface,
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { VerkleCrypto } from '@ethereumjs/util'
+import type { PrefixedHexString, VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+
+const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulVerkleStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
@@ -55,6 +63,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   public readonly common: Common
 
   protected _checkpointCount: number
+
+  // Post-state provided from the executionWitness.
+  // Should not update. Used for comparing our computed post-state with the canonical one.
+  private _postState: VerkleState = {}
+  private _preState: VerkleState = {}
 
   protected verkleCrypto: VerkleCrypto
   /**
@@ -140,6 +153,61 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
     }
     return account
+  }
+
+  public initVerkleExecutionWitness(
+    _blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitness,
+  ) {
+    if (executionWitness === null || executionWitness === undefined) {
+      const errorMsg = `Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`
+      this._debug(errorMsg)
+      throw Error(errorMsg)
+    }
+
+    // Populate the pre-state and post-state from the executionWitness
+    const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
+      const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
+        return {
+          [key]: currentValue,
+        }
+      })
+
+      return suffixDiffPairs
+    })
+
+    // also maintain a separate preState unaffected by any changes in _state
+    this._preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
+    this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
+
+    const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
+      const suffixDiffPairs = suffixDiffs.map(({ newValue, currentValue, suffix }) => {
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}` as PrefixedHexString
+        // A postState value of null means there was no change from the preState.
+        // In this implementation, we therefore replace null with the preState.
+        const value = newValue ?? currentValue
+
+        return {
+          [key]: value,
+        }
+      })
+
+      return suffixDiffPairs
+    })
+
+    const postState = postStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
+    this._postState = postState
+    this._debug('initVerkleExecutionWitness postState', this._postState)
   }
 
   /**
@@ -446,6 +514,188 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         await this.putAccount(address, account)
       }
     }
+  }
+
+  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
+    const { address, type } = accessedState
+    switch (type) {
+      case AccessedStateType.Version: {
+        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          return null
+        }
+        // Version is always 0
+        // TODO: Update this when versioning is added to accounts
+        return ZEROVALUE
+      }
+      case AccessedStateType.Balance: {
+        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          return null
+        }
+
+        const balanceBigint = createPartialAccountFromRLP(encodedAccount).balance
+        return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
+      }
+
+      case AccessedStateType.Nonce: {
+        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          return null
+        }
+        const nonceBigint = createPartialAccountFromRLP(encodedAccount).nonce
+        return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
+      }
+
+      case AccessedStateType.CodeHash: {
+        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          return null
+        }
+        return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
+      }
+
+      case AccessedStateType.CodeSize: {
+        const codeSize = this._caches?.code?.get(address)?.code?.length
+        if (codeSize === undefined) {
+          // it could be an EOA lets check for that
+          const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+          if (encodedAccount === undefined) {
+            return null
+          }
+
+          const account = createPartialAccountFromRLP(encodedAccount)
+          if (account.isContract()) {
+            const errorMsg = `Code cache not found for address=${address.toString()}`
+            this.DEBUG && this._debug(errorMsg)
+            throw Error(errorMsg)
+          } else {
+            return null
+          }
+        }
+
+        return bytesToHex(setLengthRight(bigIntToBytes(BigInt(codeSize), true), 32))
+      }
+
+      case AccessedStateType.Code: {
+        const { codeOffset } = accessedState
+        const code = this._caches?.code?.get(address)?.code
+        if (code === undefined) {
+          return null
+        }
+
+        // we can only compare the actual code because to compare the first byte would
+        // be very tricky and impossible in certain scenarios like when the previous code chunk
+        // was not accessed and hence not even provided in the witness
+        return bytesToHex(
+          setLengthRight(
+            code.slice(codeOffset, codeOffset + VERKLE_CODE_CHUNK_SIZE),
+            VERKLE_CODE_CHUNK_SIZE,
+          ),
+        )
+      }
+
+      case AccessedStateType.Storage: {
+        const { slot } = accessedState
+        const key = setLengthLeft(bigIntToBytes(slot), 32)
+
+        const storage = this._caches?.storage?.get(address, key)
+        if (storage === undefined) {
+          return null
+        }
+        return bytesToHex(setLengthLeft(storage, 32))
+      }
+    }
+  }
+
+  // Verifies that the witness post-state matches the computed post-state
+  verifyPostState(): boolean {
+    // track what all chunks were accessed so as to compare in the end if any chunks were missed
+    // in access while comparing against the provided poststate in the execution witness
+    const accessedChunks = new Map<string, boolean>()
+    // switch to false if postVerify fails
+    let postFailures = 0
+
+    for (const accessedState of this.accessWitness?.accesses() ?? []) {
+      const { address, type } = accessedState
+      let extraMeta = ''
+      if (accessedState.type === AccessedStateType.Code) {
+        extraMeta = `codeOffset=${accessedState.codeOffset}`
+      } else if (accessedState.type === AccessedStateType.Storage) {
+        extraMeta = `slot=${accessedState.slot}`
+      }
+
+      const { chunkKey } = accessedState
+      accessedChunks.set(chunkKey, true)
+      const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
+      if (computedValue === undefined) {
+        this.DEBUG &&
+          this._debug(
+            `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
+          )
+        postFailures++
+        continue
+      }
+
+      let canonicalValue: PrefixedHexString | null | undefined = this._postState[chunkKey]
+
+      if (canonicalValue === undefined) {
+        this.DEBUG &&
+          this._debug(
+            `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
+          )
+        postFailures++
+        continue
+      }
+
+      // if the access type is code, then we can't match the first byte because since the computed value
+      // doesn't has the first byte for push data since previous chunk code itself might not be available
+      if (accessedState.type === AccessedStateType.Code) {
+        // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
+        canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
+      } else if (
+        accessedState.type === AccessedStateType.Storage &&
+        canonicalValue === null &&
+        computedValue === ZEROVALUE
+      ) {
+        canonicalValue = ZEROVALUE
+      }
+
+      if (computedValue !== canonicalValue) {
+        const decodedComputedValue = decodeValue(accessedState.type, computedValue)
+        const decodedCanonicalValue = decodeValue(accessedState.type, canonicalValue)
+
+        const displayComputedValue =
+          computedValue === decodedComputedValue
+            ? computedValue
+            : `${computedValue} (${decodedComputedValue})`
+        const displayCanonicalValue =
+          canonicalValue === decodedCanonicalValue
+            ? canonicalValue
+            : `${canonicalValue} (${decodedCanonicalValue})`
+
+        this.DEBUG &&
+          this._debug(
+            `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
+          )
+        this.DEBUG && this._debug(`expected=${displayCanonicalValue}`)
+        this.DEBUG && this._debug(`computed=${displayComputedValue}`)
+        postFailures++
+      }
+    }
+
+    for (const canChunkKey of Object.keys(this._postState)) {
+      if (accessedChunks.get(canChunkKey) === undefined) {
+        this.DEBUG && this._debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
+        postFailures++
+      }
+    }
+
+    const verifyPassed = postFailures === 0
+    this.DEBUG &&
+      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+
+    return verifyPassed
   }
 
   getStateRoot(): Promise<Uint8Array> {
