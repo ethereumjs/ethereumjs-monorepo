@@ -26,6 +26,7 @@ const common = new Common({ chain: Mainnet })
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - "Guard" logging to only run with `ethjs` guard, PR [#3654](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3654/)
 
 ## 6.1.3 - 2024-08-15

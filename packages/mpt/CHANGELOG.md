@@ -42,6 +42,7 @@ We have now removed the stream functionality and the associated dependency and r
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - Address type issues and type-related improvements, PR [#3624](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3624)
 
 ## 6.2.1 - 2024-08-15

@@ -84,6 +84,7 @@ This simplifies the `StateManager` usage and allows for easier swapping between 
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - Fix BLS usage for BLS12-381 precompiles, PR [#3623](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3623)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 

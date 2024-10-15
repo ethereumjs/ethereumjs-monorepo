@@ -39,7 +39,7 @@ New names from other tx types, to grasp the scheme:
 
 #### Transaction Factory
 
-Similar renamings have been done for the generic `TransactionFactory` (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514)):
+Similar renamings have been done for the generic `TransactionFactory` (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514) and [#3667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3667)):
 
 - `TransactionFactory.fromTxData()` -> `createTx()`
 - `TransactionFactory.fromSerializedData()` -> `createTxFromRLP()`
@@ -117,6 +117,7 @@ const common = new Common({ chain: Mainnet })
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 
 ## 5.4.0 - 2024-08-15
 

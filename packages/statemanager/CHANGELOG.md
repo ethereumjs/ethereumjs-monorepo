@@ -94,6 +94,7 @@ Somewhat non-core functionality is now marked as optional (with a `?`), so if yo
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
 
