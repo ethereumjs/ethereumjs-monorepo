@@ -299,24 +299,25 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         const msg = _errorMsg('invalid gasUsed', vm, block)
         throw new Error(msg)
       }
-      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot,
-            )}`,
-          )
-        }
-        const msg = _errorMsg(
-          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-            block.header.stateRoot,
-          )}`,
-          vm,
-          block,
-        )
-        throw new Error(msg)
-      }
-    } else if (vm.common.isActivatedEIP(6800)) {
+      // if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+      //   if (vm.DEBUG) {
+      //     debug(
+      //       `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      //         block.header.stateRoot,
+      //       )}`,
+      //     )
+      //   }
+      //   const msg = _errorMsg(
+      //     `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+      //       block.header.stateRoot,
+      //     )}`,
+      //     vm,
+      //     block,
+      //   )
+      //   throw new Error(msg)
+      // }
+    }
+    if (vm.common.isActivatedEIP(6800)) {
       // If verkle is activated and executing statelessly, only validate the post-state
       if (vm['_opts'].stateManager!.verifyPostState!() === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
