@@ -70,7 +70,7 @@ export class MockPeer extends Peer {
     void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
-          await receiver.emit('data', data)
+          void receiver.emit('data', data)
         }, 100)
       }
     })
