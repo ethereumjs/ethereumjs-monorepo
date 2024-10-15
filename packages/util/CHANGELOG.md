@@ -63,6 +63,7 @@ See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 
 ## 9.1.0 - 2024-08-15

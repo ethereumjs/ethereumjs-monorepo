@@ -12,6 +12,12 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 ### Renamings
 
+#### Default Merkle SM
+
+We have renamed the previously called `DefaultStateManager` to a more neutral `MerkleStateManager`, see PR [#3641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3641), to reflect the rising importance of other state managers and align with future (at least) dual Merkle/Verkle state world:
+
+- `DefaultStateManager` -> `MerkleStateManager`
+
 #### Core State get/put Methods
 
 The names for the core state manager methods to access and write state have been simplified, see PR [#3541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3541):
@@ -87,6 +93,7 @@ Somewhat non-core functionality is now marked as optional (with a `?`), so if yo
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 - Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
 

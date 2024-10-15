@@ -91,6 +91,7 @@ For this library this means:
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - New `createEmptyBlock()` constructor (tree shaking advantages), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
 - kaustinen7 verkle testnet preparation (removes the stateRoot handling and caching for the previous block), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 

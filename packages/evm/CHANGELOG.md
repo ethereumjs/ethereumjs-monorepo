@@ -78,10 +78,12 @@ This simplifies the `StateManager` usage and allows for easier swapping between 
 - New `SimpleStateManager` as default state manager (reduces bundle size), PR [#3482](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3482)
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
 - Removed `EIP-3074` (AUTH / AUTHCALL opcodes) support, since superseded by `EIP-7702`, PR [#3582](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3582)
+- Rename `ec*` BN254 (aka alt_bn128) precompile parameters and names to `bn254*` (e.g. param `ecAddGas` -> `bn254AddGas`, name `ECMUL` -> `BN254MUL`), partly also BLS name alignment, PR [#3655](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3655)
 
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - Fix BLS usage for BLS12-381 precompiles, PR [#3623](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3623)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 

@@ -48,6 +48,7 @@ For the `Blockchain` library this means that it is not supported to operate on a
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 
 ## 7.3.0 - 2024-08-15
 

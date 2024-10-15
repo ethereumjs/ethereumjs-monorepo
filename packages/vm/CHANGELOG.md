@@ -62,7 +62,7 @@ The underlying EVM now supports Mega-EOF in an experimental form! 🎉 See EVM r
 
 ### EIP-7702 EOA Account Abstraction Support (experimental)
 
-The VM now experimentally supports running [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs with `runTx()` (or `runBlock()`) and along transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470) and [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577).
+The VM now experimentally supports running [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs with `runTx()` (or `runBlock()`) and along transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470), [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577) and [#3581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3581).
 
 The following is an example on how to create an EIP-7702 tx (note that you need to replace the `authorizationList` parameters with real-world tx and signature values):
 
@@ -109,6 +109,7 @@ For this library this means:
 ### Other Changes
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - Exit early on non-existing system contracts, PR [#3614](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3614)
 
 ## 8.1.0 - 2024-08-15
