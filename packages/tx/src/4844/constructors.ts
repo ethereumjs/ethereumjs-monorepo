@@ -249,7 +249,7 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   }
 
   const commonCopy = opts.common.copy()
-  commonCopy.updateParams(opts.params ?? paramsTx)
+  commonCopy.updateParams(opts.params ?? paramsTx, '@ethereumjs/tx')
 
   const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
   const blobsHex = blobs.map((blob) => bytesToHex(blob))
