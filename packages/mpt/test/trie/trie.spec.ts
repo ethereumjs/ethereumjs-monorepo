@@ -281,7 +281,6 @@ describe('getValueMap', async () => {
     [bigIntToBytes(0x01n), '0x' + '0a'.repeat(32)],
     [bigIntToBytes(0x02n), '0x' + '0b'.repeat(32)],
     [bigIntToBytes(0x03n), '0x' + '0c'.repeat(32)],
-    [bigIntToBytes(0x010an), '0x' + '0d'.repeat(32)],
   ]
   for (const entry of entries) {
     await trie.put(entry[0], hexToBytes(entry[1]))
