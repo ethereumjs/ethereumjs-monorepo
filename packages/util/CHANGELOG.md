@@ -59,6 +59,7 @@ See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
 - `bytes`: Restrict `hexToBytes()`, `unpadHex()` and `hexToBigInt()` to accept only hex-prefixed values, PR [#3510](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3510)
 - Remove deprecated `initKZG()` method, PR [#3635](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3635)
 - Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+- Remove redundant fills and `zeros()` function, PR [#3709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3709)
 
 ### Other Changes
 
@@ -66,6 +67,7 @@ See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
+- Use `noble` bytes conversion utilities internally, PR [#3698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3698)
 
 ## 9.1.0 - 2024-08-15
 

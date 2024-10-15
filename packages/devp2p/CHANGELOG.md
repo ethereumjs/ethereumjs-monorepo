@@ -28,6 +28,7 @@ const common = new Common({ chain: Mainnet })
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - "Guard" logging to only run with `ethjs` guard, PR [#3654](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3654/)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `devp2p:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
 
 ## 6.1.3 - 2024-08-15
 

@@ -15,6 +15,7 @@ We are getting there! 😁 While still in an experimental stage this release mak
 - Proof function renaming (e.g. `createProof()` -> `createVerkleProof()`), PR [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557)
 - Refactor trie and verkle utils, PR [#3600](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3600)
 - Add and integrate `StatefulVerkleStateManager`, PR [#3628](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3628)
+- Various Verkle Fixes, PR [#3650](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3650)
 
 ## 0.1.0 - 2024-08-15
 

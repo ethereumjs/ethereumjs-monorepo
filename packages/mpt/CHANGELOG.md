@@ -12,6 +12,12 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 ### Renamings
 
+#### Main Class
+
+The main class has been renamed to avoid confusion with Verkle, see PR [#3717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3717):
+
+- `Trie` -> `MerklePatriciaTrie`
+
 #### Static Constructors
 
 The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3515):
@@ -20,10 +26,10 @@ The static constructors for our library classes have been reworked to now be sta
 
 #### Proof Functionality
 
-Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PR [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557):
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PRs [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557) and [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718):
 
 - `Trie.createFromProof()` -> `createMPTFromProof()`
-- `Trie.verifyProof()` -> `verifyMPTProof()`
+- `Trie.verifyProof()` -> `verifyMerkleProof()`
 - `Trie.verifyRangeProof()` -> `verifyMerkleRangeProof()`
 - `Trie.createProof()` -> `createMerkleProof()`
 - `Trie.updateFromProof()` -> `updateMPTFromMerkleProof()`
@@ -37,6 +43,8 @@ We have now removed the stream functionality and the associated dependency and r
 ### Other Breaking Changes
 
 - Refactor trie util helpers, PR [#3534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3534)
+- Improve node typings and class architecture, PR [#3708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3708)
+- Rename trie helpers to mpt, PR [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718)
 
 ### Other Changes
 
@@ -44,6 +52,7 @@ We have now removed the stream functionality and the associated dependency and r
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - Address type issues and type-related improvements, PR [#3624](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3624)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `mpt:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
 
 ## 6.2.1 - 2024-08-15
 
