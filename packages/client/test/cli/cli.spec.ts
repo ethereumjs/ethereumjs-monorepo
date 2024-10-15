@@ -356,7 +356,7 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it.only('HTTP/WS RPCs should not start when cli args omitted', async () => {
+  it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
