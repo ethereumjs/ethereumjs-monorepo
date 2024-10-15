@@ -137,6 +137,7 @@ const common = new Common({
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Add T9N (TransactionTool) test consumption, PR [#3742](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3742)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 
 ## 5.4.0 - 2024-08-15

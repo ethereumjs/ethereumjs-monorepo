@@ -68,6 +68,7 @@ See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
 - Use `noble` bytes conversion utilities internally, PR [#3698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3698)
+- Added two simple unit conversion methods, `Units.ether()` and `Units.gwei()`, mainly to ease tx creation a bit, PRs [#3734](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3734), [#3736](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3736) and [#3738](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3738)
 
 ## 9.1.0 - 2024-08-15
 

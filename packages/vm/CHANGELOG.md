@@ -113,6 +113,8 @@ For this library this means:
 - Implement `t8ntool` to use for `execution-spec-tests`, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - Exit early on non-existing system contracts, PR [#3614](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3614)
+- Add `allowNoBlobs` option to `BlockBuilder.addTransaction()`, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Exit early in `runBlock()` if system contract has no code, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
 
 ## 8.1.0 - 2024-08-15
 

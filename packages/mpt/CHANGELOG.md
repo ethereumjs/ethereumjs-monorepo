@@ -12,6 +12,14 @@ This is a first round of `alpha` releases for our upcoming breaking release roun
 
 ### Renamings
 
+#### New Package Name
+
+The trie package itself has been renamed, see PR [#3719](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3719):
+
+- `@ethereumjs/trie` -> `@ethereumjs/mpt`
+
+This is to avoid confusion with Verkle in the future! Please update your dependencies and imports accordingly! The versioning of the package will be continuous from the old package and not "restart" in whatever way.
+
 #### Main Class
 
 The main class has been renamed to avoid confusion with Verkle, see PR [#3717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3717):
@@ -26,7 +34,7 @@ The static constructors for our library classes have been reworked to now be sta
 
 #### Proof Functionality
 
-Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PRs [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557) and [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718):
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PRs [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557), [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718) and [#3730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3730):
 
 - `Trie.createFromProof()` -> `createMPTFromProof()`
 - `Trie.verifyProof()` -> `verifyMerkleProof()`

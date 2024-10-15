@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.10.3 - [ UNPUBLISHED ]
 
+### Engine API
+
+- Add `getBlobsV1` to the client to support CL blob import, PR [#3711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3711)
+- Minor engine-cancun hive test fixes, PR [#3308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3308)
+
 ### RPC Methods
 
 - Added `eth_getBlockReceipts` method, PR [#3499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3499)
