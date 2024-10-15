@@ -268,7 +268,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const modules = manager['_modules']
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
-    client.config.events.emit(Event.CLIENT_SHUTDOWN)
+    void client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
 
   const { chain } = client
