@@ -1080,7 +1080,7 @@ export class MerklePatriciaTrie {
 
   /**
    * Returns a list of values stored in the trie
-   * @param startKey first unhashed key in the range to be returned (defaults to 0)
+   * @param startKey first unhashed key in the range to be returned (defaults to 0).  Note, all keys must be of the same length or undefined behavior will result
    * @param limit - the number of keys to be returned (undefined means all keys)
    * @returns an object with two properties (a map of all key/value pairs in the trie - or in the specified range) and then a `nextKey` reference if a range is specified
    */
