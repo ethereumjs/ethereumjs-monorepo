@@ -18,12 +18,17 @@ import {
   BIGINT_2,
   GWEI_TO_WEI,
   TypeOutput,
+  bigIntToBytes,
   createWithdrawal,
   createZeroAddress,
+  hexToBytes,
+  setLengthLeft,
   ssz,
   toBytes,
   toType,
+  utf8ToBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -337,8 +342,30 @@ export class BlockBuilder {
 
     let systemLogs: Log[] | undefined
     if (this.vm.common.isActivatedEIP(6493)) {
-      // dummy assignment
-      systemLogs = [] as Log[]
+      // decide to add individual or total reward logs
+      const totalPriorityReward = this.transactionResults.reduce(
+        (acc, elem) => acc + elem.minerValue,
+        BIGINT_0,
+      )
+      const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+      const coinbase =
+        this.headerData.coinbase !== undefined
+          ? new Address(toBytes(this.headerData.coinbase))
+          : createZeroAddress()
+
+      const logData = {
+        address: systemAddressBytes,
+        // operation, from, to
+        topics: [
+          keccak256(utf8ToBytes('PriorityFee(address,uint256)')),
+          setLengthLeft(systemAddressBytes, 32),
+          setLengthLeft(coinbase.toBytes(), 32),
+        ],
+        // amount be uint256
+        data: setLengthLeft(bigIntToBytes(totalPriorityReward), 32),
+      }
+
+      systemLogs = [[logData.address, logData.topics, logData.data]]
     }
 
     if (this.vm.common.isActivatedEIP(6493)) {

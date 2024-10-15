@@ -25,6 +25,7 @@ import {
   short,
   ssz,
   unprefixedHexToBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -268,8 +269,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
-    if(vm.common.isActivatedEIP(6493)){
-      if(!equalsBytes(systemLogsRoot!, block.header.systemLogsRoot!)){
+    if (vm.common.isActivatedEIP(6493)) {
+      if (!equalsBytes(systemLogsRoot!, block.header.systemLogsRoot!)) {
         if (vm.DEBUG) {
           debug(
             `Invalid systemLogsRoot received=${bytesToHex(systemLogsRoot!)} expected=${bytesToHex(
@@ -277,6 +278,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
             )}`,
           )
         }
+        console.log({ systemLogsRoot: bytesToHex(systemLogsRoot!) })
         const msg = _errorMsg('invalid systemLogsRoot', vm, block)
         throw new Error(msg)
       }
@@ -512,8 +514,25 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   }
 
   if (vm.common.isActivatedEIP(6493)) {
-    // dummy assignment
-    result.systemLogs = [] as Log[]
+    // decide to add individual or total reward logs
+    const totalPriorityReward = blockResults.results.reduce(
+      (acc, elem) => acc + elem.minerValue,
+      BIGINT_0,
+    )
+    const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+    const logData = {
+      address: systemAddressBytes,
+      // operation, from, to
+      topics: [
+        keccak256(utf8ToBytes('PriorityFee(address,uint256)')),
+        setLengthLeft(systemAddressBytes, 32),
+        setLengthLeft(block.header.coinbase.toBytes(), 32),
+      ],
+      // amount be uint256
+      data: setLengthLeft(bigIntToBytes(totalPriorityReward), 32),
+    }
+
+    result.systemLogs = [[logData.address, logData.topics, logData.data]]
   }
 
   if (vm.common.isActivatedEIP(6493)) {

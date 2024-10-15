@@ -8,6 +8,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
+  bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -16,7 +17,9 @@ import {
   equalsBytes,
   hexToBytes,
   publicToAddress,
+  setLengthLeft,
   short,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -617,6 +620,26 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`,
     )
+  }
+
+  if (vm.common.isActivatedEIP(6493)) {
+    const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+    const logData = {
+      address: systemAddressBytes,
+      // operation, from, to
+      topics: [
+        keccak256(utf8ToBytes('Fee(address,uint256)')),
+        setLengthLeft(caller.toBytes(), 32),
+        setLengthLeft(systemAddressBytes, 32),
+      ],
+      // amount be uint256
+      data: setLengthLeft(bigIntToBytes(actualTxCost), 32),
+    }
+
+    if (results.execResult.logs === undefined) {
+      results.execResult.logs = []
+    }
+    results.execResult.logs.push([logData.address, logData.topics, logData.data])
   }
 
   // Update miner's balance
