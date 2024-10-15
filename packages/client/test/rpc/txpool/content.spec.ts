@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createTx } from '@ethereumjs/tx'
-import { randomBytes } from '@ethereumjs/util'
+import { Units, randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -55,7 +55,7 @@ describe(method, () => {
       {
         header: createBlockHeader(
           {
-            baseFeePerGas: 1000000000n,
+            baseFeePerGas: Units.gwei(1),
             number: 2n,
             parentHash: headBlock.header.hash(),
           },
