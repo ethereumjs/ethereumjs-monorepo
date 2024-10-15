@@ -690,20 +690,23 @@ describe('run a verkle block statefully', () => {
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [3607, 6800] })
     const genesisRlp = hexToBytes(verkleJson.genesisRLP as PrefixedHexString)
-    const genesis = createBlockFromRLP(genesisRlp, { common })
+    const genesisBlock = createBlockFromRLP(genesisRlp, { common })
 
     const blockRlp = hexToBytes(verkleJson.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
     const sm = new StatefulVerkleStateManager({ verkleCrypto })
     await sm['_trie']['_createRootNode']()
     const blockchain = await createBlockchain({ common })
-    const vm = await setupVM({ common, stateManager: sm, blockchain, genesisBlock: genesis })
+    const vm = await setupVM({ common, stateManager: sm, blockchain, genesisBlock })
     await setupPreConditions(vm.stateManager, verkleJson)
+    assert.equal(bytesToHex(genesisBlock.hash()), verkleJson.genesisBlockHeader.hash)
     assert.equal(
       bytesToHex(await vm.stateManager.getStateRoot()),
       verkleJson.genesisBlockHeader.stateRoot,
     )
-    assert.equal(bytesToHex(genesis.hash()), verkleJson.genesisBlockHeader.hash)
-    const res = await runBlock(vm, { block, skipBlockValidation: true })
+    await runBlock(vm, {
+      block,
+      skipBlockValidation: true,
+    })
   })
 })
