@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^5.0.2",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^9.1.0",
     "@scure/base": "^1.1.7",
     "debug": "^4.3.3",
@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/tx": "^5.4.0",
+    "@ethereumjs/tx": "^6.0.0-alpha.1",
     "@types/debug": "^4.1.9",
     "@types/k-bucket": "^5.0.0",
     "chalk": "^4.1.2",

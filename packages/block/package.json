@@ -48,9 +48,9 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/mpt": "^6.2.2",
-    "@ethereumjs/tx": "^5.4.0",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/mpt": "^7.0.0-alpha.1",
+    "@ethereumjs/tx": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^9.1.0",
     "ethereum-cryptography": "^3.0.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "5.4.0",
+  "version": "6.0.0-alpha.1",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": [
     "ethereum",
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^5.0.2",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^9.1.0",
     "ethereum-cryptography": "^3.0.0"
   },

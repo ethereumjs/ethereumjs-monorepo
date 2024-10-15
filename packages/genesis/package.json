@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.2.3",
+  "version": "0.3.0-alpha.1",
   "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",
@@ -66,6 +66,6 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@ethereumjs/mpt": "^6.2.2"
+    "@ethereumjs/mpt": "^7.0.0-alpha.1"
   }
 }

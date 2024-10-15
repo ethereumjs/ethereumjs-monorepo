@@ -49,8 +49,8 @@
   "dependencies": {
     "@ethereumjs/block": "^6.0.0-alpha.1",
     "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/mpt": "^6.2.2",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/mpt": "^7.0.0-alpha.1",
     "@ethereumjs/util": "^9.1.0",
     "debug": "^4.3.3",
     "lru-cache": "10.1.0"
