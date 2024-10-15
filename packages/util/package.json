@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "9.1.0",
+  "version": "10.0.0-alpha.1",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",

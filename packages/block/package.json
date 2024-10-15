@@ -51,7 +51,7 @@
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/mpt": "^7.0.0-alpha.1",
     "@ethereumjs/tx": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
