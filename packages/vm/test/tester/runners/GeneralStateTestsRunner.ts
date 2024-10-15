@@ -147,7 +147,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       const block = makeBlockFromEnv(testData.env, { common })
 
       if (options.jsontrace === true) {
-        vm.evm.events!.on('step', (event) => stepHandler(event.data))
+        vm.evm.events!.on('step', (event) => stepHandler(event.step))
         vm.events.on('afterTx', afterTxHandler)
       }
       try {

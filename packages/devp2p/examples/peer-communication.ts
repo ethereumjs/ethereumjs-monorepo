@@ -9,13 +9,14 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  NestedUint8Array,
   randomBytes,
 } from '@ethereumjs/util'
 import chalk from 'chalk'
 import { LRUCache } from 'lru-cache'
 import ms from 'ms'
 
-import type { Block } from '@ethereumjs/block'
+import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ETH, Peer } from '@ethereumjs/devp2p'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -79,14 +80,14 @@ rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stac
 
 rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
-  const eth = peer.getProtocols()[0]
+  const eth = peer.getProtocols()[0] as ETH
   const requests: {
     headers: any[]
     bodies: any[]
     msgTypes: { [key: string]: ETH.MESSAGE_CODES }
   } = { headers: [], bodies: [], msgTypes: {} }
 
-  const clientId = peer.getHelloMessage().clientId
+  const clientId = peer.getHelloMessage()!.clientId
   console.log(
     chalk.green(
       `Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`,
@@ -102,7 +103,7 @@ rlpx.events.on('peer:added', (peer) => {
   // check CHECK_BLOCK
   let forkDrop: NodeJS.Timeout
   let forkVerified = false
-  eth.events.once('status', () => {
+  eth.events.once('status').then(() => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
       Uint8Array.from([1]),
       [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
@@ -110,10 +111,10 @@ rlpx.events.on('peer:added', (peer) => {
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
     }, ms('15s'))
-    peer.once('close', () => clearTimeout(forkDrop))
+    peer.events.once('close').then(() => clearTimeout(forkDrop))
   })
 
-  eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  eth.events.on('message', async ({ code, payload }) => {
     // We keep track of how many of each message type are received
     if (code in requests.msgTypes) {
       requests.msgTypes[code]++
@@ -126,8 +127,8 @@ rlpx.events.on('peer:added', (peer) => {
         if (!forkVerified) break
 
         for (const item of payload) {
-          const blockHash = item[0]
-          if (blocksCache.has(bytesToUnprefixedHex(blockHash))) continue
+          const blockHash = (item as NestedUint8Array)[0]
+          if (blocksCache.has(bytesToUnprefixedHex(blockHash as Uint8Array))) continue
           setTimeout(() => {
             eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
               Uint8Array.from([2]),
@@ -142,7 +143,7 @@ rlpx.events.on('peer:added', (peer) => {
         if (!forkVerified) break
 
         for (const item of payload) {
-          const tx = createTxFromBlockBodyData(item)
+          const tx = createTxFromBlockBodyData(item as Uint8Array)
           if (tx.isValid()) onNewTx(tx, peer)
         }
 
@@ -151,7 +152,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS: {
         const headers = []
         // hack
-        if (bytesToInt(payload[1][0]) === CHECK_BLOCK_NR) {
+        if (bytesToInt((payload[1] as NestedUint8Array)[0] as Uint8Array) === CHECK_BLOCK_NR) {
           headers.push(CHECK_BLOCK_HEADER)
         }
 
@@ -165,31 +166,37 @@ rlpx.events.on('peer:added', (peer) => {
 
       case devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS: {
         if (!forkVerified) {
-          if (payload[1].length !== 1) {
+          if ((payload[1] as NestedUint8Array).length !== 1) {
             console.log(
-              `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload[1].length})`,
+              `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload[1] as NestedUint8Array})`,
             )
             peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
             break
           }
 
           const expectedHash = CHECK_BLOCK
-          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(
+            (payload[1] as NestedUint8Array)[0] as Uint8Array[],
+            { common },
+          )
           if (bytesToUnprefixedHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
             forkVerified = true
           }
         } else {
-          if (payload[1].length > 1) {
+          if ((payload[1] as NestedUint8Array).length > 1) {
             console.log(
-              `${addr} not more than one block header expected (received: ${payload[1].length})`,
+              `${addr} not more than one block header expected (received: ${(payload[1] as NestedUint8Array).length})`,
             )
             break
           }
 
           let isValidPayload = false
-          const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
+          const header = createBlockHeaderFromBytesArray(
+            (payload[1] as NestedUint8Array)[0] as Uint8Array[],
+            { common },
+          )
           while (requests.headers.length > 0) {
             const blockHash = requests.headers.shift()
             if (equalsBytes(header.hash(), blockHash)) {
@@ -226,9 +233,9 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES: {
         if (!forkVerified) break
 
-        if (payload[1].length !== 1) {
+        if ((payload[1] as NestedUint8Array).length !== 1) {
           console.log(
-            `${addr} not more than one block body expected (received: ${payload[1].length})`,
+            `${addr} not more than one block body expected (received: ${(payload[1] as NestedUint8Array).length})`,
           )
           break
         }
@@ -236,8 +243,10 @@ rlpx.events.on('peer:added', (peer) => {
         let isValidPayload = false
         while (requests.bodies.length > 0) {
           const header = requests.bodies.shift()
-          const txs = payload[1][0][0]
-          const uncleHeaders = payload[1][0][1]
+          const txs = ((payload[1] as NestedUint8Array)[0] as NestedUint8Array)[0] as Uint8Array[]
+          const uncleHeaders = (
+            (payload[1] as NestedUint8Array)[0] as NestedUint8Array
+          )[1] as Uint8Array[][]
           const block = createBlockFromBytesArray([header.raw(), txs, uncleHeaders], { common })
           const isValid = await isValidBlock(block)
           if (isValid) {
@@ -257,7 +266,7 @@ rlpx.events.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK: {
         if (!forkVerified) break
 
-        const newBlock = createBlockFromBytesArray(payload[0], { common })
+        const newBlock = createBlockFromBytesArray(payload[0] as BlockBytes, { common })
         const isValidNewBlock = await isValidBlock(newBlock)
         if (isValidNewBlock) onNewBlock(newBlock, peer)
 
@@ -289,30 +298,30 @@ rlpx.events.on('peer:added', (peer) => {
   })
 })
 
-rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', ({ peer, reason, disconnectWe }) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
     chalk.yellow(
       `Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(
-        reasonCode,
-      )} (${String(reasonCode)}) (total: ${total})`,
+        reason,
+      )} (${String(reason)}) (total: ${total})`,
     ),
   )
 })
 
-rlpx.events.on('peer:error', (peer, err) => {
-  if (err.code === 'ECONNRESET') return
+rlpx.events.on('peer:error', ({ peer, error }) => {
+  if (error.code === 'ECONNRESET') return
 
-  if (err instanceof Error) {
+  if (error instanceof Error) {
     const peerId = peer.getId()
     if (peerId !== null) dpt.banPeer(peerId, ms('5m'))
 
-    console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${err.message}`))
+    console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${error.message}`))
     return
   }
 
-  console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${err.stack ?? err}`))
+  console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${error.stack ?? error}`))
 })
 
 // uncomment, if you want accept incoming connections

@@ -15,7 +15,7 @@ describe('async events', () => {
       const startTime = Date.now()
       setTimeout(() => {
         assert.ok(Date.now() > startTime + 999, 'evm paused on step function for one second')
-        event.resolve?.()
+        event.next?.()
       }, 1000)
     })
     const runCallArgs = {

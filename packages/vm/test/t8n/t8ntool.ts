@@ -150,14 +150,14 @@ export class TransitionTool {
         // eslint-disable-next-line no-console
         console.log('Done processing transaction (system operations might follow next)')
       })
-      this.vm.evm.events?.on('step', (e) => {
+      this.vm.evm.events?.on('step', ({ step, next }) => {
         // eslint-disable-next-line no-console
         console.log({
-          gasLeft: e.data.gasLeft.toString(),
-          stack: e.data.stack.map((a) => bigIntToHex(a)),
-          opName: e.data.opcode.name,
-          depth: e.data.depth,
-          address: e.data.address.toString(),
+          gasLeft: step.gasLeft.toString(),
+          stack: step.stack.map((a) => bigIntToHex(a)),
+          opName: step.opcode.name,
+          depth: step.depth,
+          address: step.address.toString(),
         })
       })
     }

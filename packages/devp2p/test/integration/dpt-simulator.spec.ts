@@ -51,11 +51,11 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42642)
 
     try {
-      dpts[0].events.once('peer:added', async (peer) => {
+      dpts[0].events.once('peer:added').then(async (peer) => {
         await util.delay(400)
         dpts[0].banPeer(peer)
       })
-      dpts[0].events.once('peer:removed', async (peer) => {
+      dpts[0].events.once('peer:removed').then(async (peer) => {
         assert.equal(dpts[0]['_banlist'].has(peer), true, 'ban-list should contain peer')
         assert.equal(
           dpts[0].getPeers().length,
@@ -74,7 +74,7 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42732)
 
     try {
-      dpts[0].events.once('peer:added', async (peer: any) => {
+      dpts[0].events.once('peer:added').then(async (peer) => {
         dpts[0]._onKBucketPing([peer], peer)
         await util.delay(400)
         assert.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
