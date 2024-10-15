@@ -59,7 +59,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.4.0",
+    "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/util": "^9.1.0"
   },
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "3.0.4",
+  "version": "4.0.0-alpha.1",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": [
     "ethash",
@@ -53,7 +53,7 @@
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^4.4.0"
+    "@ethereumjs/common": "^5.0.0-alpha.1"
   },
   "engines": {
     "node": ">=18"

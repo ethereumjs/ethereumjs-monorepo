@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "EthereumJS Execution Layer (EL) Client Implementation",
   "keywords": [
     "ethereum",
@@ -56,11 +56,11 @@
   },
   "dependencies": {
     "@ethereumjs/block": "6.0.0-alpha.1",
-    "@ethereumjs/blockchain": "7.3.0",
-    "@ethereumjs/common": "4.4.0",
-    "@ethereumjs/devp2p": "6.1.3",
-    "@ethereumjs/ethash": "3.0.4",
-    "@ethereumjs/evm": "3.1.0",
+    "@ethereumjs/blockchain": "8.0.0-alpha.1",
+    "@ethereumjs/common": "5.0.0-alpha.1",
+    "@ethereumjs/devp2p": "7.0.0-alpha.1",
+    "@ethereumjs/ethash": "4.0.0-alpha.1",
+    "@ethereumjs/evm": "4.0.0-alpha.1",
     "@ethereumjs/genesis": "0.2.3",
     "@ethereumjs/rlp": "5.0.2",
     "@ethereumjs/statemanager": "2.4.0",

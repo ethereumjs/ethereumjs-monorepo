@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "3.1.0",
+  "version": "4.0.0-alpha.1",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
@@ -56,7 +56,7 @@
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.4.0",
+    "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/statemanager": "^2.4.0",
     "@ethereumjs/util": "^9.1.0",
     "@types/debug": "^4.1.9",
