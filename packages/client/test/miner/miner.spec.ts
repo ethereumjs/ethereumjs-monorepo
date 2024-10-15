@@ -18,12 +18,11 @@ import { Config } from '../../src/config.js'
 import { Miner } from '../../src/miner/index.js'
 import { FullEthereumService } from '../../src/service/index.js'
 // import { Event } from '../../src/types'
-import { wait } from '../integration/util.js'
-
-import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import type { FullSynchronizer } from '../../src/sync/index.js'
+import { wait } from '../integration/util.js'
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -89,6 +88,7 @@ class FakeChain {
     _init: async () => undefined,
     events: {
       addListener: () => {},
+      on: () => {},
     },
   }
 }
@@ -354,6 +354,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
     common: customCommon,
     saveReceipts: true,
   })
+  console.log(chain)
   const service = new FullEthereumService({
     config,
     chain,

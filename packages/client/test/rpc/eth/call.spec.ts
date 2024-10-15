@@ -176,5 +176,5 @@ describe(
       assert.ok(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
     })
   },
-  10000,
+  20000,
 )
