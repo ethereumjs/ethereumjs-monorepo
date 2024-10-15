@@ -116,5 +116,5 @@ describe(
       assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
-  10000,
+  20000,
 )

@@ -1,6 +1,13 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { TransactionType, createTx } from '@ethereumjs/tx'
-import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  randomBytes,
+  zeroAddress,
+} from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.js'
@@ -269,24 +276,29 @@ describe('should send Receipts on GetReceipts', async () => {
   })
 })
 
-describe('should handle Transactions', async () => {
-  const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const chain = await Chain.create({ config })
-  const service = new FullEthereumService({ config, chain })
-  service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
-    it('should handle transaction message', () => {
-      assert.deepEqual(msg[0], createTx({ type: 2 }), 'handled Transactions message')
-    })
-  }
+describe('should handle Transactions', () => {
+  it('should handle transaction message', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const service = new FullEthereumService({ config, chain })
+    const pk = hexToBytes('0xdb9744e4be510db6dc556dca76a0b8505d9d189ed1c3e7577f570aac6ad78a8a')
+    service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
+      assert.deepEqual(
+        msg[0].hash(),
+        createTx({ type: 2 }).sign(pk).hash(),
+        'handled Transactions message',
+      )
+    }
 
-  await service.handle(
-    {
-      name: 'Transactions',
-      data: [createTx({ type: 2 })],
-    },
-    'eth',
-    undefined as any,
-  )
+    await service.handle(
+      {
+        name: 'Transactions',
+        data: [createTx({ type: 2 }).sign(pk)],
+      },
+      'eth',
+      undefined as any,
+    )
+  })
 })
 
 describe('should handle NewPooledTransactionHashes', async () => {
