@@ -39,8 +39,8 @@ export class MockServer extends Server {
       transport: this.name,
       url: `mock://${this.location}`,
     })
-    this.server!.config.events.on(Event.PEER_CONNECTED, async (eventData) => {
-      await this.connect(eventData.connectedPeer.id, (eventData.connectedPeer as any).stream)
+    ;(this.server as any).on('connection', async ({ id, stream }: { id: string; stream: any }) => {
+      await this.connect(id, stream)
     })
     return true
   }
