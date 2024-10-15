@@ -110,6 +110,7 @@ For this library this means:
 
 - Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
 - Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Implement `t8ntool` to use for `execution-spec-tests`, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
 - Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
 - Exit early on non-existing system contracts, PR [#3614](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3614)
 

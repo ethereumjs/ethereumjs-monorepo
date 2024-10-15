@@ -29,6 +29,21 @@ The names for the core state manager methods to access and write state have been
 - `putContractStorage()` -> `putStorage()`
 - `clearContractStorage()` -> `clearStorage()`
 
+#### Proof Functionality
+
+The following proof methods have been taken out of the core classes and made standalone-methods (tree shaking + keep core classes limited to core state functionality), see PR [#3672](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3672):
+
+- `MerkleStateManager.getProof()` -> `getMerkleStateProof()`
+- `MerkleStateManager.fromProof()` -> `fromMerkleStateProof()`
+- `MerkleStateManager.addStorageProof()` -> `addMerkleStateStorageProof()`
+- `MerkleStateManager.addProofData()` -> `addMerkleStateProofData()`
+- `MerkleStateManager.verifyProof()` -> `verifyMerkleStateProof()`
+
+- `RPCStateManager.getProof()` -> `getRPCStateProof()`
+
+- `VerkleStateManager.getProof()` -> `getVerkleStateProof()`
+- `VerkleStateManager.verifyVerkleProof()` -> `verifyVerkleStateProof()`
+
 ### New Common API
 
 There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
