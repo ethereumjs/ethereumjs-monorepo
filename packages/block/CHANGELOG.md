@@ -64,7 +64,9 @@ Since downgraded in importance and otherwise bloating the core `Block` class too
 Both clique and ethash blocks can still be created though and used within the wider EthereumJS stack. For clique, the `cliqueSigner` option has been removed. Instead there is a dedicated static constructor/standalone method to create a clique block:
 
 ```ts
-let block = createSealedCliqueBlock({ /* ... */ }
+let block = createSealedCliqueBlock({
+  /* ... */
+})
 ```
 
 Most clique methods are now invoked in a standalone-way, e.g.:
@@ -72,6 +74,26 @@ Most clique methods are now invoked in a standalone-way, e.g.:
 ```ts
 header.cliqueEpochTransitionSigners(), // old
   cliqueEpochTransitionSigners(header) // new
+```
+
+### JavaScript KZG Support (no more WASM)
+
+The WASM based KZG integration for 4844 support has been replaced with a pure JS-based solution ([micro-eth-singer](https://github.com/paulmillr/micro-eth-signer), thanks to @paulmillr for the cooperation and Andrew for the integration! ❤️), see PR [#3674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3674). This makes this library fully independent from Web Assembly code for all supported functionality! 🎉 The JS version is indeed even faster then the WASM one (we benchmarked), so we recommend to just switch over!
+
+KZG is one-time initialized by providing to `Common`, in the updated version now like this:
+
+```ts
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const kzg = new microEthKZG(trustedSetup)
+// Pass the following Common to the EthereumJS library
+const common = new Common({
+  chain: Mainnet,
+  customCrypto: {
+    kzg,
+  },
+})
 ```
 
 ### Removal of TTD Logic (live-Merge Transition Support)

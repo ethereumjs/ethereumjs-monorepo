@@ -39,6 +39,28 @@ const bn254 = await initRustBN()
 const evm = await createEVM({ bn254: new RustBN254(bn254) })
 ```
 
+#### JavaScript KZG Support
+
+The WASM based KZG integration for 4844 support and usage for the EVM KZG point evaluation precompile has been replaced with a pure JS-based solution ([micro-eth-singer](https://github.com/paulmillr/micro-eth-signer), see PR [#3674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3674). The JS version is indeed even faster then the WASM one (we benchmarked), so we recommend to just switch over!
+
+KZG is one-time initialized by providing to `Common`, in the updated version now like this:
+
+```ts
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const kzg = new microEthKZG(trustedSetup)
+// Pass the following Common to the EthereumJS library
+const common = new Common({
+  chain: Mainnet,
+  customCrypto: {
+    kzg,
+  },
+})
+```
+
+Note that you _need_ to provide this if you want to have a fully `Shanghai/Cancun` compliant EVM (otherwise the KZG precompile will not work if called)!
+
 #### Own EVM Parameter Set
 
 HF-sensitive parameters like `maxInitCodeSize` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
