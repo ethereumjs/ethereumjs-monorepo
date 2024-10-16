@@ -550,9 +550,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           if (accountData === undefined) {
             return null
           }
-          const basicDataBytes = encodeVerkleLeafBasicData(accountData)
 
-          return bytesToHex(basicDataBytes)
+          return bytesToHex(accountData.codeHash)
         } else {
           const encodedAccount = this._caches?.account?.get(address)?.accountRLP
           if (encodedAccount === undefined) {
