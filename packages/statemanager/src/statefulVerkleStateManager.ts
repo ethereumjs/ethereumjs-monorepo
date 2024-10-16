@@ -519,32 +519,15 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
     const { address, type } = accessedState
     switch (type) {
-      case AccessedStateType.Version: {
+      case AccessedStateType.BasicData: {
         const encodedAccount = this._caches?.account?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
           return null
         }
-        // Version is always 0
-        // TODO: Update this when versioning is added to accounts
-        return ZEROVALUE
-      }
-      case AccessedStateType.Balance: {
-        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-        if (encodedAccount === undefined) {
-          return null
-        }
-
-        const balanceBigint = createPartialAccountFromRLP(encodedAccount).balance
-        return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
-      }
-
-      case AccessedStateType.Nonce: {
-        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-        if (encodedAccount === undefined) {
-          return null
-        }
-        const nonceBigint = createPartialAccountFromRLP(encodedAccount).nonce
-        return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
+        const basicDataBytes = encodeVerkleLeafBasicData(
+          createPartialAccountFromRLP(encodedAccount),
+        )
+        return bytesToHex(basicDataBytes)
       }
 
       case AccessedStateType.CodeHash: {
@@ -553,28 +536,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           return null
         }
         return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
-      }
-
-      case AccessedStateType.CodeSize: {
-        const codeSize = this._caches?.code?.get(address)?.code?.length
-        if (codeSize === undefined) {
-          // it could be an EOA lets check for that
-          const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-          if (encodedAccount === undefined) {
-            return null
-          }
-
-          const account = createPartialAccountFromRLP(encodedAccount)
-          if (account.isContract()) {
-            const errorMsg = `Code cache not found for address=${address.toString()}`
-            this.DEBUG && this._debug(errorMsg)
-            throw Error(errorMsg)
-          } else {
-            return null
-          }
-        }
-
-        return bytesToHex(setLengthRight(bigIntToBytes(BigInt(codeSize), true), 32))
       }
 
       case AccessedStateType.Code: {
