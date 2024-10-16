@@ -268,6 +268,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
+    //@ts-ignore
     await modifyAccountFields(this, address, accountFields)
   }
   putCode = async (address: Address, value: Uint8Array): Promise<void> => {
@@ -516,33 +517,64 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }
   }
 
-  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
+  async getComputedValue(
+    accessedState: AccessedStateWithAddress,
+  ): Promise<PrefixedHexString | null> {
     const { address, type } = accessedState
+
     switch (type) {
       case AccessedStateType.BasicData: {
-        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-        if (encodedAccount === undefined) {
-          return null
+        if (this._caches === undefined) {
+          const accountData = await this.getAccount(address)
+          if (accountData === undefined) {
+            return null
+          }
+          const basicDataBytes = encodeVerkleLeafBasicData(accountData)
+          return bytesToHex(basicDataBytes)
+        } else {
+          const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+          this._debug(`we have encoded account ${encodedAccount}`)
+          if (encodedAccount === undefined) {
+            return null
+          }
+          const basicDataBytes = encodeVerkleLeafBasicData(
+            createPartialAccountFromRLP(encodedAccount),
+          )
+          return bytesToHex(basicDataBytes)
         }
-        const basicDataBytes = encodeVerkleLeafBasicData(
-          createPartialAccountFromRLP(encodedAccount),
-        )
-        return bytesToHex(basicDataBytes)
       }
 
       case AccessedStateType.CodeHash: {
-        const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-        if (encodedAccount === undefined) {
-          return null
+        if (this._caches === undefined) {
+          const accountData = await this.getAccount(address)
+          if (accountData === undefined) {
+            return null
+          }
+          const basicDataBytes = encodeVerkleLeafBasicData(accountData)
+
+          return bytesToHex(basicDataBytes)
+        } else {
+          const encodedAccount = this._caches?.account?.get(address)?.accountRLP
+          if (encodedAccount === undefined) {
+            return null
+          }
+          return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
         }
-        return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
       }
 
       case AccessedStateType.Code: {
         const { codeOffset } = accessedState
-        const code = this._caches?.code?.get(address)?.code
-        if (code === undefined) {
-          return null
+        let code: Uint8Array | undefined | null = null
+        if (this._caches === undefined) {
+          code = await this.getCode(address)
+          if (code === undefined) {
+            return null
+          }
+        } else {
+          code = this._caches?.code?.get(address)?.code
+          if (code === undefined) {
+            return null
+          }
         }
 
         // we can only compare the actual code because to compare the first byte would
@@ -559,8 +591,15 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       case AccessedStateType.Storage: {
         const { slot } = accessedState
         const key = setLengthLeft(bigIntToBytes(slot), 32)
-
-        const storage = this._caches?.storage?.get(address, key)
+        let storage: Uint8Array | undefined | null = null
+        if (this._caches === undefined) {
+          storage = await this.getStorage(address, key)
+          if (storage === undefined) {
+            return null
+          }
+        } else {
+          storage = this._caches?.storage?.get(address, key)
+        }
         if (storage === undefined) {
           return null
         }
@@ -568,9 +607,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
     }
   }
-
+  //@ts-ignore
   // Verifies that the witness post-state matches the computed post-state
-  verifyPostState(): boolean {
+  async verifyPostState(): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
@@ -588,7 +627,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
+      const computedValue = await this.getComputedValue(accessedState)
       if (computedValue === undefined) {
         this.DEBUG &&
           this._debug(
@@ -634,7 +673,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           canonicalValue === decodedCanonicalValue
             ? canonicalValue
             : `${canonicalValue} (${decodedCanonicalValue})`
-
+        if (type === AccessedStateType.BasicData) {
+          this.DEBUG && this._debug(decodeVerkleLeafBasicData(hexToBytes(displayComputedValue)))
+          this.DEBUG && this._debug(decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)))
+        }
         this.DEBUG &&
           this._debug(
             `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,

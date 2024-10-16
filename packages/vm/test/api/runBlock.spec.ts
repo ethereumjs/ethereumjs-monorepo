@@ -7,7 +7,11 @@ import {
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  Caches,
+  type MerkleStateManager,
+  StatefulVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import {
   Capability,
   LegacyTx,
@@ -686,7 +690,7 @@ describe('run a verkle block statefully', () => {
     verkleCrypto = await loadVerkleCrypto()
   })
   it.only('should execute a verkle block and produce an executionWitness', async () => {
-    const verkleJson = (await import('./testdata/verkleBlock.js')).block
+    const verkleJson = (await import('./testdata/verkleBlockWithValue.js')).block
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [3607, 6800] })
     const genesisRlp = hexToBytes(verkleJson.genesisRLP as PrefixedHexString)
