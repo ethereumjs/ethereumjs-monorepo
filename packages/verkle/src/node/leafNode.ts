@@ -148,17 +148,8 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
    * @param value the value to insert into the leaf value at `index`
    */
   setValue(index: number, value: Uint8Array | LeafVerkleNodeValue): void {
-    let val
-    // `val` is a bytes representation of `value` used to update the cCommitment
-    if (value instanceof Uint8Array) val = value
-    else
-      val =
-        value === LeafVerkleNodeValue.Untouched
-          ? createUntouchedLeafValue()
-          : createDeletedLeafVerkleValue()
-
     // Set the new values in the values array
-    this.values[index] = val
+    this.values[index] = value
 
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
