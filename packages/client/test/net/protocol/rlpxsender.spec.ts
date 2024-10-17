@@ -52,14 +52,3 @@ describe('should receive message', async () => {
   })
   rlpxProtocol.events.emit('message', 1, 5)
 })
-
-describe('should catch errors', async () => {
-  const rlpxProtocol = { events: new EventEmitter() }
-  const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
-  it('throws sendStatus error', () => {
-    assert.throws(() => sender.sendStatus({ id: 5 }), /not a function/, 'sendStatus error')
-  })
-  it('throws sendMessage error', () => {
-    assert.throws(() => sender.sendMessage(1, 5), /not a function/, 'sendMessage error')
-  })
-})

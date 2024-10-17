@@ -1179,7 +1179,7 @@ async function run() {
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
     prometheusMetrics,
   })
-  config.events.setMaxListeners(50)
+
   config.events.on(Event.SERVER_LISTENING, (details) => {
     const networkDir = config.getNetworkDirectory()
     // Write the transport into a file
