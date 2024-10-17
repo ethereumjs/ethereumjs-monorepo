@@ -355,13 +355,14 @@ parameter of your listener as a `resolve` function that must be called once your
 See below for example usage:
 
 ```ts
-// ./examples/eventListener.ts#L7-L13
+// ./examples/eventListener.ts#L7-L14
 
 evm.events.on('beforeMessage', (event) => {
   console.log('synchronous listener to beforeMessage', event)
 })
 evm.events.on('afterMessage', (event, resolve) => {
   console.log('asynchronous listener to beforeMessage', event)
+  // we need to call resolve() to avoid the event listener hanging
   resolve?.()
 })
 ```

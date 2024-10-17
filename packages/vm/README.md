@@ -382,11 +382,12 @@ You can subscribe to the following events:
 Note, if subscribing to events with an async listener, specify the second parameter of your listener as a `resolve` function that must be called once your listener code has finished.
 
 ```ts
-// ./examples/eventListener.ts#L10-L18
+// ./examples/eventListener.ts#L10-L19
 
 // Setup an event listener on the `afterTx` event
 vm.events.on('afterTx', (event, resolve) => {
   console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+  // we need to call resolve() to avoid the event listener hanging
   resolve?.()
 })
 

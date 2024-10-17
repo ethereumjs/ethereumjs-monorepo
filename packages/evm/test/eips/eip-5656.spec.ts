@@ -91,13 +91,11 @@ describe('should test mcopy', () => {
 
       let currentMem = ''
 
-      evm.events.on('step', (e, resolve) => {
+      evm.events.on('step', (e) => {
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
           assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
         }
-        // we need to call resolve() to avoid the event listener hanging
-        resolve?.()
       })
 
       await evm.runCall({

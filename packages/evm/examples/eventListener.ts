@@ -9,6 +9,7 @@ const main = async () => {
   })
   evm.events.on('afterMessage', (event, resolve) => {
     console.log('asynchronous listener to beforeMessage', event)
+    // we need to call resolve() to avoid the event listener hanging
     resolve?.()
   })
   const res = await evm.runCall({

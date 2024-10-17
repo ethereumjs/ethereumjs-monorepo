@@ -71,7 +71,7 @@ export class FullSynchronizer extends Synchronizer {
       // This event listener listens for other instances of the fetcher that might be syncing from a different peer
       // and reach the head of the chain before the current fetcher.
       this.config.events.once(Event.SYNC_SYNCHRONIZED, (chainHeight?: bigint) => {
-        this.resolveSync(Number(chainHeight))
+        this.resolveSync(chainHeight)
         resolve(true)
       })
     })

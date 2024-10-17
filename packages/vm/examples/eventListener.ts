@@ -10,6 +10,7 @@ const main = async () => {
   // Setup an event listener on the `afterTx` event
   vm.events.on('afterTx', (event, resolve) => {
     console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+    // we need to call resolve() to avoid the event listener hanging
     resolve?.()
   })
 
