@@ -1,4 +1,3 @@
-import * as utils from '@ethereumjs/util'
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -9,12 +8,12 @@ const byteSize = 256
 describe('bloom', () => {
   it('should initialize without params', () => {
     const b = new Bloom()
-    assert.deepEqual(b.bitvector, utils.zeros(byteSize), 'should be empty')
+    assert.deepEqual(b.bitvector, new Uint8Array(byteSize), 'should be empty')
   })
 
   it("shouldn't initialize with invalid bitvector", () => {
     assert.throws(
-      () => new Bloom(utils.zeros(byteSize / 2)),
+      () => new Bloom(new Uint8Array(byteSize / 2)),
       /bitvectors must be 2048 bits long/,
       undefined,
       'should fail for invalid length',

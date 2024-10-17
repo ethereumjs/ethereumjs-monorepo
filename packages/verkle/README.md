@@ -88,12 +88,14 @@ The `Verkle` class features optional debug logging. Individual debug selections 
 
 The following options are available:
 
-| Logger              | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| `verkle`            | minimal info logging for all verkle methods      |
-| `verkle:<METHOD>`   | debug logging for specific verkle method         |
-| `verkle:<METHOD>:*` | verbose debug logging for specific verkle method |
-| `verkle:*`          | verbose debug logging for all verkle methods     |
+| Logger                | Description                          |
+| --------------------- | ------------------------------------ |
+| `verkle:#`            | a core verkle operation has occurred |
+| `verkle:#:put`        | a verkle put operation has occurred  |
+| `verkle:#:get`        | a verkle get operation has occurred  |
+| `verkle:#:del`        | a verkle del operation has occurred  |
+| `verkle:#:find_path`  | a node is being searched for         |
+| `verkle:#:initialize` | a verkle object has been initialized |
 
 To observe the logging in action at different levels:
 
@@ -106,13 +108,13 @@ DEBUG=ethjs,verkle npx vitest test/verkle.spec.ts
 Run with **put** method logging:
 
 ```shell
-DEBUG=ethjs,verkle:PUT npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle:put npx vitest test/verkle.spec.ts
 ```
 
 Run with **verkle** + **put**/**get**/**del** logging:
 
 ```shell
-DEBUG=ethjs,verkle,verkle:PUT,verkle:GET,verkle:DEL npx vitest test/verkle.spec.ts
+DEBUG=ethjs,verkle,verkle:put,verkle:get,verkle:del npx vitest test/verkle.spec.ts
 ```
 
 Run with max logging:
@@ -124,7 +126,7 @@ DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:PUT,trie:FIND_PATH:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
 
 ## References
 

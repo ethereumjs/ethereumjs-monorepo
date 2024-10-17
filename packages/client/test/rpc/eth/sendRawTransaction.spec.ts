@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
@@ -228,7 +228,9 @@ describe(method, () => {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
+      params: paramsBlock,
     })
+
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({
       commonChain: common,

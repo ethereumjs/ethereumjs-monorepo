@@ -3,6 +3,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
+  Units,
   blobsToCommitments,
   blobsToProofs,
   commitmentsToVersionedHashes,
@@ -101,7 +102,7 @@ describe(method, () => {
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         to: createZeroAddress(),
@@ -110,6 +111,16 @@ describe(method, () => {
     ).sign(pkey)
 
     await service.txPool.add(tx, true)
+
+    // check the blob and proof is available via getBlobsV1
+    res = await rpc.request('engine_getBlobsV1', [txVersionedHashes])
+    const blobsAndProofs = res.result
+    for (let i = 0; i < txVersionedHashes.length; i++) {
+      const { blob, proof } = blobsAndProofs[i]
+      assert.equal(blob, txBlobs[i])
+      assert.equal(proof, txProofs[i])
+    }
+
     res = await rpc.request('engine_getPayloadV3', [payloadId])
 
     const { executionPayload, blobsBundle } = res.result

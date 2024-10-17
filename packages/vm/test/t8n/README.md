@@ -38,3 +38,7 @@ Processing new transaction...
   address: '0x0000000000000000000000000000000000001000'
 }
 ```
+
+## Writing a test in execution-spec-test
+
+This issue comment is a good reference to write tests, together with an example: <https://github.com/ethereumjs/ethereumjs-monorepo/issues/3666#issuecomment-2349611424>

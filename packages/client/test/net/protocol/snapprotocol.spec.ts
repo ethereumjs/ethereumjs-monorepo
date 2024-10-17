@@ -1,5 +1,5 @@
+import { decodeMPTNode, verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { decodeNode, verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
@@ -191,7 +191,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await verifyTrieRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+      await verifyMerkleRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
         useKeyHashingFunction: keccak256,
       })
     } catch (e) {
@@ -324,7 +324,7 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await verifyTrieRangeProof(
+      await verifyMerkleRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],
@@ -486,7 +486,7 @@ describe('[SnapProtocol]', () => {
     for (let i = 0; i < nodes.length; i++) {
       const node: Uint8Array = nodes[i]
       if (node !== null) {
-        assert.ok(decodeNode(node), 'raw node data should decode without error')
+        assert.ok(decodeMPTNode(node), 'raw node data should decode without error')
       }
     }
 

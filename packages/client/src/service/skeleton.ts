@@ -13,9 +13,9 @@ import {
   formatBigDecimal,
   intToBytes,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 
+import { INVALID_FORKCHOICE_STATE } from '../rpc/error-code.js'
 import { short, timeDuration } from '../util/index.js'
 import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
 
@@ -89,7 +89,7 @@ export const errReorgDenied = new Error('non-forced head reorg denied')
  */
 export const errSyncMerged = new Error('sync merged')
 
-const zeroBlockHash = zeros(32)
+const zeroBlockHash = new Uint8Array(32)
 /**
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.
@@ -750,7 +750,7 @@ export class Skeleton extends MetaDBManager {
       if (this.status.linked || shouldBeSafeNumber >= subchain0.tail) {
         if (safeBlock === undefined) {
           throw {
-            code: INVALID_PARAMS,
+            code: INVALID_FORKCHOICE_STATE,
             message: `safe block not available in canonical chain`,
           }
         } else {
@@ -760,7 +760,7 @@ export class Skeleton extends MetaDBManager {
             !equalsBytes(safeBlock.hash(), canonicalBlock.hash())
           ) {
             throw {
-              code: INVALID_PARAMS,
+              code: INVALID_FORKCHOICE_STATE,
               message: `safe block not canonical in chain`,
             }
           }
@@ -770,7 +770,7 @@ export class Skeleton extends MetaDBManager {
       if (this.status.linked || shouldBeFinalizedNumber >= subchain0.tail) {
         if (finalizedBlock === undefined) {
           throw {
-            code: INVALID_PARAMS,
+            code: INVALID_FORKCHOICE_STATE,
             message: `finalized block not available in canonical chain`,
           }
         } else {
@@ -780,7 +780,7 @@ export class Skeleton extends MetaDBManager {
             !equalsBytes(finalizedBlock.hash(), canonicalBlock.hash())
           ) {
             throw {
-              code: INVALID_PARAMS,
+              code: INVALID_FORKCHOICE_STATE,
               message: `finalized block not canonical in chain`,
             }
           }

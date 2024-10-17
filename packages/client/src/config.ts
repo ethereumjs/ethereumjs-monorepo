@@ -341,6 +341,11 @@ export interface ConfigOptions {
   ignoreStatelessInvalidExecs?: boolean
 
   /**
+   * The cache for blobs and proofs to support CL import blocks
+   */
+  blobsAndProofsCacheBlocks?: number
+
+  /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
    */
   prometheusMetrics?: PrometheusMetrics
@@ -394,6 +399,9 @@ export class Config {
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
   public static readonly SNAP_LOOKBACK_WINDOW = 1
+
+  // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
+  public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -453,6 +461,8 @@ export class Config {
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
+
+  public readonly blobsAndProofsCacheBlocks: number
 
   public synchronized: boolean
   public lastSynchronized?: boolean
@@ -556,6 +566,9 @@ export class Config {
       options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.Chainstart })
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
+
+    this.blobsAndProofsCacheBlocks =
+      options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
 
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true

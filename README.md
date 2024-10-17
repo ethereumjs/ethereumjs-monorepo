@@ -8,7 +8,7 @@
 [![Discord][discord-badge]][discord-link]
 [![GitPOAP][gitpoap-badge]][gitpoap-link]
 
-This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer and is managed by the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as a [Trie][trie-package] (Merkle Patricia Tree) and [devp2p][devp2p-package] (execution networking layer) implementation.
+This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer and is managed by the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as a [MPT][mpt-package] (Merkle Patricia Tree) and [devp2p][devp2p-package] (execution networking layer) implementation.
 
 All libraries are bound together by the core [Common][common-package] library keeping track of chain specifics and hardfork changes. They are complemented by helper packages like [RLP][rlp-package] for data encoding/decoding or [Util][util-package], providing helper functionalities like (byte) conversion, signatures, types and others.
 
@@ -32,7 +32,7 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/genesis][genesis-package]           | [![NPM Package][genesis-npm-badge]][genesis-npm-link]           | [![Genesis Issues][genesis-issues-badge]][genesis-issues-link]                | [![Actions Status][genesis-actions-badge]][genesis-actions-link]           | [![Code Coverage][genesis-coverage-badge]][genesis-coverage-link]           |
 | [@ethereumjs/rlp][rlp-package]                   | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
 | [@ethereumjs/statemanager][statemanager-package] | [![NPM Package][statemanager-npm-badge]][statemanager-npm-link] | [![StateManager Issues][statemanager-issues-badge]][statemanager-issues-link] | [![Actions Status][statemanager-actions-badge]][statemanager-actions-link] | [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link] |
-| [@ethereumjs/trie][trie-package]                 | [![NPM Package][trie-npm-badge]][trie-npm-link]                 | [![Trie Issues][trie-issues-badge]][trie-issues-link]                         | [![Actions Status][trie-actions-badge]][trie-actions-link]                 | [![Code Coverage][trie-coverage-badge]][trie-coverage-link]                 |
+| [@ethereumjs/mpt][mpt-package]                   | [![NPM Package][mpt-npm-badge]][mpt-npm-link]                   | [![MPT Issues][mpt-issues-badge]][mpt-issues-link]                            | [![Actions Status][mpt-actions-badge]][mpt-actions-link]                   | [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]                   |
 | [@ethereumjs/tx][tx-package]                     | [![NPM Package][tx-npm-badge]][tx-npm-link]                     | [![Tx Issues][tx-issues-badge]][tx-issues-link]                               | [![Actions Status][tx-actions-badge]][tx-actions-link]                     | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                     |
 | [@ethereumjs/util][util-package]                 | [![NPM Package][util-npm-badge]][util-npm-link]                 | [![Util Issues][util-issues-badge]][util-issues-link]                         | [![Actions Status][util-actions-badge]][util-actions-link]                 | [![Code Coverage][util-coverage-badge]][util-coverage-link]                 |
 | [@ethereumjs/verkle][verkle-package]             | [![NPM Package][verkle-npm-badge]][verkle-npm-link]             | [![VM Issues][verkle-issues-badge]][verkle-issues-link]                       | [![Actions Status][verkle-actions-badge]][verkle-actions-link]             | [![Code Coverage][verkle-coverage-badge]][verkle-coverage-link]             |
@@ -73,12 +73,12 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    block --> ethash
    block --> vm
    blockchain --> client
-   blockchain --> vm
-   trie --> client
-   trie --> vm
-   trie --> blockchain
-   trie --> block
-   trie --> statemanager
+   mpt --> client
+   mpt --> vm
+   mpt --> blockchain
+   mpt --> block
+   mpt --> statemanager
+   util --> common
    common --> block
    common --> statemanager
    common --> tx
@@ -92,13 +92,15 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    evm --> client
    genesis --> client
    genesis --> statemanager
-   genesis --> trie
+   genesis --> mpt
    tx --> block
-   tx --> evm
    tx --> vm
+   tx --> client
    vm --> client
+   rlp --> util
    statemanager --> evm
    statemanager --> vm
+   statemanager --> client
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
@@ -204,15 +206,15 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [tx-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Tx%22
 [tx-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=tx
 [tx-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx
-[trie-package]: ./packages/trie
-[trie-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/trie.svg
-[trie-npm-link]: https://www.npmjs.com/package/@ethereumjs/trie
-[trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20trie?label=issues
-[trie-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
-[trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Trie/badge.svg
-[trie-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Trie%22
-[trie-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=trie
-[trie-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie
+[mpt-package]: ./packages/mpt
+[mpt-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/mpt.svg
+[mpt-npm-link]: https://www.npmjs.com/package/@ethereumjs/mpt
+[mpt-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20mpt?label=issues
+[mpt-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+mpt"
+[mpt-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/MPT/badge.svg
+[mpt-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22MPT%22
+[mpt-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=mpt
+[mpt-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt
 [rlp-package]: ./packages/rlp
 [rlp-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/rlp.svg
 [rlp-npm-link]: https://www.npmjs.com/package/@ethereumjs/rlp

@@ -1,5 +1,5 @@
 import { genWithdrawalsTrieRoot } from '@ethereumjs/block'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 
@@ -105,7 +105,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
   it(name, async () => {
     // check withdrawals root computation
     const computedWithdrawalsRoot = bytesToHex(
-      await genWithdrawalsTrieRoot(withdrawals.map(createWithdrawal), new Trie()),
+      await genWithdrawalsTrieRoot(withdrawals.map(createWithdrawal), new MerklePatriciaTrie()),
     )
     assert.equal(
       withdrawalsRoot,

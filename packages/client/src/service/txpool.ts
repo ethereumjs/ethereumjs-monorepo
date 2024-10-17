@@ -26,6 +26,7 @@ import type { PeerPool } from '../net/peerpool.js'
 import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 // Configuration constants
@@ -102,6 +103,10 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  public blobsAndProofsByHash: Map<
+    PrefixedHexString,
+    { blob: PrefixedHexString; proof: PrefixedHexString }
+  >
 
   /**
    * The number of txs currently in the pool
@@ -167,6 +172,10 @@ export class TxPool {
     this.service = options.service
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.blobsAndProofsByHash = new Map<
+      PrefixedHexString,
+      { blob: PrefixedHexString; proof: PrefixedHexString }
+    >()
     this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -371,11 +380,39 @@ export class TxPool {
         this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
       }
       if (isBlob4844Tx(tx)) {
+        // add to blobs and proofs cache
+        if (tx.blobs !== undefined && tx.kzgProofs !== undefined) {
+          for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
+            const blob = tx.blobs![i]
+            const proof = tx.kzgProofs![i]
+            this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+          }
+          this.pruneBlobsAndProofsCache()
+        }
+
         this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
+    }
+  }
+
+  pruneBlobsAndProofsCache() {
+    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
+    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+
+    const pruneLength =
+      this.blobsAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
+    let pruned = 0
+    // since keys() is sorted by insertion order this prunes the oldest data in cache
+    for (const versionedHash of this.blobsAndProofsByHash.keys()) {
+      if (pruned >= pruneLength) {
+        break
+      }
+      this.blobsAndProofsByHash.delete(versionedHash)
+      pruned++
     }
   }
 

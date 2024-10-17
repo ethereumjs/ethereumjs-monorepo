@@ -3,6 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -11,7 +12,6 @@ import {
   getBlobs,
   hexToBytes,
   privateToAddress,
-  zeros,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -33,7 +33,7 @@ describe('EIP4844 tests', () => {
       customCrypto: { kzg },
     })
     const genesisBlock = createBlock(
-      { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
+      { header: { gasLimit: 50000, parentBeaconBlockRoot: new Uint8Array(32) } },
       { common },
     )
     const blockchain = await createBlockchain({
@@ -45,7 +45,7 @@ describe('EIP4844 tests', () => {
     const vm = await createVM({ common, blockchain })
 
     const address = createAddressFromString(sender)
-    await setBalance(vm, address, 14680063125000000000n)
+    await setBalance(vm, address, Units.gwei(14680063125))
     const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await buildBlock(vm, {
@@ -71,7 +71,7 @@ describe('EIP4844 tests', () => {
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),

@@ -4,6 +4,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
+  Units,
   bytesToHex,
   createAddressFromPrivateKey,
   hexToBytes,
@@ -55,7 +56,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
@@ -65,7 +66,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         nonce: 1n,
@@ -137,7 +138,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
@@ -147,7 +148,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         nonce: 1n,

@@ -6,7 +6,6 @@ import {
   equalsBytes,
   hexToBytes,
   toBytes,
-  zeros,
 } from '@ethereumjs/util'
 
 import { ExecStatus } from '../../../execution/index.js'
@@ -53,6 +52,7 @@ import type { Config } from '../../../config.js'
 import type { VMExecution } from '../../../execution/index.js'
 import type { FullEthereumService, Skeleton } from '../../../service/index.js'
 import type {
+  BlobAndProofV1,
   Bytes32,
   Bytes8,
   ExecutionPayloadBodyV1,
@@ -71,7 +71,7 @@ import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
-const zeroBlockHash = zeros(32)
+const zeroBlockHash = new Uint8Array(32)
 
 /**
  * engine_* RPC module
@@ -317,6 +317,13 @@ export class Engine {
       ]),
       () => this.connectionManager.updateStatus(),
     )
+
+    this.getBlobsV1 = cmMiddleware(
+      middleware(callWithStackTrace(this.getBlobsV1.bind(this), this._rpcDebug), 1, [
+        [validators.array(validators.bytes32)],
+      ]),
+      () => this.connectionManager.updateStatus(),
+    )
   }
 
   /**
@@ -486,7 +493,7 @@ export class Engine {
         const latestValidHash =
           this.chain.blocks.latest !== null
             ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-            : bytesToHex(zeros(32))
+            : bytesToHex(new Uint8Array(32))
         const response = {
           status: Status.INVALID,
           validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -555,7 +562,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         status: Status.INVALID,
         validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -978,7 +985,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         payloadStatus: {
           status: Status.INVALID,
@@ -1513,5 +1520,21 @@ export class Engine {
       }
     }
     return payloads
+  }
+
+  private async getBlobsV1(params: [[Bytes32]]): Promise<(BlobAndProofV1 | null)[]> {
+    if (params[0].length > 128) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: `More than 128 hashes queried`,
+      }
+    }
+
+    const blobsAndProof: (BlobAndProofV1 | null)[] = []
+    for (const versionedHashHex of params[0]) {
+      blobsAndProof.push(this.service.txPool.blobsAndProofsByHash.get(versionedHashHex) ?? null)
+    }
+
+    return blobsAndProof
   }
 }

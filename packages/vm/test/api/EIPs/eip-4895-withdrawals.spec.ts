@@ -12,7 +12,6 @@ import {
   createWithdrawalFromBytesArray,
   hexToBytes,
   parseGethGenesisState,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -122,10 +121,10 @@ describe('EIP4895 tests', () => {
       assert.equal(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
     }
 
-    assert.deepEqual(zeros(32), result!, 'withdrawals happen after transactions')
+    assert.deepEqual(new Uint8Array(32), result!, 'withdrawals happen after transactions')
 
-    const slotValue = await vm.stateManager.getStorage(withdrawalCheckAddress, zeros(32))
-    assert.deepEqual(zeros(0), slotValue, 'withdrawals do not invoke code')
+    const slotValue = await vm.stateManager.getStorage(withdrawalCheckAddress, new Uint8Array(32))
+    assert.deepEqual(new Uint8Array(), slotValue, 'withdrawals do not invoke code')
   })
 
   it('EIP4895: state update should exclude 0 amount updates', async () => {

@@ -17,7 +17,6 @@ import {
   equalsBytes,
   hexToBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -106,21 +105,21 @@ export class BlockHeader {
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 
     const defaults = {
-      parentHash: zeros(32),
+      parentHash: new Uint8Array(32),
       uncleHash: KECCAK256_RLP_ARRAY,
       coinbase: createZeroAddress(),
-      stateRoot: zeros(32),
+      stateRoot: new Uint8Array(32),
       transactionsTrie: KECCAK256_RLP,
       receiptTrie: KECCAK256_RLP,
-      logsBloom: zeros(256),
+      logsBloom: new Uint8Array(256),
       difficulty: BIGINT_0,
       number: BIGINT_0,
       gasLimit: DEFAULT_GAS_LIMIT,
       gasUsed: BIGINT_0,
       timestamp: BIGINT_0,
       extraData: new Uint8Array(0),
-      mixHash: zeros(32),
-      nonce: zeros(8),
+      mixHash: new Uint8Array(32),
+      nonce: new Uint8Array(8),
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Uint8Array) ?? defaults.parentHash
@@ -161,7 +160,7 @@ export class BlockHeader {
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
-      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
+      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
       requestsRoot: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
     }
 
@@ -424,8 +423,8 @@ export class BlockHeader {
           )} (cannot exceed 32 bytes length, received ${extraData.length} bytes)`
           error = true
         }
-        if (!equalsBytes(nonce, zeros(8))) {
-          errorMsg += `, nonce: ${bytesToHex(nonce)} (expected: ${bytesToHex(zeros(8))})`
+        if (!equalsBytes(nonce, new Uint8Array(8))) {
+          errorMsg += `, nonce: ${bytesToHex(nonce)} (expected: ${bytesToHex(new Uint8Array(8))})`
           error = true
         }
       }

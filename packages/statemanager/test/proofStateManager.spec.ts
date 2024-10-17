@@ -1,4 +1,4 @@
-import { Trie, createTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT } from '@ethereumjs/mpt'
 import {
   Account,
   Address,
@@ -10,7 +10,6 @@ import {
   equalsBytes,
   hexToBytes,
   randomBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -27,7 +26,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
@@ -37,7 +36,7 @@ describe('ProofStateManager', () => {
 
   it(`should correctly return the right storage root / account root`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
@@ -51,7 +50,7 @@ describe('ProofStateManager', () => {
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     const account = new Account()
@@ -79,7 +78,7 @@ describe('ProofStateManager', () => {
 
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const value = hexToBytes('0x0000aabb00')
     const code = hexToBytes('0x6000')
     const stateManager = new MerkleStateManager()
@@ -117,7 +116,7 @@ describe('ProofStateManager', () => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = createAddressFromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await createTrie({ useKeyHashing: true })
+    const trie = await createMPT({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -141,7 +140,7 @@ describe('ProofStateManager', () => {
     // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
     // Storage slots: empty list
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -165,7 +164,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -178,7 +177,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -203,7 +202,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -216,7 +215,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -269,7 +268,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -282,7 +281,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenNonexistentAccountData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
     stateManager['_storageTries'][addressHex] = storageTrie

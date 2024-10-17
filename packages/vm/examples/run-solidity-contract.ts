@@ -3,7 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
-import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi' // cspell:disable-line
+import { AbiCoder, Interface } from 'ethers'
 import { readFileSync } from 'fs'
 import path from 'path'
 import solc from 'solc'
@@ -147,7 +147,7 @@ async function setGreeting(
 }
 
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
-  const sigHash = new Interface(['function greet()']).getSighash('greet')
+  const sigHash = new Interface(['function greet()']).getFunction('greet')!.selector
 
   const greetResult = await vm.evm.runCall({
     to: contractAddress,
@@ -161,7 +161,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     throw greetResult.execResult.exceptionError
   }
 
-  const results = AbiCoder.decode(['string'], greetResult.execResult.returnValue)
+  const results = new AbiCoder().decode(['string'], greetResult.execResult.returnValue)
 
   return results[0]
 }

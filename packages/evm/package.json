@@ -58,14 +58,12 @@
   "dependencies": {
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/statemanager": "^2.4.0",
-    "@ethereumjs/tx": "^5.4.0",
     "@ethereumjs/util": "^9.1.0",
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {
-    "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/minimist": "^1.2.2",

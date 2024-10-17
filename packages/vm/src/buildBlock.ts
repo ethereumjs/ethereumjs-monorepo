@@ -6,8 +6,8 @@ import {
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
@@ -21,7 +21,6 @@ import {
   createZeroAddress,
   toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
@@ -144,7 +143,10 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.vm.common }),
+    )
   }
 
   /**
@@ -166,7 +168,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie({ common: this.vm.common })
+    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -323,7 +325,10 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(
+          this.withdrawals,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
@@ -404,7 +409,7 @@ export class BlockBuilder {
       // timestamp should already be set in constructor
       const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
       const parentBeaconBlockRootBuf =
-        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
     }
@@ -417,7 +422,7 @@ export class BlockBuilder {
       const { parentHash, number } = this.headerData
       // timestamp should already be set in constructor
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
-      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
+      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
     }
