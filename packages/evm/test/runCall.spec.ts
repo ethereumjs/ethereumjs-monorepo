@@ -627,11 +627,12 @@ describe('RunCall tests', () => {
 
     let verifyMemoryExpanded = false
 
-    evm.events.on('step', (e) => {
+    evm.events.on('step', (e, resolve) => {
       assert.ok(e.memory.length <= 96)
       if (e.memory.length > 0) {
         verifyMemoryExpanded = true
       }
+      resolve?.()
     })
     await evm.runCall(runCallArgs)
     assert.ok(verifyMemoryExpanded, 'memory did expand')
