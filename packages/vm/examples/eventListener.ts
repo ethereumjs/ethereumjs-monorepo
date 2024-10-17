@@ -27,7 +27,7 @@ const main = async () => {
     s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
   })
   const res = await runTx(vm, { tx, skipBalance: true })
-  console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transferc
+  console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 
 void main()
