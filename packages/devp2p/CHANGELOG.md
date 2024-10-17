@@ -14,11 +14,11 @@ There is a new Common API for simplification and better tree shaking, see PR [#3
 
 ```ts
 // old
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 
 // new
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 const common = new Common({ chain: Mainnet })
 ```
 

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 6.0.0-alpha.1 - [ UNPUBLISHED ]
 
-This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and is for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
 
 ### Renamings
 
@@ -23,7 +23,7 @@ The names for the tx classes have been shortened and simplified (see PRs [#3533]
 
 #### Static Constructors
 
-The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of not-used constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533) and [#3597](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3597)).
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533) and [#3597](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3597)).
 
 Here an example for the `FeeMarket1559Tx` class:
 
@@ -100,11 +100,11 @@ There is a new Common API for simplification and better tree shaking, see PR [#3
 
 ```ts
 // old
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 
 // new
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 const common = new Common({ chain: Mainnet })
 ```
 
