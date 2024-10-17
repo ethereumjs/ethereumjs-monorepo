@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import EventEmitter from 'events'
 import { assert, describe, it } from 'vitest'
 
 import { AsyncEventEmitter } from '../src/index.js'
