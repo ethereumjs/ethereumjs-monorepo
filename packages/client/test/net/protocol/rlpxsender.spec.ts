@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -31,7 +31,7 @@ describe('should send message', async () => {
 
 describe('should receive status', async () => {
   const rlpxProtocol = { events: new EventEmitter() }
-  const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
+  const sender = new RlpxSender(rlpxProtocol as never as Devp2pETH)
   sender.on('status', (status: any) => {
     it('status received', () => {
       assert.equal(status.id, 5, 'status received')
@@ -43,7 +43,7 @@ describe('should receive status', async () => {
 
 describe('should receive message', async () => {
   const rlpxProtocol = { events: new EventEmitter() }
-  const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
+  const sender = new RlpxSender(rlpxProtocol as never as Devp2pETH)
   sender.on('message', (message: any) => {
     it('message received', () => {
       assert.equal(message.code, 1, 'message received (code)')

@@ -434,7 +434,6 @@ export async function createInlineClient(
   customGenesisState: any,
   datadir: any = Config.DATADIR_DEFAULT,
 ) {
-  config.events.setMaxListeners(50)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`,
   )
