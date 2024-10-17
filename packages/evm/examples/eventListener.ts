@@ -18,6 +18,6 @@ const main = async () => {
     data: hexToBytes('0x6001'), // PUSH1 01 -- simple bytecode to push 1 onto the stack
   })
   console.log(res.execResult.executionGasUsed) // 0n
-
-  void main()
 }
+
+void main()
