@@ -31,7 +31,7 @@ import {
   unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { VerkleTree } from '@ethereumjs/verkle'
+import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -263,7 +263,12 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       // TODO: Determine the best way to clear code/storage for an account when deleting
       // Will need to inspect all possible code and storage keys to see if it's anything
       // other than untouched leaf values
-      await this._trie.del(stem, [VerkleLeafType.BasicData, VerkleLeafType.CodeHash])
+      // Special instance where we delete the account and revert the trie value to untouched
+      await this._trie.put(
+        stem,
+        [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
+        [LeafVerkleNodeValue.Untouched, LeafVerkleNodeValue.Untouched],
+      )
     }
   }
 
@@ -674,7 +679,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
             : `${canonicalValue} (${decodedCanonicalValue})`
         if (type === AccessedStateType.BasicData) {
           this.DEBUG && this._debug(decodeVerkleLeafBasicData(hexToBytes(displayComputedValue)))
-          this.DEBUG && this._debug(decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)))
+          displayCanonicalValue.startsWith('0x')
+            ? this.DEBUG &&
+              this._debug(decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)))
+            : this._debug(displayCanonicalValue)
         }
         this.DEBUG &&
           this._debug(
