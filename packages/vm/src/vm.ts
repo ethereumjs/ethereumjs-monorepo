@@ -1,6 +1,5 @@
 import { createEVM } from '@ethereumjs/evm'
 import { EventEmitter } from 'eventemitter3'
-import { L } from 'vitest/dist/chunks/reporters.WnPwkmgA.js'
 
 import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
