@@ -56,14 +56,14 @@ If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const stateManager = new DefaultStateManager()
+  const stateManager = new MerkleStateManager()
   const blockchain = await createBlockchain()
 
   const evm = await createEVM({
@@ -79,9 +79,10 @@ const main = async () => {
   // Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
   const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
 
-  evm.events.on('step', function (data) {
+  evm.events.on('step', function (data, resolve) {
     // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
     console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
+    resolve?.()
   })
 
   const results = await evm.runCode({
@@ -343,16 +344,27 @@ You can subscribe to the following events:
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
 - `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
-An example for the `step` event can be found in the initial usage example in this `README`.
-
-#### Event handlers
+#### Event listeners
 
 You can perform asynchronous operations from within an event handler
 and prevent the EVM to keep running until they finish.
 
-In order to do that, your event handler has to accept two arguments.
-The first one will be the event object, and the second one a function.
-The EVM won't continue until you call this function.
+If subscribing to events with an async listener, specify the second
+parameter of your listener as a `resolve` function that must be called once your listener code has finished.
+
+See below for example usage:
+
+```ts
+// ./examples/eventListener.ts#L7-L13
+
+evm.events.on('beforeMessage', (event) => {
+  console.log('synchronous listener to beforeMessage', event)
+})
+evm.events.on('afterMessage', (event, resolve) => {
+  console.log('asynchronous listener to beforeMessage', event)
+  resolve?.()
+})
+```
 
 If an exception is passed to that function, or thrown from within the
 handler or a function called by it, the exception will bubble into the

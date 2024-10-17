@@ -379,16 +379,19 @@ You can subscribe to the following events:
 - `beforeTx`: Emits a `Transaction` right before running it.
 - `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
 
-Note, each of these events passes a `resolve` function as the second parameter that must be called to prevent the VM from hanging.
+Note, if subscribing to events with an async listener, specify the second parameter of your listener as a `resolve` function that must be called once your listener code has finished.
 
 ```ts
-// ./examples/asyncListener.ts#L10-L15
+// ./examples/eventListener.ts#L10-L18
 
 // Setup an event listener on the `afterTx` event
 vm.events.on('afterTx', (event, resolve) => {
-  console.log('afterTx', event)
-  // It's important to call `resolve()` when the listener code has finished or the vm will hang
+  console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
   resolve?.()
+})
+
+vm.events.on('afterTx', (event) => {
+  console.log('synchronous listener to afterTx', bytesToHex(event.transaction.hash()))
 })
 ```
 

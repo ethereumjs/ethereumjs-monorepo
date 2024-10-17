@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { createZeroAddress } from '@ethereumjs/util'
+import { bytesToHex, createZeroAddress } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
@@ -9,10 +9,14 @@ const main = async () => {
 
   // Setup an event listener on the `afterTx` event
   vm.events.on('afterTx', (event, resolve) => {
-    console.log('afterTx', event)
-    // It's important to call `resolve()` when the listener code has finished or the vm will hang
+    console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
     resolve?.()
   })
+
+  vm.events.on('afterTx', (event) => {
+    console.log('synchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+  })
+
   const tx = createLegacyTx({
     gasLimit: BigInt(21000),
     gasPrice: BigInt(1000000000),

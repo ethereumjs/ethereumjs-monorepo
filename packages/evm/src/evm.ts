@@ -223,12 +223,13 @@ export class EVM implements EVMInterface {
     this._emit = async (topic: string, data: any): Promise<void> => {
       const listeners = this.events.listeners(topic as keyof EVMEvent)
       for (const listener of listeners) {
-        await new Promise<void>((resolve) => {
-          // Its critical that the listener function calls resolve()
-          // otherwise this function will hang
-          // TODO: Decide if we should set some timeout to call resolve if not called by `listener`
-          listener(data, resolve)
-        })
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
       }
     }
 

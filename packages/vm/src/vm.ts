@@ -1,5 +1,6 @@
 import { createEVM } from '@ethereumjs/evm'
 import { EventEmitter } from 'eventemitter3'
+import { L } from 'vitest/dist/chunks/reporters.WnPwkmgA.js'
 
 import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
@@ -74,12 +75,13 @@ export class VM {
     this._emit = async (topic: string, data: any): Promise<void> => {
       const listeners = this.events.listeners(topic as keyof VMEvent)
       for (const listener of listeners) {
-        await new Promise<void>((resolve) => {
-          // Its critical that the listener function calls resolve()
-          // otherwise this function will hang
-          // TODO: Decide if we should set some timeout to call resolve if not called by `listener`
-          listener(data, resolve)
-        })
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
       }
     }
     this._opts = opts
