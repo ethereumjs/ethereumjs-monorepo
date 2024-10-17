@@ -875,7 +875,6 @@ export async function accumulateIVCLogs(vm: VM, logs: Log[]) {
   async function accumulateLog(key: Uint8Array, logRoot: Uint8Array) {
     const prevRoot = setLengthLeft(await vm.stateManager.getStorage(ivcContractAddress, key), 32)
     const newRoot = commonSHA256(concatBytes(logRoot, prevRoot))
-    console.trace({ key: bytesToHex(key), newRoot: bytesToHex(newRoot) })
     await vm.stateManager.putStorage(ivcContractAddress, key, newRoot)
   }
 
