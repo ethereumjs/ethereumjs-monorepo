@@ -146,7 +146,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
             blocks[0]?.header.number
           } last=${blocks[blocks.length - 1]?.header.number})`,
         )
-      this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, blocks.slice(0, num))
+      await this.config.events.emit(Event.SYNC_FETCHED_BLOCKS, { blocks: blocks.slice(0, num) })
     } catch (e: any) {
       this.DEBUG &&
         this.debug(

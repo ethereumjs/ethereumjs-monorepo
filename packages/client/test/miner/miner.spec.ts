@@ -10,14 +10,11 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-// import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it, vi } from 'vitest'
 
-// import { Chain } from '../../src/blockchain/index.js'
 import { Config } from '../../src/config.js'
 import { Miner } from '../../src/miner/index.js'
 import { FullEthereumService } from '../../src/service/index.js'
-// import { Event } from '../../src/types'
 import { wait } from '../integration/util.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
@@ -89,6 +86,7 @@ class FakeChain {
     _init: async () => undefined,
     events: {
       addListener: () => {},
+      on: () => {},
     },
   }
 }
@@ -140,7 +138,7 @@ const customCommon = createCommonFromGethGenesis(chainData, {
   chain: 'devnet',
   hardfork: Hardfork.Berlin,
 })
-customCommon.events.setMaxListeners(50)
+
 const customConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -148,10 +146,9 @@ const customConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
 const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
-goerliCommon.events.setMaxListeners(50)
+
 const goerliConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -159,7 +156,6 @@ const goerliConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
 const createTx = (
   from = A,
@@ -356,6 +352,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
     common: customCommon,
     saveReceipts: true,
   })
+
   const service = new FullEthereumService({
     config,
     chain,

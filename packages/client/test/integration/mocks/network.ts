@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 //@ts-ignore
 import DuplexPair from 'it-pair/duplex'
 

@@ -1,5 +1,5 @@
 /// <reference path="./testdouble.d.ts" />
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -77,13 +77,13 @@ describe('[BoundProtocol]', () => {
       peer,
       sender,
     })
-    bound.config.events.once(Event.PROTOCOL_ERROR, (err) => {
-      assert.ok(/error0/.test(err.message), 'decode error')
+    void bound.config.events.once(Event.PROTOCOL_ERROR).then((err) => {
+      assert.ok(/error0/.test(err.boundProtocolError.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
     ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '1' })
-    bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
-      assert.deepEqual(message, { name: 'TestMessage', data: 2 }, 'correct message')
+    void bound.config.events.once(Event.PROTOCOL_MESSAGE).then((message) => {
+      assert.deepEqual(message.messageDetails, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
     ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '2' })
@@ -119,7 +119,7 @@ describe('[BoundProtocol]', () => {
     td.when(protocol.decode(testResponse, '2')).thenReturn(2)
     td.when(sender.sendMessage(0x01, '1' as any)).thenDo(() => {
       setTimeout(() => {
-        sender.emit('message', { code: 0x02, payload: '2' })
+        void sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)
     })
     const response = await bound.request('TestMessage', 1)

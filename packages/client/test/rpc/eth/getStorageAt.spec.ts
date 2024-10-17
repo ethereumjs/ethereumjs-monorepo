@@ -47,7 +47,7 @@ describe(method, async () => {
 
     // deploy contract
     let ranBlock: Block | undefined = undefined
-    execution.vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    void execution.vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
     const result = await runBlock(execution.vm, {
       block,
       generate: true,

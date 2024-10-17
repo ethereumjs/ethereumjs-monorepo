@@ -71,9 +71,9 @@ export abstract class Synchronizer {
     this.forceSync = false
     this.startingBlock = BIGINT_0
 
-    this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
-      if (this.syncable(peer)) {
-        this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
+    this.config.events.on(Event.POOL_PEER_ADDED, ({ addedPeer }) => {
+      if (this.syncable(addedPeer)) {
+        this.config.logger.debug(`Found ${this.type} peer: ${addedPeer}`)
       }
     })
 
@@ -133,7 +133,7 @@ export abstract class Synchronizer {
       try {
         await this.sync()
       } catch (error: any) {
-        this.config.events.emit(Event.SYNC_ERROR, error)
+        await this.config.events.emit(Event.SYNC_ERROR, error)
       }
       await wait(this.interval)
     }

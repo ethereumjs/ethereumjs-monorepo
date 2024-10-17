@@ -93,7 +93,7 @@ describe('[LightSynchronizer]', async () => {
     assert.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: BigInt(0) } }
     setTimeout(() => {
-      config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
+      void config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
     assert.ok(await sync.sync(), 'local height < remote height')
     td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
@@ -132,7 +132,7 @@ describe('sync errors', async () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[]),
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, { headers: [] as BlockHeader[] }),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('No headers fetched are applicable for import')) {
@@ -182,7 +182,7 @@ describe('import headers', () => {
     } as any)
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-      config.events.emit(Event.SYNC_FETCHED_HEADERS, [createBlockHeader({})]),
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, { headers: [createBlockHeader({})] }),
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {

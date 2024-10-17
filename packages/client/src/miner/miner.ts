@@ -105,7 +105,6 @@ export class Miner {
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
       const parentBlock = this.service.chain.blocks.latest!
-      //eslint-disable-next-line
       const number = parentBlock.header.number + BIGINT_1
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress,
@@ -195,10 +194,10 @@ export class Miner {
     const setInterrupt = () => {
       interrupt = true
       this.assembling = false
-      this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
+      this.config.events.off(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
     }
     _boundSetInterruptHandler = setInterrupt.bind(this)
-    this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
+    void this.config.events.once(Event.CHAIN_UPDATED).then(() => _boundSetInterruptHandler)
 
     const parentBlock = this.service.chain.blocks.latest!
     //eslint-disable-next-line
@@ -349,7 +348,7 @@ export class Miner {
     await (this.service.synchronizer as FullSynchronizer).handleNewBlock(block)
     // Remove included txs from TxPool
     this.service.txPool.removeNewBlockTxs([block])
-    this.config.events.removeListener(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
+    this.config.events.off(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
   }
 
   /**
@@ -359,7 +358,7 @@ export class Miner {
     if (!this.running) {
       return false
     }
-    this.config.events.removeListener(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler!)
+    this.config.events.off(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler!)
     if (this._nextAssemblyTimeoutId) {
       clearTimeout(this._nextAssemblyTimeoutId)
     }

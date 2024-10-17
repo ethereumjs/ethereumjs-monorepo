@@ -74,14 +74,12 @@ describe('postmerge hardfork', () => {
 
     config.events.on(Event.CHAIN_UPDATED, () => {
       assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
-      config.events.emit(Event.CLIENT_SHUTDOWN)
+      void config.events.emit(Event.CLIENT_SHUTDOWN)
     })
 
-    config.events.emit(Event.CHAIN_UPDATED)
+    await config.events.emit(Event.CHAIN_UPDATED)
     config.events.on(Event.CLIENT_SHUTDOWN, () => {
-      it('stops on client shutdown', () => {
-        assert.notOk(manager.running, 'connection manager stopped on client shutdown')
-      })
+      assert.notOk(manager.running, 'connection manager stopped on client shutdown')
     })
   })
 })

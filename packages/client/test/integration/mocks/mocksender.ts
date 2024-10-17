@@ -1,7 +1,7 @@
 import { Sender } from '../../../src/net/protocol/index.js'
 
 import type { Pushable } from './mockpeer.js'
-import type EventEmitter from 'events'
+import type EventEmitter from 'emittery'
 
 export class MockSender extends Sender {
   public protocol: string
@@ -23,7 +23,7 @@ export class MockSender extends Sender {
       if (code === 0) {
         this.status = payload
       } else {
-        this.emit('message', { code, payload })
+        void this.emit('message', { code, payload })
       }
     })
   }

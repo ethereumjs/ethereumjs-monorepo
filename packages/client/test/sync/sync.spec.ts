@@ -53,7 +53,7 @@ describe('should sync', async () => {
     td: BigInt(0),
     height: BigInt(1),
   }
-  config.events.emit(Event.CHAIN_UPDATED)
+  void config.events.emit(Event.CHAIN_UPDATED)
 
   // test getting out of sync
   ;(config as any).syncedStateRemovalPeriod = 0

@@ -95,7 +95,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
             headers[0]?.number
           } last=${headers[headers.length - 1]?.number})`,
         )
-      this.config.events.emit(Event.SYNC_FETCHED_HEADERS, headers.slice(0, num))
+      await this.config.events.emit(Event.SYNC_FETCHED_HEADERS, { headers: headers.slice(0, num) })
     } catch (e: any) {
       this.DEBUG &&
         this.debug(

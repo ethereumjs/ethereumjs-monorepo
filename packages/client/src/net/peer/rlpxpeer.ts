@@ -118,15 +118,15 @@ export class RlpxPeer extends Peer {
     })
 
     const peerErrorHandler = (_: Devp2pRlpxPeer, error: Error) => {
-      this.config.events.emit(Event.PEER_ERROR, error, this)
+      void this.config.events.emit(Event.PEER_ERROR, { error, peerCausingError: this })
     }
     const peerErrorHandlerBound = peerErrorHandler.bind(this)
     const peerAddedHandler = async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
-        this.config.events.emit(Event.PEER_CONNECTED, this)
+        await this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: this })
       } catch (error: any) {
-        this.config.events.emit(Event.PEER_ERROR, error, this)
+        await this.config.events.emit(Event.PEER_ERROR, { error, peerCausingError: this })
       }
     }
     const peerRemovedHandler = (rlpxPeer: Devp2pRlpxPeer) => {
@@ -135,12 +135,12 @@ export class RlpxPeer extends Peer {
       }
       this.rlpxPeer = null
       this.connected = false
-      this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      this.rlpx?.events.removeListener('peer:error', peerErrorHandlerBound)
+      void this.config.events.emit(Event.PEER_DISCONNECTED, { disconnectedPeer: this })
+      this.rlpx?.events.off('peer:error', ({ peer, error }) => peerErrorHandlerBound(peer, error))
     }
-    this.rlpx.events.on('peer:error', peerErrorHandlerBound)
-    this.rlpx.events.once('peer:added', peerAddedHandler.bind(this))
-    this.rlpx.events.once('peer:removed', peerRemovedHandler.bind(this))
+    this.rlpx?.events.off('peer:error', ({ peer, error }) => peerErrorHandlerBound(peer, error))
+    void this.rlpx.events.once('peer:added').then(() => peerAddedHandler.bind(this))
+    void this.rlpx.events.once('peer:removed').then(() => peerRemovedHandler.bind(this))
   }
 
   /**

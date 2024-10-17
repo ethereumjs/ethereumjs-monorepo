@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 import { pipe } from 'it-pipe'
 import pushable from 'it-pushable'
 
@@ -38,7 +38,7 @@ export class MockPeer extends Peer {
       return
     }
     await this.createStream(this.location)
-    this.config.events.emit(Event.PEER_CONNECTED, this)
+    await this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: this as any })
   }
 
   async latest(): Promise<BlockHeader | undefined> {
@@ -70,7 +70,7 @@ export class MockPeer extends Peer {
     void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
-          receiver.emit('data', data)
+          void receiver.emit('data', data)
         }, 100)
       }
     })

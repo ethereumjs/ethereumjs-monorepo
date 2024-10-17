@@ -161,7 +161,7 @@ describe('[FullSynchronizer]', async () => {
       blocks: { height: BigInt(0) },
     }
     setTimeout(() => {
-      config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
+      void config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
     assert.ok(await sync.sync(), 'local height < remote height')
     BlockFetcher.prototype.fetch = vi.fn().mockRejectedValue(new Error('err0'))

@@ -294,7 +294,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     )
 
     if (this.fetcherDoneFlags.done) {
-      this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, this.root, this.stateManager)
+      void this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, {
+        stateRoot: this.root,
+        stateManager: this.stateManager,
+      })
     }
   }
 

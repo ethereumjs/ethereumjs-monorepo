@@ -7,7 +7,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 
 import { crc32 } from './crc.js'
 import { eipsDict } from './eips.js'
@@ -20,6 +20,7 @@ import type {
   CasperConfig,
   ChainConfig,
   CliqueConfig,
+  CommonEvent,
   CommonOpts,
   CustomCrypto,
   EthashConfig,
@@ -55,10 +56,10 @@ export class Common {
 
   protected HARDFORK_CHANGES: [string, HardforkConfig][]
 
-  public events: EventEmitter
+  public events: EventEmitter<CommonEvent>
 
   constructor(opts: CommonOpts) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<CommonEvent>()
 
     this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
@@ -146,7 +147,7 @@ export class Common {
           this._hardfork = hardfork
           this._buildParamsCache()
           this._buildActivatedEIPsCache()
-          this.events.emit('hardforkChanged', hardfork)
+          void this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
       }
@@ -842,7 +843,7 @@ export class Common {
    */
   copy(): Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
-    copy.events = new EventEmitter()
+    copy.events = new EventEmitter<CommonEvent>()
     return copy
   }
 }

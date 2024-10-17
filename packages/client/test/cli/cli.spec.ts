@@ -370,8 +370,8 @@ describe('[CLI]', () => {
         child.kill()
         assert.fail('ws endpoint should not be enabled')
       }
-      if (message.includes('Miner: Assembling block')) {
-        assert.ok('miner started and no rpc endpoints started')
+      if (message.includes('Client started successfully')) {
+        assert.ok('client started and no rpc endpoints started')
         resolve(undefined)
       }
     }

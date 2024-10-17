@@ -68,7 +68,7 @@ describe(method, () => {
     block.transactions[0] = tx
 
     let ranBlock: Block | undefined = undefined
-    vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    void vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
     await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
 

@@ -201,7 +201,10 @@ export class RlpxServer extends Server {
     if (ignoredErrors.test(error.message)) {
       return
     }
-    this.config.events.emit(Event.SERVER_ERROR, error, this)
+    void this.config.events.emit(Event.SERVER_ERROR, {
+      serverError: error,
+      serverCausingError: this,
+    })
   }
 
   /**
@@ -235,8 +238,8 @@ export class RlpxServer extends Server {
         resolve()
       })
 
-      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
-        this.dpt?.confirmPeer(peer.id)
+      this.config.events.on(Event.PEER_CONNECTED, ({ connectedPeer }) => {
+        this.dpt?.confirmPeer(connectedPeer.id)
       })
 
       if (typeof this.config.port === 'number') {
@@ -276,7 +279,7 @@ export class RlpxServer extends Server {
           await peer.accept(rlpxPeer, this)
           this.peers.set(peer.id, peer)
           this.config.logger.debug(`Peer connected: ${peer}`)
-          this.config.events.emit(Event.PEER_CONNECTED, peer)
+          await this.config.events.emit(Event.PEER_CONNECTED, { connectedPeer: peer })
         } catch (error: any) {
           // Fixes a memory leak where RlpxPeer objects could not be GCed,
           // likely to the complex two-way bound-protocol logic
@@ -285,21 +288,19 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.events.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
-        const id = bytesToUnprefixedHex(rlpxPeer.getId() as Uint8Array)
-        const peer = this.peers.get(id)
-        if (peer) {
-          this.peers.delete(peer.id)
+      this.rlpx.events.on('peer:removed', ({ peer, reason }) => {
+        const id = bytesToUnprefixedHex(peer.getId() as Uint8Array)
+        const rlpxPeer = this.peers.get(id)
+        if (rlpxPeer) {
+          this.peers.delete(rlpxPeer.id)
           this.config.logger.debug(
-            `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`,
+            `Peer disconnected (${peer.getDisconnectPrefix(reason)}): ${peer}`,
           )
-          this.config.events.emit(Event.PEER_DISCONNECTED, peer)
+          void this.config.events.emit(Event.PEER_DISCONNECTED, { disconnectedPeer: rlpxPeer })
         }
       })
 
-      this.rlpx.events.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) =>
-        this.error(error),
-      )
+      this.rlpx.events.on('peer:error', ({ error }) => this.error(error))
 
       this.rlpx.events.on('error', (e: Error) => {
         this.error(e)
@@ -308,7 +309,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.events.on('listening', () => {
-        this.config.events.emit(Event.SERVER_LISTENING, {
+        void this.config.events.emit(Event.SERVER_LISTENING, {
           transport: this.name,
           url: this.getRlpxInfo().enode ?? '',
         })

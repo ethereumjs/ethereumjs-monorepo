@@ -93,6 +93,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^5.0.2",
+    "emittery": "^1.0.3",
     "ethereum-cryptography": "^3.0.0"
   },
   "devDependencies": {

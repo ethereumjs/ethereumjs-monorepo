@@ -379,7 +379,9 @@ describe('[AccountFetcher]', async () => {
     }
 
     const snapCompleted = new Promise((resolve) => {
-      config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
+      void config.events
+        .once(Event.SYNC_SNAPSYNC_COMPLETE)
+        .then((stateRoot: any) => resolve(stateRoot))
     })
     // test snapfetcher complete, since the storage fetcher is already empty it should anyway lead
     // call to snapFetchersCompleted with storageFetcher

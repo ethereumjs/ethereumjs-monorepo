@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import EventEmitter from 'emittery'
 
 /**
  * Base class for transport specific message sender/receiver. Subclasses should
@@ -22,7 +22,7 @@ export class Sender extends EventEmitter {
 
   set status(status: any) {
     this._status = status
-    this.emit('status', status)
+    void this.emit('status', status)
   }
 
   /**

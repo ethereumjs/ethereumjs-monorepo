@@ -79,7 +79,7 @@ describe(
 
       // deploy contract
       let ranBlock: Block | undefined = undefined
-      vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+      void vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
       const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
       const { createdAddress } = result.results[0]
       await vm.blockchain.putBlock(ranBlock!)
@@ -147,7 +147,7 @@ describe(
         { common: service.chain.config.chainCommon },
       )
 
-      vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+      void vm.events.once('afterBlock').then((result) => (ranBlock = result.data.block))
       await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
       await vm.blockchain.putBlock(ranBlock!)
 

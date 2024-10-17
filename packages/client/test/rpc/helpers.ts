@@ -218,8 +218,8 @@ export async function baseSetup(clientOpts: any = {}) {
   })
   const host = server.address() as AddressInfo
   const rpc = Client.http({ port: host.port })
-  server.once('close', () => {
-    client.config.events.emit(Event.CLIENT_SHUTDOWN)
+  void server.once('close', () => {
+    void client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
   return { server, manager, client, rpc }
 }
@@ -268,7 +268,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const modules = manager['_modules']
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
-    client.config.events.emit(Event.CLIENT_SHUTDOWN)
+    void client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
 
   const { chain } = client

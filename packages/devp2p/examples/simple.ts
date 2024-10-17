@@ -28,12 +28,14 @@ const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
 dpt.events.on('error', (err) => console.error(chalk.red(err.stack ?? err)))
 
 dpt.events.on('peer:added', (peer) => {
-  const info = `(${bytesToHex(peer.id)},${peer.address},${peer.udpPort},${peer.tcpPort})`
+  const info = `(${bytesToHex(peer.id!)},${peer.address},${peer.udpPort},${peer.tcpPort})`
   console.log(chalk.green(`New peer: ${info} (total: ${dpt.getPeers().length})`))
 })
 
 dpt.events.on('peer:removed', (peer) => {
-  console.log(chalk.yellow(`Remove peer: ${bytesToHex(peer.id)} (total: ${dpt.getPeers().length})`))
+  console.log(
+    chalk.yellow(`Remove peer: ${bytesToHex(peer.id!)} (total: ${dpt.getPeers().length})`),
+  )
 })
 
 // for accept incoming connections uncomment next line

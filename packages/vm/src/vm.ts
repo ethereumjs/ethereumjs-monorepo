@@ -1,10 +1,10 @@
 import { createEVM } from '@ethereumjs/evm'
-import { AsyncEventEmitter } from '@ethereumjs/util'
+import EventEmitter from 'emittery'
 
 import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
 
-import type { VMEvents, VMOpts } from './types.js'
+import type { VMEvent, VMOpts } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
@@ -28,7 +28,7 @@ export class VM {
 
   readonly common: Common
 
-  readonly events: AsyncEventEmitter<VMEvents>
+  readonly events: EventEmitter<VMEvent>
   /**
    * The EVM used for bytecode execution
    */
@@ -38,15 +38,6 @@ export class VM {
   protected _isInitialized: boolean = false
 
   protected readonly _setHardfork: boolean | BigIntLike
-
-  /**
-   * Cached emit() function, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public _emit(topic: keyof VMEvents, data: any): Promise<void> {
-    return new Promise((resolve) => this.events.emit(topic, data, resolve))
-  }
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -73,7 +64,7 @@ export class VM {
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!
 
-    this.events = new AsyncEventEmitter<VMEvents>()
+    this.events = new EventEmitter<VMEvent>()
 
     this._opts = opts
 

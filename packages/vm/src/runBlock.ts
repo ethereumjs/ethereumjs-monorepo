@@ -104,7 +104,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * @type {Object}
    * @property {Block} block emits the block that is about to be processed
    */
-  await vm._emit('beforeBlock', block)
+  await vm.events.emit('beforeBlock', { data: block })
 
   if (setHardfork !== false || vm['_setHardfork'] !== false) {
     const setHardforkUsed = setHardfork ?? vm['_setHardfork']
@@ -347,7 +347,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * @type {AfterBlockEvent}
    * @property {AfterBlockEvent} result emits the results of processing a block
    */
-  await vm._emit('afterBlock', afterBlockEvent)
+  await vm.events.emit('afterBlock', { data: afterBlockEvent })
   if (vm.DEBUG) {
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${

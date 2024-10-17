@@ -20,7 +20,7 @@ export class LightSynchronizer extends Synchronizer {
     super(options)
 
     this.processHeaders = this.processHeaders.bind(this)
-    this.config.events.on(Event.SYNC_FETCHED_HEADERS, this.processHeaders)
+    this.config.events.on(Event.SYNC_FETCHED_HEADERS, ({ headers }) => this.processHeaders(headers))
   }
 
   /**
@@ -154,7 +154,9 @@ export class LightSynchronizer extends Synchronizer {
    * Stop synchronizer.
    */
   async stop(): Promise<boolean> {
-    this.config.events.removeListener(Event.SYNC_FETCHED_HEADERS, this.processHeaders)
+    this.config.events.off(Event.SYNC_FETCHED_HEADERS, ({ headers }) =>
+      this.processHeaders(headers),
+    )
     return super.stop()
   }
 }

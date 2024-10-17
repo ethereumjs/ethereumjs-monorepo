@@ -113,7 +113,7 @@ export class SnapSynchronizer extends Synchronizer {
       await this.sync()
     } catch (error: any) {
       this.config.logger.error(`Snap sync error: ${error.message}`)
-      this.config.events.emit(Event.SYNC_ERROR, error)
+      await this.config.events.emit(Event.SYNC_ERROR, error)
     }
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false

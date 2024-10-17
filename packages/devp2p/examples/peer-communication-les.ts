@@ -7,6 +7,7 @@ import ms from 'ms'
 
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Peer } from '@ethereumjs/devp2p'
+import type { NestedUint8Array } from '@ethereumjs/rlp'
 
 const PRIVATE_KEY = randomBytes(32)
 
@@ -67,10 +68,10 @@ rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stac
 
 rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
-  const les = peer.getProtocols()[0]
+  const les = peer.getProtocols()[0] as devp2p.LES
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
 
-  const clientId = peer.getHelloMessage().clientId
+  const clientId = peer.getHelloMessage()!.clientId
   console.log(
     chalk.green(
       `Add peer: ${addr} ${clientId} (les${les.getVersion()}) (total: ${rlpx.getPeers().length})`,
@@ -85,13 +86,13 @@ rlpx.events.on('peer:added', (peer) => {
     announceType: intToBytes(0),
     recentTxLookup: intToBytes(1),
     forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
-  })
+  } as devp2p.LES.Status)
 
-  les.events.once('status', (status: devp2p.LES.Status) => {
+  les.events.once('status').then((status) => {
     const msg = [
       Uint8Array.from([]),
       [
-        bytesToInt(status['headNum']),
+        bytesToInt((<devp2p.LES.Status>status).headNum),
         Uint8Array.from([1]),
         Uint8Array.from([]),
         Uint8Array.from([1]),
@@ -100,8 +101,9 @@ rlpx.events.on('peer:added', (peer) => {
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
-  les.events.on('message', async (code: devp2p.LES.MESSAGE_CODES, payload: any) => {
-    switch (code) {
+  les.events.on('message', async ({ code, payload }) => {
+    payload = payload as NestedUint8Array
+    switch (code as devp2p.LES.MESSAGE_CODES) {
       case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
         if (payload[2].length > 1) {
           console.log(
@@ -109,7 +111,7 @@ rlpx.events.on('peer:added', (peer) => {
           )
           break
         }
-        const header = createBlockHeaderFromBytesArray(payload[2][0], { common })
+        const header = createBlockHeaderFromBytesArray(<Uint8Array[]>payload[2][0], { common })
 
         setTimeout(() => {
           les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, [
@@ -130,8 +132,8 @@ rlpx.events.on('peer:added', (peer) => {
         }
 
         const header2 = requests.bodies.shift()
-        const txs = payload[2][0][0]
-        const uncleHeaders = payload[2][0][1]
+        const txs = <Uint8Array[]>(<NestedUint8Array>payload[2])[0][0]
+        const uncleHeaders = <Uint8Array[][]>(<NestedUint8Array>payload[2])[0][1]
         const block = createBlockFromBytesArray([header2.raw(), txs, uncleHeaders], { common })
         const isValid = await isValidBlock(block)
         let isValidPayload = false
@@ -150,30 +152,30 @@ rlpx.events.on('peer:added', (peer) => {
   })
 })
 
-rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', ({ peer, reason, disconnectWe }) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
     chalk.yellow(
       `Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(
-        reasonCode,
-      )} (${String(reasonCode)}) (total: ${total})`,
+        reason,
+      )} (${String(reason)}) (total: ${total})`,
     ),
   )
 })
 
-rlpx.events.on('peer:error', (peer, err) => {
-  if (err.code === 'ECONNRESET') return
+rlpx.events.on('peer:error', ({ peer, error }) => {
+  if (error.code === 'ECONNRESET') return
 
-  if (err instanceof Error) {
+  if (error instanceof Error) {
     const peerId = peer.getId()
     if (peerId !== null) dpt.banPeer(peerId, ms('5m'))
 
-    console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${err.message}`))
+    console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${error.message}`))
     return
   }
 
-  console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${err.stack ?? err}`))
+  console.error(chalk.red(`Peer error (${getPeerAddr(peer)}): ${error.stack ?? error}`))
 })
 
 // uncomment, if you want accept incoming connections

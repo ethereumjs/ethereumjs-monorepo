@@ -182,7 +182,7 @@ export class Debug {
       failed: false,
       structLogs: [] as structLog[],
     }
-    vmCopy.evm.events?.on('step', async (step, next) => {
+    vmCopy.evm.events?.on('step', async ({ step, next }) => {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
@@ -216,8 +216,8 @@ export class Debug {
       next?.()
     })
 
-    vmCopy.evm.events?.on('afterMessage', (data, next) => {
-      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+    vmCopy.evm.events?.on('afterMessage', ({ step, next }) => {
+      if (step.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
         // Mark last opcode trace as error if exception occurs
         trace.structLogs[trace.structLogs.length - 1].error = true
       }
@@ -269,7 +269,7 @@ export class Debug {
       failed: false,
       structLogs: [] as structLog[],
     }
-    vm.evm.events?.on('step', async (step, next) => {
+    vm.evm.events?.on('step', async ({ step, next }) => {
       const memory = []
       let storage = {}
       if (opts.disableStorage === false) {
@@ -303,8 +303,8 @@ export class Debug {
       next?.()
     })
 
-    vm.evm.events?.on('afterMessage', (data, next) => {
-      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+    vm.evm.events?.on('afterMessage', ({ step, next }) => {
+      if (step.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
         // Mark last opcode trace as error if exception occurs
         trace.structLogs[trace.structLogs.length - 1].error = true
       }
