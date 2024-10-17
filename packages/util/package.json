@@ -93,7 +93,7 @@
   },
   "dependencies": {
     "@chainsafe/persistent-merkle-tree": "^0.7.2",
-    "@chainsafe/ssz": "https://github.com/ChainSafe/ssz/raw/cayman/stable-container/packages/ssz/package.tgz",
+    "@chainsafe/ssz": "^0.18.0",
     "@ethereumjs/rlp": "^5.0.2",
     "ethereum-cryptography": "^3.0.0"
   },
