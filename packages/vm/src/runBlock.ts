@@ -134,32 +134,36 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-    }
+    // We only do these checks if operating statelessly since the execution witness is
+    // constructed during stateful execution
+    if (stateManager instanceof StatelessVerkleStateManager) {
+      if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+        throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Initializing StatelessVerkleStateManager executionWitness`)
-    }
-    if (clearCache) {
-      stateManager.clearCaches()
-    }
+      if (vm.DEBUG) {
+        debug(`Initializing StatelessVerkleStateManager executionWitness`)
+      }
+      if (clearCache) {
+        stateManager.clearCaches()
+      }
 
-    // Update the stateRoot cache
-    await stateManager.setStateRoot(block.header.stateRoot)
+      // Update the stateRoot cache
+      await stateManager.setStateRoot(block.header.stateRoot)
 
-    // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+      // Populate the execution witness
+      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (
-      stateManager instanceof StatelessVerkleStateManager &&
-      verifyVerkleStateProof(stateManager) === false
-    ) {
-      throw Error(`Verkle proof verification failed`)
-    }
+      if (
+        stateManager instanceof StatelessVerkleStateManager &&
+        verifyVerkleStateProof(stateManager) === false
+      ) {
+        throw Error(`Verkle proof verification failed`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Verkle proof verification succeeded`)
+      if (vm.DEBUG) {
+        debug(`Verkle proof verification succeeded`)
+      }
     }
   } else {
     if (typeof stateManager.initVerkleExecutionWitness === 'function') {
@@ -264,57 +268,58 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
-    if (!vm.common.isActivatedEIP(6800)) {
+    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
       // Only validate the following headers if verkle blocks aren't activated
-      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw new Error(msg)
-      }
-      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-              block.header.logsBloom,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid bloom', vm, block)
-        throw new Error(msg)
-      }
-      if (result.gasUsed !== block.header.gasUsed) {
-        if (vm.DEBUG) {
-          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-        }
-        const msg = _errorMsg('invalid gasUsed', vm, block)
-        throw new Error(msg)
-      }
-      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot,
-            )}`,
-          )
-        }
-        const msg = _errorMsg(
-          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-            block.header.stateRoot,
-          )}`,
-          vm,
-          block,
-        )
-        throw new Error(msg)
-      }
-    } else if (vm.common.isActivatedEIP(6800)) {
-      // If verkle is activated, only validate the post-state
-      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
+      // if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+      //   if (vm.DEBUG) {
+      //     debug(
+      //       `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+      //         block.header.receiptTrie,
+      //       )}`,
+      //     )
+      //   }
+      //   const msg = _errorMsg('invalid receiptTrie', vm, block)
+      //   throw new Error(msg)
+      // }
+      // if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+      //   if (vm.DEBUG) {
+      //     debug(
+      //       `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+      //         block.header.logsBloom,
+      //       )}`,
+      //     )
+      //   }
+      //   const msg = _errorMsg('invalid bloom', vm, block)
+      //   throw new Error(msg)
+      // }
+      // if (result.gasUsed !== block.header.gasUsed) {
+      //   if (vm.DEBUG) {
+      //     debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+      //   }
+      //   const msg = _errorMsg('invalid gasUsed', vm, block)
+      //   throw new Error(msg)
+      // }
+      // if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+      //   if (vm.DEBUG) {
+      //     debug(
+      //       `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      //         block.header.stateRoot,
+      //       )}`,
+      //     )
+      //   }
+      //   const msg = _errorMsg(
+      //     `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+      //       block.header.stateRoot,
+      //     )}`,
+      //     vm,
+      //     block,
+      //   )
+      //   throw new Error(msg)
+      // }
+    }
+    if (vm.common.isActivatedEIP(6800)) {
+      // If verkle is activated and executing statelessly, only validate the post-state
+      if ((await vm['_opts'].stateManager!.verifyPostState!()) === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)

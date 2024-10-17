@@ -6,12 +6,10 @@ import {
   VERKLE_HEADER_STORAGE_OFFSET,
   VERKLE_MAIN_STORAGE_OFFSET,
   VERKLE_NODE_WIDTH,
-  bytesToBigInt,
   bytesToHex,
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeIndicesForCodeChunk,
-  hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -46,11 +44,8 @@ type RawAccessedState = {
 }
 
 export enum AccessedStateType {
-  Version = 'version',
-  Balance = 'balance',
-  Nonce = 'nonce',
+  BasicData = 'basicData',
   CodeHash = 'codeHash',
-  CodeSize = 'codeSize',
   Code = 'code',
   Storage = 'storage',
 }
@@ -339,18 +334,12 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
   const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
   switch (position) {
     case BigInt(0):
-      return { type: AccessedStateType.Version }
+      return { type: AccessedStateType.BasicData }
     case BigInt(1):
-      return { type: AccessedStateType.Balance }
-    case BigInt(2):
-      return { type: AccessedStateType.Nonce }
-    case BigInt(3):
       return { type: AccessedStateType.CodeHash }
-    case BigInt(4):
-      return { type: AccessedStateType.CodeSize }
     default:
       if (position < VERKLE_HEADER_STORAGE_OFFSET) {
-        throw Error(`No attribute yet stored >=5 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
+        throw Error(`No attribute yet stored >=2 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
       }
 
       if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
@@ -376,14 +365,8 @@ export function decodeValue(type: AccessedStateType, value: PrefixedHexString | 
   }
 
   switch (type) {
-    case AccessedStateType.Version:
-    case AccessedStateType.Balance:
-    case AccessedStateType.Nonce:
-    case AccessedStateType.CodeSize: {
-      const decodedValue = bytesToBigInt(hexToBytes(value), true)
-      return `${decodedValue}`
-    }
-
+    // TODO: Does BasicData need to be decoded?
+    case AccessedStateType.BasicData:
     case AccessedStateType.CodeHash:
     case AccessedStateType.Code:
     case AccessedStateType.Storage: {
