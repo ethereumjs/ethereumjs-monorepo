@@ -6,6 +6,70 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code:
+
+##### `account`
+
+See PR [#3524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3524):
+
+- `Account.fromAccountData()` -> `createAccount()`
+- `Account.fromRlpSerializedAccount()` -> `createAccountFromRLP()`
+- `Account.fromRlpSerializedPartialAccount()` -> `createPartialAccountFromRLP()`
+- `Account.fromValuesArray()` --> `createAccountFromBytesArray()`
+- `Account.fromPartialAccountData()` --> `createPartialAccount()`
+
+##### `address`
+
+See PR [#3544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3544):
+
+- `Address.zero()` -> `createZeroAddress()`
+- `Address.fromString()` -> `createAddressFromString()`
+- `Address.fromPublicKey()` -> `createAddressFromPublicKey()`
+- `Address.fromPrivateKey()` -> `createAddressFromPrivateKey()`
+- `Address.generate()` -> `createContractAddress()`
+- `Address.generate2()` -> `createContractAddress2()`
+- New: `createAddressFromBigInt()`
+
+##### `withdrawal`
+
+See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
+
+- `Withdrawal.fromWithdrawalData()` -> `createWithdrawal()`
+- `Withdrawal.fromValuesArray()` -> `createWithdrawalFromBytesArray()`
+- `Withdrawal.toBytesArray()` -> `withdrawalToBytesArray()`
+
+##### `request`
+
+See PR [#3589](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3589)
+
+- `*Request.fromRequestData()` -> `create*Request()`
+- `*Request.fromJSON()` -> `create*RequestFromJSON()`
+- `*Request.deserialize()` -> `create*RequestFromRLP()`
+
+### Other Breaking Changes
+
+- `bytes`: Restrict `hexToBytes()`, `unpadHex()` and `hexToBigInt()` to accept only hex-prefixed values, PR [#3510](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3510)
+- Remove deprecated `initKZG()` method, PR [#3635](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3635)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+- Remove redundant fills and `zeros()` function, PR [#3709](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3709)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
+- Use `noble` bytes conversion utilities internally, PR [#3698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3698)
+- Added two simple unit conversion methods, `Units.ether()` and `Units.gwei()`, mainly to ease tx creation a bit, PRs [#3734](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3734), [#3736](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3736) and [#3738](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3738)
+
 ## 9.1.0 - 2024-08-15
 
 ### Support for Partial Accounts

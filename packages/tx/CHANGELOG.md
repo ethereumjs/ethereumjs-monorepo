@@ -6,6 +6,140 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Transaction Classes
+
+The names for the tx classes have been shortened and simplified (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533)):
+
+- `FeeMarketEIP1559Transaction` -> `FeeMarket1559Tx`
+- `AccessListEIP2930Transaction` -> `AccessList2930Tx`
+- `BlobEIP4844Transaction` -> `Blob4844Tx`
+- `EOACodeEIP7702Transaction` -> `EOACode7702Tx`
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533) and [#3597](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3597)).
+
+Here an example for the `FeeMarket1559Tx` class:
+
+- `FeeMarketEIP1559Transaction.fromTxData()` -> `createFeeMarket1559Tx()`
+- `FeeMarketEIP1559Transaction.fromSerializedTx()` -> `createFeeMarket1559TxFromRLP()`
+- `FeeMarketEIP1559Transaction.fromValuesArray()` -> `create1559FeeMarketTxFromBytesArray()`
+
+New names from other tx types, to grasp the scheme:
+
+- `createBlob4844Tx()`
+- `createAccessList2930Tx()`
+- `createEOACode7702Tx()`
+
+#### Transaction Factory
+
+Similar renamings have been done for the generic `TransactionFactory` (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514) and [#3667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3667)):
+
+- `TransactionFactory.fromTxData()` -> `createTx()`
+- `TransactionFactory.fromSerializedData()` -> `createTxFromRLP()`
+- `TransactionFactory.fromBlockBodyData()` -> `createTxFromBlockBodyData()`
+- `TransactionFactory.fromJsonRpcProvider()` -> `createTxFromJSONRPCProvider()`
+- New: `createTxFromRPC()` (just from the data, without the provider fetch)
+
+#### Library Methods
+
+See: PR [#3535](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3535)
+
+- `*Tx.getBaseFee()` -> `*Tx.getIntrinsicGas()` (avoid confusion with 1559 base fee)
+- `*Tx.getDataFee()` -> `*Tx.getDataGas()` (be more explicit about method's gas unit)
+
+### EIP-7702 EOA Account Abstraction Support (experimental)
+
+The tx library now support the creation of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs, which allow to transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470) and [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577).
+
+The following is an example on how to create an EIP-7702 tx (note that you need to replace the `authorizationList` parameters with real-world tx and signature values):
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = createEOACode7702Tx(
+  {
+    authorizationList: [
+      {
+        chainId: '0x2',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: '0x1',
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
+  },
+  { common },
+)
+```
+
+#### Own Tx Parameter Set
+
+HF-sensitive parameters like `txGas` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsTx`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### JavaScript KZG Support (no more WASM)
+
+The WASM based KZG integration for 4844 support has been replaced with a pure JS-based solution ([micro-eth-singer](https://github.com/paulmillr/micro-eth-signer), thanks to @paulmillr for the cooperation and Andrew for the integration! ❤️), see PR [#3674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3674). This makes this library fully independent from Web Assembly code for all supported functionality! 🎉 The JS version is indeed even faster then the WASM one (we benchmarked), so we recommend to just switch over!
+
+KZG is one-time initialized by providing to `Common`, in the updated version now like this:
+
+```ts
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const kzg = new microEthKZG(trustedSetup)
+// Pass the following Common to the EthereumJS library
+const common = new Common({
+  chain: Mainnet,
+  customCrypto: {
+    kzg,
+  },
+})
+```
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Add T9N (TransactionTool) test consumption, PR [#3742](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3742)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+
 ## 5.4.0 - 2024-08-15
 
 #### EOA Code Transaction (EIP-7702) (outdated)

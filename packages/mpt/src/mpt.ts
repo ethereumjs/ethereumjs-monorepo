@@ -73,7 +73,7 @@ export class MerklePatriciaTrie {
 
   /** Debug logging */
   protected DEBUG: boolean
-  protected _debug: Debugger = debug('trie:#')
+  protected _debug: Debugger = debug('mpt:#')
   protected debug: (...args: any) => void
 
   /**

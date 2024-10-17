@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "2.4.0",
+  "version": "3.0.0-alpha.1",
   "description": "An Ethereum statemanager implementation",
   "keywords": [
     "ethereum",
@@ -50,19 +50,19 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.4.0",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/mpt": "^6.2.2",
-    "@ethereumjs/util": "^9.1.0",
-    "@ethereumjs/verkle": "^0.1.0",
+    "@ethereumjs/common": "^5.0.0-alpha.1",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/mpt": "^7.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "@js-sdsl/ordered-map": "^4.4.2",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^3.0.0",
     "lru-cache": "10.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^5.3.0",
-    "@ethereumjs/genesis": "^0.2.3",
+    "@ethereumjs/block": "^6.0.0-alpha.1",
+    "@ethereumjs/genesis": "^0.3.0-alpha.1",
     "@types/debug": "^4.1.9",
     "rustbn-wasm": "^0.4.0",
     "verkle-cryptography-wasm": "^0.4.8"

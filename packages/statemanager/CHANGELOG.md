@@ -6,6 +6,113 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Default Merkle SM
+
+We have renamed the previously called `DefaultStateManager` to a more neutral `MerkleStateManager`, see PR [#3641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3641), to reflect the rising importance of other state managers and align with future (at least) dual Merkle/Verkle state world:
+
+- `DefaultStateManager` -> `MerkleStateManager`
+
+#### Core State get/put Methods
+
+The names for the core state manager methods to access and write state have been simplified, see PR [#3541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3541):
+
+- `getContractCode()` -> `getCode()`
+- `putContractCode()` -> `putCode()`
+- `getContractCodeSize()` -> `getCodeSize()`
+- `getContractStorage()` -> `getStorage()`
+- `putContractStorage()` -> `putStorage()`
+- `clearContractStorage()` -> `clearStorage()`
+
+#### Proof Functionality
+
+The following proof methods have been taken out of the core classes and made standalone-methods (tree shaking + keep core classes limited to core state functionality), see PR [#3672](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3672):
+
+- `MerkleStateManager.getProof()` -> `getMerkleStateProof()`
+- `MerkleStateManager.fromProof()` -> `fromMerkleStateProof()`
+- `MerkleStateManager.addStorageProof()` -> `addMerkleStateStorageProof()`
+- `MerkleStateManager.addProofData()` -> `addMerkleStateProofData()`
+- `MerkleStateManager.verifyProof()` -> `verifyMerkleStateProof()`
+
+- `RPCStateManager.getProof()` -> `getRPCStateProof()`
+
+- `VerkleStateManager.getProof()` -> `getVerkleStateProof()`
+- `VerkleStateManager.verifyVerkleProof()` -> `verifyVerkleStateProof()`
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### New SimpleStateManager
+
+We have added a new < 200 LoC state manager `SimpleStateManager`, which has less dependencies (no tree backend) and allows for easier state reasoning and debugging, since there is no code or cache usage overhead. This new state manager is now also the default state manager for the `EVM`. Note that this state manager is meant to be used for simple use cases and should be replaced by a cache-backed state manager (in most cases atm: `MerkleStateManager`) for things like mainnet tx execution.
+
+The new state manager can be used like this:
+
+```ts
+import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+import { SimpleStateManager } from '@ethereumjs/statemanager'
+
+const main = async () => {
+  const sm = new SimpleStateManager()
+  const address = createAddressFromPrivateKey(randomBytes(32))
+  const account = new Account(0n, 0xfffffn)
+  await sm.putAccount(address, account)
+  console.log(await sm.getAccount(address))
+}
+
+void main()
+```
+
+### Cache API Refactor
+
+There is a new abstraction layer for the account, code and storage caches for all state managers, called `Caches`, see PRs [#3554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3554), [#3569](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3569) and [#3596](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3596).
+
+This allows for a cleaner separation of cache and pure state access code and also enables tree shaking for use cases where the caches are not needed.
+
+The API along cache initialization slightly changes along with this. There is a new `caches` option and a a `Caches` object must be created and passed in explicitly along state manager initialization if caches should be used:
+
+```ts
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
+
+const sm = new MerkleStateManager({ caches: new Caches() })
+```
+
+### TypeScript: StateManagerInterface Refactoring/Simplification
+
+The [StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which all state managers implement, is located in the `@ethereumjs/common` package for re-usability reasons. Along the breaking release work, this interface as been strongly simplified, see PRs [#3543](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3543) and [#3541](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3541). A dedicated `EVMStateManagerInterface` has been removed, which allows for easier state manager usage within the EVM package.
+
+Somewhat non-core functionality is now marked as optional (with a `?`), so if you make custom usage of the state manager you might need to add some `!` in your TypeScript code. Have a look at the interface linked above to see what has changed.
+
+### Other Breaking Changes
+
+- Do not throw calling `getContractStorage()` on non-existing accounts, PR [#3536](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3536)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- kaustinen7 verkle testnet preparation (update verkle leaf structure -> BASIC_DATA), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
+- Switch `js-sdsl` to `js-sdsl/orderedMap` sub package, PR [#3528](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3528)
+
 ## 2.4.0 - 2024-08-15
 
 ### Verkle Updates
