@@ -78,7 +78,8 @@ export const paramsVM: ParamsDict = {
   7002: {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
-    withdrawalRequestPredeployAddress: '0x00A3ca265EBcb825B45F985A16CEFB49958cE017', // Address of the validator excess address
+    // See: https://github.com/ethereum/EIPs/pull/8934/files
+    withdrawalRequestPredeployAddress: '0x09Fc772D0857550724b07B850a4323f39112aAaA', // Address of the validator excess address
   },
 
   /**
@@ -87,6 +88,7 @@ export const paramsVM: ParamsDict = {
   7251: {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
-    consolidationRequestPredeployAddress: '0x00b42dbF2194e931E80326D950320f7d9Dbeac02', // Address of the consolidations contract
+    // See: https://github.com/ethereum/EIPs/pull/8934/files
+    consolidationRequestPredeployAddress: '0x01aBEa29659e5e97C95107F20bb753cD3e09bBBb', // Address of the consolidations contract
   },
 }

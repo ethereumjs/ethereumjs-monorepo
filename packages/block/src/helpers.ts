@@ -2,6 +2,7 @@ import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
+import { concatBytes } from 'ethereum-cryptography/utils'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -46,7 +47,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
-    requestsRoot,
+    requestsHash,
   ] = values
 
   if (values.length > 21) {
@@ -81,7 +82,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
-    requestsRoot,
+    requestsHash,
   }
 }
 
@@ -154,9 +155,9 @@ export async function genTransactionsTrieRoot(
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */
-export async function genRequestsTrieRoot(
+export function genRequestsRoot(
   requests: CLRequest<CLRequestType>[],
-  emptyTrie?: MerklePatriciaTrie,
+  sha256Function: (msg: Uint8Array) => Uint8Array,
 ) {
   // Requests should be sorted in monotonically ascending order based on type
   // and whatever internal sorting logic is defined by each request type
@@ -166,9 +167,14 @@ export async function genRequestsTrieRoot(
         throw new Error('requests are not sorted in ascending order')
     }
   }
-  const trie = emptyTrie ?? new MerklePatriciaTrie()
-  for (const [i, req] of requests.entries()) {
-    await trie.put(RLP.encode(i), req.serialize())
+
+  // def compute_requests_hash(list):
+  //    return keccak256(rlp.encode([rlp.encode(req) for req in list]))
+
+  let flatRequests = new Uint8Array()
+  for (const req of requests) {
+    flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
   }
-  return trie.root()
+
+  return sha256Function(flatRequests)
 }

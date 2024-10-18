@@ -26,6 +26,7 @@ import {
   type CLRequest,
   type CLRequestType,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -42,7 +43,7 @@ const main = async () => {
   }
   const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
 
   const block = Block.fromBlockData(
     {
@@ -77,6 +78,7 @@ import {
   type CLRequest,
   type CLRequestType,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -93,7 +95,7 @@ const main = async () => {
     withdrawalRequestData,
   ) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
 
   const block = Block.fromBlockData(
     {
@@ -130,6 +132,7 @@ import {
   type CLRequest,
   type CLRequestType,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -146,7 +149,7 @@ const main = async () => {
     consolidationRequestData,
   ) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await Block.genRequestsTrieRoot(requests)
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
 
   const block = Block.fromBlockData(
     {
