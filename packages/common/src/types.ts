@@ -9,7 +9,7 @@ export interface ChainsConfig {
 }
 
 export interface CommonEvent {
-  hardforkChanged: string
+  hardforkChanged: [hardfork: string]
 }
 
 export type CliqueConfig = {

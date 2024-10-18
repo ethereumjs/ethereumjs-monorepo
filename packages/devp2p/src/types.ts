@@ -9,16 +9,16 @@ import type { NestedUint8Array } from '@ethereumjs/rlp'
 import type { Socket } from 'net'
 
 export interface RLPxEvent {
-  'peer:added': Peer
+  'peer:added': [peer: Peer]
   'peer:error': [peer: Peer, error: any]
   'peer:removed': [peer: Peer, reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
-  error: Error
+  error: [error: Error]
   close: undefined
   listening: undefined
 }
 
 export interface PeerEvent {
-  error: Error
+  error: [error: Error]
   connect: undefined
   close: [reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
 }
@@ -42,23 +42,23 @@ export interface ProtocolEvent {
 export interface KBucketEvent {
   ping: [contacts: Contact[], contact: PeerInfo]
   updated: [incumbent: Contact, selection: Contact]
-  added: PeerInfo
-  removed: PeerInfo
+  added: [peer: PeerInfo]
+  removed: [peer: PeerInfo]
 }
 
 export interface DPTEvent {
   listening: undefined
   close: undefined
-  error: Error
-  'peer:added': PeerInfo
-  'peer:new': PeerInfo
-  'peer:removed': PeerInfo
+  error: [error: Error]
+  'peer:added': [peer: PeerInfo]
+  'peer:new': [peer: PeerInfo]
+  'peer:removed': [peer: PeerInfo]
 }
 
 export interface ServerEvent {
   listening: undefined
   close: undefined
-  error: Error
+  error: [error: Error]
   peers: any[]
 }
 interface ProtocolConstructor {
