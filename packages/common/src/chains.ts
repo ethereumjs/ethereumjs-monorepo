@@ -117,6 +117,10 @@ export const Mainnet: ChainConfig = {
       name: 'prague',
       block: null,
     },
+    {
+      name: 'verkle',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
