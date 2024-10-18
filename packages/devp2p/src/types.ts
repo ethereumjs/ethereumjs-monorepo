@@ -10,8 +10,8 @@ import type { Socket } from 'net'
 
 export interface RLPxEvent {
   'peer:added': Peer
-  'peer:error': { peer: Peer; error: any }
-  'peer:removed': { peer: Peer; reason: any; disconnectWe: any }
+  'peer:error': [peer: Peer, error: any]
+  'peer:removed': [peer: Peer, reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
   error: Error
   close: undefined
   listening: undefined
@@ -20,7 +20,7 @@ export interface RLPxEvent {
 export interface PeerEvent {
   error: Error
   connect: undefined
-  close: { reason: any; disconnectWe: any }
+  close: [reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
 }
 
 export interface ProtocolEvent {
@@ -40,8 +40,8 @@ export interface ProtocolEvent {
 }
 
 export interface KBucketEvent {
-  ping: { contacts: Contact[]; contact: PeerInfo }
-  updated: { incumbent: Contact; selection: Contact }
+  ping: [contacts: Contact[], contact: PeerInfo]
+  updated: [incumbent: Contact, selection: Contact]
   added: PeerInfo
   removed: PeerInfo
 }
