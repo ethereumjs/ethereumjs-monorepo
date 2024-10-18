@@ -24,10 +24,10 @@ export interface PeerEvent {
 }
 
 export interface ProtocolEvent {
-  message: {
-    code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES | LES.MESSAGE_CODES
-    payload: Uint8Array | NestedUint8Array
-  }
+  message: [
+    code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES | LES.MESSAGE_CODES,
+    payload: Uint8Array | NestedUint8Array,
+  ]
   status:
     | LES.Status
     | {
