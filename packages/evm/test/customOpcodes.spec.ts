@@ -28,11 +28,10 @@ describe('VM: custom opcodes', () => {
     const evm = await createEVM({ customOpcodes: [testOpcode] })
     const gas = 123456
     let correctOpcodeName = false
-    evm.events.on('step', (e, resolve) => {
+    evm.events.on('step', (e) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
       }
-      resolve?.()
     })
     const res = await evm.runCode({
       code: hexToBytes('0x21'),

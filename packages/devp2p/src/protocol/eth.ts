@@ -151,6 +151,7 @@ export class ETH extends Protocol {
         }
       }
     }
+
     const peerFork = c.hardforkForForkHash(peerForkHash)
     if (peerFork === null) {
       const msg = 'Unknown fork hash'

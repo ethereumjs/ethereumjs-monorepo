@@ -143,7 +143,12 @@ const neighbours = {
   },
 }
 
-const messages: any = { ping, pong, findneighbours, neighbours }
+const messages: any = {
+  ping,
+  pong,
+  findneighbours,
+  neighbours,
+}
 
 type Types = { [index: string]: { [index: string]: number | string } }
 const types: Types = {

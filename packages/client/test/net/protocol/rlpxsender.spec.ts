@@ -43,7 +43,7 @@ describe('should receive status', async () => {
 
 describe('should receive message', async () => {
   const rlpxProtocol = { events: new EventEmitter() }
-  const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
+  const sender = new RlpxSender(rlpxProtocol as any)
   sender.on('message', (message: any) => {
     it('message received', () => {
       assert.equal(message.code, 1, 'message received (code)')
