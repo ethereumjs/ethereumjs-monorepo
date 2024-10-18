@@ -107,8 +107,9 @@ describe('EIP-7002 tests', () => {
     )
 
     let generatedBlock: Block
-    vm.events.on('afterBlock', (e) => {
+    vm.events.on('afterBlock', (e, resolve) => {
       generatedBlock = e.block
+      resolve?.()
     })
 
     await runBlock(vm, {

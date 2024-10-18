@@ -5,8 +5,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM } from '../../../src/index.js'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
-
 describe('EIP 3855 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
@@ -18,8 +16,9 @@ describe('EIP 3855 tests', () => {
   it('should correctly use push0 opcode', async () => {
     const vm = await createVM({ common })
     let stack: bigint[]
-    vm.evm.events!.on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e, resolve) => {
       stack = e.stack
+      resolve?.()
     })
 
     const result = await vm.evm.runCode!({
@@ -35,8 +34,9 @@ describe('EIP 3855 tests', () => {
   it('should correctly use push0 to create a stack with stack limit length', async () => {
     const vm = await createVM({ common })
     let stack: bigint[] = []
-    vm.evm.events!.on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e, resolve) => {
       stack = e.stack
+      resolve?.()
     })
 
     const depth = Number(common.param('stackLimit'))
