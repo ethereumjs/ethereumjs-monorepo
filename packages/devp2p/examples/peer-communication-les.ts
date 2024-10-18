@@ -67,7 +67,7 @@ rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stac
 
 rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
-  const les = peer.getProtocols()[0]
+  const les = peer.getProtocols()[0] as devp2p.LES
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
 
   const clientId = peer.getHelloMessage().clientId
