@@ -8,6 +8,10 @@ export interface ChainsConfig {
   [key: string]: ChainConfig | ChainName
 }
 
+export interface CommonEvent {
+  hardforkChanged: string
+}
+
 export type CliqueConfig = {
   period: number
   epoch: number
