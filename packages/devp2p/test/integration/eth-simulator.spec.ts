@@ -205,7 +205,7 @@ describe('ETH simulator tests', () => {
       })
 
       rlpxs[0].events.on('peer:added', (peer: Peer) => {
-        rlpxs[0].getPeers()[0].events.on('error', (err: Error) => {
+        ;(rlpxs[0].getPeers()[0] as Peer).events.on('error', (err: Error) => {
           assert.equal(err.message, 'Remote is advertising a future fork that passed locally')
           util.destroyRLPXs(rlpxs)
           resolve(undefined)

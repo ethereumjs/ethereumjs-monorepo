@@ -75,7 +75,7 @@ describe('RLPx simulator tests', () => {
     const peer = { address: util.localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
     rlpxs[0]['_dpt']!.addPeer(peer)
     try {
-      rlpxs[0].events.on('peer:added', async (peer) => {
+      rlpxs[0].events.on('peer:added', async (peer: any) => {
         if (peer._socket._peername.port === basePort + 1) {
           assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           const peer2 = {

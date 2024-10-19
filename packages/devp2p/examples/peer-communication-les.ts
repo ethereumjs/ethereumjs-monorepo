@@ -67,10 +67,10 @@ rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stac
 
 rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
-  const les = peer.getProtocols()[0] as devp2p.LES
+  const les = peer.getProtocols()[0] as any
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
 
-  const clientId = peer.getHelloMessage().clientId
+  const clientId = peer.getHelloMessage()!.clientId
   console.log(
     chalk.green(
       `Add peer: ${addr} ${clientId} (les${les.getVersion()}) (total: ${rlpx.getPeers().length})`,
@@ -100,7 +100,7 @@ rlpx.events.on('peer:added', (peer) => {
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
-  les.events.on('message', async (code: devp2p.LES.MESSAGE_CODES, payload: any) => {
+  les.events.on('message', async (code: any, payload: any) => {
     switch (code) {
       case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
         if (payload[2].length > 1) {
