@@ -10,9 +10,9 @@ describe('RLPx simulator tests', () => {
     const basePort = 40404
     const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, basePort)
 
-    rlpxs[0].events.on('peer:added', async (peer: any) => {
+    rlpxs[0].events.on('peer:added', async (peer) => {
       assert.equal(
-        peer._port,
+        peer['_port'],
         basePort + 1,
         'should have added peer on peer:added after successful handshake',
       )
@@ -51,10 +51,10 @@ describe('RLPx simulator tests', () => {
     const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40504)
 
     try {
-      rlpxs[0].events.once('peer:added', (peer: any) => {
-        rlpxs[0].disconnect(peer._remoteId)
+      rlpxs[0].events.once('peer:added', (peer) => {
+        rlpxs[0].disconnect(peer['_remoteId'])
       })
-      rlpxs[0].events.once('peer:removed', async (peer: any, reason: any) => {
+      rlpxs[0].events.once('peer:removed', async (_, reason: any) => {
         assert.equal(
           reason,
           DISCONNECT_REASON.CLIENT_QUITTING,
@@ -75,8 +75,8 @@ describe('RLPx simulator tests', () => {
     const peer = { address: util.localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
     rlpxs[0]['_dpt']!.addPeer(peer)
     try {
-      rlpxs[0].events.on('peer:added', async (peer: any) => {
-        if (peer._socket._peername.port === basePort + 1) {
+      rlpxs[0].events.on('peer:added', async (peer) => {
+        if ((peer['_socket'] as any)._peername.port === basePort + 1) {
           assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           const peer2 = {
             address: util.localhost,
@@ -87,7 +87,7 @@ describe('RLPx simulator tests', () => {
           await util.delay(500)
           assert.equal(rlpxs[0]['_peersQueue'].length, 1, 'peers queue should contain one peer')
         }
-        if (peer._socket._peername.port === basePort + 2) {
+        if ((peer['_socket'] as any)._peername.port === basePort + 2) {
           assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           util.destroyRLPXs(rlpxs)
         }
