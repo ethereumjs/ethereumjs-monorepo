@@ -11,7 +11,7 @@ import type { Socket } from 'net'
 export interface RLPxEvent {
   'peer:added': [peer: Peer]
   'peer:error': [peer: Peer, error: any]
-  'peer:removed': [peer: Peer, reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
+  'peer:removed': [peer: Peer, reason: any, disconnectWe: boolean | null] // disconnectWe indicates whether the disconnection was initiated by us or not
   error: [error: Error]
   close: undefined
   listening: undefined
@@ -20,7 +20,7 @@ export interface RLPxEvent {
 export interface PeerEvent {
   error: [error: Error]
   connect: undefined
-  close: [reason: any, disconnectWe: any] // disconnectWe indicates whether the disconnection was initiated by us or not
+  close: [reason: any, disconnectWe: boolean | null] // disconnectWe indicates whether the disconnection was initiated by us or not
 }
 
 export interface ProtocolEvent {
