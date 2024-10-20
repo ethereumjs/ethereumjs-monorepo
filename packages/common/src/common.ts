@@ -7,7 +7,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { crc32 } from './crc.js'
 import { eipsDict } from './eips.js'

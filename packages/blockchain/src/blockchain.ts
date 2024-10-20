@@ -1,7 +1,6 @@
 import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
@@ -15,6 +14,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { EventEmitter } from 'eventemitter3'
 
 import { CasperConsensus } from './consensus/casper.js'
 import {
@@ -28,7 +28,7 @@ import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
 import type {
-  BlockchainEvents,
+  BlockchainEvent,
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
@@ -53,7 +53,7 @@ import type { Debugger } from 'debug'
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
-  events: AsyncEventEmitter<BlockchainEvents>
+  events: EventEmitter<BlockchainEvent>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -129,7 +129,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter<BlockchainEvent>()
 
     this._consensusDict = {}
     this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()

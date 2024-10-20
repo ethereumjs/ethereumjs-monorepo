@@ -1,10 +1,15 @@
 import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   KECCAK256_RLP,
   MapDB,
   bigIntToBytes,
+  bytesToBigInt,
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   randomBytes,
   unprefixedHexToBytes,
   utf8ToBytes,
@@ -270,18 +275,104 @@ describe('keyHashingFunction', async () => {
   })
 })
 
-describe('getValueMap', () => {
+describe('getValueMap', async () => {
+  const trie = await createMPT({})
+  const entries: [Uint8Array, string][] = [
+    [bigIntToBytes(0x01n), '0x' + '0a'.repeat(32)],
+    [bigIntToBytes(0x02n), '0x' + '0b'.repeat(32)],
+    [bigIntToBytes(0x03n), '0x' + '0c'.repeat(32)],
+  ]
+  for (const entry of entries) {
+    await trie.put(entry[0], hexToBytes(entry[1]))
+  }
+  const dump = await trie.getValueMap()
+
+  it('should return a map with the correct number of entries', async () => {
+    assert.equal(Object.entries(dump.values).length, entries.length)
+  })
+
   it('should return a map of all hashed keys and values', async () => {
-    const trie = await createMPT({})
-    const entries: [Uint8Array, string][] = [
-      [bigIntToBytes(1n), '0x' + '0a'.repeat(32)],
-      [bigIntToBytes(2n), '0x' + '0b'.repeat(32)],
-      [bigIntToBytes(3n), '0x' + '0c'.repeat(32)],
-    ]
+    // Check if the reported values are the expected values
     for (const entry of entries) {
-      await trie.put(entry[0], utf8ToBytes(entry[1]))
+      const key = bytesToHex(entry[0])
+      const value = entry[1]
+      assert.equal(dump.values[key], value)
     }
+
+    assert.equal(dump.nextKey, null)
+  })
+
+  it('should enforce the startKey / limit rules', async () => {
+    const tests: {
+      startKey?: bigint
+      limit?: number
+      reportedValues: number
+      nextKey: string | null
+    }[] = [
+      {
+        startKey: BIGINT_0,
+        limit: 3,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_1,
+        limit: 3,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_1,
+        limit: 1000,
+        reportedValues: 3,
+        nextKey: null,
+      },
+      {
+        startKey: BIGINT_2,
+        limit: 2,
+        reportedValues: 2,
+        nextKey: null,
+      },
+    ]
+
+    for (const test of tests) {
+      const result = await trie.getValueMap(test.startKey, test.limit)
+      assert.equal(Object.entries(result.values).length, test.reportedValues)
+      assert.equal(result.nextKey, test.nextKey)
+    }
+  })
+
+  it('random key/value test', async () => {
+    // This test dumps a fixed amount of random key/values in the trie
+    // and then verifies that the complete `getValueMap` yields the same key/value pairs
+    const KEYS = 1000
+    const KEY_LEN = 3 // Keys are of equal length
+    const gotKeys = new Set()
+    const entries: [Uint8Array, string][] = []
+    for (let i = 0; i < KEYS; i++) {
+      const key = randomBytes(KEY_LEN)
+      const keyBigInt = bytesToBigInt(key)
+      if (gotKeys.has(keyBigInt)) continue
+      gotKeys.add(keyBigInt)
+      entries.push([key, bytesToHex(randomBytes(32))])
+    }
+
+    const trie = await createMPT({})
+    for (const entry of entries) {
+      await trie.put(entry[0], hexToBytes(entry[1]))
+    }
+
     const dump = await trie.getValueMap()
-    assert.equal(Object.entries(dump.values).length, 3)
+
+    // Check if the reported values are the expected values
+    for (const entry of entries) {
+      const key = bytesToHex(entry[0])
+      const value = entry[1]
+      assert.equal(dump.values[key], value)
+    }
+
+    assert.equal(dump.nextKey, null)
+
+    assert.equal(Object.entries(dump.values).length, entries.length)
   })
 })

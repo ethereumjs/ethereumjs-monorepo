@@ -1,7 +1,7 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DNS } from '../dns/index.js'
 import { devp2pDebug, pk2id } from '../util.js'
