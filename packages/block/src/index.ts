@@ -5,7 +5,9 @@ export { type BeaconPayloadJSON, executionPayloadFromBeaconPayload } from './fro
 export * from './header/index.js'
 export {
   genRequestsTrieRoot,
+  genTransactionsSszRoot,
   genTransactionsTrieRoot,
+  genWithdrawalsSszRoot,
   genWithdrawalsTrieRoot,
   getDifficulty,
   valuesArrayToHeaderData,
