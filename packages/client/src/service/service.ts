@@ -1,6 +1,5 @@
 import { Chain } from '../blockchain/index.js'
 import { PeerPool } from '../net/peerpool.js'
-import { FlowControl } from '../net/protocol/index.js'
 import { Event } from '../types.js'
 import { type V8Engine, getV8Engine } from '../util/index.js'
 
@@ -42,7 +41,6 @@ export class Service {
   public opened: boolean
   public running: boolean
   public pool: PeerPool
-  public flow: FlowControl
   public chain: Chain
   public interval: number
   public timeout: number
@@ -92,7 +90,6 @@ export class Service {
       }
     })
 
-    this.flow = new FlowControl()
     // @ts-ignore TODO replace with async create constructor
     this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval ?? 8000

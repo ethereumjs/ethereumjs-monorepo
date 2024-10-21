@@ -5,7 +5,6 @@ import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { ETH } from './protocol/eth.js'
-import type { LES } from './protocol/les.js'
 
 export const devp2pDebug = debug('devp2p:#')
 
@@ -39,7 +38,7 @@ export function xor(a: Uint8Array, b: any): Uint8Array {
   return bytes
 }
 
-type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | LES.Status | number | null
+type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | number | null
 
 export function assertEq(
   expected: assertInput,

@@ -5,6 +5,5 @@
 export * from '../service/skeleton.js'
 export * from './beaconsync.js'
 export * from './fullsync.js'
-export * from './lightsync.js'
 export * from './snapsync.js'
 export * from './sync.js'

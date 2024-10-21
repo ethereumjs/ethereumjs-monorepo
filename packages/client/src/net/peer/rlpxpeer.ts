@@ -1,9 +1,4 @@
-import {
-  ETH as Devp2pETH,
-  LES as Devp2pLES,
-  RLPx as Devp2pRLPx,
-  SNAP as Devp2pSNAP,
-} from '@ethereumjs/devp2p'
+import { ETH as Devp2pETH, RLPx as Devp2pRLPx, SNAP as Devp2pSNAP } from '@ethereumjs/devp2p'
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types.js'
@@ -20,9 +15,6 @@ const devp2pCapabilities = {
   eth66: Devp2pETH.eth66,
   eth67: Devp2pETH.eth67,
   eth68: Devp2pETH.eth68,
-  les2: Devp2pLES.les2,
-  les3: Devp2pLES.les3,
-  les4: Devp2pLES.les4,
 }
 
 export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
@@ -167,7 +159,7 @@ export class RlpxPeer extends Peer {
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
+          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pSNAP)
           return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
@@ -180,9 +172,7 @@ export class RlpxPeer extends Peer {
                     )
                   : undefined
               if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(
-                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP,
-                )
+                const snapSender = new RlpxSender(snapRlpxProtocol as Devp2pETH | Devp2pSNAP)
                 return this.addProtocol(snapSender, snapProtocol)
               }
             }

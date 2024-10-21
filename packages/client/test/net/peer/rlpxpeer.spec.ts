@@ -37,7 +37,6 @@ describe('[RlpxPeer]', async () => {
   it('should compute capabilities', async () => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
-      { name: 'les', versions: [4] },
       { name: 'snap', versions: [1] },
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
@@ -49,7 +48,6 @@ describe('[RlpxPeer]', async () => {
       caps,
       [
         { name: 'eth', version: 66, length: 17 },
-        { name: 'les', version: 4, length: 23 },
         { name: 'snap', version: 1, length: 8 },
       ],
       'correct capabilities',

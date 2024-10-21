@@ -113,11 +113,6 @@ const args: ClientOpts = yargs
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
   })
-  .option('lightServe', {
-    describe: 'Serve light peer requests',
-    boolean: true,
-    default: Config.LIGHTSERV_DEFAULT,
-  })
   .option('dataDir', {
     describe: 'Data directory for the blockchain',
     default: `${homedir()}/Library/Ethereum/ethereumjs`,
@@ -560,7 +555,7 @@ async function executeBlocks(client: EthereumClient) {
     )
     process.exit()
   }
-  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const { execution } = client.service
   if (execution === undefined) throw new Error('executeBlocks requires execution')
   await execution.executeBlocks(first, last, txHashes)
 }
@@ -635,9 +630,6 @@ async function startClient(
   genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {},
 ) {
   config.logger.info(`Data directory: ${config.datadir}`)
-  if (config.lightserv) {
-    config.logger.info(`Serving light peer requests`)
-  }
 
   const dbs = initDBs(config)
 
@@ -719,7 +711,7 @@ async function startClient(
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized === true) {
-    const fullService = client.services.find((s) => s.name === 'eth')
+    const fullService = client.service
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it
     ;(fullService as FullEthereumService).txPool?.checkRunState()
@@ -734,7 +726,7 @@ async function startClient(
   }
 
   if (args.loadBlocksFromRlp !== undefined && client.chain.opened) {
-    const service = client.service('eth') as FullEthereumService
+    const service = client.service
     await service.execution.open()
     await service.execution.run()
   }
@@ -1151,7 +1143,7 @@ async function run() {
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
-    lightserv: args.lightServe,
+
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,

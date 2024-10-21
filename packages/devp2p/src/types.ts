@@ -1,6 +1,5 @@
 import type { DPT } from './dpt/index.js'
 import type { ETH } from './protocol/eth.js'
-import type { LES } from './protocol/les.js'
 import type { Protocol } from './protocol/protocol.js'
 import type { SNAP } from './protocol/snap.js'
 import type { Peer } from './rlpx/peer.js'
@@ -24,19 +23,14 @@ export interface PeerEvent {
 }
 
 export interface ProtocolEvent {
-  message: [
-    code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES | LES.MESSAGE_CODES,
-    payload: Uint8Array | NestedUint8Array,
-  ]
-  status:
-    | LES.Status
-    | {
-        chainId: Uint8Array | Uint8Array[]
-        td: Uint8Array
-        bestHash: Uint8Array
-        genesisHash: Uint8Array
-        forkId?: Uint8Array | Uint8Array[]
-      }
+  message: [code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES, payload: Uint8Array | NestedUint8Array]
+  status: {
+    chainId: Uint8Array | Uint8Array[]
+    td: Uint8Array
+    bestHash: Uint8Array
+    genesisHash: Uint8Array
+    forkId?: Uint8Array | Uint8Array[]
+  }
 }
 
 export interface KBucketEvent {
@@ -214,7 +208,6 @@ export interface DPTServerOptions {
 
 export enum ProtocolType {
   ETH = 'eth',
-  LES = 'les',
   SNAP = 'snap',
 }
 

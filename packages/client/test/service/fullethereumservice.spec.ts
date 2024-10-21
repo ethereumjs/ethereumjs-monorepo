@@ -27,12 +27,6 @@ vi.mock('../../src/net/protocol/ethprotocol.js', () => {
   return { EthProtocol }
 })
 
-vi.mock('../../src/net/protocol/lesprotocol.js', () => {
-  const LesProtocol = vi.fn()
-  LesProtocol.prototype.name = 'les'
-  return { LesProtocol }
-})
-
 vi.mock('../../src/sync/fullsync.js', () => {
   const FullSynchronizer = vi.fn()
   FullSynchronizer.prototype.start = vi.fn()
@@ -77,10 +71,9 @@ describe('initialize', async () => {
     let service = new FullEthereumService({ config, chain })
     assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
     assert.notOk(service.protocols.filter((p) => p.name === 'les').length > 0, 'no light protocol')
-    config = new Config({ lightserv: true })
+    config = new Config({})
     service = new FullEthereumService({ config, chain })
     assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
-    assert.ok(service.protocols.filter((p) => p.name === 'les').length > 0, 'lightserv protocols')
   })
 })
 

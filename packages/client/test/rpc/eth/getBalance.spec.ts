@@ -10,8 +10,6 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
-
 const method = 'eth_getBalance'
 
 describe(
@@ -26,7 +24,7 @@ describe(
 
       const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-      const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+      const { execution } = client.service
       assert.notEqual(execution, undefined, 'should have valid execution')
       const { vm } = execution
 

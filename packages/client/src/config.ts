@@ -23,7 +23,6 @@ export enum DataDirectory {
 
 export enum SyncMode {
   Full = 'full',
-  Light = 'light',
   None = 'none',
 }
 
@@ -37,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full', 'light', 'none')
+   * Synchronization mode ('full', 'none')
    *
    * Default: 'full'
    */
@@ -70,13 +69,6 @@ export interface ConfigOptions {
    * Default: VM instance created by client
    */
   vm?: VM
-
-  /**
-   * Serve light peer requests
-   *
-   * Default: `false`
-   */
-  lightserv?: boolean
 
   /**
    * Root data directory for the blockchain
@@ -360,7 +352,6 @@ export class Config {
 
   public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
-  public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
@@ -405,7 +396,6 @@ export class Config {
   public readonly logger: Logger
   public readonly syncmode: SyncMode
   public readonly vm?: VM
-  public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
   public readonly bootnodes?: Multiaddr[]
@@ -483,7 +473,6 @@ export class Config {
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
-    this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -670,7 +659,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
+        const chainDataDirName = 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:

@@ -7,7 +7,7 @@ import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
-import type { Service } from '../../service/index.js'
+import type { FullEthereumService } from '../../service/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -22,7 +22,7 @@ export class Web3 {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as Service
+    const service = client.service as FullEthereumService
     this._chain = service.chain
     this._rpcDebug = rpcDebug
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])

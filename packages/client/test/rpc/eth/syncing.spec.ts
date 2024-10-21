@@ -42,7 +42,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
-    const sync = client.services[0].synchronizer!
+    const sync = client.service!.synchronizer as FullSynchronizer
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {
@@ -64,7 +64,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
-    const sync = client.services[0].synchronizer as FullSynchronizer
+    const sync = client.service!.synchronizer as FullSynchronizer
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {

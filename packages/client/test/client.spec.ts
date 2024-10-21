@@ -43,9 +43,8 @@ describe('[EthereumClient]', async () => {
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
-    assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
-    assert.ok('execution' in client.services[0], 'added FullEthereumService')
-    assert.ok('txPool' in client.services[0], 'added FullEthereumService')
+    assert.ok('execution' in client.service!, 'added FullEthereumService')
+    assert.ok('txPool' in client.service!, 'added FullEthereumService')
   })
 
   it('should open', async () => {
@@ -62,7 +61,7 @@ describe('[EthereumClient]', async () => {
     const server = new Server() as any
     const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
-    await (client.services[0] as any)['execution'].setupMerkleVM()
+    await (client.service as any)['execution'].setupMerkleVM()
     await client.start()
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')

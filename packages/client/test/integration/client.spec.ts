@@ -11,7 +11,7 @@ const server = new MockServer({ config: serverConfig }) as any
 const config = new Config({
   server,
   syncmode: SyncMode.Full,
-  lightserv: false,
+
   accountCache: 10000,
   storageCache: 1000,
 })
@@ -32,10 +32,10 @@ describe('client should start/stop/error', async () => {
     })
   })
   await client.open()
-  ;(client.service('eth') as any).interval = 100
+  client.service.interval = 100
   client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.server!)
   await client.start()
-  assert.ok((client.service('eth') as any).synchronizer.running, 'sync running')
+  assert.ok(client.service!.synchronizer!.running, 'sync running')
   await client.stop()
   it('should stop', () => {
     assert.ok(true, 'client stopped')
