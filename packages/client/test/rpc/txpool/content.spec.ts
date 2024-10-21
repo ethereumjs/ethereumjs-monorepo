@@ -9,7 +9,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'txpool_content'
@@ -47,7 +46,7 @@ describe(method, () => {
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
     await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
-    const service = client.services[0] as FullEthereumService
+    const service = client.service
     service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
