@@ -26,7 +26,7 @@ describe(method, () => {
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
     await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))

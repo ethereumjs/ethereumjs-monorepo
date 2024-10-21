@@ -250,14 +250,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
           resultSet = 'empty'
           reenqueue = true
         }
-      } else {
-        // Hot-Fix for lightsync, 2023-12-29
-        // (delete (only the if clause) in case lightsync code
-        // has been removed at some point)
-        if (!('reqId' in (result as any))) {
-          resultSet = 'unknown'
-          reenqueue = true
-        }
       }
     }
     if (reenqueue) {

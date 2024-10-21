@@ -7,7 +7,7 @@ import { middleware } from '../validation.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../client.js'
 import type { RlpxPeer } from '../../net/peer/rlpxpeer.js'
-import type { Service } from '../../service/index.js'
+import type { FullEthereumService } from '../../service/index.js'
 
 /**
  * admin_* RPC module
@@ -23,7 +23,7 @@ export class Admin {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as Service
+    const service = client.service as FullEthereumService
     this._chain = service.chain
     this._client = client
     this._rpcDebug = rpcDebug
@@ -75,8 +75,7 @@ export class Admin {
    * @returns an array of objects containing information about peers (including id, eth protocol versions supported, client name, etc.)
    */
   async peers() {
-    const peers = this._client.services.filter((service) => service.name === 'eth')[0]?.pool
-      .peers as RlpxPeer[]
+    const peers = this._client.service!.pool.peers as RlpxPeer[]
 
     return peers?.map((peer) => {
       return {
