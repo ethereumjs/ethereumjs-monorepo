@@ -270,52 +270,52 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
       // Only validate the following headers if verkle blocks aren't activated
-      // if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-      //   if (vm.DEBUG) {
-      //     debug(
-      //       `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-      //         block.header.receiptTrie,
-      //       )}`,
-      //     )
-      //   }
-      //   const msg = _errorMsg('invalid receiptTrie', vm, block)
-      //   throw new Error(msg)
-      // }
-      // if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-      //   if (vm.DEBUG) {
-      //     debug(
-      //       `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-      //         block.header.logsBloom,
-      //       )}`,
-      //     )
-      //   }
-      //   const msg = _errorMsg('invalid bloom', vm, block)
-      //   throw new Error(msg)
-      // }
-      // if (result.gasUsed !== block.header.gasUsed) {
-      //   if (vm.DEBUG) {
-      //     debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-      //   }
-      //   const msg = _errorMsg('invalid gasUsed', vm, block)
-      //   throw new Error(msg)
-      // }
-      // if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-      //   if (vm.DEBUG) {
-      //     debug(
-      //       `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-      //         block.header.stateRoot,
-      //       )}`,
-      //     )
-      //   }
-      //   const msg = _errorMsg(
-      //     `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-      //       block.header.stateRoot,
-      //     )}`,
-      //     vm,
-      //     block,
-      //   )
-      //   throw new Error(msg)
-      // }
+      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+              block.header.receiptTrie,
+            )}`,
+          )
+        }
+        const msg = _errorMsg('invalid receiptTrie', vm, block)
+        throw new Error(msg)
+      }
+      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+              block.header.logsBloom,
+            )}`,
+          )
+        }
+        const msg = _errorMsg('invalid bloom', vm, block)
+        throw new Error(msg)
+      }
+      if (result.gasUsed !== block.header.gasUsed) {
+        if (vm.DEBUG) {
+          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+        }
+        const msg = _errorMsg('invalid gasUsed', vm, block)
+        throw new Error(msg)
+      }
+      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+              block.header.stateRoot,
+            )}`,
+          )
+        }
+        const msg = _errorMsg(
+          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+            block.header.stateRoot,
+          )}`,
+          vm,
+          block,
+        )
+        throw new Error(msg)
+      }
     }
     if (vm.common.isActivatedEIP(6800)) {
       // If verkle is activated and executing statelessly, only validate the post-state
