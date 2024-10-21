@@ -95,9 +95,8 @@ export class TransitionTool {
 
     let index = 0
 
-    this.vm.events.on('afterTx', (event, resolve) => {
+    this.vm.events.on('afterTx', (event) => {
       this.afterTx(event, index, builder)
-      resolve?.()
     })
 
     for (const txData of this.txsData) {
@@ -150,12 +149,11 @@ export class TransitionTool {
         console.log('Processing new transaction...')
         resolve?.()
       })
-      this.vm.events.on('afterTx', (_, resolve) => {
+      this.vm.events.on('afterTx', () => {
         // eslint-disable-next-line no-console
         console.log('Done processing transaction (system operations might follow next)')
-        resolve?.()
       })
-      this.vm.evm.events?.on('step', (e, resolve) => {
+      this.vm.evm.events?.on('step', (e) => {
         // eslint-disable-next-line no-console
         console.log({
           gasLeft: e.gasLeft.toString(),
@@ -164,7 +162,6 @@ export class TransitionTool {
           depth: e.depth,
           address: e.address.toString(),
         })
-        resolve?.()
       })
     }
   }
