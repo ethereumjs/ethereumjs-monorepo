@@ -303,12 +303,12 @@ describe('should handles errors from id-less peers', async () => {
       assert.equal(err.message, 'err0', 'got error')
     })
   })
-  server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+  server.rlpx!.events.emit('peer:error', rlpxPeer as any, new Error('err0'))
 })
 describe('should init rlpx', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
-  const rlpxPeer = new RlpxPeer()
+  const rlpxPeer = new RlpxPeer() as any
 
   rlpxPeer.getId = vi.fn().mockReturnValue(new Uint8Array([1]))
   RlpxPeer.prototype.accept = vi.fn((input) => {
@@ -342,8 +342,8 @@ describe('should init rlpx', async () => {
     }),
   )
   server.rlpx!.events.emit('peer:added', rlpxPeer)
-  ;(server as any).peers.set('01', { id: '01' } as any)
-  server.rlpx!.events.emit('peer:removed', rlpxPeer)
+  server['peers'].set('01', { id: '01' } as any)
+  server.rlpx!.events.emit('peer:removed', rlpxPeer, '', true)
   server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   ;(server.rlpx!.id as any) = hexToBytes('0xff')
   server.rlpx!.events.emit('listening')
