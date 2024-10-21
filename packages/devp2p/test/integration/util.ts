@@ -132,7 +132,10 @@ export function twoPeerMsgExchange3(
   common?: Object | Common,
   basePort = 30306,
 ) {
-  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
+  const { rlpxs, peer } = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
+  rlpxs[0]['_dpt']!.addPeer(peer).catch(() => {
+    throw new Error('Peering failed')
+  })
   rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     opts.sendMessage(rlpxs, protocol)
