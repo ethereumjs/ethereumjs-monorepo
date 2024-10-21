@@ -25,6 +25,7 @@ import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/in
 
 import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { LegacyTxData } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
@@ -142,14 +143,12 @@ describe('EIP 2935: historical block hashes', () => {
     }
 
     it(`should validate the deployment tx`, async () => {
-      const deployContractTxData = {
-        type: '0x0' as PrefixedHexString,
-        nonce: '0x0' as PrefixedHexString,
-        gasLimit: '0x3d090' as PrefixedHexString,
-        gasPrice: '0xe8d4a51000' as PrefixedHexString,
-        maxPriorityFeePerGas: null,
-        maxFeePerGas: null,
-        value: '0x0' as PrefixedHexString,
+      const deployContractTxData: LegacyTxData = {
+        type: '0x0',
+        nonce: '0x0',
+        gasLimit: '0x3d090',
+        gasPrice: '0xe8d4a51000',
+        value: '0x0',
         // input from the EIP is data here
         data: deploymentTxData as PrefixedHexString,
         v: deploymentV as PrefixedHexString,
