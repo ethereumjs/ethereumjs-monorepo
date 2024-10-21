@@ -95,10 +95,9 @@ export class AccessWitness implements AccessWitnessInterface {
     return gas
   }
 
-  touchAndChargeValueTransfer(caller: Address, target: Address): bigint {
+  touchAndChargeValueTransfer(target: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, VERKLE_BASIC_DATA_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(target, 0, VERKLE_BASIC_DATA_LEAF_KEY)
 
     return gas
@@ -365,7 +364,6 @@ export function decodeValue(type: AccessedStateType, value: PrefixedHexString | 
   }
 
   switch (type) {
-    // TODO: Does BasicData need to be decoded?
     case AccessedStateType.BasicData:
     case AccessedStateType.CodeHash:
     case AccessedStateType.Code:

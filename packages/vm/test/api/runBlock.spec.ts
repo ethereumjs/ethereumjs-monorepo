@@ -690,7 +690,7 @@ describe('run a verkle block', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it.only('should execute a verkle block and produce an executionWitness', async () => {
+  it('should execute a verkle block and produce an executionWitness', async () => {
     const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.js')).block
     const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.js')).block
     const verkleBlocks = [verkleJSONWithoutValue, verkleJSONWithValue]

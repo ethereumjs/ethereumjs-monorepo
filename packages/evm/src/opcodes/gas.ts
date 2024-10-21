@@ -587,10 +587,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
           if (value !== BIGINT_0) {
             const contractAddress = runState.interpreter.getAddress()
-            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
+            gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
               contractAddress,
-              toAddress,
+              0,
+              VERKLE_BASIC_DATA_LEAF_KEY,
             )
+            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(toAddress)
           }
 
           gas += coldAccessGas

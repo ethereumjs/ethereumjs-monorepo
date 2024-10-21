@@ -678,11 +678,18 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
             ? canonicalValue
             : `${canonicalValue} (${decodedCanonicalValue})`
         if (type === AccessedStateType.BasicData) {
-          this.DEBUG && this._debug(decodeVerkleLeafBasicData(hexToBytes(displayComputedValue)))
+          this.DEBUG &&
+            this._debug(
+              `computed value: `,
+              decodeVerkleLeafBasicData(hexToBytes(displayComputedValue)),
+            )
           displayCanonicalValue.startsWith('0x')
             ? this.DEBUG &&
-              this._debug(decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)))
-            : this._debug(displayCanonicalValue)
+              this._debug(
+                `canonical value: `,
+                decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)),
+              )
+            : this._debug(`canonical value: `, displayCanonicalValue)
         }
         this.DEBUG &&
           this._debug(
