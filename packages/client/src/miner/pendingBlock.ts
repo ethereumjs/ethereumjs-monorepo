@@ -18,6 +18,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { Config } from '../config.js'
 import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
@@ -244,7 +245,15 @@ export class PendingBlock {
    */
   async build(
     payloadIdBytes: Uint8Array | string,
-  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
+  ): Promise<
+    | void
+    | [
+        block: Block,
+        receiptsAndSystemLogs: { receipts: TxReceipt[]; systemLogs?: Log[] },
+        value: bigint,
+        blobs?: BlobsBundle,
+      ]
+  > {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
@@ -255,7 +264,7 @@ export class PendingBlock {
     if (blockStatus.status === BuildStatus.Build) {
       return [
         blockStatus.block,
-        builder.transactionReceipts,
+        { receipts: builder.transactionReceipts, systemLogs: builder.systemLogs },
         builder.minerValue,
         this.blobsBundles.get(payloadId),
       ]
@@ -308,10 +317,15 @@ export class PendingBlock {
         block.transactions.length
       }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
         block.hash(),
-      )}`,
+      )} systemLogs=${builder.systemLogs ? builder.systemLogs.length : undefined}`,
     )
 
-    return [block, builder.transactionReceipts, builder.minerValue, blobs]
+    return [
+      block,
+      { receipts: builder.transactionReceipts, systemLogs: builder.systemLogs },
+      builder.minerValue,
+      blobs,
+    ]
   }
 
   private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {

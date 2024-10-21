@@ -86,6 +86,7 @@ export class BlockBuilder {
   private checkpointed = false
   private blockStatus: BlockStatus = { status: BuildStatus.Pending }
 
+  systemLogs?: Log[]
   get transactionReceipts() {
     return this.transactionResults.map((result) => result.receipt)
   }
@@ -398,6 +399,7 @@ export class BlockBuilder {
     const consensusType = this.vm.common.consensusType()
 
     const { requests, systemLogs } = await this.finishBlockBuild()
+    this.systemLogs = systemLogs
 
     let requestsRoot
     if (this.vm.common.isActivatedEIP(7685)) {

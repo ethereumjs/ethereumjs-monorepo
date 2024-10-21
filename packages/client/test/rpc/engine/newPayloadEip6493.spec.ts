@@ -60,7 +60,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       depositRequests: [],
       withdrawalRequests: [],
       consolidationRequests: [],
-      systemLogsRoot: "0x3850240388ff8bed46a8631179e63ad67e28c343be54906cfaec0c3a2d95e71e",
+      systemLogsRoot: '0x3850240388ff8bed46a8631179e63ad67e28c343be54906cfaec0c3a2d95e71e',
       receiptsRoot: '0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1',
       parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
       stateRoot: '0x9d95c5098ef0f1b45fef49659318055ac4f06dc6601d7baf3656a391381981e3',
@@ -154,6 +154,22 @@ describe(`${method}: call with executionPayloadV4`, () => {
       res.result,
       '0x88cce54f379f5607098522664e399bf4fee6f3e90127f8fc88f760fd4529211b',
       'ivc root at updated topic should match',
+    )
+
+    // check system logs available
+    res = await rpc.request('eth_getLogs', [{ blockHash: executionPayload.blockHash }])
+    assert.equal(res.result.length, 4, '4 logs should be found including system logs')
+    const systemLogs = res.result[3]!
+    assert.equal(systemLogs.transactionHash, null, 'last log should be system log')
+    assert.equal(
+      systemLogs.topics[0],
+      '0x5dfe9c0fd3043bb299f97cfece428f0396cf8b7890c525756e4ea5c0ff7d61b2',
+      'priority reward topic',
+    )
+    assert.equal(
+      systemLogs.topics[1].includes(executionPayload.feeRecipient.slice(2)),
+      true,
+      'fee recipient in topic',
     )
   })
 })

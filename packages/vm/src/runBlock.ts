@@ -278,7 +278,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
             )}`,
           )
         }
-        console.log({ systemLogsRoot: bytesToHex(systemLogsRoot!) })
         const msg = _errorMsg('invalid systemLogsRoot', vm, block)
         throw new Error(msg)
       }
@@ -369,6 +368,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     preimages: result.preimages,
     requestsRoot,
     requests: result.requests,
+    systemLogs: result.systemLogs,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }

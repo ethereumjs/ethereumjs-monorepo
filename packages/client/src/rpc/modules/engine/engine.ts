@@ -1346,12 +1346,17 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value, blobs] = built
+      const [block, receiptsAndSystemLogs, value, blobs] = built
 
       // do a blocking call even if execution might be busy for the moment and skip putting
       // it into chain till CL confirms with full data via new payload like versioned hashes
       // parent beacon block root
-      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true, true)
+      const executed = await this.execution.runWithoutSetHead(
+        { block },
+        receiptsAndSystemLogs,
+        true,
+        true,
+      )
       if (!executed) {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }
