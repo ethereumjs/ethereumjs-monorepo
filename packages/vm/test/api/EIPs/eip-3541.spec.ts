@@ -5,7 +5,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -71,10 +70,11 @@ describe('EIP 3541 tests', () => {
 
     const vm = await createVM({ common })
     let address: Address
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step, resolve) => {
       if (step.depth === 1) {
         address = step.address
       }
+      resolve?.()
     })
 
     await runTx(vm, { tx, skipHardForkValidation: true })
@@ -106,10 +106,11 @@ describe('EIP 3541 tests', () => {
 
     const vm = await createVM({ common })
     let address: Address
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step, resolve) => {
       if (step.depth === 1) {
         address = step.address
       }
+      resolve?.()
     })
 
     await runTx(vm, { tx, skipHardForkValidation: true })

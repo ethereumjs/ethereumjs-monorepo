@@ -12,7 +12,7 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeBlock', (val: any) => {
+    vm.events.on('beforeBlock', (val) => {
       emitted = val
     })
 
@@ -31,7 +31,7 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('afterBlock', (val: any) => {
+    vm.events.on('afterBlock', (val) => {
       emitted = val
     })
 
@@ -51,7 +51,7 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeTx', (val: any) => {
+    vm.events.on('beforeTx', (val) => {
       emitted = val
     })
 
@@ -92,8 +92,9 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('beforeMessage', (val: any) => {
+    vm.evm.events!.on('beforeMessage', (val, resolve) => {
       emitted = val
+      resolve?.()
     })
 
     const tx = createFeeMarket1559Tx({
@@ -114,8 +115,9 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('afterMessage', (val: any) => {
+    vm.evm.events!.on('afterMessage', (val, resolve) => {
       emitted = val
+      resolve?.()
     })
 
     const tx = createFeeMarket1559Tx({
@@ -134,8 +136,9 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let lastEmitted: any
-    vm.evm.events!.on('step', (val: any) => {
+    vm.evm.events!.on('step', (val, resolve) => {
       lastEmitted = val
+      resolve?.()
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
@@ -156,8 +159,9 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted: any
-    vm.evm.events!.on('newContract', (val: any) => {
+    vm.evm.events!.on('newContract', (val, resolve) => {
       emitted = val
+      resolve?.()
     })
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to

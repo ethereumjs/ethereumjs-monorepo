@@ -1,7 +1,7 @@
 import { Sender } from '../../../src/net/protocol/index.js'
 
 import type { Pushable } from './mockpeer.js'
-import type EventEmitter from 'events'
+import type { EventEmitter } from 'eventemitter3'
 
 export class MockSender extends Sender {
   public protocol: string

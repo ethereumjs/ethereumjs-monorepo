@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.js'
@@ -102,7 +102,7 @@ describe('[RlpxPeer]', async () => {
     )
     peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
     ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
@@ -116,7 +116,7 @@ describe('[RlpxPeer]', async () => {
       if (err.message === 'err2') assert.ok(true, 'got err2')
     })
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
   })
 
   it('should accept peer connection', async () => {

@@ -80,7 +80,7 @@ export type EVMProfilerOpts = {
   // extra options here (such as use X hardfork for gas)
 }
 
-export type VMEvents = {
+export type VMEvent = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
   beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void

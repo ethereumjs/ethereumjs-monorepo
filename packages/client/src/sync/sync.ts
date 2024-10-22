@@ -145,9 +145,9 @@ export abstract class Synchronizer {
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
-  resolveSync(height?: number) {
+  resolveSync(height?: bigint) {
     this.clearFetcher()
-    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+    const heightStr = typeof height === 'bigint' && height !== BIGINT_0 ? ` height=${height}` : ''
     this.config.logger.debug(`Finishing up sync with the current fetcher ${heightStr}`)
     return true
   }

@@ -404,8 +404,9 @@ async function runBlockAndGetAfterBlockEvent(
   runBlockOpts: RunBlockOpts,
 ): Promise<AfterBlockEvent> {
   let results: AfterBlockEvent
-  function handler(event: AfterBlockEvent) {
+  function handler(event: AfterBlockEvent, resolve: any) {
     results = event
+    resolve?.()
   }
 
   try {

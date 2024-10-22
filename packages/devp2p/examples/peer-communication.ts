@@ -79,14 +79,14 @@ rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stac
 
 rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
-  const eth = peer.getProtocols()[0]
+  const eth = peer.getProtocols()[0] as ETH
   const requests: {
     headers: any[]
     bodies: any[]
     msgTypes: { [key: string]: ETH.MESSAGE_CODES }
   } = { headers: [], bodies: [], msgTypes: {} }
 
-  const clientId = peer.getHelloMessage().clientId
+  const clientId = peer.getHelloMessage()!.clientId
   console.log(
     chalk.green(
       `Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`,
@@ -110,10 +110,10 @@ rlpx.events.on('peer:added', (peer) => {
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
     }, ms('15s'))
-    peer.once('close', () => clearTimeout(forkDrop))
+    peer.events.once('close', () => clearTimeout(forkDrop))
   })
 
-  eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  eth.events.on('message', async (code: any, payload: any) => {
     // We keep track of how many of each message type are received
     if (code in requests.msgTypes) {
       requests.msgTypes[code]++
