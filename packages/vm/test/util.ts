@@ -15,8 +15,8 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
-  createAccount,
   createAccountFromRLP,
+  createPartialAccount,
   equalsBytes,
   hexToBytes,
   isHexString,
@@ -417,7 +417,13 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
     }
 
     // Put account data
-    const account = createAccount({ nonce, balance, codeHash, storageRoot })
+    const account = createPartialAccount({
+      nonce,
+      balance,
+      codeHash,
+      storageRoot,
+      codeSize: codeBuf.byteLength,
+    })
     await state.putAccount(address, account)
   }
   await state.commit()

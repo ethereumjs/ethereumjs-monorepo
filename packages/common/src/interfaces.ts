@@ -72,7 +72,7 @@ export type AccessEventFlags = {
 export interface AccessWitnessInterface {
   touchAndChargeProofOfAbsence(address: Address): bigint
   touchAndChargeMessageCall(address: Address): bigint
-  touchAndChargeValueTransfer(caller: Address, target: Address): bigint
+  touchAndChargeValueTransfer(target: Address): bigint
   touchAndChargeContractCreateInit(address: Address): bigint
   touchAndChargeContractCreateCompleted(address: Address): bigint
   touchTxOriginAndComputeGas(origin: Address): bigint
@@ -168,7 +168,7 @@ export interface StateManagerInterface {
     executionWitness?: VerkleExecutionWitness | null,
     accessWitness?: AccessWitnessInterface,
   ): void
-  verifyPostState?(): boolean
+  verifyPostState?(): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
