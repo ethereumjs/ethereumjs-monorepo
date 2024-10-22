@@ -611,7 +611,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
     }
   }
-  //@ts-ignore
+
   // Verifies that the witness post-state matches the computed post-state
   async verifyPostState(): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed

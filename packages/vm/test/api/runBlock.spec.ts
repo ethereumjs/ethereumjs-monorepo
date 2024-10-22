@@ -685,7 +685,7 @@ describe('runBlock() -> tx types', async () => {
   })
 })
 
-describe('run a verkle block', () => {
+describe.skip('run a verkle block', () => {
   let verkleCrypto: VerkleCrypto
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()

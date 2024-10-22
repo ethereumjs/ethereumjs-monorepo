@@ -168,7 +168,7 @@ export interface StateManagerInterface {
     executionWitness?: VerkleExecutionWitness | null,
     accessWitness?: AccessWitnessInterface,
   ): void
-  verifyPostState?(): boolean
+  verifyPostState?(): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

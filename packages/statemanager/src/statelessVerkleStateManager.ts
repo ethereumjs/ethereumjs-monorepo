@@ -490,7 +490,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
-  verifyPostState(): boolean {
+  verifyPostState(): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
@@ -576,7 +576,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     this.DEBUG &&
       this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
-    return verifyPassed
+    // This is async so the stateful VKSM can use the same interface method
+    return Promise.resolve(verifyPassed)
   }
 
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
