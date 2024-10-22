@@ -27,6 +27,34 @@ npm install @ethereumjs/verkle
 
 To initialize a verkle tree, we provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required`VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
 
+```ts
+// ./examples/simple.ts#L7-L7
+
+const tree = await createVerkleTree()
+```
+
+Note, the current `VerkleCrypto` library we use internally is [`verkle-cryptography-wasm`](https://github.com/ethereumjs/verkle-cryptography-wasm) which is a WASM compilation of the [`rust-verkle`](https://github.com/crate-crypto/rust-verkle) library with some Javascript specific wrappers and helper methods.
+
+If you prefer to instantiate the verkle tree class directly, you can do so by passing in an already instantiated `VerkleCrypto` object and then initializing the root node manually.
+
+```ts
+// ./examples/diyVerkle.ts
+
+import { MapDB, bytesToHex } from '@ethereumjs/util'
+import { VerkleTree } from '@ethereumjs/verkle'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+
+const verkleCrypto = await loadVerkleCrypto()
+
+const main = async () => {
+  const tree = new VerkleTree({ verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
+  await tree['_createRootNode']()
+  console.log(bytesToHex(tree.root())) // 0x0000000000000000000000000000000000000000000000000000000000000000
+}
+
+void main()
+```
+
 ### Getting and Putting Values
 
 Values are stored using a combination of a `stem` obtained through the `getVerkleStem` function exposed by `@ethereumjs/util`.
