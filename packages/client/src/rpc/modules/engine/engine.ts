@@ -108,7 +108,7 @@ export class Engine {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
     this._rpcDebug = rpcDebug

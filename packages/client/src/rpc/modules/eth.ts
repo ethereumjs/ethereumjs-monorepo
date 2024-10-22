@@ -307,7 +307,7 @@ export class Eth {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as Service
+    this.service = client.service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
@@ -1288,7 +1288,7 @@ export class Eth {
       this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bigIntToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.services[0].synchronizer
+    const synchronizer = this.client.service!.synchronizer
     if (!synchronizer) {
       return false
     }

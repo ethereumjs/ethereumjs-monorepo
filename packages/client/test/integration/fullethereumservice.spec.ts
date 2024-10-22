@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
-import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
+import { Account, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -18,9 +18,9 @@ import { destroy } from './util.js'
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 // Stub out setStateRoot since correct state root doesn't exist in mock state.
-const ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
+
 MerkleStateManager.prototype.setStateRoot = (): any => {}
-const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+
 MerkleStateManager.prototype.shallowCopy = function () {
   return this
 }
@@ -32,7 +32,7 @@ async function setup(): Promise<[MockServer, FullEthereumService]> {
     validateConsensus: false,
   })
   const chain = new MockChain({ config, blockchain })
-  const serviceConfig = new Config({ server, lightserv: true })
+  const serviceConfig = new Config({ server })
   const service = new FullEthereumService({
     config: serviceConfig,
     chain,
@@ -113,21 +113,3 @@ describe(
   },
   { timeout: 30000 },
 )
-
-describe('should handle LES requests', async () => {
-  const [server, service] = await setup()
-  const peer = await server.accept('peer0')
-  const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
-  it('should handle GetBlockHeaders', () => {
-    assert.equal(
-      bytesToHex(headers[1].hash()),
-      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'handled GetBlockHeaders',
-    )
-  })
-  await destroy(server, service)
-
-  // unstub setStateRoot
-  MerkleStateManager.prototype.setStateRoot = ogSetStateRoot
-  MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
-}, 30000)

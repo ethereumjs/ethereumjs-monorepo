@@ -6,7 +6,7 @@ import { middleware } from '../validation.js'
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
 import type { PeerPool } from '../../net/peerpool.js'
-import type { Service } from '../../service/service.js'
+import type { FullEthereumService } from '../../service/fullethereumservice.js'
 
 /**
  * net_* RPC module
@@ -23,7 +23,7 @@ export class Net {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as Service
+    const service = client.service as FullEthereumService
     this._chain = service.chain
     this._client = client
     this._peerPool = service.pool
