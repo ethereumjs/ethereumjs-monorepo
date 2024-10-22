@@ -25,30 +25,33 @@ npm install @ethereumjs/verkle
 
 ### Initialization and Basic Usage
 
-```ts
-import { VerkleTree } from '@ethereumjs/verkle'
-import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+The following example demonstrates basic usage of the Verkle tree. We provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required `VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
 
-const tree = new VerkleTree()
+```ts
+// ./examples/simple.ts
+
+import { bytesToUtf8, createAddressFromString, getVerkleStem, utf8ToBytes } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
 
 async function test() {
-  await tree.put(utf8ToBytes('test'), utf8ToBytes('one'))
-  const value = await tree.get(utf8ToBytes('test'))
-  console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
+  const addrHex = '0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7'
+  const address = createAddressFromString(addrHex)
+  const tree = await createVerkleTree()
+  const stem = getVerkleStem(tree['verkleCrypto'], address)
+  await tree.put(stem, [0], [utf8ToBytes('test')])
+  const value = await tree.get(stem, [0, 1])
+  console.log(value[0] ? bytesToUtf8(value[0]) : 'not found') // 'test'
+  console.log(value[1] ? bytesToUtf8(value[1]) : 'not found') // 'not found'
 }
 
-test()
+void test()
 ```
 
 ## Proofs
 
 ### Verkle Proofs
 
-The EthereumJS Verkle package is still in its infancy, and as such, it does not currently support Verkle proof creation and verification. Support for Verkle proofs will be added eventually.
-
-## Examples
-
-You can find additional examples complete with detailed explanations [here](./examples/README.md).
+The EthereumJS Verkle package is still in development and verkle proof generation is not yet supported.
 
 ## Browser
 
@@ -126,7 +129,7 @@ DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,verkle:#:put,verkle:#:find_path:* npx vitest test/interop.spec.ts`
 
 ## References
 
