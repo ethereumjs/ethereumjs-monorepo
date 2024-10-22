@@ -129,7 +129,7 @@ export class EthereumClient {
       )
     })
 
-    await this.service?.open()
+    await this.service.open()
 
     this.opened = true
   }
@@ -143,7 +143,7 @@ export class EthereumClient {
     }
     this.config.logger.info('Setup networking and services.')
 
-    await this.service?.start()
+    await this.service.start()
     this.config.server && (await this.config.server.start())
     // Only call bootstrap if servers are actually started
     this.config.server && this.config.server.started && (await this.config.server.bootstrap())
@@ -159,7 +159,7 @@ export class EthereumClient {
       return false
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
-    await this.service?.stop()
+    await this.service.stop()
     this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false
   }

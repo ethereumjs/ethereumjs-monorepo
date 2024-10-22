@@ -307,7 +307,7 @@ export class Eth {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.service!
+    this.service = client.service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
