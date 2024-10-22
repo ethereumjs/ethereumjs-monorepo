@@ -192,8 +192,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let stateAccesses
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    if (vm.stateManager.accessWitness === undefined) {
+      throw Error(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.stateManager.accessWitness!
   }
