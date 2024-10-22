@@ -140,7 +140,7 @@ const customCommon = createCommonFromGethGenesis(chainData, {
   chain: 'devnet',
   hardfork: Hardfork.Berlin,
 })
-customCommon.events.setMaxListeners(50)
+
 const customConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -148,10 +148,9 @@ const customConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
 const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
-goerliCommon.events.setMaxListeners(50)
+
 const goerliConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -159,7 +158,6 @@ const goerliConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
 const createTx = (
   from = A,

@@ -14,6 +14,9 @@ on:
         required: false
         default: 'none'
 
+env:
+  cwd: ${{github.workspace}}/packages/devp2p
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-devp2p
   cancel-in-progress: true
@@ -49,9 +52,10 @@ jobs:
               
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/devp2p
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
-          files: ${{ github.workspace }}/packages/devp2p/coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
           flags: devp2p
 
 

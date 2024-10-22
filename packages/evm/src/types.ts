@@ -12,7 +12,8 @@ import type {
   ParamsDict,
   StateManagerInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
 
 export type DeleteOpcode = {
   opcode: number
@@ -136,7 +137,7 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
-export type EVMEvents = {
+export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
@@ -164,7 +165,7 @@ export interface EVMInterface {
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
-  events?: AsyncEventEmitter<EVMEvents>
+  events?: EventEmitter<EVMEvent>
 }
 
 export type EVMProfilerOpts = {
