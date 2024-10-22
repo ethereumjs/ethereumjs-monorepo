@@ -94,7 +94,7 @@ export class Debug {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
     this._rpcDebug = rpcDebug

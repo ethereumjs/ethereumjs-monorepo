@@ -73,7 +73,6 @@ export interface ClientOpts {
   // Deprecated, use chainId instead
   networkId?: number
   sync?: SyncMode
-  lightServe?: boolean
   dataDir?: string
   customChain?: string
   customGenesisState?: string
