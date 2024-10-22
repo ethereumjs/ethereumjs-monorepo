@@ -12,7 +12,7 @@ import { CheckpointDB } from './db/checkpoint.js'
 import { InternalVerkleNode } from './node/internalNode.js'
 import { LeafVerkleNode } from './node/leafNode.js'
 import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
-import { createDeletedLeafVerkleValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
+import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -236,10 +236,7 @@ export class VerkleTree {
       const value = values[i]
       const suffix = suffixes[i]
       // Update value(s) in leaf node
-      if (
-        value !== LeafVerkleNodeValue.Untouched &&
-        equalsBytes(value, createDeletedLeafVerkleValue())
-      ) {
+      if (value !== LeafVerkleNodeValue.Untouched && equalsBytes(value, createZeroesLeafValue())) {
         // Special case for when the deleted leaf value or zeroes is passed to `put`
         // Writing the deleted leaf value to the suffix
         leafNode.setValue(suffix, LeafVerkleNodeValue.Deleted)
@@ -313,7 +310,7 @@ export class VerkleTree {
 
   async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['del'])
-    await this.put(stem, suffixes, new Array(suffixes.length).fill(createDeletedLeafVerkleValue()))
+    await this.put(stem, suffixes, new Array(suffixes.length).fill(createZeroesLeafValue()))
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
