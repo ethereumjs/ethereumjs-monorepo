@@ -23,9 +23,25 @@ npm install @ethereumjs/verkle
 
 ## Usage
 
-### Initialization and Basic Usage
+### Initialization
 
-The following example demonstrates basic usage of the Verkle tree. We provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required `VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
+To initialize a verkle tree, we provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required`VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
+
+### Getting and Putting Values
+
+Values are stored using a combination of a `stem` obtained through the `getVerkleStem` function exposed by `@ethereumjs/util`.
+
+Following the design goal of verkle trees of allowing efficient reads and writes of multiple values that are "close" to each other, the `get` and `put` methods take a stem as a first argument and then an array of "suffixes" (the 32nd byte) of the key used to access a value.
+
+#### Getting values
+
+When retrieving values given a stem `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7` and suffixes `[0, 1]`, the `get` method would access the values stored at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
+
+#### Putting values
+
+When storing values given a stem `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7`, suffixes `[0, 1]`, and values `['test', 'test2']`, the `put` method would store the values at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
+
+See below for a complete example.
 
 ```ts
 // ./examples/simple.ts
@@ -67,21 +83,19 @@ Generated TypeDoc API [Documentation](./docs/README.md)
 
 ### Hybrid CJS/ESM Builds
 
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+The verkle package is shipped with both CommonJS and ESM builds.
 
-If you use an ES6-style `import` in your code, files from the ESM build will be used:
+If you use an ESM `import` in your code, import as below:
 
 ```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+import { createVerkleTree } from '@ethereumjs/verkle'
 ```
 
 If you use Node.js-specific `require`, the CJS build will be used:
 
 ```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+const { createVerkleTree } = require('@ethereumjs/verkle')
 ```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking, which CJS cannot provide.
 
 ## Debugging
 
@@ -91,14 +105,13 @@ The `Verkle` class features optional debug logging. Individual debug selections 
 
 The following options are available:
 
-| Logger                | Description                          |
-| --------------------- | ------------------------------------ |
-| `verkle:#`            | a core verkle operation has occurred |
-| `verkle:#:put`        | a verkle put operation has occurred  |
-| `verkle:#:get`        | a verkle get operation has occurred  |
-| `verkle:#:del`        | a verkle del operation has occurred  |
-| `verkle:#:find_path`  | a node is being searched for         |
-| `verkle:#:initialize` | a verkle object has been initialized |
+| Logger               | Description                          |
+| -------------------- | ------------------------------------ |
+| `verkle:#`           | a core verkle operation has occurred |
+| `verkle:#:put`       | a verkle put operation has occurred  |
+| `verkle:#:get`       | a verkle get operation has occurred  |
+| `verkle:#:del`       | a verkle del operation has occurred  |
+| `verkle:#:find_path` | a node is being searched for         |
 
 To observe the logging in action at different levels:
 
