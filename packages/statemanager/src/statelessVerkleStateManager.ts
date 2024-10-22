@@ -576,7 +576,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     this.DEBUG &&
       this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
-    // This is async so the stateful VKSM can use the same interface method
+    // This is async so the stateful variant can use the same interface method
     return Promise.resolve(verifyPassed)
   }
 
