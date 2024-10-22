@@ -15,7 +15,6 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
-  createAccount,
   createAccountFromRLP,
   createPartialAccount,
   equalsBytes,
