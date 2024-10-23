@@ -8,6 +8,7 @@ import {
   BIGINT_7,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
+  SHA256_NULL,
   TypeOutput,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -163,7 +164,7 @@ export class BlockHeader {
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
       // TODO: not sure what the default should be here becuase it would depends on activated EIPs
       // as even empty requests will produce data to sha hash
-      requestsHash: this.common.isActivatedEIP(7685) ? KECCAK256_RLP : undefined,
+      requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
     }
 
     const baseFeePerGas =
