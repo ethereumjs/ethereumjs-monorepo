@@ -38,11 +38,11 @@ npm install @ethereumjs/vm
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress } from '@ethereumjs/util'
-import { VM, runTx } from '@ethereumjs/vm'
+import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 
   const tx = createLegacyTx({
     gasLimit: BigInt(21000),
@@ -77,11 +77,11 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
-import { VM, buildBlock } from '@ethereumjs/vm'
+import { buildBlock, createVM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 
   const parentBlock = createBlock(
     { header: { number: 1n } },
@@ -216,14 +216,13 @@ import { createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Goerli } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
-import { runBlock } from '../src/index.js'
-import { VM } from '../src/vm.js'
+import { createVM, runBlock } from '../src/index.js'
 
 import goerliBlock2 from './testData/goerliBlock2.json'
 
 const main = async () => {
   const common = new Common({ chain: Goerli, hardfork: 'london' })
-  const vm = await VM.create({ common, setHardfork: true })
+  const vm = await createVM({ common, setHardfork: true })
 
   const block = createBlockFromRPC(goerliBlock2, undefined, { common })
   const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
@@ -245,11 +244,11 @@ An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress } from '@ethereumjs/util'
-import { VM, runTx } from '@ethereumjs/vm'
+import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
 ```
 
 ### Custom genesis state support
@@ -268,12 +267,12 @@ For initializing a custom genesis state you can use the `genesisState` construct
 import { Chain } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createAddressFromString } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { createVM } from '@ethereumjs/vm'
 
 const main = async () => {
   const genesisState = getGenesis(Chain.Mainnet)
 
-  const vm = await VM.create()
+  const vm = await createVM()
   await vm.stateManager.generateCanonicalGenesis!(genesisState)
   const account = await vm.stateManager.getAccount(
     createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
@@ -309,11 +308,11 @@ with the respective EIPs, e.g.:
 // ./examples/vmWithEIPs.ts
 
 import { Common, Mainnet } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
+import { createVM } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, eips: [7702] })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
   console.log(`EIP 7702 is active in the VM - ${vm.common.isActivatedEIP(7702)}`)
 }
 void main()
@@ -354,11 +353,11 @@ To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-import { VM } from '../src/vm.js'
+import { createVM } from '../src/index.js'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
-  const vm = await VM.create({ common })
+  const vm = await createVM({ common })
   console.log(`4844 is active in the VM - ${vm.common.isActivatedEIP(4844)}`)
 }
 
@@ -371,7 +370,7 @@ EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation prec
 
 ### Tracing Events
 
-Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
+Our `TypeScript` VM emits events that support async listeners.
 
 You can subscribe to the following events:
 
@@ -379,6 +378,23 @@ You can subscribe to the following events:
 - `afterBlock`: Emits `AfterBlockEvent` right after running a block.
 - `beforeTx`: Emits a `Transaction` right before running it.
 - `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
+
+Note, if subscribing to events with an async listener, specify the second parameter of your listener as a `resolve` function that must be called once your listener code has finished.
+
+```ts
+// ./examples/eventListener.ts#L10-L19
+
+// Setup an event listener on the `afterTx` event
+vm.events.on('afterTx', (event, resolve) => {
+  console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+  // we need to call resolve() to avoid the event listener hanging
+  resolve?.()
+})
+
+vm.events.on('afterTx', (event) => {
+  console.log('synchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+})
+```
 
 Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 

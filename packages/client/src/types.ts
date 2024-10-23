@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events'
-
 import type { SyncMode } from './index.js'
 import type { Peer } from './net/peer/index.js'
 import type { Server } from './net/server/index.js'
@@ -56,33 +54,6 @@ export interface EventParams {
   [Event.PROTOCOL_MESSAGE]: [messageDetails: any, protocolName: string, sendingPeer: Peer]
 }
 
-export declare interface EventBus<T extends Event> {
-  emit(event: T, ...args: EventParams[T]): boolean
-  on(event: T, listener: (...args: EventParams[T]) => void): this
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class EventBus<T extends Event> extends EventEmitter {}
-export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
-  EventBus<Event.CLIENT_SHUTDOWN> &
-  EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
-  EventBus<Event.SYNC_FETCHED_BLOCKS> &
-  EventBus<Event.SYNC_FETCHED_HEADERS> &
-  EventBus<Event.SYNC_SYNCHRONIZED> &
-  EventBus<Event.SYNC_SNAPSYNC_COMPLETE> &
-  EventBus<Event.SYNC_FETCHER_ERROR> &
-  EventBus<Event.PEER_CONNECTED> &
-  EventBus<Event.PEER_DISCONNECTED> &
-  EventBus<Event.PEER_ERROR> &
-  EventBus<Event.SERVER_LISTENING> &
-  EventBus<Event.SERVER_ERROR> &
-  EventBus<Event.SYNC_ERROR> &
-  EventBus<Event.POOL_PEER_ADDED> &
-  EventBus<Event.POOL_PEER_REMOVED> &
-  EventBus<Event.POOL_PEER_BANNED> &
-  EventBus<Event.PROTOCOL_ERROR> &
-  EventBus<Event.PROTOCOL_MESSAGE>
-
 /**
  * Like types
  */
@@ -102,7 +73,6 @@ export interface ClientOpts {
   // Deprecated, use chainId instead
   networkId?: number
   sync?: SyncMode
-  lightServe?: boolean
   dataDir?: string
   customChain?: string
   customGenesisState?: string

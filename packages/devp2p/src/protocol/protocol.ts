@@ -1,17 +1,17 @@
 import debugDefault from 'debug'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
+import type { ProtocolEvent, SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
 
 type MessageCodes = { [key: number | string]: number | string }
 
 export abstract class Protocol {
-  public events: EventEmitter
+  public events: EventEmitter<ProtocolEvent>
   protected _version: number
   protected _peer: Peer
   protected _send: SendMethod
@@ -36,7 +36,7 @@ export abstract class Protocol {
     version: number,
     messageCodes: MessageCodes,
   ) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<ProtocolEvent>()
     this._peer = peer
     this._send = send
     this._version = version

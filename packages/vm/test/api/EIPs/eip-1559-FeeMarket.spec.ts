@@ -4,6 +4,7 @@ import { AccessList2930Transaction, FeeMarket1559Tx, LegacyTx } from '@ethereumj
 import {
   Account,
   Address,
+  Units,
   bigIntToBytes,
   createZeroAddress,
   hexToBytes,
@@ -15,8 +16,6 @@ import { assert, describe, it } from 'vitest'
 import { createVM, runTx } from '../../../src/index.js'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
-
-const GWEI = BigInt('1000000000')
 
 const common = new Common({
   eips: [1559, 2718, 2930],
@@ -69,8 +68,8 @@ describe('EIP1559 tests', () => {
   it('test EIP1559 with all transaction types', async () => {
     const tx = new FeeMarket1559Tx(
       {
-        maxFeePerGas: GWEI * BigInt(5),
-        maxPriorityFeePerGas: GWEI * BigInt(2),
+        maxFeePerGas: Units.gwei(5),
+        maxPriorityFeePerGas: Units.gwei(2),
         to: createZeroAddress(),
         gasLimit: 21000,
       },
@@ -78,11 +77,11 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    const block = makeBlock(GWEI, tx, 2)
+    const block = makeBlock(Units.gwei(1), tx, 2)
     const vm = await createVM({ common })
     await vm.stateManager.putAccount(sender, new Account())
     let account = await vm.stateManager.getAccount(sender)
-    const balance = GWEI * BigInt(21000) * BigInt(10)
+    const balance = Units.gwei(210000)
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
     const results = await runTx(vm, {
@@ -96,8 +95,8 @@ describe('EIP1559 tests', () => {
     // It is also willing to tip the miner 2 GWEI (at most)
     // Thus, miner should get 21000*2 GWei, and the 21000*1 GWei is burned
 
-    let expectedCost = GWEI * BigInt(21000) * BigInt(3)
-    let expectedMinerBalance = GWEI * BigInt(21000) * BigInt(2)
+    let expectedCost = Units.gwei(21000) * BigInt(3)
+    let expectedMinerBalance = Units.gwei(21000) * BigInt(2)
     let expectedAccountBalance = balance - expectedCost
 
     let miner = await vm.stateManager.getAccount(coinbase)
@@ -110,12 +109,12 @@ describe('EIP1559 tests', () => {
     const tx2 = new AccessList2930Transaction(
       {
         gasLimit: 21000,
-        gasPrice: GWEI * BigInt(5),
+        gasPrice: Units.gwei(5),
         to: createZeroAddress(),
       },
       { common },
     )
-    const block2 = makeBlock(GWEI, tx2, 1)
+    const block2 = makeBlock(Units.gwei(1), tx2, 1)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
     const results2 = await runTx(vm, {
@@ -124,8 +123,8 @@ describe('EIP1559 tests', () => {
       skipNonce: true,
     })
 
-    expectedCost = GWEI * BigInt(21000) * BigInt(5)
-    expectedMinerBalance = GWEI * BigInt(21000) * BigInt(4)
+    expectedCost = Units.gwei(21000) * BigInt(5)
+    expectedMinerBalance = Units.gwei(21000) * BigInt(4)
     expectedAccountBalance = balance - expectedCost
 
     miner = await vm.stateManager.getAccount(coinbase)
@@ -138,12 +137,12 @@ describe('EIP1559 tests', () => {
     const tx3 = new LegacyTx(
       {
         gasLimit: 21000,
-        gasPrice: GWEI * BigInt(5),
+        gasPrice: Units.gwei(5),
         to: createZeroAddress(),
       },
       { common },
     )
-    const block3 = makeBlock(GWEI, tx3, 0)
+    const block3 = makeBlock(Units.gwei(1), tx3, 0)
     await vm.stateManager.modifyAccountFields(sender, { balance })
     await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
     const results3 = await runTx(vm, {
@@ -152,8 +151,8 @@ describe('EIP1559 tests', () => {
       skipNonce: true,
     })
 
-    expectedCost = GWEI * BigInt(21000) * BigInt(5)
-    expectedMinerBalance = GWEI * BigInt(21000) * BigInt(4)
+    expectedCost = Units.gwei(21000) * BigInt(5)
+    expectedMinerBalance = Units.gwei(21000) * BigInt(4)
     expectedAccountBalance = balance - expectedCost
 
     miner = await vm.stateManager.getAccount(coinbase)
@@ -168,8 +167,8 @@ describe('EIP1559 tests', () => {
     const contractAddress = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
     const tx = new FeeMarket1559Tx(
       {
-        maxFeePerGas: GWEI * BigInt(5),
-        maxPriorityFeePerGas: GWEI * BigInt(2),
+        maxFeePerGas: Units.gwei(5),
+        maxPriorityFeePerGas: Units.gwei(2),
         to: contractAddress,
         gasLimit: 210000,
       },
@@ -177,9 +176,9 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    const block = makeBlock(GWEI, tx, 2)
+    const block = makeBlock(Units.gwei(1), tx, 2)
     const vm = await createVM({ common })
-    const balance = GWEI * BigInt(210000) * BigInt(10)
+    const balance = Units.gwei(210000) * BigInt(10)
     await vm.stateManager.modifyAccountFields(sender, { balance })
 
     /**
@@ -198,7 +197,7 @@ describe('EIP1559 tests', () => {
     const result = await runTx(vm, { tx: block.transactions[0], block })
     const returnValue = result.execResult.returnValue
 
-    const expectedCost = GWEI * BigInt(3)
+    const expectedCost = Units.gwei(3)
     const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32)
 
     assert.deepEqual(returnValue, expectedReturn)

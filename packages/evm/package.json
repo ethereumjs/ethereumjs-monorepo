@@ -61,9 +61,11 @@
     "@ethereumjs/util": "^9.1.0",
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0"
+    "ethereum-cryptography": "^3.0.0",
+    "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
+    "@paulmillr/trusted-setups": "^0.1.2",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
     "@types/minimist": "^1.2.2",
@@ -73,14 +75,13 @@
     "level": "^8.0.0",
     "mcl-wasm": "^1.5.0",
     "memory-level": "^1.0.0",
+    "micro-eth-signer": "^0.11.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.12.0",
     "rustbn-wasm": "^0.4.0",
     "solc": "^0.8.1",
-    "split": "^1.0.1",
-    "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.11.0"
+    "split": "^1.0.1"
   },
   "engines": {
     "node": ">=18"

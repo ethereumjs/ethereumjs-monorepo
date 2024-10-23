@@ -1,7 +1,7 @@
 import { BIGINT_0, short } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
+import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.js'
 
 import type { Config } from '../../config.js'
 import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
@@ -49,7 +49,6 @@ export abstract class Peer extends EventEmitter {
   // TODO check if this should be moved into RlpxPeer
   public eth?: BoundEthProtocol
   public snap?: BoundSnapProtocol
-  public les?: BoundLesProtocol
 
   /*
     If the peer is in the PeerPool.
@@ -172,12 +171,6 @@ export abstract class Peer extends EventEmitter {
       await bound!.handshake(sender)
 
       this.eth = <BoundEthProtocol>bound
-    } else if (protocol.name === 'les') {
-      bound = new BoundLesProtocol(boundOpts)
-
-      await bound!.handshake(sender)
-
-      this.les = <BoundLesProtocol>bound
     } else if (protocol.name === 'snap') {
       bound = new BoundSnapProtocol(boundOpts)
       if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')

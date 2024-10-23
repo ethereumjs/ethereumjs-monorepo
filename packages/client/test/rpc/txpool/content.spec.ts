@@ -3,13 +3,12 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createTx } from '@ethereumjs/tx'
-import { randomBytes } from '@ethereumjs/util'
+import { Units, randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'txpool_content'
@@ -26,7 +25,7 @@ describe(method, () => {
     const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
     await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
@@ -47,7 +46,7 @@ describe(method, () => {
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
     await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
-    const service = client.services[0] as FullEthereumService
+    const service = client.service
     service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
@@ -55,7 +54,7 @@ describe(method, () => {
       {
         header: createBlockHeader(
           {
-            baseFeePerGas: 1000000000n,
+            baseFeePerGas: Units.gwei(1),
             number: 2n,
             parentHash: headBlock.header.hash(),
           },

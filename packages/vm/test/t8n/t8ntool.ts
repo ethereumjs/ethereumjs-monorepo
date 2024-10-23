@@ -92,7 +92,9 @@ export class TransitionTool {
 
     let index = 0
 
-    this.vm.events.on('afterTx', (event) => this.afterTx(event, index, builder))
+    this.vm.events.on('afterTx', (event) => {
+      this.afterTx(event, index, builder)
+    })
 
     for (const txData of this.txsData) {
       try {
@@ -139,9 +141,10 @@ export class TransitionTool {
     this.stateTracker = new StateTracker(this.vm, this.alloc)
 
     if (args.log === true) {
-      this.vm.events.on('beforeTx', () => {
+      this.vm.events.on('beforeTx', (_, resolve) => {
         // eslint-disable-next-line no-console
         console.log('Processing new transaction...')
+        resolve?.()
       })
       this.vm.events.on('afterTx', () => {
         // eslint-disable-next-line no-console

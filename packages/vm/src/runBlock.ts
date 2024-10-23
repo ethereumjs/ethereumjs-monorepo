@@ -135,32 +135,36 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-    }
+    // We only do these checks if operating statelessly since the execution witness is
+    // constructed during stateful execution
+    if (stateManager instanceof StatelessVerkleStateManager) {
+      if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+        throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Initializing StatelessVerkleStateManager executionWitness`)
-    }
-    if (clearCache) {
-      stateManager.clearCaches()
-    }
+      if (vm.DEBUG) {
+        debug(`Initializing StatelessVerkleStateManager executionWitness`)
+      }
+      if (clearCache) {
+        stateManager.clearCaches()
+      }
 
-    // Update the stateRoot cache
-    await stateManager.setStateRoot(block.header.stateRoot)
+      // Update the stateRoot cache
+      await stateManager.setStateRoot(block.header.stateRoot)
 
-    // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+      // Populate the execution witness
+      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (
-      stateManager instanceof StatelessVerkleStateManager &&
-      verifyVerkleStateProof(stateManager) === false
-    ) {
-      throw Error(`Verkle proof verification failed`)
-    }
+      if (
+        stateManager instanceof StatelessVerkleStateManager &&
+        verifyVerkleStateProof(stateManager) === false
+      ) {
+        throw Error(`Verkle proof verification failed`)
+      }
 
-    if (vm.DEBUG) {
-      debug(`Verkle proof verification succeeded`)
+      if (vm.DEBUG) {
+        debug(`Verkle proof verification succeeded`)
+      }
     }
   } else {
     if (typeof stateManager.initVerkleExecutionWitness === 'function') {
@@ -313,9 +317,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         )
         throw new Error(msg)
       }
-    } else if (vm.common.isActivatedEIP(6800)) {
-      // If verkle is activated, only validate the post-state
-      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
+    }
+    if (vm.common.isActivatedEIP(6800)) {
+      // If verkle is activated and executing statelessly, only validate the post-state
+      if ((await vm['_opts'].stateManager!.verifyPostState!()) === false) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)
