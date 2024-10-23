@@ -1,6 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   KECCAK256_RLP,
+  SHA256_NULL,
   bytesToBigInt,
   createDepositRequest,
   createWithdrawalRequest,
@@ -49,10 +50,9 @@ const common = new Common({
 describe('7685 tests', () => {
   it('should instantiate block with defaults', () => {
     const block = createBlock({}, { common })
-    assert.deepEqual(block.header.requestsHash, KECCAK256_RLP)
+    assert.deepEqual(block.header.requestsHash, SHA256_NULL)
     const block2 = new Block(undefined, undefined, undefined, undefined, { common })
-    assert.deepEqual(block.header.requestsHash, KECCAK256_RLP)
-    assert.equal(block2.requests?.length, 0)
+    assert.deepEqual(block2.header.requestsHash, SHA256_NULL)
   })
   it('should instantiate a block with requests', async () => {
     const request = getRandomDepositRequest()
