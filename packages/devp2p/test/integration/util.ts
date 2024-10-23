@@ -105,10 +105,7 @@ export function initTwoPeerRLPXSetup(
 ): RLPx[] {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
-  rlpxs[0]['_dpt']!.addPeer(peer).catch(() => {
-    /* Silently catch rejections here since not an actual test error */
-  })
-  return rlpxs
+  return { rlpxs, peer }
 }
 
 export function destroyRLPXs(rlpxs: any) {
@@ -135,7 +132,10 @@ export function twoPeerMsgExchange3(
   common?: Object | Common,
   basePort = 30306,
 ) {
-  const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
+  const { rlpxs, peer } = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
+  rlpxs[0]['_dpt']!.addPeer(peer).catch(() => {
+    throw new Error('Peering failed')
+  })
   rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     opts.sendMessage(rlpxs, protocol)
