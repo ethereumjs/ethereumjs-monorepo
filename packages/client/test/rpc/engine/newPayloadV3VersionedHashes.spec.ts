@@ -40,9 +40,10 @@ describe(`${method}: Cancun validations`, () => {
     let res = await rpc.request(method, blockDataExtraVersionedHashes)
 
     assert.equal(res.result.status, 'INVALID')
+    console.log(res.result.validationError)
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=0 received=2',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: expected=0 received=2',
     )
 
     const txString =
@@ -105,7 +106,7 @@ describe(`${method}: Cancun validations`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=2 received=1',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: expected=2 received=1',
     )
 
     const blockDataExtraMisMatchingHashes1 = [
@@ -127,7 +128,7 @@ describe(`${method}: Cancun validations`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
     )
 
     const blockDataMatchingVersionedHashes = [
