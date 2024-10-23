@@ -1,13 +1,14 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
+  CLRequestType,
   KECCAK256_RLP,
   SHA256_NULL,
   bytesToBigInt,
-  createDepositRequest,
+  createCLRequest,
   createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { genRequestsRoot } from '../src/helpers.js'
@@ -20,7 +21,7 @@ import {
 } from '../src/index.js'
 
 import type { JSONRPCBlock } from '../src/index.js'
-import type { CLRequest, CLRequestType } from '@ethereumjs/util'
+import type { CLRequest } from '@ethereumjs/util'
 
 function getRandomDepositRequest(): CLRequest<CLRequestType> {
   const depositRequestData = {
@@ -30,7 +31,17 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
     signature: randomBytes(96),
     index: randomBytes(8),
   }
-  return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+  // return createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+
+  // flatten request bytes as per EIP-7685
+  const depositRequestBytes = new Uint8Array(
+    Object.values(depositRequestData)
+      .map((arr) => Array.from(arr)) // Convert Uint8Arrays to regular arrays
+      .reduce((acc, curr) => acc.concat(curr), []), // Concatenate arrays
+  )
+  return createCLRequest(
+    new Uint8Array([CLRequestType.Deposit, ...depositRequestBytes]),
+  ) as CLRequest<CLRequestType.Deposit>
 }
 
 function getRandomWithdrawalRequest(): CLRequest<CLRequestType> {
