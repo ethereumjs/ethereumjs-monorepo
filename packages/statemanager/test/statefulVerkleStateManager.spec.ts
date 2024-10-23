@@ -34,7 +34,7 @@ describe('Verkle Tree API tests', () => {
     assert.equal(retrievedAccount?.nonce, account.nonce)
     await sm.deleteAccount(address)
     const deletedAccount = await sm.getAccount(address)
-    assert.ok(deletedAccount?.isEmpty())
+    assert.equal(deletedAccount, undefined)
   })
   it('should put and get code', async () => {
     const trie = await createVerkleTree()

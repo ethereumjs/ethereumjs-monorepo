@@ -20,7 +20,7 @@ export class TxPool {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const service = client.service as FullEthereumService
     this._txpool = service.txPool
     this._vm = service.execution.vm
     this._rpcDebug = rpcDebug
