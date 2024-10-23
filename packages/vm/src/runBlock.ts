@@ -253,15 +253,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
-      const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-      const requestsHash = genRequestsRoot(requests!, sha256Function)
-
-      if (!equalsBytes(block.header.requestsHash!, requestsHash)) {
+      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
         if (vm.DEBUG)
           debug(
             `Invalid requestsHash received=${bytesToHex(
               block.header.requestsHash!,
-            )} expected=${bytesToHex(requestsHash)}`,
+            )} expected=${bytesToHex(requestsHash!)}`,
           )
         const msg = _errorMsg('invalid requestsHash', vm, block)
         throw new Error(msg)
