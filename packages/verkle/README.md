@@ -177,6 +177,7 @@ Additional log selections can be added with a comma separated list (no spaces). 
 - Wiki
   - [Overview of verkle trees](https://ethereum.org/en/roadmap/verkle-trees/)
   - [Verkle trees general resource](https://verkle.info/)
+  - [Ethereum Foundation Verkle Tree Roadmap](https://ethereum.org/en/roadmap/verkle-trees)
 
 ## EthereumJS
 
