@@ -170,4 +170,8 @@ export const hardforksDict: HardforksDict = {
   osaka: {
     eips: [2935, 6800],
   },
+  // TODO: WIP
+  verkle: {
+    eips: [2935, 6800],
+  },
 }
