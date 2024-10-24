@@ -19,6 +19,13 @@ describe('Verkle tree', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
+  it('should instantiate with a MapDB if no db is provided', async () => {
+    const tree = await createVerkleTree({
+      verkleCrypto,
+    })
+    assert.ok(tree['_db'] instanceof MapDB)
+  })
+
   it('should insert and retrieve values', async () => {
     // Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
     const presentKeys = [
@@ -125,7 +132,7 @@ describe('Verkle tree', () => {
       db: new MapDB<Uint8Array, Uint8Array>(),
     })
 
-    await trie['_createRootNode']()
+    await trie.createRootNode()
 
     let putStack: [Uint8Array, VerkleNode][] = []
     const stem1 = keys[0].slice(0, 31)
@@ -236,7 +243,7 @@ describe('Verkle tree', () => {
       db: new MapDB<Uint8Array, Uint8Array>(),
     })
 
-    await trie['_createRootNode']()
+    await trie.createRootNode()
 
     const keyWithMultipleValues = keys[0].slice(0, 31)
     await trie.put(keyWithMultipleValues, [keys[0][31], keys[1][31]], [values[0], values[1]])
@@ -260,7 +267,7 @@ describe('Verkle tree', () => {
       db: new MapDB<Uint8Array, Uint8Array>(),
     })
 
-    await trie['_createRootNode']()
+    await trie.createRootNode()
     assert.deepEqual(await trie.get(keys[0].slice(0, 31), [keys[0][31]]), [])
 
     await trie.del(keys[0].slice(0, 31), [keys[0][31]])
