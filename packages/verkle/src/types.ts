@@ -11,11 +11,11 @@ export interface VerkleTreeOpts {
   /**
    * An instantiated Verkle Cryptography interface
    */
-  verkleCrypto?: VerkleCrypto | undefined
+  verkleCrypto: VerkleCrypto
   /**
    * A database instance.
    */
-  db?: DB<Uint8Array, Uint8Array>
+  db: DB<Uint8Array, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored tree
@@ -25,18 +25,13 @@ export interface VerkleTreeOpts {
   /**
    * Store the root inside the database after every `write` operation
    */
-  useRootPersistence?: boolean
+  useRootPersistence: boolean
 
   /**
    * LRU cache for tree nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
    */
-  cacheSize?: number
-}
-
-export type VerkleTreeOptsWithDefaults = VerkleTreeOpts & {
-  useRootPersistence: boolean
   cacheSize: number
 }
 
