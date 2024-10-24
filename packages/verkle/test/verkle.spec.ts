@@ -19,11 +19,11 @@ describe('Verkle tree', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it('should instantiate with a MapDB if no db is provided', async () => {
-    const tree = await createVerkleTree({
-      verkleCrypto,
-    })
-    assert.ok(tree['_db'] instanceof MapDB)
+
+  it('should instantiate with verkle crypto and a MapDB if no options are provided', async () => {
+    const tree = await createVerkleTree()
+    assert.ok(tree['_db'].db instanceof MapDB)
+    assert.ok(tree['verkleCrypto'] !== undefined)
   })
 
   it('should insert and retrieve values', async () => {
@@ -76,7 +76,6 @@ describe('Verkle tree', () => {
 
     const tree = await createVerkleTree({
       verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
     })
 
     const res = await tree.findPath(presentKeys[0])
@@ -127,10 +126,7 @@ describe('Verkle tree', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree()
 
     await trie.createRootNode()
 
@@ -238,10 +234,7 @@ describe('Verkle tree', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree()
 
     await trie.createRootNode()
 
@@ -262,10 +255,7 @@ describe('Verkle tree', () => {
   it('should put zeros in leaf node when del called with stem that was not in the trie before', async () => {
     const keys = [hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01')]
 
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree()
 
     await trie.createRootNode()
     assert.deepEqual(await trie.get(keys[0].slice(0, 31), [keys[0][31]]), [])

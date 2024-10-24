@@ -29,10 +29,7 @@ describe('lets make proofs', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree()
 
     await trie.createRootNode()
 
