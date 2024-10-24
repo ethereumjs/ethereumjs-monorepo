@@ -16,6 +16,7 @@
 - [General Usage](#general-usage)
 - [Supported Networks](#supported-networks)
 - [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
+- [Testnets](#testnets)
 - [Custom Chains](#custom-chains)
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
@@ -214,6 +215,28 @@ Then start the Lodestar client with:
 ```shell
 ./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
+
+## Testnets
+
+The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
+
+### Running a testnet with EthereumJS/Lodestar
+
+To run a testnet, the EthereumJS client has to be run alongside a consensus layer (CL) client. By far the simplest way to run In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client.
+
+The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Lodestar provides a [quick-start repository](https://github.com/ChainSafe/lodestar-quickstart) that allows users to get started quickly with minimal configuration.
+
+Taking as an example the Verkle Kaustinen6 testnet, getting the EthereumJS client started alongside the Lodestart consensus client should only require the following commands:
+
+Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
+
+`npm run client:start:ts -- --dataDir /data/k6data --network kaustinen6 --rpcEngine --rpcEngineAuth false --logLevel warn`
+
+Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repository)
+
+`setup.sh --dataDir k6data --network kaustinen6 --justCL`
+
+The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
 ## Custom Chains
 
