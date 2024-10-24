@@ -4,7 +4,6 @@ import {
   Account,
   type Address,
   KECCAK256_NULL,
-  MapDB,
   VERKLE_CODE_CHUNK_SIZE,
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
@@ -95,9 +94,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       throw new Error('EIP-6800 required for verkle state management')
 
     this.common = opts.common ?? new Common({ chain: Mainnet, eips: [6800] })
-    this._trie =
-      opts.trie ??
-      new VerkleTree({ verkleCrypto: opts.verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
+    this._trie = opts.trie ?? new VerkleTree({ verkleCrypto: opts.verkleCrypto })
     this._debug = debugDefault('statemanager:verkle:stateful')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
