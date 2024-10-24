@@ -13,7 +13,6 @@ This library bundles different components for lower-level peer-to-peer connectio
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH/68)
-- Light Ethereum Subprotocol (LES/4) (outdated)
 
 ## Usage
 
@@ -262,7 +261,7 @@ Wait for follow-up messages to arrive, send your responses.
 ```ts
 // ./examples/peer-communication.ts#L116-L119
 
-eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+eth.events.on('message', async (code: any, payload: any) => {
   // We keep track of how many of each message type are received
   if (code in requests.msgTypes) {
     requests.msgTypes[code]++
@@ -310,82 +309,6 @@ Events emitted:
 ### Reference
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
-
-## Light Ethereum Subprotocol (LES) (Outdated)
-
-Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
-
-### Usage
-
-Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
-to arrive to start the communication.
-
-```ts
-// ./examples/peer-communication-les.ts#L80-L100
-
-les.sendStatus({
-  headTd: intToBytes(GENESIS_TD),
-  headHash: GENESIS_HASH,
-  headNum: Uint8Array.from([]),
-  genesisHash: GENESIS_HASH,
-  announceType: intToBytes(0),
-  recentTxLookup: intToBytes(1),
-  forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
-})
-
-les.events.once('status', (status: devp2p.LES.Status) => {
-  const msg = [
-    Uint8Array.from([]),
-    [
-      bytesToInt(status['headNum']),
-      Uint8Array.from([1]),
-      Uint8Array.from([]),
-      Uint8Array.from([1]),
-    ],
-  ]
-  les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
-```
-
-Wait for follow-up messages to arrive, send your responses.
-
-```ts
-// ./examples/peer-communication-les.ts#L103-L105
-
-les.events.on('message', async (code: devp2p.LES.MESSAGE_CODES, payload: any) => {
-  switch (code) {
-    case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
-```
-
-See the `peer-communication-les.ts` example for a more detailed use case.
-
-### API
-
-#### `LES` (extends `EventEmitter`)
-
-Handles the different message types like `BLOCK_HEADERS` or `GET_PROOFS_V2` (see `MESSAGE_CODES`) for
-a complete list. Currently protocol version `LES/2` running in client-mode is supported.
-
-##### `new LES(privateKey, options)`
-
-Normally not instantiated directly but created as a `SubProtocol` in the `Peer` object.
-
-- `version` - The protocol version for communicating, e.g. `2`.
-- `peer` - `Peer` object to communicate with.
-- `send` - Wrapped `peer.sendMessage()` function where the communication is routed to.
-
-#### `les.sendStatus(status)`
-
-Send initial status message.
-
-- `status` - Status message to send, format `{ headTd: TOTAL_DIFFICULTY_BUFFER, headHash: HEAD_HASH_BUFFER, headNum: HEAD_NUM_BUFFER, genesisHash: GENESIS_HASH_BUFFER }`, `networkId` (respectively `chainId`) is taken from the `Common` instance
-
-#### `les.sendMessage(code, reqId, payload)`
-
-Send initial status message.
-
-- `code` - The message code, see `MESSAGE_CODES` for available message types.
-- `reqId` - Request ID, will be echoed back on response.
-- `payload` - Payload as a list, will be rlp-encoded.
 
 #### Hybrid CJS/ESM Builds
 
@@ -453,7 +376,6 @@ The following loggers are available:
 | `devp2p:rlpx`         | General RLPx debug logger                                                                |
 | `devp2p:rlpx:peer`    | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages)  |
 | `devp2p:eth`          | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
-| `devp2p:les`          | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages)   |
 
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.

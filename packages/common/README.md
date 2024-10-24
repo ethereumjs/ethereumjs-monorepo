@@ -123,10 +123,11 @@ to initialize (assuming you are using the `c-kzg` package as your KZG cryptograp
 // ./examples/initKzg.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
+  const kzg = new microEthKZG(trustedSetup)
   const common = new Common({
     chain: Mainnet,
     hardfork: Hardfork.Cancun,
@@ -309,11 +310,11 @@ common from such configuration in the following manner:
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 
-import genesisJson from './genesisData/post-merge.json'
+import genesisJSON from './genesisData/post-merge.json'
 
 const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
-// Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
-const common = createCommonFromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
+// Load geth genesis JSON file into lets say `genesisJSON` and optional `chain` and `genesisHash`
+const common = createCommonFromGethGenesis(genesisJSON, { chain: 'customChain', genesisHash })
 // If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
