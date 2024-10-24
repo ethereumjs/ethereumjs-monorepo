@@ -226,7 +226,7 @@ To run a testnet, the EthereumJS client has to be run alongside a consensus laye
 
 The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Lodestar provides a [quick-start repository](https://github.com/ChainSafe/lodestar-quickstart) that allows users to get started quickly with minimal configuration.
 
-Taking as an example the Verkle Kaustinen6 testnet, getting the EthereumJS client started alongside the Lodestart consensus client should only require the following commands:
+Taking as an example the Verkle Kaustinen6 testnet, getting the EthereumJS client started alongside the Lodestar consensus client should only require the following commands:
 
 Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
 
