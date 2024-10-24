@@ -25,7 +25,7 @@ npm install @ethereumjs/verkle
 
 ### Initialization
 
-To initialize a verkle tree, we provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required`VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
+To initialize a verkle tree, we provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required `VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
 
 ```ts
 // ./examples/simple.ts#L7-L7
@@ -63,11 +63,11 @@ Following the design goal of verkle trees of allowing efficient reads and writes
 
 #### Getting values
 
-When retrieving values given a stem `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7` and suffixes `[0, 1]`, the `get` method would access the values stored at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
+When retrieving values given a stem `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad853` and suffixes `[0, 1]`, the `get` method would access the values stored at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
 
 #### Putting values
 
-When storing values given a stem `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7`, suffixes `[0, 1]`, and values `['test', 'test2']`, the `put` method would store the values at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
+When storing values given a stem `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad853`, suffixes `[0, 1]`, and values `['test', 'test2']`, the `put` method would store the values at `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad85300` and `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad85301`.
 
 See below for a complete example.
 
