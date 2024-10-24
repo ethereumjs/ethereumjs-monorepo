@@ -22,7 +22,7 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
-import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
+import type { PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {
   node: VerkleNode | null
@@ -60,14 +60,19 @@ export class VerkleTree {
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree
    *
-   * Note: in most cases, the static {@link createVerkleTree} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, the static {@link createVerkleTree} constructor should be used. It uses the same API but provides sensible defaults
    */
   constructor(opts?: VerkleTreeOpts) {
     if (opts !== undefined) {
       this._opts = { ...this._opts, ...opts }
     }
 
-    this.database(opts?.db)
+    if (opts?.db !== undefined) {
+      if (opts.db instanceof CheckpointDB) {
+        throw new Error('Cannot pass in an instance of CheckpointDB')
+      }
+      this._db = new CheckpointDB({ db: opts.db, cacheSize: this._opts.cacheSize })
+    }
 
     this.EMPTY_TREE_ROOT = new Uint8Array(32)
     this._hashLen = this.EMPTY_TREE_ROOT.length
@@ -101,18 +106,6 @@ export class VerkleTree {
     || Persistent: ${this._opts.useRootPersistence}
     || CacheSize: ${this._opts.cacheSize}
     || ----------------`)
-  }
-
-  database(db?: DB<Uint8Array, Uint8Array>) {
-    if (db !== undefined) {
-      if (db instanceof CheckpointDB) {
-        throw new Error('Cannot pass in an instance of CheckpointDB')
-      }
-
-      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize })
-    }
-
-    return this._db
   }
 
   /**
