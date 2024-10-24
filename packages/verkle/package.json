@@ -43,6 +43,8 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "tsx ../../scripts/examples-runner.ts -- verkle",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -56,7 +58,6 @@
     "debug": "^4.3.4",
     "lru-cache": "10.1.0",
     "verkle-cryptography-wasm": "^0.4.8",
-    "@ethereumjs/block": "^5.3.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.1.0"
   },

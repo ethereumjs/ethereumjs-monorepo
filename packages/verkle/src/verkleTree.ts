@@ -12,7 +12,7 @@ import { CheckpointDB } from './db/checkpoint.js'
 import { InternalVerkleNode } from './node/internalNode.js'
 import { LeafVerkleNode } from './node/leafNode.js'
 import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
-import { createDeletedLeafVerkleValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
+import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
@@ -187,7 +187,11 @@ export class VerkleTree {
    * @param value - the value(s) to store
    * @returns A Promise that resolves once value(s) are stored.
    */
-  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[] = []): Promise<void> {
+  async put(
+    stem: Uint8Array,
+    suffixes: number[],
+    values: (Uint8Array | LeafVerkleNodeValue.Untouched)[] = [],
+  ): Promise<void> {
     if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
     if (values.length > 0 && values.length !== suffixes.length) {
       // Must have an equal number of values and suffixes
@@ -232,7 +236,7 @@ export class VerkleTree {
       const value = values[i]
       const suffix = suffixes[i]
       // Update value(s) in leaf node
-      if (equalsBytes(value, createDeletedLeafVerkleValue())) {
+      if (value !== LeafVerkleNodeValue.Untouched && equalsBytes(value, createZeroesLeafValue())) {
         // Special case for when the deleted leaf value or zeroes is passed to `put`
         // Writing the deleted leaf value to the suffix
         leafNode.setValue(suffix, LeafVerkleNodeValue.Deleted)
@@ -241,7 +245,7 @@ export class VerkleTree {
       }
       this.DEBUG &&
         this.debug(
-          `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
+          `Updating value for suffix: ${suffix} to value: ${value instanceof Uint8Array ? bytesToHex(value) : value} at leaf node with stem: ${bytesToHex(stem)}`,
           ['put'],
         )
     }
@@ -306,7 +310,7 @@ export class VerkleTree {
 
   async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['del'])
-    await this.put(stem, suffixes, new Array(suffixes.length).fill(createDeletedLeafVerkleValue()))
+    await this.put(stem, suffixes, new Array(suffixes.length).fill(createZeroesLeafValue()))
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node

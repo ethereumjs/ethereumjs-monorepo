@@ -2,7 +2,13 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
-import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Units,
+  bytesToHex,
+  createAddressFromPrivateKey,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
@@ -51,7 +57,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
@@ -61,7 +67,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         nonce: 1n,
@@ -133,7 +139,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
       },
@@ -143,7 +149,7 @@ describe(method, () => {
       {
         type: 0x01,
         maxFeePerBlobGas: 1n,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
         nonce: 1n,

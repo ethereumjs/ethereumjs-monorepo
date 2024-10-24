@@ -6,6 +6,7 @@ import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethere
 import {
   Account,
   Address,
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -400,7 +401,7 @@ describe('[PendingBlock]', async () => {
           kzgProofs: txProofs,
           maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
-          maxFeePerGas: 1000000000n,
+          maxFeePerGas: Units.gwei(1),
           maxPriorityFeePerGas: 100000000n,
           to: randomBytes(20),
           nonce: BigInt(x),
@@ -438,7 +439,7 @@ describe('[PendingBlock]', async () => {
     const txNorm = createFeeMarket1559Tx(
       {
         gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 100000000n,
         to: randomBytes(20),
         nonce: BigInt(3),
@@ -495,7 +496,7 @@ describe('[PendingBlock]', async () => {
         kzgProofs: proofs,
         maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 100000000n,
         to: randomBytes(20),
         nonce: BigInt(0),

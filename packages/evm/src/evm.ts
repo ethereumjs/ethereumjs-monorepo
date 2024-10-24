@@ -2,7 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
@@ -17,6 +16,7 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
@@ -35,7 +35,7 @@ import {
   DELEGATION_7702_FLAG,
   type EVMBLSInterface,
   type EVMBN254Interface,
-  type EVMEvents,
+  type EVMEvent,
   type EVMInterface,
   type EVMMockBlockchainInterface,
   type EVMOpts,
@@ -94,7 +94,7 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  public readonly events: EventEmitter<EVMEvent>
 
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
@@ -173,7 +173,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter<EVMEvent>()
     this._optsCached = opts
 
     // Supported EIPs
@@ -222,7 +222,16 @@ export class EVM implements EVMInterface {
     this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
-      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
+      const listeners = this.events.listeners(topic as keyof EVMEvent)
+      for (const listener of listeners) {
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
+      }
     }
 
     this.performanceLogger = new EVMPerformanceLogger()
@@ -264,7 +273,7 @@ export class EVM implements EVMInterface {
 
       let callAccessGas = message.accessWitness!.touchAndChargeMessageCall(message.to)
       if (sendsValue) {
-        callAccessGas += message.accessWitness!.touchAndChargeValueTransfer(fromAddress, message.to)
+        callAccessGas += message.accessWitness!.touchAndChargeValueTransfer(message.to)
       }
       gasLimit -= callAccessGas
       if (gasLimit < BIGINT_0) {

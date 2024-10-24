@@ -423,7 +423,7 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
       balance,
       codeHash,
       storageRoot,
-      codeSize: codeBuf.length,
+      codeSize: codeBuf.byteLength,
     })
     await state.putAccount(address, account)
   }

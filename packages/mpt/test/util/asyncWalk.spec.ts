@@ -6,7 +6,7 @@ import {
   MerklePatriciaTrie,
   createMPTFromProof,
   createMerkleProof,
-  verifyMPTProof,
+  verifyMerkleProof,
 } from '../../src/index.js'
 import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
@@ -88,7 +88,7 @@ describe('walk a sparse trie', async () => {
   const rawProofKey = inputs[0][0] as string
   const proofKey = isHexString(rawProofKey) ? hexToBytes(rawProofKey) : utf8ToBytes(rawProofKey)
   const proof = await createMerkleProof(trie, proofKey)
-  assert.ok(await verifyMPTProof(proofKey, proof))
+  assert.ok(await verifyMerkleProof(proofKey, proof))
 
   // Build a sparse trie from the proof
   const fromProof = await createMPTFromProof(proof, { root: trie.root() })
