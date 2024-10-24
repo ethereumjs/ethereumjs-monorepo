@@ -232,6 +232,8 @@ Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repos
 
 `setup.sh --dataDir k6data --network kaustinen6 --justCL`
 
+Additional information on the Kaustinen6 testnet can be retrieve from this page: https://verkle-gen-devnet-6.ethpandaops.io/
+
 The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
 ## Custom Chains
