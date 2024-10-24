@@ -11,11 +11,11 @@ export interface VerkleTreeOpts {
   /**
    * An instantiated Verkle Cryptography interface
    */
-  verkleCrypto: VerkleCrypto | undefined
+  verkleCrypto?: VerkleCrypto | undefined
   /**
    * A database instance.
    */
-  db: DB<Uint8Array, Uint8Array>
+  db?: DB<Uint8Array, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored tree
