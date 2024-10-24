@@ -57,7 +57,7 @@ void main()
 
 ### Getting and Putting Values
 
-Values are stored using a combination of a `stem` obtained through the `getVerkleStem` function exposed by `@ethereumjs/util`.
+Values are stored using a combination of a `stem` obtained through the `getVerkleStem` function exposed by `@ethereumjs/util`. In the context of Ethereum, to retrieve the data associated with an account at a particular address, we would first compute the verkle stem of that address (`getVerkleStem(verkleCrypto, address)`), and then get the particular pieces of data we're interested in by suffixing the stem with the suffixes corresponding to that data.
 
 Following the design goal of verkle trees of allowing efficient reads and writes of multiple values that are "close" to each other, the `get` and `put` methods take a stem as a first argument and then an array of "suffixes" (the 32nd byte) of the key used to access a value.
 
