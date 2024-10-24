@@ -97,7 +97,12 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this.common = opts.common ?? new Common({ chain: Mainnet, eips: [6800] })
     this._trie =
       opts.trie ??
-      new VerkleTree({ verkleCrypto: opts.verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
+      new VerkleTree({
+        verkleCrypto: opts.verkleCrypto,
+        db: new MapDB<Uint8Array, Uint8Array>(),
+        useRootPersistence: false,
+        cacheSize: 0,
+      })
     this._debug = debugDefault('statemanager:verkle:stateful')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches

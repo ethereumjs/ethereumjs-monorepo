@@ -29,12 +29,9 @@ describe('lets make proofs', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree()
 
-    await trie['_createRootNode']()
+    await trie.createRootNode()
 
     const keyWithMultipleValues = keys[0].slice(0, 31)
     await trie.put(keyWithMultipleValues, [keys[0][31], keys[1][31]], [values[0], values[1]])
@@ -73,7 +70,7 @@ describe('lets make proofs', () => {
   it('should pass for empty trie', async () => {
     const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
 
-    await trie['_createRootNode']()
+    await trie.createRootNode()
     const proof = verkleCrypto.createProof([
       {
         // Get commitment from root node
