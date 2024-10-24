@@ -468,10 +468,9 @@ export class VerkleTree {
 
   /**
    * Create empty root node for initializing an empty tree.
-   * @private
    */
 
-  protected async _createRootNode(): Promise<void> {
+  async createRootNode(): Promise<void> {
     const rootNode = new InternalVerkleNode({
       commitment: this.verkleCrypto.zeroCommitment,
       verkleCrypto: this.verkleCrypto,
