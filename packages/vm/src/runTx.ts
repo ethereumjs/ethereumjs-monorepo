@@ -471,6 +471,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         continue
       }
       const yParity = bytesToBigInt(data[3])
+
+      if (yParity > BIGINT_1) {
+        continue
+      }
+
       const r = data[4]
 
       const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
