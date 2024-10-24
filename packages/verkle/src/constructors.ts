@@ -6,14 +6,16 @@ import { VerkleTree } from './verkleTree.js'
 
 import type { VerkleTreeOpts } from './types.js'
 
-export async function createVerkleTree(opts?: VerkleTreeOpts) {
+export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   const key = ROOT_DB_KEY
 
-  // Default to verkle-cryptography-wasm verkleCrypto and MapDB
+  // Provide sensible default options
   const parsedOptions = {
     ...opts,
     db: opts?.db ?? new MapDB<Uint8Array, Uint8Array>(),
     verkleCrypto: opts?.verkleCrypto ?? (await loadVerkleCrypto()),
+    useRootPersistence: opts?.useRootPersistence ?? false,
+    cacheSize: opts?.cacheSize ?? 0,
   }
 
   if (parsedOptions.useRootPersistence === true) {

@@ -1,11 +1,4 @@
-import {
-  Lock,
-  MapDB,
-  bytesToHex,
-  equalsBytes,
-  intToHex,
-  matchingBytesLength,
-} from '@ethereumjs/util'
+import { Lock, bytesToHex, equalsBytes, intToHex, matchingBytesLength } from '@ethereumjs/util'
 import debug from 'debug'
 
 import { CheckpointDB } from './db/checkpoint.js'
@@ -13,12 +6,7 @@ import { InternalVerkleNode } from './node/internalNode.js'
 import { LeafVerkleNode } from './node/leafNode.js'
 import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
 import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
-import {
-  type Proof,
-  ROOT_DB_KEY,
-  type VerkleTreeOpts,
-  type VerkleTreeOptsWithDefaults,
-} from './types.js'
+import { type Proof, ROOT_DB_KEY, type VerkleTreeOpts } from './types.js'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
@@ -34,12 +22,7 @@ interface Path {
  * The basic verkle tree interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
  */
 export class VerkleTree {
-  protected readonly _opts: VerkleTreeOptsWithDefaults = {
-    useRootPersistence: false,
-    cacheSize: 0,
-    verkleCrypto: undefined,
-    db: new MapDB<Uint8Array, Uint8Array>(),
-  }
+  _opts: VerkleTreeOpts
 
   /** The root for an empty tree */
   EMPTY_TREE_ROOT: Uint8Array
@@ -62,17 +45,13 @@ export class VerkleTree {
    *
    * Note: in most cases, the static {@link createVerkleTree} constructor should be used. It uses the same API but provides sensible defaults
    */
-  constructor(opts?: VerkleTreeOpts) {
-    if (opts !== undefined) {
-      this._opts = { ...this._opts, ...opts }
-    }
+  constructor(opts: VerkleTreeOpts) {
+    this._opts = opts
 
-    if (opts?.db !== undefined) {
-      if (opts.db instanceof CheckpointDB) {
-        throw new Error('Cannot pass in an instance of CheckpointDB')
-      }
-      this._db = new CheckpointDB({ db: opts.db, cacheSize: this._opts.cacheSize })
+    if (opts.db instanceof CheckpointDB) {
+      throw new Error('Cannot pass in an instance of CheckpointDB')
     }
+    this._db = new CheckpointDB({ db: opts.db, cacheSize: opts.cacheSize })
 
     this.EMPTY_TREE_ROOT = new Uint8Array(32)
     this._hashLen = this.EMPTY_TREE_ROOT.length
@@ -82,11 +61,7 @@ export class VerkleTree {
       this.root(opts.root)
     }
 
-    if (opts === undefined || opts?.verkleCrypto === undefined) {
-      throw new Error('instantiated verkle cryptography option required for verkle tries')
-    }
-
-    this.verkleCrypto = opts?.verkleCrypto
+    this.verkleCrypto = opts.verkleCrypto
 
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
@@ -563,7 +538,7 @@ export class VerkleTree {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._opts.useRootPersistence) {
+    if (this._opts.useRootPersistence === true) {
       await this._db.put(ROOT_DB_KEY, this.root())
     }
   }
