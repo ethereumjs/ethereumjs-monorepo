@@ -9,33 +9,28 @@ import type { VerkleTreeOpts } from './types.js'
 export async function createVerkleTree(opts?: VerkleTreeOpts) {
   const key = ROOT_DB_KEY
 
-  if (opts?.db !== undefined && opts?.useRootPersistence === true) {
-    if (opts?.root === undefined) {
-      opts.root = await opts?.db.get(key, {
+  // Default to verkle-cryptography-wasm verkleCrypto and MapDB
+  const parsedOptions = {
+    ...opts,
+    db: opts?.db ?? new MapDB<Uint8Array, Uint8Array>(),
+    verkleCrypto: opts?.verkleCrypto ?? (await loadVerkleCrypto()),
+  }
+
+  if (parsedOptions.useRootPersistence === true) {
+    if (parsedOptions.root === undefined) {
+      parsedOptions.root = await parsedOptions.db.get(key, {
         keyEncoding: KeyEncoding.Bytes,
         valueEncoding: ValueEncoding.Bytes,
       })
     } else {
-      await opts?.db.put(key, opts.root, {
+      await parsedOptions.db.put(key, parsedOptions.root, {
         keyEncoding: KeyEncoding.Bytes,
         valueEncoding: ValueEncoding.Bytes,
       })
     }
   }
 
-  if (opts?.verkleCrypto === undefined) {
-    const verkleCrypto = await loadVerkleCrypto()
-    if (opts === undefined)
-      opts = {
-        verkleCrypto,
-        db: new MapDB<Uint8Array, Uint8Array>(),
-      }
-    else {
-      opts.verkleCrypto = verkleCrypto
-    }
-  }
-
-  const trie = new VerkleTree(opts)
-  await trie['_createRootNode']()
+  const trie = new VerkleTree(parsedOptions)
+  await trie.createRootNode()
   return trie
 }
