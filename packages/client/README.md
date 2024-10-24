@@ -222,7 +222,7 @@ The EthereumJS client supports ongoing protocol development efforts, allowing de
 
 ### Stateless Verkle
 
-We are currently supporting the Verkle Kaustinen6 testnet. Getting the EthereumJS client started alongside the Lodestar consensus client should only require the following commands:
+We currently support the Verkle Kaustinen6 testnet, and will be proactively supporting upcoming testnets (e.g. Kaustinen7) as they launch. To start the EthereumJS client alongside the Lodestar consensus client, use the following commands:
 
 Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
 
