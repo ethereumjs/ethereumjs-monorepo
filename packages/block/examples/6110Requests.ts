@@ -1,12 +1,13 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
-  type CLRequestType,
-  bytesToBigInt,
-  createDepositRequest,
+  CLRequestType,
+  bytesToHex,
+  createCLRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 const main = async () => {
   const common = new Common({
@@ -17,26 +18,29 @@ const main = async () => {
   const depositRequestData = {
     pubkey: randomBytes(48),
     withdrawalCredentials: randomBytes(32),
-    amount: bytesToBigInt(randomBytes(8)),
+    amount: randomBytes(8),
     signature: randomBytes(96),
-    index: bytesToBigInt(randomBytes(8)),
+    index: randomBytes(8),
   }
-  const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+  // flatten request bytes as per EIP-7685
+  const depositRequestBytes = new Uint8Array(
+    Object.values(depositRequestData)
+      .map((arr) => Array.from(arr)) // Convert Uint8Arrays to regular arrays
+      .reduce((acc, curr) => acc.concat(curr), []), // Concatenate arrays
+  )
+  const request = createCLRequest(
+    new Uint8Array([CLRequestType.Deposit, ...depositRequestBytes]),
+  ) as CLRequest<CLRequestType.Deposit>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = genRequestsRoot(requests, sha256)
 
   const block = createBlock(
     {
-      requests,
-      header: { requestsRoot },
+      header: { requestsHash: requestsRoot },
     },
     { common },
   )
-  console.log(
-    `Instantiated block with ${
-      block.requests?.length
-    } deposit request, requestTrieValid=${await block.requestsTrieIsValid()}`,
-  )
+  console.log(`Instantiated block ${block}, requestsHash=${bytesToHex(block.header.requestsHash!)}`)
 }
 
 void main()

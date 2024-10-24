@@ -57,7 +57,7 @@ describe('BlockBuilder', () => {
     ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
     assert.equal(
       blockBuilder.transactionReceipts.length,
       1,
@@ -132,7 +132,7 @@ describe('BlockBuilder', () => {
       mixHash: new Uint8Array(32),
       nonce: new Uint8Array(8),
     }
-    const block = await blockBuilder.build(sealOpts)
+    const { block } = await blockBuilder.build(sealOpts)
 
     assert.deepEqual(block.header.mixHash, sealOpts.mixHash)
     assert.deepEqual(block.header.nonce, sealOpts.nonce)
@@ -230,7 +230,7 @@ describe('BlockBuilder', () => {
 
     await blockBuilder.addTransaction(tx)
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
 
     assert.ok(cliqueVerifySignature(block.header, [signer.address]), 'should verify signature')
     assert.deepEqual(
@@ -306,7 +306,7 @@ describe('BlockBuilder', () => {
       blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
     })
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block })
@@ -374,7 +374,7 @@ describe('BlockBuilder', () => {
       assert.ok('should pass')
     }
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
     assert.equal(
       blockBuilder.transactionReceipts.length,
       2,

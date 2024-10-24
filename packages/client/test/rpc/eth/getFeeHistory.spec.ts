@@ -55,7 +55,7 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   })
   blockBuilder.gasUsed = gasUsed
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   await chain.putBlocks([block], false)
   //await execution.run()
 }
@@ -110,7 +110,7 @@ const produceBlockWithTx = async (
     nonce++
   }
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   await chain.putBlocks([block], false)
   await execution.run()
 }
@@ -179,7 +179,7 @@ const produceBlockWith4844Tx = async (
     nonce++
   }
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   await chain.putBlocks([block], true)
   await execution.run()
 }

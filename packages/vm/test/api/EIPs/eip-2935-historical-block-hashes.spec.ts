@@ -182,7 +182,7 @@ describe('EIP 2935: historical block hashes', () => {
         timestamp: 1,
       })
       const genesis = (await vm.blockchain.getBlock(0)) as Block
-      const block = await (
+      const { block } = await (
         await buildBlock(vm, {
           parentBlock: genesis,
           blockOpts: {
@@ -220,7 +220,7 @@ describe('EIP 2935: historical block hashes', () => {
       await vm.stateManager.putCode(historyAddress, contract2935Code)
       let lastBlock = (await vm.blockchain.getBlock(0)) as Block
       for (let i = 1; i <= blocksToBuild; i++) {
-        lastBlock = await (
+        const buildResult = await (
           await buildBlock(vm, {
             parentBlock: lastBlock,
             blockOpts: {
@@ -232,6 +232,7 @@ describe('EIP 2935: historical block hashes', () => {
             },
           })
         ).build()
+        lastBlock = buildResult.block
         await vm.blockchain.putBlock(lastBlock)
         await runBlock(vm, {
           block: lastBlock,

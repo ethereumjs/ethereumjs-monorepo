@@ -154,7 +154,7 @@ describe(method, () => {
 
     const thirdResult = await blockBuilder.addTransaction(thirdTx, { skipHardForkValidation: true })
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
     await chain.putBlocks([block], true)
 
     context.rpc = rpc

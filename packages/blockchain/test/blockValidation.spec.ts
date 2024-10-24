@@ -390,7 +390,7 @@ describe('[Blockchain]: Block validation tests', () => {
   })
 })
 describe('EIP 7685: requests field validation tests', () => {
-  it('should throw when putting a block with an invalid requestsRoot', async () => {
+  it('should throw when putting a block with an invalid requestsHash', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Cancun,
@@ -403,7 +403,7 @@ describe('EIP 7685: requests field validation tests', () => {
       {
         header: {
           number: 1n,
-          requestsRoot: randomBytes(32),
+          requestsHash: randomBytes(32),
           withdrawalsRoot: KECCAK256_RLP,
           parentHash: blockchain.genesisBlock.hash(),
           timestamp: blockchain.genesisBlock.header.timestamp + 1n,
@@ -413,13 +413,13 @@ describe('EIP 7685: requests field validation tests', () => {
       { common },
     )
 
-    await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsRoot')
+    await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsHash')
 
     const blockWithRequest = createBlock(
       {
         header: {
           number: 1n,
-          requestsRoot: randomBytes(32),
+          requestsHash: randomBytes(32),
           withdrawalsRoot: KECCAK256_RLP,
           parentHash: blockchain.genesisBlock.hash(),
           timestamp: blockchain.genesisBlock.header.timestamp + 1n,
@@ -430,7 +430,7 @@ describe('EIP 7685: requests field validation tests', () => {
       { common },
     )
     await expect(async () => blockchain.putBlock(blockWithRequest)).rejects.toThrow(
-      'invalid requestsRoot',
+      'invalid requestsHash',
     )
   })
 })

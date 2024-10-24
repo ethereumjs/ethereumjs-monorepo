@@ -82,7 +82,7 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { createTx } from '@ethereumjs/tx'
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const block = createBlock(
@@ -119,7 +119,7 @@ console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
 await blockWithMatchingBaseFee.validateData()
 
 // failed validation throws error
-const tx = createTxFromTxData(
+const tx = createTx(
   { type: 2, maxFeePerGas: BigInt(20) },
   { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
 )
@@ -190,11 +190,12 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { randomBytes } from 'crypto'
-import { loadKZG } from 'kzg-wasm'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = new Common({
     chain: Mainnet,
@@ -244,15 +245,16 @@ Starting with v5.3.0 this library supports requests to the consensus layer which
 ```ts
 // ./examples/6110Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
-  type CLRequestType,
-  bytesToBigInt,
-  createDepositRequest,
+  CLRequestType,
+  bytesToHex,
+  createCLRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 const main = async () => {
   const common = new Common({
@@ -263,26 +265,29 @@ const main = async () => {
   const depositRequestData = {
     pubkey: randomBytes(48),
     withdrawalCredentials: randomBytes(32),
-    amount: bytesToBigInt(randomBytes(8)),
+    amount: randomBytes(8),
     signature: randomBytes(96),
-    index: bytesToBigInt(randomBytes(8)),
+    index: randomBytes(8),
   }
-  const request = createDepositRequest(depositRequestData) as CLRequest<CLRequestType>
+  // flatten request bytes as per EIP-7685
+  const depositRequestBytes = new Uint8Array(
+    Object.values(depositRequestData)
+      .map((arr) => Array.from(arr)) // Convert Uint8Arrays to regular arrays
+      .reduce((acc, curr) => acc.concat(curr), []), // Concatenate arrays
+  )
+  const request = createCLRequest(
+    new Uint8Array([CLRequestType.Deposit, ...depositRequestBytes]),
+  ) as CLRequest<CLRequestType.Deposit>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = genRequestsRoot(requests, sha256)
 
   const block = createBlock(
     {
-      requests,
-      header: { requestsRoot },
+      header: { requestsHash: requestsRoot },
     },
     { common },
   )
-  console.log(
-    `Instantiated block with ${
-      block.requests?.length
-    } deposit request, requestTrieValid=${await block.requestsTrieIsValid()}`,
-  )
+  console.log(`Instantiated block ${block}, requestsHash=${bytesToHex(block.header.requestsHash!)}`)
 }
 
 void main()
@@ -297,7 +302,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various d
 ```ts
 // ./examples/7002Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -306,6 +311,7 @@ import {
   createWithdrawalRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -320,7 +326,7 @@ const main = async () => {
   }
   const request = createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = genRequestsRoot(requests, sha256)
 
   const block = createBlock(
     {
@@ -348,7 +354,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 ```ts
 // ./examples/7251Requests.ts
 
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   type CLRequest,
@@ -356,6 +362,7 @@ import {
   createConsolidationRequest,
   randomBytes,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/keccak.js'
 
 const main = async () => {
   const common = new Common({
@@ -370,7 +377,7 @@ const main = async () => {
   }
   const request = createConsolidationRequest(consolidationRequestData) as CLRequest<CLRequestType>
   const requests = [request]
-  const requestsRoot = await genRequestsTrieRoot(requests)
+  const requestsRoot = genRequestsRoot(requests, sha256)
 
   const block = createBlock(
     {

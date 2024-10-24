@@ -1,4 +1,5 @@
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { hexToBytes } from './bytes.js'
 
@@ -63,6 +64,8 @@ export const KECCAK256_RLP_S = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cad
  * Keccak-256 hash of the RLP of null
  */
 export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
+
+export const SHA256_NULL = sha256(new Uint8Array())
 
 /**
  *  RLP encoded empty string
