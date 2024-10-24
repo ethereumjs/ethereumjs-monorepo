@@ -1,5 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToBigInt, bytesToHex, equalsBytes, validateNoLeadingZeroes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
+  validateNoLeadingZeroes,
+} from '@ethereumjs/util'
 
 import { TransactionType } from '../types.js'
 import { txTypeBytes, validateNotArray } from '../util.js'
@@ -8,6 +14,9 @@ import { FeeMarket1559Tx } from './tx.js'
 
 import type { TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
+import type { ValueOf } from '@chainsafe/ssz'
+import type { ssz } from '@ethereumjs/util'
+export type Eip1559TransactionType = ValueOf<typeof ssz.Eip1559Transaction>
 
 /**
  * Instantiate a transaction from a data dictionary.
@@ -97,4 +106,47 @@ export function createFeeMarket1559TxFromRLP(serialized: Uint8Array, opts: TxOpt
   }
 
   return create1559FeeMarketTxFromBytesArray(values as TxValuesArray, opts)
+}
+
+export function createFeeMarket1559TxFromSszTx(
+  sszWrappedTx: Eip1559TransactionType,
+  opts: TxOptions = {},
+) {
+  const {
+    payload: {
+      nonce,
+      chainId,
+      maxFeesPerGas: { regular: maxFeePerGas },
+      gas: gasLimit,
+      to,
+      value,
+      input: data,
+      accessList,
+      maxPriorityFeesPerGas: { regular: maxPriorityFeePerGas },
+    },
+    signature: { secp256k1 },
+  } = sszWrappedTx
+
+  // TODO: bytes to bigint => bigint to unpadded bytes seem redundant and set for optimization
+  const r = bytesToBigInt(secp256k1.slice(0, 32))
+  const s = bytesToBigInt(secp256k1.slice(32, 64))
+  const v = bytesToBigInt(secp256k1.slice(64))
+
+  return create1559FeeMarketTxFromBytesArray(
+    [
+      bigIntToUnpaddedBytes(chainId),
+      bigIntToUnpaddedBytes(nonce),
+      bigIntToUnpaddedBytes(maxPriorityFeePerGas),
+      bigIntToUnpaddedBytes(maxFeePerGas),
+      bigIntToUnpaddedBytes(gasLimit),
+      to ?? new Uint8Array(0),
+      bigIntToUnpaddedBytes(value),
+      data,
+      accessList.map(({ address, storageKeys }) => [address, storageKeys]),
+      bigIntToUnpaddedBytes(v),
+      bigIntToUnpaddedBytes(r),
+      bigIntToUnpaddedBytes(s),
+    ],
+    opts,
+  )
 }

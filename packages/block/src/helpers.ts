@@ -1,11 +1,14 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, ssz, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
+
+export type SSZTransactionType = ValueOf<typeof ssz.Transaction>
 
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
@@ -47,9 +50,10 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     excessBlobGas,
     parentBeaconBlockRoot,
     requestsRoot,
+    systemLogsRoot,
   ] = values
 
-  if (values.length > 21) {
+  if (values.length > 22) {
     throw new Error(
       `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
     )
@@ -82,6 +86,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     excessBlobGas,
     parentBeaconBlockRoot,
     requestsRoot,
+    systemLogsRoot,
   }
 }
 
@@ -132,6 +137,11 @@ export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Merk
   return trie.root()
 }
 
+export function genWithdrawalsSszRoot(wts: Withdrawal[]) {
+  const withdrawals = wts.map((wt) => wt.toValue())
+  return ssz.Withdrawals.hashTreeRoot(withdrawals)
+}
+
 /**
  * Returns the txs trie root for array of TypedTransaction
  * @param txs array of TypedTransaction to compute the root of
@@ -146,6 +156,11 @@ export async function genTransactionsTrieRoot(
     await trie.put(RLP.encode(i), tx.serialize())
   }
   return trie.root()
+}
+
+export async function genTransactionsSszRoot(txs: TypedTransaction[]) {
+  const transactions = txs.map((tx) => tx.sszRaw() as unknown as SSZTransactionType)
+  return ssz.Transactions.hashTreeRoot(transactions)
 }
 
 /**

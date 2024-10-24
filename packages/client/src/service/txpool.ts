@@ -839,6 +839,9 @@ export class TxPool {
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
     }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
+      if (txs.length === 0) {
+        continue
+      }
       byPrice.insert(txs[0])
       byNonce.set(address, txs.slice(1))
     }

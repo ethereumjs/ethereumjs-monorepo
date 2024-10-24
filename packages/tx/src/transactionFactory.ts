@@ -1,13 +1,26 @@
 import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.js'
-import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.js'
-import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.js'
+import {
+  createFeeMarket1559Tx,
+  createFeeMarket1559TxFromRLP,
+  createFeeMarket1559TxFromSszTx,
+} from './1559/constructors.js'
+import {
+  createAccessList2930Tx,
+  createAccessList2930TxFromRLP,
+  createAccessList2930TxFromSszTx,
+} from './2930/constructors.js'
+import {
+  createBlob4844Tx,
+  createBlob4844TxFromRLP,
+  createBlob4844TxFromSszTx,
+} from './4844/constructors.js'
 import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.js'
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
+  createLegacyTxFromSszTx,
 } from './legacy/constructors.js'
 import {
   TransactionType,
@@ -17,10 +30,15 @@ import {
   isFeeMarket1559TxData,
   isLegacyTxData,
 } from './types.js'
-import { normalizeTxParams } from './util.js'
+import { fromPayloadJson, normalizeTxParams } from './util.js'
 
+import type { Eip1559TransactionType } from './1559/constructors.js'
+import type { Eip2930TransactionType } from './2930/constructors.js'
+import type { Eip4844TransactionType } from './4844/constructors.js'
+import type { LegacyTransactionType, ReplayableTransactionType } from './legacy/constructors.js'
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
-import type { EthersProvider } from '@ethereumjs/util'
+import type { SSZTransaction } from './util.js'
+import type { EthersProvider, ssz } from '@ethereumjs/util'
 /**
  * Create a transaction from a `txData` object
  *
@@ -138,4 +156,46 @@ export async function createTxFromJSONRPCProvider(
     throw new Error('No data returned from provider')
   }
   return createTxFromRPC(txData, txOptions)
+}
+
+export function createTxFromSszTx<T extends TransactionType>(
+  sszStableTx: SSZTransaction,
+  txOptions: TxOptions = {},
+): Transaction[T] {
+  const txType = Number(sszStableTx.payload.type)
+
+  switch (txType) {
+    case TransactionType.Legacy:
+      return createLegacyTxFromSszTx(
+        sszStableTx as ReplayableTransactionType | LegacyTransactionType,
+        txOptions,
+      ) as Transaction[T]
+    case TransactionType.AccessListEIP2930:
+      return createAccessList2930TxFromSszTx(
+        sszStableTx as Eip2930TransactionType,
+        txOptions,
+      ) as Transaction[T]
+    case TransactionType.FeeMarketEIP1559:
+      return createFeeMarket1559TxFromSszTx(
+        sszStableTx as Eip1559TransactionType,
+        txOptions,
+      ) as Transaction[T]
+    case TransactionType.BlobEIP4844:
+      return createBlob4844TxFromSszTx(
+        sszStableTx as Eip4844TransactionType,
+        txOptions,
+      ) as Transaction[T]
+    case TransactionType.EOACodeEIP7702:
+      throw Error('not implemented')
+    default:
+      throw new Error(`TypedTransaction with ID ${txType} unknown`)
+  }
+}
+
+export function createTxFromExecutionPayloadTx<T extends TransactionType>(
+  data: ssz.TransactionV1,
+  txOptions: TxOptions = {},
+): Transaction[T] {
+  const sszStableTx = fromPayloadJson(data)
+  return createTxFromSszTx(sszStableTx, txOptions)
 }
