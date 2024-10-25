@@ -20,6 +20,7 @@ import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
 import { createEOACode7702Tx } from './constructors.js'
 
+import type { SSZTransactionType } from '../baseTransaction.js'
 import type {
   AccessList,
   AccessListBytes,
@@ -184,6 +185,9 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    throw Error('not implemented')
+  }
   /**
    * Returns the serialized encoding of the EIP-7702 transaction.
    *

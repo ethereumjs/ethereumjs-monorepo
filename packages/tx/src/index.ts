@@ -11,6 +11,7 @@ export * from './params.js'
 export {
   createTx,
   createTxFromBlockBodyData,
+  createTxFromExecutionPayloadTx,
   createTxFromJSONRPCProvider,
   createTxFromRLP,
   createTxFromRPC,

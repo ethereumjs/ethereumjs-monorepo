@@ -79,6 +79,7 @@ export interface ClientOpts {
   gethGenesis?: string
   trustedSetup?: string
   mergeForkIdPostMerge?: boolean
+  eip6493AtPrague?: boolean
   bootnodes?: string | string[]
   port?: number
   extIP?: string

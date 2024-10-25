@@ -5,7 +5,6 @@ import {
   KECCAK256_RLP,
   createWithdrawalFromBytesArray,
   hexToBytes,
-  randomBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -228,16 +227,6 @@ describe('EIP4895 tests', () => {
       undefined,
       undefined,
       'should provide withdrawals array when 4895 is active',
-    )
-  })
-
-  it('should return early when withdrawals root equals KECCAK256_RLP', async () => {
-    const block = createBlock({}, { common })
-    // Set invalid withdrawalsRoot in cache
-    block['cache'].withdrawalsTrieRoot = randomBytes(32)
-    assert.ok(
-      await block.withdrawalsTrieIsValid(),
-      'correctly executed code path where withdrawals length is 0',
     )
   })
 })

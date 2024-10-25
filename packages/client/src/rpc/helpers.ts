@@ -36,7 +36,16 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
 /**
  * Returns tx formatted to the standard JSON-RPC fields
  */
-export const toJSONRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: number): JSONRPCTx => {
+export const toJSONRPCTx = (
+  tx: TypedTransaction,
+  block?: Block,
+  txIndex?: number,
+  inclusionProof?: {
+    merkleBranch: Uint8Array[]
+    transactionsRoot: Uint8Array
+    transactionRoot: Uint8Array
+  },
+): JSONRPCTx => {
   const txJSON = tx.toJSON()
   return {
     blockHash: block ? bytesToHex(block.hash()) : null,
@@ -61,6 +70,14 @@ export const toJSONRPCTx = (tx: TypedTransaction, block?: Block, txIndex?: numbe
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
     blobVersionedHashes: txJSON.blobVersionedHashes,
     yParity: txJSON.yParity,
+    inclusionProof:
+      inclusionProof !== undefined
+        ? {
+            merkleBranch: inclusionProof.merkleBranch.map((elem) => bytesToHex(elem)),
+            transactionsRoot: bytesToHex(inclusionProof.transactionsRoot),
+            transactionRoot: bytesToHex(inclusionProof.transactionRoot),
+          }
+        : undefined,
   }
 }
 
