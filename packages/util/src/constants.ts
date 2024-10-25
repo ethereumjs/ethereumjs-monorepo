@@ -68,6 +68,11 @@ export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
 export const SHA256_NULL = sha256(new Uint8Array())
 
 /**
+ * SHA-256 hash of the RLP of an empty requests hash
+ */
+export const SHA256_EMPTY_RH = sha256(new Uint8Array([0, 1, 2]))
+
+/**
  *  RLP encoded empty string
  */
 export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
