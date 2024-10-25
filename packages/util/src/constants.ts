@@ -76,7 +76,7 @@ export const KECCAK256_RLP_RH_S =
 /**
  * Keccak-256 hash of the RLP of an empty requests hash
  */
-export const KECCAK256_RLP_RH = hexToBytes(KECCAK256_RLP_RH_S)
+export const SHA256_EMPTY_RH = hexToBytes(SHA256_EMPTY_RH_S)
 
 /**
  *  RLP encoded empty string
