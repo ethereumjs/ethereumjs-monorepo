@@ -5,7 +5,7 @@ import {
   BIGINT_1,
   BIGINT_8,
   KECCAK256_RLP,
-  KECCAK256_RLP_RH,
+  SHA256_EMPTY_RH,
   Lock,
   MapDB,
   bigIntToHex,
@@ -1314,7 +1314,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      requestsHash: common.isActivatedEIP(7685) ? KECCAK256_RLP_RH : undefined,
+      requestsHash: common.isActivatedEIP(7685) ? SHA256_EMPTY_RH : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
