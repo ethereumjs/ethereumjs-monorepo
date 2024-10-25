@@ -69,6 +69,13 @@ export type AccessEventFlags = {
  *
  * Experimental (do not implement)
  */
+
+export enum VerkleAccessedStateType {
+  BasicData = 'basicData',
+  CodeHash = 'codeHash',
+  Code = 'code',
+  Storage = 'storage',
+}
 export interface AccessWitnessInterface {
   touchAndChargeProofOfAbsence(address: Address): bigint
   touchAndChargeMessageCall(address: Address): bigint

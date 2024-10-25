@@ -35,7 +35,7 @@ import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
+import { AccessWitness, VerkleAccessedStateType, decodeValue } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
@@ -533,7 +533,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     const { address, type } = accessedState
 
     switch (type) {
-      case AccessedStateType.BasicData: {
+      case VerkleAccessedStateType.BasicData: {
         if (this._caches === undefined) {
           const accountData = await this.getAccount(address)
           if (accountData === undefined) {
@@ -554,7 +554,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         }
       }
 
-      case AccessedStateType.CodeHash: {
+      case VerkleAccessedStateType.CodeHash: {
         if (this._caches === undefined) {
           const accountData = await this.getAccount(address)
           if (accountData === undefined) {
@@ -571,7 +571,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         }
       }
 
-      case AccessedStateType.Code: {
+      case VerkleAccessedStateType.Code: {
         const { codeOffset } = accessedState
         let code: Uint8Array | undefined | null = null
         if (this._caches === undefined) {
@@ -597,7 +597,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         )
       }
 
-      case AccessedStateType.Storage: {
+      case VerkleAccessedStateType.Storage: {
         const { slot } = accessedState
         const key = setLengthLeft(bigIntToBytes(slot), 32)
         let storage: Uint8Array | undefined | null = null
@@ -628,9 +628,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     for (const accessedState of this.accessWitness?.accesses() ?? []) {
       const { address, type } = accessedState
       let extraMeta = ''
-      if (accessedState.type === AccessedStateType.Code) {
+      if (accessedState.type === VerkleAccessedStateType.Code) {
         extraMeta = `codeOffset=${accessedState.codeOffset}`
-      } else if (accessedState.type === AccessedStateType.Storage) {
+      } else if (accessedState.type === VerkleAccessedStateType.Storage) {
         extraMeta = `slot=${accessedState.slot}`
       }
 
@@ -659,11 +659,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
-      if (accessedState.type === AccessedStateType.Code) {
+      if (accessedState.type === VerkleAccessedStateType.Code) {
         // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
       } else if (
-        accessedState.type === AccessedStateType.Storage &&
+        accessedState.type === VerkleAccessedStateType.Storage &&
         canonicalValue === null &&
         computedValue === ZEROVALUE
       ) {
@@ -682,7 +682,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           canonicalValue === decodedCanonicalValue
             ? canonicalValue
             : `${canonicalValue} (${decodedCanonicalValue})`
-        if (type === AccessedStateType.BasicData) {
+        if (type === VerkleAccessedStateType.BasicData) {
           this.DEBUG &&
             this._debug(
               `computed value: `,

@@ -1,3 +1,4 @@
+import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   BIGINT_0,
   VERKLE_BASIC_DATA_LEAF_KEY,
@@ -43,17 +44,15 @@ type RawAccessedState = {
   chunkKey: PrefixedHexString
 }
 
-export enum AccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
-}
-
 type AccessedState =
-  | { type: Exclude<AccessedStateType, AccessedStateType.Code | AccessedStateType.Storage> }
-  | { type: AccessedStateType.Code; codeOffset: number }
-  | { type: AccessedStateType.Storage; slot: bigint }
+  | {
+      type: Exclude<
+        VerkleAccessedStateType,
+        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+      >
+    }
+  | { type: VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: VerkleAccessedStateType.Storage; slot: bigint }
 export type AccessedStateWithAddress = AccessedState & {
   address: Address
   chunkKey: PrefixedHexString
@@ -333,9 +332,9 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
   const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
   switch (position) {
     case BigInt(0):
-      return { type: AccessedStateType.BasicData }
+      return { type: VerkleAccessedStateType.BasicData }
     case BigInt(1):
-      return { type: AccessedStateType.CodeHash }
+      return { type: VerkleAccessedStateType.CodeHash }
     default:
       if (position < VERKLE_HEADER_STORAGE_OFFSET) {
         throw Error(`No attribute yet stored >=2 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
@@ -343,13 +342,13 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
 
       if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
         const slot = position - BigInt(VERKLE_HEADER_STORAGE_OFFSET)
-        return { type: AccessedStateType.Storage, slot }
+        return { type: VerkleAccessedStateType.Storage, slot }
       } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
         const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
-        return { type: AccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
+        return { type: VerkleAccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
       } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
         const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
-        return { type: AccessedStateType.Storage, slot }
+        return { type: VerkleAccessedStateType.Storage, slot }
       } else {
         throw Error(
           `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`,
@@ -358,16 +357,19 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
   }
 }
 
-export function decodeValue(type: AccessedStateType, value: PrefixedHexString | null): string {
+export function decodeValue(
+  type: VerkleAccessedStateType,
+  value: PrefixedHexString | null,
+): string {
   if (value === null) {
     return ''
   }
 
   switch (type) {
-    case AccessedStateType.BasicData:
-    case AccessedStateType.CodeHash:
-    case AccessedStateType.Code:
-    case AccessedStateType.Storage: {
+    case VerkleAccessedStateType.BasicData:
+    case VerkleAccessedStateType.CodeHash:
+    case VerkleAccessedStateType.Code:
+    case VerkleAccessedStateType.Storage: {
       return value
     }
   }

@@ -24,7 +24,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccessWitness, AccessedStateType, decodeValue } from './accessWitness.js'
+import { AccessWitness, VerkleAccessedStateType, decodeValue } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
@@ -500,9 +500,9 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     for (const accessedState of this.accessWitness?.accesses() ?? []) {
       const { address, type } = accessedState
       let extraMeta = ''
-      if (accessedState.type === AccessedStateType.Code) {
+      if (accessedState.type === VerkleAccessedStateType.Code) {
         extraMeta = `codeOffset=${accessedState.codeOffset}`
-      } else if (accessedState.type === AccessedStateType.Storage) {
+      } else if (accessedState.type === VerkleAccessedStateType.Storage) {
         extraMeta = `slot=${accessedState.slot}`
       }
 
@@ -531,11 +531,11 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
-      if (accessedState.type === AccessedStateType.Code) {
+      if (accessedState.type === VerkleAccessedStateType.Code) {
         // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
       } else if (
-        accessedState.type === AccessedStateType.Storage &&
+        accessedState.type === VerkleAccessedStateType.Storage &&
         canonicalValue === null &&
         computedValue === ZEROVALUE
       ) {
@@ -583,7 +583,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
     const { address, type } = accessedState
     switch (type) {
-      case AccessedStateType.BasicData: {
+      case VerkleAccessedStateType.BasicData: {
         const encodedAccount = this._caches?.account?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
           return null
@@ -594,7 +594,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
         return bytesToHex(basicDataBytes)
       }
 
-      case AccessedStateType.CodeHash: {
+      case VerkleAccessedStateType.CodeHash: {
         const encodedAccount = this._caches?.account?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
           return null
@@ -602,7 +602,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
         return bytesToHex(createPartialAccountFromRLP(encodedAccount).codeHash)
       }
 
-      case AccessedStateType.Code: {
+      case VerkleAccessedStateType.Code: {
         const { codeOffset } = accessedState
         const code = this._caches?.code?.get(address)?.code
         if (code === undefined) {
@@ -620,7 +620,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
         )
       }
 
-      case AccessedStateType.Storage: {
+      case VerkleAccessedStateType.Storage: {
         const { slot } = accessedState
         const key = setLengthLeft(bigIntToBytes(slot), 32)
 
