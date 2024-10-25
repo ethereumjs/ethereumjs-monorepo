@@ -708,7 +708,7 @@ describe.skip('run a verkle block', () => {
       const blockRlp = hexToBytes(verkleJSON.blocks[0].rlp as PrefixedHexString)
       const block = createBlockFromRLP(blockRlp, { common })
       const sm = new StatefulVerkleStateManager({ verkleCrypto })
-      await sm['_trie']['_createRootNode']()
+      await sm['_trie'].createRootNode()
       const blockchain = await createBlockchain({ common })
       const vm = await setupVM({ common, stateManager: sm, blockchain, genesisBlock })
       await setupPreConditions(vm.stateManager, verkleJSON)
