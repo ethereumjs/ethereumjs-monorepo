@@ -33,6 +33,7 @@ export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   }
 
   const trie = new VerkleTree(parsedOptions)
-  await trie.createRootNode()
+  // If the root node does not exist, initialize the empty root node
+  if (parsedOptions.root === undefined) await trie.createRootNode()
   return trie
 }
