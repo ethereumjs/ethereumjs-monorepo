@@ -82,7 +82,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   private keccakFunction: Function
 
-  accessWitness?: VerkleAccessWitnessInterface
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -161,7 +160,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   public initVerkleExecutionWitness(
     _blockNum: bigint,
-    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
   ) {
     if (executionWitness === null || executionWitness === undefined) {
@@ -187,8 +185,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       const acc = { ...prevValue, ...currentValue }
       return acc
     }, {})
-
-    this.accessWitness = accessWitness
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, currentValue, suffix }) => {
@@ -617,14 +613,14 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
-  async verifyPostState(): Promise<boolean> {
+  async verifyPostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
     // switch to false if postVerify fails
     let postFailures = 0
 
-    for (const accessedState of this.accessWitness?.accesses() ?? []) {
+    for (const accessedState of accessWitness?.accesses() ?? []) {
       const { address, type } = accessedState
       let extraMeta = ''
       if (accessedState.type === VerkleAccessedStateType.Code) {

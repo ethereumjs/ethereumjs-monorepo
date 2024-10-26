@@ -101,7 +101,6 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
-  accessWitness?: VerkleAccessWitnessInterface
 
   private keccakFunction: Function
 
@@ -134,7 +133,6 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   public initVerkleExecutionWitness(
     blockNum: bigint,
-    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
   ) {
     this._blockNum = blockNum
@@ -144,7 +142,6 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       throw Error(errorMsg)
     }
 
-    this.accessWitness = accessWitness
     this._executionWitness = executionWitness
     this._proof = executionWitness.verkleProof
 
@@ -493,14 +490,14 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
-  verifyPostState(): Promise<boolean> {
+  verifyPostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
     // switch to false if postVerify fails
     let postFailures = 0
 
-    for (const accessedState of this.accessWitness?.accesses() ?? []) {
+    for (const accessedState of accessWitness?.accesses() ?? []) {
       const { address, type } = accessedState
       let extraMeta = ''
       if (accessedState.type === VerkleAccessedStateType.Code) {
