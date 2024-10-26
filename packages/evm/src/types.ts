@@ -7,10 +7,10 @@ import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type {
-  AccessWitnessInterface,
   Common,
   ParamsDict,
   StateManagerInterface,
+  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
@@ -128,7 +128,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -166,6 +166,7 @@ export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
+  verkleAccessWitness?: VerkleAccessWitnessInterface
 }
 
 export type EVMProfilerOpts = {
