@@ -44,6 +44,10 @@ export async function createVM(opts: VMOpts = {}): Promise<VM> {
     throw new Error('the evm and evmOpts options cannot be used in conjunction')
   }
 
+  if (opts.common.isActivatedEIP(6800) && opts.verkleCrypto === undefined) {
+    throw Error('VerkleCrypto is required for EIP-6800')
+  }
+
   if (opts.evm === undefined) {
     let enableProfiler = false
     if (opts.profilerOpts?.reportAfterBlock === true || opts.profilerOpts?.reportAfterTx === true) {
@@ -57,6 +61,7 @@ export async function createVM(opts: VMOpts = {}): Promise<VM> {
       profiler: {
         enabled: enableProfiler,
       },
+      verkleCrypto: opts.verkleCrypto,
       ...evmOpts,
     })
   }
