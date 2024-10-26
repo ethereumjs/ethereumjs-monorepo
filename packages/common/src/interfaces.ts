@@ -76,7 +76,31 @@ export enum VerkleAccessedStateType {
   Code = 'code',
   Storage = 'storage',
 }
-export interface AccessWitnessInterface {
+
+export type RawVerkleAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
+
+export type VerkleAccessedState =
+  | {
+      type: Exclude<
+        VerkleAccessedStateType,
+        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+      >
+    }
+  | { type: VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+
+export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface VerkleAccessWitnessInterface {
+  accesses(): Generator<VerkleAccessedStateWithAddress>
+  rawAccesses(): Generator<RawVerkleAccessedState>
   touchAndChargeProofOfAbsence(address: Address): bigint
   touchAndChargeMessageCall(address: Address): bigint
   touchAndChargeValueTransfer(target: Address): bigint
@@ -108,8 +132,8 @@ export interface AccessWitnessInterface {
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
-  shallowCopy(): AccessWitnessInterface
-  merge(accessWitness: AccessWitnessInterface): void
+  shallowCopy(): VerkleAccessWitnessInterface
+  merge(accessWitness: VerkleAccessWitnessInterface): void
 }
 
 /*
@@ -169,11 +193,11 @@ export interface StateManagerInterface {
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
   // only Verkle/EIP-6800 (experimental)
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
   initVerkleExecutionWitness?(
     blockNum: bigint,
+    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitnessInterface,
   ): void
   verifyPostState?(): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
