@@ -12,7 +12,7 @@ import type {
   StateManagerInterface,
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 
 export type DeleteOpcode = {
@@ -167,6 +167,7 @@ export interface EVMInterface {
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
   verkleAccessWitness?: VerkleAccessWitnessInterface
+  verkleCrypto?: VerkleCrypto
 }
 
 export type EVMProfilerOpts = {
@@ -213,6 +214,7 @@ export interface EVMOpts {
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
    * - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
    * - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+   * - [EIP-6800](https://eips.ethereum.org/EIPS/eip-6800) - Verkle state tree (Experimental)
    * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
    * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
    * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
@@ -362,6 +364,12 @@ export interface EVMOpts {
    * `Interpreter.getBlockCoinbase` method is called.
    */
   cliqueSigner?: (header: Block['header']) => Address
+
+  /**
+   * Experimental
+   * Verkle cryptography
+   */
+  verkleCrypto?: VerkleCrypto
 }
 
 /**

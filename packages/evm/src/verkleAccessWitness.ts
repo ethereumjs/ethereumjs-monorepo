@@ -48,13 +48,11 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
   verkleCrypto: VerkleCrypto
-  constructor(
-    opts: {
-      verkleCrypto?: VerkleCrypto
-      stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
-      chunks?: Map<PrefixedHexString, ChunkAccessEvent>
-    } = {},
-  ) {
+  constructor(opts: {
+    verkleCrypto: VerkleCrypto
+    stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
+    chunks?: Map<PrefixedHexString, ChunkAccessEvent>
+  }) {
     if (opts.verkleCrypto === undefined) {
       throw new Error('verkle crypto required')
     }

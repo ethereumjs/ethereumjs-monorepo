@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { AccessWitness, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   bigIntToBytes,
   createAccount,
@@ -28,13 +28,11 @@ describe('verkle tests', () => {
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account = createAccount({ nonce: 3n, balance: 0xffffffffn })
     await sm.putAccount(address, account)
-    const evm = await createEVM({ common, stateManager: sm })
+    const evm = await createEVM({ common, verkleCrypto, stateManager: sm })
     const code = hexToBytes('0x6001600255') // PUSH1 01 PUSH1 02 SSTORE
-    const accessWitness = new AccessWitness({ verkleCrypto })
     const res = await evm.runCall({
       code,
       caller: address,
-      accessWitness,
       to: address,
     })
     assert.deepEqual(res.execResult.returnValue, new Uint8Array())
