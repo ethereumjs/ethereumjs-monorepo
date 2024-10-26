@@ -1,3 +1,4 @@
+import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   Account,
   KECCAK256_NULL,
@@ -24,15 +25,18 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccessWitness, VerkleAccessedStateType, decodeValue } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { decodeVerkleAccessWitnessValue, modifyAccountFields } from './util.js'
 
-import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { MerkleStateManager } from './merkleStateManager.js'
-import type { AccountFields, StateManagerInterface } from '@ethereumjs/common'
+import type {
+  AccountFields,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+  VerkleAccessedStateWithAddress,
+} from '@ethereumjs/common'
 import type {
   Address,
   PrefixedHexString,
@@ -97,7 +101,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
-  accessWitness?: AccessWitness
+  accessWitness?: VerkleAccessWitnessInterface
 
   private keccakFunction: Function
 
@@ -130,8 +134,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   public initVerkleExecutionWitness(
     blockNum: bigint,
+    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitness,
   ) {
     this._blockNum = blockNum
     if (executionWitness === null || executionWitness === undefined) {
@@ -140,9 +144,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       throw Error(errorMsg)
     }
 
+    this.accessWitness = accessWitness
     this._executionWitness = executionWitness
-    this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
-
     this._proof = executionWitness.verkleProof
 
     // Populate the pre-state and post-state from the executionWitness
@@ -543,8 +546,14 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       }
 
       if (computedValue !== canonicalValue) {
-        const decodedComputedValue = decodeValue(accessedState.type, computedValue)
-        const decodedCanonicalValue = decodeValue(accessedState.type, canonicalValue)
+        const decodedComputedValue = decodeVerkleAccessWitnessValue(
+          accessedState.type,
+          computedValue,
+        )
+        const decodedCanonicalValue = decodeVerkleAccessWitnessValue(
+          accessedState.type,
+          canonicalValue,
+        )
 
         const displayComputedValue =
           computedValue === decodedComputedValue
@@ -580,7 +589,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     return Promise.resolve(verifyPassed)
   }
 
-  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
+  getComputedValue(accessedState: VerkleAccessedStateWithAddress): PrefixedHexString | null {
     const { address, type } = accessedState
     switch (type) {
       case VerkleAccessedStateType.BasicData: {

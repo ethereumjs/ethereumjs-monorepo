@@ -1,4 +1,4 @@
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Mainnet, VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
@@ -35,11 +35,9 @@ import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccessWitness, VerkleAccessedStateType, decodeValue } from './accessWitness.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { modifyAccountFields } from './util.js'
+import { decodeVerkleAccessWitnessValue, modifyAccountFields } from './util.js'
 
-import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { Caches } from './cache/caches.js'
 import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 import type {
@@ -47,6 +45,8 @@ import type {
   StateManagerInterface,
   StorageDump,
   StorageRange,
+  VerkleAccessWitnessInterface,
+  VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
 import type { PrefixedHexString, VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -82,7 +82,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   private keccakFunction: Function
 
-  accessWitness?: AccessWitness
+  accessWitness?: VerkleAccessWitnessInterface
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -108,7 +108,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.verkleCrypto
-    this.accessWitness = new AccessWitness({ verkleCrypto: this.verkleCrypto })
   }
 
   /**
@@ -162,8 +161,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
   public initVerkleExecutionWitness(
     _blockNum: bigint,
+    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitness,
   ) {
     if (executionWitness === null || executionWitness === undefined) {
       const errorMsg = `Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`
@@ -189,7 +188,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       return acc
     }, {})
 
-    this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
+    this.accessWitness = accessWitness
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, currentValue, suffix }) => {
@@ -528,7 +527,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   async getComputedValue(
-    accessedState: AccessedStateWithAddress,
+    accessedState: VerkleAccessedStateWithAddress,
   ): Promise<PrefixedHexString | null> {
     const { address, type } = accessedState
 
@@ -671,8 +670,14 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
 
       if (computedValue !== canonicalValue) {
-        const decodedComputedValue = decodeValue(accessedState.type, computedValue)
-        const decodedCanonicalValue = decodeValue(accessedState.type, canonicalValue)
+        const decodedComputedValue = decodeVerkleAccessWitnessValue(
+          accessedState.type,
+          computedValue,
+        )
+        const decodedCanonicalValue = decodeVerkleAccessWitnessValue(
+          accessedState.type,
+          canonicalValue,
+        )
 
         const displayComputedValue =
           computedValue === decodedComputedValue
