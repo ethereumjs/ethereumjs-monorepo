@@ -272,20 +272,23 @@ export class EVM implements EVMInterface {
     const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
+      if (message.accessWitness === undefined) {
+        throw new Error('accessWitness is required for EIP-6800')
+      }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(fromAddress)
+        const originAccessGas = message.accessWitness.touchTxOriginAndComputeGas(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
 
-        const destAccessGas = message.accessWitness!.touchTxTargetAndComputeGas(message.to, {
+        const destAccessGas = message.accessWitness.touchTxTargetAndComputeGas(message.to, {
           sendsValue,
         })
         debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
       }
 
-      let callAccessGas = message.accessWitness!.touchAndChargeMessageCall(message.to)
+      let callAccessGas = message.accessWitness.touchAndChargeMessageCall(message.to)
       if (sendsValue) {
-        callAccessGas += message.accessWitness!.touchAndChargeValueTransfer(message.to)
+        callAccessGas += message.accessWitness.touchAndChargeValueTransfer(message.to)
       }
       gasLimit -= callAccessGas
       if (gasLimit < BIGINT_0) {
