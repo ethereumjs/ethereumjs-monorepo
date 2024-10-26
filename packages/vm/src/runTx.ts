@@ -192,10 +192,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let stateAccesses
   if (vm.common.isActivatedEIP(6800)) {
-    if (vm.stateManager.accessWitness === undefined) {
+    if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`Verkle State Manager needed for execution of verkle blocks`)
     }
-    stateAccesses = vm.stateManager.accessWitness!
+    stateAccesses = vm.evm.verkleAccessWitness
   }
   const txAccesses = stateAccesses?.shallowCopy()
 
@@ -630,7 +630,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
+      if (vm.evm.verkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
+      vm.evm.verkleAccessWitness.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -641,8 +644,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   minerAccount.balance += results.minerValue
 
   if (vm.common.isActivatedEIP(6800)) {
+    if (vm.evm.verkleAccessWitness === undefined) {
+      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+    }
     // use vm utility to build access but the computed gas is not charged and hence free
-    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
+    vm.evm.verkleAccessWitness.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }
