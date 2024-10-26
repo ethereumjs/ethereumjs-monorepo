@@ -192,14 +192,11 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  // only Verkle/EIP-6800 (experimental)
-  accessWitness?: VerkleAccessWitnessInterface
   initVerkleExecutionWitness?(
     blockNum: bigint,
-    accessWitness: VerkleAccessWitnessInterface,
     executionWitness?: VerkleExecutionWitness | null,
   ): void
-  verifyPostState?(): Promise<boolean>
+  verifyPostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
