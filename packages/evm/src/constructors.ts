@@ -32,9 +32,5 @@ export async function createEVM(createOpts?: EVMOpts) {
     opts.stateManager = new SimpleStateManager()
   }
 
-  if (opts.common.isActivatedEIP(6800) && opts.verkleCrypto === undefined) {
-    throw Error('VerkleCrypto is required for EIP-6800')
-  }
-
   return new EVM(opts)
 }

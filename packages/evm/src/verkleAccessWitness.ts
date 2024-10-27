@@ -258,7 +258,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
 
-  /**Create a shallow copy, could clone some caches in future for optimizations */
+  /** Create a shallow copy, could clone some caches in future for optimizations */
   shallowCopy(): VerkleAccessWitness {
     return new VerkleAccessWitness({ verkleCrypto: this.verkleCrypto })
   }

@@ -216,7 +216,6 @@ export class VMExecution extends Execution {
         bn254: new RustBN254(rustBN),
       },
       profilerOpts: this.config.vmProfilerOpts,
-      verkleCrypto,
     })
   }
 

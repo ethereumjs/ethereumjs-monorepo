@@ -141,10 +141,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
       }
 
-      if (vm.evm.verkleCrypto === undefined) {
-        throw Error(`VerkleCrypto needed for verkle`)
-      }
-
       if (vm.DEBUG) {
         debug(`Initializing StatelessVerkleStateManager executionWitness`)
       }
@@ -156,7 +152,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       await stateManager.setStateRoot(block.header.stateRoot)
 
       // Initialize the access witness
-      vm.evm.verkleAccessWitness = new VerkleAccessWitness({ verkleCrypto: vm.evm.verkleCrypto })
+      vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+        verkleCrypto: stateManager.verkleCrypto,
+      })
       // Populate the execution witness
       stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 

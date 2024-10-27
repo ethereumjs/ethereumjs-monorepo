@@ -12,7 +12,7 @@ import type {
   StateManagerInterface,
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 
 export type DeleteOpcode = {
@@ -167,7 +167,6 @@ export interface EVMInterface {
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
   verkleAccessWitness?: VerkleAccessWitnessInterface
-  verkleCrypto?: VerkleCrypto
 }
 
 export type EVMProfilerOpts = {
@@ -364,12 +363,6 @@ export interface EVMOpts {
    * `Interpreter.getBlockCoinbase` method is called.
    */
   cliqueSigner?: (header: Block['header']) => Address
-
-  /**
-   * Experimental
-   * Verkle cryptography
-   */
-  verkleCrypto?: VerkleCrypto
 }
 
 /**
