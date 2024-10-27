@@ -132,7 +132,6 @@ export interface VerkleAccessWitnessInterface {
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
-  shallowCopy(): VerkleAccessWitnessInterface
   merge(accessWitness: VerkleAccessWitnessInterface): void
 }
 

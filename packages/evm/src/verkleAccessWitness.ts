@@ -258,11 +258,6 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
 
-  /** Create a shallow copy, could clone some caches in future for optimizations */
-  shallowCopy(): VerkleAccessWitness {
-    return new VerkleAccessWitness({ verkleCrypto: this.verkleCrypto })
-  }
-
   merge(accessWitness: VerkleAccessWitness): void {
     for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
       const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString

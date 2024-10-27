@@ -57,6 +57,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   protected _caches?: Caches
 
   originalStorageCache: OriginalStorageCache
+  verkleCrypto: VerkleCrypto
 
   protected _trie: VerkleTree
 
@@ -69,7 +70,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   private _postState: VerkleState = {}
   private _preState: VerkleState = {}
 
-  protected verkleCrypto: VerkleCrypto
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
