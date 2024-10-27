@@ -36,7 +36,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { decodeVerkleAccessWitnessValue, modifyAccountFields } from './util.js'
+import { modifyAccountFields } from './util.js'
 
 import type { Caches } from './cache/caches.js'
 import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
@@ -631,7 +631,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue = await this.getComputedValue(accessedState)
+      const computedValue: PrefixedHexString | null | undefined =
+        await this.getComputedValue(accessedState)
       if (computedValue === undefined) {
         this.DEBUG &&
           this._debug(
@@ -666,43 +667,26 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
 
       if (computedValue !== canonicalValue) {
-        const decodedComputedValue = decodeVerkleAccessWitnessValue(
-          accessedState.type,
-          computedValue,
-        )
-        const decodedCanonicalValue = decodeVerkleAccessWitnessValue(
-          accessedState.type,
-          canonicalValue,
-        )
-
-        const displayComputedValue =
-          computedValue === decodedComputedValue
-            ? computedValue
-            : `${computedValue} (${decodedComputedValue})`
-        const displayCanonicalValue =
-          canonicalValue === decodedCanonicalValue
-            ? canonicalValue
-            : `${canonicalValue} (${decodedCanonicalValue})`
         if (type === VerkleAccessedStateType.BasicData) {
           this.DEBUG &&
             this._debug(
-              `computed value: `,
-              decodeVerkleLeafBasicData(hexToBytes(displayComputedValue)),
+              `canonical value: `,
+              canonicalValue === null
+                ? null
+                : decodeVerkleLeafBasicData(hexToBytes(canonicalValue)),
             )
-          displayCanonicalValue.startsWith('0x')
-            ? this.DEBUG &&
-              this._debug(
-                `canonical value: `,
-                decodeVerkleLeafBasicData(hexToBytes(displayCanonicalValue)),
-              )
-            : this._debug(`canonical value: `, displayCanonicalValue)
+          this.DEBUG &&
+            this._debug(
+              `computed value: `,
+              computedValue === null ? null : decodeVerkleLeafBasicData(hexToBytes(computedValue)),
+            )
         }
         this.DEBUG &&
           this._debug(
             `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
-        this.DEBUG && this._debug(`expected=${displayCanonicalValue}`)
-        this.DEBUG && this._debug(`computed=${displayComputedValue}`)
+        this.DEBUG && this._debug(`expected=${canonicalValue}`)
+        this.DEBUG && this._debug(`computed=${computedValue}`)
         postFailures++
       }
     }

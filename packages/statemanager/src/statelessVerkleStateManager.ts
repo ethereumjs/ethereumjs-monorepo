@@ -26,7 +26,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.js'
-import { decodeVerkleAccessWitnessValue, modifyAccountFields } from './util.js'
+import { modifyAccountFields } from './util.js'
 
 import type { Caches } from './cache/index.js'
 import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
@@ -543,30 +543,12 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       }
 
       if (computedValue !== canonicalValue) {
-        const decodedComputedValue = decodeVerkleAccessWitnessValue(
-          accessedState.type,
-          computedValue,
-        )
-        const decodedCanonicalValue = decodeVerkleAccessWitnessValue(
-          accessedState.type,
-          canonicalValue,
-        )
-
-        const displayComputedValue =
-          computedValue === decodedComputedValue
-            ? computedValue
-            : `${computedValue} (${decodedComputedValue})`
-        const displayCanonicalValue =
-          canonicalValue === decodedCanonicalValue
-            ? canonicalValue
-            : `${canonicalValue} (${decodedCanonicalValue})`
-
         this.DEBUG &&
           this._debug(
             `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
-        this.DEBUG && this._debug(`expected=${displayCanonicalValue}`)
-        this.DEBUG && this._debug(`computed=${displayComputedValue}`)
+        this.DEBUG && this._debug(`expected=${canonicalValue}`)
+        this.DEBUG && this._debug(`computed=${computedValue}`)
         postFailures++
       }
     }

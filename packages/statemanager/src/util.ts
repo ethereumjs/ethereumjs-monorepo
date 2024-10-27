@@ -1,32 +1,7 @@
-import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { Account, bytesToHex } from '@ethereumjs/util'
 
 import type { AccountFields, StateManagerInterface } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
-
-/**
- * Helper method for decoding verkle accessWitness values
- * @param type the type of the accessed state
- * @param value the value of the accessed state
- * @returns string - the decoded value of the accessed state
- */
-export function decodeVerkleAccessWitnessValue(
-  type: VerkleAccessedStateType,
-  value: PrefixedHexString | null,
-): string {
-  if (value === null) {
-    return ''
-  }
-
-  switch (type) {
-    case VerkleAccessedStateType.BasicData:
-    case VerkleAccessedStateType.CodeHash:
-    case VerkleAccessedStateType.Code:
-    case VerkleAccessedStateType.Storage: {
-      return value
-    }
-  }
-}
+import type { Address } from '@ethereumjs/util'
 
 export async function modifyAccountFields(
   stateManager: StateManagerInterface,
