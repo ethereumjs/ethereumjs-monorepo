@@ -2,7 +2,7 @@ import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { EOFEnv } from './types.js'
-import type { AccessWitnessInterface } from '@ethereumjs/common'
+import type { VerkleAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
@@ -40,7 +40,7 @@ interface MessageOpts {
   delegatecall?: boolean
   gasRefund?: bigint
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 }
 
 export class Message {
@@ -73,7 +73,7 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 
   constructor(opts: MessageOpts) {
     this.to = opts.to

@@ -1,3 +1,4 @@
+import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   BIGINT_0,
   VERKLE_BASIC_DATA_LEAF_KEY,
@@ -14,7 +15,13 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import type { AccessEventFlags, AccessWitnessInterface } from '@ethereumjs/common'
+import type {
+  AccessEventFlags,
+  RawVerkleAccessedState,
+  VerkleAccessWitnessInterface,
+  VerkleAccessedState,
+  VerkleAccessedStateWithAddress,
+} from '@ethereumjs/common'
 import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
 const debug = debugDefault('statemanager:verkle:aw')
@@ -36,40 +43,16 @@ type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
 
 // Since stem is pedersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number | bigint }
-type RawAccessedState = {
-  address: Address
-  treeIndex: number | bigint
-  chunkIndex: number
-  chunkKey: PrefixedHexString
-}
 
-export enum AccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
-}
-
-type AccessedState =
-  | { type: Exclude<AccessedStateType, AccessedStateType.Code | AccessedStateType.Storage> }
-  | { type: AccessedStateType.Code; codeOffset: number }
-  | { type: AccessedStateType.Storage; slot: bigint }
-export type AccessedStateWithAddress = AccessedState & {
-  address: Address
-  chunkKey: PrefixedHexString
-}
-
-export class AccessWitness implements AccessWitnessInterface {
+export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
   verkleCrypto: VerkleCrypto
-  constructor(
-    opts: {
-      verkleCrypto?: VerkleCrypto
-      stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
-      chunks?: Map<PrefixedHexString, ChunkAccessEvent>
-    } = {},
-  ) {
+  constructor(opts: {
+    verkleCrypto: VerkleCrypto
+    stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
+    chunks?: Map<PrefixedHexString, ChunkAccessEvent>
+  }) {
     if (opts.verkleCrypto === undefined) {
       throw new Error('verkle crypto required')
     }
@@ -275,12 +258,7 @@ export class AccessWitness implements AccessWitnessInterface {
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
 
-  /**Create a shallow copy, could clone some caches in future for optimizations */
-  shallowCopy(): AccessWitness {
-    return new AccessWitness({ verkleCrypto: this.verkleCrypto })
-  }
-
-  merge(accessWitness: AccessWitness): void {
+  merge(accessWitness: VerkleAccessWitness): void {
     for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
       const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
       const stem = accessWitness.stems.get(stemKey)
@@ -305,7 +283,7 @@ export class AccessWitness implements AccessWitnessInterface {
     }
   }
 
-  *rawAccesses(): Generator<RawAccessedState> {
+  *rawAccesses(): Generator<RawVerkleAccessedState> {
     for (const chunkKey of this.chunks.keys()) {
       // drop the last byte
       const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
@@ -320,7 +298,7 @@ export class AccessWitness implements AccessWitnessInterface {
     }
   }
 
-  *accesses(): Generator<AccessedStateWithAddress> {
+  *accesses(): Generator<VerkleAccessedStateWithAddress> {
     for (const rawAccess of this.rawAccesses()) {
       const { address, treeIndex, chunkIndex, chunkKey } = rawAccess
       const accessedState = decodeAccessedState(treeIndex, chunkIndex)
@@ -329,13 +307,16 @@ export class AccessWitness implements AccessWitnessInterface {
   }
 }
 
-export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: number): AccessedState {
+export function decodeAccessedState(
+  treeIndex: number | bigint,
+  chunkIndex: number,
+): VerkleAccessedState {
   const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
   switch (position) {
     case BigInt(0):
-      return { type: AccessedStateType.BasicData }
+      return { type: VerkleAccessedStateType.BasicData }
     case BigInt(1):
-      return { type: AccessedStateType.CodeHash }
+      return { type: VerkleAccessedStateType.CodeHash }
     default:
       if (position < VERKLE_HEADER_STORAGE_OFFSET) {
         throw Error(`No attribute yet stored >=2 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
@@ -343,32 +324,17 @@ export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: numb
 
       if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
         const slot = position - BigInt(VERKLE_HEADER_STORAGE_OFFSET)
-        return { type: AccessedStateType.Storage, slot }
+        return { type: VerkleAccessedStateType.Storage, slot }
       } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
         const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
-        return { type: AccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
+        return { type: VerkleAccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
       } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
         const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
-        return { type: AccessedStateType.Storage, slot }
+        return { type: VerkleAccessedStateType.Storage, slot }
       } else {
         throw Error(
           `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`,
         )
       }
-  }
-}
-
-export function decodeValue(type: AccessedStateType, value: PrefixedHexString | null): string {
-  if (value === null) {
-    return ''
-  }
-
-  switch (type) {
-    case AccessedStateType.BasicData:
-    case AccessedStateType.CodeHash:
-    case AccessedStateType.Code:
-    case AccessedStateType.Storage: {
-      return value
-    }
   }
 }
