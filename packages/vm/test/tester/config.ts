@@ -323,7 +323,7 @@ function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
     }
   }
 
-  testHardforks.push({ name: 'verkle', block: null })
+  testHardforks.push({ name: 'verkle', block: 1 })
 
   const common = createCustomCommon(
     {

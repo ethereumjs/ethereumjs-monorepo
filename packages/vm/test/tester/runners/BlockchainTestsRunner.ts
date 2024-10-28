@@ -1,4 +1,4 @@
-import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -8,7 +8,6 @@ import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereu
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
-  bytesToBigInt,
   bytesToHex,
   hexToBytes,
   isHexString,
@@ -153,26 +152,29 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
     // Here we decode the rlp to extract the block number
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
-    try {
-      const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
-      const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
-      currentBlock = bytesToBigInt(decodedRLP[0][8])
-    } catch (e: any) {
-      await handleError(e, expectException)
-      continue
-    }
+    // try {
+    //   const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
+    //   const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
+    //   currentBlock = bytesToBigInt(decodedRLP[0][8])
+    // } catch (e: any) {
+    //   await handleError(e, expectException)
+    //   continue
+    // }
 
     try {
-      const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
-      // Update common HF
-      let timestamp: bigint | undefined = undefined
-      try {
-        const decoded: any = RLP.decode(blockRlp)
-        timestamp = bytesToBigInt(decoded[0][11])
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      // const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
+      // // Update common HF
+      // const timestamp: bigint | undefined = undefined
+      // try {
+      //   const decoded: any = RLP.decode(blockRlp)
+      //   const timestamp = bytesToBigInt(decoded[0][11])
+      //   // eslint-disable-next-line no-empty
+      // } catch (e) {}
 
-      common.setHardforkBy({ blockNumber: currentBlock, timestamp })
+      common.setHardforkBy({
+        blockNumber: BigInt(raw.blockHeader.number),
+        timestamp: BigInt(raw.blockHeader.timestamp),
+      })
 
       // transactionSequence is provided when txs are expected to be rejected.
       // To run this field we try to import them on the current state.
@@ -206,7 +208,20 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLP(blockRlp, { common, setHardfork: true })
+      const block = createBlock(
+        {
+          header: raw.blockHeader,
+          transactions: raw.transactions,
+          uncleHeaders: raw.uncleHeaders,
+          withdrawals: raw.withdrawals,
+          executionWitness: raw.witness,
+        },
+        {
+          common,
+          setHardfork: true,
+        },
+      )
+
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -251,6 +266,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         return
       }
     } catch (error: any) {
+      console.log(error)
       // caught an error, reduce block number
       currentBlock--
       await handleError(error, expectException)
