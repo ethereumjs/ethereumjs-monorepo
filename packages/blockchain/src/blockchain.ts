@@ -5,7 +5,6 @@ import {
   BIGINT_1,
   BIGINT_8,
   KECCAK256_RLP,
-  SHA256_EMPTY_RH,
   Lock,
   MapDB,
   bigIntToHex,
@@ -27,6 +26,7 @@ import {
 } from './db/helpers.js'
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
+import { SHA256_EMPTY_RH } from './helpers.js'
 
 import type {
   BlockchainEvent,

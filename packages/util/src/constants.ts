@@ -1,7 +1,7 @@
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { concatBytes, hexToBytes } from './bytes.js'
+import { hexToBytes } from './bytes.js'
 
 /**
  * 2^64-1
@@ -66,16 +66,6 @@ export const KECCAK256_RLP_S = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cad
 export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
 
 export const SHA256_NULL = sha256(new Uint8Array())
-
-// Used to calculate the empty requests hash
-const z0 = sha256(new Uint8Array([0]))
-const z1 = sha256(new Uint8Array([1]))
-const z2 = sha256(new Uint8Array([2]))
-
-/**
- * SHA-256 hash of the RLP of an empty requests hash
- */
-export const SHA256_EMPTY_RH = sha256(concatBytes(z0, z1, z2))
 
 /**
  *  RLP encoded empty string
