@@ -53,7 +53,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (options.stateManager === 'verkle') {
     const verkleCrypto = await loadVerkleCrypto()
-    stateTree = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+    stateTree = await createVerkleTree()
     stateManager = new StatefulVerkleStateManager({
       verkleCrypto,
       trie: stateTree,
