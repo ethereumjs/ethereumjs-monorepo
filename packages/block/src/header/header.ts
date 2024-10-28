@@ -6,9 +6,12 @@ import {
   BIGINT_1,
   BIGINT_2,
   BIGINT_7,
+  ErrorCode,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
+  UsageError,
+  ValueError,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToHex,
@@ -75,10 +78,13 @@ export class BlockHeader {
    */
   get prevRandao() {
     if (!this.common.isActivatedEIP(4399)) {
-      const msg = this._errorMsg(
+      throw new UsageError(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated',
+        ErrorCode.EIP_NOT_ACTIVATED,
+        {
+          objectContext: this.errorStr(),
+        },
       )
-      throw new Error(msg)
     }
     return this.mixHash
   }
@@ -179,7 +185,10 @@ export class BlockHeader {
       toType(headerData.requestsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
-      throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+      throw new UsageError(
+        'A base fee for a block can only be set with EIP1559 being activated',
+        ErrorCode.EIP_NOT_ACTIVATED,
+      )
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
@@ -258,33 +267,41 @@ export class BlockHeader {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
 
     if (parentHash.length !== 32) {
-      const msg = this._errorMsg(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError(`parentHash must be 32 bytes`, ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${parentHash.length} bytes`,
+      })
     }
     if (stateRoot.length !== 32) {
-      const msg = this._errorMsg(`stateRoot must be 32 bytes, received ${stateRoot.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError(`stateRoot must be 32 bytes`, ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${stateRoot.length} bytes`,
+      })
     }
     if (transactionsTrie.length !== 32) {
-      const msg = this._errorMsg(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`,
-      )
-      throw new Error(msg)
+      throw new ValueError('transactionsTrie must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${bytesToHex(transactionsTrie)} (${transactionsTrie.length} bytes)`,
+      })
     }
     if (receiptTrie.length !== 32) {
-      const msg = this._errorMsg(
-        `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`,
-      )
-      throw new Error(msg)
+      throw new ValueError('receiptTrie must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${bytesToHex(receiptTrie)} (${receiptTrie.length} bytes)`,
+      })
     }
     if (mixHash.length !== 32) {
-      const msg = this._errorMsg(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError('mixHash must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${bytesToHex(mixHash)} (${mixHash.length} bytes)`,
+      })
     }
 
     if (nonce.length !== 8) {
-      const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError('nonce must be 8 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${bytesToHex(nonce)} (${nonce.length} bytes)`,
+      })
     }
 
     // check if the block used too much gas
@@ -429,8 +446,9 @@ export class BlockHeader {
         }
       }
       if (error) {
-        const msg = this._errorMsg(`Invalid PoS block: ${errorMsg}`)
-        throw new Error(msg)
+        throw new ValueError(`Invalid PoS block${errorMsg}`, ErrorCode.INVALID_OBJECT, {
+          objectContext: this.errorStr(),
+        })
       }
     }
   }
@@ -659,14 +677,22 @@ export class BlockHeader {
    */
   ethashCanonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
     if (this.common.consensusType() !== ConsensusType.ProofOfWork) {
-      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
-      throw new Error(msg)
+      throw new UsageError(
+        'difficulty calculation is only supported on PoW chains',
+        ErrorCode.INVALID_METHOD_CALL,
+        {
+          objectContext: this.errorStr(),
+        },
+      )
     }
     if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      const msg = this._errorMsg(
+      throw new UsageError(
         'difficulty calculation currently only supports the ethash algorithm',
+        ErrorCode.INVALID_METHOD_CALL,
+        {
+          objectContext: this.errorStr(),
+        },
       )
-      throw new Error(msg)
     }
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
