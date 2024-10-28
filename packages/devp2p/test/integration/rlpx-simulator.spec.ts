@@ -95,7 +95,6 @@ describe('RLPx simulator tests', () => {
         rlpxs[0]['_dpt']!.addPeer(peer2).then((peer) => {
           assert.equal(rlpxs[0]['_peersQueue'].length, 1, 'peers queue should contain one peer')
           assert.equal(peer.tcpPort, basePort + 2)
-          assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           util.destroyRLPXs(rlpxs)
           resolve(undefined)
         })
