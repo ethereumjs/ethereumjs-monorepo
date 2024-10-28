@@ -36,7 +36,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  * @memberof module:sync/fetcher
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
-  root: Uint8Array
+  height: bigint
   accountToStorageTrie?: Map<String, MerklePatriciaTrie>
   stateManager?: MerkleStateManager
 
@@ -60,6 +60,7 @@ type FetchedNodeData = {
 }
 
 type NodeRequestData = {
+  requested: boolean
   nodeHash: string
   nodeParentHash: string
   parentAccountHash?: string // for leaf account nodes that contain a storage component
@@ -67,7 +68,6 @@ type NodeRequestData = {
 
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
-  root: Uint8Array
 
   stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
@@ -99,7 +99,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
-    this.root = options.root
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
@@ -116,7 +115,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
-      nodeHash: bytesToHex(this.root),
+      requested: false,
+      nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!), // TODO this target could change, have to update tfn to clear and recreate root request on targetRoot changing
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
 
@@ -147,15 +147,58 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    const latest = await peer?.latest()
+    // console.log('dbg850')
+    if (latest !== undefined && latest.stateRoot !== undefined) {
+      const currentHeight = this.fetcherDoneFlags.trieNodeFetcher.currentHeight
+      const newestHeight = latest.number
+      // console.log(currentHeight)
+      // console.log(newestHeight)
+      // console.log(this.config.snapLookbackWindow)
+      // console.log(newestHeight - currentHeight >= this.config.snapLookbackWindow)
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
+        this.debug('dbg810: updating roots')
+        // update latest height and root
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
+        this.fetcherDoneFlags.trieNodeFetcher.currentHeight = newestHeight
+
+        // console.log('dbg811')
+        // console.log(latest.number)
+        // console.log(bytesToHex(latest.stateRoot))
+        // console.log(bytesToHex(latest.hash()))
+        // console.log(latest.toJSON())
+
+        // clear any tasks or requests and create new request for newest root set to
+        this.clear()
+        this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
+        this.requestedNodeToPath = new Map<string, string>()
+        this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
+        this.nodeCount = 0
+        this.pathToNodeRequestData.setElement('', {
+          requested: false,
+          nodeHash: bytesToHex(this.fetcherDoneFlags.snapTargetRoot!), // TODO this target could change, have to update tfn to clear and recreate root request on targetRoot changing
+          nodeParentHash: '', // root node does not have a parent
+        } as NodeRequestData)
+      }
+    }
 
     const { paths, pathStrings } = task
 
     const rangeResult = await peer!.snap!.getTrieNodes({
-      root: this.root,
+      root: this.fetcherDoneFlags.snapTargetRoot!,
       paths,
       bytes: BigInt(this.config.maxRangeBytes),
     })
+
+    this.debug(`dbg800: trienodefetcher.ts`)
+    this.debug(`root: ${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`)
+    this.debug(
+      `paths requested: ${paths.map((valArr, _) => {
+        return valArr.map((val, _) => bytesToHex(val))
+      })}`,
+    )
 
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For trie node range queries that means the peer is not
@@ -225,6 +268,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         let unknownChildNodeCount = 0
         let hasStorageComponent = false
 
+        this.debug(`dbg804: trienodefetcher.ts`)
+        this.debug(`nodeData: ${node}`)
+
         // get all children of received node
         if (node instanceof BranchMPTNode) {
           const children = (node as BranchMPTNode).getChildren()
@@ -263,6 +309,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
                 storagePath,
               ].join('/')
               this.pathToNodeRequestData.setElement(syncPath, {
+                requested: false,
                 nodeHash: bytesToHex(storageRoot),
                 nodeParentHash: nodeHash,
                 parentAccountHash: nodeHash,
@@ -293,12 +340,14 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               await this.accountTrie.lookupNode(childNode.nodeHash as Uint8Array)
             }
           } catch (e) {
+            // console.log('dbg901')
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
               pathString,
             ) as NodeRequestData
             this.pathToNodeRequestData.setElement(childNode.path, {
+              requested: false,
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
               parentAccountHash,
@@ -386,7 +435,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           this.debug(
             `Stored accountTrie with root actual=${bytesToHex(
               this.accountTrie.root(),
-            )} expected=${bytesToHex(this.root)}`,
+            )} expected=${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`,
           )
       }
     } catch (e) {
@@ -416,17 +465,25 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       if (this.pathToNodeRequestData.size() > 0) {
         let { pathStrings } = this.getSortedPathStrings() // TODO pass in number of paths to return
         while (tasks.length < maxTasks && pathStrings.length > 0) {
-          const requestedPathStrings = pathStrings.slice(0, max)
+          const pendingPathStrings = pathStrings.slice(0, max)
           pathStrings = pathStrings.slice(max + 1)
-          for (const pathString of requestedPathStrings) {
-            const nodeHash = this.pathToNodeRequestData.getElementByKey(pathString)?.nodeHash // TODO return node set too from sorted function and avoid lookups here
-            if (nodeHash === undefined) throw Error('Path should exist')
-            this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
+          const neededPathStrings = []
+          for (const pathString of pendingPathStrings) {
+            const requestData = this.pathToNodeRequestData.getElementByKey(pathString) // TODO return node set too from sorted function and avoid lookups here
+            if (requestData === undefined) throw Error('Path should exist')
+            if (requestData.requested === false) {
+              this.requestedNodeToPath.set(requestData.nodeHash as unknown as string, pathString)
+              this.pathToNodeRequestData.setElement(pathString, {
+                ...requestData,
+                requested: true,
+              })
+              neededPathStrings.push(pathString)
+            }
           }
           this.DEBUG && this.debug('At start of mergeAndFormatPaths')
-          const paths = mergeAndFormatKeyPaths(requestedPathStrings) as unknown as Uint8Array[][]
+          const paths = mergeAndFormatKeyPaths(neededPathStrings) as unknown as Uint8Array[][]
           tasks.push({
-            pathStrings: requestedPathStrings,
+            pathStrings: neededPathStrings,
             paths,
           })
           this.DEBUG && this.debug(`Created new tasks num=${tasks.length}`)

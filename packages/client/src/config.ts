@@ -319,6 +319,7 @@ export interface ConfigOptions {
   pruneEngineCache?: boolean
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
+  snapLookbackWindow?: number
 
   /**
    * Save account keys preimages in the meta db (default: false)
@@ -389,6 +390,7 @@ export class Config {
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
+  public static readonly SNAP_LOOKBACK_WINDOW = 1
 
   // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
   public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
@@ -439,6 +441,7 @@ export class Config {
   public readonly engineNewpayloadMaxTxsExecute: number
   public readonly snapAvailabilityDepth: bigint
   public readonly snapTransitionSafeDepth: bigint
+  public readonly snapLookbackWindow: number
 
   public readonly prefixStorageTrieKeys: boolean
   // Defaulting to false as experimental as of now
@@ -533,6 +536,7 @@ export class Config {
     this.snapAvailabilityDepth = options.snapAvailabilityDepth ?? Config.SNAP_AVAILABILITY_DEPTH
     this.snapTransitionSafeDepth =
       options.snapTransitionSafeDepth ?? Config.SNAP_TRANSITION_SAFE_DEPTH
+    this.snapLookbackWindow = options.snapLookbackWindow ?? Config.SNAP_LOOKBACK_WINDOW
 
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
     this.enableSnapSync = options.enableSnapSync ?? false

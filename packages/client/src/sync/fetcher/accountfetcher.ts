@@ -43,8 +43,8 @@ type AccountDataResponse = AccountData[] & { completed?: boolean }
  * @memberof module:sync/fetcher
  */
 export interface AccountFetcherOptions extends FetcherOptions {
-  /** Root hash of the account trie to serve */
-  root: Uint8Array
+  // height of block being targeted for snap sync
+  height: bigint
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
   first: bigint
@@ -72,7 +72,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   stateManager: MerkleStateManager
   accountTrie: MerklePatriciaTrie
 
-  root: Uint8Array
+  height: bigint
   highestKnownHash: Uint8Array | undefined
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
@@ -92,7 +92,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     super(options)
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
 
-    this.root = options.root
+    this.height = options.height
     this.first = options.first
     this.count = options.count ?? BIGINT_2EXP256 - this.first
 
@@ -104,7 +104,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.storageFetcher = new StorageFetcher({
       config: this.config,
       pool: this.pool,
-      root: this.root,
+      height: this.height,
       storageRequests: [],
       first: BIGINT_1,
       destroyWhenDone: false,
@@ -122,7 +122,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.trieNodeFetcher = new TrieNodeFetcher({
       config: this.config,
       pool: this.pool,
-      root: this.root,
+      height: this.height,
       stateManager: this.stateManager,
       destroyWhenDone: false,
       fetcherDoneFlags: this.fetcherDoneFlags,
@@ -138,7 +138,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     this.DEBUG &&
       this.debug(
-        `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
+        `Account fetcher instantiated root=${short(this.fetcherDoneFlags.snapTargetRoot!)} origin=${short(origin)} limit=${short(
           limit,
         )} destroyWhenDone=${this.destroyWhenDone}`,
       )
@@ -277,6 +277,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         }
         break
       case TrieNodeFetcher:
+        // TODO update to check if heal phase completed successfully and then continue with next
+        // healing phase
+        if (fetcherDoneFlags.trieNodeFetcher.healCycleRepeatCount > 1) {
+          fetcherDoneFlags.trieNodeFetcher.healCycleRepeatCount--
+          break
+        }
         fetcherDoneFlags.trieNodeFetcher.done = true
         break
     }
@@ -286,15 +292,21 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
-      `snapFetchersCompletion root=${short(this.root)} accountsRoot=${short(
-        fetcherDoneFlags.stateRoot ?? 'na',
-      )} done=${this.fetcherDoneFlags.done} accountsDone=${accountFetcher.done} storageDone=${
-        storageFetcher.done
-      } byteCodesDone=${byteCodeFetcher.done} trieNodesDone=${trieNodeFetcher.done}`,
+      `snapFetchersCompletion root=${short(
+        this.fetcherDoneFlags.snapTargetRoot!,
+      )} accountsRoot=${short(fetcherDoneFlags.stateRoot ?? 'na')} done=${
+        this.fetcherDoneFlags.done
+      } accountsDone=${accountFetcher.done} storageDone=${storageFetcher.done} byteCodesDone=${
+        byteCodeFetcher.done
+      } trieNodesDone=${trieNodeFetcher.done}`,
     )
 
     if (this.fetcherDoneFlags.done) {
-      this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, this.root, this.stateManager)
+      this.config.events.emit(
+        Event.SYNC_SNAPSYNC_COMPLETE,
+        this.fetcherDoneFlags.snapTargetRoot!,
+        this.stateManager,
+      )
     }
   }
 
@@ -378,10 +390,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    const latest = await peer?.latest()
+    if (latest !== undefined && latest.stateRoot !== undefined) {
+      // TODO currently doing this check and update both in account and trienode fetchers since they
+      // could be running independently of eachother in some cases
+      const currentHeight = this.height
+      const newestHeight = latest.number
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
+        this.height = newestHeight
+      }
+    }
+
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
-
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
       this.DEBUG && this.debug(`skipping request with limit lower than highest known hash`)
@@ -389,7 +413,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const rangeResult = await peer!.snap!.getAccountRange({
-      root: this.root,
+      root: this.fetcherDoneFlags.snapTargetRoot!,
       origin,
       limit,
       bytes: BigInt(this.config.maxRangeBytes),
@@ -406,7 +430,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       if (rangeResult.proof.length > 0) {
         try {
           const isMissingRightRange = await verifyMerkleRangeProof(
-            this.root,
+            this.fetcherDoneFlags.snapTargetRoot!,
             origin,
             null,
             [],
@@ -433,7 +457,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     try {
       // verifyRangeProof will also verify validate there are no missed states between origin and
       // response data
-      const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
+      const isMissingRightRange = await this.verifyRangeProof(
+        this.fetcherDoneFlags.snapTargetRoot!,
+        origin,
+        rangeResult,
+      )
 
       // Check if there is any pending data to be synced to the right
       let completed: boolean
@@ -584,10 +612,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     )}`
     this.DEBUG && this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
-  }
-
-  updateStateRoot(stateRoot: Uint8Array) {
-    this.root = stateRoot
   }
 
   nextTasks(): void {

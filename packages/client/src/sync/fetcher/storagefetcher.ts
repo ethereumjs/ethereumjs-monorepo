@@ -34,6 +34,8 @@ export type StorageRequest = {
   storageRoot: Uint8Array
   first: bigint
   count: bigint
+  stateRoot: Uint8Array // needed for verifying request if targetRoot has been updated since the creation of this request
+  height: bigint // needed for checking if request is still safely within stateRoot-lookback-window before requesting to avoid being banned by peer
 }
 
 /**
@@ -41,8 +43,8 @@ export type StorageRequest = {
  * @memberof module:sync/fetcher
  */
 export interface StorageFetcherOptions extends FetcherOptions {
-  /** Root hash of the account trie to serve */
-  root: Uint8Array
+  // height of block being targeted for snap sync
+  height: bigint
 
   /** Storage requests to fetch */
   storageRequests?: StorageRequest[]
@@ -64,11 +66,13 @@ export interface StorageFetcherOptions extends FetcherOptions {
 export type JobTask = {
   storageRequests: StorageRequest[]
   multi: boolean
+  stateRoot: Uint8Array // needed for verifying request if targetRoot has been updated since the creation of this request
+  height: bigint // needed for checking if request is still safely within stateRoot-lookback-window before requesting to avoid being banned by peer
 }
 
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
-  root: Uint8Array
+  height: bigint
   stateManager: MerkleStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
 
@@ -87,7 +91,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     super(options)
     this.fragmentedRequests = []
 
-    this.root = options.root
+    this.height = options.height
     this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
@@ -105,7 +109,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         this.debug(
           `Storage fetcher instantiated with ${
             fullJob.task.storageRequests.length
-          } accounts requested and root=${short(this.root)} origin=${short(origin)} limit=${short(
+          } accounts requested and root=${short(this.fetcherDoneFlags.snapTargetRoot!)} origin=${short(origin)} limit=${short(
             limit,
           )} destroyWhenDone=${this.destroyWhenDone}`,
         )
@@ -223,12 +227,23 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    const latest = await peer?.latest()
+    if (latest !== undefined && latest.stateRoot !== undefined) {
+      // TODO currently doing this check and update both in account and trienode fetchers since they
+      // could be running independently of eachother in some cases
+      const currentHeight = this.height
+      const newestHeight = latest.number
+      if (newestHeight - currentHeight >= this.config.snapLookbackWindow) {
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
+      }
+    }
 
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 
-    this.DEBUG && this.debug(`requested root: ${bytesToHex(this.root)}`)
+    this.DEBUG && this.debug(`requested root: ${bytesToHex(this.fetcherDoneFlags.snapTargetRoot!)}`)
     this.DEBUG && this.debug(`requested origin: ${bytesToHex(origin)}`)
     this.DEBUG && this.debug(`requested limit: ${bytesToHex(limit)}`)
     this.DEBUG &&
@@ -251,8 +266,17 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       }
     }
 
+    if (
+      this.fetcherDoneFlags.snapTargetHeight! - (task.height ?? task.storageRequests[0].height) >=
+      this.config.snapLookbackWindow
+    ) {
+      // skip request if we are close to being outside of lookback range to avoid getting banned
+      this.debug(`skipping request that is close to being outside of lookback range`)
+      return Object.assign([], [{ skipped: true }], { completed: true })
+    }
+
     const rangeResult = await peer!.snap!.getStorageRanges({
-      root: this.root,
+      root: task.stateRoot,
       accounts: task.storageRequests.map((req) => req.accountHash),
       origin,
       limit,
@@ -393,6 +417,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
               // start fetching from next hash after last slot hash of last account received
               first: bytesToBigInt(highestReceivedhash),
               count: TOTAL_RANGE_END - bytesToBigInt(highestReceivedhash),
+              stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+              height: this.fetcherDoneFlags.snapTargetHeight!,
             } as StorageRequest)
           }
           // finally, we have to requeue account requests after fragmented account that were ignored
@@ -555,6 +581,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       tasks.unshift({
         storageRequests: this.storageRequests, // TODO limit max number of accounts per single fetch request
         multi: true,
+        stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+        height: this.fetcherDoneFlags.snapTargetHeight!,
       })
       this.storageRequests = [] // greedily request as many account slots by requesting all known ones
       return tasks
@@ -579,8 +607,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             storageRoot: storageRequest!.storageRoot,
             first: myFirst,
             count: max,
+            stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+            height: this.fetcherDoneFlags.snapTargetHeight!,
           },
         ],
+        stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+        height: this.fetcherDoneFlags.snapTargetHeight!,
         first: myFirst,
         count: max,
         multi: false,
@@ -598,8 +630,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             storageRoot: storageRequest!.storageRoot,
             first: myFirst,
             count: myCount,
+            stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+            height: this.fetcherDoneFlags.snapTargetHeight!,
           },
         ],
+        stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+        height: this.fetcherDoneFlags.snapTargetHeight!,
         first: myFirst,
         count: myCount,
         multi: false,
@@ -615,6 +651,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     if (myCount !== BIGINT_0 && startedWith === whereFirstWas) {
       // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
+        stateRoot: this.fetcherDoneFlags.snapTargetRoot!, // TODO make sure the flags root or height being undefined isn't a possiblity here
+        height: this.fetcherDoneFlags.snapTargetHeight!,
         accountHash: storageRequest!.accountHash,
         storageRoot: storageRequest!.storageRoot,
         first: myFirst,

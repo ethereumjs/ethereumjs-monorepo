@@ -16,7 +16,7 @@ Note: All commands should be run from the `client` package directory root (so so
 1. Start external geth client:
 
 ```bash
-NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth EXTRA_CL_PARAMS="--params.CAPELLA_FORK_EPOCH 0"  DATADIR=/usr/app/ethereumjs/packages/client/data test/sim/single-run.sh
+NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth EXTRA_CL_PARAMS="--params.CAPELLA_FORK_EPOCH 0 --params.DENEB_FORK_EPOCH 0"  DATADIR=/usr/app/ethereumjs/packages/client/data test/sim/single-run.sh
 ```
 
 2. (optional) Add some txs/state to geth

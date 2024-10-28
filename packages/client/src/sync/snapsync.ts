@@ -228,8 +228,8 @@ export class SnapSynchronizer extends Synchronizer {
       this.fetcher = new AccountFetcher({
         config: this.config,
         pool: this.pool,
+        height,
         stateManager: this.execution.vm.stateManager as MerkleStateManager,
-        root: stateRoot,
         // This needs to be determined from the current state of the MPT dump
         first: BigInt(0),
         fetcherDoneFlags: this.fetcherDoneFlags,
