@@ -1,18 +1,18 @@
-[@ethereumjs/statemanager](../README.md) / AccessedStateType
+[@ethereumjs/statemanager](../README.md) / VerkleAccessedStateType
 
-# Enumeration: AccessedStateType
+# Enumeration: VerkleAccessedStateType
 
 ## Table of contents
 
 ### Enumeration Members
 
-- [Balance](AccessedStateType.md#balance)
-- [Code](AccessedStateType.md#code)
-- [CodeHash](AccessedStateType.md#codehash)
-- [CodeSize](AccessedStateType.md#codesize)
-- [Nonce](AccessedStateType.md#nonce)
-- [Storage](AccessedStateType.md#storage)
-- [Version](AccessedStateType.md#version)
+- [Balance](VerkleAccessedStateType.md#balance)
+- [Code](VerkleAccessedStateType.md#code)
+- [CodeHash](VerkleAccessedStateType.md#codehash)
+- [CodeSize](VerkleAccessedStateType.md#codesize)
+- [Nonce](VerkleAccessedStateType.md#nonce)
+- [Storage](VerkleAccessedStateType.md#storage)
+- [Version](VerkleAccessedStateType.md#version)
 
 ## Enumeration Members
 
