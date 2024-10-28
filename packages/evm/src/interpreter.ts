@@ -34,7 +34,11 @@ import type {
   EVMResult,
   Log,
 } from './types.js'
-import type { AccessWitnessInterface, Common, StateManagerInterface } from '@ethereumjs/common'
+import type {
+  Common,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const debugGas = debugDefault('evm:gas')
@@ -78,7 +82,7 @@ export interface Env {
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
