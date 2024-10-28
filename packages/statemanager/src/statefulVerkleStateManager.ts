@@ -538,7 +538,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           return bytesToHex(basicDataBytes)
         } else {
           const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-          this._debug(`we have encoded account ${encodedAccount}`)
           if (encodedAccount === undefined) {
             return null
           }

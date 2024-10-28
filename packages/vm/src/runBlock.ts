@@ -141,35 +141,30 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     vm.evm.verkleAccessWitness = new VerkleAccessWitness({
       verkleCrypto: (stateManager as StatefulVerkleStateManager).verkleCrypto,
     })
-    // We only do these checks if operating statelessly since the execution witness is
-    // constructed during stateful execution
+
+    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+
+    if (vm.DEBUG) {
+      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+    }
+    if (clearCache) {
+      stateManager.clearCaches()
+    }
+
+    // Populate the execution witness
+    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+
     if (stateManager instanceof StatelessVerkleStateManager) {
-      if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-        throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-      }
-
-      if (vm.DEBUG) {
-        debug(`Initializing StatelessVerkleStateManager executionWitness`)
-      }
-      if (clearCache) {
-        stateManager.clearCaches()
-      }
-
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
-
-      // Populate the execution witness
-      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
-
-      if (
-        stateManager instanceof StatelessVerkleStateManager &&
-        verifyVerkleStateProof(stateManager) === false
-      ) {
+      if (verifyVerkleStateProof(stateManager) === true) {
+        if (vm.DEBUG) {
+          debug(`Verkle proof verification succeeded`)
+        }
+      } else {
         throw Error(`Verkle proof verification failed`)
-      }
-
-      if (vm.DEBUG) {
-        debug(`Verkle proof verification succeeded`)
       }
     }
   } else {
