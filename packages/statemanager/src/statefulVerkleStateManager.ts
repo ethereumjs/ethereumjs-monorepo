@@ -665,7 +665,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         canonicalValue = ZEROVALUE
       }
 
-      this._debug(`computed ${computedValue} canonical ${canonicalValue}`)
       if (computedValue !== canonicalValue) {
         if (type === VerkleAccessedStateType.BasicData) {
           this.DEBUG &&
