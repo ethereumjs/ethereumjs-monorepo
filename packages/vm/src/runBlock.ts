@@ -255,7 +255,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     const blockData = {
       ...block,
-      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = createBlock(blockData, { common: vm.common })
