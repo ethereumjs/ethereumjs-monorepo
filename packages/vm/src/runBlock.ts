@@ -330,7 +330,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
       // If verkle is activated and executing statelessly, only validate the post-state
       if (
-        !(await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
       ) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
