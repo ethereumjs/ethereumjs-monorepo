@@ -424,12 +424,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     const value = await this._trie.get(storageKey.slice(0, 31), [storageKey[31]])
 
     this._caches?.storage?.put(address, key, value[0] ?? hexToBytes('0x80'))
-    const decoded = RLP.decode(value[0] ?? new Uint8Array(0)) as Uint8Array
-    return decoded
+    const decoded = (value[0] ?? new Uint8Array(0)) as Uint8Array
+    return setLengthLeft(decoded, 32)
   }
 
   putStorage = async (address: Address, key: Uint8Array, value: Uint8Array): Promise<void> => {
-    value = unpadBytes(value)
     this._caches?.storage?.put(address, key, RLP.encode(value))
     if (this._caches?.storage === undefined) {
       const storageKey = await getVerkleTreeKeyForStorageSlot(
@@ -437,7 +436,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         bytesToBigInt(key, true),
         this.verkleCrypto,
       )
-      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [RLP.encode(value)])
+      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [value])
     }
   }
 

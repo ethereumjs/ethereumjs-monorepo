@@ -31,6 +31,6 @@ export const dumpLeafValues = async (
       .map((value) => dumpLeafValues(tree, tree['verkleCrypto'].hashCommitment(value.commitment)))
 
     const res = (await Promise.all(childPaths)).filter((val) => val !== undefined)
-    return res.flat(1)
+    return res.flat(1) as [PrefixedHexString, PrefixedHexString][]
   }
 }
