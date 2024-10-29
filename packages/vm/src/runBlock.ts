@@ -143,11 +143,11 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     })
 
     if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
     }
 
     if (vm.DEBUG) {
-      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+      debug(`Initializing executionWitness`)
     }
     if (clearCache) {
       stateManager.clearCaches()
