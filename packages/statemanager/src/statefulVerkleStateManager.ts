@@ -28,7 +28,6 @@ import {
   setLengthLeft,
   setLengthRight,
   short,
-  unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
