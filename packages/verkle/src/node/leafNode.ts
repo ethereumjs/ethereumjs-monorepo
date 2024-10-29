@@ -2,12 +2,7 @@ import { equalsBytes, intToBytes, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
-import {
-  createCValues,
-  createDefaultLeafVerkleValues,
-  createDeletedLeafVerkleValue,
-  createUntouchedLeafValue,
-} from './util.js'
+import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.js'
 
 import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
@@ -124,7 +119,7 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
 
     const values = rawNode
       .slice(5, rawNode.length)
-      .map((el) => (el.length === 0 ? 0 : equalsBytes(el, createDeletedLeafVerkleValue()) ? 1 : el))
+      .map((el) => (el.length === 0 ? 0 : equalsBytes(el, createZeroesLeafValue()) ? 1 : el))
     return new LeafVerkleNode({ stem, values, c1, c2, commitment, verkleCrypto })
   }
 
@@ -148,17 +143,8 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
    * @param value the value to insert into the leaf value at `index`
    */
   setValue(index: number, value: Uint8Array | LeafVerkleNodeValue): void {
-    let val
-    // `val` is a bytes representation of `value` used to update the cCommitment
-    if (value instanceof Uint8Array) val = value
-    else
-      val =
-        value === LeafVerkleNodeValue.Untouched
-          ? createUntouchedLeafValue()
-          : createDeletedLeafVerkleValue()
-
     // Set the new values in the values array
-    this.values[index] = val
+    this.values[index] = value
 
     // First we update c1 or c2 (depending on whether the index is < 128 or not)
     // Generate the 16 byte values representing the 32 byte values in the half of the values array that
@@ -199,7 +185,7 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
           case LeafVerkleNodeValue.Untouched:
             return new Uint8Array()
           case LeafVerkleNodeValue.Deleted:
-            return createDeletedLeafVerkleValue()
+            return createZeroesLeafValue()
           default:
             return val
         }
