@@ -51,6 +51,7 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
+import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
@@ -98,6 +99,7 @@ export class EVM implements EVMInterface {
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
+  public verkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -218,6 +220,7 @@ export class EVM implements EVMInterface {
       this._bls = opts.bls ?? new NobleBLS()
       this._bls.init?.()
     }
+
     this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
@@ -259,20 +262,23 @@ export class EVM implements EVMInterface {
     const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
+      if (message.accessWitness === undefined) {
+        throw new Error('accessWitness is required for EIP-6800')
+      }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(fromAddress)
+        const originAccessGas = message.accessWitness.touchTxOriginAndComputeGas(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
 
-        const destAccessGas = message.accessWitness!.touchTxTargetAndComputeGas(message.to, {
+        const destAccessGas = message.accessWitness.touchTxTargetAndComputeGas(message.to, {
           sendsValue,
         })
         debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
       }
 
-      let callAccessGas = message.accessWitness!.touchAndChargeMessageCall(message.to)
+      let callAccessGas = message.accessWitness.touchAndChargeMessageCall(message.to)
       if (sendsValue) {
-        callAccessGas += message.accessWitness!.touchAndChargeValueTransfer(fromAddress, message.to)
+        callAccessGas += message.accessWitness.touchAndChargeValueTransfer(message.to)
       }
       gasLimit -= callAccessGas
       if (gasLimit < BIGINT_0) {
@@ -860,7 +866,7 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: opts.accessWitness,
+        accessWitness: this.verkleAccessWitness,
       })
     }
 

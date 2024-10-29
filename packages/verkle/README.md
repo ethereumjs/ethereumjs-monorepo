@@ -23,32 +23,84 @@ npm install @ethereumjs/verkle
 
 ## Usage
 
-### Initialization and Basic Usage
+### Initialization
+
+To initialize a verkle tree, we provide an async constructor `createVerkleTree` which returns a `VerkleTree` instance that is properly initialized with the required `VerkleCrypto` package that implements the necessary cryptographic primitives used by Verkle trees.
 
 ```ts
+// ./examples/simple.ts#L7-L7
+
+const tree = await createVerkleTree()
+```
+
+Note, the current `VerkleCrypto` library we use internally is [`verkle-cryptography-wasm`](https://github.com/ethereumjs/verkle-cryptography-wasm) which is a WASM compilation of the [`rust-verkle`](https://github.com/crate-crypto/rust-verkle) library with some Javascript specific wrappers and helper methods.
+
+If you prefer to instantiate the verkle tree class directly, you can do so by passing in an already instantiated `VerkleCrypto` object and then initializing the root node manually.
+
+```ts
+// ./examples/diyVerkle.ts
+
+import { MapDB, bytesToHex } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
-import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
-const tree = new VerkleTree()
+const verkleCrypto = await loadVerkleCrypto()
 
-async function test() {
-  await tree.put(utf8ToBytes('test'), utf8ToBytes('one'))
-  const value = await tree.get(utf8ToBytes('test'))
-  console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
+const main = async () => {
+  const tree = new VerkleTree({
+    cacheSize: 0,
+    db: new MapDB<Uint8Array, Uint8Array>(),
+    useRootPersistence: false,
+    verkleCrypto,
+  })
+  await tree.createRootNode()
+  console.log(bytesToHex(tree.root())) // 0x0000000000000000000000000000000000000000000000000000000000000000
 }
 
-test()
+void main()
+```
+
+### Getting and Putting Values
+
+Values are stored using a combination of a `stem` obtained through the `getVerkleStem` function exposed by `@ethereumjs/util`. In the context of Ethereum, to retrieve the data associated with an account at a particular address, we would first compute the verkle stem of that address (`getVerkleStem(verkleCrypto, address)`), and then get the particular pieces of data we're interested in by suffixing the stem with the suffixes corresponding to that data.
+
+Following the design goal of verkle trees of allowing efficient reads and writes of multiple values that are "close" to each other, the `get` and `put` methods take a stem as a first argument and then an array of "suffixes" (the 32nd byte) of the key used to access a value.
+
+#### Getting values
+
+When retrieving values given a stem `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad853` and suffixes `[0, 1]`, the `get` method would access the values stored at `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70000` and `0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae70001`.
+
+#### Putting values
+
+When storing values given a stem `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad853`, suffixes `[0, 1]`, and values `['test', 'test2']`, the `put` method would store the values at `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad85300` and `0xc5e561a64a0f52c2d038d827293b3deab99a886d41cc0667c938946dcad85301`.
+
+See below for a complete example.
+
+```ts
+// ./examples/simple.ts
+
+import { bytesToUtf8, createAddressFromString, getVerkleStem, utf8ToBytes } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
+
+async function test() {
+  const addrHex = '0x781f1e4238f9de8b4d0ede9932f5a4d08f15dae7'
+  const address = createAddressFromString(addrHex)
+  const tree = await createVerkleTree()
+  const stem = getVerkleStem(tree['verkleCrypto'], address)
+  await tree.put(stem, [0], [utf8ToBytes('test')])
+  const value = await tree.get(stem, [0, 1])
+  console.log(value[0] ? bytesToUtf8(value[0]) : 'not found') // 'test'
+  console.log(value[1] ? bytesToUtf8(value[1]) : 'not found') // 'not found'
+}
+
+void test()
 ```
 
 ## Proofs
 
 ### Verkle Proofs
 
-The EthereumJS Verkle package is still in its infancy, and as such, it does not currently support Verkle proof creation and verification. Support for Verkle proofs will be added eventually.
-
-## Examples
-
-You can find additional examples complete with detailed explanations [here](./examples/README.md).
+The EthereumJS Verkle package is still in development and verkle proof generation is not yet supported.
 
 ## Browser
 
@@ -64,21 +116,19 @@ Generated TypeDoc API [Documentation](./docs/README.md)
 
 ### Hybrid CJS/ESM Builds
 
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+The verkle package is shipped with both CommonJS and ESM builds.
 
-If you use an ES6-style `import` in your code, files from the ESM build will be used:
+If you use an ESM `import` in your code, import as below:
 
 ```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+import { createVerkleTree } from '@ethereumjs/verkle'
 ```
 
 If you use Node.js-specific `require`, the CJS build will be used:
 
 ```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+const { createVerkleTree } = require('@ethereumjs/verkle')
 ```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking, which CJS cannot provide.
 
 ## Debugging
 
@@ -88,14 +138,13 @@ The `Verkle` class features optional debug logging. Individual debug selections 
 
 The following options are available:
 
-| Logger                | Description                          |
-| --------------------- | ------------------------------------ |
-| `verkle:#`            | a core verkle operation has occurred |
-| `verkle:#:put`        | a verkle put operation has occurred  |
-| `verkle:#:get`        | a verkle get operation has occurred  |
-| `verkle:#:del`        | a verkle del operation has occurred  |
-| `verkle:#:find_path`  | a node is being searched for         |
-| `verkle:#:initialize` | a verkle object has been initialized |
+| Logger               | Description                          |
+| -------------------- | ------------------------------------ |
+| `verkle:#`           | a core verkle operation has occurred |
+| `verkle:#:put`       | a verkle put operation has occurred  |
+| `verkle:#:get`       | a verkle get operation has occurred  |
+| `verkle:#:del`       | a verkle del operation has occurred  |
+| `verkle:#:find_path` | a node is being searched for         |
 
 To observe the logging in action at different levels:
 
@@ -126,13 +175,14 @@ DEBUG=ethjs,verkle:* npx vitest test/verkle.spec.ts
 `ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
 
-`DEBUG=ethjs,tie:put,trie:find_path:* npx vitest test/proof.spec.ts`
+`DEBUG=ethjs,verkle:#:put,verkle:#:find_path:* npx vitest test/interop.spec.ts`
 
 ## References
 
 - Wiki
   - [Overview of verkle trees](https://ethereum.org/en/roadmap/verkle-trees/)
   - [Verkle trees general resource](https://verkle.info/)
+  - [Ethereum Foundation Verkle Tree Roadmap](https://ethereum.org/en/roadmap/verkle-trees)
 
 ## EthereumJS
 

@@ -1,28 +1,16 @@
-import {
-  Lock,
-  MapDB,
-  bytesToHex,
-  equalsBytes,
-  intToHex,
-  matchingBytesLength,
-} from '@ethereumjs/util'
+import { Lock, bytesToHex, equalsBytes, intToHex, matchingBytesLength } from '@ethereumjs/util'
 import debug from 'debug'
 
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalVerkleNode } from './node/internalNode.js'
 import { LeafVerkleNode } from './node/leafNode.js'
 import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
-import { createDeletedLeafVerkleValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
-import {
-  type Proof,
-  ROOT_DB_KEY,
-  type VerkleTreeOpts,
-  type VerkleTreeOptsWithDefaults,
-} from './types.js'
+import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
+import { type Proof, ROOT_DB_KEY, type VerkleTreeOpts } from './types.js'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
-import type { DB, PutBatch, VerkleCrypto } from '@ethereumjs/util'
+import type { PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {
   node: VerkleNode | null
@@ -34,12 +22,7 @@ interface Path {
  * The basic verkle tree interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
  */
 export class VerkleTree {
-  protected readonly _opts: VerkleTreeOptsWithDefaults = {
-    useRootPersistence: false,
-    cacheSize: 0,
-    verkleCrypto: undefined,
-    db: new MapDB<Uint8Array, Uint8Array>(),
-  }
+  _opts: VerkleTreeOpts
 
   /** The root for an empty tree */
   EMPTY_TREE_ROOT: Uint8Array
@@ -60,14 +43,15 @@ export class VerkleTree {
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree
    *
-   * Note: in most cases, the static {@link createVerkleTree} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, the static {@link createVerkleTree} constructor should be used. It uses the same API but provides sensible defaults
    */
-  constructor(opts?: VerkleTreeOpts) {
-    if (opts !== undefined) {
-      this._opts = { ...this._opts, ...opts }
-    }
+  constructor(opts: VerkleTreeOpts) {
+    this._opts = opts
 
-    this.database(opts?.db)
+    if (opts.db instanceof CheckpointDB) {
+      throw new Error('Cannot pass in an instance of CheckpointDB')
+    }
+    this._db = new CheckpointDB({ db: opts.db, cacheSize: opts.cacheSize })
 
     this.EMPTY_TREE_ROOT = new Uint8Array(32)
     this._hashLen = this.EMPTY_TREE_ROOT.length
@@ -77,11 +61,7 @@ export class VerkleTree {
       this.root(opts.root)
     }
 
-    if (opts === undefined || opts?.verkleCrypto === undefined) {
-      throw new Error('instantiated verkle cryptography option required for verkle tries')
-    }
-
-    this.verkleCrypto = opts?.verkleCrypto
+    this.verkleCrypto = opts.verkleCrypto
 
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
@@ -101,18 +81,6 @@ export class VerkleTree {
     || Persistent: ${this._opts.useRootPersistence}
     || CacheSize: ${this._opts.cacheSize}
     || ----------------`)
-  }
-
-  database(db?: DB<Uint8Array, Uint8Array>) {
-    if (db !== undefined) {
-      if (db instanceof CheckpointDB) {
-        throw new Error('Cannot pass in an instance of CheckpointDB')
-      }
-
-      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize })
-    }
-
-    return this._db
   }
 
   /**
@@ -187,7 +155,11 @@ export class VerkleTree {
    * @param value - the value(s) to store
    * @returns A Promise that resolves once value(s) are stored.
    */
-  async put(stem: Uint8Array, suffixes: number[], values: Uint8Array[] = []): Promise<void> {
+  async put(
+    stem: Uint8Array,
+    suffixes: number[],
+    values: (Uint8Array | LeafVerkleNodeValue.Untouched)[] = [],
+  ): Promise<void> {
     if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
     if (values.length > 0 && values.length !== suffixes.length) {
       // Must have an equal number of values and suffixes
@@ -232,7 +204,7 @@ export class VerkleTree {
       const value = values[i]
       const suffix = suffixes[i]
       // Update value(s) in leaf node
-      if (equalsBytes(value, createDeletedLeafVerkleValue())) {
+      if (value !== LeafVerkleNodeValue.Untouched && equalsBytes(value, createZeroesLeafValue())) {
         // Special case for when the deleted leaf value or zeroes is passed to `put`
         // Writing the deleted leaf value to the suffix
         leafNode.setValue(suffix, LeafVerkleNodeValue.Deleted)
@@ -241,7 +213,7 @@ export class VerkleTree {
       }
       this.DEBUG &&
         this.debug(
-          `Updating value for suffix: ${suffix} at leaf node with stem: ${bytesToHex(stem)}`,
+          `Updating value for suffix: ${suffix} to value: ${value instanceof Uint8Array ? bytesToHex(value) : value} at leaf node with stem: ${bytesToHex(stem)}`,
           ['put'],
         )
     }
@@ -306,7 +278,7 @@ export class VerkleTree {
 
   async del(stem: Uint8Array, suffixes: number[]): Promise<void> {
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix(es): ${suffixes}`, ['del'])
-    await this.put(stem, suffixes, new Array(suffixes.length).fill(createDeletedLeafVerkleValue()))
+    await this.put(stem, suffixes, new Array(suffixes.length).fill(createZeroesLeafValue()))
   }
   /**
    * Helper method for updating or creating the parent internal node for a given leaf node
@@ -464,10 +436,9 @@ export class VerkleTree {
 
   /**
    * Create empty root node for initializing an empty tree.
-   * @private
    */
 
-  protected async _createRootNode(): Promise<void> {
+  async createRootNode(): Promise<void> {
     const rootNode = new InternalVerkleNode({
       commitment: this.verkleCrypto.zeroCommitment,
       verkleCrypto: this.verkleCrypto,
@@ -567,7 +538,7 @@ export class VerkleTree {
    * Persists the root hash in the underlying database
    */
   async persistRoot() {
-    if (this._opts.useRootPersistence) {
+    if (this._opts.useRootPersistence === true) {
       await this._db.put(ROOT_DB_KEY, this.root())
     }
   }

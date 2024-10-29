@@ -1,6 +1,8 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
+import { StatefulVerkleStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -36,8 +38,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
+import type { Common, VerkleAccessWitnessInterface } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Transaction,
@@ -190,14 +191,22 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses
+  let stateAccesses: VerkleAccessWitnessInterface | undefined
+  let txAccesses: VerkleAccessWitnessInterface | undefined
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    if (vm.evm.verkleAccessWitness === undefined) {
+      throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
-    stateAccesses = vm.stateManager.accessWitness!
+
+    if (
+      !(vm.stateManager instanceof StatefulVerkleStateManager) &&
+      !(vm.stateManager instanceof StatelessVerkleStateManager)
+    ) {
+      throw new Error(`Verkle State Manager needed for execution of verkle blocks`)
+    }
+    stateAccesses = vm.evm.verkleAccessWitness
+    txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
   }
-  const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -630,7 +639,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
+      if (vm.evm.verkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
+      vm.evm.verkleAccessWitness.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -641,8 +653,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   minerAccount.balance += results.minerValue
 
   if (vm.common.isActivatedEIP(6800)) {
+    if (vm.evm.verkleAccessWitness === undefined) {
+      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+    }
     // use vm utility to build access but the computed gas is not charged and hence free
-    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
+    vm.evm.verkleAccessWitness.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }

@@ -69,10 +69,41 @@ export type AccessEventFlags = {
  *
  * Experimental (do not implement)
  */
-export interface AccessWitnessInterface {
+
+export enum VerkleAccessedStateType {
+  BasicData = 'basicData',
+  CodeHash = 'codeHash',
+  Code = 'code',
+  Storage = 'storage',
+}
+
+export type RawVerkleAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
+
+export type VerkleAccessedState =
+  | {
+      type: Exclude<
+        VerkleAccessedStateType,
+        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+      >
+    }
+  | { type: VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+
+export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface VerkleAccessWitnessInterface {
+  accesses(): Generator<VerkleAccessedStateWithAddress>
+  rawAccesses(): Generator<RawVerkleAccessedState>
   touchAndChargeProofOfAbsence(address: Address): bigint
   touchAndChargeMessageCall(address: Address): bigint
-  touchAndChargeValueTransfer(caller: Address, target: Address): bigint
+  touchAndChargeValueTransfer(target: Address): bigint
   touchAndChargeContractCreateInit(address: Address): bigint
   touchAndChargeContractCreateCompleted(address: Address): bigint
   touchTxOriginAndComputeGas(origin: Address): bigint
@@ -101,8 +132,7 @@ export interface AccessWitnessInterface {
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
-  shallowCopy(): AccessWitnessInterface
-  merge(accessWitness: AccessWitnessInterface): void
+  merge(accessWitness: VerkleAccessWitnessInterface): void
 }
 
 /*
@@ -161,14 +191,11 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  // only Verkle/EIP-6800 (experimental)
-  accessWitness?: AccessWitnessInterface
   initVerkleExecutionWitness?(
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitnessInterface,
   ): void
-  verifyPostState?(): boolean
+  verifyPostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
