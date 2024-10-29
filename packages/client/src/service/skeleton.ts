@@ -1161,7 +1161,7 @@ export class Skeleton extends MetaDBManager {
   /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
-  async fillCanonicalChain(batchChainUpdateEvent: boolean = false) {
+  async fillCanonicalChain(skipUpdateEmit: boolean = false) {
     if (this.filling) return
     this.filling = true
 
@@ -1194,7 +1194,7 @@ export class Skeleton extends MetaDBManager {
     const start = canonicalHead
     // This subchain is a reference to update the tail for the very subchain we are filling the data for
     this.config.logger.debug(
-      `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head} batchChainUpdateEvent=${batchChainUpdateEvent}`,
+      `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head} skipUpdateEmit=${skipUpdateEmit}`,
     )
 
     // run till it has not been determined that tail reset is required by concurrent setHead calls
@@ -1236,7 +1236,7 @@ export class Skeleton extends MetaDBManager {
       // putBlocks should fail causing the fill to exit with skeleton stepback
       if (this.chain.blocks.height <= block.header.number) {
         try {
-          numBlocksInserted = await this.chain.putBlocks([block], true, batchChainUpdateEvent)
+          numBlocksInserted = await this.chain.putBlocks([block], true, skipUpdateEmit)
           if (numBlocksInserted > 0) {
             this.fillStatus = {
               status: PutStatus.VALID,
@@ -1341,9 +1341,6 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Successfully put=${fillLogIndex} skipped (because already inserted)=${skippedLogIndex} blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`,
     )
-    if (batchChainUpdateEvent) {
-      this.chain.update(true)
-    }
   }
 
   serialize({
