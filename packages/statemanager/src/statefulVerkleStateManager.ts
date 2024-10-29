@@ -385,9 +385,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       // Determine code ending byte (if we're on the last chunk)
       let sliceEnd = 32
       if (x === chunks.length - 1) {
-        sliceEnd = (codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
+        // On the last chunk, the end of the slice is either codeSize (if only one chunk) or codeSize % chunkSize
+        sliceEnd = (x === 0 ? codeSize : codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
       }
-
       code.set(chunks[x]!.slice(1, sliceEnd), code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE)
     }
     this._caches?.code?.put(address, code)
@@ -538,7 +538,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           return bytesToHex(basicDataBytes)
         } else {
           const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-          this._debug(`we have encoded account ${encodedAccount}`)
           if (encodedAccount === undefined) {
             return null
           }
