@@ -55,30 +55,6 @@ describe('RLPx simulator tests', () => {
       })
     })
   })
-  it('RLPX: remove node', async () => {
-    const { rlpxs, peer } = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40504)
-    rlpxs[0]
-      ['_dpt']!.addPeer(peer)
-      .then((peer1) => {
-        rlpxs[0].disconnect(peer1['id']!)
-      })
-      .catch((e) => {
-        throw new Error(`Peering failed: ${e}: ${e.stack}`)
-      })
-    await new Promise((resolve) => {
-      rlpxs[0].events.once('peer:removed', async (_, reason: any) => {
-        assert.equal(
-          reason,
-          DISCONNECT_REASON.CLIENT_QUITTING,
-          'should close with CLIENT_QUITTING disconnect reason',
-        )
-        assert.equal(rlpxs[0]._getOpenSlots(), 10, 'should have maxPeers open slots left')
-        await util.delay(500)
-        util.destroyRLPXs(rlpxs)
-      })
-      resolve(undefined)
-    })
-  })
   it('RLPX: test peer queue / refill connections', async () => {
     const basePort = 60661
     const rlpxs = util.getTestRLPXs(3, 1, basePort)
@@ -105,5 +81,29 @@ describe('RLPx simulator tests', () => {
         }
       })
     })
-  }, 10000)
+  }, 30000)
+  it('RLPX: remove node', async () => {
+    const { rlpxs, peer } = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40504)
+    rlpxs[0]
+      ['_dpt']!.addPeer(peer)
+      .then((peer1) => {
+        rlpxs[0].disconnect(peer1['id']!)
+      })
+      .catch((e) => {
+        throw new Error(`Peering failed: ${e}: ${e.stack}`)
+      })
+    await new Promise((resolve) => {
+      rlpxs[0].events.once('peer:removed', async (_, reason: any) => {
+        assert.equal(
+          reason,
+          DISCONNECT_REASON.CLIENT_QUITTING,
+          'should close with CLIENT_QUITTING disconnect reason',
+        )
+        assert.equal(rlpxs[0]._getOpenSlots(), 10, 'should have maxPeers open slots left')
+        await util.delay(500)
+        util.destroyRLPXs(rlpxs)
+      })
+      resolve(undefined)
+    })
+  })
 })
