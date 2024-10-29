@@ -97,12 +97,20 @@ export function getTestRLPXs(
   return rlpxs
 }
 
+type TestRLPXs = {
+  rlpxs: RLPx[]
+  peer: {
+    address: string
+    udpPort: number
+    tcpPort: number
+  }
+}
 export function initTwoPeerRLPXSetup(
   maxPeers?: any,
   capabilities?: any,
   common?: Object | Common,
   basePort = 30306,
-): RLPx[] {
+): TestRLPXs {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
   return { rlpxs, peer }

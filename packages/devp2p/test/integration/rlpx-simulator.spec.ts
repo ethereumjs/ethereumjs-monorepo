@@ -60,7 +60,7 @@ describe('RLPx simulator tests', () => {
     rlpxs[0]
       ['_dpt']!.addPeer(peer)
       .then((peer1) => {
-        rlpxs[0].disconnect(peer1['id'])
+        rlpxs[0].disconnect(peer1['id']!)
       })
       .catch((e) => {
         throw new Error(`Peering failed: ${e}: ${e.stack}`)
@@ -85,6 +85,7 @@ describe('RLPx simulator tests', () => {
     rlpxs[0]['_dpt']!.addPeer(peer)
     await new Promise((resolve) => {
       rlpxs[0].events.on('peer:added', async (peer) => {
+        //@ts-ignore
         assert.equal(peer._socket._peername.port, basePort + 1)
         assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
         const peer2 = {
