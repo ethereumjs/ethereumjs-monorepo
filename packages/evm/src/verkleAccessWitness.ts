@@ -24,7 +24,7 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
-const debug = debugDefault('statemanager:verkle:aw')
+const debug = debugDefault('evm:verkle:aw')
 
 /**
  * Tree key constants.
