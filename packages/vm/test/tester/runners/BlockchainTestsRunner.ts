@@ -209,7 +209,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       }
 
       // TODO: Decide if we want to keep this variant of the block construction
-      // Create the block from the JSON block data since the RLP doesn't include the execution witnesss
+      // Create the block from the JSON block data since the RLP doesn't include the execution witness
       const block = createBlock(
         {
           header: raw.blockHeader,
