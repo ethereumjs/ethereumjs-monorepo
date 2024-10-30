@@ -72,7 +72,7 @@ describe('Verkle Tree API tests', () => {
     await sm.putAccount(address, new Account(0n, 1n))
     await sm.putStorage(address, zeroSlot, zeroSlotValue)
     const retrievedValue = await sm.getStorage(address, zeroSlot)
-    assert.deepEqual(retrievedValue, zeroSlotValue)
+    assert.deepEqual(retrievedValue, setLengthLeft(zeroSlotValue, 32))
   })
 })
 
