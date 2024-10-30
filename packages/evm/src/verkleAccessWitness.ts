@@ -253,7 +253,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
 
     debug(
-      `${accessedChunkKeyHex}: isWrite=${isWrite} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`,
+      `${accessedChunkKeyHex}: isWrite=${isWrite} for stemRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`,
     )
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
