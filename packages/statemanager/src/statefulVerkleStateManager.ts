@@ -28,7 +28,6 @@ import {
   setLengthLeft,
   setLengthRight,
   short,
-  unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
@@ -385,9 +384,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       // Determine code ending byte (if we're on the last chunk)
       let sliceEnd = 32
       if (x === chunks.length - 1) {
-        sliceEnd = (codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
+        // On the last chunk, the end of the slice is either codeSize (if only one chunk) or codeSize % chunkSize
+        sliceEnd = (x === 0 ? codeSize : codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
       }
-
       code.set(chunks[x]!.slice(1, sliceEnd), code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE)
     }
     this._caches?.code?.put(address, code)
@@ -424,12 +423,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     const value = await this._trie.get(storageKey.slice(0, 31), [storageKey[31]])
 
     this._caches?.storage?.put(address, key, value[0] ?? hexToBytes('0x80'))
-    const decoded = RLP.decode(value[0] ?? new Uint8Array(0)) as Uint8Array
-    return decoded
+    const decoded = (value[0] ?? new Uint8Array(0)) as Uint8Array
+    return setLengthLeft(decoded, 32)
   }
 
   putStorage = async (address: Address, key: Uint8Array, value: Uint8Array): Promise<void> => {
-    value = unpadBytes(value)
     this._caches?.storage?.put(address, key, RLP.encode(value))
     if (this._caches?.storage === undefined) {
       const storageKey = await getVerkleTreeKeyForStorageSlot(
@@ -437,7 +435,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         bytesToBigInt(key, true),
         this.verkleCrypto,
       )
-      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [RLP.encode(value)])
+      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [value])
     }
   }
 
@@ -538,7 +536,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
           return bytesToHex(basicDataBytes)
         } else {
           const encodedAccount = this._caches?.account?.get(address)?.accountRLP
-          this._debug(`we have encoded account ${encodedAccount}`)
           if (encodedAccount === undefined) {
             return null
           }
