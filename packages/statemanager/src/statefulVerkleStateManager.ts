@@ -206,7 +206,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }, {})
 
     this._postState = postState
-    this._debug('initVerkleExecutionWitness postState', this._postState)
   }
 
   /**
@@ -417,7 +416,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }
     const storageKey = await getVerkleTreeKeyForStorageSlot(
       address,
-      bytesToBigInt(key, true),
+      bytesToBigInt(key),
       this.verkleCrypto,
     )
     const value = await this._trie.get(storageKey.slice(0, 31), [storageKey[31]])
@@ -432,10 +431,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     if (this._caches?.storage === undefined) {
       const storageKey = await getVerkleTreeKeyForStorageSlot(
         address,
-        bytesToBigInt(key, true),
+        bytesToBigInt(key),
         this.verkleCrypto,
       )
-      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [value])
+      await this._trie.put(storageKey.slice(0, 31), [storageKey[31]], [setLengthLeft(value, 32)])
     }
   }
 
