@@ -2,9 +2,9 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { EthashConsensus, createBlockchain } from '../src/index.js'
 
