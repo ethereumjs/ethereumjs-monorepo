@@ -1,7 +1,7 @@
 import {
   createBlock,
   createSealedCliqueBlock,
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
@@ -22,6 +22,7 @@ import {
   toBytes,
   toType,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -342,11 +343,11 @@ export class BlockBuilder {
     }
 
     let requests
-    let requestsRoot
+    let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
+      const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsTrieRoot(requests)
-      // Do other validations per request type
+      requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -362,7 +363,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
-      requestsRoot,
+      requestsHash,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -374,7 +375,6 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
-      requests,
     }
 
     let block
@@ -395,7 +395,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return block
+    return { block, requests }
   }
 
   async initState() {

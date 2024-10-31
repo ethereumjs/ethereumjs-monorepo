@@ -128,15 +128,6 @@ export class DBManager {
           body.push([])
         }
       }
-
-      // If requests root exists, validate that requests array exists or insert it
-      if (header.requestsRoot !== undefined) {
-        if (!equalsBytes(header.requestsRoot, KECCAK256_RLP)) {
-          throw new Error('requestsRoot should be equal to hash of null when no requests')
-        } else {
-          body.push([])
-        }
-      }
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes

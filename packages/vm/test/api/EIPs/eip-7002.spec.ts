@@ -1,6 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -15,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes.js'
+import { CLRequestType } from '../../../../util/src/request.js'
 import { runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
@@ -33,11 +32,11 @@ const deploymentTxData = {
   gasLimit: BigInt('0x3d090'),
   gasPrice: BigInt('0xe8d4a51000'),
   data: hexToBytes(
-    '0x61049d5f5561013280600f5f395ff33373fffffffffffffffffffffffffffffffffffffffe146090573615156028575f545f5260205ff35b366038141561012e5760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061012e57600154600101600155600354806003026004013381556001015f3581556001016020359055600101600355005b6003546002548082038060101160a4575060105b5f5b81811460dd5780604c02838201600302600401805490600101805490600101549160601b83528260140152906034015260010160a6565b910180921460ed579060025560f8565b90505f6002555f6003555b5f548061049d141561010757505f5b60015460028282011161011c5750505f610122565b01600290035b5f555f600155604c025ff35b5f5ffd',
+    '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5f556101f480602d5f395ff33373fffffffffffffffffffffffffffffffffffffffe1460c7573615156028575f545f5260205ff35b36603814156101f05760115f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff146101f057600182026001905f5b5f821115608057810190830284830290049160010191906065565b9093900434106101f057600154600101600155600354806003026004013381556001015f35815560010160203590553360601b5f5260385f601437604c5fa0600101600355005b6003546002548082038060101160db575060105b5f5b81811461017f5780604c02838201600302600401805490600101805490600101549160601b83528260140152807fffffffffffffffffffffffffffffffff0000000000000000000000000000000016826034015260401c906044018160381c81600701538160301c81600601538160281c81600501538160201c81600401538160181c81600301538160101c81600201538160081c81600101535360010160dd565b9101809214610191579060025561019c565b90505f6002555f6003555b5f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff14156101c957505f5b6001546002828201116101de5750505f6101e4565b01600290035b5f555f600155604c025ff35b5f5ffd',
   ),
   v: BigInt('0x1b'),
   r: BigInt('0x539'),
-  s: BigInt('0xaba653c9d105790c'),
+  s: BigInt('0x10e740537d4d36b9'),
 }
 
 const deploymentTx = createLegacyTx(deploymentTxData)
@@ -111,7 +110,7 @@ describe('EIP-7002 tests', () => {
       generatedBlock = e.block
     })
 
-    await runBlock(vm, {
+    let runBlockResults = await runBlock(vm, {
       block: block2,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -119,21 +118,30 @@ describe('EIP-7002 tests', () => {
     })
 
     // Ensure the request is generated
-    assert.ok(generatedBlock!.requests!.length === 1)
+    assert.ok(runBlockResults.requests!.length === 1)
+    assert.equal(
+      generatedBlock!.transactions.length,
+      1,
+      'withdrawal transaction should be included',
+    )
 
-    const requestDecoded = RLP.decode(generatedBlock!.requests![0].serialize().slice(1))
+    const withdrawalRequest = runBlockResults.requests![0]
+    assert.equal(
+      withdrawalRequest.type,
+      CLRequestType.Withdrawal,
+      'make sure its withdrawal request',
+    )
 
-    const sourceAddressRequest = requestDecoded[0] as Uint8Array
-    const validatorPubkeyRequest = requestDecoded[1] as Uint8Array
-    const amountRequest = requestDecoded[2] as Uint8Array
-
+    // amount is in le when contract pack it in requests
+    const expectedRequestData = concatBytes(
+      tx.getSenderAddress().bytes,
+      validatorPubkey,
+      amountBytes.reverse(),
+    )
     // Ensure the requests are correct
-    assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
-    assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
-    // the direct byte comparison fails because leading zeros have been stripped
-    // off the amountBytes because it was serialized in request from bigint
-    assert.equal(bytesToBigInt(amountBytes), bytesToBigInt(amountRequest))
+    assert.ok(equalsBytes(expectedRequestData, withdrawalRequest.data))
 
+    // generated block should be valid
     await runBlock(vm, { block: generatedBlock!, skipHeaderValidation: true, root })
 
     // Run block with 2 requests
@@ -152,7 +160,7 @@ describe('EIP-7002 tests', () => {
       { common },
     )
 
-    await runBlock(vm, {
+    runBlockResults = await runBlock(vm, {
       block: block3,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -161,7 +169,12 @@ describe('EIP-7002 tests', () => {
 
     // Note: generatedBlock is now overridden with the new generated block (this is thus block number 3)
     // Ensure there are 2 requests
-    assert.ok(generatedBlock!.requests!.length === 2)
+    assert.ok(runBlockResults.requests!.length === 1)
+    assert.equal(
+      generatedBlock!.transactions.length,
+      2,
+      'withdrawal transactions should be included',
+    )
   })
 
   it('should throw when contract is not deployed', async () => {
