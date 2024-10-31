@@ -48,6 +48,7 @@ import type {
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
+import type { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('vm:block')
@@ -135,39 +136,36 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
-    // We only do these checks if operating statelessly since the execution witness is
-    // constructed during stateful execution
+    // Initialize the access witness
+    if ((stateManager as any)['verkleCrypto'] === undefined)
+      throw Error('verkleCrypto required when EIP-6800 is active')
+    vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: (stateManager as StatefulVerkleStateManager).verkleCrypto,
+    })
+
+    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
+    }
+
+    if (vm.DEBUG) {
+      debug(`Initializing executionWitness`)
+    }
+    if (clearCache) {
+      stateManager.clearCaches()
+    }
+
+    // Populate the execution witness
+    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+
     if (stateManager instanceof StatelessVerkleStateManager) {
-      if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-        throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
-      }
-
-      if (vm.DEBUG) {
-        debug(`Initializing StatelessVerkleStateManager executionWitness`)
-      }
-      if (clearCache) {
-        stateManager.clearCaches()
-      }
-
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
-
-      // Initialize the access witness
-      vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-        verkleCrypto: stateManager.verkleCrypto,
-      })
-      // Populate the execution witness
-      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
-
-      if (
-        stateManager instanceof StatelessVerkleStateManager &&
-        verifyVerkleStateProof(stateManager) === false
-      ) {
+      if (verifyVerkleStateProof(stateManager) === true) {
+        if (vm.DEBUG) {
+          debug(`Verkle proof verification succeeded`)
+        }
+      } else {
         throw Error(`Verkle proof verification failed`)
-      }
-
-      if (vm.DEBUG) {
-        debug(`Verkle proof verification succeeded`)
       }
     }
   } else {
@@ -327,7 +325,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
       // If verkle is activated and executing statelessly, only validate the post-state
       if (
-        !(await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
       ) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
