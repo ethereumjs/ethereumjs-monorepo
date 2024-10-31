@@ -26,6 +26,71 @@ type CLData = {
   executionRequests?: PrefixedHexString[]
 }
 
+export const validate4844BlobVersionedHashes = (
+  headBlock: Block,
+  blobVersionedHashes: PrefixedHexString[],
+): string | null => {
+  let validationError: string | null = null
+
+  // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
+  const txVersionedHashes = []
+  for (const tx of headBlock.transactions) {
+    if (tx instanceof Blob4844Tx) {
+      for (const vHash of tx.blobVersionedHashes) {
+        txVersionedHashes.push(vHash)
+      }
+    }
+  }
+
+  if (blobVersionedHashes.length !== txVersionedHashes.length) {
+    validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
+  } else {
+    // match individual hashes
+    for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
+      // if mismatch, record error and break
+      if (blobVersionedHashes[vIndex] !== txVersionedHashes[vIndex]) {
+        validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
+          txVersionedHashes[vIndex],
+        )} received=${short(blobVersionedHashes[vIndex])}`
+        break
+      }
+    }
+  }
+  return validationError
+}
+
+export const validateAndGen7685RequestsHash = (
+  common: Common,
+  executionRequests: PrefixedHexString[],
+): PrefixedHexString => {
+  let validationError: string | null = null
+
+  const requests: CLRequest<CLRequestType>[] = []
+  let requestIndex = 0
+  if (common.isActivatedEIP(6110)) {
+    requests.push(new DepositRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+  if (common.isActivatedEIP(7002)) {
+    requests.push(new WithdrawalRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+  if (common.isActivatedEIP(7251)) {
+    requests.push(new ConsolidationRequest(hexToBytes(executionRequests[requestIndex])))
+    requestIndex++
+  }
+
+  if (requestIndex !== executionRequests.length) {
+    validationError = `Invalid executionRequests=${executionRequests.length} expected=${requestIndex}`
+    throw validationError
+  }
+
+  const sha256Function = common.customCrypto.sha256 ?? sha256
+  const requestsHash = genRequestsRoot(requests, sha256Function)
+
+  return bytesToHex(requestsHash)
+}
+
 /**
  * Returns a block from a payload.
  * If errors, returns {@link PayloadStatusV1}
@@ -96,69 +161,4 @@ export const assembleBlock = async (
     }
     return { error: response }
   }
-}
-
-export const validate4844BlobVersionedHashes = (
-  headBlock: Block,
-  blobVersionedHashes: PrefixedHexString[],
-): string | null => {
-  let validationError: string | null = null
-
-  // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
-  const txVersionedHashes = []
-  for (const tx of headBlock.transactions) {
-    if (tx instanceof Blob4844Tx) {
-      for (const vHash of tx.blobVersionedHashes) {
-        txVersionedHashes.push(vHash)
-      }
-    }
-  }
-
-  if (blobVersionedHashes.length !== txVersionedHashes.length) {
-    validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
-  } else {
-    // match individual hashes
-    for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
-      // if mismatch, record error and break
-      if (blobVersionedHashes[vIndex] !== txVersionedHashes[vIndex]) {
-        validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
-          txVersionedHashes[vIndex],
-        )} received=${short(blobVersionedHashes[vIndex])}`
-        break
-      }
-    }
-  }
-  return validationError
-}
-
-export const validateAndGen7685RequestsHash = (
-  common: Common,
-  executionRequests: PrefixedHexString[],
-): PrefixedHexString => {
-  let validationError: string | null = null
-
-  const requests: CLRequest<CLRequestType>[] = []
-  let requestIndex = 0
-  if (common.isActivatedEIP(6110)) {
-    requests.push(new DepositRequest(hexToBytes(executionRequests[requestIndex])))
-    requestIndex++
-  }
-  if (common.isActivatedEIP(7002)) {
-    requests.push(new WithdrawalRequest(hexToBytes(executionRequests[requestIndex])))
-    requestIndex++
-  }
-  if (common.isActivatedEIP(7251)) {
-    requests.push(new ConsolidationRequest(hexToBytes(executionRequests[requestIndex])))
-    requestIndex++
-  }
-
-  if (requestIndex !== executionRequests.length) {
-    validationError = `Invalid executionRequests=${executionRequests.length} expected=${requestIndex}`
-    throw validationError
-  }
-
-  const sha256Function = common.customCrypto.sha256 ?? sha256
-  const requestsHash = genRequestsRoot(requests, sha256Function)
-
-  return bytesToHex(requestsHash)
 }

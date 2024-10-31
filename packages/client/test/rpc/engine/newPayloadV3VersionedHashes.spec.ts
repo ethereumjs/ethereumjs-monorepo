@@ -40,7 +40,6 @@ describe(`${method}: Cancun validations`, () => {
     let res = await rpc.request(method, blockDataExtraVersionedHashes)
 
     assert.equal(res.result.status, 'INVALID')
-    console.log(res.result.validationError)
     assert.equal(
       res.result.validationError,
       'Error assembling block from payload: Error verifying blobVersionedHashes: expected=0 received=2',
