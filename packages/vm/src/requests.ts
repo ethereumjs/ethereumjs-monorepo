@@ -1,8 +1,7 @@
 import { Mainnet } from '@ethereumjs/common'
 import {
-  ConsolidationRequest,
-  DepositRequest,
-  WithdrawalRequest,
+  CLRequest,
+  CLRequestType,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
@@ -14,7 +13,6 @@ import {
 
 import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
-import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
@@ -69,7 +67,7 @@ const accumulateWithdrawalsRequest = async (
   const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
   if (originalAccount === undefined) {
-    return new WithdrawalRequest(new Uint8Array())
+    return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
   }
 
   const results = await vm.evm.runCall({
@@ -85,7 +83,7 @@ const accumulateWithdrawalsRequest = async (
   }
 
   const resultsBytes = results.execResult.returnValue
-  return new WithdrawalRequest(resultsBytes)
+  return new CLRequest(CLRequestType.Withdrawal, resultsBytes)
 }
 
 const accumulateConsolidationsRequest = async (
@@ -105,7 +103,7 @@ const accumulateConsolidationsRequest = async (
   const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
 
   if (originalAccount === undefined) {
-    return new ConsolidationRequest(new Uint8Array(0))
+    return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
   }
 
   const results = await vm.evm.runCall({
@@ -121,7 +119,7 @@ const accumulateConsolidationsRequest = async (
   }
 
   const resultsBytes = results.execResult.returnValue
-  return new ConsolidationRequest(resultsBytes)
+  return new CLRequest(CLRequestType.Consolidation, resultsBytes)
 }
 
 const accumulateDepositsRequest = (
@@ -148,7 +146,7 @@ const accumulateDepositsRequest = (
     }
   }
 
-  return new DepositRequest(resultsBytes)
+  return new CLRequest(CLRequestType.Deposit, resultsBytes)
 }
 
 function parseDepositLog(requestData: Uint8Array) {

@@ -1,12 +1,6 @@
 import { createBlockFromExecutionPayload, genRequestsRoot } from '@ethereumjs/block'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import {
-  ConsolidationRequest,
-  DepositRequest,
-  WithdrawalRequest,
-  bytesToHex,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { CLRequest, CLRequestType, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { short } from '../../../../util/index.js'
@@ -18,7 +12,7 @@ import type { Chain } from '../../../../blockchain/index.js'
 import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 type CLData = {
   parentBeaconBlockRoot?: PrefixedHexString
@@ -68,15 +62,19 @@ export const validateAndGen7685RequestsHash = (
   const requests: CLRequest<CLRequestType>[] = []
   let requestIndex = 0
   if (common.isActivatedEIP(6110)) {
-    requests.push(new DepositRequest(hexToBytes(executionRequests[requestIndex])))
+    requests.push(new CLRequest(CLRequestType.Deposit, hexToBytes(executionRequests[requestIndex])))
     requestIndex++
   }
   if (common.isActivatedEIP(7002)) {
-    requests.push(new WithdrawalRequest(hexToBytes(executionRequests[requestIndex])))
+    requests.push(
+      new CLRequest(CLRequestType.Withdrawal, hexToBytes(executionRequests[requestIndex])),
+    )
     requestIndex++
   }
   if (common.isActivatedEIP(7251)) {
-    requests.push(new ConsolidationRequest(hexToBytes(executionRequests[requestIndex])))
+    requests.push(
+      new CLRequest(CLRequestType.Consolidation, hexToBytes(executionRequests[requestIndex])),
+    )
     requestIndex++
   }
 

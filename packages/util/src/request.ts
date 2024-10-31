@@ -32,32 +32,14 @@ export class CLRequest<T extends CLRequestType> {
   }
 }
 
-export class DepositRequest extends CLRequest<CLRequestType.Deposit> {
-  constructor(requestData: Uint8Array) {
-    super(CLRequestType.Deposit, requestData)
-  }
-}
-
-export class WithdrawalRequest extends CLRequest<CLRequestType.Withdrawal> {
-  constructor(requestData: Uint8Array) {
-    super(CLRequestType.Withdrawal, requestData)
-  }
-}
-
-export class ConsolidationRequest extends CLRequest<CLRequestType.Consolidation> {
-  constructor(requestData: Uint8Array) {
-    super(CLRequestType.Consolidation, requestData)
-  }
-}
-
-export function createCLRequest<T extends CLRequestType>(bytes: Uint8Array): CLRequest<T> {
+export function createCLRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
   switch (bytes[0]) {
     case CLRequestType.Deposit:
-      return new DepositRequest(bytes.subarray(1)) as CLRequest<T>
+      return new CLRequest(CLRequestType.Deposit, bytes.subarray(1))
     case CLRequestType.Withdrawal:
-      return new WithdrawalRequest(bytes.subarray(1)) as CLRequest<T>
+      return new CLRequest(CLRequestType.Withdrawal, bytes.subarray(1))
     case CLRequestType.Consolidation:
-      return new ConsolidationRequest(bytes.subarray(1)) as CLRequest<T>
+      return new CLRequest(CLRequestType.Consolidation, bytes.subarray(1))
     default:
       throw Error(`Invalid request type=${bytes[0]}`)
   }
