@@ -162,8 +162,8 @@ export class BlockHeader {
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
-      // TODO: not sure what the default should be here becuase it would depends on activated EIPs
-      // as even empty requests will produce data to sha hash
+      // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
+      // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
     }
 
