@@ -7,6 +7,7 @@ import * as path from 'path'
 import * as process from 'process'
 import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import {
   DEFAULT_FORK_CONFIG,
@@ -23,6 +24,7 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 /**
  * Test runner
@@ -123,6 +125,11 @@ async function runTests() {
     bn254 = new NobleBN254()
   }
 
+  let verkleCrypto: VerkleCrypto
+  if (FORK_CONFIG === 'verkle') {
+    verkleCrypto = await loadVerkleCrypto()
+  }
+
   /**
    * Run-time configuration
    */
@@ -157,6 +164,7 @@ async function runTests() {
     profile: RUN_PROFILER,
     bn254,
     stateManager: argv.stateManager,
+    verkleCrypto,
   }
 
   /**
