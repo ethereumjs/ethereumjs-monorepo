@@ -126,7 +126,11 @@ describe('EIP-7002 tests', () => {
     )
 
     const withdrawalRequest = runBlockResults.requests![0]
-    assert(withdrawalRequest.type, CLRequestType.Withdrawal, 'make sure its withdrawal request')
+    assert.equal(
+      withdrawalRequest.type,
+      CLRequestType.Withdrawal,
+      'make sure its withdrawal request',
+    )
 
     // amount is in le when contract pack it in requests
     const expectedRequestData = concatBytes(
