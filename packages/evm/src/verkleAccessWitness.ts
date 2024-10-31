@@ -24,7 +24,7 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 
-const debug = debugDefault('statemanager:verkle:aw')
+const debug = debugDefault('evm:verkle:aw')
 
 /**
  * Tree key constants.
@@ -253,7 +253,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
 
     debug(
-      `${accessedChunkKeyHex}: isWrite=${isWrite} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`,
+      `${accessedChunkKeyHex}: isWrite=${isWrite} for stemRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`,
     )
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
