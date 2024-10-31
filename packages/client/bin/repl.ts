@@ -1,3 +1,4 @@
+import process from 'process'
 import repl from 'repl'
 
 const setupClient = async () => {
@@ -39,16 +40,46 @@ const setupClient = async () => {
     rpcEngineAuth: false,
     rpcCors: '',
   })
-  return client
+  return { client, executionRpc: servers[0], engineRpc: servers[1] }
 }
 
-const client = await setupClient()
+const setupRepl = async () => {
+  const { client, executionRpc, engineRpc } = await setupClient()
 
-const replServer = repl.start({
-  prompt: 'EthJS > ',
-  ignoreUndefined: true,
-})
+  const replServer = repl.start({
+    prompt: 'EthJS > ',
+    ignoreUndefined: true,
+  })
 
-replServer.context.client = client
+  // bootstrap contexts or modules
+  replServer.context.client = client
+  replServer.context.executionRpc = executionRpc._methods // TODO modify methods to only include functions and make them usable
+  replServer.context.engineRpc = engineRpc._methods
 
-console.log('Custom console started. Type .help for available commands.')
+  replServer.on('exit', () => {
+    console.log('Exiting REPL...')
+    process.exit()
+  })
+
+  // define commands
+  replServer.defineCommand('getBlock', {
+    help: 'Get block by number. Must be a decimal block number or prefixed hex string block ID',
+    action(blockNumber: string) {
+      // TODO check if prefixed hex string or bigint block number and fetch and return
+      client.chain
+        .getBlock(blockNumber)
+        .then((block) => {
+          console.log(block)
+          this.displayPrompt()
+        })
+        .catch((err) => {
+          console.error(err)
+          this.displayPrompt()
+        })
+    },
+  })
+
+  console.log('Custom console started. Type .help for available commands.')
+}
+
+await setupRepl()
