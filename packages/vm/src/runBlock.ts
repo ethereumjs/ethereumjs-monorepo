@@ -270,8 +270,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (!vm.common.isActivatedEIP(6800)) {
-      // Only validate the following headers if verkle blocks aren't activated
+    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+      // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
           debug(
