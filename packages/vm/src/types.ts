@@ -371,9 +371,9 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   logsBloom: Uint8Array
 
   /**
-   * The requestsRoot for any CL requests in the block
+   * The requestsHash for any CL requests in the block
    */
-  requestsRoot?: Uint8Array
+  requestsHash?: Uint8Array
   /**
    * Any CL requests that were processed in the course of this block
    */

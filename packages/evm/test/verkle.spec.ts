@@ -39,6 +39,6 @@ describe('verkle tests', () => {
     })
     assert.deepEqual(res.execResult.returnValue, new Uint8Array())
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(2n), 32))
-    assert.deepEqual(retrievedValue, bigIntToBytes(1n))
+    assert.deepEqual(retrievedValue, setLengthLeft(bigIntToBytes(1n), 32))
   })
 })

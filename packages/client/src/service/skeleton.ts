@@ -1091,13 +1091,15 @@ export class Skeleton extends MetaDBManager {
   async blockingFillWithCutoff(cutoffLen: number): Promise<void> {
     const subchain0 = this.status.progress.subchains[0]
     if (this.status.linked && subchain0 !== undefined) {
-      const fillPromise = this.fillCanonicalChain().catch((_e) => {})
-      // if subchain0Head is not too ahead, then fill blocking as it gives better sync
-      // log experience else just trigger
-      if (
+      const isChainHeadNearEnough =
         subchain0.head - BigInt(cutoffLen) <
         (this.status.canonicalHeadReset ? subchain0.tail : this.chain.blocks.height)
-      ) {
+      // do fillCanonicalChain and don't send update event as blockingFillWithCutoff called
+      // from fcU which should send its own event once done
+      const fillPromise = this.fillCanonicalChain(isChainHeadNearEnough).catch((_e) => {})
+      // if subchain0Head is not too ahead, then fill blocking as it gives better sync
+      // log experience else just trigger
+      if (isChainHeadNearEnough) {
         this.config.logger.debug('Attempting blocking fill')
         await fillPromise
       }
@@ -1159,7 +1161,7 @@ export class Skeleton extends MetaDBManager {
   /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
-  async fillCanonicalChain() {
+  async fillCanonicalChain(skipUpdateEmit: boolean = false) {
     if (this.filling) return
     this.filling = true
 
@@ -1192,7 +1194,7 @@ export class Skeleton extends MetaDBManager {
     const start = canonicalHead
     // This subchain is a reference to update the tail for the very subchain we are filling the data for
     this.config.logger.debug(
-      `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head}`,
+      `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head} skipUpdateEmit=${skipUpdateEmit}`,
     )
 
     // run till it has not been determined that tail reset is required by concurrent setHead calls
@@ -1234,7 +1236,7 @@ export class Skeleton extends MetaDBManager {
       // putBlocks should fail causing the fill to exit with skeleton stepback
       if (this.chain.blocks.height <= block.header.number) {
         try {
-          numBlocksInserted = await this.chain.putBlocks([block], true)
+          numBlocksInserted = await this.chain.putBlocks([block], true, skipUpdateEmit)
           if (numBlocksInserted > 0) {
             this.fillStatus = {
               status: PutStatus.VALID,

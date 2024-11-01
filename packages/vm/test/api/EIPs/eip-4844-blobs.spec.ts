@@ -82,7 +82,7 @@ describe('EIP4844 tests', () => {
 
     await blockBuilder.addTransaction(signedTx)
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
     assert.equal(block.transactions.length, 1, 'blob transaction should be included')
     assert.equal(
       bytesToHex(block.transactions[0].hash()),
