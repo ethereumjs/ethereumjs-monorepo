@@ -6,6 +6,8 @@ const setupClient = async () => {
   const { readFileSync } = await import('fs')
 
   const { createCommonFromGethGenesis } = await import('@ethereumjs/common')
+
+  //@ts-ignore
   const { createInlineClient } = await import('../test/sim/simutils.js')
   const { Config } = await import('../src/config.js')
   const { getLogger } = await import('../src/logging.js')
