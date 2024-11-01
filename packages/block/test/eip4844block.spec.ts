@@ -228,7 +228,6 @@ describe('transaction validation tests', () => {
     )
     const blockJSON = blockWithValidTx.toJSON()
     blockJSON.header!.blobGasUsed = '0x0'
-    // @ts-expect-error
     const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),

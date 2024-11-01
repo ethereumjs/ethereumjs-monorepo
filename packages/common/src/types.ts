@@ -52,6 +52,7 @@ export interface GenesisBlockConfig {
   extraData: PrefixedHexString
   baseFeePerGas?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
+  requestsHash?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {

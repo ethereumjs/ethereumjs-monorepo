@@ -13,10 +13,10 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
+import { CLRequestType } from '../../../../util/src/request.js'
 import { buildBlock, runBlock } from '../../../src/index.js'
 import { setupVM } from '../utils.js'
 
-import type { DepositRequest } from '../../../../util/src/request.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const depositContractByteCode = hexToBytes(
@@ -65,8 +65,10 @@ describe('EIP-6110 runBlock tests', () => {
     )
     const res = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
     assert.equal(res.requests?.length, 1)
-    const reqPubkey = (res.requests![0] as DepositRequest).pubkey
-    assert.equal(bytesToHex(reqPubkey), pubkey)
+    const depositRequest = res.requests![0]
+    assert.equal(depositRequest.type, CLRequestType.Deposit)
+    const parsedRequest = parseDepositRequest(depositRequest.data)
+    assert.equal(bytesToHex(parsedRequest.pubkey), pubkey)
   })
 })
 
@@ -96,7 +98,26 @@ describe('EIP-7685 buildBlock tests', () => {
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
     assert.equal(res.requests?.length, 1)
-    const reqPubkey = (res.requests![0] as DepositRequest).pubkey
-    assert.equal(bytesToHex(reqPubkey), pubkey)
+
+    const depositRequest = res.requests![0]
+    assert.equal(depositRequest.type, CLRequestType.Deposit)
+    const parsedRequest = parseDepositRequest(depositRequest.data)
+    assert.equal(bytesToHex(parsedRequest.pubkey), pubkey)
   })
 })
+
+function parseDepositRequest(requestData: Uint8Array) {
+  const pubkey = requestData.subarray(0, 48)
+  const withdrawalCredentials = requestData.subarray(48, 48 + 32)
+  const amount = requestData.subarray(48 + 32, 48 + 32 + 8)
+  const signature = requestData.subarray(48 + 32 + 8, 48 + 32 + 8 + 96)
+  const index = requestData.subarray(48 + 32 + 8 + 96, 48 + 32 + 8 + 96 + 8)
+
+  return {
+    pubkey,
+    withdrawalCredentials,
+    amount,
+    signature,
+    index,
+  }
+}

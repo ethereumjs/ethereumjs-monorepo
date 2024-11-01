@@ -84,7 +84,7 @@ const produceBlockWith4844Tx = async (
     nonce++
   }
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   await chain.putBlocks([block], true)
   await execution.run()
 }

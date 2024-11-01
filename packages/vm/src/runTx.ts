@@ -10,6 +10,8 @@ import {
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
+  MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -456,9 +458,25 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to take code from
       const address = data[1]
       const nonce = data[2]
-      const yParity = bytesToBigInt(data[3])
-      const r = data[4]
+      if (bytesToBigInt(nonce) >= MAX_UINT64) {
+        // authority nonce >= 2^64 - 1. Bumping this nonce by one will not make this fit in an uint64.
+        // EIPs PR: https://github.com/ethereum/EIPs/pull/8938
+        continue
+      }
       const s = data[5]
+      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
+        // Malleability protection to avoid "flipping" a valid signature to get
+        // another valid signature (which yields the same account on `ecrecover`)
+        // This is invalid, so skip this auth tuple
+        continue
+      }
+      const yParity = bytesToBigInt(data[3])
+
+      if (yParity > BIGINT_1) {
+        continue
+      }
+
+      const r = data[4]
 
       const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
       const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
@@ -506,8 +524,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       account.nonce++
       await vm.evm.journal.putAccount(authority, account)
 
-      const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
-      await vm.stateManager.putCode(authority, addressCode)
+      if (equalsBytes(address, new Uint8Array(20))) {
+        // Special case (see EIP PR: https://github.com/ethereum/EIPs/pull/8929)
+        // If delegated to the zero address, clear the delegation of authority
+        await vm.stateManager.putCode(authority, new Uint8Array())
+      } else {
+        const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
+        await vm.stateManager.putCode(authority, addressCode)
+      }
     }
   }
 
