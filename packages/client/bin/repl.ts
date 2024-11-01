@@ -5,10 +5,11 @@ const setupClient = async () => {
   const { readFileSync } = await import('fs')
 
   const { createCommonFromGethGenesis } = await import('@ethereumjs/common')
-  const { createInlineClient } = await import('../test/sim/simutils.ts')
-  const { Config } = await import('../src/config.ts')
-  const { getLogger } = await import('../src/logging.ts')
-  const { startRPCServers } = await import('./startRPC.ts')
+  //@ts-ignore
+  const { createInlineClient } = await import('../test/sim/simutils.js')
+  const { Config } = await import('../src/config.js')
+  const { getLogger } = await import('../src/logging.js')
+  const { startRPCServers } = await import('./startRPC.js')
   const genesisFile = JSON.parse(readFileSync('./bin/genesis.json', 'utf-8'))
   const chainName = 'pectra'
   const common = createCommonFromGethGenesis(genesisFile, {
@@ -53,8 +54,10 @@ const setupRepl = async () => {
 
   // bootstrap contexts or modules
   replServer.context.client = client
-  replServer.context.executionRpc = executionRpc._methods // TODO modify methods to only include functions and make them usable
-  replServer.context.engineRpc = engineRpc._methods
+  //@ts-ignore
+  replServer.context.executionRpc = executionRpc['_methods'] // TODO modify methods to only include functions and make them usable
+  //@ts-ignore
+  replServer.context.engineRpc = engineRpc['_methods']
 
   replServer.on('exit', () => {
     console.log('Exiting REPL...')
@@ -67,6 +70,7 @@ const setupRepl = async () => {
     action(blockNumber: string) {
       // TODO check if prefixed hex string or bigint block number and fetch and return
       client.chain
+        //@ts-ignore
         .getBlock(blockNumber)
         .then((block) => {
           console.log(block)
