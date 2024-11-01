@@ -44,6 +44,26 @@ const setupClient = async () => {
   return { client, executionRpc: servers[0], engineRpc: servers[1] }
 }
 
+const activateRpcMethods = async (replServer, allRpcMethods) => {
+  function defineRpcAction(context, methodName: string, params: string) {
+    allRpcMethods[methodName]
+      .handler(params === '' ? '[]' : JSON.parse(params))
+      .then((result) => console.log(result))
+      .catch((err) => console.error(err))
+    context.displayPrompt()
+  }
+
+  // activate all rpc methods (execution and engine) as repl commands
+  for (const methodName of Object.keys(allRpcMethods)) {
+    replServer.defineCommand(methodName, {
+      help: `Execute ${methodName}. Example usage: .${methodName} [params].`,
+      action(params) {
+        defineRpcAction(this, methodName, params)
+      },
+    })
+  }
+}
+
 const setupRepl = async () => {
   const { client, executionRpc, engineRpc } = await setupClient()
   const allRpcMethods = { ...executionRpc._methods, ...engineRpc._methods }
@@ -57,26 +77,7 @@ const setupRepl = async () => {
     process.exit()
   })
 
-  function defineRpcAction(context, methodName: string, params: string) {
-    allRpcMethods[methodName]
-      .handler(params === '' ? '[]' : JSON.parse(params))
-      .then((result) => console.log(`Result: ${result}`))
-      .catch((err) => console.error(`Error: ${err}`))
-    context.displayPrompt()
-  }
-
-  // activate all rpc methods (execution and engine) as repl commands
-  for (const methodName of [
-    ...Object.keys(executionRpc._methods),
-    ...Object.keys(engineRpc._methods),
-  ]) {
-    replServer.defineCommand(methodName, {
-      help: `Execute ${methodName}. Example usage: .${methodName} [params].`,
-      action(params) {
-        defineRpcAction(this, methodName, params)
-      },
-    })
-  }
+  await activateRpcMethods(replServer, allRpcMethods)
 
   // TODO define more commands similar to geths admin package to allow basic tasks like knowing when the client is fully synced
 }
