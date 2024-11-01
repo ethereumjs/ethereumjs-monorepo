@@ -1,4 +1,4 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
@@ -27,6 +27,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -218,11 +219,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     throw err
   }
 
-  let requestsRoot: Uint8Array | undefined
+  let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
+    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsTrieRoot(requests)
+    requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -237,40 +239,38 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   // values to the current block, or validate the resulting
   // header values against the current block.
   if (generateFields) {
-    const bloom = result.bloom.bitvector
+    const logsBloom = result.bloom.bitvector
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = {
       stateRoot,
-      bloom,
+      logsBloom,
       gasUsed,
       receiptTrie,
       transactionsTrie,
-      requestsRoot,
+      requestsHash,
     }
     const blockData = {
       ...block,
-      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid(requests)
-      if (!valid) {
-        const validRoot = await genRequestsTrieRoot(requests!)
+      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
         if (vm.DEBUG)
           debug(
-            `Invalid requestsRoot received=${bytesToHex(
-              block.header.requestsRoot!,
-            )} expected=${bytesToHex(validRoot)}`,
+            `Invalid requestsHash received=${bytesToHex(
+              block.header.requestsHash!,
+            )} expected=${bytesToHex(requestsHash!)}`,
           )
-        const msg = _errorMsg('invalid requestsRoot', vm, block)
+        const msg = _errorMsg('invalid requestsHash', vm, block)
         throw new Error(msg)
       }
     }
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+
+    if (!vm.common.isActivatedEIP(6800)) {
       // Only validate the following headers if verkle blocks aren't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
@@ -346,7 +346,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
-    requestsRoot,
+    requestsHash,
     requests,
   }
 

@@ -38,6 +38,7 @@ function parseGethParams(json: any) {
     coinbase,
     baseFeePerGas,
     excessBlobGas,
+    requestsHash,
     extraData: unparsedExtraData,
     nonce: unparsedNonce,
     timestamp: unparsedTimestamp,
@@ -50,6 +51,7 @@ function parseGethParams(json: any) {
     coinbase: PrefixedHexString
     baseFeePerGas: PrefixedHexString
     excessBlobGas: PrefixedHexString
+    requestsHash: PrefixedHexString
     extraData: string
     nonce: string
     timestamp: string
@@ -105,6 +107,7 @@ function parseGethParams(json: any) {
       coinbase,
       baseFeePerGas,
       excessBlobGas,
+      requestsHash,
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],
