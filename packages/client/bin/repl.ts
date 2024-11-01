@@ -1,3 +1,4 @@
+//@ts-nocheck
 import process from 'process'
 import repl from 'repl'
 
@@ -5,7 +6,6 @@ const setupClient = async () => {
   const { readFileSync } = await import('fs')
 
   const { createCommonFromGethGenesis } = await import('@ethereumjs/common')
-  //@ts-ignore
   const { createInlineClient } = await import('../test/sim/simutils.js')
   const { Config } = await import('../src/config.js')
   const { getLogger } = await import('../src/logging.js')
@@ -46,44 +46,39 @@ const setupClient = async () => {
 
 const setupRepl = async () => {
   const { client, executionRpc, engineRpc } = await setupClient()
+  const allRpcMethods = { ...executionRpc._methods, ...engineRpc._methods }
 
   const replServer = repl.start({
     prompt: 'EthJS > ',
     ignoreUndefined: true,
   })
-
-  // bootstrap contexts or modules
-  replServer.context.client = client
-  //@ts-ignore
-  replServer.context.executionRpc = executionRpc['_methods'] // TODO modify methods to only include functions and make them usable
-  //@ts-ignore
-  replServer.context.engineRpc = engineRpc['_methods']
-
   replServer.on('exit', () => {
     console.log('Exiting REPL...')
     process.exit()
   })
 
-  // define commands
-  replServer.defineCommand('getBlock', {
-    help: 'Get block by number. Must be a decimal block number or prefixed hex string block ID',
-    action(blockNumber: string) {
-      // TODO check if prefixed hex string or bigint block number and fetch and return
-      client.chain
-        //@ts-ignore
-        .getBlock(blockNumber)
-        .then((block) => {
-          console.log(block)
-          this.displayPrompt()
-        })
-        .catch((err) => {
-          console.error(err)
-          this.displayPrompt()
-        })
-    },
-  })
+  function defineRpcAction(context, methodName: string, params: string) {
+    allRpcMethods[methodName]
+      .handler(params === '' ? '[]' : JSON.parse(params))
+      .then((result) => console.log(`Result: ${result}`))
+      .catch((err) => console.error(`Error: ${err}`))
+    context.displayPrompt()
+  }
 
-  console.log('Custom console started. Type .help for available commands.')
+  // activate all rpc methods (execution and engine) as repl commands
+  for (const methodName of [
+    ...Object.keys(executionRpc._methods),
+    ...Object.keys(engineRpc._methods),
+  ]) {
+    replServer.defineCommand(methodName, {
+      help: `Execute ${methodName}. Example usage: .${methodName} [params].`,
+      action(params) {
+        defineRpcAction(this, methodName, params)
+      },
+    })
+  }
+
+  // TODO define more commands similar to geths admin package to allow basic tasks like knowing when the client is fully synced
 }
 
 await setupRepl()
