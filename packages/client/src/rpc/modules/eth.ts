@@ -152,8 +152,7 @@ const toJSONRPCBlock = async (
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
     parentBeaconBlockRoot: header.parentBeaconBlockRoot,
-    requestsRoot: header.requestsRoot,
-    requests: block.requests?.map((req) => bytesToHex(req.serialize())),
+    requestsHash: header.requestsHash,
   }
 }
 
