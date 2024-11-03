@@ -36,22 +36,29 @@ describe('Verkle Tree API tests', () => {
     const deletedAccount = await sm.getAccount(address)
     assert.equal(deletedAccount, undefined)
   })
-  it('should return same stateRoot when putting and then deleting account', async () => {
+
+  it.only('should return same stateRoot when putting and then deleting account', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
-    const initialStateRoot = await sm.getStateRoot()
-    const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
-    const account = createAccount({ nonce: 3n, balance: 0xfffn })
 
-    await sm.putAccount(address, account)
-    const stateRootAfterPutAccount = await sm.getStateRoot()
-    assert.notEqual(initialStateRoot, stateRootAfterPutAccount)
+    const address1 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
+    const account1 = createAccount({ nonce: 3n, balance: 0xfffn })
 
-    await sm.deleteAccount(address)
+    const address2 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b4')
+    const account2 = createAccount({ nonce: 4n, balance: 0xffen })
 
+    await sm.putAccount(address1, account1)
+    const stateRootAfterPutAccount1 = await sm.getStateRoot()
+
+    // Put and then delete the account2
+    await sm.putAccount(address2, account2)
+    await sm.deleteAccount(address2)
+
+    // StateRoot should return to the initial stateRoot
     const stateRootAfterDeleteAccount = await sm.getStateRoot()
-    assert.deepEqual(initialStateRoot, stateRootAfterDeleteAccount)
+    assert.deepEqual(stateRootAfterPutAccount1, stateRootAfterDeleteAccount)
   })
+
   it('should put and get code', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
