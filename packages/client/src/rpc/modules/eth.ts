@@ -155,6 +155,7 @@ const toJSONRPCBlock = async (
     parentBeaconBlockRoot: header.parentBeaconBlockRoot,
     requestsRoot: header.requestsRoot,
     requests: block.requests?.map((req) => bytesToHex(req.serialize())),
+    systemLogsRoot: header.systemLogsRoot,
   }
 }
 
