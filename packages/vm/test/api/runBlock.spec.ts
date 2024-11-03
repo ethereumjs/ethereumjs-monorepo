@@ -36,8 +36,6 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 //import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
-const loadVerkleCrypto = () => verkle
-
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.js'
@@ -62,6 +60,7 @@ import type {
   VerkleCrypto,
   VerkleExecutionWitness,
 } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {

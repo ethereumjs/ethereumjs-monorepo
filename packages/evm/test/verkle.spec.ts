@@ -10,12 +10,12 @@ import {
 import { createVerkleTree } from '@ethereumjs/verkle'
 //import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
-const loadVerkleCrypto = () => verkle
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { VerkleAccessWitness, createEVM } from '../src/index.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle tests', () => {
   let verkleCrypto: VerkleCrypto

@@ -1,7 +1,6 @@
 import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
 //import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
-const loadVerkleCrypto = () => verkle
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -11,6 +10,7 @@ import {
   isInternalVerkleNode,
 } from '../src/node/index.js'
 import { InternalVerkleNode } from '../src/node/internalNode.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle node - internal', () => {
   let verkleCrypto: VerkleCrypto

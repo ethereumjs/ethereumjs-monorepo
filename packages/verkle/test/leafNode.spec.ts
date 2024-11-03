@@ -1,8 +1,6 @@
 import { type VerkleCrypto, equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
 //import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
-const loadVerkleCrypto = () => verkle
-
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -13,6 +11,7 @@ import {
   isLeafVerkleNode,
 } from '../src/node/index.js'
 import { LeafVerkleNode } from '../src/node/leafNode.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle node - leaf', () => {
   let verkleCrypto = undefined as never as VerkleCrypto
