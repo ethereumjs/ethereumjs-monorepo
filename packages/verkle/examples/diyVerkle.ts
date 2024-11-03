@@ -1,6 +1,8 @@
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
 
 const verkleCrypto = await loadVerkleCrypto()
 

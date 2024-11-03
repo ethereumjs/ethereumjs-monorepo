@@ -4,7 +4,10 @@ import { createEVM } from '@ethereumjs/evm'
 import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
+
 import { describe, it } from 'vitest'
 
 import { verkleKaustinen6Block72Data } from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.js'

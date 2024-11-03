@@ -8,7 +8,9 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { VerkleAccessWitness, createEVM } from '../src/index.js'

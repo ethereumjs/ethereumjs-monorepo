@@ -34,7 +34,10 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
+
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.js'

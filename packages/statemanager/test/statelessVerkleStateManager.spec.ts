@@ -13,7 +13,10 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
+
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'

@@ -42,7 +42,9 @@ If you prefer to instantiate the verkle tree class directly, you can do so by pa
 
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => verkle
 
 const verkleCrypto = await loadVerkleCrypto()
 
