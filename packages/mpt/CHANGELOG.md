@@ -44,7 +44,7 @@ Proof functionality also has been extracted from the trie class to make the core
 
 ### Replaced Stream Functionality
 
-One of the largest burdens for the trie library - dependency wise - was the `readable-stream` dependency, used for implementing a read stream for full trie dumps in a platform independent way. This dependency has a lot of downstream dependencies and posed therefore an strong and unnecessary security risk for our upstream stack.
+One of the largest burdens for the trie library - dependency wise - was the `readable-stream` dependency, used for implementing a read stream for full trie dumps in a platform independent way. This dependency has a lot of downstream dependencies and posed therefore a strong and unnecessary security risk for our upstream stack.
 
 We have now removed the stream functionality and the associated dependency and replaced with a simpler async value map retrieval by using `trie.getValueMap()`, see PR [#3519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3519). For an example see the MPT [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples) folder.
 

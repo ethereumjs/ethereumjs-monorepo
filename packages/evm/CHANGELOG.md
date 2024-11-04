@@ -28,7 +28,7 @@ So, what changed?
 
 #### Generic BN254 (alt_BN128) Interface for Precompiles
 
-The previously WASM-backed `BN254` (or previously called `alt_BN128`) precompile implementations have first decoupled from the WASM-backend by introducing a generic interface `EVMBN254Interface`, see PR [#3564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3564). Then the WASM version - using the [rustbn-wasm](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3564) binding library to the [BN](https://github.com/paritytech/bn) Rust library - has been replaced by using the corresponding JS functionality from [noble-curves](https://github.com/paulmillr/noble-curves).
+The previously WASM-backed `BN254` (or previously called `alt_BN128`) precompile implementations have first decoupled from the WASM-backend by introducing a generic interface `EVMBN254Interface`, see PR [#3564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3564). Then the WASM version - using the [rustbn-wasm](https://github.com/ethereumjs/rustbn-wasm) binding library to the [BN](https://github.com/paritytech/bn) Rust library - has been replaced by using the corresponding JS functionality from [noble-curves](https://github.com/paulmillr/noble-curves).
 
 It is still possible to use the WASM version (if more performance is needed) like this using the `bn254` constructor option:
 

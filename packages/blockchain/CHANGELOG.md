@@ -35,7 +35,7 @@ const common = new Common({ chain: Mainnet })
 
 ### No Consensus Validation by Default
 
-Along the transition to Proof-of-Stake Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.
+Along the transition to Proof-of-Stake, Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.
 
 It is still easy to set up a `Clique` or `Ethash` blockchain by using the new `consensusDict` option and pass in an instantiated consensus instance, see the respective option documentation or the related [example](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/examples/clique.ts) in the blockchain `examples` folder.
 
