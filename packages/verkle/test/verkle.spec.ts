@@ -9,6 +9,7 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
+  dumpNodeHashes,
 } from '../src/index.js'
 
 import type { VerkleNode } from '../src/index.js'
@@ -277,5 +278,27 @@ describe('Verkle tree', () => {
     const res = await trie.findPath(keys[0].slice(0, 31))
     assert.ok(res.node !== null)
     assert.deepEqual((res.node as LeafVerkleNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
+  })
+  it.only('should remove null child nodes and roots should match', async () => {
+    const keys = [
+      // Two keys with the same stem but different suffixes
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+      // A key with a partially matching stem 0x318d to above 2 keys
+      '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318dfa51 to above key
+      '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+    const values = [
+      '0x320122e8584be00d000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+    const trie = await createVerkleTree({ verkleCrypto })
+    await trie.put(keys[0].slice(0, 31), [keys[0][31]], [values[0]])
+    const root1 = trie.root()
+    await trie.put(keys[1].slice(0, 31), [keys[1][31]], [values[1]])
+    const root2 = trie.root()
+    await trie.put(keys[2].slice(0, 31), [keys[2][31]], [values[1]])
+    await trie.put(keys[2].slice(0, 31), [keys[2][31]], [LeafVerkleNodeValue.Untouched])
+    assert.deepEqual(trie.root(), root2)
   })
 })

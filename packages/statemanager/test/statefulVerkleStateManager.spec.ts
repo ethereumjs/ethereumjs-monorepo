@@ -37,13 +37,12 @@ describe('Verkle Tree API tests', () => {
     assert.equal(deletedAccount, undefined)
   })
 
-  it.only('should return same stateRoot when putting and then deleting account', async () => {
+  it('should return same stateRoot when putting and then deleting account', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
 
     const address1 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account1 = createAccount({ nonce: 3n, balance: 0xfffn })
-
     const address2 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b4')
     const account2 = createAccount({ nonce: 4n, balance: 0xffen })
 
