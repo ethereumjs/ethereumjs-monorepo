@@ -11,7 +11,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     //@ts-ignore
-    manager['_client'].services[0].pool.peers = [
+    manager['_client'].service.pool.peers = [
       {
         id: 'abcd',
         eth: {

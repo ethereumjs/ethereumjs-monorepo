@@ -1,7 +1,7 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DNS } from '../dns/index.js'
 import { devp2pDebug, pk2id } from '../util.js'
@@ -10,13 +10,13 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
-import type { DPTOptions, PeerInfo } from '../types.js'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
 export class DPT {
-  public events: EventEmitter
+  public events: EventEmitter<DPTEvent>
   protected _privateKey: Uint8Array
   protected _banlist: BanList
   protected _dns: DNS
@@ -41,7 +41,7 @@ export class DPT {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<DPTEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true

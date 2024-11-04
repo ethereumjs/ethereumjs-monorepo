@@ -6,7 +6,7 @@
 
 ### Enumerations
 
-- [AccessedStateType](enums/AccessedStateType.md)
+- [VerkleAccessedStateType](enums/VerkleAccessedStateType.md)
 - [CacheType](enums/CacheType.md)
 
 ### Classes
@@ -246,7 +246,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `type` | [`AccessedStateType`](enums/AccessedStateType.md) |
+| `type` | [`VerkleAccessedStateType`](enums/VerkleAccessedStateType.md) |
 | `value` | ``null`` \| `string` |
 
 #### Returns

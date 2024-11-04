@@ -1,49 +1,31 @@
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt, randomBytes } from '../src/bytes.js'
-import {
-  CLRequestFactory,
-  CLRequestType,
-  createConsolidationRequest,
-  createDepositRequest,
-  createWithdrawalRequest,
-} from '../src/request.js'
+import { concatBytes, randomBytes } from '../src/bytes.js'
+import { CLRequestType, createCLRequest } from '../src/request.js'
 
-import type {
-  CLRequest,
-  ConsolidationRequest,
-  DepositRequest,
-  WithdrawalRequest,
-} from '../src/request.js'
+import type { CLRequest } from '../src/request.js'
 
 describe('Requests', () => {
-  const testCases: [
-    string,
-    any,
-    CLRequestType,
-    (...args: any) => ConsolidationRequest | DepositRequest | WithdrawalRequest,
-  ][] = [
+  const testCases: [string, { [key: string]: Uint8Array }, CLRequestType][] = [
     [
       'DepositRequest',
       {
         pubkey: randomBytes(48),
         withdrawalCredentials: randomBytes(32),
-        amount: bytesToBigInt(randomBytes(8)),
+        amount: randomBytes(8),
         signature: randomBytes(96),
-        index: bytesToBigInt(randomBytes(8)),
+        index: randomBytes(8),
       },
       CLRequestType.Deposit,
-      createDepositRequest,
     ],
     [
       'WithdrawalRequest',
       {
         sourceAddress: randomBytes(20),
         validatorPubkey: randomBytes(48),
-        amount: bytesToBigInt(randomBytes(8)),
+        amount: randomBytes(8),
       },
       CLRequestType.Withdrawal,
-      createWithdrawalRequest,
     ],
     [
       'ConsolidationRequest',
@@ -53,22 +35,22 @@ describe('Requests', () => {
         targetPubkey: randomBytes(48),
       },
       CLRequestType.Consolidation,
-      createConsolidationRequest,
     ],
   ]
-  for (const [requestName, requestData, requestType, requestInstanceConstructor] of testCases) {
+  for (const [requestName, requestData, requestType] of testCases) {
     it(`${requestName}`, () => {
-      const requestObject = requestInstanceConstructor(requestData) as CLRequest<CLRequestType>
-      const requestJSON = requestObject.toJSON()
-      const serialized = requestObject.serialize()
-      assert.equal(serialized[0], requestType)
+      // flatten request bytes as per EIP-7685
+      const depositRequestBytes = new Uint8Array(
+        Object.values(requestData)
+          .map((arr) => Array.from(arr)) // Convert Uint8Arrays to regular arrays
+          .reduce((acc, curr) => acc.concat(curr), []), // Concatenate arrays
+      )
+      const requestObject = createCLRequest(
+        concatBytes(new Uint8Array([requestType]), depositRequestBytes),
+      ) as CLRequest<CLRequestType>
 
-      const deserialized = CLRequestFactory.fromSerializedRequest(serialized)
-      const deserializedJSON = deserialized.toJSON()
-      assert.deepEqual(deserializedJSON, requestJSON)
-
-      const reserialized = deserialized.serialize()
-      assert.deepEqual(serialized, reserialized)
+      assert.equal(requestObject.type, requestType)
+      assert.deepEqual(requestObject.data, depositRequestBytes)
     })
   }
 })

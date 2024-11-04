@@ -8,6 +8,10 @@ export interface ChainsConfig {
   [key: string]: ChainConfig | ChainName
 }
 
+export interface CommonEvent {
+  hardforkChanged: [hardfork: string]
+}
+
 export type CliqueConfig = {
   period: number
   epoch: number
@@ -48,6 +52,7 @@ export interface GenesisBlockConfig {
   extraData: PrefixedHexString
   baseFeePerGas?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
+  requestsHash?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {

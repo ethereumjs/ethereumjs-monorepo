@@ -4,13 +4,13 @@ import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequestType,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
@@ -19,7 +19,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genRequestsTrieRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   BlockHeader,
@@ -35,14 +34,7 @@ import {
 import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type {
-  CLRequest,
-  ConsolidationRequest,
-  DepositRequest,
-  VerkleExecutionWitness,
-  Withdrawal,
-  WithdrawalRequest,
-} from '@ethereumjs/util'
+import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -65,9 +57,9 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected sha256Function: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -79,7 +71,6 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
-    requestsRoot?: Uint8Array
   } = {}
 
   /**
@@ -94,17 +85,16 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null,
   ) {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.executionWitness = executionWitness
-    this.requests = requests ?? (this.common.isActivatedEIP(7685) ? [] : undefined)
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
@@ -155,18 +145,6 @@ export class Block {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
-    if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
-      throw new Error(`Cannot have requests field if EIP 7685 is not active`)
-    }
-
-    // Requests should be sorted in monotonically ascending order based on type
-    // and whatever internal sorting logic is defined by each request type
-    if (requests !== undefined && requests.length > 1) {
-      for (let x = 1; x < requests.length; x++) {
-        if (requests[x].type < requests[x - 1].type)
-          throw new Error('requests are not sorted in ascending order')
-      }
-    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -187,11 +165,6 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
-    }
-
-    const requestsRaw = this.requests?.map((req) => req.serialize())
-    if (requestsRaw) {
-      bytesArray.push(requestsRaw)
     }
 
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
@@ -251,27 +224,6 @@ export class Block {
     return result
   }
 
-  async requestsTrieIsValid(requestsInput?: CLRequest<CLRequestType>[]): Promise<boolean> {
-    if (!this.common.isActivatedEIP(7685)) {
-      throw new Error('EIP 7685 is not activated')
-    }
-
-    const requests = requestsInput ?? this.requests!
-
-    if (requests!.length === 0) {
-      return equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
-    }
-
-    if (requestsInput === undefined) {
-      if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsTrieRoot(this.requests!)
-      }
-      return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
-    } else {
-      const reportedRoot = await genRequestsTrieRoot(requests)
-      return equalsBytes(reportedRoot, this.header.requestsRoot!)
-    }
-  }
   /**
    * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings
@@ -383,6 +335,7 @@ export class Block {
 
     // Validation for Verkle blocks
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
+    // TODO: Decide if we should actually require this or not
     if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
         throw new Error(`Invalid block: missing executionWitness`)
@@ -533,7 +486,6 @@ export class Block {
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
-      requests: this.requests?.map((req) => bytesToHex(req.serialize())),
     }
   }
 
@@ -568,36 +520,8 @@ export class Block {
       transactions,
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
+      requestsHash: header.requestsHash,
       executionWitness: this.executionWitness,
-
-      // lets add the  request fields first and then iterate over requests to fill them up
-      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
-      withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
-      consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
-    }
-
-    if (this.requests !== undefined) {
-      for (const request of this.requests) {
-        switch (request.type) {
-          case CLRequestType.Deposit:
-            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
-            continue
-
-          case CLRequestType.Withdrawal:
-            executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
-            continue
-
-          case CLRequestType.Consolidation:
-            executionPayload.consolidationRequests!.push((request as ConsolidationRequest).toJSON())
-            continue
-        }
-      }
-    } else if (
-      executionPayload.depositRequests !== undefined ||
-      executionPayload.withdrawalRequests !== undefined ||
-      executionPayload.consolidationRequests !== undefined
-    ) {
-      throw Error(`Undefined requests for activated deposit or withdrawal requests`)
     }
 
     return executionPayload

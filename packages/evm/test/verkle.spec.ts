@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { AccessWitness, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   bigIntToBytes,
   createAccount,
@@ -11,7 +11,7 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { VerkleAccessWitness, createEVM } from '../src/index.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -29,16 +29,16 @@ describe('verkle tests', () => {
     const account = createAccount({ nonce: 3n, balance: 0xffffffffn })
     await sm.putAccount(address, account)
     const evm = await createEVM({ common, stateManager: sm })
+    // Initialize verkleAccess Witness manually (in real context, it is done by the VM, but we are bypassing that here)
+    evm.verkleAccessWitness = new VerkleAccessWitness({ verkleCrypto })
     const code = hexToBytes('0x6001600255') // PUSH1 01 PUSH1 02 SSTORE
-    const accessWitness = new AccessWitness({ verkleCrypto })
     const res = await evm.runCall({
       code,
       caller: address,
-      accessWitness,
       to: address,
     })
     assert.deepEqual(res.execResult.returnValue, new Uint8Array())
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(2n), 32))
-    assert.deepEqual(retrievedValue, bigIntToBytes(1n))
+    assert.deepEqual(retrievedValue, setLengthLeft(bigIntToBytes(1n), 32))
   })
 })
