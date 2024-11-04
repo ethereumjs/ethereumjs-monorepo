@@ -1,5 +1,4 @@
 import { KeyEncoding, MapDB, ValueEncoding } from '@ethereumjs/util'
-//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
 
 import { ROOT_DB_KEY } from './types.js'

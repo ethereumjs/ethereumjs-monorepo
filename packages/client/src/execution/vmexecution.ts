@@ -28,7 +28,6 @@ import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
 import { initRustBN } from 'rustbn-wasm'
-//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
 import { debugCodeReplayBlock } from '../util/debug.js'

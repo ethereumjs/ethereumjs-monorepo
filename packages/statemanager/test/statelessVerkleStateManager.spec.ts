@@ -13,7 +13,6 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 

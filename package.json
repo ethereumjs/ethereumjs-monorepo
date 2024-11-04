@@ -29,7 +29,6 @@
     "install-browser-deps": "npm install webdriverio@9.2.6 @vitest/browser@2.1.0"
   },
   "devDependencies": {
-    "micro-eth-signer": "^0.12.1",
     "@types/estree": "^1.0.1",
     "@types/node": "18.11.9",
     "@types/tape": "4.13.2",

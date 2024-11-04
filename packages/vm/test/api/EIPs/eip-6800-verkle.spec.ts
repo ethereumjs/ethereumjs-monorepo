@@ -4,7 +4,6 @@ import { createEVM } from '@ethereumjs/evm'
 import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
-//import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 import * as verkle from 'micro-eth-signer/verkle'
 import { describe, it } from 'vitest'
 
