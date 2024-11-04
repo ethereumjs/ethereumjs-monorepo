@@ -2,6 +2,7 @@
 import process from 'process'
 import repl from 'repl'
 
+// TODO parameterize client and server inputs
 const setupClient = async () => {
   const { readFileSync } = await import('fs')
 
@@ -49,7 +50,7 @@ const setupClient = async () => {
 const activateRpcMethods = async (replServer, allRpcMethods) => {
   function defineRpcAction(context, methodName: string, params: string) {
     allRpcMethods[methodName]
-      .handler(params === '' ? '[]' : JSON.parse(params))
+      .handler(params === '' ? '[]' : JSON.parse(params)) // TODO why does parse crash repl when error is caught?
       .then((result) => console.log(result))
       .catch((err) => console.error(err))
     context.displayPrompt()
