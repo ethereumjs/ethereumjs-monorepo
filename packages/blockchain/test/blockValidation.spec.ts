@@ -10,7 +10,6 @@ import { EthashConsensus, createBlockchain } from '../src/index.js'
 
 import { generateBlock } from './util.js'
 
-import type { MinimalEthashInterface } from '../src/consensus/ethash.js'
 import type { ConsensusDict } from '../src/index.js'
 
 describe('[Blockchain]: Block validation tests', () => {
@@ -125,9 +124,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
   it('should throw if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
-    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(
-      new Ethash() as MinimalEthashInterface,
-    )
+    consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: false, consensusDict })
 

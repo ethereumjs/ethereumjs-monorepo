@@ -57,7 +57,7 @@
     "lru-cache": "10.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "^3.0.3"
+    "@ethereumjs/ethash": "^4.0.0-alpha.1"
   },
   "engines": {
     "node": ">=18"
