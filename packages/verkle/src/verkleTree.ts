@@ -217,18 +217,15 @@ export class VerkleTree {
           ['put'],
         )
     }
-    if (
-      equalsBytes(leafNode.c1!, this.verkleCrypto.zeroCommitment) &&
-      equalsBytes(leafNode.c2!, this.verkleCrypto.zeroCommitment)
-    ) {
-      // Special case where we've only written `LeafVerkleNodeValue.Untouched`. In this case, the node shouldn't be in the tree at all
+    if (leafNode.values.filter((val) => val !== LeafVerkleNodeValue.Untouched).length === 0) {
+      // If all of the values are "untouched", this node should be deleted if it was previously created
       if (foundPath.node !== null) {
         // If the node previously existed, we need to delete it
         this.DEBUG && this.debug(`Deleting leaf node at stem: ${bytesToHex(stem)}`, ['put'])
         putStack.push([leafNode.hash(), null])
       } else {
-        // NOOP
-        // If the leaf node doesn't exist in the tree, we shouldn't insert it
+        // If the leaf node doesn't exist in the tree, we shouldn't insert it and should just return
+        return
       }
     } else {
       // Push new/updated leafNode to putStack
@@ -245,9 +242,11 @@ export class VerkleTree {
       const nearestNodeTuple = foundPath.stack.pop()!
       const nearestNode = nearestNodeTuple[0]
       lastPath = nearestNodeTuple[1]
-      const updatedParentTuple = this.updateParent(leafNode, nearestNode, lastPath)
-      putStack.push([updatedParentTuple.node.hash(), updatedParentTuple.node])
-      lastPath = updatedParentTuple.lastPath
+      const updatedParentTuple = await this.updateParent(leafNode, nearestNode, lastPath)
+      if (updatedParentTuple !== undefined) {
+        putStack.push([updatedParentTuple.node.hash(), updatedParentTuple.node])
+        lastPath = updatedParentTuple.lastPath
+      }
 
       // Step 3) Walk up trie and update child references in parent internal nodes
       while (foundPath.stack.length > 1) {
@@ -328,15 +327,18 @@ export class VerkleTree {
    * @param pathToNode the path to `nearestNode`
    * @returns a tuple of the updated parent node and the path to that parent (i.e. the partial stem of the leaf node that leads to the parent)
    */
-  updateParent(
+  async updateParent(
     leafNode: LeafVerkleNode,
     nearestNode: VerkleNode,
     pathToNode: Uint8Array,
-  ): { node: InternalVerkleNode; lastPath: Uint8Array } {
+  ): Promise<{ node: VerkleNode; lastPath: Uint8Array } | undefined> {
+    const leafNodeWasDeleted =
+      leafNode.values.filter((val) => val !== LeafVerkleNodeValue.Untouched).length === 0
+
     // Compute the portion of leafNode.stem and nearestNode.path that match (i.e. the partial path closest to leafNode.stem)
     const partialMatchingStemIndex = matchingBytesLength(leafNode.stem, pathToNode)
     let internalNode: InternalVerkleNode
-    if (isLeafVerkleNode(nearestNode)) {
+    if (isLeafVerkleNode(nearestNode) && !leafNodeWasDeleted) {
       // We need to create a new internal node and set nearestNode and leafNode as child nodes of it
       // Create new internal node
       internalNode = InternalVerkleNode.create(this.verkleCrypto)
@@ -353,14 +355,36 @@ export class VerkleTree {
       pathToNode = leafNode.stem.slice(0, partialMatchingStemIndex)
       this.DEBUG &&
         this.debug(`Creating new internal node at path ${bytesToHex(pathToNode)}`, ['put'])
-    } else {
+    } else if (!isLeafVerkleNode(nearestNode)) {
       // Nearest node is an internal node.  We need to update the appropriate child reference
       // to the new leaf node
       internalNode = nearestNode
-      internalNode.setChild(leafNode.stem[partialMatchingStemIndex], {
-        commitment: leafNode.commitment,
-        path: leafNode.stem,
-      })
+      internalNode.setChild(
+        leafNode.stem[partialMatchingStemIndex],
+        leafNodeWasDeleted
+          ? null
+          : {
+              commitment: leafNode.commitment,
+              path: leafNode.stem,
+            },
+      )
+      if (leafNodeWasDeleted) {
+        // Check to see if the internal node has only one other child node
+        const children = internalNode.children.filter((el) => el !== null)
+        if (children.length === 1) {
+          // If the internal node has only one child, we can replace the internal node with its child
+          const rawNode = await this._db.get(
+            this.verkleCrypto.hashCommitment(children[0]!.commitment),
+          )
+          if (rawNode === undefined)
+            throw new Error(`missing node in DB at ${bytesToHex(children[0]!.path)}`)
+          return {
+            node: decodeVerkleNode(rawNode, this.verkleCrypto) as VerkleNode,
+            lastPath: children[0]!.path,
+          }
+        }
+      }
+
       this.DEBUG &&
         this.debug(
           `Updating child reference for leaf node with stem: ${bytesToHex(
@@ -372,6 +396,9 @@ export class VerkleTree {
           )}`,
           ['put'],
         )
+    } else {
+      // Nearest node is a leaf node and new leaf node is actually being deleted
+      return
     }
     return { node: internalNode, lastPath: pathToNode }
   }
