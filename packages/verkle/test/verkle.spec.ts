@@ -1,5 +1,5 @@
-import { MapDB, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import { MapDB, bytesToHex, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -15,6 +15,7 @@ import {
 
 import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle tree', () => {
   let verkleCrypto: VerkleCrypto

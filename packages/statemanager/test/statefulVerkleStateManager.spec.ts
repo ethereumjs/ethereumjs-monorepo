@@ -10,13 +10,14 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { Caches } from '../src/index.js'
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle Tree API tests', () => {
   let verkleCrypto: VerkleCrypto
