@@ -1,5 +1,7 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { Config } from '../../index.js'
+import { RlpxPeer } from '../../net/peer/rlpxpeer.js'
 import { getClientVersion } from '../../util/index.js'
 import { INTERNAL_ERROR } from '../error-code.js'
 import { callWithStackTrace } from '../helpers.js'
@@ -7,7 +9,6 @@ import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../client.js'
-import type { RlpxPeer } from '../../net/peer/rlpxpeer.js'
 import type { RlpxServer } from '../../net/server/rlpxserver.js'
 import type { FullEthereumService } from '../../service/index.js'
 
@@ -122,7 +123,13 @@ export class Admin {
     let peerInfo
     try {
       peerInfo = await dpt!.addPeer(params[0])
-      await server.connect(bytesToHex(peerInfo.id!))
+      const rlpxPeer = new RlpxPeer({
+        config: new Config(),
+        id: bytesToHex(peerInfo.id!),
+        host: peerInfo.address!,
+        port: peerInfo.tcpPort as number,
+      })
+      service.pool.add(rlpxPeer)
     } catch (err: any) {
       throw {
         code: INTERNAL_ERROR,
