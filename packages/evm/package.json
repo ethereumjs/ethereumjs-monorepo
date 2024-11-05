@@ -75,7 +75,7 @@
     "level": "^8.0.0",
     "mcl-wasm": "^1.5.0",
     "memory-level": "^1.0.0",
-    "micro-eth-signer": "^0.11.0",
+    "micro-eth-signer": "^0.12.1",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.12.0",
