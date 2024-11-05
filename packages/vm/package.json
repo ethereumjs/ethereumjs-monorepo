@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "@ethereumjs/blockchain": "^8.0.0-alpha.1",
-    "@ethereumjs/ethash": "^3.0.3",
+    "@ethereumjs/ethash": "^4.0.0-alpha.1",
     "@paulmillr/trusted-setups": "^0.1.2",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
