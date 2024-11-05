@@ -26,6 +26,7 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JSONTx,
+  TransactionCache,
   TransactionInterface,
   TxOptions,
 } from '../types.js'
@@ -64,6 +65,8 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   private keccakFunction: (msg: Uint8Array) => Uint8Array
 
   protected readonly txOptions: TxOptions
+
+  readonly cache: TransactionCache = {}
 
   /**
    * List of tx type defining EIPs,
@@ -290,6 +293,23 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     return Legacy.getDataGas(this)
   }
 
+  // TODO figure out if this is necessary
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return Legacy.toCreationAddress(this)
+  }
+
+  /**
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+   */
+  getIntrinsicGas(): bigint {
+    return Legacy.getIntrinsicGas(this)
+  }
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
@@ -312,7 +332,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    */
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
-      const msg = this._errorMsg('This transaction is not signed')
+      const msg = Legacy.errorMsg(this, 'This transaction is not signed')
       throw new Error(msg)
     }
     return this.getHashedMessageToSign()
@@ -377,14 +397,34 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     }
   }
 
+  getValidationErrors(): string[] {
+    return Legacy.getValidationErrors(this)
+  }
+
+  isValid(): boolean {
+    return Legacy.isValid(this)
+  }
+
+  verifySignature(): boolean {
+    return Legacy.verifySignature(this)
+  }
+
+  getSenderAddress(): Address {
+    return Legacy.getSenderAddress(this)
+  }
+
+  sign(privateKey: Uint8Array): LegacyTx {
+    return <LegacyTx>Legacy.sign(this, privateKey)
+  }
+
   /**
    * Return a compact error string representation of the object
    */
-  /*public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
+  public errorStr() {
+    let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` gasPrice=${this.gasPrice}`
     return errorStr
-  }*/
+  }
 
   /**
    * Internal helper function to create an annotated error message

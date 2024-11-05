@@ -217,6 +217,13 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JSONTx
   errorStr(): string
+
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV?: boolean,
+  ): Transaction[T]
 }
 
 export interface LegacyTxInterface<T extends TransactionType = TransactionType>
