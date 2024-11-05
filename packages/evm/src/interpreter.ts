@@ -1115,6 +1115,9 @@ export class Interpreter {
       if (this.common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
         for (const item of createdAddresses!) {
+          if (!this._result.createdAddresses) {
+            this._result.createdAddresses = new Set()
+          }
           this._result.createdAddresses!.add(item)
         }
       }
