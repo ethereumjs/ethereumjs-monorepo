@@ -114,20 +114,20 @@ export class Admin {
    * e.g. `.admin_addPeer [{"address": "127.0.0.1", "tcpPort": 30303, "udpPort": 30303}]`
    * @param params An object containing an address, tcpPort, and udpPort for target server to connect to
    */
-  async addPeer(params: [string]) {
+  async addPeer(params: [Object]) {
     const service = this._client.service as any as FullEthereumService
     const server = service.pool.config.server as RlpxServer
     const dpt = server.dpt
 
     let peerInfo
     try {
-      peerInfo = await dpt.addPeer(params[0])
-      await server.connect(peerInfo.id)
-    } catch (err) {
+      peerInfo = await dpt!.addPeer(params[0])
+      await server.connect(bytesToHex(peerInfo.id!))
+    } catch (err: any) {
       throw {
         code: INTERNAL_ERROR,
         message: `failed to add peer: ${JSON.stringify(params)}`,
-        stack: err.stack,
+        stack: err?.stack,
       }
     }
 
