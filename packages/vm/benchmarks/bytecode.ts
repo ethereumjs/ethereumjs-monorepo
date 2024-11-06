@@ -2,7 +2,7 @@ import { readFileSync } from 'fs'
 import { Chain, Common, Hardfork, Mainnet, StateManagerInterface } from '@ethereumjs/common'
 import { getPreState } from './util.js'
 import { EVM } from '@ethereumjs/evm'
-import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import { Address, createZeroAddress, hexToBytes, PrefixedHexString } from '@ethereumjs/util'
 import { createEVM } from '@ethereumjs/evm'
 import { Bench } from 'tinybench'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
@@ -34,6 +34,7 @@ export async function bytecode(numSamples?: number, bytecode?: string, preState?
       await evm.runCode({
         code: bytecodeHex,
         gasLimit: gasLimit,
+        createdAddresses: new Set<PrefixedHexString>(),
       })
     })
   }
