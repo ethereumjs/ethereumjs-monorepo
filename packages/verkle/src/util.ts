@@ -2,6 +2,7 @@ import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
 import { LeafVerkleNode, LeafVerkleNodeValue, decodeVerkleNode } from './node/index.js'
 
+import type { ChildNode } from './node/index.js'
 import type { VerkleTree } from './verkleTree.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -34,7 +35,9 @@ export const dumpLeafValues = async (
   } else {
     const childPaths = node.children
       .filter((value) => value !== null)
-      .map((value) => dumpLeafValues(tree, tree['verkleCrypto'].hashCommitment(value!.commitment)))
+      .map((value: ChildNode) =>
+        dumpLeafValues(tree, tree['verkleCrypto'].hashCommitment(value.commitment)),
+      )
 
     const res = (await Promise.all(childPaths)).filter((val) => val !== undefined)
     return res.flat(1) as [PrefixedHexString, PrefixedHexString][]
