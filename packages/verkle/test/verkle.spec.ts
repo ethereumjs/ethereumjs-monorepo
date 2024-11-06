@@ -1,4 +1,4 @@
-import { MapDB, bytesToHex, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
+import { MapDB, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -9,8 +9,6 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
-  dumpLeafValues,
-  dumpNodeHashes,
 } from '../src/index.js'
 
 import type { VerkleNode } from '../src/index.js'
