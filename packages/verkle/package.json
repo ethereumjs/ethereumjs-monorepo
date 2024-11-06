@@ -55,11 +55,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
     "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.4.8",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1"
+    "micro-eth-signer": "0.12.1"
   },
   "engines": {
     "node": ">=18"

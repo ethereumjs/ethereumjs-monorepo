@@ -63,8 +63,6 @@
   "devDependencies": {
     "@ethereumjs/block": "^6.0.0-alpha.1",
     "@ethereumjs/genesis": "^0.3.0-alpha.1",
-    "@types/debug": "^4.1.9",
-    "rustbn-wasm": "^0.4.0",
-    "verkle-cryptography-wasm": "^0.4.8"
+    "@types/debug": "^4.1.9"
   }
 }
