@@ -217,7 +217,7 @@ export class VerkleTree {
           ['put'],
         )
     }
-    if (leafNode.values.filter((val) => val !== LeafVerkleNodeValue.Untouched).length === 0) {
+    if (leafNode.values.every((val) => val === LeafVerkleNodeValue.Untouched)) {
       // If all of the values are "untouched", this node should be deleted if it was previously created
       if (foundPath.node !== null) {
         // If the node previously existed, we need to delete it

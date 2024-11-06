@@ -40,9 +40,7 @@ export const dumpLeafValues = async (
   } else {
     const childPaths = node.children
       .filter((value) => value !== null)
-      .map((value: ChildNode) =>
-        dumpLeafValues(tree, tree['verkleCrypto'].hashCommitment(value.commitment)),
-      )
+      .map((value) => dumpLeafValues(tree, tree['verkleCrypto'].hashCommitment(value!.commitment)))
 
     const res = (await Promise.all(childPaths)).filter((val) => val !== undefined)
     return res.flat(1) as [PrefixedHexString, PrefixedHexString][]
@@ -67,7 +65,7 @@ export const dumpNodeHashes = async (
   // If current node is root, push '0x' for path and node hash for commitment
   equalsBytes(startingNode, tree.root()) && entries.push(['0x', bytesToHex(startingNode)])
   if (node instanceof InternalVerkleNode) {
-    const children: ChildNode[] = node.children.filter((value) => value !== null)
+    const children = node.children.filter((value) => value !== null) as ChildNode[]
 
     // Push non-null children paths and hashes
     for (const child of children) {
@@ -84,10 +82,12 @@ export const dumpNodeHashes = async (
           dumpNodeHashes(tree, tree['verkleCrypto'].hashCommitment(value.commitment)),
         ),
       )
-    ).filter((val) => val !== undefined)
+    )
+      .filter((val) => val !== undefined)
+      .flat(1)
 
     // Add all child paths and hashes to entries
-    entries = [...entries, ...childPaths.flat(1)]
+    entries = [...entries, ...childPaths] as [PrefixedHexString, PrefixedHexString][]
   }
 
   return entries
