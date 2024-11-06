@@ -45,5 +45,6 @@ describe(method, () => {
 
     const peersResponse = await rpc.request('admin_peers', [])
     assert.equal(peersResponse.result.length, 1, 'added peer is visible')
+    assert.equal(localPeerClient.service.pool.peers.length, 1, 'added peer is visible in peer pool')
   })
 })
