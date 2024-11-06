@@ -1,7 +1,13 @@
 import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
-import { LeafVerkleNode, LeafVerkleNodeValue, decodeVerkleNode } from './node/index.js'
+import {
+  InternalVerkleNode,
+  LeafVerkleNode,
+  LeafVerkleNodeValue,
+  decodeVerkleNode,
+} from './node/index.js'
 
+import type { ChildNode } from './node/index.js'
 import type { VerkleTree } from './verkleTree.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -58,22 +64,31 @@ export const dumpNodeHashes = async (
   const node = decodeVerkleNode(rawNode, tree['verkleCrypto'])
   // If current node is root, push '0x' for path and node hash for commitment
   equalsBytes(startingNode, tree.root()) && entries.push(['0x', bytesToHex(startingNode)])
-  if (node instanceof LeafVerkleNode) {
-    // Leaf node paths/hashes were added in the previous inner node's iteration
-    return []
-  } else {
-    const children = node.children.filter((value) => value !== null)
+  if (node instanceof InternalVerkleNode) {
+    const children = node.children.filter((value) => value !== null) as ChildNode[]
+
+    // Push non-null children paths and hashes
     for (const child of children) {
       entries.push([
-        bytesToHex(child!.path),
-        bytesToHex(tree['verkleCrypto'].hashCommitment(child!.commitment)),
+        bytesToHex(child.path),
+        bytesToHex(tree['verkleCrypto'].hashCommitment(child.commitment)),
       ])
     }
-    const childPaths = children.map((value) =>
-      dumpNodeHashes(tree, tree['verkleCrypto'].hashCommitment(value!.commitment)),
+
+    // Recursively call dumpNodeHashes on each child node
+    const childPaths = (
+      await Promise.all(
+        children.map((value) =>
+          dumpNodeHashes(tree, tree['verkleCrypto'].hashCommitment(value.commitment)),
+        ),
+      )
     )
-    const res = (await Promise.all(childPaths)).filter((val) => val !== undefined)
-    entries = [...entries, ...(res.flat(1) as [PrefixedHexString, PrefixedHexString][])]
+      .filter((val) => val !== undefined)
+      .flat(1)
+
+    // Add all child paths and hashes to entries
+    entries = [...entries, ...childPaths] as [PrefixedHexString, PrefixedHexString][]
   }
+
   return entries
 }

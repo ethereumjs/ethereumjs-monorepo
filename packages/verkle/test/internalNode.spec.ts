@@ -63,7 +63,7 @@ describe('verkle node - internal', () => {
     })
     const serialized = node.serialize()
     const decoded = decodeVerkleNode(serialized, verkleCrypto)
-    assert.deepEqual((decoded as InternalVerkleNode).children[0].commitment, child.commitment)
+    assert.deepEqual((decoded as InternalVerkleNode).children[0]?.commitment, child.commitment)
   })
 
   it('should serialize and deserialize a node with no children', async () => {

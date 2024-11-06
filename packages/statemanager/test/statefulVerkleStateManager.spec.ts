@@ -24,7 +24,7 @@ describe('Verkle Tree API tests', () => {
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it('should put/get/delete an account (with no storage/code from the trie', async () => {
+  it('should put/get/delete an account (with no storage/code from the trie)', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
