@@ -13,7 +13,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
@@ -22,6 +22,7 @@ import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js
 import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   let verkleCrypto: VerkleCrypto

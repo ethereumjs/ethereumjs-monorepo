@@ -1,12 +1,14 @@
 import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
 import { LeafVerkleNode } from '../src/index.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
-import type { ProverInput, VerifierInput } from 'verkle-cryptography-wasm'
+import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle'
+
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('lets make proofs', () => {
   let verkleCrypto: VerkleCrypto

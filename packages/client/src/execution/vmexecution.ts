@@ -26,8 +26,8 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { initRustBN } from 'rustbn-wasm'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
 import { debugCodeReplayBlock } from '../util/debug.js'
@@ -42,6 +42,7 @@ import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 export enum ExecStatus {
   VALID = 'VALID',
