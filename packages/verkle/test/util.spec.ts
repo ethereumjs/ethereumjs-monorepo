@@ -74,7 +74,7 @@ describe('dump node hashes', () => {
     const entries = await dumpNodeHashes(trie, trie.root())
     assert.deepEqual(entries, [['0x', bytesToHex(trie.root())]])
   })
-  it.only('should contain the paths and hashes of all nodes in the tree', async () => {
+  it('should contain the paths and hashes of all nodes in the tree', async () => {
     const trie = await createVerkleTree()
     for (const [key, val] of values) {
       const treeKey = hexToBytes(key)
