@@ -1,10 +1,11 @@
 import { KeyEncoding, MapDB, ValueEncoding } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 
 import { ROOT_DB_KEY } from './types.js'
 import { VerkleTree } from './verkleTree.js'
 
 import type { VerkleTreeOpts } from './types.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   const key = ROOT_DB_KEY
