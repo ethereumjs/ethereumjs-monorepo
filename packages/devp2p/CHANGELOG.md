@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.0.0-alpha.1 - [ UNPUBLISHED ]
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- "Guard" logging to only run with `ethjs` guard, PR [#3654](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3654/)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `devp2p:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
+
 ## 6.1.3 - 2024-08-15
 
 Maintenance release with downstream dependency updates, see PR [#3527](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3527)
