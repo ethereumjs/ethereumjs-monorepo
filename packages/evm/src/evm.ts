@@ -972,6 +972,7 @@ export class EVM implements EVMInterface {
       selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
       blobVersionedHashes: opts.blobVersionedHashes,
+      createdAddresses: opts.createdAddresses,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })
