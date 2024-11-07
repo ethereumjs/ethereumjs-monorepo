@@ -255,6 +255,7 @@ export function sign(tx: LegacyTxInterface, privateKey: Uint8Array): Transaction
   return signedTx
 }
 
+// TODO maybe move this to shared methods (util.ts in features)
 export function getSharedErrorPostfix(tx: LegacyTxInterface) {
   let hash = ''
   try {
