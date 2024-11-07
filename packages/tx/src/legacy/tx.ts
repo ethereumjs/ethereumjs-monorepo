@@ -63,7 +63,7 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
       )
     }
 
-    this.common.updateParams(opts.params ?? paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx, '@ethereumjs/tx')
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 

@@ -18,16 +18,14 @@ describe('[Common]: Parameter instantiation / params option / Updates', () => {
     c.updateParams(params)
     msg = 'Should update parameter on updateParams() and properly rebuild cache'
     assert.equal(c.param('bn254AddGas'), BigInt(250), msg)
-
-    c.resetParams(params)
-    msg = 'Should reset all parameters on resetParams() and properly rebuild cache'
-    assert.equal(c.param('bn254AddGas'), BigInt(250), msg)
-    assert.throws(() => {
-      c.param('bn254MulGas'), BigInt(250)
-    })
+    assert.equal(c['_includedParams'].length, 0, msg)
 
     msg = 'Should not side-manipulate the original params file during updating internally'
     assert.equal(paramsTest['1679']['bn254AddGas'], 150)
+
+    msg = 'Should add optional parameter set name to parameter set names array'
+    c.updateParams(params, 'myparams')
+    assert.equal(c['_includedParams'].length, 1, msg)
   })
 })
 

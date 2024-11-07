@@ -74,7 +74,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx, '@ethereumjs/tx')
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {

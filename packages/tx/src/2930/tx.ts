@@ -61,7 +61,7 @@ export class AccessList2930Transaction extends BaseTransaction<TransactionType.A
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
+    this.common.updateParams(opts.params ?? paramsTx, '@ethereumjs/tx')
     this.chainId = this.common.chainId()
 
     // EIP-2718 check is done in Common
