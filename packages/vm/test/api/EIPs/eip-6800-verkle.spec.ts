@@ -9,12 +9,12 @@ import { describe, it } from 'vitest'
 
 import { verkleKaustinen6Block72Data } from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import { createVM, runBlock } from '../../../src/index.js'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 const customChainParams = { name: 'custom', chainId: 69420 }
 const common = createCustomCommon(customChainParams, Mainnet, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
+  customCrypto: { verkleCrypto: verkle },
 })
 const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
   createTxFromRLP(hexToBytes(tx), { common }),
@@ -34,7 +34,7 @@ const block = createBlock(
 describe('EIP 6800 tests', () => {
   // TODO: Turn back on once we have kaustinen7 block data
   it.skip('successfully run transactions statelessly using the block witness', async () => {
-    common.customCrypto.verkleCrypto = await loadVerkleCrypto()
+    common.customCrypto.verkleCrypto = verkle
     const verkleStateManager = new StatelessVerkleStateManager({
       caches: new Caches(),
       common,

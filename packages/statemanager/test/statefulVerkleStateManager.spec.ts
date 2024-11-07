@@ -12,25 +12,22 @@ import {
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { Caches } from '../src/index.js'
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle Tree API tests', () => {
   let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
+
   it('should put/get/delete an account (with no storage/code from the trie)', async () => {
     const trie = await createVerkleTree()
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -121,16 +118,12 @@ describe('Verkle Tree API tests', () => {
 })
 
 describe('caching functionality works', () => {
-  let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   it('should cache accounts and then write to trie', async () => {
     const trie = await createVerkleTree()
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie, caches: new Caches() })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -138,7 +131,7 @@ describe('caching functionality works', () => {
     await sm.putAccount(address, account)
 
     // Confirm account doesn't exist in trie
-    const stem = getVerkleStem(verkleCrypto, address, 0)
+    const stem = getVerkleStem(verkle, address, 0)
     const accountData = await sm['_trie'].get(stem, [
       VerkleLeafType.BasicData,
       VerkleLeafType.CodeHash,

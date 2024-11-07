@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
@@ -53,13 +53,7 @@ import type {
 } from '../../src/types.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type {
-  NestedUint8Array,
-  PrefixedHexString,
-  VerkleCrypto,
-  VerkleExecutionWitness,
-} from '@ethereumjs/util'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
+import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
@@ -687,10 +681,6 @@ describe('runBlock() -> tx types', async () => {
 })
 
 describe.skip('run a verkle block', () => {
-  let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   it('should execute a verkle block and produce an executionWitness', async () => {
     const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.js')).block
     const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.js')).block
@@ -698,7 +688,7 @@ describe.skip('run a verkle block', () => {
 
     const common = new Common({
       chain: Mainnet,
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
       hardfork: Hardfork.Shanghai,
       eips: [2935, 3607, 6800],
     })

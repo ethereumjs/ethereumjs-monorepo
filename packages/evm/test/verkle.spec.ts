@@ -9,23 +9,20 @@ import {
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { VerkleAccessWitness, createEVM } from '../src/index.js'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle tests', () => {
   let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
+
   it('should execute bytecode and update the state', async () => {
     // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({
       chain: Mainnet,
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
       eips: [6800],
       hardfork: Hardfork.Cancun,
     })
