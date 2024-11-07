@@ -5,7 +5,6 @@ import { Event } from '../../types.js'
 import type { Config } from '../../config.js'
 import type { Peer } from '../peer/peer.js'
 import type { EthProtocolMethods } from './ethprotocol.js'
-import type { LesProtocolMethods } from './lesprotocol.js'
 import type { Message, Protocol } from './protocol.js'
 import type { Sender } from './sender.js'
 import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
@@ -315,27 +314,6 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     bytes: bigint
   }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
     return this.request('GetTrieNodes', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
-      return undefined
-    })
-  }
-}
-
-export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethods {
-  name = 'les' // public name: string
-
-  constructor(options: BoundProtocolOptions) {
-    super(options)
-  }
-
-  async getBlockHeaders(opts: {
-    reqId?: bigint | undefined
-    block: bigint | Uint8Array
-    max: number
-    skip?: number | undefined
-    reverse?: boolean | undefined
-  }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
-    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
       this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       return undefined
     })

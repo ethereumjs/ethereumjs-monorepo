@@ -39,21 +39,7 @@ export function isInternalVerkleNode(node: VerkleNode): node is InternalVerkleNo
   return node.type === VerkleNodeType.Internal
 }
 
-export const createUntouchedLeafValue = () => new Uint8Array(32)
-
-/**
- * Generates a 32 byte array of zeroes and sets the 129th bit to 1 (if `setLeafMarker` is set),
- * which the EIP refers to as the leaf marker to indicate a leaf value that has been touched previously
- * and contains only zeroes
- * @returns a 32 byte array of zeroes (optionally with 129th bit set to 1)
- */
-export const createDeletedLeafVerkleValue = (setLeafMarker = false) => {
-  const bytes = new Uint8Array(32)
-  // Set the 129th bit to 1 directly by setting the 17th byte (index 16) to 1 (since these bytes are little endian)
-  if (setLeafMarker) bytes[16] = 1
-
-  return bytes
-}
+export const createZeroesLeafValue = () => new Uint8Array(32)
 
 export const createDefaultLeafVerkleValues = () => new Array(256).fill(0)
 
@@ -75,10 +61,8 @@ export const createCValues = (values: (Uint8Array | LeafVerkleNodeValue)[]) => {
     let val: Uint8Array
     switch (retrievedValue) {
       case LeafVerkleNodeValue.Untouched: // Leaf value that has never been written before
-        val = createUntouchedLeafValue()
-        break
       case LeafVerkleNodeValue.Deleted: // Leaf value that has been written with zeros (either zeroes or a deleted value)
-        val = createDeletedLeafVerkleValue(true)
+        val = createZeroesLeafValue()
         break
       default:
         val = retrievedValue

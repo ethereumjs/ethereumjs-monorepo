@@ -7,24 +7,19 @@ import { SyncMode } from '../config.js'
 import { VMExecution } from '../execution/index.js'
 import { Miner } from '../miner/index.js'
 import { EthProtocol } from '../net/protocol/ethprotocol.js'
-import { LesProtocol } from '../net/protocol/lesprotocol.js'
 import { SnapProtocol } from '../net/protocol/snapprotocol.js'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.js'
 import { Event } from '../types.js'
 
-import { Service, type ServiceOptions } from './service.js'
+import { Service } from './service.js'
 import { Skeleton } from './skeleton.js'
 import { TxPool } from './txpool.js'
 
 import type { Peer } from '../net/peer/peer.js'
 import type { Protocol } from '../net/protocol/index.js'
+import type { ServiceOptions } from './service.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blob4844Tx } from '@ethereumjs/tx'
-
-interface FullEthereumServiceOptions extends ServiceOptions {
-  /** Serve LES requests (default: false) */
-  lightserv?: boolean
-}
 
 /**
  * Full Ethereum service
@@ -33,7 +28,6 @@ interface FullEthereumServiceOptions extends ServiceOptions {
 export class FullEthereumService extends Service {
   /* synchronizer for syncing the chain */
   public synchronizer?: BeaconSynchronizer | FullSynchronizer
-  public lightserv: boolean
   public miner: Miner | undefined
   public txPool: TxPool
   public skeleton?: Skeleton
@@ -48,10 +42,8 @@ export class FullEthereumService extends Service {
   /**
    * Create new ETH service
    */
-  constructor(options: FullEthereumServiceOptions) {
+  constructor(options: ServiceOptions) {
     super(options)
-
-    this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
 
@@ -322,16 +314,6 @@ export class FullEthereumService extends Service {
         convertSlimBody: true,
       }),
     ]
-    if (this.config.lightserv) {
-      protocols.push(
-        new LesProtocol({
-          config: this.config,
-          chain: this.chain,
-          flow: this.flow,
-          timeout: this.timeout,
-        }),
-      )
-    }
     return protocols
   }
 
@@ -344,8 +326,6 @@ export class FullEthereumService extends Service {
   async handle(message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
-    } else {
-      return this.handleLes(message, peer)
     }
   }
 
@@ -453,34 +433,6 @@ export class FullEthereumService extends Service {
         }
         peer.eth?.send('Receipts', { reqId, receipts })
         break
-      }
-    }
-  }
-
-  /**
-   * Handles incoming LES message from connected peer
-   * @param message message object
-   * @param peer peer
-   */
-  async handleLes(message: any, peer: Peer): Promise<void> {
-    if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
-      const { reqId, block, max, skip, reverse } = message.data
-      const bv = this.flow.handleRequest(peer, message.name, max)
-      if (bv < 0) {
-        this.pool.ban(peer, 300000)
-        this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
-      } else {
-        if (typeof block === 'bigint') {
-          if (
-            (reverse === true && block > this.chain.headers.height) ||
-            (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
-          ) {
-            // Don't respond to requests greater than the current height
-            return
-          }
-        }
-        const headers = await this.chain.getHeaders(block, max, skip, reverse)
-        peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
   }

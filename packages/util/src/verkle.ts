@@ -52,7 +52,7 @@ export interface VerifierInput {
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
- * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from Verkle cryptography
  * @param {Address} address The address to generate the tree key for.
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
@@ -78,7 +78,7 @@ export function getVerkleStem(
 
 /**
  * Verifies that the executionWitness is valid for the given prestateRoot.
- * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from Verkle cryptography
  * @param {VerkleExecutionWitness} executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
@@ -258,10 +258,10 @@ export const chunkifyCode = (code: Uint8Array) => {
     if (x >= 0 && slice[x] - 0x5f > 31 - x) {
       // x >= 0 indicates PUSHn in this chunk
       // n > 31 - x indicates that PUSHDATA spills over to next chunk
-      // PUSHDATA overflow = n - 31 - x + 1(i.e. number of elements PUSHed
+      // PUSHDATA overflow = n - (31 - x) + 1(i.e. number of elements PUSHed
       // - size of code chunk (31) - position of PUSHn in the previous
       // code chunk + 1 (since x is zero-indexed))
-      const pushDataOverflow = slice[x] - 0x5f - 31 - x + 1
+      const pushDataOverflow = slice[x] - 0x5f - (31 - x) + 1
       // Put next chunk prepended with number of overflow PUSHDATA bytes
       chunks.push(
         concatBytes(Uint8Array.from([pushDataOverflow]), code.slice(i * 31, (i + 1) * 31)),

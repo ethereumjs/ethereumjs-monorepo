@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
 
-import type { InterpreterStep, RunState } from '../src/interpreter.js'
+import type { RunState } from '../src/interpreter.js'
 import type { AddOpcode } from '../src/types.js'
 
 describe('VM: custom opcodes', () => {
@@ -28,7 +28,7 @@ describe('VM: custom opcodes', () => {
     const evm = await createEVM({ customOpcodes: [testOpcode] })
     const gas = 123456
     let correctOpcodeName = false
-    evm.events.on('step', (e: InterpreterStep) => {
+    evm.events.on('step', (e) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
       }

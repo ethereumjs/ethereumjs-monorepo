@@ -1,5 +1,5 @@
 import { type VerkleCrypto, equalsBytes, randomBytes } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -9,6 +9,7 @@ import {
   isInternalVerkleNode,
 } from '../src/node/index.js'
 import { InternalVerkleNode } from '../src/node/internalNode.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle node - internal', () => {
   let verkleCrypto: VerkleCrypto
@@ -62,7 +63,7 @@ describe('verkle node - internal', () => {
     })
     const serialized = node.serialize()
     const decoded = decodeVerkleNode(serialized, verkleCrypto)
-    assert.deepEqual((decoded as InternalVerkleNode).children[0].commitment, child.commitment)
+    assert.deepEqual((decoded as InternalVerkleNode).children[0]?.commitment, child.commitment)
   })
 
   it('should serialize and deserialize a node with no children', async () => {

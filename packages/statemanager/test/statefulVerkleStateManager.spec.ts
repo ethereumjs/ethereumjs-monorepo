@@ -10,20 +10,21 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { Caches } from '../src/index.js'
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle Tree API tests', () => {
   let verkleCrypto: VerkleCrypto
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
-  it('should put/get/delete an account (with no storage/code from the trie', async () => {
+  it('should put/get/delete an account (with no storage/code from the trie)', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -34,8 +35,30 @@ describe('Verkle Tree API tests', () => {
     assert.equal(retrievedAccount?.nonce, account.nonce)
     await sm.deleteAccount(address)
     const deletedAccount = await sm.getAccount(address)
-    assert.ok(deletedAccount?.isEmpty())
+    assert.equal(deletedAccount, undefined)
   })
+
+  it('should return same stateRoot when putting and then deleting account', async () => {
+    const trie = await createVerkleTree()
+    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+
+    const address1 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
+    const account1 = createAccount({ nonce: 3n, balance: 0xfffn })
+    const address2 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b4')
+    const account2 = createAccount({ nonce: 4n, balance: 0xffen })
+
+    await sm.putAccount(address1, account1)
+    const stateRootAfterPutAccount1 = await sm.getStateRoot()
+
+    // Put and then delete the account2
+    await sm.putAccount(address2, account2)
+    await sm.deleteAccount(address2)
+
+    // StateRoot should return to the initial stateRoot
+    const stateRootAfterDeleteAccount = await sm.getStateRoot()
+    assert.deepEqual(stateRootAfterPutAccount1, stateRootAfterDeleteAccount)
+  })
+
   it('should put and get code', async () => {
     const trie = await createVerkleTree()
     const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
@@ -72,7 +95,7 @@ describe('Verkle Tree API tests', () => {
     await sm.putAccount(address, new Account(0n, 1n))
     await sm.putStorage(address, zeroSlot, zeroSlotValue)
     const retrievedValue = await sm.getStorage(address, zeroSlot)
-    assert.deepEqual(retrievedValue, zeroSlotValue)
+    assert.deepEqual(retrievedValue, setLengthLeft(zeroSlotValue, 32))
   })
 })
 

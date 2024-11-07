@@ -1,12 +1,14 @@
 import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
 import { LeafVerkleNode } from '../src/index.js'
 
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
-import type { ProverInput, VerifierInput } from 'verkle-cryptography-wasm'
+import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle'
+
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('lets make proofs', () => {
   let verkleCrypto: VerkleCrypto
@@ -29,12 +31,7 @@ describe('lets make proofs', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
-
-    await trie['_createRootNode']()
+    const trie = await createVerkleTree()
 
     const keyWithMultipleValues = keys[0].slice(0, 31)
     await trie.put(keyWithMultipleValues, [keys[0][31], keys[1][31]], [values[0], values[1]])
@@ -73,7 +70,6 @@ describe('lets make proofs', () => {
   it('should pass for empty trie', async () => {
     const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
 
-    await trie['_createRootNode']()
     const proof = verkleCrypto.createProof([
       {
         // Get commitment from root node

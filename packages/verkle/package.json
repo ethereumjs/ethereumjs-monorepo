@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/verkle",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.1",
   "description": "Implementation of verkle trees as used in Ethereum.",
   "keywords": [
     "verkle",
@@ -43,6 +43,8 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "tsx ../../scripts/examples-runner.ts -- verkle",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -53,11 +55,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
     "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.4.8",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.1.0"
+    "micro-eth-signer": "0.12.1"
   },
   "engines": {
     "node": ">=18"

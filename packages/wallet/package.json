@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.4",
+  "version": "3.0.0-alpha.1",
   "description": "Utilities for handling Ethereum keys",
   "keywords": [
     "ethereum",
@@ -34,7 +34,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
     "examples:build": "npx embedme README.md",
@@ -48,7 +48,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
     "@scure/base": "^1.1.7",
     "ethereum-cryptography": "^3.0.0",
     "js-md5": "^0.8.3",

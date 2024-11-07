@@ -1,5 +1,5 @@
 import { type VerkleCrypto, equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -10,6 +10,7 @@ import {
   isLeafVerkleNode,
 } from '../src/node/index.js'
 import { LeafVerkleNode } from '../src/node/leafNode.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle node - leaf', () => {
   let verkleCrypto = undefined as never as VerkleCrypto
@@ -79,9 +80,14 @@ describe('verkle node - leaf', () => {
     const key = randomBytes(32)
     const stem = key.slice(0, 31)
     const node = await LeafVerkleNode.create(stem, verkleCrypto)
+    const hash = node.hash()
     assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
     node.setValue(0, randomBytes(32))
     assert.notDeepEqual(node.c1, verkleCrypto.zeroCommitment)
+    assert.notDeepEqual(node.hash(), hash)
+    node.setValue(0, LeafVerkleNodeValue.Untouched)
+    assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
+    assert.deepEqual(node.hash(), hash)
   })
 
   it('should serialize and deserialize a node from raw values', async () => {

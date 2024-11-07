@@ -15,8 +15,8 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
-  createAccount,
   createAccountFromRLP,
+  createPartialAccount,
   equalsBytes,
   hexToBytes,
   isHexString,
@@ -136,8 +136,17 @@ export function makeTx(
       if (signature.v !== undefined) {
         signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
       }
-      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
-        signature.nonce[0] = '0x'
+      if (signature.r !== undefined) {
+        signature.r = bytesToHex(unpadBytes(hexToBytes(signature.r)))
+      }
+      if (signature.s !== undefined) {
+        signature.s = bytesToHex(unpadBytes(hexToBytes(signature.s)))
+      }
+      if (signature.chainId !== undefined) {
+        signature.chainId = bytesToHex(unpadBytes(hexToBytes(signature.chainId)))
+      }
+      if (signature.nonce !== undefined && signature.nonce === '0x00') {
+        signature.nonce = '0x'
       }
     }
     tx = createEOACode7702Tx(txData, opts)
@@ -417,7 +426,13 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
     }
 
     // Put account data
-    const account = createAccount({ nonce, balance, codeHash, storageRoot })
+    const account = createPartialAccount({
+      nonce,
+      balance,
+      codeHash,
+      storageRoot,
+      codeSize: codeBuf.byteLength,
+    })
     await state.putAccount(address, account)
   }
   await state.commit()

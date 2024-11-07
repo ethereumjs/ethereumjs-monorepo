@@ -1,5 +1,5 @@
 import { MapDB, equalsBytes, hexToBytes, matchingBytesLength } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
@@ -13,12 +13,38 @@ import {
 
 import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle tree', () => {
   let verkleCrypto: VerkleCrypto
   beforeAll(async () => {
     verkleCrypto = await loadVerkleCrypto()
   })
+
+  it('should instantiate with verkle crypto and a MapDB if no options are provided', async () => {
+    const tree = await createVerkleTree()
+    assert.ok(tree['_db'].db instanceof MapDB)
+    assert.ok(tree['verkleCrypto'] !== undefined)
+  })
+
+  it('should not destroy a previous root', async () => {
+    const tree = await createVerkleTree({ useRootPersistence: true })
+    await tree.put(
+      hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d'),
+      [0],
+      [hexToBytes('0x01')],
+    )
+    const root = tree.root()
+
+    const tree2 = await createVerkleTree({
+      verkleCrypto: tree['verkleCrypto'],
+      db: tree['_db'].db,
+      useRootPersistence: true,
+      root,
+    })
+    assert.deepEqual(tree2.root(), root)
+  })
+
   it('should insert and retrieve values', async () => {
     // Testdata based on https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
     const presentKeys = [
@@ -69,7 +95,6 @@ describe('Verkle tree', () => {
 
     const tree = await createVerkleTree({
       verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
     })
 
     const res = await tree.findPath(presentKeys[0])
@@ -120,12 +145,7 @@ describe('Verkle tree', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
-
-    await trie['_createRootNode']()
+    const trie = await createVerkleTree({ verkleCrypto })
 
     let putStack: [Uint8Array, VerkleNode][] = []
     const stem1 = keys[0].slice(0, 31)
@@ -231,12 +251,7 @@ describe('Verkle tree', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0300000000000000000000000000000000000000000000000000000000000000',
     ].map((key) => hexToBytes(key as PrefixedHexString))
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
-
-    await trie['_createRootNode']()
+    const trie = await createVerkleTree({ verkleCrypto })
 
     const keyWithMultipleValues = keys[0].slice(0, 31)
     await trie.put(keyWithMultipleValues, [keys[0][31], keys[1][31]], [values[0], values[1]])
@@ -255,17 +270,36 @@ describe('Verkle tree', () => {
   it('should put zeros in leaf node when del called with stem that was not in the trie before', async () => {
     const keys = [hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01')]
 
-    const trie = await createVerkleTree({
-      verkleCrypto,
-      db: new MapDB<Uint8Array, Uint8Array>(),
-    })
+    const trie = await createVerkleTree({ verkleCrypto })
 
-    await trie['_createRootNode']()
     assert.deepEqual(await trie.get(keys[0].slice(0, 31), [keys[0][31]]), [])
 
     await trie.del(keys[0].slice(0, 31), [keys[0][31]])
     const res = await trie.findPath(keys[0].slice(0, 31))
     assert.ok(res.node !== null)
     assert.deepEqual((res.node as LeafVerkleNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
+  })
+  it('should remove null child nodes and roots should match', async () => {
+    const keys = [
+      // Two keys with the same stem but different suffixes
+      '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d01',
+      // A key with a partially matching stem 0x318d to above 2 keys
+      '0x318dfa512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+      // A key with a partially matching stem 0x318dfa51 to above key
+      '0x318dfa513b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d02',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+    const values = [
+      '0x320122e8584be00d000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+    ].map((key) => hexToBytes(key as PrefixedHexString))
+    const trie = await createVerkleTree({ verkleCrypto })
+    await trie.put(keys[0].slice(0, 31), [keys[0][31]], [values[0]])
+    await trie.put(keys[1].slice(0, 31), [keys[1][31]], [values[1]])
+    const root2 = trie.root()
+    await trie.put(keys[2].slice(0, 31), [keys[2][31]], [values[1]])
+
+    await trie.put(keys[2].slice(0, 31), [keys[2][31]], [LeafVerkleNodeValue.Untouched])
+
+    assert.deepEqual(trie.root(), root2)
   })
 })

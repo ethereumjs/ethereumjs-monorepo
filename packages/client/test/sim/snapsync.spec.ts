@@ -178,7 +178,7 @@ describe('simple mainnet test run', async () => {
 
         try {
           // call sync if not has been called yet
-          void ejsClient.services[0].synchronizer?.sync()
+          void ejsClient.service.synchronizer?.sync()
           await Promise.race([
             (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
@@ -282,7 +282,7 @@ async function createSnapClient(
   return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
 }
 
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })

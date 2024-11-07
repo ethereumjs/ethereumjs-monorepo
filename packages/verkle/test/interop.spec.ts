@@ -1,8 +1,9 @@
 import { MapDB, bytesToHex } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('rust-verkle test vectors', () => {
   let verkleCrypto: Awaited<ReturnType<typeof loadVerkleCrypto>>

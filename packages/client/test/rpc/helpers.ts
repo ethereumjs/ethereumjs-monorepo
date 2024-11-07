@@ -35,7 +35,6 @@ import { createRPCServerListener, createWsRPCServerListener } from '../../src/ut
 import { mockBlockchain } from './mockBlockchain.js'
 
 import type { EthereumClient } from '../../src/client.js'
-import type { FullEthereumService } from '../../src/service/index.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
@@ -174,26 +173,25 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     synchronized: false,
     config,
     chain,
-    services: [
-      {
-        name: 'eth',
-        chain,
-        skeleton,
-        pool: { peers },
-        protocols: [
-          {
-            name: 'eth',
-            versions: clientConfig.ethProtocolVersions,
-          },
-        ],
-        synchronizer,
-        execution,
-        switchToBeaconSync: () => {
-          return undefined
+    service: {
+      name: 'eth',
+      chain,
+      skeleton,
+      pool: { peers },
+      protocols: [
+        {
+          name: 'eth',
+          versions: clientConfig.ethProtocolVersions,
         },
-        buildHeadState: () => {},
+      ],
+      synchronizer,
+      execution,
+      switchToBeaconSync: () => {
+        return undefined
       },
-    ],
+      buildHeadState: () => {},
+    },
+
     servers,
     opened: clientConfig.opened,
     server: (name: string) => {
@@ -202,7 +200,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   }
 
   if (clientOpts.includeVM === true) {
-    client.services[0].txPool = new TxPool({ config, service: client.services[0] })
+    client.service.txPool = new TxPool({ config, service: client.service })
   }
 
   return client as EthereumClient
@@ -272,7 +270,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
 
   const { chain } = client
-  const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const service = client.service
   const { execution, skeleton } = service
 
   await chain.open()
@@ -308,7 +306,7 @@ export async function runBlockWithTxs(
   for (const tx of txs) {
     await blockBuilder.addTransaction(tx, { skipHardForkValidation: true })
   }
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
 
   // put block into chain and run execution
   await chain.putBlocks([block], fromEngine)
