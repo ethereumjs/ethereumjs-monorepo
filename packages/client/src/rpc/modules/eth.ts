@@ -37,6 +37,7 @@ import {
   type PreByzantiumTxReceipt,
   type TxReceipt,
   type VM,
+  encodeSszReceipt,
   runBlock,
   runTx,
 } from '@ethereumjs/vm'
@@ -91,6 +92,11 @@ type JSONRPCReceipt = {
   blobGasUsed?: string // QUANTITY, blob gas consumed by transaction (if blob transaction)
   blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
   type: string // QUANTITY, transaction type
+  inclusionProof?: {
+    merkleBranch: string[]
+    receiptsRoot: string
+    receiptRoot: string
+  }
 }
 type JSONRPCLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -194,6 +200,11 @@ const toJSONRPCReceipt = async (
   contractAddress?: Address,
   blobGasUsed?: bigint,
   blobGasPrice?: bigint,
+  inclusionProof?: {
+    merkleBranch: Uint8Array[]
+    receiptsRoot: Uint8Array
+    receiptRoot: Uint8Array
+  },
 ): Promise<JSONRPCReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -220,6 +231,14 @@ const toJSONRPCReceipt = async (
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
   blobGasPrice: blobGasPrice !== undefined ? bigIntToHex(blobGasPrice) : undefined,
   type: intToHex(tx.type),
+  inclusionProof:
+    inclusionProof !== undefined
+      ? {
+          merkleBranch: inclusionProof.merkleBranch.map((elem) => bytesToHex(elem)),
+          receiptsRoot: bytesToHex(inclusionProof.receiptsRoot),
+          receiptRoot: bytesToHex(inclusionProof.receiptRoot),
+        }
+      : undefined,
 })
 
 const calculateRewards = async (
@@ -996,6 +1015,10 @@ export class Eth {
       skipBlockValidation: true,
     })
 
+    const sszReceipts = runBlockResult.receipts.map((txReceipt, index) =>
+      encodeSszReceipt(txReceipt, block.transactions[index].type),
+    )
+
     const receipts = await Promise.all(
       result.map(async (r, i) => {
         const tx = block.transactions[i]
@@ -1011,6 +1034,14 @@ export class Eth {
                 block.header.baseFeePerGas!
             : (tx as LegacyTx).gasPrice
 
+        let inclusionProof = undefined
+        if (block.common.isActivatedEIP(6493)) {
+          inclusionProof = inclusionProof = {
+            receiptsRoot: block.header.receiptTrie,
+            ...ssz.computeReceiptInclusionProof(sszReceipts, i),
+          }
+        }
+
         return toJSONRPCReceipt(
           r,
           totalGasSpent,
@@ -1022,6 +1053,7 @@ export class Eth {
           createdAddress,
           blobGasUsed,
           blobGasPrice,
+          inclusionProof,
         )
       }),
     )
@@ -1073,6 +1105,18 @@ export class Eth {
 
     const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
     const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
+
+    const sszReceipts = runBlockResult.receipts.map((txReceipt, index) =>
+      encodeSszReceipt(txReceipt, block.transactions[index].type),
+    )
+    let inclusionProof = undefined
+    if (block.common.isActivatedEIP(6493)) {
+      inclusionProof = inclusionProof = {
+        receiptsRoot: block.header.receiptTrie,
+        ...ssz.computeReceiptInclusionProof(sszReceipts, txIndex),
+      }
+    }
+
     return toJSONRPCReceipt(
       receipt,
       totalGasSpent,
@@ -1084,6 +1128,7 @@ export class Eth {
       createdAddress,
       blobGasUsed,
       blobGasPrice,
+      inclusionProof,
     )
   }
 

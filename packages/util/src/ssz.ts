@@ -426,9 +426,43 @@ export const Receipt = new StableContainerType(
   { typeName: 'Receipt', jsonCase: 'eth2' },
 )
 export const Receipts = new ListCompositeType(Receipt, MAX_TRANSACTIONS_PER_PAYLOAD)
+export const ReceiptRootsList = new ListCompositeType(Bytes32, MAX_TRANSACTIONS_PER_PAYLOAD)
+export type ReceiptsType = ValueOf<typeof Receipts>
 
 export const MAX_BLOCKHEADER_FIELDS = 64
 const MAX_EXTRA_DATA_BYTES = 32
+
+export function computeReceiptInclusionProof(
+  receipts: ReceiptsType,
+  index: number,
+  fromRoots = true,
+): { merkleBranch: Uint8Array[]; receiptRoot: Uint8Array } {
+  if (index >= receipts.length) {
+    throw Error(`Invalid index=${index} > receipts=${receipts.length}`)
+  }
+
+  const receiptRoot = Receipt.hashTreeRoot(receipts[index])
+
+  let merkleBranch
+  if (fromRoots === true) {
+    const receiptRoots = receipts.map((tx) => Receipt.hashTreeRoot(tx))
+    const ReceiptsRootView = ReceiptRootsList.toView(receiptRoots)
+    // transaction index is its g index in the list
+    merkleBranch = new Tree(ReceiptsRootView.node).getSingleProof(
+      // same gindex as transaction
+      TRANSACTION_GINDEX0 + BigInt(index),
+    )
+  } else {
+    const ReceiptsView = Receipts.toView(receipts)
+    // transaction index is its g index in the list
+    merkleBranch = new Tree(ReceiptsView.node).getSingleProof(
+      // same gindex as transaction
+      TRANSACTION_GINDEX0 + BigInt(index),
+    )
+  }
+
+  return { merkleBranch, receiptRoot }
+}
 
 export const BlockHeader = new StableContainerType(
   {
