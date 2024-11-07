@@ -11,7 +11,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from '../baseTransaction.js'
 import { Capability, TransactionType } from '../types.js'
 
 import type { LegacyTxInterface, Transaction } from '../types.js'
@@ -27,23 +26,6 @@ export function isSigned(tx: LegacyTxInterface): boolean {
   } else {
     return true
   }
-}
-
-/**
- * The minimum gas limit which the tx to have to be valid.
- * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
- * the optional creation fee (if the transaction creates a contract), and if relevant the gas
- * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
- */
-export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
-  const txFee = tx.common.param('txGas')
-  let fee = getDataGas(tx)
-  if (txFee) fee += txFee
-  if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
-    const txCreationFee = tx.common.param('txCreationGas')
-    if (txCreationFee) fee += txCreationFee
-  }
-  return fee
 }
 
 /**
@@ -76,6 +58,23 @@ export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   }
 
   return cost
+}
+
+/**
+ * The minimum gas limit which the tx to have to be valid.
+ * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+ * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+ * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+ */
+export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
+  const txFee = tx.common.param('txGas')
+  let fee = getDataGas(tx)
+  if (txFee) fee += txFee
+  if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
+    const txCreationFee = tx.common.param('txCreationGas')
+    if (txCreationFee) fee += txCreationFee
+  }
+  return fee
 }
 
 export function toCreationAddress(tx: LegacyTxInterface): boolean {

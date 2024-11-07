@@ -1,5 +1,9 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { MAX_INTEGER, MAX_UINT64 } from '@ethereumjs/util'
+import { Address, MAX_INTEGER, MAX_UINT64, bytesToBigInt, toBytes } from '@ethereumjs/util'
+
+import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
+
+import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
@@ -45,5 +49,64 @@ export function valueBoundaryCheck( // TODO: better method name
         throw new Error('unimplemented bits value')
       }
     }
+  }
+}
+
+type Mutable<T> = {
+  -readonly [P in keyof T]: T[P]
+}
+
+// This is (temp) a shared method which reflects `super` logic which were called from all txs and thus
+// represents the constructor of baseTransaction
+// Note: have to use `Mutable` to write to readonly props. Only call this in constructor of txs.
+export function sharedConstructor(
+  tx: Mutable<TransactionInterface>,
+  txData: TxData[TransactionType],
+  opts: TxOptions = {},
+) {
+  // LOAD base tx super({ ...txData, type: TransactionType.Legacy }, opts)
+  tx.common = getCommon(opts.common)
+
+  validateNotArray(txData) // is this necessary?
+
+  const { nonce, gasLimit, to, value, data, v, r, s } = txData
+
+  tx.txOptions = opts // TODO: freeze?
+
+  // Set the tx properties
+  const toB = toBytes(to === '' ? '0x' : to)
+  tx.to = toB.length > 0 ? new Address(toB) : undefined // TODO mark this explicitly as null if create-contract-tx?
+
+  const vB = toBytes(v)
+  const rB = toBytes(r)
+  const sB = toBytes(s)
+
+  tx.nonce = bytesToBigInt(toBytes(nonce))
+  tx.gasLimit = bytesToBigInt(toBytes(gasLimit))
+  tx.to = toB.length > 0 ? new Address(toB) : undefined
+  tx.value = bytesToBigInt(toBytes(value))
+  tx.data = toBytes(data === '' ? '0x' : data)
+
+  // Set signature values (if the tx is signed)
+  tx.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
+  tx.r = rB.length > 0 ? bytesToBigInt(rB) : undefined
+  tx.s = sB.length > 0 ? bytesToBigInt(sB) : undefined
+
+  // Start validating the data
+
+  // Validate value/r/s
+  valueBoundaryCheck({ value: tx.value, r: tx.r, s: tx.s })
+
+  // geth limits gasLimit to 2^64-1
+  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 64)
+
+  // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
+  valueBoundaryCheck({ nonce: tx.nonce }, 64, true)
+
+  const createContract = tx.to === undefined || tx.to === null
+  const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
+
+  if (createContract && tx.common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
+    checkMaxInitCodeSize(tx.common, tx.data.length)
   }
 }

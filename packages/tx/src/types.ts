@@ -198,6 +198,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   readonly cache: TransactionCache
   supports(capability: Capability): boolean
   type: TransactionType
+  txOptions: TxOptions
   getIntrinsicGas(): bigint
   getDataGas(): bigint
   getUpfrontCost(): bigint
