@@ -1,3 +1,4 @@
+import { Common, Mainnet } from '@ethereumjs/common'
 import {
   Account,
   VerkleLeafType,
@@ -26,7 +27,12 @@ describe('Verkle Tree API tests', () => {
   })
   it('should put/get/delete an account (with no storage/code from the trie)', async () => {
     const trie = await createVerkleTree()
-    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+    const common = new Common({
+      chain: Mainnet,
+      eips: [6800],
+      customCrypto: { verkleCrypto },
+    })
+    const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account = createAccount({ nonce: 3n, balance: 0xfffn })
     await sm.putAccount(address, account)
@@ -40,7 +46,12 @@ describe('Verkle Tree API tests', () => {
 
   it('should return same stateRoot when putting and then deleting account', async () => {
     const trie = await createVerkleTree()
-    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+    const common = new Common({
+      chain: Mainnet,
+      eips: [6800],
+      customCrypto: { verkleCrypto },
+    })
+    const sm = new StatefulVerkleStateManager({ common, trie })
 
     const address1 = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account1 = createAccount({ nonce: 3n, balance: 0xfffn })
@@ -61,7 +72,12 @@ describe('Verkle Tree API tests', () => {
 
   it('should put and get code', async () => {
     const trie = await createVerkleTree()
-    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+    const common = new Common({
+      chain: Mainnet,
+      eips: [6800],
+      customCrypto: { verkleCrypto },
+    })
+    const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const code = hexToBytes('0x6001') // PUSH 01
     await sm.putCode(address, code)
@@ -90,7 +106,12 @@ describe('Verkle Tree API tests', () => {
     const zeroSlot = setLengthLeft(bigIntToBytes(0n), 32)
     const zeroSlotValue = hexToBytes('0x1')
     const trie = await createVerkleTree()
-    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto })
+    const common = new Common({
+      chain: Mainnet,
+      eips: [6800],
+      customCrypto: { verkleCrypto },
+    })
+    const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     await sm.putAccount(address, new Account(0n, 1n))
     await sm.putStorage(address, zeroSlot, zeroSlotValue)
@@ -106,7 +127,12 @@ describe('caching functionality works', () => {
   })
   it('should cache accounts and then write to trie', async () => {
     const trie = await createVerkleTree()
-    const sm = new StatefulVerkleStateManager({ trie, verkleCrypto, caches: new Caches() })
+    const common = new Common({
+      chain: Mainnet,
+      eips: [6800],
+      customCrypto: { verkleCrypto },
+    })
+    const sm = new StatefulVerkleStateManager({ common, trie, caches: new Caches() })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account = createAccount({ nonce: 3n, balance: 0xfffn })
     await sm.putAccount(address, account)

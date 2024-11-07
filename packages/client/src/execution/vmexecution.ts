@@ -26,7 +26,6 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
-import * as verkle from 'micro-eth-signer/verkle'
 import { initRustBN } from 'rustbn-wasm'
 
 import { Event } from '../types.js'
@@ -42,7 +41,6 @@ import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 export enum ExecStatus {
   VALID = 'VALID',
@@ -202,9 +200,8 @@ export class VMExecution extends Execution {
       return
     }
     this.config.logger.info(`Setting up verkleVM`)
-    const verkleCrypto = await loadVerkleCrypto()
     const stateManager = new StatelessVerkleStateManager({
-      verkleCrypto,
+      common: this.config.execCommon,
     })
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()

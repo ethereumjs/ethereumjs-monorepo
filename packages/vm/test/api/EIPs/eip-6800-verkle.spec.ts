@@ -34,11 +34,10 @@ const block = createBlock(
 describe('EIP 6800 tests', () => {
   // TODO: Turn back on once we have kaustinen7 block data
   it.skip('successfully run transactions statelessly using the block witness', async () => {
-    const verkleCrypto = await loadVerkleCrypto()
+    common.customCrypto.verkleCrypto = await loadVerkleCrypto()
     const verkleStateManager = new StatelessVerkleStateManager({
       caches: new Caches(),
       common,
-      verkleCrypto,
     })
     const evm = await createEVM({ common, stateManager: verkleStateManager })
     const vm = await createVM({
