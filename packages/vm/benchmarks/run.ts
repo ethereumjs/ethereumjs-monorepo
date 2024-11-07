@@ -22,7 +22,7 @@ async function main() {
     .command('benchmarks <benchmarks>', 'Run benchmarks', (yargs) => {
       yargs.positional('benchmarks', {
         describe: `Name(s) of benchmarks to run: BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]. Benchmarks available: ${Object.keys(
-          BENCHMARKS
+          BENCHMARKS,
         ).join(', ')}`,
         type: 'string',
         required: true,
@@ -71,9 +71,11 @@ async function main() {
       }
       const results = await BENCHMARKS[name].function(Number(numSamples), bytecode, preState)
       if (csv) {
-        console.log(Object.keys(results[0]!).join())
+        console.log('Task Name,Average Time (ns),Margin,Samples')
         for (const result of results) {
-          console.log(Object.values(result!).join())
+          console.log(
+            `${result['Task Name']},${result['Average Time (ns)']},${result['Margin']},${result['Samples']}`,
+          )
         }
       } else {
         console.table(results)
