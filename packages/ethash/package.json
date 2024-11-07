@@ -34,7 +34,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "npx vitest --coverage --coverage.include=src --coverage.reporter=lcov run test/*",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- ethash",
     "examples:build": "npx embedme README.md",
