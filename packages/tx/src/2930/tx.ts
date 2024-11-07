@@ -40,9 +40,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessList2930Transaction
-  implements TransactionInterface<TransactionType.AccessListEIP2930>
-{
+export class AccessList2930Tx implements TransactionInterface<TransactionType.AccessListEIP2930> {
   public type: number = TransactionType.AccessListEIP2930 // Legacy tx type
 
   public readonly gasPrice: bigint
@@ -170,12 +168,12 @@ export class AccessList2930Transaction
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
-   * Use {@link AccessList2930Transaction.serialize} to add a transaction to a block
+   * Use {@link AccessList2930Tx.serialize} to add a transaction to a block
    * with {@link createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link AccessList2930Transaction.getMessageToSign}.
+   * representation for external signing use {@link AccessList2930Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -280,7 +278,7 @@ export class AccessList2930Transaction
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): AccessList2930Transaction {
+  ): AccessList2930Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -334,17 +332,12 @@ export class AccessList2930Transaction
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array): AccessList2930Transaction {
-    return <AccessList2930Transaction>Legacy.sign(this, privateKey)
+  sign(privateKey: Uint8Array): AccessList2930Tx {
+    return <AccessList2930Tx>Legacy.sign(this, privateKey)
   }
 
   public isSigned(): boolean {
-    const { v, r, s } = this
-    if (v === undefined || r === undefined || s === undefined) {
-      return false
-    } else {
-      return true
-    }
+    return Legacy.isSigned(this)
   }
 
   /**

@@ -1,7 +1,7 @@
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
 import type { FeeMarket1559Tx } from './1559/tx.js'
-import type { AccessList2930Transaction } from './2930/tx.js'
+import type { AccessList2930Tx } from './2930/tx.js'
 import type { Blob4844Tx } from './4844/tx.js'
 import type { EOACode7702Transaction } from './7702/tx.js'
 import type { LegacyTx } from './legacy/tx.js'
@@ -158,7 +158,7 @@ export enum TransactionType {
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTx
   [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx
-  [TransactionType.AccessListEIP2930]: AccessList2930Transaction
+  [TransactionType.AccessListEIP2930]: AccessList2930Tx
   [TransactionType.BlobEIP4844]: Blob4844Tx
   [TransactionType.EOACodeEIP7702]: EOACode7702Transaction
 }
@@ -169,7 +169,7 @@ export function isLegacyTx(tx: TypedTransaction): tx is LegacyTx {
   return tx.type === TransactionType.Legacy
 }
 
-export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Transaction {
+export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Tx {
   return tx.type === TransactionType.AccessListEIP2930
 }
 
@@ -357,7 +357,7 @@ export type LegacyTxData = {
 }
 
 /**
- * {@link AccessList2930Transaction} data.
+ * {@link AccessList2930Tx} data.
  */
 export interface AccessList2930TxData extends LegacyTxData {
   /**
@@ -441,7 +441,7 @@ export interface TxValuesArray {
 type LegacyTxValuesArray = Uint8Array[]
 
 /**
- * Bytes values array for an {@link AccessList2930Transaction}
+ * Bytes values array for an {@link AccessList2930Tx}
  */
 type AccessList2930TxValuesArray = [
   Uint8Array,
