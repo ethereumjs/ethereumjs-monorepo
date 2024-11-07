@@ -1,5 +1,13 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { Address, MAX_INTEGER, MAX_UINT64, bytesToBigInt, toBytes } from '@ethereumjs/util'
+import {
+  Address,
+  MAX_INTEGER,
+  MAX_UINT64,
+  bigIntToHex,
+  bytesToBigInt,
+  toBytes,
+} from '@ethereumjs/util'
+import { bytesToHex } from 'ethereum-cryptography/utils'
 
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
@@ -108,5 +116,21 @@ export function sharedConstructor(
 
   if (createContract && tx.common.isActivatedEIP(3860) && allowUnlimitedInitCodeSize === false) {
     checkMaxInitCodeSize(tx.common, tx.data.length)
+  }
+}
+
+export function getBaseJSON(tx: TransactionInterface) {
+  return {
+    type: bigIntToHex(BigInt(tx.type)),
+    nonce: bigIntToHex(tx.nonce),
+    gasLimit: bigIntToHex(tx.gasLimit),
+    to: tx.to !== undefined ? tx.to.toString() : undefined,
+    value: bigIntToHex(tx.value),
+    data: bytesToHex(tx.data),
+    v: tx.v !== undefined ? bigIntToHex(tx.v) : undefined,
+    r: tx.r !== undefined ? bigIntToHex(tx.r) : undefined,
+    s: tx.s !== undefined ? bigIntToHex(tx.s) : undefined,
+    chainId: bigIntToHex(tx.common.chainId()),
+    yParity: tx.v === 0n || tx.v === 1n ? bigIntToHex(tx.v) : undefined,
   }
 }

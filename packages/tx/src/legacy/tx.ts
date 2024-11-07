@@ -6,14 +6,13 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToHex,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import * as Legacy from '../capabilities/legacy.js'
-import { sharedConstructor, valueBoundaryCheck } from '../features/util.js'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
 
@@ -369,21 +368,11 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    */
   toJSON(): JSONTx {
     // TODO this is just copied. Make this execution-api compliant
-    // See: https://github.com/ethereum/execution-apis/blob/4140e528360fea53c34a766d86a000c6c039100e/src/eth/transaction.yaml#L19
-    return {
-      type: bigIntToHex(BigInt(this.type)),
-      nonce: bigIntToHex(this.nonce),
-      gasLimit: bigIntToHex(this.gasLimit),
-      gasPrice: bigIntToHex(this.gasPrice),
-      to: this.to !== undefined ? this.to.toString() : undefined,
-      value: bigIntToHex(this.value),
-      data: bytesToHex(this.data),
-      v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
-      r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
-      s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
-      chainId: bigIntToHex(this.common.chainId()),
-      yParity: this.v === 0n || this.v === 1n ? bigIntToHex(this.v) : undefined,
-    }
+
+    const baseJSON = getBaseJSON(this) as JSONTx
+    baseJSON.gasPrice = bigIntToHex(this.gasPrice)
+
+    return baseJSON
   }
 
   getValidationErrors(): string[] {
