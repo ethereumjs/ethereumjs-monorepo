@@ -181,12 +181,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   }
 
   public isSigned(): boolean {
-    const { v, r, s } = this
-    if (v === undefined || r === undefined || s === undefined) {
-      return false
-    } else {
-      return true
-    }
+    return Legacy.isSigned(this)
   }
 
   getEffectivePriorityFee(baseFee?: bigint): bigint {
