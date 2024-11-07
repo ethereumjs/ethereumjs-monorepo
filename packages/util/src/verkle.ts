@@ -362,7 +362,8 @@ export const generateChunkSuffixes = (numChunks: number) => {
   if (numChunks > VERKLE_CODE_OFFSET) {
     for (let x = VERKLE_CODE_OFFSET; x < numChunks; x++) {
       // Fill subsequent chunk suffixes up to 256 and then start over since a single node
-      chunkSuffixes[x] = x - Math.floor(x / VERKLE_NODE_WIDTH) * VERKLE_NODE_WIDTH
+      chunkSuffixes[x] =
+        x - VERKLE_CODE_OFFSET - Math.floor(x / VERKLE_NODE_WIDTH) * VERKLE_NODE_WIDTH
     }
   }
 
@@ -388,7 +389,7 @@ export const generateCodeStems = async (
   // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
   // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
   // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
-  const numStems = Math.ceil(numChunks / VERKLE_NODE_WIDTH)
+  const numStems = numChunks > VERKLE_CODE_OFFSET ? Math.ceil(numChunks / VERKLE_NODE_WIDTH) + 1 : 1
   const chunkStems = new Array<Uint8Array>(numStems)
   // Compute the stem for the initial set of code chunks
   chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)
