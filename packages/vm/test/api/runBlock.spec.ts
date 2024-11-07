@@ -698,6 +698,7 @@ describe.skip('run a verkle block', () => {
 
     const common = new Common({
       chain: Mainnet,
+      customCrypto: { verkleCrypto },
       hardfork: Hardfork.Shanghai,
       eips: [2935, 3607, 6800],
     })
@@ -708,7 +709,7 @@ describe.skip('run a verkle block', () => {
 
       const blockRlp = hexToBytes(verkleJSON.blocks[0].rlp as PrefixedHexString)
       const block = createBlockFromRLP(blockRlp, { common })
-      const sm = new StatefulVerkleStateManager({ verkleCrypto })
+      const sm = new StatefulVerkleStateManager({ common })
       await sm['_trie'].createRootNode()
       const blockchain = await createBlockchain({ common })
       const vm = await setupVM({ common, stateManager: sm, blockchain, genesisBlock })
