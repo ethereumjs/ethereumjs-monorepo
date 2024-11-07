@@ -2,12 +2,12 @@ import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import * as verkle from 'micro-eth-signer/verkle'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
 import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import {
   DEFAULT_FORK_CONFIG,
@@ -25,6 +25,7 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
 import type { VerkleCrypto } from '@ethereumjs/util'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 /**
  * Test runner

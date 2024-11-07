@@ -15,7 +15,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
 import { setupPreConditions, verifyPostConditions } from '../../util.js'
@@ -26,6 +26,7 @@ import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}

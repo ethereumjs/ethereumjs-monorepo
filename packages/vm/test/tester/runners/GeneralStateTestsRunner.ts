@@ -12,7 +12,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 
 import { createVM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
@@ -20,6 +20,7 @@ import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 function parseTestCases(
   forkConfigTestSuite: string,
