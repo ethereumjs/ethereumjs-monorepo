@@ -48,7 +48,6 @@ import type {
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('vm:block')
@@ -137,10 +136,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
   if (vm.common.isActivatedEIP(6800)) {
     // Initialize the access witness
-    if ((stateManager as any)['verkleCrypto'] === undefined)
+
+    if (vm.common.customCrypto.verkleCrypto === undefined) {
       throw Error('verkleCrypto required when EIP-6800 is active')
+    }
     vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: (stateManager as StatefulVerkleStateManager).verkleCrypto,
+      verkleCrypto: vm.common.customCrypto.verkleCrypto,
     })
 
     if (typeof stateManager.initVerkleExecutionWitness !== 'function') {

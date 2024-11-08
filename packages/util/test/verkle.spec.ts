@@ -1,11 +1,10 @@
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { verkleKaustinen6Block72Data } from '../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import {
   Account,
   VERKLE_CODE_CHUNK_SIZE,
-  type VerkleCrypto,
   type VerkleExecutionWitness,
   VerkleLeafType,
   bytesToHex,
@@ -22,14 +21,8 @@ import {
   randomBytes,
   verifyVerkleProof,
 } from '../src/index.js'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('Verkle cryptographic helpers', () => {
-  let verkle: VerkleCrypto
-  beforeAll(async () => {
-    verkle = await loadVerkleCrypto()
-  })
-
   it('getVerkleStem(): returns the expected stems', () => {
     // Empty address
     assert.equal(

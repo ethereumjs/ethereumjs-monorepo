@@ -1,15 +1,10 @@
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.js'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('rust-verkle test vectors', () => {
-  let verkleCrypto: Awaited<ReturnType<typeof loadVerkleCrypto>>
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   it('should produce the correct commitment', async () => {
     // Test from python implementation
     //https://github.com/crate-crypto/verkle-trie-ref/blob/483f40c737f27bc8f059870f862cf6c244159cd4/verkle/verkle_test.py#L63
@@ -18,7 +13,7 @@ describe('rust-verkle test vectors', () => {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
       27, 28, 29, 30, 31, 32,
     ])
-    const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+    const trie = await createVerkleTree({ verkleCrypto: verkle, db: new MapDB() })
     await trie.put(key.slice(0, 31), [key[31]], [key])
 
     const path = await trie.findPath(key.slice(0, 31))
@@ -40,7 +35,7 @@ describe('rust-verkle test vectors', () => {
       27, 28, 29, 30, 31, 32,
     ])
     const stem = key.slice(0, 31)
-    const trie = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+    const trie = await createVerkleTree({ verkleCrypto: verkle, db: new MapDB() })
     await trie.put(stem, [key[31]], [new Uint8Array(32)])
     let path = await trie.findPath(stem)
     assert.equal(

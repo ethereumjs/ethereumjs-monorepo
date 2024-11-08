@@ -1,6 +1,6 @@
-import { type VerkleCrypto, equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
+import { equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import {
   LeafVerkleNodeValue,
@@ -10,13 +10,8 @@ import {
   isLeafVerkleNode,
 } from '../src/node/index.js'
 import { LeafVerkleNode } from '../src/node/leafNode.js'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 describe('verkle node - leaf', () => {
-  let verkleCrypto = undefined as never as VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   it('constructor should create an leaf node', async () => {
     const commitment = randomBytes(64)
     const c1 = randomBytes(64)
@@ -29,7 +24,7 @@ describe('verkle node - leaf', () => {
       commitment,
       stem,
       values,
-      verkleCrypto,
+      verkleCrypto: verkle,
     })
 
     assert.ok(isLeafVerkleNode(node), 'typeguard should return true')
@@ -53,13 +48,13 @@ describe('verkle node - leaf', () => {
     const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
     values[2] = value
     const stem = key.slice(0, 31)
-    const node = await LeafVerkleNode.create(stem, verkleCrypto, values)
+    const node = await LeafVerkleNode.create(stem, verkle, values)
     assert.ok(node instanceof LeafVerkleNode)
   })
 
   it('should create a leafnode with default values', async () => {
     const key = randomBytes(32)
-    const node = await LeafVerkleNode.create(key.slice(0, 31), verkleCrypto)
+    const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
     assert.ok(node instanceof LeafVerkleNode)
     assert.equal(node.getValue(0), undefined)
     node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
@@ -70,7 +65,7 @@ describe('verkle node - leaf', () => {
 
   it('should set the leaf marker on a touched value', async () => {
     const key = randomBytes(32)
-    const node = await LeafVerkleNode.create(key.slice(0, 31), verkleCrypto)
+    const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
     node.setValue(0, LeafVerkleNodeValue.Deleted)
     const c1Values = createCValues(node.values.slice(0, 128))
     assert.equal(c1Values[0][16], 1)
@@ -79,14 +74,14 @@ describe('verkle node - leaf', () => {
   it('should update a commitment when setting a value', async () => {
     const key = randomBytes(32)
     const stem = key.slice(0, 31)
-    const node = await LeafVerkleNode.create(stem, verkleCrypto)
+    const node = await LeafVerkleNode.create(stem, verkle)
     const hash = node.hash()
-    assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
+    assert.deepEqual(node.c1, verkle.zeroCommitment)
     node.setValue(0, randomBytes(32))
-    assert.notDeepEqual(node.c1, verkleCrypto.zeroCommitment)
+    assert.notDeepEqual(node.c1, verkle.zeroCommitment)
     assert.notDeepEqual(node.hash(), hash)
     node.setValue(0, LeafVerkleNodeValue.Untouched)
-    assert.deepEqual(node.c1, verkleCrypto.zeroCommitment)
+    assert.deepEqual(node.c1, verkle.zeroCommitment)
     assert.deepEqual(node.hash(), hash)
   })
 
@@ -94,14 +89,14 @@ describe('verkle node - leaf', () => {
     const key = randomBytes(32)
     const stem = key.slice(0, 31)
     const values = new Array<Uint8Array>(256).fill(new Uint8Array(32))
-    const node = await LeafVerkleNode.create(stem, verkleCrypto, values)
+    const node = await LeafVerkleNode.create(stem, verkle, values)
     const serialized = node.serialize()
-    const decodedNode = decodeVerkleNode(serialized, verkleCrypto)
+    const decodedNode = decodeVerkleNode(serialized, verkle)
 
     assert.deepEqual(node, decodedNode)
 
-    const defaultNode = await LeafVerkleNode.create(randomBytes(31), verkleCrypto)
+    const defaultNode = await LeafVerkleNode.create(randomBytes(31), verkle)
 
-    assert.deepEqual(defaultNode, decodeVerkleNode(defaultNode.serialize(), verkleCrypto))
+    assert.deepEqual(defaultNode, decodeVerkleNode(defaultNode.serialize(), verkle))
   })
 })
