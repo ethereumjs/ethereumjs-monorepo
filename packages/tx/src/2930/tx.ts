@@ -161,6 +161,24 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
   }
 
   /**
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+   */
+  getIntrinsicGas(): bigint {
+    return Legacy.getIntrinsicGas(this)
+  }
+
+  // TODO figure out if this is necessary
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return Legacy.toCreationAddress(this)
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes of the EIP-2930 transaction, in order.
    *
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
@@ -227,24 +245,6 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    */
   getHashedMessageToSign(): Uint8Array {
     return EIP2718.getHashedMessageToSign(this)
-  }
-
-  // TODO figure out if this is necessary
-  /**
-   * If the tx's `to` is to the creation address
-   */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
-  }
-
-  /**
-   * The minimum gas limit which the tx to have to be valid.
-   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
-   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
-   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
-   */
-  getIntrinsicGas(): bigint {
-    return Legacy.getIntrinsicGas(this)
   }
 
   /**
