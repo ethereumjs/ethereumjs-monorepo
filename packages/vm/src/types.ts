@@ -14,7 +14,6 @@ import type {
   CLRequest,
   CLRequestType,
   PrefixedHexString,
-  VerkleCrypto,
   WithdrawalData,
 } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
@@ -185,11 +184,6 @@ export interface VMOpts {
   evmOpts?: EVMOpts
 
   profilerOpts?: VMProfilerOpts
-
-  /**
-   * (Experimental) Verkle Crypto instance for EIP-6800
-   */
-  verkleCrypto?: VerkleCrypto
 }
 
 /**

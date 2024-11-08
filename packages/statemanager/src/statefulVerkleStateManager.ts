@@ -1,4 +1,4 @@
-import { Common, Mainnet, VerkleAccessedStateType } from '@ethereumjs/common'
+import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
@@ -41,6 +41,7 @@ import type { Caches } from './cache/caches.js'
 import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 import type {
   AccountFields,
+  Common,
   StateManagerInterface,
   StorageDump,
   StorageRange,
@@ -80,7 +81,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   protected readonly DEBUG: boolean = false
 
   private keccakFunction: Function
-
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -89,14 +89,19 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    if (opts.common?.isActivatedEIP(6800) === false)
+    if (opts.common.isActivatedEIP(6800) === false) {
       throw new Error('EIP-6800 required for verkle state management')
+    }
 
-    this.common = opts.common ?? new Common({ chain: Mainnet, eips: [6800] })
+    if (opts.common.customCrypto.verkleCrypto === undefined) {
+      throw new Error('verkle crypto required')
+    }
+
+    this.common = opts.common
     this._trie =
       opts.trie ??
       new VerkleTree({
-        verkleCrypto: opts.verkleCrypto,
+        verkleCrypto: opts.common.customCrypto.verkleCrypto,
         db: new MapDB<Uint8Array, Uint8Array>(),
         useRootPersistence: false,
         cacheSize: 0,
@@ -104,8 +109,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._debug = debugDefault('statemanager:verkle:stateful')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
-    this.verkleCrypto = opts.verkleCrypto
+    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
+    this.verkleCrypto = opts.common.customCrypto.verkleCrypto
   }
 
   /**
