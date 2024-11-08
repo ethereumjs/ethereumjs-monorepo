@@ -13,7 +13,7 @@ import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import { AccessLists } from '../util.js'
 
 import { createAccessList2930Tx } from './constructors.js'
 
@@ -107,8 +107,6 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
     valueBoundaryCheck({ gasPrice: this.gasPrice })
-
-    validateNotArray(txData)
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
