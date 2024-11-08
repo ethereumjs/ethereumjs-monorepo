@@ -46,6 +46,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
   public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
 
+  // Tx data part (part of the RLP)
   public readonly nonce!: bigint
   public readonly gasLimit!: bigint
   public readonly value!: bigint
@@ -53,15 +54,17 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
   public readonly to?: Address
   public readonly accessList: AccessListBytes
   public readonly chainId: bigint
+  public readonly maxPriorityFeePerGas: bigint
+  public readonly maxFeePerGas: bigint
 
   // Props only for signed txs
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
 
+  // End of Tx data part
+
   public readonly AccessListJSON: AccessList
-  public readonly maxPriorityFeePerGas: bigint
-  public readonly maxFeePerGas: bigint
 
   public readonly common!: Common
 
