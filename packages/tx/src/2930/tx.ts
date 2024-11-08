@@ -41,7 +41,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
 export class AccessList2930Tx implements TransactionInterface<TransactionType.AccessListEIP2930> {
-  public type: number = TransactionType.AccessListEIP2930 // Legacy tx type
+  public type: number = TransactionType.AccessListEIP2930 // 2930 tx type
 
   public readonly gasPrice: bigint
   public readonly nonce!: bigint
