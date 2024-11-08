@@ -3,7 +3,7 @@ import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 import type { FeeMarket1559Tx } from './1559/tx.js'
 import type { AccessList2930Tx } from './2930/tx.js'
 import type { Blob4844Tx } from './4844/tx.js'
-import type { EOACode7702Transaction } from './7702/tx.js'
+import type { EOACode7702Tx } from './7702/tx.js'
 import type { LegacyTx } from './legacy/tx.js'
 import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
@@ -160,7 +160,7 @@ export interface Transaction {
   [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx
   [TransactionType.AccessListEIP2930]: AccessList2930Tx
   [TransactionType.BlobEIP4844]: Blob4844Tx
-  [TransactionType.EOACodeEIP7702]: EOACode7702Transaction
+  [TransactionType.EOACodeEIP7702]: EOACode7702Tx
 }
 
 export type TypedTransaction = Transaction[TransactionType]
@@ -181,7 +181,7 @@ export function isBlob4844Tx(tx: TypedTransaction): tx is Blob4844Tx {
   return tx.type === TransactionType.BlobEIP4844
 }
 
-export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Transaction {
+export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
 
