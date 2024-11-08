@@ -43,6 +43,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
 export class AccessList2930Tx implements TransactionInterface<TransactionType.AccessListEIP2930> {
   public type: number = TransactionType.AccessListEIP2930 // 2930 tx type
 
+  // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
   public readonly nonce!: bigint
   public readonly gasLimit!: bigint
@@ -56,6 +57,8 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
+
+  // End of Tx data part
 
   public readonly AccessListJSON: AccessList
 

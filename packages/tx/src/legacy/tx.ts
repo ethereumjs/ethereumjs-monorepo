@@ -82,6 +82,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   /* Tx public data fields */
   public type: number = TransactionType.Legacy // Legacy tx type
 
+  // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
   public readonly nonce!: bigint
   public readonly gasLimit!: bigint
@@ -93,6 +94,8 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
+
+  // End of Tx data part
 
   /* Other handy tx props */
   public readonly common!: Common
