@@ -13,11 +13,7 @@ import { assert, describe, it } from 'vitest'
 
 import { VerkleAccessWitness, createEVM } from '../src/index.js'
 
-import type { VerkleCrypto } from '@ethereumjs/util'
-
 describe('verkle tests', () => {
-  let verkleCrypto: VerkleCrypto
-
   it('should execute bytecode and update the state', async () => {
     // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({
@@ -34,7 +30,7 @@ describe('verkle tests', () => {
     const evm = await createEVM({ common, stateManager: sm })
     // Initialize verkleAccess Witness manually (in real context, it is done by the VM, but we are bypassing that here)
     evm.verkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto,
+      verkleCrypto: verkle,
     })
     const code = hexToBytes('0x6001600255') // PUSH1 01 PUSH1 02 SSTORE
     const res = await evm.runCall({

@@ -17,11 +17,9 @@ import { assert, describe, it } from 'vitest'
 import { Caches } from '../src/index.js'
 import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
 
-import type { PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('Verkle Tree API tests', () => {
-  let verkleCrypto: VerkleCrypto
-
   it('should put/get/delete an account (with no storage/code from the trie)', async () => {
     const trie = await createVerkleTree()
     const common = new Common({
@@ -46,7 +44,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
 
@@ -72,7 +70,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -106,7 +104,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto },
+      customCrypto: { verkleCrypto: verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
