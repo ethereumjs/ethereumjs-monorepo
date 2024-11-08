@@ -5,7 +5,6 @@ import { ROOT_DB_KEY } from './types.js'
 import { VerkleTree } from './verkleTree.js'
 
 import type { VerkleTreeOpts } from './types.js'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   const key = ROOT_DB_KEY
@@ -14,7 +13,7 @@ export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   const parsedOptions = {
     ...opts,
     db: opts?.db ?? new MapDB<Uint8Array, Uint8Array>(),
-    verkleCrypto: opts?.verkleCrypto ?? (await loadVerkleCrypto()),
+    verkleCrypto: opts?.verkleCrypto ?? verkle,
     useRootPersistence: opts?.useRootPersistence ?? false,
     cacheSize: opts?.cacheSize ?? 0,
   }

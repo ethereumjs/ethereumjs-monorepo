@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
 import { readFileSync } from 'fs'
+import * as verkle from 'micro-eth-signer'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -80,6 +81,7 @@ describe(`valid verkle network setup`, async () => {
   const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
+    customCrypto: { verkleCrypto: verkle },
   })
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
