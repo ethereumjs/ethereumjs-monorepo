@@ -366,7 +366,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
 
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this) as JSONTx
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,

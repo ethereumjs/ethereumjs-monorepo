@@ -307,7 +307,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this) as JSONTx
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,

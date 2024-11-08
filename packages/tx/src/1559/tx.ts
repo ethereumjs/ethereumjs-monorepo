@@ -328,7 +328,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this) as JSONTx
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,

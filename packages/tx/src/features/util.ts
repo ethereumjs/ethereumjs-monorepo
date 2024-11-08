@@ -5,9 +5,9 @@ import {
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
+  bytesToHex,
   toBytes,
 } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 

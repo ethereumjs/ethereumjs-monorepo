@@ -351,7 +351,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this) as JSONTx
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,
