@@ -180,7 +180,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     return this.activeCapabilities.includes(capability)
   }
 
-  public isSigned(): boolean {
+  isSigned(): boolean {
     return Legacy.isSigned(this)
   }
 

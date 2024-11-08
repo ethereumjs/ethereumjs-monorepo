@@ -336,7 +336,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return <AccessList2930Tx>Legacy.sign(this, privateKey)
   }
 
-  public isSigned(): boolean {
+  isSigned(): boolean {
     return Legacy.isSigned(this)
   }
 
