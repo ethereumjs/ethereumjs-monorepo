@@ -116,7 +116,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
 
     if (opts.common.isActivatedEIP(6800) === false) {
-      throw new Error('EIP-6800 required for verkle state management')
+      throw new Error('EIP-6800 required for stateless verkle state management')
     }
 
     if (opts.common.customCrypto.verkleCrypto === undefined) {
