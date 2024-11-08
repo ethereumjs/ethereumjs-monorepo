@@ -33,6 +33,7 @@ import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
 import type { MerkleStateManager } from './merkleStateManager.js'
 import type {
   AccountFields,
+  Common,
   StateManagerInterface,
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
@@ -76,6 +77,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
   protected _debug: Debugger
 
+  public readonly common: Common
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -112,14 +115,19 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
     this._caches = opts.caches
 
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
+    if (opts.common.isActivatedEIP(6800) === false) {
+      throw new Error('EIP-6800 required for stateless verkle state management')
+    }
 
-    this._debug = debugDefault('statemanager:verkle:stateless')
-
-    if (opts.verkleCrypto === undefined) {
+    if (opts.common.customCrypto.verkleCrypto === undefined) {
       throw new Error('verkle crypto required')
     }
-    this.verkleCrypto = opts.verkleCrypto
+
+    this.common = opts.common
+    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
+    this.verkleCrypto = opts.common.customCrypto.verkleCrypto
+
+    this._debug = debugDefault('statemanager:verkle:stateless')
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -211,7 +219,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   shallowCopy(downlevelCaches = true): StatelessVerkleStateManager {
     const stateManager = new StatelessVerkleStateManager({
       caches: this._caches?.shallowCopy(downlevelCaches),
-      verkleCrypto: this.verkleCrypto,
+      common: this.common,
     })
     return stateManager
   }
