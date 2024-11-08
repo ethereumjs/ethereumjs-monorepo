@@ -158,8 +158,8 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     // check system logs available
     res = await rpc.request('eth_getLogs', [{ blockHash: executionPayload.blockHash }])
-    assert.equal(res.result.length, 4, '4 logs should be found including system logs')
-    const systemLogs = res.result[3]!
+    assert.equal(res.result.length, 6, '6 logs should be found including system logs')
+    const systemLogs = res.result[5]!
     assert.equal(systemLogs.transactionHash, null, 'last log should be system log')
     assert.equal(
       systemLogs.topics[0],
@@ -171,6 +171,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
       true,
       'fee recipient in topic',
     )
+
+    const txHash = res.result[4].transactionHash
+    res = await rpc.request('eth_getTransactionReceipt', [txHash])
+    assert.ok(res.result.inclusionProof !== undefined, 'recepit should have inclusion proof')
   })
 })
 
