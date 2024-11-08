@@ -43,7 +43,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common, VerkleAccessWitnessInterface } from '@ethereumjs/common'
 import type {
   AccessList,
-  AccessList2930Transaction,
+  AccessList2930Tx,
   AccessListItem,
   EIP7702CompatibleTx,
   FeeMarket1559Tx,
@@ -147,7 +147,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
 
-    const castedTx = <AccessList2930Transaction>opts.tx
+    const castedTx = <AccessList2930Tx>opts.tx
 
     for (const accessListItem of castedTx.AccessListJSON) {
       vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
