@@ -68,7 +68,7 @@ export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
  */
 export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
   const txFee = tx.common.param('txGas')
-  let fee = getDataGas(tx)
+  let fee = tx.getDataGas()
   if (txFee) fee += txFee
   if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
     const txCreationFee = tx.common.param('txCreationGas')

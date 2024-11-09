@@ -9,6 +9,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
+import { paramsTx } from '../params.js'
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
 import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
@@ -74,6 +75,7 @@ export function sharedConstructor(
 ) {
   // LOAD base tx super({ ...txData, type: TransactionType.Legacy }, opts)
   tx.common = getCommon(opts.common)
+  tx.common.updateParams(opts.params ?? paramsTx)
 
   validateNotArray(txData) // is this necessary?
 

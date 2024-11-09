@@ -13,7 +13,6 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { AccessLists } from '../util.js'
 
@@ -95,7 +94,6 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {

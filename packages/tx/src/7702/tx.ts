@@ -13,7 +13,6 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
@@ -98,7 +97,6 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(7702)) {

@@ -17,7 +17,6 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from '../constants.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -104,7 +103,6 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {

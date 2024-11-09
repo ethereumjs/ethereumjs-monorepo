@@ -11,7 +11,6 @@ import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
 import { TransactionType } from '../types.js'
 import { AccessLists } from '../util.js'
 
@@ -91,7 +90,6 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     // EIP-2718 check is done in Common

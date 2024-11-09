@@ -12,8 +12,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { valueBoundaryCheck } from '../src/features/util.js'
 import {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   Capability,
   FeeMarket1559Tx,
   LegacyTx,
@@ -34,24 +35,23 @@ import { eip1559TxsData } from './testData/eip1559txs.js'
 import { eip2930TxsData } from './testData/eip2930txs.js'
 import { txsData } from './testData/txs.js'
 
-import type { BaseTransaction } from '../src/baseTransaction.js'
 import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-  const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
+  const legacyTxs: LegacyTx[] = []
   for (const tx of txsData.slice(0, 4)) {
     legacyTxs.push(createLegacyTx(tx.data as LegacyTxData, { common }))
   }
 
-  const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
+  const eip2930Txs: AccessList2930Tx[] = []
   for (const tx of eip2930TxsData) {
     eip2930Txs.push(createAccessList2930Tx(tx.data as AccessList2930TxData, { common }))
   }
 
-  const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
+  const eip1559Txs: FeeMarket1559Tx[] = []
   for (const tx of eip1559TxsData) {
     eip1559Txs.push(createFeeMarket1559Tx(tx.data as FeeMarketEIP1559TxData, { common }))
   }
@@ -79,8 +79,8 @@ describe('[BaseTransaction]', () => {
       ],
     },
     {
-      class: AccessList2930Transaction,
-      name: 'AccessList2930Transaction',
+      class: AccessList2930Tx,
+      name: 'AccessList2930Tx',
       type: TransactionType.AccessListEIP2930,
       values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
       txs: eip2930Txs,
@@ -434,10 +434,10 @@ describe('[BaseTransaction]', () => {
     assert.equal(tx.nonce, bytesToBigInt(bufferZero))
   })
 
-  it('_validateCannotExceedMaxInteger()', () => {
-    const tx = createFeeMarket1559Tx(eip1559Txs[0])
+  // TODO: move this to a different file (not part of base transaction anymore)
+  it('valueBoundaryCheck()', () => {
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
+      valueBoundaryCheck({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {
       assert.ok(
         err.message.includes('equal or exceed MAX_INTEGER'),
@@ -445,12 +445,12 @@ describe('[BaseTransaction]', () => {
       )
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER + BigInt(1) }, 256, false)
+      valueBoundaryCheck({ a: MAX_INTEGER + BigInt(1) }, 256, false)
     } catch (err: any) {
       assert.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: BigInt(0) }, 100, false)
+      valueBoundaryCheck({ a: BigInt(0) }, 100, false)
     } catch (err: any) {
       assert.ok(
         err.message.includes('unimplemented bits value'),
@@ -458,12 +458,12 @@ describe('[BaseTransaction]', () => {
       )
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 + BigInt(1) }, 64, false)
+      valueBoundaryCheck({ a: MAX_UINT64 + BigInt(1) }, 64, false)
     } catch (err: any) {
       assert.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }
     try {
-      ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
+      valueBoundaryCheck({ a: MAX_UINT64 }, 64, true)
     } catch (err: any) {
       assert.ok(
         err.message.includes('2^64'),
