@@ -44,7 +44,7 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
 export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACodeEIP7702> {
-  public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
+  public type: number = TransactionType.EOACodeEIP7702 // 7702 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
