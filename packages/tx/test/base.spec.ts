@@ -324,6 +324,7 @@ describe('[BaseTransaction]', () => {
         ...txType.txs,
         // add unsigned variants
         ...txType.txs.map((tx) =>
+          // @ts-ignore Not sure why this is now throwing
           txType.create.txData({
             ...tx,
             v: undefined,
