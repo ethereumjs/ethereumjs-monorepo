@@ -131,12 +131,16 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      const msg = Legacy.errorMsg(
+        this,
+        'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
+      )
       throw new Error(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
@@ -146,7 +150,8 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     Legacy.validateHighS(this)
 
     if (this.to === undefined) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw new Error(msg)
@@ -397,15 +402,5 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }

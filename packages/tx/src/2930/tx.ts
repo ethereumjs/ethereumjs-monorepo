@@ -110,7 +110,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     valueBoundaryCheck({ gasPrice: this.gasPrice })
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * gasPrice cannot exceed MAX_INTEGER')
+      const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
       throw new Error(msg)
     }
 
@@ -347,15 +347,5 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     // Keep ? for this.accessList since this otherwise causes Hardhat E2E tests to fail
     errorStr += ` gasPrice=${this.gasPrice} accessListCount=${this.accessList?.length ?? 0}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }

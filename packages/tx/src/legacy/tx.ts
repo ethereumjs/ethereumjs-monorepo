@@ -401,14 +401,4 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     errorStr += ` gasPrice=${this.gasPrice}`
     return errorStr
   }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  /*protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
-  }*/
 }

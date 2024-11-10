@@ -132,12 +132,16 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      const msg = Legacy.errorMsg(
+        this,
+        'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
+      )
       throw new Error(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
@@ -156,24 +160,28 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     for (const hash of this.blobVersionedHashes) {
       if (hash.length !== 66) {
         // 66 is the length of a 32 byte hash as a PrefixedHexString
-        const msg = this._errorMsg('versioned hash is invalid length')
+        const msg = Legacy.errorMsg(this, 'versioned hash is invalid length')
         throw new Error(msg)
       }
       if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
         // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
-        const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
+        const msg = Legacy.errorMsg(
+          this,
+          'versioned hash does not start with KZG commitment version',
+        )
         throw new Error(msg)
       }
     }
     if (this.blobVersionedHashes.length > LIMIT_BLOBS_PER_TX) {
-      const msg = this._errorMsg(`tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
+      const msg = Legacy.errorMsg(this, `tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
       throw new Error(msg)
     } else if (this.blobVersionedHashes.length === 0) {
-      const msg = this._errorMsg(`tx should contain at least one blob`)
+      const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)
       throw new Error(msg)
     }
     if (this.to === undefined) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw new Error(msg)
@@ -447,16 +455,6 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 
   /**

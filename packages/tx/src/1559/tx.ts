@@ -117,12 +117,16 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     })
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      const msg = Legacy.errorMsg(
+        this,
+        'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
+      )
       throw new Error(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
@@ -373,15 +377,5 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }
