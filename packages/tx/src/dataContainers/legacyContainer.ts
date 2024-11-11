@@ -5,24 +5,28 @@ import { Feature } from '../dataContainerTypes.js'
 import { TransactionType } from '../types.js'
 
 import type {
-  ContractCreationContainerInterface,
+  CreateContractInterface,
   DefaultContainerInterface,
-  ECDSAContainerInterface,
-  LegacyContainerDataFields,
+  ECDSAMaybeSignedInterface,
+  ECDSASignedFields,
+  ECDSASignedInterface,
   LegacyGasMarketInterface,
-  TxDataContainer,
+  TxConstructorFields,
+  TxContainerMethods,
 } from '../dataContainerTypes.js'
 import type { TxOptions } from '../types.js'
+
+type TxType = TransactionType.Legacy
 
 const legacyFeatures = new Set<Feature>([Feature.ECDSASignable, Feature.LegacyGasMarket])
 
 export class LegacyDataContainer
   implements
-    TxDataContainer,
+    TxContainerMethods,
     DefaultContainerInterface,
-    ContractCreationContainerInterface,
-    ECDSAContainerInterface,
-    LegacyGasMarketInterface
+    CreateContractInterface,
+    LegacyGasMarketInterface,
+    ECDSAMaybeSignedInterface
 {
   public type: number = TransactionType.Legacy // Legacy tx type
 
@@ -32,7 +36,6 @@ export class LegacyDataContainer
   public readonly gasLimit: bigint
   public readonly value: bigint
   public readonly data: Uint8Array
-  // TODO fix type (how to do this? need to somehow override the interface)
   public readonly to: Address | null
 
   // Props only for signed txs
@@ -43,7 +46,7 @@ export class LegacyDataContainer
   // TODO: verify if txOptions is necessary
   // TODO (optimizing): for reach tx we auto-convert the input values to the target values (mostly bigints)
   // Is this necessary? What if we need the unconverted values? Convert it on the fly?
-  constructor(txData: LegacyContainerDataFields, txOptions: TxOptions) {
+  constructor(txData: TxConstructorFields[TxType], txOptions: TxOptions) {
     const { nonce, gasLimit, to, value, data, v, r, s } = txData
 
     // Set the tx properties
@@ -80,5 +83,10 @@ export class LegacyDataContainer
 
   toJSON() {
     return {}
+  }
+
+  sign(privateKey: Uint8Array): LegacyDataContainer & ECDSASignedInterface {
+    // TODO
+    return this as LegacyDataContainer & ECDSASignedInterface // Type return value to have v/r/s set
   }
 }

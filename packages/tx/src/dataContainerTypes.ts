@@ -33,7 +33,7 @@ export enum Feature {
 
 export type NestedUint8Array = (Uint8Array | NestedUint8Array)[]
 
-export interface TxDataContainer {
+export interface TxContainerMethods {
   supports(capability: Feature): boolean
   type: TransactionType
 
@@ -80,7 +80,7 @@ export interface TxDataContainer {
 // Fields: used for the CONSTRUCTOR of the containers
 // Interface: used for the resulting constructor, so each param of the field is converted to that type before resulting in the container
 
-export type DefaultContainerDataFields = {
+export type DefaultFields = {
   nonce?: BigIntLike
   gasLimit?: BigIntLike
   to?: AddressLike
@@ -89,36 +89,43 @@ export type DefaultContainerDataFields = {
 }
 
 export interface DefaultContainerInterface {
-  readonly gasPrice: bigint
   readonly nonce: bigint
   readonly gasLimit: bigint
   readonly value: bigint
   readonly data: Uint8Array
-  readonly to: Address | null // TODO: figure out how to handle this on txs which do not allow to:null (7702/4844)
 }
 
-export type ECDSASignedContainerFields = {
+export type CreateContractFields = {
+  to?: AddressLike | '' | null
+}
+
+export interface CreateContractInterface {
+  to: Address | null
+}
+
+// Equivalent of CreateContractDataFields but does not allow "null" or the empty string.
+export type ToFields = {
+  to?: AddressLike
+}
+
+export interface ToInterface {
+  to: Address
+}
+
+export type ECDSAMaybeSignedFields = {
   v?: BigIntLike
   r?: BigIntLike
   s?: BigIntLike
 }
 
-export interface ECDSAContainerInterface {
+export type ECDSASignedFields = Required<ECDSAMaybeSignedFields>
+
+// Note: only container interface with values which could be undefined due to unsigned containers
+export interface ECDSAMaybeSignedInterface {
   readonly v?: bigint
   readonly r?: bigint
   readonly s?: bigint
 }
-
-// The container / tx data fields if the tx can create contracts (to `null`)
-/*export type ContractCreationDataFields = {
-    to?: DefaultContainerDataFields['to'] | null | ''
-}*/
-
-/*
-export interface ContractCreationContainerInterface {
-    to: DefaultContainerInterface['to'] | null
-}
-*/
 
 export type LegacyGasMarketFields = {
   gasPrice: BigIntLike
@@ -128,11 +135,25 @@ export interface LegacyGasMarketInterface {
   readonly gasPrice: bigint
 }
 
-interface L1DefaultContainer
-  extends TxDataContainer,
-    DefaultContainerInterface,
-    ECDSAContainerInterface {}
+export type TxConstructorFields = {
+  [TransactionType.Legacy]: DefaultFields &
+    CreateContractFields &
+    LegacyGasMarketFields &
+    ECDSASignedFields
+}
 
+export interface LegacyTxInterface
+  extends DefaultContainerInterface,
+    CreateContractInterface,
+    LegacyGasMarketInterface,
+    ECDSAMaybeSignedInterface {}
+
+export type ContainerInterface = {
+  [TransactionType.Legacy]: LegacyTxInterface
+}
+
+// Below here TODO
+/*
 export interface LegacyContainerInterface extends L1DefaultContainer, LegacyGasMarketInterface {
   // to: DefaultContainerInterface['to'] | null
 }
@@ -205,3 +226,4 @@ export interface AuthorizationListInterface {
 }
 
 export interface EOA7702Interface extends FeeMarket1559Interface, AuthorizationListInterface {}
+*/
