@@ -307,5 +307,8 @@ describe('[FeeMarket1559Tx]', () => {
       undefined,
       'total fee must be the larger of the two',
     )
+    assert.throws(() => {
+      createFeeMarket1559Tx({ gasPrice: 1 }, { common })
+    }, 'gasPrice cannot be defined on 1559 tx')
   })
 })

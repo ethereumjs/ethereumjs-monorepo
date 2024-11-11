@@ -132,6 +132,10 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
       throw new Error(msg)
     }
 
+    if (txData.gasPrice !== undefined && txData.gasPrice !== null) {
+      const msg = Legacy.errorMsg(this, 'gasPrice cannot be defined on 1559 tx')
+      throw new Error(msg)
+    }
     EIP2718.validateYParity(this)
     Legacy.validateHighS(this)
 
