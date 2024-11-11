@@ -3,7 +3,7 @@ import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Blob4844Tx,
-  EOACode7702Transaction,
+  EOACode7702Tx,
   FeeMarket1559Tx,
   TransactionType,
   createFeeMarket1559Tx,
@@ -231,9 +231,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       // calculate expected coinbase balance
       const baseFee = block.header.baseFeePerGas!
       const inclusionFeePerGas =
-        tx instanceof FeeMarket1559Tx ||
-        tx instanceof Blob4844Tx ||
-        tx instanceof EOACode7702Transaction
+        tx instanceof FeeMarket1559Tx || tx instanceof Blob4844Tx || tx instanceof EOACode7702Tx
           ? tx.maxPriorityFeePerGas < tx.maxFeePerGas - baseFee
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee

@@ -4,7 +4,7 @@ import { bytesToBigInt, bytesToHex, equalsBytes, validateNoLeadingZeroes } from 
 import { TransactionType } from '../types.js'
 import { txTypeBytes, validateNotArray } from '../util.js'
 
-import { AccessList2930Transaction } from './tx.js'
+import { AccessList2930Tx } from './tx.js'
 
 import type { AccessList, TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
@@ -20,7 +20,7 @@ import type { TxData, TxValuesArray } from './tx.js'
  * - All parameters are optional and have some basic default values
  */
 export function createAccessList2930Tx(txData: TxData, opts: TxOptions = {}) {
-  return new AccessList2930Transaction(txData, opts)
+  return new AccessList2930Tx(txData, opts)
 }
 
 /**
@@ -43,7 +43,7 @@ export function createAccessList2930TxFromBytesArray(values: TxValuesArray, opts
 
   const emptyAccessList: AccessList = []
 
-  return new AccessList2930Transaction(
+  return new AccessList2930Tx(
     {
       chainId: bytesToBigInt(chainId),
       nonce,

@@ -30,9 +30,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { BlockOptions } from '@ethereumjs/block'
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   Blob4844Tx,
-  EOACode7702Transaction,
+  EOACode7702Tx,
   FeeMarket1559Tx,
   LegacyTx,
   TxOptions,
@@ -128,7 +128,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
 export function makeTx(
   txData: any,
   opts?: TxOptions,
-): EOACode7702Transaction | Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx {
+): EOACode7702Tx | Blob4844Tx | FeeMarket1559Tx | AccessList2930Tx | LegacyTx {
   let tx
   if (txData.authorizationList !== undefined) {
     // Convert `v` keys to `yParity`
