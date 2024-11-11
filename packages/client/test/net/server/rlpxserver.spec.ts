@@ -138,7 +138,6 @@ describe('should return rlpx server info with ip4 as default', async () => {
     bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
   }) as any
   const _nodeInfo = server.getRlpxInfo()
-
   ;(server as any).initDpt = vi.fn()
   ;(server as any).initRlpx = vi.fn()
   server.dpt = {
