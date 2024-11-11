@@ -5,35 +5,16 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 
 import { Feature } from './dataContainerTypes.js'
-import { AccessLists } from './util.js'
+import { AccessLists, AuthorizationLists } from './util.js'
 
 import type {
   AccessListInterface,
+  AuthorizationListInterface,
+  CreateContractInterface,
   DefaultContainerInterface,
-  TxDataContainer,
+  TxContainerMethods,
 } from './dataContainerTypes.js'
 import type { Common } from '@ethereumjs/common'
-
-/**
- * Gets the intrinsic gas which is the minimal gas limit a tx should have to be valid
- * @param tx
- * @param common
- */
-export function getIntrinsicGas(
-  tx: TxDataContainer & DefaultContainerInterface,
-  common: Common,
-): bigint {
-  // NOTE: TxDataContainer & DefaultContainerInterface
-  // This is the tx data container class interface WITH the default tx params
-  let intrincisGas = BIGINT_0
-  const txFee = common.param('txGas')
-  if (txFee) intrincisGas += txFee
-  if (common.gteHardfork('homestead') && (tx.to === undefined || tx.to === null)) {
-    const txCreationFee = common.param('txCreationGas')
-    if (txCreationFee) intrincisGas += txCreationFee
-  }
-  return intrincisGas + getDataGas(tx, common)
-}
 
 /**
  * Gets the data gas part of the tx, this consists of calldata, access lists and authority lists
@@ -41,7 +22,7 @@ export function getIntrinsicGas(
  * @param common
  */
 export function getDataGas(
-  tx: TxDataContainer & DefaultContainerInterface,
+  tx: TxContainerMethods & DefaultContainerInterface & CreateContractInterface,
   common: Common,
 ): bigint {
   // Side note: can also do this method without the entire tx container and just use `tx.data` instead as param?
@@ -60,15 +41,37 @@ export function getDataGas(
   }
 
   if (tx.supports(Feature.AccessLists)) {
-    // calculate access list cost
-
-    // TODO fix why this cannot be cast like this
-    cost += BigInt(AccessLists.getDataGasEIP2930((<AccessListInterface>tx).accessList, common))
+    // TODO: figure out how to get rid of the "unknown"
+    // (Likely: mark a type with all tx interfaces and mark them all as "optional")
+    const eip2930tx = tx as unknown as AccessListInterface
+    cost += BigInt(AccessLists.getDataGasEIP2930(eip2930tx.accessList, common))
   }
 
   if (tx.supports(Feature.EOACode)) {
-    // calculate authority list cost
+    const eip7702tx = tx as unknown as AuthorizationListInterface
+    cost += BigInt(AuthorizationLists.getDataGasEIP7702(eip7702tx.authorizationList, common))
   }
 
   return cost
+}
+
+/**
+ * Gets the intrinsic gas which is the minimal gas limit a tx should have to be valid
+ * @param tx
+ * @param common
+ */
+export function getIntrinsicGas(
+  tx: TxContainerMethods & DefaultContainerInterface & CreateContractInterface,
+  common: Common,
+): bigint {
+  // NOTE: TxDataContainer & DefaultContainerInterface
+  // This is the tx data container class interface WITH the default tx params
+  let intrincisGas = BIGINT_0
+  const txFee = common.param('txGas')
+  if (txFee) intrincisGas += txFee
+  if (common.gteHardfork('homestead') && (tx.to === undefined || tx.to === null)) {
+    const txCreationFee = common.param('txCreationGas')
+    if (txCreationFee) intrincisGas += txCreationFee
+  }
+  return intrincisGas + getDataGas(tx, common)
 }
