@@ -376,6 +376,11 @@ export interface AccessList2930TxData extends LegacyTxData {
  */
 export interface FeeMarketEIP1559TxData extends AccessList2930TxData {
   /**
+   * The transaction's gas price, inherited from {@link Transaction}.  This property is not used for EIP1559
+   * transactions and should always be undefined for this specific transaction type.
+   */
+  gasPrice?: never | null
+  /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
   maxPriorityFeePerGas?: BigIntLike
