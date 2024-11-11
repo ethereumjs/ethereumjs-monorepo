@@ -29,6 +29,7 @@ export enum Feature {
 
   AccessLists = 'AccessLists',
   EOACode = 'EOACode',
+  Blobs = 'Blobs',
 }
 
 export type NestedUint8Array = (Uint8Array | NestedUint8Array)[]
