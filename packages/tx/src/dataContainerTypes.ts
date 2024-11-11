@@ -216,20 +216,17 @@ type DefaultFieldsMaybeSigned = DefaultFields & ECDSAMaybeSignedFields
 export type TxConstructorFields = {
   [TransactionType.Legacy]: DefaultFieldsMaybeSigned & CreateContractFields & LegacyGasMarketFields
   [TransactionType.AccessListEIP2930]: TxConstructorFields[TransactionType.Legacy] & EIP2930Fields
-  [TransactionType.FeeMarketEIP1559]: Exclude<
+  [TransactionType.FeeMarketEIP1559]: Omit<
     TxConstructorFields[TransactionType.AccessListEIP2930],
-    LegacyGasMarketFields
+    'gasPrice'
   > &
     FeeMarketFields
-  [TransactionType.BlobEIP4844]: Exclude<
-    TxConstructorFields[TransactionType.FeeMarketEIP1559],
-    CreateContractFields
-  > &
+  [TransactionType.BlobEIP4844]: Omit<TxConstructorFields[TransactionType.FeeMarketEIP1559], 'to'> &
     ToFields &
     BlobFields
-  [TransactionType.EOACodeEIP7702]: Exclude<
+  [TransactionType.EOACodeEIP7702]: Omit<
     TxConstructorFields[TransactionType.FeeMarketEIP1559],
-    CreateContractFields
+    'to'
   > &
     ToFields &
     AuthorizationListFields
