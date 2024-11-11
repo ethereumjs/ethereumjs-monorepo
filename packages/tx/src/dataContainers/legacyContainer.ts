@@ -8,7 +8,6 @@ import type {
   CreateContractInterface,
   DefaultContainerInterface,
   ECDSAMaybeSignedInterface,
-  ECDSASignedFields,
   ECDSASignedInterface,
   LegacyGasMarketInterface,
   TxConstructorFields,
