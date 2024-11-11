@@ -15,7 +15,8 @@
       "**/config/**",
       "**/4844-interop/**",
       "**/scripts/**",
-      "**/rlp/bin/**"
+      "**/rlp/bin/**",
+      "**/benchmarks/fixture/**"
     ]
   },
   "formatter": {
