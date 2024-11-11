@@ -127,19 +127,16 @@ export interface ECDSAMaybeSignedInterface {
   readonly s?: bigint
 }
 
+type ECDSASignedInterfaceType = Required<ECDSAMaybeSignedInterface>
+
+export interface ECDSASignedInterface extends ECDSASignedInterfaceType {}
+
 export type LegacyGasMarketFields = {
   gasPrice: BigIntLike
 }
 
 export interface LegacyGasMarketInterface {
   readonly gasPrice: bigint
-}
-
-export type TxConstructorFields = {
-  [TransactionType.Legacy]: DefaultFields &
-    CreateContractFields &
-    LegacyGasMarketFields &
-    ECDSASignedFields
 }
 
 export interface LegacyTxInterface
@@ -152,12 +149,7 @@ export type ContainerInterface = {
   [TransactionType.Legacy]: LegacyTxInterface
 }
 
-// Below here TODO
-/*
-export interface LegacyContainerInterface extends L1DefaultContainer, LegacyGasMarketInterface {
-  // to: DefaultContainerInterface['to'] | null
-}
-
+// EIP-2930 (Access Lists) related types and interfaces
 export type ChainIdFields = {
   chainId?: BigIntLike
 }
@@ -167,22 +159,18 @@ export interface ChainIdInterface {
 }
 
 export type AccessListFields = {
-  accessList?: AccessListBytes | AccessList | null
+  accessList?: AccessListBytes | AccessList
 }
+
+export type EIP2930Fields = ChainIdFields & AccessListFields
 
 export interface AccessListInterface {
   accessList: AccessListBytes
 }
 
-interface L1_2930Interface extends L1DefaultContainer, ChainIdInterface, AccessListInterface {}
+export interface AccessList2930Interface extends ChainIdInterface, AccessListInterface {}
 
-export interface AccessList2930ContainerInterface
-  extends L1_2930Interface,
-    LegacyGasMarketInterface {}
-
-// interface AccessList2930Interface: L1DefaultFields, ContractCreationDataFields, LegacyGasMarket, ChainId, AccessList
-
-// EIP1559 txs
+// EIP-1559 (Fee market) related types and interfaces
 export type FeeMarketFields = {
   maxPriorityFeePerGas?: BigIntLike
   maxFeePerGas?: BigIntLike
@@ -193,16 +181,14 @@ export interface FeeMarketInterface {
   readonly maxFeePerGas: bigint
 }
 
-export interface FeeMarket1559Interface extends L1_2930Interface, FeeMarketInterface {}
-
-// EIP4844 txs
+// EIP-4844 (Shard blob transactions) related types and fields
 export type BlobFields = {
   blobVersionedHashes?: BytesLike[]
   maxFeePerBlobGas?: BigIntLike
   blobs?: BytesLike[]
   kzgCommitments?: BytesLike[]
   kzgProofs?: BytesLike[]
-  blobsData?: string[]
+  blobsData?: string[] // TODO why is this string and not something like PrefixedHexString?
 }
 
 export interface BlobInterface {
@@ -213,10 +199,7 @@ export interface BlobInterface {
   readonly maxFeePerBlobGas: bigint
 }
 
-export interface Blob4844Interface extends FeeMarket1559Interface, BlobInterface {}
-
-// EIP7702 txs
-
+// EIP-7702 (EOA code transactions) related types and fields
 export type AuthorizationListFields = {
   authorizationList?: AuthorizationListBytes | AuthorizationList | never
 }
@@ -225,5 +208,29 @@ export interface AuthorizationListInterface {
   readonly authorizationList: AuthorizationListBytes
 }
 
-export interface EOA7702Interface extends FeeMarket1559Interface, AuthorizationListInterface {}
-*/
+// Below here: helper types
+// Helper type which is common on the txs:
+type DefaultFieldsMaybeSigned = DefaultFields & ECDSAMaybeSignedFields
+
+// Helper type for the constructor fields of the txs
+export type TxConstructorFields = {
+  [TransactionType.Legacy]: DefaultFieldsMaybeSigned & CreateContractFields & LegacyGasMarketFields
+  [TransactionType.AccessListEIP2930]: TxConstructorFields[TransactionType.Legacy] & EIP2930Fields
+  [TransactionType.FeeMarketEIP1559]: Exclude<
+    TxConstructorFields[TransactionType.AccessListEIP2930],
+    LegacyGasMarketFields
+  > &
+    FeeMarketFields
+  [TransactionType.BlobEIP4844]: Exclude<
+    TxConstructorFields[TransactionType.FeeMarketEIP1559],
+    CreateContractFields
+  > &
+    ToFields &
+    BlobFields
+  [TransactionType.EOACodeEIP7702]: Exclude<
+    TxConstructorFields[TransactionType.FeeMarketEIP1559],
+    CreateContractFields
+  > &
+    ToFields &
+    AuthorizationListFields
+}
