@@ -7,7 +7,17 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["**/node_modules/**", "**/dist/**", "**/coverage/**", "**/ethereum-tests/**"]
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "**/ethereum-tests/**",
+      "**/config/**",
+      "**/4844-interop/**",
+      "**/scripts/**",
+      "**/rlp/bin/**",
+      "**/benchmarks/fixture/**"
+    ]
   },
   "formatter": {
     "enabled": true,
