@@ -132,7 +132,7 @@ type ECDSASignedInterfaceType = Required<ECDSAMaybeSignedInterface>
 export interface ECDSASignedInterface extends ECDSASignedInterfaceType {}
 
 export type LegacyGasMarketFields = {
-  gasPrice: BigIntLike
+  gasPrice?: BigIntLike
 }
 
 export interface LegacyGasMarketInterface {
