@@ -1,9 +1,7 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
@@ -24,7 +22,6 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
     "prepare": "git config --local core.hooksPath .githooks",
-    "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
     "install-browser-deps": "npm install webdriverio@9.2.6 @vitest/browser@2.1.0"
   },
@@ -41,19 +38,16 @@
     "cspell": "^8.13.3",
     "embedme": "1.22.1",
     "eslint": "8.57.0",
-    "eslint-config-prettier": "^9.1.0",
     "eslint-config-typestrict": "^1.0.5",
     "eslint-formatter-codeframe": "7.32.1",
     "eslint-plugin-ethereumjs": "file:./eslint",
     "eslint-plugin-github": "4.9.2",
     "eslint-plugin-implicit-dependencies": "1.1.1",
     "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-sonarjs": "0.19.0",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
-    "prettier": "^3.3.3",
     "sort-package-json": "1.57.0",
     "tape": "5.6.0",
     "tsx": "^4.6.2",

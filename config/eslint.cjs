@@ -19,7 +19,6 @@ module.exports = {
     'coverage',
     'dist',
     'node_modules',
-    'prettier.config.js',
     'recipes',
     'rlp.cjs',
     'scripts',
