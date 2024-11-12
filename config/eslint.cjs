@@ -27,7 +27,11 @@ module.exports = {
     'vitest.config.browser.ts',
     'vitest.config.unit.ts',
     'vite.*.ts',
-    "../packages/client/**/*.ts"
+    'ethereum-tests',
+    'archive',
+    'devnets',
+    'eslint',
+    'lint-staged.config.js',
   ],
   extends: [
     'typestrict',
@@ -102,6 +106,7 @@ module.exports = {
     'no-dupe-class-members': 'off',
     'no-extra-semi': 'off',
     'no-redeclare': 'off',
+    'no-undef': 'off',
     'no-unused-vars': 'off',
     'no-var': 'error',
     'object-shorthand': 'error',
@@ -123,6 +128,7 @@ module.exports = {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
         'no-console': 'off',
+        '@typescript-eslint/no-floating-promises': 'warn',
       },
     },
     {
