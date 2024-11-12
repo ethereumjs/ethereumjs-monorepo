@@ -26,7 +26,9 @@ module.exports = {
     'webpack.config.js',
     'vitest.config.ts',
     'vitest.config.browser.ts',
-    'vitest.config.unit.ts'
+    'vitest.config.unit.ts',
+    'ethereum-tests/*',
+    'vite.*.ts'
   ],
   extends: [
     'typestrict',
@@ -59,6 +61,7 @@ module.exports = {
     '@typescript-eslint/restrict-plus-operands': 'off',
     '@typescript-eslint/return-await': 'error',
     '@typescript-eslint/strict-boolean-expressions': ['error'],
+    '@typescript-eslint/no-use-before-define': 'warn', // TODO: decide if we care
     eqeqeq: 'error',
     'github/array-foreach': 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
@@ -107,6 +110,7 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
+    'no-restricted-syntax': 'off',
   },
   parserOptions: {
     extraFileExtensions: ['.json'],
