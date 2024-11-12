@@ -1,33 +1,29 @@
-import { Lock } from "@ethereumjs/util";
+import { Lock } from '@ethereumjs/util'
 
-import { Event } from "../../types.js";
+import { Event } from '../../types.js'
 
-import type { BlockBodyBytes, BlockHeader } from "@ethereumjs/block";
-import type { TypedTransaction } from "@ethereumjs/tx";
-import type { TxReceipt } from "@ethereumjs/vm";
-import type { Config } from "../../config.js";
-import type { Peer } from "../peer/peer.js";
-import type { EthProtocolMethods } from "./ethprotocol.js";
-import type { Message, Protocol } from "./protocol.js";
-import type { Sender } from "./sender.js";
-import type {
-  AccountData,
-  SnapProtocolMethods,
-  StorageData,
-} from "./snapprotocol.js";
+import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TxReceipt } from '@ethereumjs/vm'
+import type { Config } from '../../config.js'
+import type { Peer } from '../peer/peer.js'
+import type { EthProtocolMethods } from './ethprotocol.js'
+import type { Message, Protocol } from './protocol.js'
+import type { Sender } from './sender.js'
+import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
 
 export interface BoundProtocolOptions {
   /* Config */
-  config: Config;
+  config: Config
 
   /* Protocol */
-  protocol: Protocol;
+  protocol: Protocol
 
   /* Peer */
-  peer: Peer;
+  peer: Peer
 
   /* Sender */
-  sender: Sender;
+  sender: Sender
 }
 
 /**
@@ -35,16 +31,16 @@ export interface BoundProtocolOptions {
  * @memberof module:net/protocol
  */
 export class BoundProtocol {
-  public config: Config;
-  public name: string;
-  private protocol: Protocol;
-  protected peer: Peer;
-  private sender: Sender;
-  private versions: number[];
-  private timeout: number;
-  private _status: any;
-  private resolvers: Map<string | number, any>;
-  private messageQueue: Message[] = [];
+  public config: Config
+  public name: string
+  private protocol: Protocol
+  protected peer: Peer
+  private sender: Sender
+  private versions: number[]
+  private timeout: number
+  private _status: any
+  private resolvers: Map<string | number, any>
+  private messageQueue: Message[] = []
 
   /**
    * An eventual updated best head.
@@ -53,54 +49,54 @@ export class BoundProtocol {
    * the initial `STATUS` exchange (`_status` property here) and `updatedBestHash`
    * number/hash should take precedence.
    */
-  public updatedBestHeader?: BlockHeader;
+  public updatedBestHeader?: BlockHeader
 
   /**
    * Create bound protocol
    */
   constructor(options: BoundProtocolOptions) {
-    this.config = options.config;
+    this.config = options.config
 
-    this.protocol = options.protocol;
-    this.peer = options.peer;
-    this.sender = options.sender;
-    this.name = this.protocol.name;
-    this.versions = this.protocol.versions;
-    this.timeout = this.protocol.timeout;
-    this._status = {};
-    this.resolvers = new Map();
-    this.sender.on("message", (message: any) => {
+    this.protocol = options.protocol
+    this.peer = options.peer
+    this.sender = options.sender
+    this.name = this.protocol.name
+    this.versions = this.protocol.versions
+    this.timeout = this.protocol.timeout
+    this._status = {}
+    this.resolvers = new Map()
+    this.sender.on('message', (message: any) => {
       try {
         if (this.peer.pooled) {
-          this.handle(message);
+          this.handle(message)
         } else {
-          this.messageQueue.push(message);
+          this.messageQueue.push(message)
           // Expected message queue growth is in the single digits
           // so this adds a guard here if something goes wrong
           if (this.messageQueue.length >= 50) {
-            const error = new Error("unexpected message queue growth for peer");
-            this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
+            const error = new Error('unexpected message queue growth for peer')
+            this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
           }
         }
       } catch (error: any) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       }
-    });
-    this.sender.on("error", (error: Error) =>
+    })
+    this.sender.on('error', (error: Error) =>
       this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer),
-    );
+    )
   }
 
   get status(): any {
-    return this._status;
+    return this._status
   }
 
   set status(status: any) {
-    Object.assign(this._status, status);
+    Object.assign(this._status, status)
   }
 
   async handshake(sender: Sender) {
-    this._status = await this.protocol.handshake(sender);
+    this._status = await this.protocol.handshake(sender)
   }
 
   /**
@@ -110,37 +106,37 @@ export class BoundProtocol {
    * @emits {@link Event.PROTOCOL_ERROR}
    */
   private handle(incoming: Message) {
-    const messages = this.protocol.messages;
-    const message = messages.find((m) => m.code === incoming.code);
+    const messages = this.protocol.messages
+    const message = messages.find((m) => m.code === incoming.code)
     if (!message) {
-      return;
+      return
     }
 
-    let data;
-    let error;
+    let data
+    let error
     try {
-      data = this.protocol.decode(message, incoming.payload);
+      data = this.protocol.decode(message, incoming.payload)
     } catch (e: any) {
-      error = new Error(`Could not decode message ${message.name}: ${e}`);
+      error = new Error(`Could not decode message ${message.name}: ${e}`)
     }
-    const resolver = this.resolvers.get(incoming.code);
+    const resolver = this.resolvers.get(incoming.code)
     if (resolver !== undefined) {
-      clearTimeout(resolver.timeout);
-      this.resolvers.delete(incoming.code);
+      clearTimeout(resolver.timeout)
+      this.resolvers.delete(incoming.code)
       if (error) {
-        resolver.reject(error);
+        resolver.reject(error)
       } else {
-        resolver.resolve(data);
+        resolver.resolve(data)
       }
     } else if (error) {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
     } else {
       this.config.events.emit(
         Event.PROTOCOL_MESSAGE,
         { name: message.name, data },
         this.protocol.name,
         this.peer,
-      );
+      )
     }
   }
 
@@ -149,7 +145,7 @@ export class BoundProtocol {
    */
   handleMessageQueue() {
     for (const message of this.messageQueue) {
-      this.handle(message);
+      this.handle(message)
     }
   }
 
@@ -159,15 +155,15 @@ export class BoundProtocol {
    * @param args message arguments
    */
   send(name: string, args?: any) {
-    const messages = this.protocol.messages;
-    const message = messages.find((m) => m.name === name);
+    const messages = this.protocol.messages
+    const message = messages.find((m) => m.name === name)
     if (message) {
-      const encoded = this.protocol.encode(message, args);
-      this.sender.sendMessage(message.code, encoded);
+      const encoded = this.protocol.encode(message, args)
+      this.sender.sendMessage(message.code, encoded)
     } else {
-      throw new Error(`Unknown message: ${name}`);
+      throw new Error(`Unknown message: ${name}`)
     }
-    return message;
+    return message
   }
 
   /**
@@ -177,153 +173,147 @@ export class BoundProtocol {
    * @param args message arguments
    */
   async request(name: string, args: any): Promise<any> {
-    const message = this.send(name, args);
-    let lock;
+    const message = this.send(name, args)
+    let lock
     if (
-      typeof message.response === "number" &&
+      typeof message.response === 'number' &&
       this.resolvers.get(message.response) !== undefined
     ) {
-      const res = this.resolvers.get(message.response);
-      lock = res.lock;
-      await res.lock.acquire();
+      const res = this.resolvers.get(message.response)
+      lock = res.lock
+      await res.lock.acquire()
     }
     const resolver: any = {
       timeout: null,
       resolve: null,
       reject: null,
       lock: lock ?? new Lock(),
-    };
-    this.resolvers.set(message.response!, resolver);
+    }
+    this.resolvers.set(message.response!, resolver)
     if (lock === undefined) {
-      await resolver.lock.acquire();
+      await resolver.lock.acquire()
     }
     return new Promise((resolve, reject) => {
       resolver.resolve = (e: any) => {
-        resolver.lock.release();
-        resolve(e);
-      };
+        resolver.lock.release()
+        resolve(e)
+      }
       resolver.reject = (e: any) => {
-        resolver.lock.release();
-        reject(e);
-      };
+        resolver.lock.release()
+        reject(e)
+      }
       resolver.timeout = setTimeout(() => {
-        resolver.timeout = null;
-        this.resolvers.delete(message.response!);
-        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`));
-      }, this.timeout);
-    });
+        resolver.timeout = null
+        this.resolvers.delete(message.response!)
+        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
+      }, this.timeout)
+    })
   }
 }
 
-export class BoundEthProtocol
-  extends BoundProtocol
-  implements EthProtocolMethods
-{
-  name = "eth"; // public name: string
+export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethods {
+  name = 'eth' // public name: string
 
   constructor(options: BoundProtocolOptions) {
-    super(options);
+    super(options)
   }
 
   async getBlockHeaders(opts: {
-    reqId?: bigint | undefined;
-    block: bigint | Uint8Array;
-    max: number;
-    skip?: number | undefined;
-    reverse?: boolean | undefined;
+    reqId?: bigint | undefined
+    block: bigint | Uint8Array
+    max: number
+    skip?: number | undefined
+    reverse?: boolean | undefined
   }): Promise<[bigint, BlockHeader[]]> {
-    return this.request("GetBlockHeaders", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getBlockBodies(opts: {
-    reqId?: bigint | undefined;
-    hashes: Uint8Array[];
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
   }): Promise<[bigint, BlockBodyBytes[]]> {
-    return this.request("GetBlockBodies", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetBlockBodies', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getPooledTransactions(opts: {
-    reqId?: bigint | undefined;
-    hashes: Uint8Array[];
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
   }): Promise<[bigint, TypedTransaction[]]> {
-    return this.request("GetPooledTransactions", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetPooledTransactions', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getReceipts(opts: {
-    reqId?: bigint | undefined;
-    hashes: Uint8Array[];
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
   }): Promise<[bigint, TxReceipt[]]> {
-    return this.request("GetReceipts", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetReceipts', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }
 
-export class BoundSnapProtocol
-  extends BoundProtocol
-  implements SnapProtocolMethods
-{
-  name = "snap"; // public name: string
+export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMethods {
+  name = 'snap' // public name: string
 
   constructor(options: BoundProtocolOptions) {
-    super(options);
+    super(options)
   }
   async getAccountRange(opts: {
-    reqId?: bigint | undefined;
-    root: Uint8Array;
-    origin: Uint8Array;
-    limit: Uint8Array;
-    bytes: bigint;
+    reqId?: bigint | undefined
+    root: Uint8Array
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
   }): Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }> {
-    return this.request("GetAccountRange", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetAccountRange', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getStorageRanges(opts: {
-    reqId?: bigint | undefined;
-    root: Uint8Array;
-    accounts: Uint8Array[];
-    origin: Uint8Array;
-    limit: Uint8Array;
-    bytes: bigint;
+    reqId?: bigint | undefined
+    root: Uint8Array
+    accounts: Uint8Array[]
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
   }): Promise<{
-    reqId: bigint;
-    slots: StorageData[][];
-    proof: Uint8Array[];
+    reqId: bigint
+    slots: StorageData[][]
+    proof: Uint8Array[]
   }> {
-    return this.request("GetStorageRanges", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetStorageRanges', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getByteCodes(opts: {
-    reqId?: bigint | undefined;
-    hashes: Uint8Array[];
-    bytes: bigint;
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+    bytes: bigint
   }): Promise<{ reqId: bigint; codes: Uint8Array[] }> {
-    return this.request("GetByteCodes", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetByteCodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getTrieNodes(opts: {
-    reqId?: bigint | undefined; // so this adds a guard here if something goes wrong
+    reqId?: bigint | undefined // so this adds a guard here if something goes wrong
     // so this adds a guard here if something goes wrong
-    root: Uint8Array;
-    paths: Uint8Array[][];
-    bytes: bigint;
+    root: Uint8Array
+    paths: Uint8Array[][]
+    bytes: bigint
   }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
-    return this.request("GetTrieNodes", opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      return undefined;
-    });
+    return this.request('GetTrieNodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }

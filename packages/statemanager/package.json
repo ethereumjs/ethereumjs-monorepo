@@ -2,10 +2,7 @@
   "name": "@ethereumjs/statemanager",
   "version": "3.0.0-alpha.1",
   "description": "An Ethereum statemanager implementation",
-  "keywords": [
-    "ethereum",
-    "statemanager"
-  ],
+  "keywords": ["ethereum", "statemanager"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
@@ -16,9 +13,7 @@
   },
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
-  "contributors": [
-    "g11tech <gajinder@g11.in>"
-  ],
+  "contributors": ["g11tech <gajinder@g11.in>"],
   "type": "module",
   "sideEffects": false,
   "main": "dist/cjs/index.js",
@@ -29,10 +24,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",

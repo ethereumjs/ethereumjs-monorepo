@@ -1,9 +1,9 @@
-import type { PrefixedHexString } from "@ethereumjs/util";
+import type { PrefixedHexString } from '@ethereumjs/util'
 
-import type { Common } from "@ethereumjs/common";
-import type { MerklePatriciaTrie } from "@ethereumjs/mpt";
-import type { VerkleTree } from "@ethereumjs/verkle";
-import type { Caches } from "./index.js";
+import type { Common } from '@ethereumjs/common'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import type { VerkleTree } from '@ethereumjs/verkle'
+import type { Caches } from './index.js'
 /**
  * Basic state manager options (not to be used directly)
  */
@@ -11,7 +11,7 @@ interface BaseStateManagerOpts {
   /**
    * The common to use
    */
-  common?: Common;
+  common?: Common
 }
 
 /**
@@ -22,8 +22,8 @@ export interface SimpleStateManagerOpts extends BaseStateManagerOpts {
 }
 
 export interface RPCStateManagerOpts extends BaseStateManagerOpts {
-  provider: string;
-  blockTag: bigint | "earliest";
+  provider: string
+  blockTag: bigint | 'earliest'
 }
 
 /**
@@ -33,14 +33,14 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   /**
    * A {@link MerklePatriciaTrie} instance
    */
-  trie?: MerklePatriciaTrie;
+  trie?: MerklePatriciaTrie
   /**
    * Option to prefix codehashes in the database. This defaults to `true`.
    * If this is disabled, note that it is possible to corrupt the trie, by deploying code
    * which code is equal to the preimage of a trie-node.
    * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
    */
-  prefixCodeHashes?: boolean;
+  prefixCodeHashes?: boolean
 
   /**
    * Option to prefix the keys for the storage tries with the first 7 bytes from the
@@ -52,7 +52,7 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
    *
    * Default: false (for backwards compatibility reasons)
    */
-  prefixStorageTrieKeys?: boolean;
+  prefixStorageTrieKeys?: boolean
 
   /**
    * Options to enable and configure the use of a cache account, code and storage
@@ -61,42 +61,42 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
    *
    * Default: false
    */
-  caches?: Caches;
+  caches?: Caches
 }
 
 /**
  * Options dictionary.
  */
 export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
-  common: Common; // Common required since it provides verkleCrypto through customCrypto
-  caches?: Caches;
+  common: Common // Common required since it provides verkleCrypto through customCrypto
+  caches?: Caches
 }
 
 export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
-  common: Common; // Common required since it provides verkleCrypto through customCrypto
-  trie?: VerkleTree;
-  caches?: Caches;
+  common: Common // Common required since it provides verkleCrypto through customCrypto
+  trie?: VerkleTree
+  caches?: Caches
 }
 export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString | null;
+  [key: PrefixedHexString]: PrefixedHexString | null
 }
 
 export interface EncodedVerkleProof {
-  [key: PrefixedHexString]: PrefixedHexString;
+  [key: PrefixedHexString]: PrefixedHexString
 }
 
 export type StorageProof = {
-  key: PrefixedHexString;
-  proof: PrefixedHexString[];
-  value: PrefixedHexString;
-};
+  key: PrefixedHexString
+  proof: PrefixedHexString[]
+  value: PrefixedHexString
+}
 
 export type Proof = {
-  address: PrefixedHexString;
-  balance: PrefixedHexString;
-  codeHash: PrefixedHexString;
-  nonce: PrefixedHexString;
-  storageHash: PrefixedHexString;
-  accountProof: PrefixedHexString[];
-  storageProof: StorageProof[];
-};
+  address: PrefixedHexString
+  balance: PrefixedHexString
+  codeHash: PrefixedHexString
+  nonce: PrefixedHexString
+  storageHash: PrefixedHexString
+  accountProof: PrefixedHexString[]
+  storageProof: StorageProof[]
+}

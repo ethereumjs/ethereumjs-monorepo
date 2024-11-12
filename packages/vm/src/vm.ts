@@ -1,13 +1,13 @@
-import { createEVM } from "@ethereumjs/evm";
-import { EventEmitter } from "eventemitter3";
+import { createEVM } from '@ethereumjs/evm'
+import { EventEmitter } from 'eventemitter3'
 
-import { createVM } from "./constructors.js";
-import { paramsVM } from "./params.js";
+import { createVM } from './constructors.js'
+import { paramsVM } from './params.js'
 
-import type { Common, StateManagerInterface } from "@ethereumjs/common";
-import type { EVMInterface, EVMMockBlockchainInterface } from "@ethereumjs/evm";
-import type { BigIntLike } from "@ethereumjs/util";
-import type { VMEvent, VMOpts } from "./types.js";
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
+import type { BigIntLike } from '@ethereumjs/util'
+import type { VMEvent, VMOpts } from './types.js'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -17,32 +17,32 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: StateManagerInterface;
+  readonly stateManager: StateManagerInterface
 
   /**
    * The blockchain the VM operates on
    */
-  readonly blockchain: EVMMockBlockchainInterface;
+  readonly blockchain: EVMMockBlockchainInterface
 
-  readonly common: Common;
+  readonly common: Common
 
-  readonly events: EventEmitter<VMEvent>;
+  readonly events: EventEmitter<VMEvent>
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVMInterface;
+  readonly evm: EVMInterface
 
-  protected readonly _opts: VMOpts;
-  protected _isInitialized = false;
+  protected readonly _opts: VMOpts
+  protected _isInitialized = false
 
-  protected readonly _setHardfork: boolean | BigIntLike;
+  protected readonly _setHardfork: boolean | BigIntLike
 
   /**
    * Cached emit() function, not for public usage
    * set to public due to implementation internals
    * @hidden
    */
-  public readonly _emit: (topic: string, data: any) => Promise<void>;
+  public readonly _emit: (topic: string, data: any) => Promise<void>
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -52,7 +52,7 @@ export class VM {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  readonly DEBUG: boolean = false;
+  readonly DEBUG: boolean = false
 
   /**
    * Instantiates a new {@link VM} Object.
@@ -63,36 +63,34 @@ export class VM {
    * @param opts
    */
   constructor(opts: VMOpts = {}) {
-    this.common = opts.common!;
-    this.common.updateParams(opts.params ?? paramsVM);
-    this.stateManager = opts.stateManager!;
-    this.blockchain = opts.blockchain!;
-    this.evm = opts.evm!;
+    this.common = opts.common!
+    this.common.updateParams(opts.params ?? paramsVM)
+    this.stateManager = opts.stateManager!
+    this.blockchain = opts.blockchain!
+    this.evm = opts.evm!
 
-    this.events = new EventEmitter<VMEvent>();
+    this.events = new EventEmitter<VMEvent>()
 
     this._emit = async (topic: string, data: any): Promise<void> => {
-      const listeners = this.events.listeners(topic as keyof VMEvent);
+      const listeners = this.events.listeners(topic as keyof VMEvent)
       for (const listener of listeners) {
         if (listener.length === 2) {
           await new Promise<void>((resolve) => {
-            listener(data, resolve);
-          });
+            listener(data, resolve)
+          })
         } else {
-          listener(data);
+          listener(data)
         }
       }
-    };
-    this._opts = opts;
+    }
+    this._opts = opts
 
-    this._setHardfork = opts.setHardfork ?? false;
+    this._setHardfork = opts.setHardfork ?? false
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === "undefined"
-        ? (process?.env?.DEBUG?.includes("ethjs") ?? false)
-        : false;
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**
@@ -109,19 +107,17 @@ export class VM {
    * @param downlevelCaches Downlevel (so: adopted for short-term usage) associated state caches (default: true)
    */
   async shallowCopy(downlevelCaches = true): Promise<VM> {
-    const common = this.common.copy();
-    common.setHardfork(this.common.hardfork());
-    const blockchain = this.blockchain.shallowCopy();
-    const stateManager = this.stateManager.shallowCopy(downlevelCaches);
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
+    const blockchain = this.blockchain.shallowCopy()
+    const stateManager = this.stateManager.shallowCopy(downlevelCaches)
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common: this._opts.evmOpts?.common?.copy() ?? common,
       blockchain: this._opts.evmOpts?.blockchain?.shallowCopy() ?? blockchain,
-      stateManager:
-        this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ??
-        stateManager,
-    };
-    const evmCopy = await createEVM(evmOpts); // TODO fixme (should copy the EVMInterface, not default EVM)
+      stateManager: this._opts.evmOpts?.stateManager?.shallowCopy(downlevelCaches) ?? stateManager,
+    }
+    const evmCopy = await createEVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return createVM({
       stateManager,
       blockchain: this.blockchain,
@@ -129,20 +125,20 @@ export class VM {
       evm: evmCopy,
       setHardfork: this._setHardfork,
       profilerOpts: this._opts.profilerOpts,
-    });
+    })
   }
 
   /**
    * Return a compact error string representation of the object
    */
   errorStr() {
-    let hf = "";
+    let hf = ''
     try {
-      hf = this.common.hardfork();
+      hf = this.common.hardfork()
     } catch (e: any) {
-      hf = "error";
+      hf = 'error'
     }
-    const errorStr = `vm hf=${hf}`;
-    return errorStr;
+    const errorStr = `vm hf=${hf}`
+    return errorStr
   }
 }

@@ -1,4 +1,4 @@
-import { KeyEncoding, ValueEncoding } from "@ethereumjs/util";
+import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 
 import {
   HEADS_KEY,
@@ -9,9 +9,9 @@ import {
   headerKey,
   numberToHashKey,
   tdKey,
-} from "./constants.js";
+} from './constants.js'
 
-import type { CacheMap } from "./manager.js";
+import type { CacheMap } from './manager.js'
 
 export enum DBTarget {
   Heads = 0,
@@ -32,82 +32,82 @@ export enum DBTarget {
  * @hidden
  */
 export interface DBOpData {
-  type?: "put" | "del";
-  key: Uint8Array | string;
-  keyEncoding: KeyEncoding;
-  valueEncoding?: ValueEncoding;
-  value?: Uint8Array | object;
+  type?: 'put' | 'del'
+  key: Uint8Array | string
+  keyEncoding: KeyEncoding
+  valueEncoding?: ValueEncoding
+  value?: Uint8Array | object
 }
 
 // a Database Key is identified by a block hash, a block number, or both
 export type DatabaseKey = {
-  blockNumber?: bigint;
-  blockHash?: Uint8Array;
-};
+  blockNumber?: bigint
+  blockHash?: Uint8Array
+}
 
 /**
  * The DBOp class aids creating database operations which is used by `level` using a more high-level interface
  */
 export class DBOp {
-  public operationTarget: DBTarget;
-  public baseDBOp: DBOpData;
-  public cacheString: string | undefined;
+  public operationTarget: DBTarget
+  public baseDBOp: DBOpData
+  public cacheString: string | undefined
 
   private constructor(operationTarget: DBTarget, key?: DatabaseKey) {
-    this.operationTarget = operationTarget;
+    this.operationTarget = operationTarget
 
     this.baseDBOp = {
-      key: "",
+      key: '',
       keyEncoding: KeyEncoding.Bytes,
       valueEncoding: ValueEncoding.Bytes,
-    };
+    }
 
     switch (operationTarget) {
       case DBTarget.Heads: {
-        this.baseDBOp.key = HEADS_KEY;
-        this.baseDBOp.valueEncoding = ValueEncoding.JSON;
-        break;
+        this.baseDBOp.key = HEADS_KEY
+        this.baseDBOp.valueEncoding = ValueEncoding.JSON
+        break
       }
       case DBTarget.HeadHeader: {
-        this.baseDBOp.key = HEAD_HEADER_KEY;
-        this.baseDBOp.keyEncoding = KeyEncoding.String;
-        break;
+        this.baseDBOp.key = HEAD_HEADER_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
+        break
       }
       case DBTarget.HeadBlock: {
-        this.baseDBOp.key = HEAD_BLOCK_KEY;
-        this.baseDBOp.keyEncoding = KeyEncoding.String;
-        break;
+        this.baseDBOp.key = HEAD_BLOCK_KEY
+        this.baseDBOp.keyEncoding = KeyEncoding.String
+        break
       }
       case DBTarget.HashToNumber: {
-        this.baseDBOp.key = hashToNumberKey(key!.blockHash!);
-        this.cacheString = "hashToNumber";
-        break;
+        this.baseDBOp.key = hashToNumberKey(key!.blockHash!)
+        this.cacheString = 'hashToNumber'
+        break
       }
       case DBTarget.NumberToHash: {
-        this.baseDBOp.key = numberToHashKey(key!.blockNumber!);
-        this.cacheString = "numberToHash";
-        break;
+        this.baseDBOp.key = numberToHashKey(key!.blockNumber!)
+        this.cacheString = 'numberToHash'
+        break
       }
       case DBTarget.TotalDifficulty: {
-        this.baseDBOp.key = tdKey(key!.blockNumber!, key!.blockHash!);
-        this.cacheString = "td";
-        break;
+        this.baseDBOp.key = tdKey(key!.blockNumber!, key!.blockHash!)
+        this.cacheString = 'td'
+        break
       }
       case DBTarget.Body: {
-        this.baseDBOp.key = bodyKey(key!.blockNumber!, key!.blockHash!);
-        this.cacheString = "body";
-        break;
+        this.baseDBOp.key = bodyKey(key!.blockNumber!, key!.blockHash!)
+        this.cacheString = 'body'
+        break
       }
       case DBTarget.Header: {
-        this.baseDBOp.key = headerKey(key!.blockNumber!, key!.blockHash!);
-        this.cacheString = "header";
-        break;
+        this.baseDBOp.key = headerKey(key!.blockNumber!, key!.blockHash!)
+        this.cacheString = 'header'
+        break
       }
     }
   }
 
   public static get(operationTarget: DBTarget, key?: DatabaseKey): DBOp {
-    return new DBOp(operationTarget, key);
+    return new DBOp(operationTarget, key)
   }
 
   // set operation: note: value/key is not in default order
@@ -116,40 +116,34 @@ export class DBOp {
     value: Uint8Array | object,
     key?: DatabaseKey,
   ): DBOp {
-    const dbOperation = new DBOp(operationTarget, key);
-    dbOperation.baseDBOp.value = value;
-    dbOperation.baseDBOp.type = "put";
+    const dbOperation = new DBOp(operationTarget, key)
+    dbOperation.baseDBOp.value = value
+    dbOperation.baseDBOp.type = 'put'
 
     if (operationTarget === DBTarget.Heads) {
-      dbOperation.baseDBOp.valueEncoding = ValueEncoding.JSON;
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.JSON
     } else {
-      dbOperation.baseDBOp.valueEncoding = ValueEncoding.Bytes;
+      dbOperation.baseDBOp.valueEncoding = ValueEncoding.Bytes
     }
 
-    return dbOperation;
+    return dbOperation
   }
 
   public static del(operationTarget: DBTarget, key?: DatabaseKey): DBOp {
-    const dbOperation = new DBOp(operationTarget, key);
-    dbOperation.baseDBOp.type = "del";
-    return dbOperation;
+    const dbOperation = new DBOp(operationTarget, key)
+    dbOperation.baseDBOp.type = 'del'
+    return dbOperation
   }
 
   public updateCache(cacheMap: CacheMap) {
-    if (
-      this.cacheString !== undefined &&
-      cacheMap[this.cacheString] !== undefined
-    ) {
-      if (this.baseDBOp.type === "put") {
+    if (this.cacheString !== undefined && cacheMap[this.cacheString] !== undefined) {
+      if (this.baseDBOp.type === 'put') {
         this.baseDBOp.value instanceof Uint8Array &&
-          cacheMap[this.cacheString].set(
-            this.baseDBOp.key,
-            this.baseDBOp.value,
-          );
-      } else if (this.baseDBOp.type === "del") {
-        cacheMap[this.cacheString].del(this.baseDBOp.key);
+          cacheMap[this.cacheString].set(this.baseDBOp.key, this.baseDBOp.value)
+      } else if (this.baseDBOp.type === 'del') {
+        cacheMap[this.cacheString].del(this.baseDBOp.key)
       } else {
-        throw new Error("unsupported db operation on cache");
+        throw new Error('unsupported db operation on cache')
       }
     }
   }

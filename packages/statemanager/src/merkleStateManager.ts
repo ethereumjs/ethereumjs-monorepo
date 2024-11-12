@@ -1,6 +1,6 @@
-import { Common, Mainnet } from "@ethereumjs/common";
-import { MerklePatriciaTrie } from "@ethereumjs/mpt";
-import { RLP } from "@ethereumjs/rlp";
+import { Common, Mainnet } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   bytesToUnprefixedHex,
@@ -15,24 +15,24 @@ import {
   unpadBytes,
   unprefixedHexToBytes,
   utf8ToBytes,
-} from "@ethereumjs/util";
-import debugDefault from "debug";
-import { keccak256 } from "ethereum-cryptography/keccak.js";
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from "./cache/index.js";
-import { modifyAccountFields } from "./util.js";
+import { OriginalStorageCache } from './cache/index.js'
+import { modifyAccountFields } from './util.js'
 
-import type { MerkleStateManagerOpts } from "./index.js";
+import type { MerkleStateManagerOpts } from './index.js'
 
 import type {
   AccountFields,
   StateManagerInterface,
   StorageDump,
   StorageRange,
-} from "@ethereumjs/common";
-import type { Address, DB } from "@ethereumjs/util";
-import type { Debugger } from "debug";
-import type { Caches } from "./index.js";
+} from '@ethereumjs/common'
+import type { Address, DB } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
+import type { Caches } from './index.js'
 
 /**
  * Prefix to distinguish between a contract deployed with code `0x80`
@@ -42,7 +42,7 @@ import type { Caches } from "./index.js";
  * will be the same as the hash of the empty trie which leads to
  * misbehaviour in the underlying trie library.
  */
-export const CODEHASH_PREFIX = utf8ToBytes("c");
+export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
  * Default StateManager implementation for the VM.
@@ -60,22 +60,22 @@ export const CODEHASH_PREFIX = utf8ToBytes("c");
  * for many basic use cases.
  */
 export class MerkleStateManager implements StateManagerInterface {
-  protected _debug: Debugger;
-  protected _caches?: Caches;
+  protected _debug: Debugger
+  protected _caches?: Caches
 
-  originalStorageCache: OriginalStorageCache;
+  originalStorageCache: OriginalStorageCache
 
-  protected _trie: MerklePatriciaTrie;
-  protected _storageTries: { [key: string]: MerklePatriciaTrie };
+  protected _trie: MerklePatriciaTrie
+  protected _storageTries: { [key: string]: MerklePatriciaTrie }
 
-  protected readonly _prefixCodeHashes: boolean;
-  protected readonly _prefixStorageTrieKeys: boolean;
+  protected readonly _prefixCodeHashes: boolean
+  protected readonly _prefixStorageTrieKeys: boolean
 
-  public readonly common: Common;
+  public readonly common: Common
 
-  protected _checkpointCount: number;
+  protected _checkpointCount: number
 
-  private keccakFunction: Function;
+  private keccakFunction: Function
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -85,7 +85,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * performance reasons to avoid string literal evaluation
    * @hidden
    */
-  protected readonly DEBUG: boolean = false;
+  protected readonly DEBUG: boolean = false
 
   /**
    * Instantiate the StateManager interface.
@@ -94,31 +94,25 @@ export class MerkleStateManager implements StateManagerInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === "undefined"
-        ? (process?.env?.DEBUG?.includes("ethjs") ?? false)
-        : false;
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault("statemanager:merkle");
+    this._debug = debugDefault('statemanager:merkle')
 
-    this.common = opts.common ?? new Common({ chain: Mainnet });
+    this.common = opts.common ?? new Common({ chain: Mainnet })
 
-    this._checkpointCount = 0;
+    this._checkpointCount = 0
 
-    this._trie =
-      opts.trie ??
-      new MerklePatriciaTrie({ useKeyHashing: true, common: this.common });
-    this._storageTries = {};
+    this._trie = opts.trie ?? new MerklePatriciaTrie({ useKeyHashing: true, common: this.common })
+    this._storageTries = {}
 
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256;
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
-    this.originalStorageCache = new OriginalStorageCache(
-      this.getStorage.bind(this),
-    );
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
-    this._prefixCodeHashes = opts.prefixCodeHashes ?? true;
-    this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false;
+    this._prefixCodeHashes = opts.prefixCodeHashes ?? true
+    this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
 
-    this._caches = opts.caches;
+    this._caches = opts.caches
   }
 
   /**
@@ -126,22 +120,18 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    const elem = this._caches?.account?.get(address);
+    const elem = this._caches?.account?.get(address)
     if (elem !== undefined) {
-      return elem.accountRLP !== undefined
-        ? createAccountFromRLP(elem.accountRLP)
-        : undefined;
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
-    const rlp = await this._trie.get(address.bytes);
-    const account = rlp !== null ? createAccountFromRLP(rlp) : undefined;
+    const rlp = await this._trie.get(address.bytes)
+    const account = rlp !== null ? createAccountFromRLP(rlp) : undefined
     if (this.DEBUG) {
-      this._debug(
-        `Get account ${address} from DB (${account ? "exists" : "non-existent"})`,
-      );
+      this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
-    this._caches?.account?.put(address, account);
-    return account;
+    this._caches?.account?.put(address, account)
+    return account
   }
 
   /**
@@ -149,30 +139,27 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param address - Address under which to store `account`
    * @param account - The account to store or undefined if to be deleted
    */
-  async putAccount(
-    address: Address,
-    account: Account | undefined,
-  ): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
           account?.balance
-        } contract=${account && account.isContract() ? "yes" : "no"} empty=${
-          account && account.isEmpty() ? "yes" : "no"
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
         }`,
-      );
+      )
     }
     if (this._caches?.account === undefined) {
-      const trie = this._trie;
+      const trie = this._trie
       if (account !== undefined) {
-        await trie.put(address.bytes, account.serialize());
+        await trie.put(address.bytes, account.serialize())
       } else {
-        await trie.del(address.bytes);
+        await trie.del(address.bytes)
       }
     } else if (account !== undefined) {
-      this._caches.account?.put(address, account);
+      this._caches.account?.put(address, account)
     } else {
-      this._caches.account?.del(address);
+      this._caches.account?.del(address)
     }
   }
 
@@ -183,11 +170,8 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
-  async modifyAccountFields(
-    address: Address,
-    accountFields: AccountFields,
-  ): Promise<void> {
-    await modifyAccountFields(this, address, accountFields);
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    await modifyAccountFields(this, address, accountFields)
   }
 
   /**
@@ -196,13 +180,13 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async deleteAccount(address: Address) {
     if (this.DEBUG) {
-      this._debug(`Delete account ${address}`);
+      this._debug(`Delete account ${address}`)
     }
 
-    this._caches?.deleteAccount(address);
+    this._caches?.deleteAccount(address)
 
     if (this._caches?.account === undefined) {
-      await this._trie.del(address.bytes);
+      await this._trie.del(address.bytes)
     }
   }
 
@@ -213,27 +197,23 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param value - The value of the `code`
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
-    const codeHash = this.keccakFunction(value);
+    const codeHash = this.keccakFunction(value)
 
     if (this._caches?.code !== undefined) {
-      this._caches!.code!.put(address, value);
+      this._caches!.code!.put(address, value)
     } else {
-      const key = this._prefixCodeHashes
-        ? concatBytes(CODEHASH_PREFIX, codeHash)
-        : codeHash;
-      await this._getCodeDB().put(key, value);
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, value)
     }
 
     if (this.DEBUG) {
-      this._debug(
-        `Update codeHash (-> ${short(codeHash)}) for account ${address}`,
-      );
+      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
 
     if ((await this.getAccount(address)) === undefined) {
-      await this.putAccount(address, new Account());
+      await this.putAccount(address, new Account())
     }
-    await this.modifyAccountFields(address, { codeHash });
+    await this.modifyAccountFields(address, { codeHash })
   }
 
   /**
@@ -243,29 +223,29 @@ export class MerkleStateManager implements StateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getCode(address: Address): Promise<Uint8Array> {
-    const elem = this._caches?.code?.get(address);
+    const elem = this._caches?.code?.get(address)
     if (elem !== undefined) {
-      return elem.code ?? new Uint8Array(0);
+      return elem.code ?? new Uint8Array(0)
     }
-    const account = await this.getAccount(address);
+    const account = await this.getAccount(address)
     if (!account) {
-      return new Uint8Array(0);
+      return new Uint8Array(0)
     }
     if (!account.isContract()) {
-      return new Uint8Array(0);
+      return new Uint8Array(0)
     }
     const key = this._prefixCodeHashes
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
-      : account.codeHash;
-    const code = (await this._trie.database().get(key)) ?? new Uint8Array(0);
+      : account.codeHash
+    const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
 
-    this._caches?.code?.put(address, code);
-    return code;
+    this._caches?.code?.put(address, code)
+    return code
   }
 
   async getCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getCode(address);
-    return contractCode.length;
+    const contractCode = await this.getCode(address)
+    return contractCode.length
   }
 
   /**
@@ -291,25 +271,21 @@ export class MerkleStateManager implements StateManagerInterface {
   ): MerklePatriciaTrie {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
-      addressOrHash instanceof Uint8Array
-        ? addressOrHash
-        : this.keccakFunction(addressOrHash.bytes);
-    const addressHex: string = bytesToUnprefixedHex(addressBytes);
-    let storageTrie = this._storageTries[addressHex];
+      addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
+    const addressHex: string = bytesToUnprefixedHex(addressBytes)
+    let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const keyPrefix = this._prefixStorageTrieKeys
-        ? addressBytes.slice(0, 7)
-        : undefined;
-      storageTrie = this._trie.shallowCopy(false, { keyPrefix });
+      const keyPrefix = this._prefixStorageTrieKeys ? addressBytes.slice(0, 7) : undefined
+      storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       if (rootAccount !== undefined) {
-        storageTrie.root(rootAccount.storageRoot);
+        storageTrie.root(rootAccount.storageRoot)
       } else {
-        storageTrie.root(storageTrie.EMPTY_TRIE_ROOT);
+        storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       }
-      storageTrie.flushCheckpoints();
-      this._storageTries[addressHex] = storageTrie;
+      storageTrie.flushCheckpoints()
+      this._storageTries[addressHex] = storageTrie
     }
-    return storageTrie;
+    return storageTrie
   }
 
   /**
@@ -318,7 +294,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * @private
    */
   protected _getAccountTrie(): MerklePatriciaTrie {
-    return this._trie;
+    return this._trie
   }
 
   /**
@@ -327,7 +303,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * @private
    */
   protected _getCodeDB(): DB {
-    return this._trie.database();
+    return this._trie.database()
   }
 
   /**
@@ -341,25 +317,23 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
-      throw new Error("Storage key must be 32 bytes long");
+      throw new Error('Storage key must be 32 bytes long')
     }
-    const cachedValue = this._caches?.storage?.get(address, key);
+    const cachedValue = this._caches?.storage?.get(address, key)
     if (cachedValue !== undefined) {
-      const decoded = RLP.decode(
-        cachedValue ?? new Uint8Array(0),
-      ) as Uint8Array;
-      return decoded;
+      const decoded = RLP.decode(cachedValue ?? new Uint8Array(0)) as Uint8Array
+      return decoded
     }
 
-    const account = await this.getAccount(address);
+    const account = await this.getAccount(address)
     if (!account) {
-      return new Uint8Array();
+      return new Uint8Array()
     }
-    const trie = this._getStorageTrie(address, account);
-    const value = await trie.get(key);
-    this._caches?.storage?.put(address, key, value ?? hexToBytes("0x80"));
-    const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array;
-    return decoded;
+    const trie = this._getStorageTrie(address, account)
+    const value = await trie.get(key)
+    this._caches?.storage?.put(address, key, value ?? hexToBytes('0x80'))
+    const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+    return decoded
   }
 
   /**
@@ -375,19 +349,19 @@ export class MerkleStateManager implements StateManagerInterface {
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      const storageTrie = this._getStorageTrie(address, account);
+      const storageTrie = this._getStorageTrie(address, account)
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
-        const addressHex = bytesToUnprefixedHex(address.bytes);
-        this._storageTries[addressHex] = storageTrie;
+        const addressHex = bytesToUnprefixedHex(address.bytes)
+        this._storageTries[addressHex] = storageTrie
 
         // update contract storageRoot
-        account.storageRoot = storageTrie.root();
-        await this.putAccount(address, account);
-        resolve();
-      });
-    });
+        account.storageRoot = storageTrie.root()
+        await this.putAccount(address, account)
+        resolve()
+      })
+    })
   }
 
   protected async _writeContractStorage(
@@ -396,29 +370,23 @@ export class MerkleStateManager implements StateManagerInterface {
     key: Uint8Array,
     value: Uint8Array,
   ) {
-    await this._modifyContractStorage(
-      address,
-      account,
-      async (storageTrie, done) => {
-        if (value instanceof Uint8Array && value.length) {
-          // format input
-          const encodedValue = RLP.encode(value);
-          if (this.DEBUG) {
-            this._debug(
-              `Update contract storage for account ${address} to ${short(value)}`,
-            );
-          }
-          await storageTrie.put(key, encodedValue);
-        } else {
-          // deleting a value
-          if (this.DEBUG) {
-            this._debug(`Delete contract storage for account`);
-          }
-          await storageTrie.del(key);
+    await this._modifyContractStorage(address, account, async (storageTrie, done) => {
+      if (value instanceof Uint8Array && value.length) {
+        // format input
+        const encodedValue = RLP.encode(value)
+        if (this.DEBUG) {
+          this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
-        done();
-      },
-    );
+        await storageTrie.put(key, encodedValue)
+      } else {
+        // deleting a value
+        if (this.DEBUG) {
+          this._debug(`Delete contract storage for account`)
+        }
+        await storageTrie.del(key)
+      }
+      done()
+    })
   }
 
   /**
@@ -430,27 +398,23 @@ export class MerkleStateManager implements StateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is a empty or filled with zeros, deletes the value.
    */
-  async putStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-  ): Promise<void> {
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
-      throw new Error("Storage key must be 32 bytes long");
+      throw new Error('Storage key must be 32 bytes long')
     }
 
     if (value.length > 32) {
-      throw new Error("Storage value cannot be longer than 32 bytes");
+      throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
-    const account = await this.getAccount(address);
+    const account = await this.getAccount(address)
     if (!account) {
-      throw new Error("putStorage() called on non-existing account");
+      throw new Error('putStorage() called on non-existing account')
     }
 
-    value = unpadBytes(value);
+    value = unpadBytes(value)
     this._caches?.storage?.put(address, key, RLP.encode(value)) ??
-      (await this._writeContractStorage(address, account, key, value));
+      (await this._writeContractStorage(address, account, key, value))
   }
 
   /**
@@ -458,15 +422,15 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param address - Address to clear the storage of
    */
   async clearStorage(address: Address): Promise<void> {
-    let account = await this.getAccount(address);
+    let account = await this.getAccount(address)
     if (!account) {
-      account = new Account();
+      account = new Account()
     }
-    this._caches?.storage?.clearStorage(address);
+    this._caches?.storage?.clearStorage(address)
     await this._modifyContractStorage(address, account, (storageTrie, done) => {
-      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT);
-      done();
-    });
+      storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
+      done()
+    })
   }
 
   /**
@@ -475,9 +439,9 @@ export class MerkleStateManager implements StateManagerInterface {
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
-    this._trie.checkpoint();
-    this._caches?.checkpoint();
-    this._checkpointCount++;
+    this._trie.checkpoint()
+    this._caches?.checkpoint()
+    this._checkpointCount++
   }
 
   /**
@@ -486,17 +450,17 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async commit(): Promise<void> {
     // setup trie checkpointing
-    await this._trie.commit();
-    this._caches?.commit();
-    this._checkpointCount--;
+    await this._trie.commit()
+    this._caches?.commit()
+    this._checkpointCount--
 
     if (this._checkpointCount === 0) {
-      await this.flush();
-      this.originalStorageCache.clear();
+      await this.flush()
+      this.originalStorageCache.clear()
     }
 
     if (this.DEBUG) {
-      this._debug(`state checkpoint committed`);
+      this._debug(`state checkpoint committed`)
     }
   }
 
@@ -506,16 +470,16 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async revert(): Promise<void> {
     // setup trie checkpointing
-    await this._trie.revert();
-    this._caches?.revert();
+    await this._trie.revert()
+    this._caches?.revert()
 
-    this._storageTries = {};
+    this._storageTries = {}
 
-    this._checkpointCount--;
+    this._checkpointCount--
 
     if (this._checkpointCount === 0) {
-      await this.flush();
-      this.originalStorageCache.clear();
+      await this.flush()
+      this.originalStorageCache.clear()
     }
   }
 
@@ -523,53 +487,51 @@ export class MerkleStateManager implements StateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    const codeItems = this._caches?.code?.flush() ?? [];
+    const codeItems = this._caches?.code?.flush() ?? []
     for (const item of codeItems) {
-      const addr = createAddressFromString(`0x${item[0]}`);
+      const addr = createAddressFromString(`0x${item[0]}`)
 
-      const code = item[1].code;
+      const code = item[1].code
       if (code === undefined) {
-        continue;
+        continue
       }
 
       // update code in database
-      const codeHash = this.keccakFunction(code);
-      const key = this._prefixCodeHashes
-        ? concatBytes(CODEHASH_PREFIX, codeHash)
-        : codeHash;
-      await this._getCodeDB().put(key, code);
+      const codeHash = this.keccakFunction(code)
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, code)
 
       // update code root of associated account
       if ((await this.getAccount(addr)) === undefined) {
-        await this.putAccount(addr, new Account());
+        await this.putAccount(addr, new Account())
       }
-      await this.modifyAccountFields(addr, { codeHash });
+      await this.modifyAccountFields(addr, { codeHash })
     }
-    const storageItems = this._caches?.storage?.flush() ?? [];
+    const storageItems = this._caches?.storage?.flush() ?? []
     for (const item of storageItems) {
-      const address = createAddressFromString(`0x${item[0]}`);
-      const keyHex = item[1];
-      const keyBytes = unprefixedHexToBytes(keyHex);
-      const value = item[2];
+      const address = createAddressFromString(`0x${item[0]}`)
+      const keyHex = item[1]
+      const keyBytes = unprefixedHexToBytes(keyHex)
+      const value = item[2]
 
-      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array;
-      const account = await this.getAccount(address);
+      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+      const account = await this.getAccount(address)
       if (account) {
-        await this._writeContractStorage(address, account, keyBytes, decoded);
+        await this._writeContractStorage(address, account, keyBytes, decoded)
       }
     }
 
-    const accountItems = this._caches?.account?.flush() ?? [];
+    const accountItems = this._caches?.account?.flush() ?? []
     for (const item of accountItems) {
-      const addressHex = item[0];
-      const addressBytes = unprefixedHexToBytes(addressHex);
-      const elem = item[1];
+      const addressHex = item[0]
+      const addressBytes = unprefixedHexToBytes(addressHex)
+      const elem = item[1]
       if (elem.accountRLP === undefined) {
-        const trie = this._trie;
-        await trie.del(addressBytes);
+        const trie = this._trie
+        await trie.del(addressBytes)
       } else {
-        const trie = this._trie;
-        await trie.put(addressBytes, elem.accountRLP);
+        const trie = this._trie
+        await trie.put(addressBytes, elem.accountRLP)
       }
     }
   }
@@ -581,8 +543,8 @@ export class MerkleStateManager implements StateManagerInterface {
    * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Uint8Array> {
-    await this.flush();
-    return this._trie.root();
+    await this.flush()
+    return this._trie.root()
   }
 
   /**
@@ -593,20 +555,20 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Uint8Array, clearCache = true): Promise<void> {
-    await this.flush();
+    await this.flush()
 
     if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
-      const hasRoot = await this._trie.checkRoot(stateRoot);
+      const hasRoot = await this._trie.checkRoot(stateRoot)
       if (!hasRoot) {
-        throw new Error("State trie does not contain state root");
+        throw new Error('State trie does not contain state root')
       }
     }
 
-    this._trie.root(stateRoot);
+    this._trie.root(stateRoot)
     if (clearCache) {
-      this._caches?.clear();
+      this._caches?.clear()
     }
-    this._storageTries = {};
+    this._storageTries = {}
   }
 
   /**
@@ -617,18 +579,16 @@ export class MerkleStateManager implements StateManagerInterface {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
-    await this.flush();
-    const account = await this.getAccount(address);
+    await this.flush()
+    const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(
-        `dumpStorage f() can only be called for an existing account`,
-      );
+      throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
-    const trie = this._getStorageTrie(address, account);
+    const trie = this._getStorageTrie(address, account)
 
     return trie.getValueMap().then((value) => {
-      return value.values;
-    });
+      return value.values
+    })
   }
 
   /**
@@ -640,39 +600,35 @@ export class MerkleStateManager implements StateManagerInterface {
    @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
-  async dumpStorageRange(
-    address: Address,
-    startKey: bigint,
-    limit: number,
-  ): Promise<StorageRange> {
+  async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     if (!Number.isSafeInteger(limit) || limit < 0) {
-      throw new Error(`Limit is not a proper uint.`);
+      throw new Error(`Limit is not a proper uint.`)
     }
 
-    await this.flush();
-    const account = await this.getAccount(address);
+    await this.flush()
+    const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`Account does not exist.`);
+      throw new Error(`Account does not exist.`)
     }
 
-    const trie = this._getStorageTrie(address, account);
+    const trie = this._getStorageTrie(address, account)
 
     return trie.getValueMap(startKey, limit).then((value) => {
-      const values = value.values;
-      const dump = Object.create(null);
+      const values = value.values
+      const dump = Object.create(null)
       for (const key of Object.keys(values)) {
-        const val = values[key];
+        const val = values[key]
         dump[key] = {
           key: null,
           value: val,
-        };
+        }
       }
 
       return {
         storage: dump,
         nextKey: value.nextKey,
-      };
-    });
+      }
+    })
   }
 
   /**
@@ -682,44 +638,42 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async generateCanonicalGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
-      throw new Error(
-        "Cannot create genesis state with uncommitted checkpoints",
-      );
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
     if (this.DEBUG) {
-      this._debug(`Save genesis state into the state trie`);
+      this._debug(`Save genesis state into the state trie`)
     }
-    const addresses = Object.keys(initState);
+    const addresses = Object.keys(initState)
     for (const address of addresses) {
-      const addr = createAddressFromString(address);
-      const state = initState[address];
+      const addr = createAddressFromString(address)
+      const state = initState[address]
       if (Array.isArray(state)) {
         // New format: address -> [balance, code, storage]
-        const [balance, code, storage, nonce] = state;
-        const account = createAccount({ balance, nonce });
-        await this.putAccount(addr, account);
+        const [balance, code, storage, nonce] = state
+        const account = createAccount({ balance, nonce })
+        await this.putAccount(addr, account)
         if (code !== undefined) {
-          await this.putCode(addr, toBytes(code));
+          await this.putCode(addr, toBytes(code))
         }
         if (storage !== undefined) {
           for (const [key, value] of storage) {
-            await this.putStorage(addr, toBytes(key), toBytes(value));
+            await this.putStorage(addr, toBytes(key), toBytes(value))
           }
         }
       } else {
         // Prior format: address -> balance
-        const account = createAccount({ balance: state });
-        await this.putAccount(addr, account);
+        const account = createAccount({ balance: state })
+        await this.putAccount(addr, account)
       }
     }
-    await this.flush();
+    await this.flush()
   }
 
   /**
    * Checks whether there is a state corresponding to a stateRoot
    */
   async hasStateRoot(root: Uint8Array): Promise<boolean> {
-    return this._trie.checkRoot(root);
+    return this._trie.checkRoot(root)
   }
 
   /**
@@ -745,13 +699,13 @@ export class MerkleStateManager implements StateManagerInterface {
    * `downlevelCaches` setting.
    */
   shallowCopy(downlevelCaches = true): MerkleStateManager {
-    const common = this.common.copy();
-    common.setHardfork(this.common.hardfork());
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
 
-    const cacheSize = downlevelCaches ? 0 : this._trie["_opts"]["cacheSize"];
-    const trie = this._trie.shallowCopy(false, { cacheSize });
-    const prefixCodeHashes = this._prefixCodeHashes;
-    const prefixStorageTrieKeys = this._prefixStorageTrieKeys;
+    const cacheSize = downlevelCaches ? 0 : this._trie['_opts']['cacheSize']
+    const trie = this._trie.shallowCopy(false, { cacheSize })
+    const prefixCodeHashes = this._prefixCodeHashes
+    const prefixStorageTrieKeys = this._prefixStorageTrieKeys
 
     return new MerkleStateManager({
       common,
@@ -759,14 +713,14 @@ export class MerkleStateManager implements StateManagerInterface {
       prefixStorageTrieKeys,
       prefixCodeHashes,
       caches: this._caches?.shallowCopy(downlevelCaches),
-    });
+    })
   }
 
   /**
    * Clears all underlying caches
    */
   clearCaches() {
-    this._caches?.clear();
+    this._caches?.clear()
   }
 
   /**
@@ -776,6 +730,6 @@ export class MerkleStateManager implements StateManagerInterface {
    * @returns {Uint8Array} - The applied key (e.g. hashed address)
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
-    return this._trie["appliedKey"](address);
+    return this._trie['appliedKey'](address)
   }
 }

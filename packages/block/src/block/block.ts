@@ -1,24 +1,20 @@
-import { ConsensusType } from "@ethereumjs/common";
-import { MerklePatriciaTrie } from "@ethereumjs/mpt";
-import { RLP } from "@ethereumjs/rlp";
-import { Blob4844Tx, Capability } from "@ethereumjs/tx";
+import { ConsensusType } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { RLP } from '@ethereumjs/rlp'
+import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
   equalsBytes,
-} from "@ethereumjs/util";
-import { keccak256 } from "ethereum-cryptography/keccak.js";
-import { sha256 } from "ethereum-cryptography/sha256";
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
-import type { Common } from "@ethereumjs/common";
-import type {
-  FeeMarket1559Tx,
-  LegacyTx,
-  TypedTransaction,
-} from "@ethereumjs/tx";
-import type { VerkleExecutionWitness, Withdrawal } from "@ethereumjs/util";
+import type { Common } from '@ethereumjs/common'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -36,14 +32,9 @@ import {
   type createBlockFromRPC,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
-} from "../index.js";
+} from '../index.js'
 /* eslint-enable */
-import type {
-  BlockBytes,
-  BlockOptions,
-  ExecutionPayload,
-  JSONBlock,
-} from "../types.js";
+import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -62,25 +53,25 @@ import type {
  * - {@link createBlockFromBeaconPayloadJSON }
  */
 export class Block {
-  public readonly header: BlockHeader;
-  public readonly transactions: TypedTransaction[] = [];
-  public readonly uncleHeaders: BlockHeader[] = [];
-  public readonly withdrawals?: Withdrawal[];
-  public readonly common: Common;
-  protected keccakFunction: (msg: Uint8Array) => Uint8Array;
-  protected sha256Function: (msg: Uint8Array) => Uint8Array;
+  public readonly header: BlockHeader
+  public readonly transactions: TypedTransaction[] = []
+  public readonly uncleHeaders: BlockHeader[] = []
+  public readonly withdrawals?: Withdrawal[]
+  public readonly common: Common
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected sha256Function: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    * null implies that the non default executionWitness might exist but not available
    * and will not lead to execution of the block via vm with verkle stateless manager
    */
-  public readonly executionWitness?: VerkleExecutionWitness | null;
+  public readonly executionWitness?: VerkleExecutionWitness | null
 
   protected cache: {
-    txTrieRoot?: Uint8Array;
-    withdrawalsTrieRoot?: Uint8Array;
-  } = {};
+    txTrieRoot?: Uint8Array
+    withdrawalsTrieRoot?: Uint8Array
+  } = {}
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -96,60 +87,54 @@ export class Block {
     opts: BlockOptions = {},
     executionWitness?: VerkleExecutionWitness | null,
   ) {
-    this.header = header ?? new BlockHeader({}, opts);
-    this.common = this.header.common;
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256;
-    this.sha256Function = this.common.customCrypto.sha256 ?? sha256;
+    this.header = header ?? new BlockHeader({}, opts)
+    this.common = this.header.common
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
-    this.transactions = transactions;
-    this.withdrawals =
-      withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined);
-    this.executionWitness = executionWitness;
+    this.transactions = transactions
+    this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
+    this.executionWitness = executionWitness
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
-    if (
-      this.common.isActivatedEIP(6800) &&
-      this.executionWitness === undefined
-    ) {
+    if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
       this.executionWitness = {
         // TODO: Evaluate how default parentStateRoot should be handled?
-        parentStateRoot: "0x",
+        parentStateRoot: '0x',
         stateDiff: [],
         verkleProof: {
           commitmentsByPath: [],
-          d: "0x",
-          depthExtensionPresent: "0x",
+          d: '0x',
+          depthExtensionPresent: '0x',
           ipaProof: {
             cl: [],
             cr: [],
-            finalEvaluation: "0x",
+            finalEvaluation: '0x',
           },
           otherStems: [],
         },
-      };
+      }
     }
 
-    this.uncleHeaders = uncleHeaders;
+    this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
-      this.validateUncles();
+      this.validateUncles()
       if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
-          "Block initialization with uncleHeaders on a PoA network is not allowed",
-        );
-        throw new Error(msg);
+          'Block initialization with uncleHeaders on a PoA network is not allowed',
+        )
+        throw new Error(msg)
       }
       if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
-          "Block initialization with uncleHeaders on a PoS network is not allowed",
-        );
-        throw new Error(msg);
+          'Block initialization with uncleHeaders on a PoS network is not allowed',
+        )
+        throw new Error(msg)
       }
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
-      throw new Error(
-        "Cannot have a withdrawals field if EIP 4895 is not active",
-      );
+      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
     if (
@@ -157,14 +142,12 @@ export class Block {
       executionWitness !== undefined &&
       executionWitness !== null
     ) {
-      throw new Error(
-        `Cannot have executionWitness field if EIP 6800 is not active `,
-      );
+      throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
-    const freeze = opts?.freeze ?? true;
+    const freeze = opts?.freeze ?? true
     if (freeze) {
-      Object.freeze(this);
+      Object.freeze(this)
     }
   }
 
@@ -175,45 +158,41 @@ export class Block {
     const bytesArray = <BlockBytes>[
       this.header.raw(),
       this.transactions.map((tx) =>
-        tx.supports(Capability.EIP2718TypedTransaction)
-          ? tx.serialize()
-          : tx.raw(),
+        tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw(),
       ) as Uint8Array[],
       this.uncleHeaders.map((uh) => uh.raw()),
-    ];
-    const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw());
+    ]
+    const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
-      bytesArray.push(withdrawalsRaw);
+      bytesArray.push(withdrawalsRaw)
     }
 
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
-      const executionWitnessBytes = RLP.encode(
-        JSON.stringify(this.executionWitness),
-      );
-      bytesArray.push(executionWitnessBytes as any);
+      const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
+      bytesArray.push(executionWitnessBytes as any)
     }
-    return bytesArray;
+    return bytesArray
   }
 
   /**
    * Returns the hash of the block.
    */
   hash(): Uint8Array {
-    return this.header.hash();
+    return this.header.hash()
   }
 
   /**
    * Determines if this block is the genesis block.
    */
   isGenesis(): boolean {
-    return this.header.isGenesis();
+    return this.header.isGenesis()
   }
 
   /**
    * Returns the rlp encoding of the block.
    */
   serialize(): Uint8Array {
-    return RLP.encode(this.raw());
+    return RLP.encode(this.raw())
   }
 
   /**
@@ -223,7 +202,7 @@ export class Block {
     return genTransactionsTrieRoot(
       this.transactions,
       new MerklePatriciaTrie({ common: this.common }),
-    );
+    )
   }
 
   /**
@@ -232,17 +211,17 @@ export class Block {
    * @returns True if the transaction trie is valid, false otherwise
    */
   async transactionsTrieIsValid(): Promise<boolean> {
-    let result;
+    let result
     if (this.transactions.length === 0) {
-      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP);
-      return result;
+      result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
+      return result
     }
 
     if (this.cache.txTrieRoot === undefined) {
-      this.cache.txTrieRoot = await this.genTxTrie();
+      this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie);
-    return result;
+    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
+    return result
   }
 
   /**
@@ -250,51 +229,49 @@ export class Block {
    * @returns {string[]} an array of error strings
    */
   getTransactionsValidationErrors(): string[] {
-    const errors: string[] = [];
-    let blobGasUsed = BIGINT_0;
+    const errors: string[] = []
+    let blobGasUsed = BIGINT_0
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
-      const errs = tx.getValidationErrors();
+      const errs = tx.getValidationErrors()
       if (this.common.isActivatedEIP(1559)) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
-          tx = tx as FeeMarket1559Tx;
+          tx = tx as FeeMarket1559Tx
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
-            errs.push("tx unable to pay base fee (EIP-1559 tx)");
+            errs.push('tx unable to pay base fee (EIP-1559 tx)')
           }
         } else {
-          tx = tx as LegacyTx;
+          tx = tx as LegacyTx
           if (tx.gasPrice < this.header.baseFeePerGas!) {
-            errs.push("tx unable to pay base fee (non EIP-1559 tx)");
+            errs.push('tx unable to pay base fee (non EIP-1559 tx)')
           }
         }
       }
       if (this.common.isActivatedEIP(4844)) {
-        const blobGasLimit = this.common.param("maxblobGasPerBlock");
-        const blobGasPerBlob = this.common.param("blobGasPerBlob");
+        const blobGasLimit = this.common.param('maxblobGasPerBlock')
+        const blobGasPerBlob = this.common.param('blobGasPerBlob')
         if (tx instanceof Blob4844Tx) {
-          blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob;
+          blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
               `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
-            );
+            )
           }
         }
       }
       if (errs.length > 0) {
-        errors.push(`errors at tx ${i}: ${errs.join(", ")}`);
+        errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
     }
 
     if (this.common.isActivatedEIP(4844)) {
       if (blobGasUsed !== this.header.blobGasUsed) {
-        errors.push(
-          `invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`,
-        );
+        errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }
     }
 
-    return errors;
+    return errors
   }
 
   /**
@@ -302,9 +279,9 @@ export class Block {
    * @returns True if all transactions are valid, false otherwise
    */
   transactionsAreValid(): boolean {
-    const errors = this.getTransactionsValidationErrors();
+    const errors = this.getTransactionsValidationErrors()
 
-    return errors.length === 0;
+    return errors.length === 0
   }
 
   /**
@@ -319,17 +296,15 @@ export class Block {
    */
   async validateData(onlyHeader = false, verifyTxs = true): Promise<void> {
     if (verifyTxs) {
-      const txErrors = this.getTransactionsValidationErrors();
+      const txErrors = this.getTransactionsValidationErrors()
       if (txErrors.length > 0) {
-        const msg = this._errorMsg(
-          `invalid transactions: ${txErrors.join(" ")}`,
-        );
-        throw new Error(msg);
+        const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+        throw new Error(msg)
       }
     }
 
     if (onlyHeader) {
-      return;
+      return
     }
 
     if (verifyTxs) {
@@ -337,28 +312,25 @@ export class Block {
         if (!tx.isSigned()) {
           const msg = this._errorMsg(
             `invalid transactions: transaction at index ${index} is unsigned`,
-          );
-          throw new Error(msg);
+          )
+          throw new Error(msg)
         }
       }
     }
 
     if (!(await this.transactionsTrieIsValid())) {
-      const msg = this._errorMsg("invalid transaction trie");
-      throw new Error(msg);
+      const msg = this._errorMsg('invalid transaction trie')
+      throw new Error(msg)
     }
 
     if (!this.uncleHashIsValid()) {
-      const msg = this._errorMsg("invalid uncle hash");
-      throw new Error(msg);
+      const msg = this._errorMsg('invalid uncle hash')
+      throw new Error(msg)
     }
 
-    if (
-      this.common.isActivatedEIP(4895) &&
-      !(await this.withdrawalsTrieIsValid())
-    ) {
-      const msg = this._errorMsg("invalid withdrawals trie");
-      throw new Error(msg);
+    if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
+      const msg = this._errorMsg('invalid withdrawals trie')
+      throw new Error(msg)
     }
 
     // Validation for Verkle blocks
@@ -366,12 +338,10 @@ export class Block {
     // TODO: Decide if we should actually require this or not
     if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
-        throw new Error(`Invalid block: missing executionWitness`);
+        throw new Error(`Invalid block: missing executionWitness`)
       }
       if (this.executionWitness === null) {
-        throw new Error(
-          `Invalid block: ethereumjs stateless client needs executionWitness`,
-        );
+        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
       }
     }
   }
@@ -384,36 +354,36 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const blobGasLimit = this.common.param("maxblobGasPerBlock");
-      const blobGasPerBlob = this.common.param("blobGasPerBlob");
-      let blobGasUsed = BIGINT_0;
+      const blobGasLimit = this.common.param('maxblobGasPerBlock')
+      const blobGasPerBlob = this.common.param('blobGasPerBlob')
+      let blobGasUsed = BIGINT_0
 
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas();
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(
           `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,
-        );
+        )
       }
 
-      let blobGasPrice;
+      let blobGasPrice
 
       for (const tx of this.transactions) {
         if (tx instanceof Blob4844Tx) {
-          blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice();
+          blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
             throw new Error(
               `blob transaction maxFeePerBlobGas ${
                 tx.maxFeePerBlobGas
               } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`,
-            );
+            )
           }
 
-          blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob;
+          blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
           if (blobGasUsed > blobGasLimit) {
             throw new Error(
               `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
-            );
+            )
           }
         }
       }
@@ -421,7 +391,7 @@ export class Block {
       if (this.header.blobGasUsed !== blobGasUsed) {
         throw new Error(
           `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`,
-        );
+        )
       }
     }
   }
@@ -432,11 +402,11 @@ export class Block {
    */
   uncleHashIsValid(): boolean {
     if (this.uncleHeaders.length === 0) {
-      return equalsBytes(KECCAK256_RLP_ARRAY, this.header.uncleHash);
+      return equalsBytes(KECCAK256_RLP_ARRAY, this.header.uncleHash)
     }
-    const uncles = this.uncleHeaders.map((uh) => uh.raw());
-    const raw = RLP.encode(uncles);
-    return equalsBytes(this.keccakFunction(raw), this.header.uncleHash);
+    const uncles = this.uncleHeaders.map((uh) => uh.raw())
+    const raw = RLP.encode(uncles)
+    return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
   }
 
   /**
@@ -445,26 +415,23 @@ export class Block {
    */
   async withdrawalsTrieIsValid(): Promise<boolean> {
     if (!this.common.isActivatedEIP(4895)) {
-      throw new Error("EIP 4895 is not activated");
+      throw new Error('EIP 4895 is not activated')
     }
 
-    let result;
+    let result
     if (this.withdrawals!.length === 0) {
-      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP);
-      return result;
+      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP)
+      return result
     }
 
     if (this.cache.withdrawalsTrieRoot === undefined) {
       this.cache.withdrawalsTrieRoot = await genWithdrawalsTrieRoot(
         this.withdrawals!,
         new MerklePatriciaTrie({ common: this.common }),
-      );
+      )
     }
-    result = equalsBytes(
-      this.cache.withdrawalsTrieRoot,
-      this.header.withdrawalsRoot!,
-    );
-    return result;
+    result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
+    return result
   }
 
   /**
@@ -478,22 +445,20 @@ export class Block {
    */
   validateUncles() {
     if (this.isGenesis()) {
-      return;
+      return
     }
 
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
-      const msg = this._errorMsg("too many uncle headers");
-      throw new Error(msg);
+      const msg = this._errorMsg('too many uncle headers')
+      throw new Error(msg)
     }
 
     // Header does not count an uncle twice.
-    const uncleHashes = this.uncleHeaders.map((header) =>
-      bytesToHex(header.hash()),
-    );
+    const uncleHashes = this.uncleHeaders.map((header) => bytesToHex(header.hash()))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
-      const msg = this._errorMsg("duplicate uncles");
-      throw new Error(msg);
+      const msg = this._errorMsg('duplicate uncles')
+      throw new Error(msg)
     }
   }
 
@@ -504,7 +469,7 @@ export class Block {
    * @param parentBlock - the parent of this `Block`
    */
   validateGasLimit(parentBlock: Block) {
-    return this.header.validateGasLimit(parentBlock.header);
+    return this.header.validateGasLimit(parentBlock.header)
   }
 
   /**
@@ -515,13 +480,13 @@ export class Block {
       ? {
           withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
         }
-      : {};
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
-    };
+    }
   }
 
   /**
@@ -531,13 +496,10 @@ export class Block {
    * @returns dict with the execution payload parameters with camel case naming
    */
   toExecutionPayload(): ExecutionPayload {
-    const blockJSON = this.toJSON();
-    const header = blockJSON.header!;
-    const transactions =
-      this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? [];
-    const withdrawalsArr = blockJSON.withdrawals
-      ? { withdrawals: blockJSON.withdrawals }
-      : {};
+    const blockJSON = this.toJSON()
+    const header = blockJSON.header!
+    const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+    const withdrawalsArr = blockJSON.withdrawals ? { withdrawals: blockJSON.withdrawals } : {}
 
     const executionPayload: ExecutionPayload = {
       blockNumber: header.number!,
@@ -560,31 +522,31 @@ export class Block {
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       requestsHash: header.requestsHash,
       executionWitness: this.executionWitness,
-    };
+    }
 
-    return executionPayload;
+    return executionPayload
   }
 
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let hash = "";
+    let hash = ''
     try {
-      hash = bytesToHex(this.hash());
+      hash = bytesToHex(this.hash())
     } catch (e: any) {
-      hash = "error";
+      hash = 'error'
     }
-    let hf = "";
+    let hf = ''
     try {
-      hf = this.common.hardfork();
+      hf = this.common.hardfork()
     } catch (e: any) {
-      hf = "error";
+      hf = 'error'
     }
-    let errorStr = `block number=${this.header.number} hash=${hash} `;
-    errorStr += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? "none"} `;
-    errorStr += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`;
-    return errorStr;
+    let errorStr = `block number=${this.header.number} hash=${hash} `
+    errorStr += `hf=${hf} baseFeePerGas=${this.header.baseFeePerGas ?? 'none'} `
+    errorStr += `txs=${this.transactions.length} uncles=${this.uncleHeaders.length}`
+    return errorStr
   }
 
   /**
@@ -594,6 +556,6 @@ export class Block {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`;
+    return `${msg} (${this.errorStr()})`
   }
 }

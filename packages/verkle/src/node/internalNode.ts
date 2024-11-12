@@ -1,18 +1,18 @@
-import type { VerkleCrypto } from "@ethereumjs/util";
+import type { VerkleCrypto } from '@ethereumjs/util'
 
-import { BaseVerkleNode } from "./baseVerkleNode.js";
-import { NODE_WIDTH, VerkleNodeType } from "./types.js";
+import { BaseVerkleNode } from './baseVerkleNode.js'
+import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { ChildNode, VerkleNodeOptions } from "./types.js";
+import type { ChildNode, VerkleNodeOptions } from './types.js'
 
 export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
-  public children: Array<ChildNode | null>;
-  public type = VerkleNodeType.Internal;
+  public children: Array<ChildNode | null>
+  public type = VerkleNodeType.Internal
 
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
-    super(options);
-    this.children = options.children ?? new Array(256).fill(null);
+    super(options)
+    this.children = options.children ?? new Array(256).fill(null)
   }
 
   // Updates the commitment value for a child node at the corresponding index
@@ -24,9 +24,9 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
         : {
             commitment: this.verkleCrypto.zeroCommitment,
             path: new Uint8Array(),
-          };
+          }
     // Updates the commitment to the child node at `index`
-    this.children[childIndex] = child !== null ? { ...child } : null;
+    this.children[childIndex] = child !== null ? { ...child } : null
     // Updates the overall node commitment based on the update to this child
     this.commitment = this.verkleCrypto.updateCommitment(
       this.commitment,
@@ -36,33 +36,29 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
       this.verkleCrypto.hashCommitment(
         child !== null ? child.commitment : this.verkleCrypto.zeroCommitment,
       ),
-    );
+    )
   }
 
-  static fromRawNode(
-    rawNode: Uint8Array[],
-    verkleCrypto: VerkleCrypto,
-  ): InternalVerkleNode {
-    const nodeType = rawNode[0][0];
+  static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalVerkleNode {
+    const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
-      throw new Error("Invalid node type");
+      throw new Error('Invalid node type')
     }
 
     // The length of the rawNode should be the # of children * 2 (for commitments and paths) + 2 for the node type and the commitment
     if (rawNode.length !== NODE_WIDTH * 2 + 2) {
-      throw new Error("Invalid node length");
+      throw new Error('Invalid node length')
     }
 
-    const commitment = rawNode[rawNode.length - 1];
-    const childrenCommitments = rawNode.slice(1, NODE_WIDTH + 1);
-    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2 + 1);
+    const commitment = rawNode[rawNode.length - 1]
+    const childrenCommitments = rawNode.slice(1, NODE_WIDTH + 1)
+    const childrenPaths = rawNode.slice(NODE_WIDTH + 1, NODE_WIDTH * 2 + 1)
 
     const children = childrenCommitments.map((commitment, idx) => {
-      if (commitment.length > 0)
-        return { commitment, path: childrenPaths[idx] };
-      return null;
-    });
-    return new InternalVerkleNode({ commitment, verkleCrypto, children });
+      if (commitment.length > 0) return { commitment, path: childrenPaths[idx] }
+      return null
+    })
+    return new InternalVerkleNode({ commitment, verkleCrypto, children })
   }
 
   /**
@@ -72,9 +68,9 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
     const node = new InternalVerkleNode({
       commitment: verkleCrypto.zeroCommitment,
       verkleCrypto,
-    });
+    })
 
-    return node;
+    return node
   }
 
   /**
@@ -83,19 +79,15 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
    * @returns the uncompressed 64byte commitment for the child node at the `index` position in the children array
    */
   getChildren(index: number): ChildNode | null {
-    return this.children[index];
+    return this.children[index]
   }
 
   raw(): Uint8Array[] {
     return [
       new Uint8Array([VerkleNodeType.Internal]),
-      ...this.children.map((child) =>
-        child !== null ? child.commitment : new Uint8Array(),
-      ),
-      ...this.children.map((child) =>
-        child !== null ? child.path : new Uint8Array(),
-      ),
+      ...this.children.map((child) => (child !== null ? child.commitment : new Uint8Array())),
+      ...this.children.map((child) => (child !== null ? child.path : new Uint8Array())),
       this.commitment,
-    ];
+    ]
   }
 }

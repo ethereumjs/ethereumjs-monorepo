@@ -1,14 +1,14 @@
-import { bytesToHex } from "@ethereumjs/util";
+import { bytesToHex } from '@ethereumjs/util'
 
-import { OOGResult } from "../evm.js";
-import { ERROR, EvmError } from "../exceptions.js";
+import { OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import { gasLimitCheck } from "./util.js";
+import { gasLimitCheck } from './util.js'
 
-import { getPrecompileName } from "./index.js";
+import { getPrecompileName } from './index.js'
 
-import type { ExecResult } from "../types.js";
-import type { PrecompileInput } from "./types.js";
+import type { ExecResult } from '../types.js'
+import type { PrecompileInput } from './types.js'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
@@ -24,29 +24,29 @@ import type { PrecompileInput } from "./types.js";
 // Sets v[a,a+1] += v[b,b+1]
 // v should be a Uint32Array
 function ADD64AA(v: Uint32Array, a: number, b: number) {
-  const o0 = v[a] + v[b];
-  let o1 = v[a + 1] + v[b + 1];
+  const o0 = v[a] + v[b]
+  let o1 = v[a + 1] + v[b + 1]
   if (o0 >= 0x100000000) {
-    o1++;
+    o1++
   }
-  v[a] = o0;
-  v[a + 1] = o1;
+  v[a] = o0
+  v[a + 1] = o1
 }
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += b
 // b0 is the low 32 bits of b, b1 represents the high 32 bits
 function ADD64AC(v: Uint32Array, a: number, b0: number, b1: number) {
-  let o0 = v[a] + b0;
+  let o0 = v[a] + b0
   if (b0 < 0) {
-    o0 += 0x100000000;
+    o0 += 0x100000000
   }
-  let o1 = v[a + 1] + b1;
+  let o1 = v[a + 1] + b1
   if (o0 >= 0x100000000) {
-    o1++;
+    o1++
   }
-  v[a] = o0;
-  v[a + 1] = o1;
+  v[a] = o0
+  v[a + 1] = o1
 }
 
 // G Mixing function
@@ -61,44 +61,44 @@ function b2bG(
   ix: number,
   iy: number,
 ) {
-  const x0 = mw[ix];
-  const x1 = mw[ix + 1];
-  const y0 = mw[iy];
-  const y1 = mw[iy + 1];
+  const x0 = mw[ix]
+  const x1 = mw[ix + 1]
+  const y0 = mw[iy]
+  const y1 = mw[iy + 1]
 
-  ADD64AA(v, a, b); // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
-  ADD64AC(v, a, x0, x1); // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
+  ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
+  ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
 
   // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated to the right by 32 bits
-  let xor0 = v[d] ^ v[a];
-  let xor1 = v[d + 1] ^ v[a + 1];
-  v[d] = xor1;
-  v[d + 1] = xor0;
+  let xor0 = v[d] ^ v[a]
+  let xor1 = v[d + 1] ^ v[a + 1]
+  v[d] = xor1
+  v[d + 1] = xor0
 
-  ADD64AA(v, c, d);
+  ADD64AA(v, c, d)
 
   // v[b,b+1] = (v[b,b+1] xor v[c,c+1]) rotated right by 24 bits
-  xor0 = v[b] ^ v[c];
-  xor1 = v[b + 1] ^ v[c + 1];
-  v[b] = (xor0 >>> 24) ^ (xor1 << 8);
-  v[b + 1] = (xor1 >>> 24) ^ (xor0 << 8);
+  xor0 = v[b] ^ v[c]
+  xor1 = v[b + 1] ^ v[c + 1]
+  v[b] = (xor0 >>> 24) ^ (xor1 << 8)
+  v[b + 1] = (xor1 >>> 24) ^ (xor0 << 8)
 
-  ADD64AA(v, a, b);
-  ADD64AC(v, a, y0, y1);
+  ADD64AA(v, a, b)
+  ADD64AC(v, a, y0, y1)
 
   // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated right by 16 bits
-  xor0 = v[d] ^ v[a];
-  xor1 = v[d + 1] ^ v[a + 1];
-  v[d] = (xor0 >>> 16) ^ (xor1 << 16);
-  v[d + 1] = (xor1 >>> 16) ^ (xor0 << 16);
+  xor0 = v[d] ^ v[a]
+  xor1 = v[d + 1] ^ v[a + 1]
+  v[d] = (xor0 >>> 16) ^ (xor1 << 16)
+  v[d + 1] = (xor1 >>> 16) ^ (xor0 << 16)
 
-  ADD64AA(v, c, d);
+  ADD64AA(v, c, d)
 
   // v[b,b+1] = (v[b,b+1] xor v[c,c+1]) rotated right by 63 bits
-  xor0 = v[b] ^ v[c];
-  xor1 = v[b + 1] ^ v[c + 1];
-  v[b] = (xor1 >>> 31) ^ (xor0 << 1);
-  v[b + 1] = (xor0 >>> 31) ^ (xor1 << 1);
+  xor0 = v[b] ^ v[c]
+  xor1 = v[b + 1] ^ v[c + 1]
+  v[b] = (xor1 >>> 31) ^ (xor0 << 1)
+  v[b + 1] = (xor0 >>> 31) ^ (xor1 << 1)
 }
 
 // Initialization Vector
@@ -122,34 +122,28 @@ const SIGMA8 = [
 // These are offsets into a uint64 buffer.
 // Multiply them all by 2 to make them offsets into a uint32 buffer,
 // because this is Javascript and we don't have uint64s
-const SIGMA82 = new Uint8Array(SIGMA8.map((x) => x * 2));
+const SIGMA82 = new Uint8Array(SIGMA8.map((x) => x * 2))
 
-export function F(
-  h: Uint32Array,
-  m: Uint32Array,
-  t: Uint32Array,
-  f: boolean,
-  rounds: number,
-) {
-  const v = new Uint32Array(32);
-  let i = 0;
+export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
+  const v = new Uint32Array(32)
+  let i = 0
 
   // init work variables
   for (i = 0; i < 16; i++) {
-    v[i] = h[i];
-    v[i + 16] = BLAKE2B_IV32[i];
+    v[i] = h[i]
+    v[i + 16] = BLAKE2B_IV32[i]
   }
 
   // 128 bits of offset
-  v[24] = v[24] ^ t[0];
-  v[25] = v[25] ^ t[1];
-  v[26] = v[26] ^ t[2];
-  v[27] = v[27] ^ t[3];
+  v[24] = v[24] ^ t[0]
+  v[25] = v[25] ^ t[1]
+  v[26] = v[26] ^ t[2]
+  v[27] = v[27] ^ t[3]
 
   // last block flag set ?
   if (f) {
-    v[28] = ~v[28];
-    v[29] = ~v[29];
+    v[28] = ~v[28]
+    v[29] = ~v[29]
   }
 
   // twelve rounds of mixing
@@ -158,89 +152,89 @@ export function F(
   // util.debugPrint('          m[16]', m, 64)
   for (i = 0; i < rounds; i++) {
     // util.debugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v, 64)
-    const ri = (i % 10) * 16;
-    b2bG(v, m, 0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1]);
-    b2bG(v, m, 2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3]);
-    b2bG(v, m, 4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5]);
-    b2bG(v, m, 6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7]);
-    b2bG(v, m, 0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9]);
-    b2bG(v, m, 2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11]);
-    b2bG(v, m, 4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13]);
-    b2bG(v, m, 6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15]);
+    const ri = (i % 10) * 16
+    b2bG(v, m, 0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
+    b2bG(v, m, 2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
+    b2bG(v, m, 4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
+    b2bG(v, m, 6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
+    b2bG(v, m, 0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
+    b2bG(v, m, 2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
+    b2bG(v, m, 4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
+    b2bG(v, m, 6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
   }
 
   for (i = 0; i < 16; i++) {
-    h[i] = h[i] ^ v[i] ^ v[i + 16];
+    h[i] = h[i] ^ v[i] ^ v[i + 16]
   }
 }
 
 export function precompile09(opts: PrecompileInput): ExecResult {
-  const pName = getPrecompileName("09");
-  const data = opts.data;
+  const pName = getPrecompileName('09')
+  const data = opts.data
   if (data.length !== 213) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OUT_OF_RANGE dataLength=${data.length}`);
+      opts._debug(`${pName} failed: OUT_OF_RANGE dataLength=${data.length}`)
     }
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
-    };
+    }
   }
-  const lastByte = data.subarray(212, 213)[0];
+  const lastByte = data.subarray(212, 213)[0]
   if (lastByte !== 1 && lastByte !== 0) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OUT_OF_RANGE lastByte=${lastByte}`);
+      opts._debug(`${pName} failed: OUT_OF_RANGE lastByte=${lastByte}`)
     }
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
       exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
-    };
+    }
   }
 
-  const rounds = new DataView(data.buffer, data.byteOffset).getUint32(0);
-  const hRaw = new DataView(data.buffer, data.byteOffset + 4, 64);
-  const mRaw = new DataView(data.buffer, data.byteOffset + 68, 128);
-  const tRaw = new DataView(data.buffer, data.byteOffset + 196, 16);
+  const rounds = new DataView(data.buffer, data.byteOffset).getUint32(0)
+  const hRaw = new DataView(data.buffer, data.byteOffset + 4, 64)
+  const mRaw = new DataView(data.buffer, data.byteOffset + 68, 128)
+  const tRaw = new DataView(data.buffer, data.byteOffset + 196, 16)
   // final
-  const f = lastByte === 1;
+  const f = lastByte === 1
 
-  let gasUsed = opts.common.param("blake2RoundGas");
-  gasUsed *= BigInt(rounds);
+  let gasUsed = opts.common.param('blake2RoundGas')
+  gasUsed *= BigInt(rounds)
   if (!gasLimitCheck(opts, gasUsed, pName)) {
-    return OOGResult(opts.gasLimit);
+    return OOGResult(opts.gasLimit)
   }
 
-  const h = new Uint32Array(16);
+  const h = new Uint32Array(16)
   for (let i = 0; i < 16; i++) {
-    h[i] = hRaw.getUint32(i * 4, true);
+    h[i] = hRaw.getUint32(i * 4, true)
   }
 
-  const m = new Uint32Array(32);
+  const m = new Uint32Array(32)
   for (let i = 0; i < 32; i++) {
-    m[i] = mRaw.getUint32(i * 4, true);
+    m[i] = mRaw.getUint32(i * 4, true)
   }
 
-  const t = new Uint32Array(4);
+  const t = new Uint32Array(4)
   for (let i = 0; i < 4; i++) {
-    t[i] = tRaw.getUint32(i * 4, true);
+    t[i] = tRaw.getUint32(i * 4, true)
   }
 
-  F(h, m, t, f, rounds);
+  F(h, m, t, f, rounds)
 
-  const output = new Uint8Array(64);
-  const outputView = new DataView(output.buffer);
+  const output = new Uint8Array(64)
+  const outputView = new DataView(output.buffer)
   for (let i = 0; i < 16; i++) {
-    outputView.setUint32(i * 4, h[i], true);
+    outputView.setUint32(i * 4, h[i], true)
   }
 
   if (opts._debug !== undefined) {
-    opts._debug(`${pName} return hash=${bytesToHex(output)}`);
+    opts._debug(`${pName} return hash=${bytesToHex(output)}`)
   }
 
   return {
     executionGasUsed: gasUsed,
     returnValue: output,
-  };
+  }
 }

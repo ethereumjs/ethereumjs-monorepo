@@ -1,7 +1,7 @@
 type RpcParams = {
-  method: string;
-  params: (string | string[] | boolean | number)[];
-};
+  method: string
+  params: (string | string[] | boolean | number)[]
+}
 
 /**
  * Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
@@ -25,17 +25,17 @@ export const fetchFromProvider = async (url: string, params: RpcParams) => {
   const data = JSON.stringify({
     method: params.method,
     params: params.params,
-    jsonrpc: "2.0",
+    jsonrpc: '2.0',
     id: 1,
-  });
+  })
 
   const res = await fetch(url, {
     headers: {
-      "content-type": "application/json",
+      'content-type': 'application/json',
     },
-    method: "POST",
+    method: 'POST',
     body: data,
-  });
+  })
   if (!res.ok) {
     throw new Error(
       `JSONRPCError: ${JSON.stringify(
@@ -43,18 +43,18 @@ export const fetchFromProvider = async (url: string, params: RpcParams) => {
           method: params.method,
           status: res.status,
           message: await res.text().catch(() => {
-            return "Could not parse error message likely because of a network error";
+            return 'Could not parse error message likely because of a network error'
           }),
         },
         null,
         2,
       )}`,
-    );
+    )
   }
-  const json = await res.json();
+  const json = await res.json()
   // TODO we should check json.error here
-  return json.result;
-};
+  return json.result
+}
 
 /**
  *
@@ -62,17 +62,14 @@ export const fetchFromProvider = async (url: string, params: RpcParams) => {
  * @returns the extracted URL string for the JSON-RPC Provider
  */
 export const getProvider = (provider: string | EthersProvider) => {
-  if (typeof provider === "string") {
-    return provider;
-  } else if (
-    typeof provider === "object" &&
-    provider._getConnection !== undefined
-  ) {
-    return provider._getConnection().url;
+  if (typeof provider === 'string') {
+    return provider
+  } else if (typeof provider === 'object' && provider._getConnection !== undefined) {
+    return provider._getConnection().url
   } else {
-    throw new Error("Must provide valid provider URL or Web3Provider");
+    throw new Error('Must provide valid provider URL or Web3Provider')
   }
-};
+}
 
 /**
  * A partial interface for an `ethers` `JSONRPCProvider`
@@ -81,6 +78,6 @@ export const getProvider = (provider: string | EthersProvider) => {
  */
 export interface EthersProvider {
   _getConnection: () => {
-    url: string;
-  };
+    url: string
+  }
 }

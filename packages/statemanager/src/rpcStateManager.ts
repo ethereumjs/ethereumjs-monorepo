@@ -1,5 +1,5 @@
-import { Common, Mainnet } from "@ethereumjs/common";
-import { RLP } from "@ethereumjs/rlp";
+import { Common, Mainnet } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   bigIntToHex,
@@ -11,64 +11,53 @@ import {
   hexToBytes,
   intToHex,
   toBytes,
-} from "@ethereumjs/util";
-import debugDefault from "debug";
-import { keccak256 } from "ethereum-cryptography/keccak.js";
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Caches, OriginalStorageCache } from "./cache/index.js";
-import { modifyAccountFields } from "./util.js";
+import { Caches, OriginalStorageCache } from './cache/index.js'
+import { modifyAccountFields } from './util.js'
 
-import type {
-  AccountFields,
-  StateManagerInterface,
-  StorageDump,
-} from "@ethereumjs/common";
-import type { Address } from "@ethereumjs/util";
-import type { Debugger } from "debug";
-import type { RPCStateManagerOpts } from "./index.js";
+import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
+import type { RPCStateManagerOpts } from './index.js'
 
-const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(
-  2,
-);
+const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
 export class RPCStateManager implements StateManagerInterface {
-  protected _provider: string;
-  protected _caches: Caches;
-  protected _blockTag: string;
-  originalStorageCache: OriginalStorageCache;
-  protected _debug: Debugger;
-  protected DEBUG: boolean;
-  private keccakFunction: Function;
-  public readonly common: Common;
+  protected _provider: string
+  protected _caches: Caches
+  protected _blockTag: string
+  originalStorageCache: OriginalStorageCache
+  protected _debug: Debugger
+  protected DEBUG: boolean
+  private keccakFunction: Function
+  public readonly common: Common
 
   constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === "undefined"
-        ? (process?.env?.DEBUG?.includes("ethjs") ?? false)
-        : false;
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault("statemanager:rpc");
-    if (typeof opts.provider === "string" && opts.provider.startsWith("http")) {
-      this._provider = opts.provider;
+    this._debug = debugDefault('statemanager:rpc')
+    if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
+      this._provider = opts.provider
     } else {
-      throw new Error(`valid RPC provider url required; got ${opts.provider}`);
+      throw new Error(`valid RPC provider url required; got ${opts.provider}`)
     }
 
-    this._blockTag =
-      opts.blockTag === "earliest" ? opts.blockTag : bigIntToHex(opts.blockTag);
+    this._blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
     this._caches = new Caches({
       storage: { size: 100000 },
       code: { size: 100000 },
-    });
+    })
 
-    this.originalStorageCache = new OriginalStorageCache(
-      this.getStorage.bind(this),
-    );
-    this.common = opts.common ?? new Common({ chain: Mainnet });
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256;
+    this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
+    this.common = opts.common ?? new Common({ chain: Mainnet })
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
 
   /**
@@ -80,10 +69,10 @@ export class RPCStateManager implements StateManagerInterface {
     const newState = new RPCStateManager({
       provider: this._provider,
       blockTag: BigInt(this._blockTag),
-    });
-    newState._caches = new Caches({ storage: { size: 100000 } });
+    })
+    newState._caches = new Caches({ storage: { size: 100000 } })
 
-    return newState;
+    return newState
   }
 
   /**
@@ -91,10 +80,10 @@ export class RPCStateManager implements StateManagerInterface {
    * internal cache.
    * @param blockTag - the new block tag to use when querying the provider
    */
-  setBlockTag(blockTag: bigint | "earliest"): void {
-    this._blockTag = blockTag === "earliest" ? blockTag : bigIntToHex(blockTag);
-    this.clearCaches();
-    if (this.DEBUG) this._debug(`setting block tag to ${this._blockTag}`);
+  setBlockTag(blockTag: bigint | 'earliest'): void {
+    this._blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
+    this.clearCaches()
+    if (this.DEBUG) this._debug(`setting block tag to ${this._blockTag}`)
   }
 
   /**
@@ -102,7 +91,7 @@ export class RPCStateManager implements StateManagerInterface {
    * initially be retrieved from the provider
    */
   clearCaches(): void {
-    this._caches.clear();
+    this._caches.clear()
   }
 
   /**
@@ -112,20 +101,20 @@ export class RPCStateManager implements StateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getCode(address: Address): Promise<Uint8Array> {
-    let codeBytes = this._caches.code?.get(address)?.code;
-    if (codeBytes !== undefined) return codeBytes;
+    let codeBytes = this._caches.code?.get(address)?.code
+    if (codeBytes !== undefined) return codeBytes
     const code = await fetchFromProvider(this._provider, {
-      method: "eth_getCode",
+      method: 'eth_getCode',
       params: [address.toString(), this._blockTag],
-    });
-    codeBytes = toBytes(code);
-    this._caches.code?.put(address, codeBytes);
-    return codeBytes;
+    })
+    codeBytes = toBytes(code)
+    this._caches.code?.put(address, codeBytes)
+    return codeBytes
   }
 
   async getCodeSize(address: Address): Promise<number> {
-    const contractCode = await this.getCode(address);
-    return contractCode.length;
+    const contractCode = await this.getCode(address)
+    return contractCode.length
   }
 
   /**
@@ -136,7 +125,7 @@ export class RPCStateManager implements StateManagerInterface {
    */
   async putCode(address: Address, value: Uint8Array): Promise<void> {
     // Store contract code in the cache
-    this._caches.code?.put(address, value);
+    this._caches.code?.put(address, value)
   }
 
   /**
@@ -151,23 +140,23 @@ export class RPCStateManager implements StateManagerInterface {
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
-      throw new Error("Storage key must be 32 bytes long");
+      throw new Error('Storage key must be 32 bytes long')
     }
 
-    let value = this._caches.storage?.get(address, key);
+    let value = this._caches.storage?.get(address, key)
     if (value !== undefined) {
-      return value;
+      return value
     }
 
     // Retrieve storage slot from provider if not found in cache
     const storage = await fetchFromProvider(this._provider, {
-      method: "eth_getStorageAt",
+      method: 'eth_getStorageAt',
       params: [address.toString(), bytesToHex(key), this._blockTag],
-    });
-    value = toBytes(storage);
+    })
+    value = toBytes(storage)
 
-    await this.putStorage(address, key, value);
-    return value;
+    await this.putStorage(address, key, value)
+    return value
   }
 
   /**
@@ -179,12 +168,8 @@ export class RPCStateManager implements StateManagerInterface {
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is empty or filled with zeros, deletes the value.
    */
-  async putStorage(
-    address: Address,
-    key: Uint8Array,
-    value: Uint8Array,
-  ): Promise<void> {
-    this._caches.storage?.put(address, key, value);
+  async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+    this._caches.storage?.put(address, key, value)
   }
 
   /**
@@ -192,7 +177,7 @@ export class RPCStateManager implements StateManagerInterface {
    * @param address - Address to clear the storage of
    */
   async clearStorage(address: Address): Promise<void> {
-    this._caches.storage?.clearStorage(address);
+    this._caches.storage?.clearStorage(address)
   }
 
   /**
@@ -203,14 +188,14 @@ export class RPCStateManager implements StateManagerInterface {
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
-    const storageMap = this._caches.storage?.dump(address);
-    const dump: StorageDump = {};
+    const storageMap = this._caches.storage?.dump(address)
+    const dump: StorageDump = {}
     if (storageMap !== undefined) {
       for (const slot of storageMap) {
-        dump[slot[0]] = bytesToHex(slot[1]);
+        dump[slot[0]] = bytesToHex(slot[1])
       }
     }
-    return Promise.resolve(dump);
+    return Promise.resolve(dump)
   }
 
   /**
@@ -218,23 +203,21 @@ export class RPCStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    const elem = this._caches.account?.get(address);
+    const elem = this._caches.account?.get(address)
     if (elem !== undefined) {
-      return elem.accountRLP !== undefined
-        ? createAccountFromRLP(elem.accountRLP)
-        : undefined;
+      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
     }
 
-    const accountFromProvider = await this.getAccountFromProvider(address);
+    const accountFromProvider = await this.getAccountFromProvider(address)
     const account =
       equalsBytes(accountFromProvider.codeHash, new Uint8Array(32)) ||
       equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
         ? undefined
-        : createAccountFromRLP(accountFromProvider.serialize());
+        : createAccountFromRLP(accountFromProvider.serialize())
 
-    this._caches.account?.put(address, account);
+    this._caches.account?.put(address, account)
 
-    return account;
+    return account
   }
 
   /**
@@ -243,21 +226,18 @@ export class RPCStateManager implements StateManagerInterface {
    * @private
    */
   async getAccountFromProvider(address: Address): Promise<Account> {
-    if (this.DEBUG)
-      this._debug(
-        `retrieving account data from ${address.toString()} from provider`,
-      );
+    if (this.DEBUG) this._debug(`retrieving account data from ${address.toString()} from provider`)
     const accountData = await fetchFromProvider(this._provider, {
-      method: "eth_getProof",
+      method: 'eth_getProof',
       params: [address.toString(), [] as any, this._blockTag],
-    });
+    })
     const account = createAccount({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
       codeHash: toBytes(accountData.codeHash),
       storageRoot: toBytes(accountData.storageHash),
-    });
-    return account;
+    })
+    return account
   }
 
   /**
@@ -265,23 +245,20 @@ export class RPCStateManager implements StateManagerInterface {
    * @param address - Address under which to store `account`
    * @param account - The account to store
    */
-  async putAccount(
-    address: Address,
-    account: Account | undefined,
-  ): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
           account?.balance
-        } contract=${account && account.isContract() ? "yes" : "no"} empty=${
-          account && account.isEmpty() ? "yes" : "no"
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
         }`,
-      );
+      )
     }
     if (account !== undefined) {
-      this._caches.account!.put(address, account);
+      this._caches.account!.put(address, account)
     } else {
-      this._caches.account!.del(address);
+      this._caches.account!.del(address)
     }
   }
 
@@ -292,24 +269,21 @@ export class RPCStateManager implements StateManagerInterface {
    * @param address - Address of the account to modify
    * @param accountFields - Object containing account fields and values to modify
    */
-  async modifyAccountFields(
-    address: Address,
-    accountFields: AccountFields,
-  ): Promise<void> {
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
     if (this.DEBUG) {
-      this._debug(`modifying account fields for ${address.toString()}`);
+      this._debug(`modifying account fields for ${address.toString()}`)
       this._debug(
         JSON.stringify(
           accountFields,
           (k, v) => {
-            if (k === "nonce") return v.toString();
-            return v;
+            if (k === 'nonce') return v.toString()
+            return v
           },
           2,
         ),
-      );
+      )
     }
-    await modifyAccountFields(this, address, accountFields);
+    await modifyAccountFields(this, address, accountFields)
   }
 
   /**
@@ -318,9 +292,9 @@ export class RPCStateManager implements StateManagerInterface {
    */
   async deleteAccount(address: Address) {
     if (this.DEBUG) {
-      this._debug(`deleting account corresponding to ${address.toString()}`);
+      this._debug(`deleting account corresponding to ${address.toString()}`)
     }
-    this._caches.account?.del(address);
+    this._caches.account?.del(address)
   }
 
   /**
@@ -330,7 +304,7 @@ export class RPCStateManager implements StateManagerInterface {
    * @returns {Uint8Array} - The applied key (e.g. hashed address)
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
-    return this.keccakFunction(address);
+    return this.keccakFunction(address)
   }
 
   /**
@@ -339,7 +313,7 @@ export class RPCStateManager implements StateManagerInterface {
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
-    this._caches.checkpoint();
+    this._caches.checkpoint()
   }
 
   /**
@@ -350,7 +324,7 @@ export class RPCStateManager implements StateManagerInterface {
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
-    this._caches.account?.commit();
+    this._caches.account?.commit()
   }
 
   /**
@@ -360,51 +334,50 @@ export class RPCStateManager implements StateManagerInterface {
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    this._caches.revert();
+    this._caches.revert()
   }
 
   async flush(): Promise<void> {
-    this._caches.account?.flush();
+    this._caches.account?.flush()
   }
 
   /**
    * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   getStateRoot = async () => {
-    return new Uint8Array(32);
-  };
+    return new Uint8Array(32)
+  }
 
   /**
    * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
-  setStateRoot = async (_root: Uint8Array) => {};
+  setStateRoot = async (_root: Uint8Array) => {}
 
   /**
    * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
-    throw new Error("function not implemented");
-  };
+    throw new Error('function not implemented')
+  }
 }
 
 export class RPCBlockChain {
-  readonly provider: string;
+  readonly provider: string
   constructor(provider: string) {
-    if (provider === undefined || provider === "")
-      throw new Error("provider URL is required");
-    this.provider = provider;
+    if (provider === undefined || provider === '') throw new Error('provider URL is required')
+    this.provider = provider
   }
   async getBlock(blockId: number) {
     const block = await fetchFromProvider(this.provider, {
-      method: "eth_getBlockByNumber",
+      method: 'eth_getBlockByNumber',
       params: [intToHex(blockId), false],
-    });
+    })
     return {
       hash: () => hexToBytes(block.hash),
-    };
+    }
   }
 
   shallowCopy() {
-    return this;
+    return this
   }
 }

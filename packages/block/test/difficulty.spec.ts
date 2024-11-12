@@ -1,77 +1,61 @@
-import { Common, Hardfork, Mainnet } from "@ethereumjs/common";
-import { assert, describe, it } from "vitest";
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { assert, describe, it } from 'vitest'
 
-import * as difficultyMainNetwork from "../../ethereum-tests/BasicTests/difficultyMainNetwork.json";
-import * as difficultyArrowGlacier from "../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json";
-import * as difficultyByzantium from "../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json";
-import * as difficultyConstantinople from "../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json";
-import * as difficultyEIP2384 from "../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json";
-import * as difficultyEip2384Random from "../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json";
-import * as difficultyEip2384RandomTo20m from "../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json";
-import * as difficultyFrontier from "../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json";
-import * as difficultyGrayGlacier from "../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json";
-import * as difficultyHomestead from "../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json";
-import {
-  type Block,
-  createBlock,
-  ethashCanonicalDifficulty,
-} from "../src/index.js";
+import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
+import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json'
+import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json'
+import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json'
+import * as difficultyEIP2384 from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json'
+import * as difficultyEip2384Random from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json'
+import * as difficultyEip2384RandomTo20m from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json'
+import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
+import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
+import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
+import { type Block, createBlock, ethashCanonicalDifficulty } from '../src/index.js'
 
-function runDifficultyTests(
-  test: any,
-  parentBlock: Block,
-  block: Block,
-  msg: string,
-) {
-  const dif = ethashCanonicalDifficulty(block, parentBlock);
-  assert.equal(
-    dif,
-    BigInt(test.currentDifficulty),
-    `test ethashCanonicalDifficulty: ${msg}`,
-  );
+function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
+  const dif = ethashCanonicalDifficulty(block, parentBlock)
+  assert.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
 }
 
-type TestData = { [key: string]: any };
+type TestData = { [key: string]: any }
 
 const hardforkTestData: TestData = {
   chainstart: difficultyFrontier.default.difficultyFrontier.Frontier,
   homestead: difficultyHomestead.default.difficultyHomestead.Homestead,
   byzantium: difficultyByzantium.default.difficultyByzantium.Byzantium,
-  constantinople:
-    difficultyConstantinople.default.difficultyConstantinople.Constantinople,
+  constantinople: difficultyConstantinople.default.difficultyConstantinople.Constantinople,
   muirGlacier: Object.assign(
     difficultyEIP2384.default.difficultyEIP2384.Berlin,
     difficultyEip2384Random.default.difficultyEIP2384_random.Berlin,
     difficultyEip2384RandomTo20m.default.difficultyEIP2384_random_to20M.Berlin,
   ),
-  arrowGlacier:
-    difficultyArrowGlacier.default.difficultyArrowGlacier.ArrowGlacier,
+  arrowGlacier: difficultyArrowGlacier.default.difficultyArrowGlacier.ArrowGlacier,
   grayGlacier: difficultyGrayGlacier.default.difficultyGrayGlacier.GrayGlacier,
-};
+}
 
 const chainTestData: TestData = {
   mainnet: difficultyMainNetwork,
-};
+}
 
-describe("[Header]: difficulty tests", () => {
+describe('[Header]: difficulty tests', () => {
   // Unschedule any timestamp since tests are not configured for timestamps
   Mainnet.hardforks
     .filter((hf) => hf.timestamp !== undefined)
     .map((hf) => {
-      hf.timestamp = undefined;
-    });
+      hf.timestamp = undefined
+    })
 
-  it("by hardfork", () => {
+  it('by hardfork', () => {
     /* eslint-disable no-restricted-syntax */
     for (const hardfork in hardforkTestData) {
-      const testData = hardforkTestData[hardfork];
+      const testData = hardforkTestData[hardfork]
       for (const testName in testData) {
-        const test = testData[testName];
-        const common = new Common({ chain: Mainnet, hardfork });
+        const test = testData[testName]
+        const common = new Common({ chain: Mainnet, hardfork })
 
-        const blockOpts = { common };
-        const uncleHash =
-          test.parentUncles === "0x00" ? undefined : test.parentUncles;
+        const blockOpts = { common }
+        const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = createBlock(
           {
             header: {
@@ -81,7 +65,7 @@ describe("[Header]: difficulty tests", () => {
             },
           },
           blockOpts,
-        );
+        )
 
         const block = createBlock(
           {
@@ -92,30 +76,24 @@ describe("[Header]: difficulty tests", () => {
             },
           },
           blockOpts,
-        );
+        )
 
-        runDifficultyTests(
-          test,
-          parentBlock,
-          block,
-          `fork determination by hardfork (${hardfork})`,
-        );
+        runDifficultyTests(test, parentBlock, block, `fork determination by hardfork (${hardfork})`)
       }
     }
-  });
+  })
 
-  it("by chain", () => {
+  it('by chain', () => {
     for (const chain in chainTestData) {
-      const testData = chainTestData[chain];
+      const testData = chainTestData[chain]
       for (const testName in testData.default) {
-        const test = testData[testName];
+        const test = testData[testName]
         const common = new Common({
           chain: Mainnet,
           hardfork: Hardfork.Chainstart,
-        });
-        const blockOpts = { common, setHardfork: true };
-        const uncleHash =
-          test.parentUncles === "0x00" ? undefined : test.parentUncles;
+        })
+        const blockOpts = { common, setHardfork: true }
+        const uncleHash = test.parentUncles === '0x00' ? undefined : test.parentUncles
         const parentBlock = createBlock(
           {
             header: {
@@ -126,7 +104,7 @@ describe("[Header]: difficulty tests", () => {
             },
           },
           blockOpts,
-        );
+        )
 
         const block = createBlock(
           {
@@ -137,15 +115,15 @@ describe("[Header]: difficulty tests", () => {
             },
           },
           blockOpts,
-        );
+        )
 
         runDifficultyTests(
           test,
           parentBlock,
           block,
           `fork determination by block number (${test.currentBlockNumber})`,
-        );
+        )
       }
     }
-  });
-});
+  })
+})

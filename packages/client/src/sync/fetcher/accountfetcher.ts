@@ -1,5 +1,5 @@
-import { verifyMerkleRangeProof } from "@ethereumjs/mpt";
-import { MerkleStateManager } from "@ethereumjs/statemanager";
+import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -15,28 +15,28 @@ import {
   equalsBytes,
   formatBigDecimal,
   setLengthLeft,
-} from "@ethereumjs/util";
-import debugDefault from "debug";
-import { keccak256 } from "ethereum-cryptography/keccak.js";
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Event } from "../../types.js";
-import { short } from "../../util/index.js";
+import { Event } from '../../types.js'
+import { short } from '../../util/index.js'
 
-import { ByteCodeFetcher } from "./bytecodefetcher.js";
-import { Fetcher } from "./fetcher.js";
-import { StorageFetcher } from "./storagefetcher.js";
-import { TrieNodeFetcher } from "./trienodefetcher.js";
-import { getInitFetcherDoneFlags } from "./types.js";
+import { ByteCodeFetcher } from './bytecodefetcher.js'
+import { Fetcher } from './fetcher.js'
+import { StorageFetcher } from './storagefetcher.js'
+import { TrieNodeFetcher } from './trienodefetcher.js'
+import { getInitFetcherDoneFlags } from './types.js'
 
-import type { MerklePatriciaTrie } from "@ethereumjs/mpt";
-import type { Debugger } from "debug";
-import type { Peer } from "../../net/peer/index.js";
-import type { AccountData } from "../../net/protocol/snapprotocol.js";
-import type { FetcherOptions } from "./fetcher.js";
-import type { StorageRequest } from "./storagefetcher.js";
-import type { Job, SnapFetcherDoneFlags } from "./types.js";
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.js'
+import type { AccountData } from '../../net/protocol/snapprotocol.js'
+import type { FetcherOptions } from './fetcher.js'
+import type { StorageRequest } from './storagefetcher.js'
+import type { Job, SnapFetcherDoneFlags } from './types.js'
 
-type AccountDataResponse = AccountData[] & { completed?: boolean };
+type AccountDataResponse = AccountData[] & { completed?: boolean }
 
 /**
  * Implements an snap1 based account fetcher
@@ -44,67 +44,62 @@ type AccountDataResponse = AccountData[] & { completed?: boolean };
  */
 export interface AccountFetcherOptions extends FetcherOptions {
   /** Root hash of the account trie to serve */
-  root: Uint8Array;
+  root: Uint8Array
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
-  first: bigint;
+  first: bigint
   /** The range to eventually, by default should be set at BIGINT_2 ** BigInt(256) + BIGINT_1 - first */
-  count?: bigint;
+  count?: bigint
 
   /** Destroy fetcher once all tasks are done */
-  destroyWhenDone?: boolean;
+  destroyWhenDone?: boolean
 
-  stateManager?: MerkleStateManager;
+  stateManager?: MerkleStateManager
 
-  fetcherDoneFlags?: SnapFetcherDoneFlags;
+  fetcherDoneFlags?: SnapFetcherDoneFlags
 }
 
 // root comes from block?
 export type JobTask = {
   /** The origin to start account fetcher from */
-  first: bigint;
+  first: bigint
   /** Range to eventually fetch */
-  count: bigint;
-};
+  count: bigint
+}
 
-export class AccountFetcher extends Fetcher<
-  JobTask,
-  AccountData[],
-  AccountData
-> {
-  protected debug: Debugger;
-  stateManager: MerkleStateManager;
-  accountTrie: MerklePatriciaTrie;
+export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
+  protected debug: Debugger
+  stateManager: MerkleStateManager
+  accountTrie: MerklePatriciaTrie
 
-  root: Uint8Array;
-  highestKnownHash: Uint8Array | undefined;
+  root: Uint8Array
+  highestKnownHash: Uint8Array | undefined
 
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
-  first: bigint;
+  first: bigint
   /** The range to eventually, by default should be set at BIGINT_2 ** BigInt(256) + BIGINT_1 - first */
-  count: bigint;
+  count: bigint
 
-  storageFetcher: StorageFetcher;
-  byteCodeFetcher: ByteCodeFetcher;
-  trieNodeFetcher: TrieNodeFetcher;
-  private readonly fetcherDoneFlags: SnapFetcherDoneFlags;
+  storageFetcher: StorageFetcher
+  byteCodeFetcher: ByteCodeFetcher
+  trieNodeFetcher: TrieNodeFetcher
+  private readonly fetcherDoneFlags: SnapFetcherDoneFlags
 
   /**
    * Create new block fetcher
    */
   constructor(options: AccountFetcherOptions) {
-    super(options);
-    this.fetcherDoneFlags =
-      options.fetcherDoneFlags ?? getInitFetcherDoneFlags();
+    super(options)
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFetcherDoneFlags()
 
-    this.root = options.root;
-    this.first = options.first;
-    this.count = options.count ?? BIGINT_2EXP256 - this.first;
+    this.root = options.root
+    this.first = options.first
+    this.count = options.count ?? BIGINT_2EXP256 - this.first
 
-    this.stateManager = options.stateManager ?? new MerkleStateManager();
-    this.accountTrie = this.stateManager["_getAccountTrie"]();
+    this.stateManager = options.stateManager ?? new MerkleStateManager()
+    this.accountTrie = this.stateManager['_getAccountTrie']()
 
-    this.debug = debugDefault("client:fetcher:account");
+    this.debug = debugDefault('client:fetcher:account')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
@@ -115,7 +110,7 @@ export class AccountFetcher extends Fetcher<
       destroyWhenDone: false,
       stateManager: this.stateManager,
       fetcherDoneFlags: this.fetcherDoneFlags,
-    });
+    })
     this.byteCodeFetcher = new ByteCodeFetcher({
       config: this.config,
       pool: this.pool,
@@ -123,7 +118,7 @@ export class AccountFetcher extends Fetcher<
       destroyWhenDone: false,
       stateManager: this.stateManager,
       fetcherDoneFlags: this.fetcherDoneFlags,
-    });
+    })
     this.trieNodeFetcher = new TrieNodeFetcher({
       config: this.config,
       pool: this.pool,
@@ -131,49 +126,45 @@ export class AccountFetcher extends Fetcher<
       stateManager: this.stateManager,
       destroyWhenDone: false,
       fetcherDoneFlags: this.fetcherDoneFlags,
-    });
+    })
 
     const syncRange = { task: { first: this.first, count: this.count } } as Job<
       JobTask,
       AccountData[],
       AccountData
-    >;
-    const origin = this.getOrigin(syncRange);
-    const limit = this.getLimit(syncRange);
+    >
+    const origin = this.getOrigin(syncRange)
+    const limit = this.getLimit(syncRange)
 
     this.DEBUG &&
       this.debug(
         `Account fetcher instantiated root=${short(this.root)} origin=${short(origin)} limit=${short(
           limit,
         )} destroyWhenDone=${this.destroyWhenDone}`,
-      );
+      )
   }
 
   async blockingFetch(): Promise<boolean> {
-    this.fetcherDoneFlags.syncing = true;
+    this.fetcherDoneFlags.syncing = true
 
     try {
       // in next iterations we might make this dynamic depending on how far off we are from the
       // vmhead
-      const accountFetch = this.fetcherDoneFlags.accountFetcher.done
-        ? null
-        : super.blockingFetch();
+      const accountFetch = this.fetcherDoneFlags.accountFetcher.done ? null : super.blockingFetch()
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
-      this.config.superMsg(
-        `Snapsync: running accountFetch=${accountFetch !== null}`,
-      );
+      this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
 
       // if account fetcher is working, storage fetchers might need to work
       if (accountFetch !== null) {
-        this.fetcherDoneFlags.storageFetcher.done = false;
-        this.fetcherDoneFlags.byteCodeFetcher.done = false;
+        this.fetcherDoneFlags.storageFetcher.done = false
+        this.fetcherDoneFlags.byteCodeFetcher.done = false
       }
       // trienodes need to be tried on each fetch call
-      this.fetcherDoneFlags.trieNodeFetcher.done = false;
+      this.fetcherDoneFlags.trieNodeFetcher.done = false
 
-      await accountFetch;
+      await accountFetch
       if (this.fetcherDoneFlags.accountFetcher.done !== true) {
-        throw Error("accountFetcher finished without completing the sync");
+        throw Error('accountFetcher finished without completing the sync')
       }
 
       const storageFetch = this.fetcherDoneFlags.storageFetcher.done
@@ -181,25 +172,25 @@ export class AccountFetcher extends Fetcher<
         : this.storageFetcher.blockingFetch().then(
             () => this.snapFetchersCompleted(StorageFetcher),
             () => {
-              throw Error("Snap fetcher failed to exit");
+              throw Error('Snap fetcher failed to exit')
             },
-          );
+          )
       const codeFetch = this.fetcherDoneFlags.byteCodeFetcher.done
         ? null
         : this.byteCodeFetcher.blockingFetch().then(
             () => this.snapFetchersCompleted(ByteCodeFetcher),
             () => {
-              throw Error("Snap fetcher failed to exit");
+              throw Error('Snap fetcher failed to exit')
             },
-          );
+          )
 
       this.config.superMsg(
         `Snapsync: running storageFetch=${storageFetch !== null} codeFetch=${codeFetch !== null}`,
-      );
+      )
 
-      this.storageFetcher.setDestroyWhenDone();
-      this.byteCodeFetcher.setDestroyWhenDone();
-      await Promise.all([storageFetch, codeFetch]);
+      this.storageFetcher.setDestroyWhenDone()
+      this.byteCodeFetcher.setDestroyWhenDone()
+      await Promise.all([storageFetch, codeFetch])
 
       if (
         this.fetcherDoneFlags.storageFetcher.done !== true ||
@@ -207,7 +198,7 @@ export class AccountFetcher extends Fetcher<
       ) {
         throw Error(
           `storageFetch or codeFetch didn't complete storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done}`,
-        );
+        )
       }
 
       // always do trienode fetch as this should only sync diffs else return
@@ -215,111 +206,95 @@ export class AccountFetcher extends Fetcher<
       // ignore this if previously build
       const trieNodeFetch = this.trieNodeFetcher.fetch().then(
         () => {
-          this.snapFetchersCompleted(TrieNodeFetcher);
+          this.snapFetchersCompleted(TrieNodeFetcher)
         },
         () => {
-          throw Error("Snap fetcher failed to exit");
+          throw Error('Snap fetcher failed to exit')
         },
-      );
-      this.config.superMsg(
-        `Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`,
-      );
-      this.trieNodeFetcher.setDestroyWhenDone();
-      await trieNodeFetch;
+      )
+      this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
+      this.trieNodeFetcher.setDestroyWhenDone()
+      await trieNodeFetch
 
-      return true;
+      return true
     } catch (error) {
-      this.config.logger.error(`Error while fetching snapsync: ${error}`);
-      return false;
+      this.config.logger.error(`Error while fetching snapsync: ${error}`)
+      return false
     } finally {
-      this.fetcherDoneFlags.syncing = false;
-      this.fetcherDoneFlags.accountFetcher.started = false;
+      this.fetcherDoneFlags.syncing = false
+      this.fetcherDoneFlags.accountFetcher.started = false
     }
   }
 
   snapFetchersCompleted(fetcherType: Object, root?: Uint8Array): void {
-    const fetcherDoneFlags = this.fetcherDoneFlags;
+    const fetcherDoneFlags = this.fetcherDoneFlags
 
     switch (fetcherType) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
-        fetcherDoneFlags.accountFetcher.done = true;
-        fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256;
-        fetcherDoneFlags.stateRoot = root;
+        fetcherDoneFlags.accountFetcher.done = true
+        fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256
+        fetcherDoneFlags.stateRoot = root
 
         if (fetcherDoneFlags.accountFetcher.first !== BIGINT_2EXP256) {
           const fetcherProgress = formatBigDecimal(
             fetcherDoneFlags.accountFetcher.first * BIGINT_100,
             BIGINT_2EXP256,
             BIGINT_100,
-          );
+          )
           this.config.logger.warn(
             `accountFetcher completed with pending range done=${fetcherProgress}%`,
-          );
+          )
         }
-        break;
+        break
       case StorageFetcher:
-        fetcherDoneFlags.storageFetcher.done = true;
+        fetcherDoneFlags.storageFetcher.done = true
 
-        if (
-          fetcherDoneFlags.storageFetcher.first !==
-          fetcherDoneFlags.storageFetcher.count
-        ) {
+        if (fetcherDoneFlags.storageFetcher.first !== fetcherDoneFlags.storageFetcher.count) {
           const reqsDone = formatBigDecimal(
             fetcherDoneFlags.storageFetcher.first * BIGINT_100,
             fetcherDoneFlags.storageFetcher.count,
             BIGINT_100,
-          );
+          )
           this.config.logger.warn(
             `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`,
-          );
+          )
         }
 
-        break;
+        break
       case ByteCodeFetcher:
-        fetcherDoneFlags.byteCodeFetcher.done = true;
+        fetcherDoneFlags.byteCodeFetcher.done = true
 
-        if (
-          fetcherDoneFlags.byteCodeFetcher.first !==
-          fetcherDoneFlags.byteCodeFetcher.count
-        ) {
+        if (fetcherDoneFlags.byteCodeFetcher.first !== fetcherDoneFlags.byteCodeFetcher.count) {
           const reqsDone = formatBigDecimal(
             fetcherDoneFlags.byteCodeFetcher.first * BIGINT_100,
             fetcherDoneFlags.byteCodeFetcher.count,
             BIGINT_100,
-          );
+          )
           this.config.logger.warn(
             `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`,
-          );
+          )
         }
-        break;
+        break
       case TrieNodeFetcher:
-        fetcherDoneFlags.trieNodeFetcher.done = true;
-        break;
+        fetcherDoneFlags.trieNodeFetcher.done = true
+        break
     }
 
-    const { accountFetcher, storageFetcher, byteCodeFetcher, trieNodeFetcher } =
-      fetcherDoneFlags;
+    const { accountFetcher, storageFetcher, byteCodeFetcher, trieNodeFetcher } = fetcherDoneFlags
     this.fetcherDoneFlags.done =
-      accountFetcher.done &&
-      storageFetcher.done &&
-      byteCodeFetcher.done &&
-      trieNodeFetcher.done;
+      accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
       `snapFetchersCompletion root=${short(this.root)} accountsRoot=${short(
-        fetcherDoneFlags.stateRoot ?? "na",
+        fetcherDoneFlags.stateRoot ?? 'na',
       )} done=${this.fetcherDoneFlags.done} accountsDone=${accountFetcher.done} storageDone=${
         storageFetcher.done
       } byteCodesDone=${byteCodeFetcher.done} trieNodesDone=${trieNodeFetcher.done}`,
-    );
+    )
 
     if (this.fetcherDoneFlags.done) {
-      this.config.events.emit(
-        Event.SYNC_SNAPSYNC_COMPLETE,
-        this.root,
-        this.stateManager,
-      );
+      this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, this.root, this.stateManager)
     }
   }
 
@@ -333,75 +308,58 @@ export class AccountFetcher extends Fetcher<
         `verifyRangeProof accounts:${accounts.length} first=${bytesToHex(
           accounts[0].hash,
         )} last=${short(accounts[accounts.length - 1].hash)}`,
-      );
+      )
 
     for (let i = 0; i < accounts.length - 1; i++) {
       // ensure the range is monotonically increasing
-      if (
-        bytesToBigInt(accounts[i].hash) > bytesToBigInt(accounts[i + 1].hash)
-      ) {
+      if (bytesToBigInt(accounts[i].hash) > bytesToBigInt(accounts[i + 1].hash)) {
         throw Error(
           `Account hashes not monotonically increasing: ${i} ${accounts[i].hash} vs ${i + 1} ${
             accounts[i + 1].hash
           }`,
-        );
+        )
       }
     }
 
-    const keys = accounts.map((acc: any) => acc.hash);
-    const values = accounts.map((acc: any) => accountBodyToRLP(acc.body));
+    const keys = accounts.map((acc: any) => acc.hash)
+    const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return verifyMerkleRangeProof(
-      stateRoot,
-      origin,
-      keys[keys.length - 1],
-      keys,
-      values,
-      proof,
-      {
-        common: this.config.chainCommon,
-        useKeyHashingFunction:
-          this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-      },
-    );
+    return verifyMerkleRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+      common: this.config.chainCommon,
+      useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+    })
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
-    const { task, partialResult } = job;
-    const { first } = task;
+    const { task, partialResult } = job
+    const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
     const origin = partialResult
-      ? bigIntToBytes(
-          bytesToBigInt(partialResult[partialResult.length - 1].hash) +
-            BIGINT_1,
-        )
-      : bigIntToBytes(first);
-    return setLengthLeft(origin, 32);
+      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
+      : bigIntToBytes(first)
+    return setLengthLeft(origin, 32)
   }
 
   private getLimit(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
-    const { task } = job;
-    const { first, count } = task;
-    const limit = bigIntToBytes(first + BigInt(count) - BIGINT_1);
-    return setLengthLeft(limit, 32);
+    const { task } = job
+    const { first, count } = task
+    const limit = bigIntToBytes(first + BigInt(count) - BIGINT_1)
+    return setLengthLeft(limit, 32)
   }
 
   private isMissingRightRange(
     limit: Uint8Array,
-    {
-      accounts,
-      proof: _proof,
-    }: { accounts: AccountData[]; proof: Uint8Array[] },
+    { accounts, proof: _proof }: { accounts: AccountData[]; proof: Uint8Array[] },
   ): boolean {
     if (
       accounts.length > 0 &&
       accounts[accounts.length - 1] !== undefined &&
       bytesToBigInt(accounts[accounts.length - 1].hash) >= bytesToBigInt(limit)
     ) {
-      return false;
+      return false
     } else {
       // TODO: Check if there is a proof of missing limit in state
-      return true;
+      return true
     }
   }
 
@@ -415,23 +373,19 @@ export class AccountFetcher extends Fetcher<
   async request(
     job: Job<JobTask, AccountData[], AccountData>,
   ): Promise<AccountDataResponse | undefined> {
-    const { peer } = job;
+    const { peer } = job
     // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest();
-    const origin = this.getOrigin(job);
-    const limit = this.getLimit(job);
+    await peer?.latest()
+    const origin = this.getOrigin(job)
+    const limit = this.getLimit(job)
 
-    if (
-      this.highestKnownHash &&
-      compareBytes(limit, this.highestKnownHash) < 0
-    ) {
+    if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
-      this.DEBUG &&
-        this.debug(`skipping request with limit lower than highest known hash`);
-      return Object.assign([], [{ skipped: true }], { completed: true });
+      this.DEBUG && this.debug(`skipping request with limit lower than highest known hash`)
+      return Object.assign([], [{ skipped: true }], { completed: true })
     }
 
     const rangeResult = await peer!.snap!.getAccountRange({
@@ -439,9 +393,9 @@ export class AccountFetcher extends Fetcher<
       origin,
       limit,
       bytes: BigInt(this.config.maxRangeBytes),
-    });
+    })
     if (rangeResult === undefined) {
-      return undefined;
+      return undefined
     }
 
     if (
@@ -459,48 +413,44 @@ export class AccountFetcher extends Fetcher<
             [],
             <any>rangeResult.proof,
             { useKeyHashingFunction: keccak256 },
-          );
+          )
           // if proof is false, reject corrupt peer
-          if (isMissingRightRange !== false) return undefined;
+          if (isMissingRightRange !== false) return undefined
         } catch (e) {
-          this.DEBUG && this.debug(e);
+          this.DEBUG && this.debug(e)
           // if proof is false, reject corrupt peer
-          return undefined;
+          return undefined
         }
 
-        this.DEBUG && this.debug(`Data for last range has been received`);
+        this.DEBUG && this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
-        return Object.assign([], [Object.create(null)], { completed: true });
+        return Object.assign([], [Object.create(null)], { completed: true })
       }
     }
 
-    const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`;
+    const peerInfo = `id=${peer?.id.slice(0, 8)} address=${peer?.address}`
     // validate the proof
     try {
       // verifyRangeProof will also verify validate there are no missed states between origin and
       // response data
-      const isMissingRightRange = await this.verifyRangeProof(
-        this.root,
-        origin,
-        rangeResult,
-      );
+      const isMissingRightRange = await this.verifyRangeProof(this.root, origin, rangeResult)
 
       // Check if there is any pending data to be synced to the right
-      let completed: boolean;
+      let completed: boolean
       if (isMissingRightRange && this.isMissingRightRange(limit, rangeResult)) {
         this.DEBUG &&
           this.debug(
             `Peer ${peerInfo} returned missing right range account=${bytesToHex(
               rangeResult.accounts[rangeResult.accounts.length - 1].hash,
             )} limit=${bytesToHex(limit)}`,
-          );
-        completed = false;
+          )
+        completed = false
       } else {
-        completed = true;
+        completed = true
       }
-      return Object.assign([], rangeResult.accounts, { completed });
+      return Object.assign([], rangeResult.accounts, { completed })
     } catch (err) {
-      throw Error(`InvalidAccountRange: ${err}`);
+      throw Error(`InvalidAccountRange: ${err}`)
     }
   }
 
@@ -515,23 +465,23 @@ export class AccountFetcher extends Fetcher<
     job: Job<JobTask, AccountData[], AccountData>,
     result: AccountDataResponse,
   ): AccountData[] | undefined {
-    const fullResult = (job.partialResult ?? []).concat(result);
+    const fullResult = (job.partialResult ?? []).concat(result)
 
     // update highest known hash
-    const highestReceivedhash = result.at(-1)?.hash as Uint8Array;
+    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
     if (this.highestKnownHash) {
       if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
-        this.highestKnownHash = highestReceivedhash;
+        this.highestKnownHash = highestReceivedhash
       }
     } else {
-      this.highestKnownHash = highestReceivedhash;
+      this.highestKnownHash = highestReceivedhash
     }
 
     if (result.completed === true) {
-      return fullResult;
+      return fullResult
     } else {
       // Save partial result to re-request missing items.
-      job.partialResult = fullResult;
+      job.partialResult = fullResult
     }
   }
 
@@ -540,68 +490,58 @@ export class AccountFetcher extends Fetcher<
    * @param result fetch result
    */
   async store(result: AccountData[]): Promise<void> {
-    this.DEBUG &&
-      this.debug(`Stored ${result.length} accounts in account trie`);
+    this.DEBUG && this.debug(`Stored ${result.length} accounts in account trie`)
 
     if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
       // return without storing to skip this task
-      return;
+      return
     }
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
       // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
-      this.DEBUG &&
-        this.debug(
-          "Final range received with no elements remaining to the right",
-        );
+      this.DEBUG && this.debug('Final range received with no elements remaining to the right')
 
-      await this.accountTrie.persistRoot();
-      this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root());
-      return;
+      await this.accountTrie.persistRoot()
+      this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root())
+      return
     }
 
-    const storageFetchRequests = new Set();
-    const byteCodeFetchRequests = new Set<Uint8Array>();
+    const storageFetchRequests = new Set()
+    const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
       // what we have is hashed account and not its pre-image, so we skipKeyTransform
-      await this.accountTrie.put(
-        account.hash,
-        accountBodyToRLP(account.body),
-        true,
-      );
+      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body), true)
 
       // build record of accounts that need storage slots to be fetched
-      const storageRoot: Uint8Array = account.body[2];
+      const storageRoot: Uint8Array = account.body[2]
       if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
         storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
           first: BIGINT_0,
           count: BIGINT_2EXP256 - BIGINT_1,
-        });
+        })
       }
       // build record of accounts that need bytecode to be fetched
-      const codeHash: Uint8Array = account.body[3];
+      const codeHash: Uint8Array = account.body[3]
       if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
-        byteCodeFetchRequests.add(codeHash);
+        byteCodeFetchRequests.add(codeHash)
       }
     }
 
     // update what has been synced for accountfetcher
-    const lastFetched = result[result.length - 1];
+    const lastFetched = result[result.length - 1]
     if (lastFetched !== undefined && lastFetched !== null) {
-      this.fetcherDoneFlags.accountFetcher.first = bytesToBigInt(
-        lastFetched.hash,
-      );
+      this.fetcherDoneFlags.accountFetcher.first = bytesToBigInt(lastFetched.hash)
     }
 
     if (storageFetchRequests.size > 0)
       this.storageFetcher.enqueueByStorageRequestList(
         Array.from(storageFetchRequests) as StorageRequest[],
-      );
+      )
     if (byteCodeFetchRequests.size > 0)
       this.byteCodeFetcher.enqueueByByteCodeRequestList(
         Array.from(byteCodeFetchRequests) as Uint8Array[],
-      );
+      )
   }
 
   /**
@@ -612,47 +552,42 @@ export class AccountFetcher extends Fetcher<
    * size and turns each range into a task for the fetcher
    */
 
-  tasks(
-    first = this.first,
-    count = this.count,
-    maxTasks = this.config.maxFetcherJobs,
-  ): JobTask[] {
-    const max = this.config.maxAccountRange;
-    const tasks: JobTask[] = [];
-    let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(first), 32))}`;
-    let pushedCount = BIGINT_0;
-    const startedWith = first;
+  tasks(first = this.first, count = this.count, maxTasks = this.config.maxFetcherJobs): JobTask[] {
+    const max = this.config.maxAccountRange
+    const tasks: JobTask[] = []
+    let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(first), 32))}`
+    let pushedCount = BIGINT_0
+    const startedWith = first
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
-      tasks.push({ first, count: max });
-      first += BigInt(max);
-      count -= BigInt(max);
-      pushedCount += BigInt(max);
+      tasks.push({ first, count: max })
+      first += BigInt(max)
+      count -= BigInt(max)
+      pushedCount += BigInt(max)
     }
     if (count > BIGINT_0 && tasks.length < maxTasks) {
-      tasks.push({ first, count });
-      first += BigInt(count);
-      pushedCount += count;
-      count = BIGINT_0;
+      tasks.push({ first, count })
+      first += BigInt(count)
+      pushedCount += count
+      count = BIGINT_0
     }
 
     // If we started with where this.first was, i.e. there are no gaps and hence
     // we can move this.first to where its now, and reduce count by pushedCount
     if (startedWith === this.first) {
-      this.first = first;
-      this.count = this.count - pushedCount;
+      this.first = first
+      this.count = this.count - pushedCount
     }
 
     debugStr += ` limit=${short(
       setLengthLeft(bigIntToBytes(startedWith + pushedCount - BIGINT_1), 32),
-    )}`;
-    this.DEBUG &&
-      this.debug(`Created new tasks num=${tasks.length} ${debugStr}`);
-    return tasks;
+    )}`
+    this.DEBUG && this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
+    return tasks
   }
 
   updateStateRoot(stateRoot: Uint8Array) {
-    this.root = stateRoot;
+    this.root = stateRoot
   }
 
   nextTasks(): void {
@@ -664,17 +599,14 @@ export class AccountFetcher extends Fetcher<
       // pendingRange is for which new tasks need to be generated
       const pendingRange = {
         task: { first: this.first, count: this.count },
-      } as Job<JobTask, AccountData[], AccountData>;
-      const origin = this.getOrigin(pendingRange);
-      const limit = this.getLimit(pendingRange);
+      } as Job<JobTask, AccountData[], AccountData>
+      const origin = this.getOrigin(pendingRange)
+      const limit = this.getLimit(pendingRange)
 
-      this.DEBUG &&
-        this.debug(
-          `Fetcher pending with origin=${short(origin)} limit=${short(limit)}`,
-        );
-      const tasks = this.tasks();
+      this.DEBUG && this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
+      const tasks = this.tasks()
       for (const task of tasks) {
-        this.enqueueTask(task);
+        this.enqueueTask(task)
       }
     }
   }
@@ -683,26 +615,26 @@ export class AccountFetcher extends Fetcher<
    * Clears all outstanding tasks from the fetcher
    */
   clear() {
-    return;
+    return
   }
 
   /**
    * Returns an idle peer that can process a next job.
    */
   peer(): Peer | undefined {
-    return this.pool.idle((peer) => "snap" in peer);
+    return this.pool.idle((peer) => 'snap' in peer)
   }
 
   processStoreError(
     error: Error,
     _task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BIGINT_0;
+    const stepBack = BIGINT_0
     const destroyFetcher =
       !(error.message as string).includes(`InvalidRangeProof`) &&
-      !(error.message as string).includes(`InvalidAccountRange`);
-    const banPeer = true;
-    return { destroyFetcher, banPeer, stepBack };
+      !(error.message as string).includes(`InvalidAccountRange`)
+    const banPeer = true
+    return { destroyFetcher, banPeer, stepBack }
   }
 
   /**
@@ -711,22 +643,22 @@ export class AccountFetcher extends Fetcher<
    * @param withIndex pass true to additionally output job.index
    */
   jobStr(job: Job<JobTask, AccountData[], AccountData>, withIndex = false) {
-    let str = "";
+    let str = ''
     if (withIndex) {
-      str += `index=${job.index} `;
+      str += `index=${job.index} `
     }
 
-    const origin = this.getOrigin(job);
-    const limit = this.getLimit(job);
+    const origin = this.getOrigin(job)
+    const limit = this.getLimit(job)
 
-    let partialResult;
+    let partialResult
     if (job.partialResult) {
-      partialResult = ` partialResults=${job.partialResult.length}`;
+      partialResult = ` partialResults=${job.partialResult.length}`
     } else {
-      partialResult = "";
+      partialResult = ''
     }
 
-    str += `origin=${short(origin)} limit=${short(limit)}${partialResult}`;
-    return str;
+    str += `origin=${short(origin)} limit=${short(limit)}${partialResult}`
+    return str
   }
 }

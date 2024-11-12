@@ -1,7 +1,7 @@
-import { equalsBytes } from "@ethereumjs/util";
+import { equalsBytes } from '@ethereumjs/util'
 
-import type { Common } from "@ethereumjs/common";
-import type { RunState } from "../interpreter.js";
+import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.js'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-1283 (Constantinople)
@@ -21,24 +21,24 @@ export function updateSstoreGasEIP1283(
 ) {
   if (equalsBytes(currentStorage, value)) {
     // If current value equals new value (this is a no-op), 200 gas is deducted.
-    return common.param("netSstoreNoopGas");
+    return common.param('netSstoreNoopGas')
   }
   // If current value does not equal new value
   if (equalsBytes(originalStorage, currentStorage)) {
     // If original value equals current value (this storage slot has not been changed by the current execution context)
     if (originalStorage.length === 0) {
       // If original value is 0, 20000 gas is deducted.
-      return common.param("netSstoreInitGas");
+      return common.param('netSstoreInitGas')
     }
     if (value.length === 0) {
       // If new value is 0, add 15000 gas to refund counter.
       runState.interpreter.refundGas(
-        common.param("netSstoreClearRefundGas"),
-        "EIP-1283 -> netSstoreClearRefund",
-      );
+        common.param('netSstoreClearRefundGas'),
+        'EIP-1283 -> netSstoreClearRefund',
+      )
     }
     // Otherwise, 5000 gas is deducted.
-    return common.param("netSstoreCleanGas");
+    return common.param('netSstoreCleanGas')
   }
   // If original value does not equal current value (this storage slot is dirty), 200 gas is deducted. Apply both of the following clauses.
   if (originalStorage.length !== 0) {
@@ -46,15 +46,15 @@ export function updateSstoreGasEIP1283(
     if (currentStorage.length === 0) {
       // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
       runState.interpreter.subRefund(
-        common.param("netSstoreClearRefundGas"),
-        "EIP-1283 -> netSstoreClearRefund",
-      );
+        common.param('netSstoreClearRefundGas'),
+        'EIP-1283 -> netSstoreClearRefund',
+      )
     } else if (value.length === 0) {
       // If new value is 0 (also means that current value is not 0), add 15000 gas to refund counter.
       runState.interpreter.refundGas(
-        common.param("netSstoreClearRefundGas"),
-        "EIP-1283 -> netSstoreClearRefund",
-      );
+        common.param('netSstoreClearRefundGas'),
+        'EIP-1283 -> netSstoreClearRefund',
+      )
     }
   }
   if (equalsBytes(originalStorage, value)) {
@@ -62,16 +62,16 @@ export function updateSstoreGasEIP1283(
     if (originalStorage.length === 0) {
       // If original value is 0, add 19800 gas to refund counter.
       runState.interpreter.refundGas(
-        common.param("netSstoreResetClearRefundGas"),
-        "EIP-1283 -> netSstoreResetClearRefund",
-      );
+        common.param('netSstoreResetClearRefundGas'),
+        'EIP-1283 -> netSstoreResetClearRefund',
+      )
     } else {
       // Otherwise, add 4800 gas to refund counter.
       runState.interpreter.refundGas(
-        common.param("netSstoreResetRefundGas"),
-        "EIP-1283 -> netSstoreResetRefund",
-      );
+        common.param('netSstoreResetRefundGas'),
+        'EIP-1283 -> netSstoreResetRefund',
+      )
     }
   }
-  return common.param("netSstoreDirtyGas");
+  return common.param('netSstoreDirtyGas')
 }

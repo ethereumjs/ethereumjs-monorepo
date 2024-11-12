@@ -1,21 +1,21 @@
-import { readFileSync } from "fs";
+import { readFileSync } from 'fs'
 
-import { Chain } from "./blockchain/index.js";
-import { FullEthereumService } from "./service/index.js";
-import { Event } from "./types.js";
+import { Chain } from './blockchain/index.js'
+import { FullEthereumService } from './service/index.js'
+import { Event } from './types.js'
 
-import type { Blockchain } from "@ethereumjs/blockchain";
-import type { GenesisState } from "@ethereumjs/util";
-import type { AbstractLevel } from "abstract-level";
-import type { Config } from "./config.js";
-import type { MultiaddrLike } from "./types.js";
+import type { Blockchain } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
+import type { Config } from './config.js'
+import type { MultiaddrLike } from './types.js'
 
 export interface EthereumClientOptions {
   /** Client configuration */
-  config: Config;
+  config: Config
 
   /** Custom blockchain (optional) */
-  blockchain?: Blockchain;
+  blockchain?: Blockchain
 
   /**
    * Database to store blocks and metadata.
@@ -23,11 +23,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  chainDB?: AbstractLevel<
-    string | Uint8Array,
-    string | Uint8Array,
-    string | Uint8Array
-  >;
+  chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Database to store the state.
@@ -35,11 +31,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the MerklePatriciaTrie class
    */
-  stateDB?: AbstractLevel<
-    string | Uint8Array,
-    string | Uint8Array,
-    string | Uint8Array
-  >;
+  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /**
    * Database to store tx receipts, logs, and indexes.
@@ -47,29 +39,25 @@ export interface EthereumClientOptions {
    *
    * Default: Database created in datadir folder
    */
-  metaDB?: AbstractLevel<
-    string | Uint8Array,
-    string | Uint8Array,
-    string | Uint8Array
-  >;
+  metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* List of bootnodes to use for discovery */
-  bootnodes?: MultiaddrLike[];
+  bootnodes?: MultiaddrLike[]
 
   /* List of supported clients */
-  clientFilter?: string[];
+  clientFilter?: string[]
 
   /* How often to discover new peers */
-  refreshInterval?: number;
+  refreshInterval?: number
 
   /* custom genesisState if any for the chain */
-  genesisState?: GenesisState;
+  genesisState?: GenesisState
 
   /* custom genesisStateRoot to be used with post verkle genesis for stateless runs */
-  genesisStateRoot?: Uint8Array;
+  genesisStateRoot?: Uint8Array
 
   /* if client can be run stateless post verkle, defaults to true for now */
-  statelessVerkle?: boolean;
+  statelessVerkle?: boolean
 }
 
 /**
@@ -78,12 +66,12 @@ export interface EthereumClientOptions {
  * @memberof module:node
  */
 export class EthereumClient {
-  public config: Config;
-  public chain: Chain;
-  public service: FullEthereumService;
+  public config: Config
+  public chain: Chain
+  public service: FullEthereumService
 
-  public opened: boolean;
-  public started: boolean;
+  public opened: boolean
+  public started: boolean
 
   /**
    * Main entrypoint for client initialization.
@@ -92,25 +80,25 @@ export class EthereumClient {
    * of the underlying Blockchain object.
    */
   public static async create(options: EthereumClientOptions) {
-    const chain = await Chain.create(options);
-    return new this(chain, options);
+    const chain = await Chain.create(options)
+    return new this(chain, options)
   }
 
   /**
    * Create new node
    */
   protected constructor(chain: Chain, options: EthereumClientOptions) {
-    this.config = options.config;
-    this.chain = chain;
+    this.config = options.config
+    this.chain = chain
     this.service = new FullEthereumService({
       config: this.config,
       chainDB: options.chainDB,
       stateDB: options.stateDB,
       metaDB: options.metaDB,
       chain,
-    });
-    this.opened = false;
-    this.started = false;
+    })
+    this.opened = false
+    this.started = false
   }
 
   /**
@@ -118,34 +106,32 @@ export class EthereumClient {
    */
   async open() {
     if (this.opened) {
-      return false;
+      return false
     }
-    const name = this.config.chainCommon.chainName();
-    const chainId = this.config.chainCommon.chainId();
+    const name = this.config.chainCommon.chainName()
+    const chainId = this.config.chainCommon.chainId()
     const packageJSON = JSON.parse(
       readFileSync(
-        "/" +
-          import.meta.url.split("client")[0].split("file:///")[1] +
-          "client/package.json",
-        "utf-8",
+        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
+        'utf-8',
       ),
-    );
+    )
     this.config.logger.info(
       `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
-    );
+    )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
-      this.config.logger.warn(`Server error: ${error.name} - ${error.message}`);
-    });
+      this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
+    })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       this.config.logger.info(
         `Server listener up transport=${details.transport} url=${details.url}`,
-      );
-    });
+      )
+    })
 
-    await this.service.open();
+    await this.service.open()
 
-    this.opened = true;
+    this.opened = true
   }
 
   /**
@@ -153,18 +139,16 @@ export class EthereumClient {
    */
   async start() {
     if (this.started) {
-      return false;
+      return false
     }
-    this.config.logger.info("Setup networking and services.");
+    this.config.logger.info('Setup networking and services.')
 
-    await this.service.start();
-    this.config.server && (await this.config.server.start());
+    await this.service.start()
+    this.config.server && (await this.config.server.start())
     // Only call bootstrap if servers are actually started
-    this.config.server &&
-      this.config.server.started &&
-      (await this.config.server.bootstrap());
+    this.config.server && this.config.server.started && (await this.config.server.bootstrap())
 
-    this.started = true;
+    this.started = true
   }
 
   /**
@@ -172,14 +156,12 @@ export class EthereumClient {
    */
   async stop() {
     if (!this.started) {
-      return false;
+      return false
     }
-    this.config.events.emit(Event.CLIENT_SHUTDOWN);
-    await this.service.stop();
-    this.config.server &&
-      this.config.server.started &&
-      (await this.config.server.stop());
-    this.started = false;
+    this.config.events.emit(Event.CLIENT_SHUTDOWN)
+    await this.service.stop()
+    this.config.server && this.config.server.started && (await this.config.server.stop())
+    this.started = false
   }
 
   /**
@@ -187,6 +169,6 @@ export class EthereumClient {
    * @returns the RLPx server (if it exists)
    */
   server() {
-    return this.config.server;
+    return this.config.server
   }
 }

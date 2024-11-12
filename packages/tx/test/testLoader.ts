@@ -1,13 +1,13 @@
-import * as path from "path";
-import { bytesToHex } from "@ethereumjs/util";
-import * as dir from "node-dir";
+import * as path from 'path'
+import { bytesToHex } from '@ethereumjs/util'
+import * as dir from 'node-dir'
 
-const falsePredicate = () => false;
+const falsePredicate = () => false
 
 /**
  * Default tests path (git submodule: ethereum-tests)
  */
-export const DEFAULT_TESTS_PATH = path.resolve("../ethereum-tests");
+export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 
 /**
  * Returns the list of test files matching the given parameters from the ethereum-tests git submodule
@@ -28,15 +28,15 @@ export async function getTests(
   const options = {
     match: fileFilter,
     excludeDir,
-  };
+  }
   return new Promise((resolve, reject) => {
     const finishedCallback = (err: Error | undefined, files: string[]) => {
       if (err) {
-        reject(err);
-        return;
+        reject(err)
+        return
       }
-      resolve(files);
-    };
+      resolve(files)
+    }
     const fileCallback = async (
       err: Error | undefined,
       content: string | Uint8Array,
@@ -44,27 +44,22 @@ export async function getTests(
       next: Function,
     ) => {
       if (err) {
-        reject(err);
-        return;
+        reject(err)
+        return
       }
-      const subDir = fileName.substr(directory.length + 1);
-      const parsedFileName = path.parse(fileName).name;
-      content = content instanceof Uint8Array ? bytesToHex(content) : content;
-      const testsByName = JSON.parse(content);
-      const testNames = Object.keys(testsByName);
+      const subDir = fileName.substr(directory.length + 1)
+      const parsedFileName = path.parse(fileName).name
+      content = content instanceof Uint8Array ? bytesToHex(content) : content
+      const testsByName = JSON.parse(content)
+      const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
         if (skipPredicate(testName, testsByName[testName]) === false) {
-          await onFile(parsedFileName, subDir, testName, testsByName[testName]);
+          await onFile(parsedFileName, subDir, testName, testsByName[testName])
         }
       }
-      next();
-    };
+      next()
+    }
 
-    dir.readFiles(
-      path.join(DEFAULT_TESTS_PATH, directory),
-      options,
-      fileCallback,
-      finishedCallback,
-    );
-  });
+    dir.readFiles(path.join(DEFAULT_TESTS_PATH, directory), options, fileCallback, finishedCallback)
+  })
 }

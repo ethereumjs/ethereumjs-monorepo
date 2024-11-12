@@ -1,1 +1,1 @@
-export * from "./kbucket.js";
+export * from './kbucket.js'

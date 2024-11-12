@@ -1,18 +1,18 @@
-import { keccak256 } from "ethereum-cryptography/keccak.js";
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // @ts-ignore - package has no types...
-import { logMem, mark, run } from "micro-bmark"; // cspell:disable-line
+import { logMem, mark, run } from 'micro-bmark' // cspell:disable-line
 
-import { MerklePatriciaTrie } from "../dist/cjs/index.js";
-import { keys } from "./keys";
+import { MerklePatriciaTrie } from '../dist/cjs/index.js'
+import { keys } from './keys'
 
-import type { DB } from "@ethereumjs/util";
+import type { DB } from '@ethereumjs/util'
 
 export function createSuite(db: DB<string, string>) {
-  const trie = new MerklePatriciaTrie({ db });
-  const checkpointTrie = new MerklePatriciaTrie({ db });
+  const trie = new MerklePatriciaTrie({ db })
+  const checkpointTrie = new MerklePatriciaTrie({ db })
 
-  const rounds = 1000;
-  const keySize = 32;
+  const rounds = 1000
+  const keySize = 32
 
   run(async () => {
     // random.ts
@@ -21,45 +21,41 @@ export function createSuite(db: DB<string, string>) {
     // The standard secure-trie test is `1k-9-32-ran`
 
     for (const [title, eraSize, symmetric] of [
-      ["1k-3-32-ran", 3, false],
-      ["1k-5-32-ran", 5, false],
-      ["1k-9-32-ran", 9, false],
-      ["1k-1k-32-ran", 1000, false],
-      ["1k-1k-32-mir", 1000, true],
+      ['1k-3-32-ran', 3, false],
+      ['1k-5-32-ran', 5, false],
+      ['1k-9-32-ran', 9, false],
+      ['1k-1k-32-ran', 1000, false],
+      ['1k-1k-32-mir', 1000, true],
     ]) {
       await mark(title, async () => {
-        let key = new Uint8Array(keySize);
+        let key = new Uint8Array(keySize)
 
         for (let i = 0; i <= rounds; i++) {
-          key = keccak256(key);
+          key = keccak256(key)
 
           if (symmetric) {
-            await trie.put(key, key);
+            await trie.put(key, key)
           } else {
-            await trie.put(key, key);
+            await trie.put(key, key)
           }
 
           if (i % (eraSize as number) === 0) {
-            key = trie.root();
+            key = trie.root()
           }
         }
-      });
+      })
     }
 
     // References:
     // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22/
     for (const samples of [100, 500, 1000, 5000]) {
-      await mark(
-        `Checkpointing: ${samples} iterations`,
-        samples,
-        async (i: number) => {
-          checkpointTrie.checkpoint();
-          await checkpointTrie.put(keys[i], keys[i]);
-          await checkpointTrie.commit();
-        },
-      );
+      await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
+        checkpointTrie.checkpoint()
+        await checkpointTrie.put(keys[i], keys[i])
+        await checkpointTrie.commit()
+      })
     }
 
-    logMem();
-  });
+    logMem()
+  })
 }

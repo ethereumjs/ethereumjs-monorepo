@@ -3,8 +3,8 @@ import {
   createMerkleProof,
   updateMPTFromMerkleProof,
   verifyMerkleProof,
-} from "@ethereumjs/mpt";
-import { RLP } from "@ethereumjs/rlp";
+} from '@ethereumjs/mpt'
+import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_NULL,
   KECCAK256_NULL_S,
@@ -18,13 +18,13 @@ import {
   hexToBytes,
   setLengthLeft,
   unpadBytes,
-} from "@ethereumjs/util";
+} from '@ethereumjs/util'
 
-import { MerkleStateManager } from "../merkleStateManager.js";
+import { MerkleStateManager } from '../merkleStateManager.js'
 
-import type { Proof, StorageProof } from "@ethereumjs/common";
-import type { Address, PrefixedHexString } from "@ethereumjs/util";
-import type { MerkleStateManagerOpts } from "../index.js";
+import type { Proof, StorageProof } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { MerkleStateManagerOpts } from '../index.js'
 
 /**
  * Get an EIP-1186 proof
@@ -36,39 +36,35 @@ export async function getMerkleStateProof(
   address: Address,
   storageSlots: Uint8Array[] = [],
 ): Promise<Proof> {
-  await sm["flush"]();
-  const account = await sm.getAccount(address);
+  await sm['flush']()
+  const account = await sm.getAccount(address)
   if (!account) {
     const returnValue: Proof = {
       address: address.toString(),
-      balance: "0x0",
+      balance: '0x0',
       codeHash: KECCAK256_NULL_S,
-      nonce: "0x0",
+      nonce: '0x0',
       storageHash: KECCAK256_RLP_S,
-      accountProof: (await createMerkleProof(sm["_trie"], address.bytes)).map(
-        (p) => bytesToHex(p),
-      ),
+      accountProof: (await createMerkleProof(sm['_trie'], address.bytes)).map((p) => bytesToHex(p)),
       storageProof: [],
-    };
-    return returnValue;
+    }
+    return returnValue
   }
   const accountProof: PrefixedHexString[] = (
-    await createMerkleProof(sm["_trie"], address.bytes)
-  ).map((p) => bytesToHex(p));
-  const storageProof: StorageProof[] = [];
-  const storageTrie = sm["_getStorageTrie"](address, account);
+    await createMerkleProof(sm['_trie'], address.bytes)
+  ).map((p) => bytesToHex(p))
+  const storageProof: StorageProof[] = []
+  const storageTrie = sm['_getStorageTrie'](address, account)
 
   for (const storageKey of storageSlots) {
-    const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) =>
-      bytesToHex(p),
-    );
-    const value = bytesToHex(await sm.getStorage(address, storageKey));
+    const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
+    const value = bytesToHex(await sm.getStorage(address, storageKey))
     const proofItem: StorageProof = {
       key: bytesToHex(storageKey),
-      value: value === "0x" ? "0x0" : value, // Return '0x' values as '0x0' since this is a JSON RPC response
+      value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
       proof,
-    };
-    storageProof.push(proofItem);
+    }
+    storageProof.push(proofItem)
   }
 
   const returnValue: Proof = {
@@ -79,8 +75,8 @@ export async function getMerkleStateProof(
     storageHash: bytesToHex(account.storageRoot),
     accountProof,
     storageProof,
-  };
-  return returnValue;
+  }
+  return returnValue
 }
 
 /**
@@ -97,14 +93,14 @@ export async function addMerkleStateStorageProof(
   address: Address,
   safe = false,
 ) {
-  const trie = sm["_getStorageTrie"](address);
-  trie.root(hexToBytes(storageHash));
+  const trie = sm['_getStorageTrie'](address)
+  trie.root(hexToBytes(storageHash))
   for (let i = 0; i < storageProof.length; i++) {
     await updateMPTFromMerkleProof(
       trie,
       storageProof[i].proof.map((e) => hexToBytes(e)),
       safe,
-    );
+    )
   }
 }
 
@@ -123,32 +119,32 @@ export async function fromMerkleStateProof(
 ): Promise<MerkleStateManager> {
   if (Array.isArray(proof)) {
     if (proof.length === 0) {
-      return new MerkleStateManager(opts);
+      return new MerkleStateManager(opts)
     } else {
       const trie =
         opts.trie ??
         (await createMPTFromProof(
           proof[0].accountProof.map((e) => hexToBytes(e)),
           { useKeyHashing: true },
-        ));
-      const sm = new MerkleStateManager({ ...opts, trie });
-      const address = createAddressFromString(proof[0].address);
+        ))
+      const sm = new MerkleStateManager({ ...opts, trie })
+      const address = createAddressFromString(proof[0].address)
       await addMerkleStateStorageProof(
         sm,
         proof[0].storageProof,
         proof[0].storageHash,
         address,
         safe,
-      );
+      )
       for (let i = 1; i < proof.length; i++) {
-        const proofItem = proof[i];
-        await addMerkleStateProofData(sm, proofItem, true);
+        const proofItem = proof[i]
+        await addMerkleStateProofData(sm, proofItem, true)
       }
-      await sm.flush(); // TODO verify if this is necessary
-      return sm;
+      await sm.flush() // TODO verify if this is necessary
+      return sm
     }
   } else {
-    return fromMerkleStateProof([proof], safe, opts);
+    return fromMerkleStateProof([proof], safe, opts)
   }
 }
 
@@ -166,20 +162,20 @@ export async function addMerkleStateProofData(
   if (Array.isArray(proof)) {
     for (let i = 0; i < proof.length; i++) {
       await updateMPTFromMerkleProof(
-        sm["_trie"],
+        sm['_trie'],
         proof[i].accountProof.map((e) => hexToBytes(e)),
         safe,
-      );
+      )
       await addMerkleStateStorageProof(
         sm,
         proof[i].storageProof,
         proof[i].storageHash,
         createAddressFromString(proof[i].address),
         safe,
-      );
+      )
     }
   } else {
-    await addMerkleStateProofData(sm, [proof], safe);
+    await addMerkleStateProofData(sm, [proof], safe)
   }
 }
 
@@ -191,79 +187,73 @@ export async function verifyMerkleStateProof(
   sm: MerkleStateManager,
   proof: Proof,
 ): Promise<boolean> {
-  const key = hexToBytes(proof.address);
+  const key = hexToBytes(proof.address)
   const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
     hexToBytes(rlpString),
-  );
+  )
 
   // This returns the account if the proof is valid.
   // Verify that it matches the reported account.
   const value = await verifyMerkleProof(key, accountProof, {
     useKeyHashing: true,
-  });
+  })
 
   if (value === null) {
     // Verify that the account is empty in the proof.
-    const emptyBytes = new Uint8Array(0);
-    const notEmptyErrorMsg = "Invalid proof provided: account is not empty";
-    const nonce = unpadBytes(hexToBytes(proof.nonce));
+    const emptyBytes = new Uint8Array(0)
+    const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
+    const nonce = unpadBytes(hexToBytes(proof.nonce))
     if (!equalsBytes(nonce, emptyBytes)) {
-      throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`);
+      throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
     }
-    const balance = unpadBytes(hexToBytes(proof.balance));
+    const balance = unpadBytes(hexToBytes(proof.balance))
     if (!equalsBytes(balance, emptyBytes)) {
-      throw new Error(`${notEmptyErrorMsg} (balance is not zero)`);
+      throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
     }
-    const storageHash = hexToBytes(proof.storageHash);
+    const storageHash = hexToBytes(proof.storageHash)
     if (!equalsBytes(storageHash, KECCAK256_RLP)) {
-      throw new Error(
-        `${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`,
-      );
+      throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
     }
-    const codeHash = hexToBytes(proof.codeHash);
+    const codeHash = hexToBytes(proof.codeHash)
     if (!equalsBytes(codeHash, KECCAK256_NULL)) {
-      throw new Error(
-        `${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`,
-      );
+      throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
     }
   } else {
-    const account = createAccountFromRLP(value);
-    const { nonce, balance, storageRoot, codeHash } = account;
-    const invalidErrorMsg = "Invalid proof provided:";
+    const account = createAccountFromRLP(value)
+    const { nonce, balance, storageRoot, codeHash } = account
+    const invalidErrorMsg = 'Invalid proof provided:'
     if (nonce !== BigInt(proof.nonce)) {
-      throw new Error(`${invalidErrorMsg} nonce does not match`);
+      throw new Error(`${invalidErrorMsg} nonce does not match`)
     }
     if (balance !== BigInt(proof.balance)) {
-      throw new Error(`${invalidErrorMsg} balance does not match`);
+      throw new Error(`${invalidErrorMsg} balance does not match`)
     }
     if (!equalsBytes(storageRoot, hexToBytes(proof.storageHash))) {
-      throw new Error(`${invalidErrorMsg} storageHash does not match`);
+      throw new Error(`${invalidErrorMsg} storageHash does not match`)
     }
     if (!equalsBytes(codeHash, hexToBytes(proof.codeHash))) {
-      throw new Error(`${invalidErrorMsg} codeHash does not match`);
+      throw new Error(`${invalidErrorMsg} codeHash does not match`)
     }
   }
 
   for (const stProof of proof.storageProof) {
-    const storageProof = stProof.proof.map((value: PrefixedHexString) =>
-      hexToBytes(value),
-    );
-    const storageValue = setLengthLeft(hexToBytes(stProof.value), 32);
-    const storageKey = hexToBytes(stProof.key);
+    const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
+    const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
+    const storageKey = hexToBytes(stProof.key)
     const proofValue = await verifyMerkleProof(storageKey, storageProof, {
       useKeyHashing: true,
-    });
+    })
     const reportedValue = setLengthLeft(
       RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
       32,
-    );
+    )
     if (!equalsBytes(reportedValue, storageValue)) {
       throw new Error(
         `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
           reportedValue,
         )}, actual: ${bytesToHex(storageValue)}`,
-      );
+      )
     }
   }
-  return true;
+  return true
 }

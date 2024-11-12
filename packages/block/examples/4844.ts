@@ -1,13 +1,13 @@
-import { randomBytes } from "crypto";
-import { createBlock } from "@ethereumjs/block";
-import { Common, Hardfork, Mainnet } from "@ethereumjs/common";
-import { createBlob4844Tx } from "@ethereumjs/tx";
-import { createAddressFromPrivateKey } from "@ethereumjs/util";
-import { trustedSetup } from "@paulmillr/trusted-setups/fast.js";
-import { KZG as microEthKZG } from "micro-eth-signer/kzg";
+import { randomBytes } from 'crypto'
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createBlob4844Tx } from '@ethereumjs/tx'
+import { createAddressFromPrivateKey } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = new microEthKZG(trustedSetup);
+  const kzg = new microEthKZG(trustedSetup)
 
   const common = new Common({
     chain: Mainnet,
@@ -15,14 +15,14 @@ const main = async () => {
     customCrypto: {
       kzg,
     },
-  });
+  })
   const blobTx = createBlob4844Tx(
     {
-      blobsData: ["myFirstBlob"],
+      blobsData: ['myFirstBlob'],
       to: createAddressFromPrivateKey(randomBytes(32)),
     },
     { common },
-  );
+  )
 
   const block = createBlock(
     {
@@ -35,13 +35,13 @@ const main = async () => {
       common,
       skipConsensusFormatValidation: true,
     },
-  );
+  )
 
   console.log(
     `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
       block.transactions.filter((tx) => tx.type === 3).length
     } blob transactions`,
-  );
-};
+  )
+}
 
-void main();
+void main()

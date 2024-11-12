@@ -1,34 +1,34 @@
-import { BIGINT_0, short } from "@ethereumjs/util";
-import { EventEmitter } from "eventemitter3";
+import { BIGINT_0, short } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 
-import { BoundEthProtocol, BoundSnapProtocol } from "../protocol/index.js";
+import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.js'
 
-import type { BlockHeader } from "@ethereumjs/block";
-import type { Config } from "../../config.js";
-import type { BoundProtocol, Protocol, Sender } from "../protocol/index.js";
-import type { Server } from "../server/index.js";
+import type { BlockHeader } from '@ethereumjs/block'
+import type { Config } from '../../config.js'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
+import type { Server } from '../server/index.js'
 
 export interface PeerOptions {
   /* Config */
-  config: Config;
+  config: Config
 
   /* Peer id */
-  id?: string;
+  id?: string
 
   /* Peer address */
-  address: string;
+  address: string
 
   /* Transport name */
-  transport: string;
+  transport: string
 
   /* Pass true if peer initiated connection (default: false) */
-  inbound?: boolean;
+  inbound?: boolean
 
   /* Supported protocols */
-  protocols?: Protocol[];
+  protocols?: Protocol[]
 
   /* Server */
-  server?: Server;
+  server?: Server
 }
 
 /**
@@ -36,19 +36,19 @@ export interface PeerOptions {
  * @memberof module:net/peer
  */
 export abstract class Peer extends EventEmitter {
-  public config: Config;
-  public id: string;
-  public address: string;
-  public inbound: boolean;
-  public server: Server | undefined;
-  protected transport: string;
-  protected protocols: Protocol[];
-  protected boundProtocols: BoundProtocol[] = [];
-  private _idle: boolean;
+  public config: Config
+  public id: string
+  public address: string
+  public inbound: boolean
+  public server: Server | undefined
+  protected transport: string
+  protected protocols: Protocol[]
+  protected boundProtocols: BoundProtocol[] = []
+  private _idle: boolean
 
   // TODO check if this should be moved into RlpxPeer
-  public eth?: BoundEthProtocol;
-  public snap?: BoundSnapProtocol;
+  public eth?: BoundEthProtocol
+  public snap?: BoundSnapProtocol
 
   /*
     If the peer is in the PeerPool.
@@ -56,78 +56,76 @@ export abstract class Peer extends EventEmitter {
     If false, adds incoming messages to handleMessageQueue,
     which are handled after the peer is added to the pool.
   */
-  public pooled = false;
+  public pooled = false
 
   /**
    * Create new peer
    */
   constructor(options: PeerOptions) {
-    super();
+    super()
 
-    this.config = options.config;
+    this.config = options.config
 
-    this.id = options.id ?? "";
-    this.address = options.address;
-    this.transport = options.transport;
-    this.inbound = options.inbound ?? false;
-    this.protocols = options.protocols ?? [];
+    this.id = options.id ?? ''
+    this.address = options.address
+    this.transport = options.transport
+    this.inbound = options.inbound ?? false
+    this.protocols = options.protocols ?? []
 
-    this._idle = true;
+    this._idle = true
   }
 
   /**
    * Get idle state of peer
    */
   get idle() {
-    return this._idle;
+    return this._idle
   }
 
   /**
    * Set idle state of peer
    */
   set idle(value) {
-    this._idle = value;
+    this._idle = value
   }
 
-  abstract connect(): Promise<void>;
+  abstract connect(): Promise<void>
 
   /**
    * Eventually updates and returns the latest header of peer
    */
   async latest(): Promise<BlockHeader | undefined> {
     if (!this.eth) {
-      return;
+      return
     }
-    let block: bigint | Uint8Array;
+    let block: bigint | Uint8Array
     if (this.eth!.updatedBestHeader) {
-      block = this.getPotentialBestHeaderNum();
+      block = this.getPotentialBestHeaderNum()
     } else {
       // If there is no updated best header stored yet, start with the status hash
-      block = this.eth!.status.bestHash;
+      block = this.eth!.status.bestHash
     }
     const result = await this.eth!.getBlockHeaders({
       block,
       max: 1,
-    });
+    })
     if (result !== undefined) {
-      const latest = result[1][0];
-      this.eth!.updatedBestHeader = latest;
+      const latest = result[1][0]
+      this.eth!.updatedBestHeader = latest
       if (latest !== undefined) {
-        const height = latest.number;
+        const height = latest.number
         if (
           height > BIGINT_0 &&
           (this.config.syncTargetHeight === undefined ||
             this.config.syncTargetHeight === BIGINT_0 ||
             this.config.syncTargetHeight < latest.number)
         ) {
-          this.config.syncTargetHeight = height;
-          this.config.logger.info(
-            `New sync target height=${height} hash=${short(latest.hash())}`,
-          );
+          this.config.syncTargetHeight = height
+          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
         }
       }
     }
-    return this.eth!.updatedBestHeader;
+    return this.eth!.updatedBestHeader
   }
 
   /**
@@ -137,56 +135,52 @@ export abstract class Peer extends EventEmitter {
    * header timestamp "forward-calculated" by block/slot times (12s).
    */
   getPotentialBestHeaderNum(): bigint {
-    let forwardCalculatedNum = BIGINT_0;
-    const bestSyncTargetNum = this.config.syncTargetHeight ?? BIGINT_0;
+    let forwardCalculatedNum = BIGINT_0
+    const bestSyncTargetNum = this.config.syncTargetHeight ?? BIGINT_0
     if (this.eth?.updatedBestHeader !== undefined) {
-      const bestHeaderNum = this.eth!.updatedBestHeader.number;
-      const nowSec = Math.floor(Date.now() / 1000);
-      const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp);
-      const slotTime = 12;
-      const diffBlocks = BigInt(Math.floor(diffSec / slotTime));
-      forwardCalculatedNum = bestHeaderNum + diffBlocks;
+      const bestHeaderNum = this.eth!.updatedBestHeader.number
+      const nowSec = Math.floor(Date.now() / 1000)
+      const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp)
+      const slotTime = 12
+      const diffBlocks = BigInt(Math.floor(diffSec / slotTime))
+      forwardCalculatedNum = bestHeaderNum + diffBlocks
     }
-    const best =
-      forwardCalculatedNum > bestSyncTargetNum
-        ? forwardCalculatedNum
-        : bestSyncTargetNum;
-    return best;
+    const best = forwardCalculatedNum > bestSyncTargetNum ? forwardCalculatedNum : bestSyncTargetNum
+    return best
   }
 
   /**
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    this.boundProtocols.map((e) => e.handleMessageQueue());
+    this.boundProtocols.map((e) => e.handleMessageQueue())
   }
 
   async addProtocol(sender: Sender, protocol: Protocol): Promise<void> {
-    let bound: BoundProtocol;
+    let bound: BoundProtocol
     const boundOpts = {
       config: protocol.config, // TODO: why cant we use `this.config`?
       protocol,
       peer: this,
       sender,
-    };
-
-    if (protocol.name === "eth") {
-      bound = new BoundEthProtocol(boundOpts);
-
-      await bound!.handshake(sender);
-
-      this.eth = <BoundEthProtocol>bound;
-    } else if (protocol.name === "snap") {
-      bound = new BoundSnapProtocol(boundOpts);
-      if (sender.status === undefined)
-        throw Error("Snap can only be bound on handshaked peer");
-
-      this.snap = <BoundSnapProtocol>bound;
-    } else {
-      throw new Error(`addProtocol: ${protocol.name} protocol not supported`);
     }
 
-    this.boundProtocols.push(bound);
+    if (protocol.name === 'eth') {
+      bound = new BoundEthProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.eth = <BoundEthProtocol>bound
+    } else if (protocol.name === 'snap') {
+      bound = new BoundSnapProtocol(boundOpts)
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+
+      this.snap = <BoundSnapProtocol>bound
+    } else {
+      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+    }
+
+    this.boundProtocols.push(bound)
   }
 
   toString(withFullId = false): string {
@@ -196,13 +190,10 @@ export abstract class Peer extends EventEmitter {
       transport: this.transport,
       protocols: this.boundProtocols.map((e) => e.name),
       inbound: this.inbound,
-    };
+    }
     return Object.entries(properties)
-      .filter(
-        ([, value]) =>
-          value !== undefined && value !== null && value.toString() !== "",
-      )
-      .map((keyValue) => keyValue.join("="))
-      .join(" ");
+      .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')
+      .map((keyValue) => keyValue.join('='))
+      .join(' ')
   }
 }

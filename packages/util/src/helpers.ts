@@ -1,4 +1,4 @@
-import { isHexString } from "./internal.js";
+import { isHexString } from './internal.js'
 
 /**
  * Throws if a string is not hex prefixed
@@ -6,10 +6,10 @@ import { isHexString } from "./internal.js";
  */
 export const assertIsHexString = (input: string): void => {
   if (!isHexString(input)) {
-    const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`;
-    throw new Error(msg);
+    const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`
+    throw new Error(msg)
   }
-};
+}
 
 /**
  * Throws if input is not a buffer
@@ -17,10 +17,10 @@ export const assertIsHexString = (input: string): void => {
  */
 export const assertIsBytes = (input: Uint8Array): void => {
   if (!(input instanceof Uint8Array)) {
-    const msg = `This method only supports Uint8Array but input was: ${input}`;
-    throw new Error(msg);
+    const msg = `This method only supports Uint8Array but input was: ${input}`
+    throw new Error(msg)
   }
-};
+}
 
 /**
  * Throws if input is not an array
@@ -28,18 +28,18 @@ export const assertIsBytes = (input: Uint8Array): void => {
  */
 export const assertIsArray = (input: number[]): void => {
   if (!Array.isArray(input)) {
-    const msg = `This method only supports number arrays but input was: ${input}`;
-    throw new Error(msg);
+    const msg = `This method only supports number arrays but input was: ${input}`
+    throw new Error(msg)
   }
-};
+}
 
 /**
  * Throws if input is not a string
  * @param {string} input value to check
  */
 export const assertIsString = (input: string): void => {
-  if (typeof input !== "string") {
-    const msg = `This method only supports strings but input was: ${input}`;
-    throw new Error(msg);
+  if (typeof input !== 'string') {
+    const msg = `This method only supports strings but input was: ${input}`
+    throw new Error(msg)
   }
-};
+}

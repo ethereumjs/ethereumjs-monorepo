@@ -1,8 +1,8 @@
-import path from "path";
-import { Account } from "@ethereumjs/util";
+import path from 'path'
+import { Account } from '@ethereumjs/util'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
-  return new Account(nonce, balance);
+  return new Account(nonce, balance)
 }
 
 /**
@@ -10,5 +10,5 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
  * @param file
  */
 export function getSingleFile(file: string) {
-  return require(path.join(path.resolve("../ethereum-tests"), file));
+  return require(path.join(path.resolve('../ethereum-tests'), file))
 }

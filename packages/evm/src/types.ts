@@ -3,34 +3,31 @@ import type {
   ParamsDict,
   StateManagerInterface,
   VerkleAccessWitnessInterface,
-} from "@ethereumjs/common";
-import type { Account, Address, PrefixedHexString } from "@ethereumjs/util";
-import type { EventEmitter } from "eventemitter3";
-import type { EOFContainer } from "./eof/container.js";
-import type { EvmError } from "./exceptions.js";
-import type { InterpreterStep, RunState } from "./interpreter.js";
-import type { Message } from "./message.js";
-import type {
-  AsyncDynamicGasHandler,
-  SyncDynamicGasHandler,
-} from "./opcodes/gas.js";
-import type { OpHandler } from "./opcodes/index.js";
-import type { CustomPrecompile } from "./precompiles/index.js";
-import type { PrecompileFunc } from "./precompiles/types.js";
+} from '@ethereumjs/common'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
+import type { EOFContainer } from './eof/container.js'
+import type { EvmError } from './exceptions.js'
+import type { InterpreterStep, RunState } from './interpreter.js'
+import type { Message } from './message.js'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
+import type { OpHandler } from './opcodes/index.js'
+import type { CustomPrecompile } from './precompiles/index.js'
+import type { PrecompileFunc } from './precompiles/types.js'
 
 export type DeleteOpcode = {
-  opcode: number;
-};
+  opcode: number
+}
 
 export type AddOpcode = {
-  opcode: number;
-  opcodeName: string;
-  baseFee: number;
-  gasFunction?: AsyncDynamicGasHandler | SyncDynamicGasHandler;
-  logicFunction: OpHandler;
-};
+  opcode: number
+  opcodeName: string
+  baseFee: number
+  gasFunction?: AsyncDynamicGasHandler | SyncDynamicGasHandler
+  logicFunction: OpHandler
+}
 
-export type CustomOpcode = AddOpcode | DeleteOpcode;
+export type CustomOpcode = AddOpcode | DeleteOpcode
 
 /**
  * Base options for the `EVM.runCode()` / `EVM.runCall()` method.
@@ -39,62 +36,62 @@ interface EVMRunOpts {
   /**
    * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */
-  block?: Block;
+  block?: Block
   /**
    * The gas price for the call. Defaults to `0`
    */
-  gasPrice?: bigint;
+  gasPrice?: bigint
   /**
    * The address where the call originated from. Defaults to the zero address.
    */
-  origin?: Address;
+  origin?: Address
   /**
    * The address that ran this code (`msg.sender`). Defaults to the zero address.
    */
-  caller?: Address;
+  caller?: Address
   /**
    * The EVM code to run.
    */
-  code?: Uint8Array;
+  code?: Uint8Array
   /**
    * The input data.
    */
-  data?: Uint8Array;
+  data?: Uint8Array
   /**
    * The gas limit for the call. Defaults to `16777215` (`0xffffff`)
    */
-  gasLimit?: bigint;
+  gasLimit?: bigint
   /**
    * The value in ether that is being sent to `opts.address`. Defaults to `0`
    */
-  value?: bigint;
+  value?: bigint
   /**
    * The call depth. Defaults to `0`
    */
-  depth?: number;
+  depth?: number
   /**
    * If the call should be executed statically. Defaults to false.
    */
-  isStatic?: boolean;
+  isStatic?: boolean
   /**
    * Addresses to selfdestruct. Defaults to the empty set.
    */
-  selfdestruct?: Set<PrefixedHexString>;
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
-  to?: Address;
+  to?: Address
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  blobVersionedHashes?: PrefixedHexString[];
+  blobVersionedHashes?: PrefixedHexString[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {
   /*
    * The initial program counter. Defaults to `0`
    */
-  pc?: number;
+  pc?: number
 }
 
 /**
@@ -104,85 +101,78 @@ export interface EVMRunCallOpts extends EVMRunOpts {
   /**
    * If the code location is a precompile.
    */
-  isCompiled?: boolean;
+  isCompiled?: boolean
   /**
    * An optional salt to pass to CREATE2.
    */
-  salt?: Uint8Array;
+  salt?: Uint8Array
   /**
    * Created addresses in current context. Used in EIP 6780
    */
-  createdAddresses?: Set<PrefixedHexString>;
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * Skip balance checks if true. If caller balance is less than message value,
    * sets balance to message value to ensure execution doesn't fail.
    */
-  skipBalance?: boolean;
+  skipBalance?: boolean
   /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
-  delegatecall?: boolean;
+  delegatecall?: boolean
   /**
    * Refund counter. Defaults to `0`
    */
-  gasRefund?: bigint;
+  gasRefund?: bigint
   /**
    * Optionally pass in an already-built message.
    */
-  message?: Message;
+  message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface;
+  accessWitness?: VerkleAccessWitnessInterface
 }
 
 interface NewContractEvent {
-  address: Address;
+  address: Address
   // The deployment code
-  code: Uint8Array;
+  code: Uint8Array
 }
 
 export type EVMEvent = {
-  newContract: (
-    data: NewContractEvent,
-    resolve?: (result?: any) => void,
-  ) => void;
-  beforeMessage: (data: Message, resolve?: (result?: any) => void) => void;
-  afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void;
-  step: (data: InterpreterStep, resolve?: (result?: any) => void) => void;
-};
+  newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
+  beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
+  afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
+  step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
+}
 
 export interface EVMInterface {
-  common: Common;
+  common: Common
   journal: {
-    commit(): Promise<void>;
-    revert(): Promise<void>;
-    checkpoint(): Promise<void>;
-    cleanJournal(): void;
-    cleanup(): Promise<void>;
-    putAccount(address: Address, account: Account): Promise<void>;
-    deleteAccount(address: Address): Promise<void>;
-    accessList?: Map<string, Set<string>>;
-    preimages?: Map<PrefixedHexString, Uint8Array>;
-    addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void;
-    addAlwaysWarmSlot(
-      address: string,
-      slot: string,
-      addToAccessList?: boolean,
-    ): void;
-    startReportingAccessList(): void;
-    startReportingPreimages?(): void;
-  };
-  stateManager: StateManagerInterface;
-  precompiles: Map<string, PrecompileFunc>;
-  runCall(opts: EVMRunCallOpts): Promise<EVMResult>;
-  runCode(opts: EVMRunCodeOpts): Promise<ExecResult>;
-  events?: EventEmitter<EVMEvent>;
-  verkleAccessWitness?: VerkleAccessWitnessInterface;
+    commit(): Promise<void>
+    revert(): Promise<void>
+    checkpoint(): Promise<void>
+    cleanJournal(): void
+    cleanup(): Promise<void>
+    putAccount(address: Address, account: Account): Promise<void>
+    deleteAccount(address: Address): Promise<void>
+    accessList?: Map<string, Set<string>>
+    preimages?: Map<PrefixedHexString, Uint8Array>
+    addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
+    addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
+    startReportingAccessList(): void
+    startReportingPreimages?(): void
+  }
+  stateManager: StateManagerInterface
+  precompiles: Map<string, PrecompileFunc>
+  runCall(opts: EVMRunCallOpts): Promise<EVMResult>
+  runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
+  events?: EventEmitter<EVMEvent>
+  verkleAccessWitness?: VerkleAccessWitnessInterface
 }
 
 export type EVMProfilerOpts = {
-  enabled: boolean;
+  enabled: boolean
   // extra options here (such as use X hardfork for gas)
-};
+}
 
 /**
  * Options for instantiating a {@link EVM}.
@@ -233,7 +223,7 @@ export interface EVMOpts {
    *
    * - `experimental`: behaviour can change on patch versions
    */
-  common?: Common;
+  common?: Common
 
   /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
@@ -241,13 +231,13 @@ export interface EVMOpts {
    *
    * Default: `false` [ONLY set to `true` during debugging]
    */
-  allowUnlimitedContractSize?: boolean;
+  allowUnlimitedContractSize?: boolean
 
   /**
    * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
    * Gas cost for initcode size analysis will still be charged. Use with caution.
    */
-  allowUnlimitedInitCodeSize?: boolean;
+  allowUnlimitedInitCodeSize?: boolean
 
   /**
    * EVM parameters sorted by EIP can be found in the exported `paramsEVM` dictionary,
@@ -265,7 +255,7 @@ export interface EVMOpts {
    * params['1679']['bn254AddGas'] = 100 // 150
    * ```
    */
-  params?: ParamsDict;
+  params?: ParamsDict
 
   /**
    * Override or add custom opcodes to the EVM instruction set
@@ -287,7 +277,7 @@ export interface EVMOpts {
    * }
    * Note: gasFunction and logicFunction can both be async or synchronous functions
    */
-  customOpcodes?: CustomOpcode[];
+  customOpcodes?: CustomOpcode[]
 
   /*
    * Adds custom precompiles. This is hardfork-agnostic: these precompiles are always activated
@@ -295,7 +285,7 @@ export interface EVMOpts {
    * If an address and a `PrecompileFunc` is given, this precompile is inserted or overridden
    * Please ensure `PrecompileFunc` has exactly one parameter `input: PrecompileInput`
    */
-  customPrecompiles?: CustomPrecompile[];
+  customPrecompiles?: CustomPrecompile[]
 
   /**
    * For the EIP-2537 BLS Precompiles, the native JS `ethereum-cryptography` (`@noble/curves`)
@@ -317,7 +307,7 @@ export interface EVMOpts {
    * const evm = await createEVM({ bls: new MCLBLS(mcl) })
    * ```
    */
-  bls?: EVMBLSInterface;
+  bls?: EVMBLSInterface
 
   /**
    * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `ethereum-cryptography`
@@ -340,7 +330,7 @@ export interface EVMOpts {
    * const evm = await createEVM({ bn254: new RustBN254(bn254) })
    * ```
    */
-  bn254?: EVMBN254Interface;
+  bn254?: EVMBN254Interface
 
   /*
    * The EVM comes with a basic dependency-minimized `SimpleStateManager` implementation
@@ -351,7 +341,7 @@ export interface EVMOpts {
    * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
    * which can be used by this option as a replacement.
    */
-  stateManager?: StateManagerInterface;
+  stateManager?: StateManagerInterface
 
   /**
    * The EVM comes with a basic mock blockchain interface and implementation for
@@ -360,19 +350,19 @@ export interface EVMOpts {
    * For block-containing setups use the full blockchain implementation from the
    * `@ethereumjs/blockchain package.
    */
-  blockchain?: EVMMockBlockchainInterface;
+  blockchain?: EVMMockBlockchainInterface
 
   /**
    *
    */
-  profiler?: EVMProfilerOpts;
+  profiler?: EVMProfilerOpts
 
   /**
    * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
    * must be provided along with a `BlockHeader` so that the coinbase can be correctly retrieved when the
    * `Interpreter.getBlockCoinbase` method is called.
    */
-  cliqueSigner?: (header: Block["header"]) => Address;
+  cliqueSigner?: (header: Block['header']) => Address
 }
 
 /**
@@ -382,54 +372,54 @@ export interface EVMResult {
   /**
    * Address of created account during transaction, if any
    */
-  createdAddress?: Address;
+  createdAddress?: Address
   /**
    * Contains the results from running the code, if any, as described in {@link runCode}
    */
-  execResult: ExecResult;
+  execResult: ExecResult
 }
 
 /**
  * Result of executing a call via the {@link EVM}.
  */
 export interface ExecResult {
-  runState?: RunState;
+  runState?: RunState
   /**
    * Description of the exception, if any occurred
    */
-  exceptionError?: EvmError;
+  exceptionError?: EvmError
   /**
    * Amount of gas left
    */
-  gas?: bigint;
+  gas?: bigint
   /**
    * Amount of gas the code used to run
    */
-  executionGasUsed: bigint;
+  executionGasUsed: bigint
   /**
    * Return value from the contract
    */
-  returnValue: Uint8Array;
+  returnValue: Uint8Array
   /**
    * Array of logs that the contract emitted
    */
-  logs?: Log[];
+  logs?: Log[]
   /**
    * A set of accounts to selfdestruct
    */
-  selfdestruct?: Set<PrefixedHexString>;
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: Set<PrefixedHexString>;
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * The gas refund counter
    */
-  gasRefund?: bigint;
+  gasRefund?: bigint
   /**
    * Amount of blob gas consumed by the transaction
    */
-  blobGasUsed?: bigint;
+  blobGasUsed?: bigint
 }
 
 /**
@@ -437,87 +427,87 @@ export interface ExecResult {
  * for the BLS precompiles
  */
 export type EVMBLSInterface = {
-  init?(): void;
-  addG1(input: Uint8Array): Uint8Array;
-  mulG1(input: Uint8Array): Uint8Array;
-  addG2(input: Uint8Array): Uint8Array;
-  mulG2(input: Uint8Array): Uint8Array;
-  mapFPtoG1(input: Uint8Array): Uint8Array;
-  mapFP2toG2(input: Uint8Array): Uint8Array;
-  msmG1(input: Uint8Array): Uint8Array;
-  msmG2(input: Uint8Array): Uint8Array;
-  pairingCheck(input: Uint8Array): Uint8Array;
-};
+  init?(): void
+  addG1(input: Uint8Array): Uint8Array
+  mulG1(input: Uint8Array): Uint8Array
+  addG2(input: Uint8Array): Uint8Array
+  mulG2(input: Uint8Array): Uint8Array
+  mapFPtoG1(input: Uint8Array): Uint8Array
+  mapFP2toG2(input: Uint8Array): Uint8Array
+  msmG1(input: Uint8Array): Uint8Array
+  msmG2(input: Uint8Array): Uint8Array
+  pairingCheck(input: Uint8Array): Uint8Array
+}
 
 /**
  * High level wrapper for BN254 (alt_BN128) libraries
  * used for the BN254 (alt_BN128) EC precompiles
  */
 export type EVMBN254Interface = {
-  add: (input: Uint8Array) => Uint8Array;
-  mul: (input: Uint8Array) => Uint8Array;
-  pairing: (input: Uint8Array) => Uint8Array;
-};
+  add: (input: Uint8Array) => Uint8Array
+  mul: (input: Uint8Array) => Uint8Array
+  pairing: (input: Uint8Array) => Uint8Array
+}
 
 /**
  * Log that the contract emits.
  */
-export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array];
+export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
 export type Block = {
   header: {
-    number: bigint;
-    coinbase: Address;
-    timestamp: bigint;
-    difficulty: bigint;
-    prevRandao: Uint8Array;
-    gasLimit: bigint;
-    baseFeePerGas?: bigint;
-    getBlobGasPrice(): bigint | undefined;
-  };
-};
+    number: bigint
+    coinbase: Address
+    timestamp: bigint
+    difficulty: bigint
+    prevRandao: Uint8Array
+    gasLimit: bigint
+    baseFeePerGas?: bigint
+    getBlobGasPrice(): bigint | undefined
+  }
+}
 
 export interface TransientStorageInterface {
-  get(addr: Address, key: Uint8Array): Uint8Array;
-  put(addr: Address, key: Uint8Array, value: Uint8Array): void;
-  commit(): void;
-  checkpoint(): void;
-  revert(): void;
-  toJSON(): { [address: string]: { [key: string]: string } };
-  clear(): void;
+  get(addr: Address, key: Uint8Array): Uint8Array
+  put(addr: Address, key: Uint8Array, value: Uint8Array): void
+  commit(): void
+  checkpoint(): void
+  revert(): void
+  toJSON(): { [address: string]: { [key: string]: string } }
+  clear(): void
 }
 
 export type EVMMockBlock = {
-  hash(): Uint8Array;
-};
+  hash(): Uint8Array
+}
 
 export interface EVMMockBlockchainInterface {
-  getBlock(blockId: number): Promise<EVMMockBlock>;
-  putBlock(block: EVMMockBlock): Promise<void>;
-  shallowCopy(): EVMMockBlockchainInterface;
+  getBlock(blockId: number): Promise<EVMMockBlock>
+  putBlock(block: EVMMockBlock): Promise<void>
+  shallowCopy(): EVMMockBlockchainInterface
 }
 
 export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
       hash() {
-        return new Uint8Array(32);
+        return new Uint8Array(32)
       },
-    };
+    }
   }
   async putBlock() {}
   shallowCopy() {
-    return this;
+    return this
   }
 }
 
 // EOF type which holds the execution-related data for EOF
 export type EOFEnv = {
-  container: EOFContainer;
+  container: EOFContainer
   eofRunState: {
-    returnStack: number[];
-  };
-};
+    returnStack: number[]
+  }
+}
 
 // EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
-export const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00]);
+export const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])

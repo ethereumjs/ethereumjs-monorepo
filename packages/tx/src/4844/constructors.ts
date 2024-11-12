@@ -1,4 +1,4 @@
-import { RLP } from "@ethereumjs/rlp";
+import { RLP } from '@ethereumjs/rlp'
 import {
   bigIntToHex,
   blobsToCommitments,
@@ -10,21 +10,21 @@ import {
   equalsBytes,
   getBlobs,
   validateNoLeadingZeroes,
-} from "@ethereumjs/util";
+} from '@ethereumjs/util'
 
-import { paramsTx } from "../params.js";
-import { TransactionType } from "../types.js";
-import { AccessLists, txTypeBytes, validateNotArray } from "../util.js";
+import { paramsTx } from '../params.js'
+import { TransactionType } from '../types.js'
+import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
 
-import { Blob4844Tx } from "./tx.js";
+import { Blob4844Tx } from './tx.js'
 
-import type { KZG, PrefixedHexString } from "@ethereumjs/util";
+import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
   BlobEIP4844NetworkValuesArray,
   JSONBlobTxNetworkWrapper,
   TxOptions,
-} from "../types.js";
-import type { TxData, TxValuesArray } from "./tx.js";
+} from '../types.js'
+import type { TxData, TxValuesArray } from './tx.js'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: PrefixedHexString[],
@@ -34,39 +34,30 @@ const validateBlobTransactionNetworkWrapper = (
   version: number,
   kzg: KZG,
 ) => {
-  if (
-    !(
-      blobVersionedHashes.length === blobs.length &&
-      blobs.length === commitments.length
-    )
-  ) {
-    throw new Error(
-      "Number of blobVersionedHashes, blobs, and commitments not all equal",
-    );
+  if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
+    throw new Error('Number of blobVersionedHashes, blobs, and commitments not all equal')
   }
   if (blobVersionedHashes.length === 0) {
-    throw new Error("Invalid transaction with empty blobs");
+    throw new Error('Invalid transaction with empty blobs')
   }
 
-  let isValid;
+  let isValid
   try {
-    isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs);
+    isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
   } catch (error) {
-    throw new Error(`KZG verification of blobs fail with error=${error}`);
+    throw new Error(`KZG verification of blobs fail with error=${error}`)
   }
   if (!isValid) {
-    throw new Error("KZG proof cannot be verified from blobs/commitments");
+    throw new Error('KZG proof cannot be verified from blobs/commitments')
   }
 
   for (let x = 0; x < blobVersionedHashes.length; x++) {
-    const computedVersionedHash = computeVersionedHash(commitments[x], version);
+    const computedVersionedHash = computeVersionedHash(commitments[x], version)
     if (computedVersionedHash !== blobVersionedHashes[x]) {
-      throw new Error(
-        `commitment for blob at index ${x} does not match versionedHash`,
-      );
+      throw new Error(`commitment for blob at index ${x} does not match versionedHash`)
     }
   }
-};
+}
 
 /**
  * Instantiate a transaction from a data dictionary.
@@ -83,49 +74,36 @@ const validateBlobTransactionNetworkWrapper = (
 export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      "A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx",
-    );
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
+    )
   }
-  const kzg = opts!.common!.customCrypto!.kzg!;
+  const kzg = opts!.common!.customCrypto!.kzg!
   if (txData.blobsData !== undefined) {
     if (txData.blobs !== undefined) {
-      throw new Error(
-        "cannot have both raw blobs data and encoded blobs in constructor",
-      );
+      throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
     }
     if (txData.kzgCommitments !== undefined) {
-      throw new Error(
-        "cannot have both raw blobs data and KZG commitments in constructor",
-      );
+      throw new Error('cannot have both raw blobs data and KZG commitments in constructor')
     }
     if (txData.blobVersionedHashes !== undefined) {
-      throw new Error(
-        "cannot have both raw blobs data and versioned hashes in constructor",
-      );
+      throw new Error('cannot have both raw blobs data and versioned hashes in constructor')
     }
     if (txData.kzgProofs !== undefined) {
-      throw new Error(
-        "cannot have both raw blobs data and KZG proofs in constructor",
-      );
+      throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
     }
-    txData.blobs = getBlobs(
-      txData.blobsData.reduce((acc, cur) => acc + cur),
-    ) as PrefixedHexString[];
-    txData.kzgCommitments = blobsToCommitments(
-      kzg,
-      txData.blobs as PrefixedHexString[],
-    );
+    txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur)) as PrefixedHexString[]
+    txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as PrefixedHexString[])
     txData.blobVersionedHashes = commitmentsToVersionedHashes(
       txData.kzgCommitments as PrefixedHexString[],
-    );
+    )
     txData.kzgProofs = blobsToProofs(
       kzg,
       txData.blobs as PrefixedHexString[],
       txData.kzgCommitments as PrefixedHexString[],
-    );
+    )
   }
 
-  return new Blob4844Tx(txData, opts);
+  return new Blob4844Tx(txData, opts)
 }
 
 /**
@@ -134,20 +112,17 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
  */
-export function createBlob4844TxFromBytesArray(
-  values: TxValuesArray,
-  opts: TxOptions = {},
-) {
+export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      "A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx",
-    );
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
+    )
   }
 
   if (values.length !== 11 && values.length !== 14) {
     throw new Error(
-      "Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).",
-    );
+      'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).',
+    )
   }
 
   const [
@@ -165,9 +140,9 @@ export function createBlob4844TxFromBytesArray(
     v,
     r,
     s,
-  ] = values;
+  ] = values
 
-  validateNotArray({ chainId, v });
+  validateNotArray({ chainId, v })
   validateNoLeadingZeroes({
     nonce,
     maxPriorityFeePerGas,
@@ -178,7 +153,7 @@ export function createBlob4844TxFromBytesArray(
     v,
     r,
     s,
-  });
+  })
 
   return new Blob4844Tx(
     {
@@ -198,7 +173,7 @@ export function createBlob4844TxFromBytesArray(
       s,
     },
     opts,
-  );
+  )
 }
 
 /**
@@ -207,36 +182,28 @@ export function createBlob4844TxFromBytesArray(
  * Format: `0x03 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
  * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
  */
-export function createBlob4844TxFromRLP(
-  serialized: Uint8Array,
-  opts: TxOptions = {},
-) {
+export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      "A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx",
-    );
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
+    )
   }
 
-  if (
-    equalsBytes(
-      serialized.subarray(0, 1),
-      txTypeBytes(TransactionType.BlobEIP4844),
-    ) === false
-  ) {
+  if (equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false) {
     throw new Error(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
       }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
-    );
+    )
   }
 
-  const values = RLP.decode(serialized.subarray(1));
+  const values = RLP.decode(serialized.subarray(1))
 
   if (!Array.isArray(values)) {
-    throw new Error("Invalid serialized tx input: must be array");
+    throw new Error('Invalid serialized tx input: must be array')
   }
 
-  return createBlob4844TxFromBytesArray(values as TxValuesArray, opts);
+  return createBlob4844TxFromBytesArray(values as TxValuesArray, opts)
 }
 
 /**
@@ -250,52 +217,47 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   opts?: TxOptions,
 ): Blob4844Tx {
   if (!opts || !opts.common) {
-    throw new Error("common instance required to validate versioned hashes");
+    throw new Error('common instance required to validate versioned hashes')
   }
 
   if (opts.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      "A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx",
-    );
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
+    )
   }
 
-  if (
-    equalsBytes(
-      serialized.subarray(0, 1),
-      txTypeBytes(TransactionType.BlobEIP4844),
-    ) === false
-  ) {
+  if (equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false) {
     throw new Error(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
       }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
-    );
+    )
   }
 
   // Validate network wrapper
-  const networkTxValues = RLP.decode(serialized.subarray(1));
+  const networkTxValues = RLP.decode(serialized.subarray(1))
   if (networkTxValues.length !== 4) {
-    throw Error(`Expected 4 values in the deserialized network transaction`);
+    throw Error(`Expected 4 values in the deserialized network transaction`)
   }
   const [txValues, blobs, kzgCommitments, kzgProofs] =
-    networkTxValues as BlobEIP4844NetworkValuesArray;
+    networkTxValues as BlobEIP4844NetworkValuesArray
 
   // Construct the tx but don't freeze yet, we will assign blobs etc once validated
   const decodedTx = createBlob4844TxFromBytesArray(txValues, {
     ...opts,
     freeze: false,
-  });
+  })
   if (decodedTx.to === undefined) {
-    throw Error("Blob4844Tx can not be send without a valid `to`");
+    throw Error('Blob4844Tx can not be send without a valid `to`')
   }
 
-  const commonCopy = opts.common.copy();
-  commonCopy.updateParams(opts.params ?? paramsTx);
+  const commonCopy = opts.common.copy()
+  commonCopy.updateParams(opts.params ?? paramsTx)
 
-  const version = Number(commonCopy.param("blobCommitmentVersionKzg"));
-  const blobsHex = blobs.map((blob) => bytesToHex(blob));
-  const commsHex = kzgCommitments.map((com) => bytesToHex(com));
-  const proofsHex = kzgProofs.map((proof) => bytesToHex(proof));
+  const version = Number(commonCopy.param('blobCommitmentVersionKzg'))
+  const blobsHex = blobs.map((blob) => bytesToHex(blob))
+  const commsHex = kzgCommitments.map((com) => bytesToHex(com))
+  const proofsHex = kzgProofs.map((proof) => bytesToHex(proof))
   validateBlobTransactionNetworkWrapper(
     decodedTx.blobVersionedHashes,
     blobsHex,
@@ -303,20 +265,20 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
     proofsHex,
     version,
     opts.common.customCrypto.kzg,
-  );
+  )
 
   // set the network blob data on the tx
-  decodedTx.blobs = blobsHex;
-  decodedTx.kzgCommitments = commsHex;
-  decodedTx.kzgProofs = proofsHex;
+  decodedTx.blobs = blobsHex
+  decodedTx.kzgCommitments = commsHex
+  decodedTx.kzgProofs = proofsHex
 
   // freeze the tx
-  const freeze = opts?.freeze ?? true;
+  const freeze = opts?.freeze ?? true
   if (freeze) {
-    Object.freeze(decodedTx);
+    Object.freeze(decodedTx)
   }
 
-  return decodedTx;
+  return decodedTx
 }
 
 /**
@@ -332,8 +294,8 @@ export function createMinimal4844TxFromNetworkWrapper(
 ): Blob4844Tx {
   if (opts?.common?.customCrypto?.kzg === undefined) {
     throw new Error(
-      "A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx",
-    );
+      'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
+    )
   }
 
   const tx = createBlob4844Tx(
@@ -342,8 +304,8 @@ export function createMinimal4844TxFromNetworkWrapper(
       ...{ blobs: undefined, kzgCommitments: undefined, kzgProofs: undefined },
     },
     opts,
-  );
-  return tx;
+  )
+  return tx
 }
 
 /**
@@ -357,10 +319,10 @@ export function blobTxNetworkWrapperToJSON(
   serialized: Uint8Array,
   opts?: TxOptions,
 ): JSONBlobTxNetworkWrapper {
-  const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts);
+  const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts)
 
-  const accessListJSON = AccessLists.getAccessListJSON(tx.accessList);
-  const baseJSON = tx.toJSON();
+  const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
+  const baseJSON = tx.toJSON()
 
   return {
     ...baseJSON,
@@ -373,5 +335,5 @@ export function blobTxNetworkWrapperToJSON(
     blobs: tx.blobs!,
     kzgCommitments: tx.kzgCommitments!,
     kzgProofs: tx.kzgProofs!,
-  };
+  }
 }

@@ -1,38 +1,38 @@
-import { Sender } from "../../../src/net/protocol/index.js";
+import { Sender } from '../../../src/net/protocol/index.js'
 
-import type { EventEmitter } from "eventemitter3";
-import type { Pushable } from "./mockpeer.js";
+import type { EventEmitter } from 'eventemitter3'
+import type { Pushable } from './mockpeer.js'
 
 export class MockSender extends Sender {
-  public protocol: string;
-  public pushable: Pushable;
-  public receiver: EventEmitter;
+  public protocol: string
+  public pushable: Pushable
+  public receiver: EventEmitter
 
   constructor(protocol: string, pushable: Pushable, receiver: EventEmitter) {
-    super();
+    super()
 
-    this.protocol = protocol;
-    this.pushable = pushable;
-    this.receiver = receiver;
-    this.init();
+    this.protocol = protocol
+    this.pushable = pushable
+    this.receiver = receiver
+    this.init()
   }
 
   init() {
-    this.receiver.on("data", ([protocol, code, payload]: any[]) => {
-      if (protocol !== this.protocol) return;
+    this.receiver.on('data', ([protocol, code, payload]: any[]) => {
+      if (protocol !== this.protocol) return
       if (code === 0) {
-        this.status = payload;
+        this.status = payload
       } else {
-        this.emit("message", { code, payload });
+        this.emit('message', { code, payload })
       }
-    });
+    })
   }
 
   sendStatus(status: any) {
-    this.pushable.push([this.protocol, 0, status] as any);
+    this.pushable.push([this.protocol, 0, status] as any)
   }
 
   sendMessage(code: any, data: any) {
-    this.pushable.push([this.protocol, code, data] as any);
+    this.pushable.push([this.protocol, code, data] as any)
   }
 }

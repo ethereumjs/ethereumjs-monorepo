@@ -6,27 +6,27 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-} from "@ethereumjs/util";
-import { bn254 } from "ethereum-cryptography/bn.js";
+} from '@ethereumjs/util'
+import { bn254 } from 'ethereum-cryptography/bn.js'
 
-import { ERROR, EvmError } from "../../exceptions.js";
+import { ERROR, EvmError } from '../../exceptions.js'
 
-import type { EVMBN254Interface } from "../../types.js";
+import type { EVMBN254Interface } from '../../types.js'
 
-const G1_INFINITY_POINT_BYTES = new Uint8Array(64);
-const G2_INFINITY_POINT_BYTES = new Uint8Array(128);
-const G1_POINT_BYTE_LENGTH = 64;
-const G1_ELEMENT_BYTE_LENGTH = 32;
-const G2_POINT_BYTE_LENGTH = 128;
+const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
+const G2_INFINITY_POINT_BYTES = new Uint8Array(128)
+const G1_POINT_BYTE_LENGTH = 64
+const G1_ELEMENT_BYTE_LENGTH = 32
+const G2_POINT_BYTE_LENGTH = 128
 
-const ZERO_BUFFER = new Uint8Array(32);
-const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes("0x01"));
+const ZERO_BUFFER = new Uint8Array(32)
+const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
 // Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
 export type AffinePoint<T> = {
-  x: T;
-  y: T;
-} & { z?: never; t?: never };
+  x: T
+  y: T
+} & { z?: never; t?: never }
 
 /**
  * Converts an Uint8Array to a Noble G1 point.
@@ -35,38 +35,36 @@ export type AffinePoint<T> = {
  */
 function toG1Point(input: Uint8Array) {
   if (equalsBytes(input, G1_INFINITY_POINT_BYTES)) {
-    return bn254.G1.ProjectivePoint.ZERO;
+    return bn254.G1.ProjectivePoint.ZERO
   }
 
-  const x = bytesToBigInt(input.subarray(0, G1_ELEMENT_BYTE_LENGTH));
-  const y = bytesToBigInt(
-    input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH),
-  );
+  const x = bytesToBigInt(input.subarray(0, G1_ELEMENT_BYTE_LENGTH))
+  const y = bytesToBigInt(input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH))
 
   const G1 = bn254.G1.ProjectivePoint.fromAffine({
     x,
     y,
-  });
-  G1.assertValidity();
-  return G1;
+  })
+  G1.assertValidity()
+  return G1
 }
 
 function fromG1Point(input: AffinePoint<bigint>): Uint8Array {
-  const xBytes = setLengthLeft(bigIntToBytes(input.x), G1_ELEMENT_BYTE_LENGTH);
-  const yBytes = setLengthLeft(bigIntToBytes(input.y), G1_ELEMENT_BYTE_LENGTH);
+  const xBytes = setLengthLeft(bigIntToBytes(input.x), G1_ELEMENT_BYTE_LENGTH)
+  const yBytes = setLengthLeft(bigIntToBytes(input.y), G1_ELEMENT_BYTE_LENGTH)
 
-  return concatBytes(xBytes, yBytes);
+  return concatBytes(xBytes, yBytes)
 }
 
 // input: a 32-byte hex scalar Uint8Array
 // output: a Noble Fr point
 
 function toFrPoint(input: Uint8Array): bigint {
-  const Fr = bn254.fields.Fr.fromBytes(input);
+  const Fr = bn254.fields.Fr.fromBytes(input)
   if (Fr >= bn254.fields.Fr.ORDER) {
-    return Fr % bn254.fields.Fr.ORDER;
+    return Fr % bn254.fields.Fr.ORDER
   }
-  return Fr;
+  return Fr
 }
 
 /**
@@ -77,53 +75,47 @@ function toFrPoint(input: Uint8Array): bigint {
  */
 function toG2Point(input: Uint8Array) {
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
-    return bn254.G2.ProjectivePoint.ZERO;
+    return bn254.G2.ProjectivePoint.ZERO
   }
 
-  const pX2 = input.subarray(0, G1_ELEMENT_BYTE_LENGTH);
-  const pX1 = input.subarray(
-    G1_ELEMENT_BYTE_LENGTH,
-    G1_ELEMENT_BYTE_LENGTH * 2,
-  );
-  const start2 = G1_ELEMENT_BYTE_LENGTH * 2;
-  const pY2 = input.subarray(start2, start2 + G1_ELEMENT_BYTE_LENGTH);
-  const pY1 = input.subarray(
-    start2 + G1_ELEMENT_BYTE_LENGTH,
-    start2 + G1_ELEMENT_BYTE_LENGTH * 2,
-  );
+  const pX2 = input.subarray(0, G1_ELEMENT_BYTE_LENGTH)
+  const pX1 = input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_ELEMENT_BYTE_LENGTH * 2)
+  const start2 = G1_ELEMENT_BYTE_LENGTH * 2
+  const pY2 = input.subarray(start2, start2 + G1_ELEMENT_BYTE_LENGTH)
+  const pY1 = input.subarray(start2 + G1_ELEMENT_BYTE_LENGTH, start2 + G1_ELEMENT_BYTE_LENGTH * 2)
 
   for (const p of [pX1, pX2, pY1, pY2]) {
-    const pB = bytesToBigInt(p);
+    const pB = bytesToBigInt(p)
     if (bn254.fields.Fp.create(pB) !== pB) {
-      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD);
+      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
     }
   }
 
-  const Fp2X = toFp2Point(pX1, pX2);
-  const Fp2Y = toFp2Point(pY1, pY2);
+  const Fp2X = toFp2Point(pX1, pX2)
+  const Fp2Y = toFp2Point(pY1, pY2)
 
   const pG2 = bn254.G2.ProjectivePoint.fromAffine({
     x: Fp2X,
     y: Fp2Y,
-  });
+  })
 
-  pG2.assertValidity();
+  pG2.assertValidity()
 
-  return pG2;
+  return pG2
 }
 
 function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD);
+    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
   }
   if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD);
+    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
   }
 
-  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate);
+  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
 
-  const fp = bn254.fields.Fp2.fromBytes(fpBytes);
-  return fp;
+  const fp = bn254.fields.Fp2.fromBytes(fpBytes)
+  return fp
 }
 
 /**
@@ -134,56 +126,47 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
  */
 export class NobleBN254 implements EVMBN254Interface {
   add(input: Uint8Array): Uint8Array {
-    const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH));
-    const p2 = toG1Point(
-      input.slice(G1_POINT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH * 2),
-    );
+    const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
+    const p2 = toG1Point(input.slice(G1_POINT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH * 2))
 
-    const result = fromG1Point(p1.add(p2));
-    return result;
+    const result = fromG1Point(p1.add(p2))
+    return result
   }
 
   mul(input: Uint8Array): Uint8Array {
-    const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH));
-    const scalar = toFrPoint(input.slice(G1_POINT_BYTE_LENGTH, 96));
+    const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
+    const scalar = toFrPoint(input.slice(G1_POINT_BYTE_LENGTH, 96))
 
     if (scalar === BIGINT_0) {
-      return G1_INFINITY_POINT_BYTES;
+      return G1_INFINITY_POINT_BYTES
     }
 
-    const result = fromG1Point(p1.multiply(scalar));
-    return result;
+    const result = fromG1Point(p1.multiply(scalar))
+    return result
   }
   pairing(input: Uint8Array): Uint8Array {
     // Extract the pairs from the input
-    const pairLength = 192;
-    const pairs = [];
+    const pairLength = 192
+    const pairs = []
     for (let k = 0; k < input.length / pairLength; k++) {
-      const pairStart = pairLength * k;
-      const G1 = toG1Point(
-        input.subarray(pairStart, pairStart + G1_POINT_BYTE_LENGTH),
-      );
+      const pairStart = pairLength * k
+      const G1 = toG1Point(input.subarray(pairStart, pairStart + G1_POINT_BYTE_LENGTH))
 
-      const g2start = pairStart + G1_POINT_BYTE_LENGTH;
-      const G2 = toG2Point(
-        input.subarray(g2start, g2start + G2_POINT_BYTE_LENGTH),
-      );
+      const g2start = pairStart + G1_POINT_BYTE_LENGTH
+      const G2 = toG2Point(input.subarray(g2start, g2start + G2_POINT_BYTE_LENGTH))
 
-      if (
-        G1 === bn254.G1.ProjectivePoint.ZERO ||
-        G2 === bn254.G2.ProjectivePoint.ZERO
-      ) {
-        continue;
+      if (G1 === bn254.G1.ProjectivePoint.ZERO || G2 === bn254.G2.ProjectivePoint.ZERO) {
+        continue
       }
 
-      pairs.push({ g1: G1, g2: G2 });
+      pairs.push({ g1: G1, g2: G2 })
     }
 
-    const res = bn254.pairingBatch(pairs);
+    const res = bn254.pairingBatch(pairs)
     if (bn254.fields.Fp12.eql(res, bn254.fields.Fp12.ONE) === true) {
-      return ONE_BUFFER;
+      return ONE_BUFFER
     } else {
-      return ZERO_BUFFER;
+      return ZERO_BUFFER
     }
   }
 }

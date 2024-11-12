@@ -1,9 +1,9 @@
-import { bytesToHex } from "@ethereumjs/util";
+import { bytesToHex } from '@ethereumjs/util'
 
-import { DataDirectory } from "../index.js";
+import { DataDirectory } from '../index.js'
 
-import type { Block } from "@ethereumjs/block";
-import type { VMExecution } from "../execution/index.js";
+import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.js'
 
 /**
  * Generates a code snippet which can be used to replay an erroneous block
@@ -11,10 +11,7 @@ import type { VMExecution } from "../execution/index.js";
  *
  * @param block
  */
-export async function debugCodeReplayBlock(
-  execution: VMExecution,
-  block: Block,
-) {
+export async function debugCodeReplayBlock(execution: VMExecution, block: Block) {
   const code = `
 /**
  * Script for locally executing a block in the EthereumJS VM,
@@ -64,6 +61,6 @@ const main = async () => {
 }
 
 main()
-    `;
-  execution.config.logger.info(code);
+    `
+  execution.config.logger.info(code)
 }

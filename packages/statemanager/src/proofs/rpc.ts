@@ -1,7 +1,7 @@
-import { bytesToHex, fetchFromProvider } from "@ethereumjs/util";
+import { bytesToHex, fetchFromProvider } from '@ethereumjs/util'
 
-import type { Address } from "@ethereumjs/util";
-import type { Proof, RPCStateManager } from "../index.js";
+import type { Address } from '@ethereumjs/util'
+import type { Proof, RPCStateManager } from '../index.js'
 
 /**
  * Get an EIP-1186 proof from the provider
@@ -14,12 +14,11 @@ export async function getRPCStateProof(
   address: Address,
   storageSlots: Uint8Array[] = [],
 ): Promise<Proof> {
-  if (sm["DEBUG"])
-    sm["_debug"](`retrieving proof from provider for ${address.toString()}`);
-  const proof = await fetchFromProvider(sm["_provider"], {
-    method: "eth_getProof",
-    params: [address.toString(), storageSlots.map(bytesToHex), sm["_blockTag"]],
-  });
+  if (sm['DEBUG']) sm['_debug'](`retrieving proof from provider for ${address.toString()}`)
+  const proof = await fetchFromProvider(sm['_provider'], {
+    method: 'eth_getProof',
+    params: [address.toString(), storageSlots.map(bytesToHex), sm['_blockTag']],
+  })
 
-  return proof;
+  return proof
 }

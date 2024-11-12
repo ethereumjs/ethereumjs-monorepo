@@ -1,8 +1,8 @@
-import { bytesToUnprefixedHex } from "@ethereumjs/util";
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
-import type { Address } from "@ethereumjs/util";
+import type { Address } from '@ethereumjs/util'
 
-type GetStorage = (address: Address, key: Uint8Array) => Promise<Uint8Array>;
+type GetStorage = (address: Address, key: Uint8Array) => Promise<Uint8Array>
 
 /**
  * Helper class to cache original storage values (so values already being present in
@@ -14,42 +14,42 @@ type GetStorage = (address: Address, key: Uint8Array) => Promise<Uint8Array>;
  *
  */
 export class OriginalStorageCache {
-  private map: Map<string, Map<string, Uint8Array>>;
-  private getStorage: GetStorage;
+  private map: Map<string, Map<string, Uint8Array>>
+  private getStorage: GetStorage
   constructor(getStorage: GetStorage) {
-    this.map = new Map();
-    this.getStorage = getStorage;
+    this.map = new Map()
+    this.getStorage = getStorage
   }
 
   async get(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    const addressHex = bytesToUnprefixedHex(address.bytes);
-    const map = this.map.get(addressHex);
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const map = this.map.get(addressHex)
     if (map !== undefined) {
-      const keyHex = bytesToUnprefixedHex(key);
-      const value = map.get(keyHex);
+      const keyHex = bytesToUnprefixedHex(key)
+      const value = map.get(keyHex)
       if (value !== undefined) {
-        return value;
+        return value
       }
     }
-    const value = await this.getStorage(address, key);
-    this.put(address, key, value);
-    return value;
+    const value = await this.getStorage(address, key)
+    this.put(address, key, value)
+    return value
   }
 
   put(address: Address, key: Uint8Array, value: Uint8Array) {
-    const addressHex = bytesToUnprefixedHex(address.bytes);
-    let map = this.map.get(addressHex);
+    const addressHex = bytesToUnprefixedHex(address.bytes)
+    let map = this.map.get(addressHex)
     if (map === undefined) {
-      map = new Map();
-      this.map.set(addressHex, map);
+      map = new Map()
+      this.map.set(addressHex, map)
     }
-    const keyHex = bytesToUnprefixedHex(key);
+    const keyHex = bytesToUnprefixedHex(key)
     if (map!.has(keyHex) === false) {
-      map!.set(keyHex, value);
+      map!.set(keyHex, value)
     }
   }
 
   clear(): void {
-    this.map = new Map();
+    this.map = new Map()
   }
 }

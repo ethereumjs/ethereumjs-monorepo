@@ -1,17 +1,17 @@
-import { ConsensusAlgorithm } from "@ethereumjs/common";
-import { BIGINT_0 } from "@ethereumjs/util";
+import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { BIGINT_0 } from '@ethereumjs/util'
 
-import type { BlockHeader } from "@ethereumjs/block";
-import type { Consensus } from "../types.js";
+import type { BlockHeader } from '@ethereumjs/block'
+import type { Consensus } from '../types.js'
 
 /**
  * This class encapsulates Casper-related consensus functionality when used with the Blockchain class.
  */
 export class CasperConsensus implements Consensus {
-  algorithm: ConsensusAlgorithm;
+  algorithm: ConsensusAlgorithm
 
   constructor() {
-    this.algorithm = ConsensusAlgorithm.Casper;
+    this.algorithm = ConsensusAlgorithm.Casper
   }
 
   public async genesisInit(): Promise<void> {}
@@ -25,8 +25,8 @@ export class CasperConsensus implements Consensus {
     // if it is possible to replace by a more generic hardfork check between block and
     // blockchain along adding new blocks or headers
     if (header.difficulty !== BIGINT_0) {
-      const msg = "invalid difficulty.  PoS blocks must have difficulty 0";
-      throw new Error(`${msg} ${header.errorStr()}`);
+      const msg = 'invalid difficulty.  PoS blocks must have difficulty 0'
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
   }
   public async newBlock(): Promise<void> {}

@@ -1,7 +1,7 @@
-import { createBlock, createBlockHeader } from "@ethereumjs/block";
-import { Hardfork } from "@ethereumjs/common";
-import { MerkleStateManager } from "@ethereumjs/statemanager";
-import { createTx } from "@ethereumjs/tx";
+import { createBlock, createBlockHeader } from '@ethereumjs/block'
+import { Hardfork } from '@ethereumjs/common'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { createTx } from '@ethereumjs/tx'
 import {
   Account,
   Units,
@@ -9,59 +9,49 @@ import {
   createAddressFromPrivateKey,
   hexToBytes,
   randomBytes,
-} from "@ethereumjs/util";
-import { assert, describe, it } from "vitest";
+} from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { TOO_LARGE_REQUEST } from "../../../src/rpc/error-code.js";
-import { eip4844Data } from "../../testdata/geth-genesis/eip4844.js";
-import { postMergeData } from "../../testdata/geth-genesis/post-merge.js";
-import { baseSetup, getRPCClient, setupChain } from "../helpers.js";
+import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
 
-const method = "engine_getPayloadBodiesByHashV1";
+const method = 'engine_getPayloadBodiesByHashV1'
 
 describe(method, () => {
-  it("call with too many hashes", async () => {
-    const { rpc } = await baseSetup({ engine: true, includeVM: true });
-    const tooManyHashes: string[] = [];
+  it('call with too many hashes', async () => {
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
+    const tooManyHashes: string[] = []
     for (let x = 0; x < 35; x++) {
-      tooManyHashes.push(bytesToHex(randomBytes(32)));
+      tooManyHashes.push(bytesToHex(randomBytes(32)))
     }
-    const res = await rpc.request(method, [tooManyHashes]);
-    assert.equal(res.error.code, TOO_LARGE_REQUEST);
-    assert.ok(
-      res.error.message.includes(
-        "More than 32 execution payload bodies requested",
-      ),
-    );
-  });
+    const res = await rpc.request(method, [tooManyHashes])
+    assert.equal(res.error.code, TOO_LARGE_REQUEST)
+    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
+  })
 
-  it("call with valid parameters", async () => {
+  it('call with valid parameters', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot;
-    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy;
-    MerkleStateManager.prototype.setStateRoot = (): any => {};
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     MerkleStateManager.prototype.shallowCopy = function () {
-      return this;
-    };
-    const { chain, service, server, common } = await setupChain(
-      eip4844Data,
-      "post-merge",
-      {
-        engine: true,
-        hardfork: Hardfork.Cancun,
-      },
-    );
-    const rpc = getRPCClient(server);
-    common.setHardfork(Hardfork.Cancun);
-    const pkey = hexToBytes(
-      "0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355",
-    );
-    const address = createAddressFromPrivateKey(pkey);
-    await service.execution.vm.stateManager.putAccount(address, new Account());
-    const account = await service.execution.vm.stateManager.getAccount(address);
+      return this
+    }
+    const { chain, service, server, common } = await setupChain(eip4844Data, 'post-merge', {
+      engine: true,
+      hardfork: Hardfork.Cancun,
+    })
+    const rpc = getRPCClient(server)
+    common.setHardfork(Hardfork.Cancun)
+    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+    const address = createAddressFromPrivateKey(pkey)
+    await service.execution.vm.stateManager.putAccount(address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(address)
 
-    account!.balance = 0xfffffffffffffffn;
-    await service.execution.vm.stateManager.putAccount(address, account!);
+    account!.balance = 0xfffffffffffffffn
+    await service.execution.vm.stateManager.putAccount(address, account!)
     const tx = createTx(
       {
         type: 0x01,
@@ -71,7 +61,7 @@ describe(method, () => {
         gasLimit: 30000000n,
       },
       { common },
-    ).sign(pkey);
+    ).sign(pkey)
     const tx2 = createTx(
       {
         type: 0x01,
@@ -82,7 +72,7 @@ describe(method, () => {
         nonce: 1n,
       },
       { common },
-    ).sign(pkey);
+    ).sign(pkey)
     const block = createBlock(
       {
         transactions: [tx],
@@ -92,7 +82,7 @@ describe(method, () => {
         ),
       },
       { common, skipConsensusFormatValidation: true },
-    );
+    )
     const block2 = createBlock(
       {
         transactions: [tx2],
@@ -102,62 +92,48 @@ describe(method, () => {
         ),
       },
       { common, skipConsensusFormatValidation: true },
-    );
+    )
 
-    await chain.putBlocks([block, block2], true);
+    await chain.putBlocks([block, block2], true)
 
     const res = await rpc.request(method, [
-      [
-        bytesToHex(block.hash()),
-        bytesToHex(randomBytes(32)),
-        bytesToHex(block2.hash()),
-      ],
-    ]);
+      [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
+    ])
 
     assert.equal(
       res.result[0].transactions[0],
       bytesToHex(tx.serialize()),
-      "got expected transaction from first payload",
-    );
-    assert.equal(res.result[1], null, "got null for block not found in chain");
-    assert.equal(
-      res.result.length,
-      3,
-      "length of response matches number of block hashes sent",
-    );
+      'got expected transaction from first payload',
+    )
+    assert.equal(res.result[1], null, 'got null for block not found in chain')
+    assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
 
     // Restore setStateRoot
-    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot;
-    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy;
-  });
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
+  })
 
-  it("call with valid parameters on pre-Shanghai block", async () => {
+  it('call with valid parameters on pre-Shanghai block', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot;
-    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy;
-    MerkleStateManager.prototype.setStateRoot = (): any => {};
+    const originalSetStateRoot = MerkleStateManager.prototype.setStateRoot
+    const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+    MerkleStateManager.prototype.setStateRoot = (): any => {}
     MerkleStateManager.prototype.shallowCopy = function () {
-      return this;
-    };
-    const { chain, service, server, common } = await setupChain(
-      postMergeData,
-      "post-merge",
-      {
-        engine: true,
-        hardfork: Hardfork.London,
-      },
-    );
-    const rpc = getRPCClient(server);
-    common.setHardfork(Hardfork.London);
-    const pkey = hexToBytes(
-      "0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355",
-    );
-    const address = createAddressFromPrivateKey(pkey);
-    await service.execution.vm.stateManager.putAccount(address, new Account());
-    const account = await service.execution.vm.stateManager.getAccount(address);
+      return this
+    }
+    const { chain, service, server, common } = await setupChain(postMergeData, 'post-merge', {
+      engine: true,
+      hardfork: Hardfork.London,
+    })
+    const rpc = getRPCClient(server)
+    common.setHardfork(Hardfork.London)
+    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+    const address = createAddressFromPrivateKey(pkey)
+    await service.execution.vm.stateManager.putAccount(address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(address)
 
-    account!.balance = 0xfffffffffffffffn;
-    await service.execution.vm.stateManager.putAccount(address, account!);
+    account!.balance = 0xfffffffffffffffn
+    await service.execution.vm.stateManager.putAccount(address, account!)
     const tx = createTx(
       {
         type: 0x01,
@@ -167,7 +143,7 @@ describe(method, () => {
         gasLimit: 30000000n,
       },
       { common },
-    ).sign(pkey);
+    ).sign(pkey)
     const tx2 = createTx(
       {
         type: 0x01,
@@ -178,7 +154,7 @@ describe(method, () => {
         nonce: 1n,
       },
       { common },
-    ).sign(pkey);
+    ).sign(pkey)
     const block = createBlock(
       {
         transactions: [tx],
@@ -188,7 +164,7 @@ describe(method, () => {
         ),
       },
       { common, skipConsensusFormatValidation: true },
-    );
+    )
     const block2 = createBlock(
       {
         transactions: [tx2],
@@ -198,26 +174,22 @@ describe(method, () => {
         ),
       },
       { common, skipConsensusFormatValidation: true },
-    );
+    )
 
-    await chain.putBlocks([block, block2], true);
+    await chain.putBlocks([block, block2], true)
 
     const res = await rpc.request(method, [
-      [
-        bytesToHex(block.hash()),
-        bytesToHex(randomBytes(32)),
-        bytesToHex(block2.hash()),
-      ],
-    ]);
+      [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
+    ])
 
     assert.equal(
       res.result[0].withdrawals,
       null,
-      "got null for withdrawals field on pre-Shanghai block",
-    );
+      'got null for withdrawals field on pre-Shanghai block',
+    )
 
     // Restore setStateRoot
-    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot;
-    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy;
-  });
-});
+    MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
+    MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
+  })
+})

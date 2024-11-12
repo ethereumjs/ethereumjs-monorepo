@@ -1,25 +1,25 @@
-import { parseKey, parseMultiaddrs } from "../../util/parse.js";
+import { parseKey, parseMultiaddrs } from '../../util/parse.js'
 
-import type { Multiaddr } from "@multiformats/multiaddr";
-import type { Config } from "../../config.js";
-import type { DnsNetwork, KeyLike, MultiaddrLike } from "../../types.js";
-import type { Protocol } from "../protocol/protocol.js";
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Config } from '../../config.js'
+import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types.js'
+import type { Protocol } from '../protocol/protocol.js'
 
 export interface ServerOptions {
   /* Config */
-  config: Config;
+  config: Config
 
   /* How often (in ms) to discover new peers (default: 30000) */
-  refreshInterval?: number;
+  refreshInterval?: number
 
   /* Private key to use for server */
-  key?: KeyLike;
+  key?: KeyLike
 
   /* List of bootnodes to use for discovery */
-  bootnodes?: MultiaddrLike;
+  bootnodes?: MultiaddrLike
 
   /* DNS record tree to search for discovery */
-  dnsNetworks?: DnsNetwork[];
+  dnsNetworks?: DnsNetwork[]
 }
 
 /**
@@ -27,41 +27,39 @@ export interface ServerOptions {
  * @memberof module:net/server
  */
 export class Server {
-  public config: Config;
-  public key: Uint8Array;
-  public bootnodes: Multiaddr[] = [];
-  public dnsNetworks: DnsNetwork[];
+  public config: Config
+  public key: Uint8Array
+  public bootnodes: Multiaddr[] = []
+  public dnsNetworks: DnsNetwork[]
 
-  protected refreshInterval: number;
-  protected protocols: Set<Protocol>;
+  protected refreshInterval: number
+  protected protocols: Set<Protocol>
 
-  public started: boolean;
+  public started: boolean
 
   /**
    * Create new server
    */
   constructor(options: ServerOptions) {
-    this.config = options.config;
-    this.key =
-      options.key !== undefined ? parseKey(options.key) : this.config.key;
-    this.bootnodes =
-      options.bootnodes !== undefined ? parseMultiaddrs(options.bootnodes) : [];
-    this.dnsNetworks = options.dnsNetworks ?? [];
-    this.refreshInterval = options.refreshInterval ?? 30000;
+    this.config = options.config
+    this.key = options.key !== undefined ? parseKey(options.key) : this.config.key
+    this.bootnodes = options.bootnodes !== undefined ? parseMultiaddrs(options.bootnodes) : []
+    this.dnsNetworks = options.dnsNetworks ?? []
+    this.refreshInterval = options.refreshInterval ?? 30000
 
-    this.protocols = new Set();
-    this.started = false;
+    this.protocols = new Set()
+    this.started = false
   }
 
   get name() {
-    return this.constructor.name;
+    return this.constructor.name
   }
 
   /**
    * Check if server is running
    */
   get running() {
-    return this.started;
+    return this.started
   }
 
   /**
@@ -71,15 +69,13 @@ export class Server {
    */
   async start(): Promise<boolean> {
     if (this.started) {
-      return false;
+      return false
     }
-    const protocols: Protocol[] = Array.from(this.protocols);
-    await Promise.all(protocols.map((p) => p.open()));
-    this.started = true;
-    this.config.logger.info(
-      `Started ${this.name} server maxPeers=${this.config.maxPeers}`,
-    );
-    return true;
+    const protocols: Protocol[] = Array.from(this.protocols)
+    await Promise.all(protocols.map((p) => p.open()))
+    this.started = true
+    this.config.logger.info(`Started ${this.name} server maxPeers=${this.config.maxPeers}`)
+    return true
   }
 
   /**
@@ -92,9 +88,9 @@ export class Server {
    * Stop server. Returns a promise that resolves once server has been stopped.
    */
   async stop(): Promise<boolean> {
-    this.started = false;
-    this.config.logger.info(`Stopped ${this.name} server.`);
-    return this.started;
+    this.started = false
+    this.config.logger.info(`Stopped ${this.name} server.`)
+    return this.started
   }
 
   /**
@@ -104,15 +100,13 @@ export class Server {
    */
   addProtocols(protocols: Protocol[]) {
     if (this.started) {
-      this.config.logger.error(
-        "Cannot require protocols after server has been started",
-      );
-      return false;
+      this.config.logger.error('Cannot require protocols after server has been started')
+      return false
     }
     for (const p of protocols) {
-      this.protocols.add(p);
+      this.protocols.add(p)
     }
-    return true;
+    return true
   }
 
   /**
