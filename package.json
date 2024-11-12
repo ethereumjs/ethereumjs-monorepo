@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
+    "biome": "npx @biomejs/biome check --write",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
     "cspell": "npm run cspell:ts && npm run cspell:md",

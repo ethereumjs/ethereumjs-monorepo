@@ -460,8 +460,11 @@ describe('hex prefix', () => {
 
 describe('recursive typings', () => {
   it('should not throw compilation error', () => {
-    type IsType<T, U> =
-      Exclude<T, U> extends never ? (Exclude<U, T> extends never ? true : false) : false
+    type IsType<T, U> = Exclude<T, U> extends never
+      ? Exclude<U, T> extends never
+        ? true
+        : false
+      : false
     const assertType = <T, U>(isTrue: IsType<T, U>) => {
       return isTrue
     }

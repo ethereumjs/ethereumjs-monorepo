@@ -6,7 +6,7 @@
     "useIgnoreFile": false
   },
   "files": {
-    "ignoreUnknown": false,
+    "ignoreUnknown": true,
     "ignore": [
       "**/node_modules/**",
       "**/dist/**",
