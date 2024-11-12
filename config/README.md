@@ -60,7 +60,7 @@ Use CLI commands above in your `package.json`:
 
 ### Getting the most out of linting
 
-This lint package is used as git pre-push hook on with the help of [Husky](https://www.npmjs.com/package/husky).
+This lint package is used as git pre-push hook with the help of [Husky](https://www.npmjs.com/package/husky).
 
 ## Coverage
 
