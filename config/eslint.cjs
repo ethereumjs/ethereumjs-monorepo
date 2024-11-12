@@ -5,7 +5,6 @@ module.exports = {
     'github',
     'implicit-dependencies',
     'import',
-  //  'prettier',
     'simple-import-sort',
     'ethereumjs',
   ],
@@ -35,7 +34,6 @@ module.exports = {
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
- //   'prettier',
   ],
   rules: {
     'no-restricted-imports': ['error', 'ethereum-cryptography/utils.js'],
@@ -107,7 +105,6 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-const': 'error',
- //   'prettier/prettier': 'error',
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
@@ -119,7 +116,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['test/**/*.ts', 'tests/**/*.ts', 'examples/**/*.ts'],
+      files: ['test/**/*.ts', 'examples/**/*.ts'],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
