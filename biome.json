@@ -29,9 +29,38 @@
     "enabled": true
   },
   "linter": {
-    "enabled": false,
+    "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "nursery": {
+        "recommended": true,
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "ethereum-cryptography/utils.js": "use @ethereumjs/util equivalentsinstead"
+            }
+          }
+        }
+      },
+      "style": {
+        "all": true,
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "interface",
+                  "scope": "global"
+                },
+                "formats": ["PascalCase", "camelCase"],
+                "match": "I[A-Z]"
+              }
+            ]
+          }
+        }
+      }
     }
   },
   "javascript": {
