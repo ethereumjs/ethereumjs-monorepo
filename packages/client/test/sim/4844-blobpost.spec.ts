@@ -1,8 +1,8 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
-import { randomBytes } from 'node:crypto'
-import { assert, describe, it } from 'vitest'
+import { randomBytes } from "node:crypto";
+import { createCommonFromGethGenesis } from "@ethereumjs/common";
+import { bytesToHex, hexToBytes, privateToAddress } from "@ethereumjs/util";
+import { Client } from "jayson/promise";
+import { assert, describe, it } from "vitest";
 
 import {
   createBlobTxs,
@@ -11,67 +11,72 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from "./simutils.js";
 
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from "@ethereumjs/util";
 
 const pkey = hexToBytes(
   (process.env.PRIVATE_KEY as PrefixedHexString) ??
-    '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e',
-)
-const sender = bytesToHex(privateToAddress(pkey))
+    "0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e",
+);
+const sender = bytesToHex(privateToAddress(pkey));
 const rpcUrl =
-  process.env.RPC_URL ?? 'https://rpc.lodestar-ethereumjs-1.srv.4844-devnet-5.ethpandaops.io'
+  process.env.RPC_URL ??
+  "https://rpc.lodestar-ethereumjs-1.srv.4844-devnet-5.ethpandaops.io";
 if (rpcUrl === undefined) {
-  throw Error('Need a valid RPC url to connect to EL client')
+  throw Error("Need a valid RPC url to connect to EL client");
 }
 
-const client = Client.https(rpcUrl as any)
+const client = Client.https(rpcUrl as any);
 // pick sharding spec which has cancun hf instantiated from genesis itself
 // only override the chainid if provided
-const chainId = Number(process.env.CHAIN_ID ?? 4844001005)
-const numTxs = Number(process.env.NUM_TXS ?? 1)
-console.log({ sender, rpcUrl, chainId, numTxs })
+const chainId = Number(process.env.CHAIN_ID ?? 4844001005);
+const numTxs = Number(process.env.NUM_TXS ?? 1);
+console.log({ sender, rpcUrl, chainId, numTxs });
 
-const network = 'sharding'
-const shardingJSON = require(`./configs/${network}.json`)
+const network = "sharding";
+const shardingJSON = require(`./configs/${network}.json`);
 
 // safely change chainId without modifying underlying json
-const commonJSON = { ...shardingJSON }
-commonJSON.config = { ...commonJSON.config, chainId }
-const common = createCommonFromGethGenesis(commonJSON, { chain: network })
+const commonJSON = { ...shardingJSON };
+commonJSON.config = { ...commonJSON.config, chainId };
+const common = createCommonFromGethGenesis(commonJSON, { chain: network });
 
-export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
-  return runTxHelper({ client, common, sender, pkey }, data, to, value)
+export async function runTx(
+  data: PrefixedHexString,
+  to?: PrefixedHexString,
+  value?: bigint,
+) {
+  return runTxHelper({ client, common, sender, pkey }, data, to, value);
 }
 
 describe(`running txes on ${rpcUrl}`, async () => {
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
-    externalRun: 'true',
-  })
-  assert.ok(true, `connected to client ${result}`)
+    externalRun: "true",
+  });
+  assert.ok(true, `connected to client ${result}`);
 
-  console.log(`Checking for network running...`)
+  console.log(`Checking for network running...`);
   try {
-    await waitForELStart(client)
-    assert.ok(true, `${result} confirmed running`)
+    await waitForELStart(client);
+    assert.ok(true, `${result} confirmed running`);
   } catch (e) {
-    assert.fail(`failed to confirm ${result} running`)
-    throw e
+    assert.fail(`failed to confirm ${result} running`);
+    throw e;
   }
 
   it(
-    'run blob transactions',
+    "run blob transactions",
     async () => {
       const nonceFetch = await client.request(
-        'eth_getTransactionCount',
-        [sender.toString(), 'latest'],
+        "eth_getTransactionCount",
+        [sender.toString(), "latest"],
         2.0,
-      )
-      const nonce = Number(nonceFetch.result)
-      assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
+      );
+      const nonce = Number(nonceFetch.result);
+      assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`);
 
       const txns = await createBlobTxs(
         numTxs - 1,
@@ -87,29 +92,29 @@ describe(`running txes on ${rpcUrl}`, async () => {
           blobSize: Number(process.env.BLOB_SIZE ?? 4096),
         },
         { common },
-      )
-      const txHashes = []
+      );
+      const txHashes = [];
       for (const txn of txns) {
-        const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+        const res = await client.request("eth_sendRawTransaction", [txn], 2.0);
         if (res.result === undefined) {
-          console.log('eth_sendRawTransaction returned invalid response', res)
-          assert.fail(`Unable to post all txs`)
-          break
+          console.log("eth_sendRawTransaction returned invalid response", res);
+          assert.fail(`Unable to post all txs`);
+          break;
         }
-        assert.ok(true, `posted tx with hash=${res.result}`)
-        txHashes.push(res.result)
+        assert.ok(true, `posted tx with hash=${res.result}`);
+        txHashes.push(res.result);
       }
-      assert.ok(true, `posted txs=${txHashes.length}`)
+      assert.ok(true, `posted txs=${txHashes.length}`);
     },
     10 * 60_000,
-  )
+  );
 
-  it('cleanup', async () => {
+  it("cleanup", async () => {
     try {
-      await teardownCallBack()
-      assert.ok(true, 'script terminated')
+      await teardownCallBack();
+      assert.ok(true, "script terminated");
     } catch (e) {
-      assert.fail('could not terminate properly')
+      assert.fail("could not terminate properly");
     }
-  }, 60_000)
-})
+  }, 60_000);
+});

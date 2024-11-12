@@ -1,23 +1,26 @@
-import type { Blockchain } from './index.js'
-import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
-import type { EventEmitter } from 'eventemitter3'
+import type { Block, BlockHeader } from "@ethereumjs/block";
+import type { Common, ConsensusAlgorithm } from "@ethereumjs/common";
+import type { DB, DBObject, GenesisState } from "@ethereumjs/util";
+import type { EventEmitter } from "eventemitter3";
+import type { Blockchain } from "./index.js";
 
-export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
+export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void;
 
 export type BlockchainEvent = {
-  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
-}
+  deletedCanonicalBlocks: (
+    data: Block[],
+    resolve?: (result?: any) => void,
+  ) => void;
+};
 
 export interface BlockchainInterface {
-  consensus: Consensus | undefined
+  consensus: Consensus | undefined;
   /**
    * Adds a block to the blockchain.
    *
    * @param block - The block to be added to the blockchain.
    */
-  putBlock(block: Block): Promise<void>
+  putBlock(block: Block): Promise<void>;
 
   /**
    * Deletes a block from the blockchain. All child blocks in the chain are
@@ -25,12 +28,12 @@ export interface BlockchainInterface {
    *
    * @param blockHash - The hash of the block to be deleted
    */
-  delBlock(blockHash: Uint8Array): Promise<void>
+  delBlock(blockHash: Uint8Array): Promise<void>;
 
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockId: Uint8Array | number | bigint): Promise<Block>
+  getBlock(blockId: Uint8Array | number | bigint): Promise<Block>;
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls
@@ -46,26 +49,26 @@ export interface BlockchainInterface {
     onBlock: OnBlock,
     maxBlocks?: number,
     releaseLockOnCallback?: boolean,
-  ): Promise<number>
+  ): Promise<number>;
 
   /**
    * Returns a shallow copy of the blockchain that may share state with the original
    */
-  shallowCopy(): BlockchainInterface
+  shallowCopy(): BlockchainInterface;
 
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
    * @param header - header to be validated
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
-  validateHeader(header: BlockHeader, height?: bigint): Promise<void>
+  validateHeader(header: BlockHeader, height?: bigint): Promise<void>;
 
   /**
    * Returns the specified iterator head.
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead(name?: string): Promise<Block>
+  getIteratorHead(name?: string): Promise<Block>;
 
   /**
    * Set header hash of a certain `tag`.
@@ -73,22 +76,22 @@ export interface BlockchainInterface {
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
    */
-  setIteratorHead(tag: string, headHash: Uint8Array): Promise<void>
+  setIteratorHead(tag: string, headHash: Uint8Array): Promise<void>;
 
   /**
    * Gets total difficulty for a block specified by hash and number
    */
-  getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
+  getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>;
 
   /**
    * Returns the latest full block in the canonical chain.
    */
-  getCanonicalHeadBlock(): Promise<Block>
+  getCanonicalHeadBlock(): Promise<Block>;
 
   /**
    * Optional events emitter
    */
-  events?: EventEmitter<BlockchainEvent>
+  events?: EventEmitter<BlockchainEvent>;
 }
 
 export interface GenesisOptions {
@@ -99,7 +102,7 @@ export interface GenesisOptions {
    * present in the DB and no block is provided, then the genesis block as
    * provided from the `common` will be used.
    */
-  genesisBlock?: Block
+  genesisBlock?: Block;
 
   /**
    * If you are using a custom chain {@link Common}, pass the genesis state.
@@ -125,17 +128,17 @@ export interface GenesisOptions {
    * }
    * ```
    */
-  genesisState?: GenesisState
+  genesisState?: GenesisState;
 
   /**
    * State root of the genesis state
    */
-  genesisStateRoot?: Uint8Array
+  genesisStateRoot?: Uint8Array;
 }
 
 export type ConsensusDict = {
-  [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus
-}
+  [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus;
+};
 
 /**
  * This are the options that the Blockchain constructor can receive.
@@ -147,7 +150,7 @@ export interface BlockchainOptions extends GenesisOptions {
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    *
    */
-  common?: Common
+  common?: Common;
 
   /**
    * Set the HF to the fork determined by the head block and update on head updates.
@@ -158,13 +161,13 @@ export interface BlockchainOptions extends GenesisOptions {
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByHeadBlockNumber?: boolean
+  hardforkByHeadBlockNumber?: boolean;
 
   /**
    * Database to store blocks and metadata.
    * Can be any database implementation that adheres to the `DB` interface
    */
-  db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>
+  db?: DB<Uint8Array | string | number, Uint8Array | string | DBObject>;
 
   /**
    * This flag indicates if protocol-given consistency checks on
@@ -172,7 +175,7 @@ export interface BlockchainOptions extends GenesisOptions {
    * see Block#validate for details.
    *
    */
-  validateBlocks?: boolean
+  validateBlocks?: boolean;
 
   /**
    * Validate the consensus with the respective consensus implementation passed
@@ -184,7 +187,7 @@ export interface BlockchainOptions extends GenesisOptions {
    * - 'poa' with 'clique' algorithm (verifies the block signatures)
    * Default: `false`.
    */
-  validateConsensus?: boolean
+  validateConsensus?: boolean;
 
   /**
    * Optional dictionary with consensus objects (adhering to the {@link Consensus} interface)
@@ -208,32 +211,32 @@ export interface BlockchainOptions extends GenesisOptions {
    * Note that this needs a custom `Common` object passed to the blockchain where
    * the `ConsensusAlgorithm` string matches the string used here.
    */
-  consensusDict?: ConsensusDict
+  consensusDict?: ConsensusDict;
 }
 
 /**
  * Interface that a consensus class needs to implement.
  */
 export interface Consensus {
-  algorithm: ConsensusAlgorithm | string
+  algorithm: ConsensusAlgorithm | string;
   /**
    * Initialize genesis for consensus mechanism
    * @param genesisBlock genesis block
    */
-  genesisInit(genesisBlock: Block): Promise<void>
+  genesisInit(genesisBlock: Block): Promise<void>;
 
   /**
    * Set up consensus mechanism
    */
-  setup({ blockchain }: ConsensusOptions): Promise<void>
+  setup({ blockchain }: ConsensusOptions): Promise<void>;
 
   /**
    * Validate block consensus parameters
    * @param block block to be validated
    */
-  validateConsensus(block: Block): Promise<void>
+  validateConsensus(block: Block): Promise<void>;
 
-  validateDifficulty(header: BlockHeader): Promise<void>
+  validateDifficulty(header: BlockHeader): Promise<void>;
 
   /**
    * Update consensus on new block
@@ -245,12 +248,12 @@ export interface Consensus {
     block: Block,
     commonAncestor?: BlockHeader,
     ancientHeaders?: BlockHeader[],
-  ): Promise<void>
+  ): Promise<void>;
 }
 
 /**
  * Options when initializing a class that implements the Consensus interface.
  */
 export interface ConsensusOptions {
-  blockchain: Blockchain
+  blockchain: Blockchain;
 }

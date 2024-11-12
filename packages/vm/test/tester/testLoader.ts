@@ -1,10 +1,10 @@
-import * as fs from 'fs'
-import * as dir from 'node-dir'
-import * as path from 'path'
+import * as fs from "fs";
+import * as path from "path";
+import * as dir from "node-dir";
 
-import { DEFAULT_TESTS_PATH } from './config.js'
+import { DEFAULT_TESTS_PATH } from "./config.js";
 
-const falsePredicate = () => false
+const falsePredicate = () => false;
 
 /**
  * Returns the list of test files matching the given parameters
@@ -25,15 +25,15 @@ export async function getTests(
   const options = {
     match: fileFilter,
     excludeDir,
-  }
+  };
   return new Promise((resolve, reject) => {
     const finishedCallback = (err: Error | undefined, files: string[]) => {
       if (err) {
-        reject(err)
-        return
+        reject(err);
+        return;
       }
-      resolve(files)
-    }
+      resolve(files);
+    };
     const fileCallback = async (
       err: Error | undefined,
       content: string | Uint8Array,
@@ -41,30 +41,30 @@ export async function getTests(
       next: Function,
     ) => {
       if (err) {
-        reject(err)
-        return
+        reject(err);
+        return;
       }
-      const subDir = fileName.substr(directory.length + 1)
-      const parsedFileName = path.parse(fileName).name
-      content = content instanceof Uint8Array ? content.toString() : content
-      const testsByName = JSON.parse(content)
-      const testNames = Object.keys(testsByName)
+      const subDir = fileName.substr(directory.length + 1);
+      const parsedFileName = path.parse(fileName).name;
+      content = content instanceof Uint8Array ? content.toString() : content;
+      const testsByName = JSON.parse(content);
+      const testNames = Object.keys(testsByName);
       for (const testName of testNames) {
         if (!skipPredicate(testName, testsByName[testName])) {
-          await onFile(parsedFileName, subDir, testName, testsByName[testName])
+          await onFile(parsedFileName, subDir, testName, testsByName[testName]);
         }
       }
-      next()
-    }
+      next();
+    };
 
-    dir.readFiles(directory, options, fileCallback, finishedCallback)
-  })
+    dir.readFiles(directory, options, fileCallback, finishedCallback);
+  });
 }
 
 function skipTest(testName: string, skipList = []) {
   return skipList
     .map((skipName) => new RegExp(`^${skipName}`).test(testName))
-    .some((isMatch) => isMatch)
+    .some((isMatch) => isMatch);
 }
 
 /**
@@ -73,32 +73,34 @@ function skipTest(testName: string, skipList = []) {
  * @param onFile callback function invoked with contents of specified file (or an error message)
  */
 export function getTestFromSource(file: string, onFile: Function) {
-  const stream = fs.createReadStream(file)
-  let contents = ''
-  let test: any = null
+  const stream = fs.createReadStream(file);
+  let contents = "";
+  let test: any = null;
 
   stream
-    .on('data', function (data: string) {
-      contents += data
+    .on("data", function (data: string) {
+      contents += data;
     })
-    .on('error', function (err: Error) {
+    .on("error", function (err: Error) {
       // eslint-disable-next-line no-console
-      console.warn('♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.')
-      onFile(err)
+      console.warn(
+        "♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.",
+      );
+      onFile(err);
     })
-    .on('end', function () {
+    .on("end", function () {
       try {
-        test = JSON.parse(contents)
+        test = JSON.parse(contents);
       } catch (e: any) {
-        onFile(e)
+        onFile(e);
       }
 
-      const testName = Object.keys(test)[0]
-      const testData = test[testName]
-      testData.testName = testName
+      const testName = Object.keys(test)[0];
+      const testData = test[testName];
+      testData.testName = testName;
 
-      onFile(null, testData)
-    })
+      onFile(null, testData);
+    });
 }
 
 /**
@@ -108,49 +110,56 @@ export function getTestFromSource(file: string, onFile: Function) {
  * @param args the CLI args
  * @returns the list of test files
  */
-export async function getTestsFromArgs(testType: string, onFile: Function, args: any = {}) {
-  let fileFilter, excludeDir, skipFn
+export async function getTestsFromArgs(
+  testType: string,
+  onFile: Function,
+  args: any = {},
+) {
+  let fileFilter, excludeDir, skipFn;
 
   skipFn = (name: string) => {
-    return skipTest(name, args.skipTests)
-  }
+    return skipTest(name, args.skipTests);
+  };
   if (new RegExp(`BlockchainTests`).test(testType)) {
-    const forkFilter = new RegExp(`${args.forkConfig}$`)
-    skipFn = (name: string, test: any) => {
-      return forkFilter.test(test.network) === false || skipTest(name, args.skipTests)
-    }
-  }
-  if (new RegExp(`GeneralStateTests`).test(testType)) {
-    const forkFilter = new RegExp(`${args.forkConfig}$`)
+    const forkFilter = new RegExp(`${args.forkConfig}$`);
     skipFn = (name: string, test: any) => {
       return (
-        Object.keys(test['post'])
+        forkFilter.test(test.network) === false ||
+        skipTest(name, args.skipTests)
+      );
+    };
+  }
+  if (new RegExp(`GeneralStateTests`).test(testType)) {
+    const forkFilter = new RegExp(`${args.forkConfig}$`);
+    skipFn = (name: string, test: any) => {
+      return (
+        Object.keys(test["post"])
           .map((key) => forkFilter.test(key))
           .every((e) => !e) || skipTest(name, args.skipTests)
-      )
-    }
+      );
+    };
   }
-  if (testType === 'VMTests') {
+  if (testType === "VMTests") {
     skipFn = (name: string) => {
-      return skipTest(name, args.skipVM)
-    }
+      return skipTest(name, args.skipVM);
+    };
   }
   if (args.singleSource !== undefined) {
-    return getTestFromSource(args.singleSource, onFile)
+    return getTestFromSource(args.singleSource, onFile);
   }
   if (args.file !== undefined) {
-    fileFilter = new RegExp(args.file)
+    fileFilter = new RegExp(args.file);
   }
   if (args.excludeDir !== undefined) {
-    excludeDir = new RegExp(args.excludeDir)
+    excludeDir = new RegExp(args.excludeDir);
   }
   if (args.test !== undefined) {
     skipFn = (testName: string) => {
-      return testName !== args.test
-    }
+      return testName !== args.test;
+    };
   }
 
-  return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir)
+  return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir);
 }
 
 /**
@@ -158,5 +167,5 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
  * @param file
  */
 export function getSingleFile(file: string) {
-  return require(path.join(DEFAULT_TESTS_PATH, file))
+  return require(path.join(DEFAULT_TESTS_PATH, file));
 }

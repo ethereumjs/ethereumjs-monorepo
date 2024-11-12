@@ -1,33 +1,33 @@
-import debugDefault from 'debug'
-import { EventEmitter } from 'eventemitter3'
+import debugDefault from "debug";
+import { EventEmitter } from "eventemitter3";
 
-import { DISCONNECT_REASON, ProtocolType } from '../types.js'
-import { devp2pDebug } from '../util.js'
+import { DISCONNECT_REASON, ProtocolType } from "../types.js";
+import { devp2pDebug } from "../util.js";
 
-import type { Peer } from '../rlpx/peer.js'
-import type { ProtocolEvent, SendMethod } from '../types.js'
-import type { Debugger } from 'debug'
+import type { Debugger } from "debug";
+import type { Peer } from "../rlpx/peer.js";
+import type { ProtocolEvent, SendMethod } from "../types.js";
 
-type MessageCodes = { [key: number | string]: number | string }
+type MessageCodes = { [key: number | string]: number | string };
 
 export abstract class Protocol {
-  public events: EventEmitter<ProtocolEvent>
-  protected _version: number
-  protected _peer: Peer
-  protected _send: SendMethod
-  protected _statusTimeoutId?: NodeJS.Timeout
-  protected _messageCodes: MessageCodes
-  private _debug: Debugger
-  protected _verbose: boolean
+  public events: EventEmitter<ProtocolEvent>;
+  protected _version: number;
+  protected _peer: Peer;
+  protected _send: SendMethod;
+  protected _statusTimeoutId?: NodeJS.Timeout;
+  protected _messageCodes: MessageCodes;
+  private _debug: Debugger;
+  protected _verbose: boolean;
 
   /**
    * Will be set to the first successfully connected peer to allow for
    * debugging with the `devp2p:FIRST_PEER` debugger
    */
-  _firstPeer = ''
+  _firstPeer = "";
 
   // Message debuggers (e.g. { 'GET_BLOCK_HEADERS': [debug Object], ...})
-  protected msgDebuggers: { [key: string]: (debug: string) => void } = {}
+  protected msgDebuggers: { [key: string]: (debug: string) => void } = {};
 
   constructor(
     peer: Peer,
@@ -36,36 +36,36 @@ export abstract class Protocol {
     version: number,
     messageCodes: MessageCodes,
   ) {
-    this.events = new EventEmitter<ProtocolEvent>()
-    this._peer = peer
-    this._send = send
-    this._version = version
-    this._messageCodes = messageCodes
+    this.events = new EventEmitter<ProtocolEvent>();
+    this._peer = peer;
+    this._send = send;
+    this._version = version;
+    this._messageCodes = messageCodes;
     this._statusTimeoutId =
       protocol !== ProtocolType.SNAP
         ? setTimeout(() => {
-            this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
+            this._peer.disconnect(DISCONNECT_REASON.TIMEOUT);
           }, 5000) // 5 sec * 1000
-        : undefined
+        : undefined;
 
-    this._debug = devp2pDebug.extend(protocol)
-    this._verbose = debugDefault('verbose').enabled
-    this.initMsgDebuggers(protocol)
+    this._debug = devp2pDebug.extend(protocol);
+    this._verbose = debugDefault("verbose").enabled;
+    this.initMsgDebuggers(protocol);
   }
 
   private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
-      (value) => typeof value === 'string',
-    ) as string[]
+      (value) => typeof value === "string",
+    ) as string[];
     for (const name of MESSAGE_NAMES) {
-      this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)
+      this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name);
     }
 
     // Remote Peer IP logger
 
-    const ip = this._peer['_socket'].remoteAddress
-    if (typeof ip === 'string') {
-      this.msgDebuggers[ip] = devp2pDebug.extend(ip)
+    const ip = this._peer["_socket"].remoteAddress;
+    if (typeof ip === "string") {
+      this.msgDebuggers[ip] = devp2pDebug.extend(ip);
     }
   }
 
@@ -76,11 +76,11 @@ export abstract class Protocol {
    * Can be used together with the `devp2p:FIRST_PEER` debugger.
    */
   _addFirstPeerDebugger() {
-    const ip = this._peer['_socket'].remoteAddress
-    if (typeof ip === 'string') {
-      this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
-      this._peer._addFirstPeerDebugger()
-      this._firstPeer = ip
+    const ip = this._peer["_socket"].remoteAddress;
+    if (typeof ip === "string") {
+      this.msgDebuggers[ip] = devp2pDebug.extend("FIRST_PEER");
+      this._peer._addFirstPeerDebugger();
+      this._firstPeer = ip;
     }
   }
 
@@ -91,14 +91,14 @@ export abstract class Protocol {
    * @param msg Message text to debug
    */
   protected debug(messageName: string, msg: string) {
-    this._debug(msg)
+    this._debug(msg);
     if (this.msgDebuggers[messageName] !== undefined) {
-      this.msgDebuggers[messageName](msg)
+      this.msgDebuggers[messageName](msg);
     }
 
-    const ip = this._peer['_socket'].remoteAddress
-    if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
-      this.msgDebuggers[ip](msg)
+    const ip = this._peer["_socket"].remoteAddress;
+    if (typeof ip === "string" && this.msgDebuggers[ip] !== undefined) {
+      this.msgDebuggers[ip](msg);
     }
   }
   /**
@@ -106,5 +106,5 @@ export abstract class Protocol {
    * @param code
    * @param data
    */
-  abstract _handleMessage(code: number, data: Uint8Array): void
+  abstract _handleMessage(code: number, data: Uint8Array): void;
 }

@@ -9,9 +9,9 @@
  *      - Input length < 32 bytes (reverts)
  */
 
-import { createBlock, createBlockHeader } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type TransactionType, type TxData, createTx } from '@ethereumjs/tx'
+import { createBlock, createBlockHeader } from "@ethereumjs/block";
+import { Common, Hardfork, Mainnet } from "@ethereumjs/common";
+import { type TransactionType, type TxData, createTx } from "@ethereumjs/tx";
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -19,30 +19,30 @@ import {
   hexToBytes,
   setLengthLeft,
   setLengthRight,
-} from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+} from "@ethereumjs/util";
+import { assert, describe, it } from "vitest";
 
-import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from "../../../src/index.js";
 
-import type { VM } from '../../../src/index.js'
-import type { Block } from '@ethereumjs/block'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { Block } from "@ethereumjs/block";
+import type { BigIntLike, PrefixedHexString } from "@ethereumjs/util";
+import type { VM } from "../../../src/index.js";
 
 const common = new Common({
   chain: Mainnet,
   hardfork: Hardfork.Cancun,
   eips: [4788],
-})
+});
 
-const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
-const contractAddress = createAddressFromString('0x' + 'c0de'.repeat(10))
+const pkey = hexToBytes(`0x${"20".repeat(32)}`);
+const contractAddress = createAddressFromString("0x" + "c0de".repeat(10));
 
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
   transactions: Array<TxData[TransactionType]>,
 ) {
-  const newTxData = []
+  const newTxData = [];
 
   for (const txData of transactions) {
     const tx = createTx({
@@ -51,18 +51,18 @@ function beaconrootBlock(
       ...txData,
       type: 0,
       to: contractAddress,
-    })
-    newTxData.push(tx.sign(pkey))
+    });
+    newTxData.push(tx.sign(pkey));
   }
 
-  const root = setLengthLeft(bigIntToBytes(blockroot), 32)
+  const root = setLengthLeft(bigIntToBytes(blockroot), 32);
   const header = createBlockHeader(
     {
       parentBeaconBlockRoot: root,
       timestamp,
     },
     { common, freeze: false },
-  )
+  );
   const block = createBlock(
     {
       header,
@@ -72,8 +72,8 @@ function beaconrootBlock(
       common,
       freeze: false,
     },
-  )
-  return block
+  );
+  return block;
 }
 
 /**
@@ -84,16 +84,16 @@ function beaconrootBlock(
  * Then it returns the data the precompile returns
  */
 
-const BROOT_AddressString = '000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
-const CODE = ('0x365F5F375F5F365F5F' +
+const BROOT_AddressString = "000F3df6D732807Ef1319fB7B8bB8522d0Beac02";
+const CODE = ("0x365F5F375F5F365F5F" +
   // push broot contract address on stack
-  '73' +
+  "73" +
   BROOT_AddressString +
   // remaining contract
-  '5AF15F553D5F5F3E3D5FF3') as PrefixedHexString
+  "5AF15F553D5F5F3E3D5FF3") as PrefixedHexString;
 const BROOT_CODE =
-  '0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500'
-const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`)
+  "0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500";
+const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`);
 
 /**
  * Run a block inside a 4788 VM
@@ -103,10 +103,10 @@ const BROOT_Address = createAddressFromString(`0x${BROOT_AddressString}`)
 async function runBlock(block: Block) {
   const vm = await createVM({
     common,
-  })
+  });
 
-  await vm.stateManager.putCode(contractAddress, hexToBytes(CODE))
-  await vm.stateManager.putCode(BROOT_Address, hexToBytes(BROOT_CODE))
+  await vm.stateManager.putCode(contractAddress, hexToBytes(CODE));
+  await vm.stateManager.putCode(BROOT_Address, hexToBytes(BROOT_CODE));
   return {
     vmResult: await runBlockVM(vm, {
       block,
@@ -115,15 +115,18 @@ async function runBlock(block: Block) {
       generate: true,
     }),
     callStatus: await getCallStatus(vm),
-  }
+  };
 }
 
 /**
  * Get call status saved in the contract
  */
 async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
-  return bytesToBigInt(stat)
+  const stat = await vm.stateManager.getStorage(
+    contractAddress,
+    new Uint8Array(32),
+  );
+  return bytesToBigInt(stat);
 }
 
 /**
@@ -131,52 +134,54 @@ async function getCallStatus(vm: VM) {
  * @param input
  */
 async function runBlockTest(input: {
-  timestamp: bigint // Timestamp as input to our contract which calls into the precompile
-  timestampBlock: bigint // Timestamp of the block (this is saved in the precompile)
-  blockRoot: bigint // Blockroot of the block (also saved in the precompile)
-  extLeft?: number // Extend length left of the input (defaults to 32)
-  extRight?: number // Extend length right of the input (defaults to 32) - happens after extendLeft
-  expRet: bigint // Expected return value
-  expCallStatus: bigint // Expected call status (either 0 or 1)
+  timestamp: bigint; // Timestamp as input to our contract which calls into the precompile
+  timestampBlock: bigint; // Timestamp of the block (this is saved in the precompile)
+  blockRoot: bigint; // Blockroot of the block (also saved in the precompile)
+  extLeft?: number; // Extend length left of the input (defaults to 32)
+  extRight?: number; // Extend length right of the input (defaults to 32) - happens after extendLeft
+  expRet: bigint; // Expected return value
+  expCallStatus: bigint; // Expected call status (either 0 or 1)
 }) {
-  const { timestamp, blockRoot, timestampBlock, expRet, expCallStatus } = input
+  const { timestamp, blockRoot, timestampBlock, expRet, expCallStatus } = input;
 
   const data = setLengthRight(
     setLengthLeft(bigIntToBytes(timestamp), input.extLeft ?? 32),
     input.extRight ?? 32,
-  )
+  );
   const block = beaconrootBlock(blockRoot, timestampBlock, [
     {
       data,
     },
-  ])
+  ]);
 
-  const ret = await runBlock(block)
-  const bigIntReturn = bytesToBigInt(ret.vmResult.results[0].execResult.returnValue)
-  assert.equal(bigIntReturn, expRet, 'blockRoot ok')
-  assert.equal(ret.callStatus, expCallStatus, 'call status ok')
+  const ret = await runBlock(block);
+  const bigIntReturn = bytesToBigInt(
+    ret.vmResult.results[0].execResult.returnValue,
+  );
+  assert.equal(bigIntReturn, expRet, "blockRoot ok");
+  assert.equal(ret.callStatus, expCallStatus, "call status ok");
 }
 
-describe('should run beaconroot precompile correctly', async () => {
-  it('should run precompile with known timestamp', async () => {
+describe("should run beaconroot precompile correctly", async () => {
+  it("should run precompile with known timestamp", async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),
       blockRoot: BigInt(1),
       expRet: BigInt(1),
       expCallStatus: BigInt(1),
-    })
-  })
-  it('should run precompile with unknown timestamp', async () => {
+    });
+  });
+  it("should run precompile with unknown timestamp", async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(11),
       blockRoot: BigInt(1),
       expRet: BigInt(0),
       expCallStatus: BigInt(0),
-    })
-  })
-  it('should run precompile with known timestamp, input length > 32 bytes', async () => {
+    });
+  });
+  it("should run precompile with known timestamp, input length > 32 bytes", async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),
@@ -185,9 +190,9 @@ describe('should run beaconroot precompile correctly', async () => {
       extRight: 320,
       expRet: BigInt(0),
       expCallStatus: BigInt(0),
-    })
-  })
-  it('should run precompile with known timestamp, input length < 32 bytes', async () => {
+    });
+  });
+  it("should run precompile with known timestamp, input length < 32 bytes", async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),
@@ -196,6 +201,6 @@ describe('should run beaconroot precompile correctly', async () => {
       extRight: 31,
       expRet: BigInt(0),
       expCallStatus: BigInt(0),
-    })
-  })
-})
+    });
+  });
+});

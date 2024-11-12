@@ -24,9 +24,9 @@ import {
   waitForELStart,
 } from "./simutils.js";
 
-import type { EthereumClient } from "../../src/client.js";
 import type { MerkleStateManager } from "@ethereumjs/statemanager";
 import type { PrefixedHexString } from "@ethereumjs/util";
+import type { EthereumClient } from "../../src/client.js";
 
 const client = Client.http({ port: 8545 });
 

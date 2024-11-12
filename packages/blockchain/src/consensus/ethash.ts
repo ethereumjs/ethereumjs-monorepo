@@ -1,46 +1,48 @@
-import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { bytesToHex } from '@ethereumjs/util'
-import debugDefault from 'debug'
+import { ConsensusAlgorithm } from "@ethereumjs/common";
+import { bytesToHex } from "@ethereumjs/util";
+import debugDefault from "debug";
 
-import type { Blockchain } from '../index.js'
-import type { Consensus, ConsensusOptions } from '../types.js'
-import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Debugger } from 'debug'
+import type { Block, BlockHeader } from "@ethereumjs/block";
+import type { Debugger } from "debug";
+import type { Blockchain } from "../index.js";
+import type { Consensus, ConsensusOptions } from "../types.js";
 
 export type MinimalEthashInterface = {
-  cacheDB?: any
-  verifyPOW(block: Block): Promise<boolean>
-}
+  cacheDB?: any;
+  verifyPOW(block: Block): Promise<boolean>;
+};
 
 /**
  * This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
  */
 export class EthashConsensus implements Consensus {
-  blockchain: Blockchain | undefined
-  algorithm: ConsensusAlgorithm
-  _ethash: MinimalEthashInterface
+  blockchain: Blockchain | undefined;
+  algorithm: ConsensusAlgorithm;
+  _ethash: MinimalEthashInterface;
 
-  private DEBUG: boolean // Guard for debug logs
-  private _debug: Debugger
+  private DEBUG: boolean; // Guard for debug logs
+  private _debug: Debugger;
 
   constructor(ethash: MinimalEthashInterface) {
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
-    this._debug = debugDefault('blockchain:ethash')
+      typeof window === "undefined"
+        ? (process?.env?.DEBUG?.includes("ethjs") ?? false)
+        : false;
+    this._debug = debugDefault("blockchain:ethash");
 
-    this.algorithm = ConsensusAlgorithm.Ethash
-    this._ethash = ethash
+    this.algorithm = ConsensusAlgorithm.Ethash;
+    this._ethash = ethash;
   }
 
   async validateConsensus(block: Block): Promise<void> {
-    const valid = await this._ethash.verifyPOW(block)
+    const valid = await this._ethash.verifyPOW(block);
     if (!valid) {
-      throw new Error('invalid POW')
+      throw new Error("invalid POW");
     }
     this.DEBUG &&
       this._debug(
         `valid PoW consensus block: number ${block.header.number} hash ${bytesToHex(block.hash())}`,
-      )
+      );
   }
 
   /**
@@ -49,22 +51,22 @@ export class EthashConsensus implements Consensus {
    */
   async validateDifficulty(header: BlockHeader) {
     if (!this.blockchain) {
-      throw new Error('blockchain not provided')
+      throw new Error("blockchain not provided");
     }
-    const parentHeader = await this.blockchain['_getHeader'](header.parentHash)
+    const parentHeader = await this.blockchain["_getHeader"](header.parentHash);
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
-      throw new Error(`invalid difficulty ${header.errorStr()}`)
+      throw new Error(`invalid difficulty ${header.errorStr()}`);
     }
     this.DEBUG &&
       this._debug(
         `valid difficulty header: number ${header.number} difficulty ${header.difficulty} parentHash ${bytesToHex(header.parentHash)}`,
-      )
+      );
   }
 
   public async genesisInit(): Promise<void> {}
   public async setup({ blockchain }: ConsensusOptions): Promise<void> {
-    this.blockchain = blockchain
-    this._ethash.cacheDB = this.blockchain.db
+    this.blockchain = blockchain;
+    this._ethash.cacheDB = this.blockchain.db;
   }
   public async newBlock(): Promise<void> {}
 }

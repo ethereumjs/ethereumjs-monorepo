@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { Common } from "@ethereumjs/common";
 import {
   BIGINT_0,
   BIGINT_27,
@@ -10,20 +10,21 @@ import {
   hexToBytes,
   toBytes,
   toType,
-} from '@ethereumjs/util'
+} from "@ethereumjs/util";
 
-import { BaseTransaction } from '../baseTransaction.js'
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { LIMIT_BLOBS_PER_TX } from '../constants.js'
-import { paramsTx } from '../index.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import { BaseTransaction } from "../baseTransaction.js";
+import * as EIP1559 from "../capabilities/eip1559.js";
+import * as EIP2718 from "../capabilities/eip2718.js";
+import * as EIP2930 from "../capabilities/eip2930.js";
+import * as Legacy from "../capabilities/legacy.js";
+import { LIMIT_BLOBS_PER_TX } from "../constants.js";
+import { paramsTx } from "../index.js";
+import { TransactionType } from "../types.js";
+import { AccessLists, validateNotArray } from "../util.js";
 
-import { createBlob4844Tx } from './constructors.js'
+import { createBlob4844Tx } from "./constructors.js";
 
+import type { PrefixedHexString } from "@ethereumjs/util";
 import type {
   AccessList,
   AccessListBytes,
@@ -31,11 +32,10 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   JSONTx,
   TxOptions,
-} from '../types.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
+} from "../types.js";
 
-export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+export type TxData = AllTypesTxData[TransactionType.BlobEIP4844];
+export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844];
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -44,18 +44,18 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
 export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
-  public readonly chainId: bigint
-  public readonly accessList: AccessListBytes
-  public readonly AccessListJSON: AccessList
-  public readonly maxPriorityFeePerGas: bigint
-  public readonly maxFeePerGas: bigint
-  public readonly maxFeePerBlobGas: bigint
+  public readonly chainId: bigint;
+  public readonly accessList: AccessListBytes;
+  public readonly AccessListJSON: AccessList;
+  public readonly maxPriorityFeePerGas: bigint;
+  public readonly maxFeePerGas: bigint;
+  public readonly maxFeePerBlobGas: bigint;
 
-  public readonly common: Common
-  public blobVersionedHashes: PrefixedHexString[]
-  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  public readonly common: Common;
+  public blobVersionedHashes: PrefixedHexString[];
+  blobs?: PrefixedHexString[]; // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgCommitments?: PrefixedHexString[]; // This property should only be populated when the transaction is in the "Network Wrapper" format
+  kzgProofs?: PrefixedHexString[]; // This property should only be populated when the transaction is in the "Network Wrapper" format
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -65,100 +65,125 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * varying data types.
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.BlobEIP4844 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
+    super({ ...txData, type: TransactionType.BlobEIP4844 }, opts);
+    const {
+      chainId,
+      accessList,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      maxFeePerBlobGas,
+    } = txData;
 
-    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
-    if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
+    this.common =
+      opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN });
+    if (
+      chainId !== undefined &&
+      bytesToBigInt(toBytes(chainId)) !== this.common.chainId()
+    ) {
       throw new Error(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
-      )
+      );
     }
-    this.common.updateParams(opts.params ?? paramsTx)
-    this.chainId = this.common.chainId()
+    this.common.updateParams(opts.params ?? paramsTx);
+    this.chainId = this.common.chainId();
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw new Error("EIP-1559 not enabled on Common");
     }
 
     if (!this.common.isActivatedEIP(4844)) {
-      throw new Error('EIP-4844 not enabled on Common')
+      throw new Error("EIP-4844 not enabled on Common");
     }
-    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
+    this.activeCapabilities = this.activeCapabilities.concat([
+      1559, 2718, 2930,
+    ]);
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    const accessListData = AccessLists.getAccessListData(accessList ?? []);
+    this.accessList = accessListData.accessList;
+    this.AccessListJSON = accessListData.AccessListJSON;
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    AccessLists.verifyAccessList(this.accessList);
 
-    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
-    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas));
+    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas));
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-    })
+    });
 
-    validateNotArray(txData)
+    validateNotArray(txData);
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
-      throw new Error(msg)
+      const msg = this._errorMsg(
+        "gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)",
+      );
+      throw new Error(msg);
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
-      )
-      throw new Error(msg)
+        "maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)",
+      );
+      throw new Error(msg);
     }
 
     this.maxFeePerBlobGas = bytesToBigInt(
-      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
-    )
+      toBytes((maxFeePerBlobGas ?? "") === "" ? "0x" : maxFeePerBlobGas),
+    );
 
     this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) =>
       toType(vh, TypeOutput.PrefixedHexString),
-    )
-    EIP2718.validateYParity(this)
-    Legacy.validateHighS(this)
+    );
+    EIP2718.validateYParity(this);
+    Legacy.validateHighS(this);
 
     for (const hash of this.blobVersionedHashes) {
       if (hash.length !== 66) {
         // 66 is the length of a 32 byte hash as a PrefixedHexString
-        const msg = this._errorMsg('versioned hash is invalid length')
-        throw new Error(msg)
+        const msg = this._errorMsg("versioned hash is invalid length");
+        throw new Error(msg);
       }
-      if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
+      if (
+        BigInt(parseInt(hash.slice(2, 4))) !==
+        this.common.param("blobCommitmentVersionKzg")
+      ) {
         // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
-        const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
-        throw new Error(msg)
+        const msg = this._errorMsg(
+          "versioned hash does not start with KZG commitment version",
+        );
+        throw new Error(msg);
       }
     }
     if (this.blobVersionedHashes.length > LIMIT_BLOBS_PER_TX) {
-      const msg = this._errorMsg(`tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
-      throw new Error(msg)
+      const msg = this._errorMsg(
+        `tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`,
+      );
+      throw new Error(msg);
     } else if (this.blobVersionedHashes.length === 0) {
-      const msg = this._errorMsg(`tx should contain at least one blob`)
-      throw new Error(msg)
+      const msg = this._errorMsg(`tx should contain at least one blob`);
+      throw new Error(msg);
     }
     if (this.to === undefined) {
       const msg = this._errorMsg(
         `tx should have a "to" field and cannot be used to create contracts`,
-      )
-      throw new Error(msg)
+      );
+      throw new Error(msg);
     }
 
-    this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
+    this.blobs = txData.blobs?.map((blob) =>
+      toType(blob, TypeOutput.PrefixedHexString),
+    );
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
-    )
-    this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
-    const freeze = opts?.freeze ?? true
+    );
+    this.kzgProofs = txData.kzgProofs?.map((proof) =>
+      toType(proof, TypeOutput.PrefixedHexString),
+    );
+    const freeze = opts?.freeze ?? true;
     if (freeze) {
-      Object.freeze(this)
+      Object.freeze(this);
     }
   }
 
@@ -167,14 +192,14 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * @param baseFee Base fee retrieved from block
    */
   getEffectivePriorityFee(baseFee: bigint): bigint {
-    return EIP1559.getEffectivePriorityFee(this, baseFee)
+    return EIP1559.getEffectivePriorityFee(this, baseFee);
   }
 
   /**
    * The amount of gas paid for the data in this tx
    */
   getDataGas(): bigint {
-    return EIP2930.getDataGas(this)
+    return EIP2930.getDataGas(this);
   }
 
   /**
@@ -182,7 +207,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
-    return EIP1559.getUpfrontCost(this, baseFee)
+    return EIP1559.getUpfrontCost(this, baseFee);
   }
 
   /**
@@ -214,7 +239,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
-    ]
+    ];
   }
 
   /**
@@ -228,7 +253,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2718.serialize(this)
+    return EIP2718.serialize(this);
   }
 
   /**
@@ -241,11 +266,16 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       this.kzgProofs === undefined
     ) {
       throw new Error(
-        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
-      )
+        "cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided",
+      );
     }
 
-    return EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
+    return EIP2718.serialize(this, [
+      this.raw(),
+      this.blobs,
+      this.kzgCommitments,
+      this.kzgProofs,
+    ]);
   }
 
   /**
@@ -260,7 +290,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * ```
    */
   getMessageToSign(): Uint8Array {
-    return EIP2718.serialize(this, this.raw().slice(0, 11))
+    return EIP2718.serialize(this, this.raw().slice(0, 11));
   }
 
   /**
@@ -271,7 +301,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2718.getHashedMessageToSign(this)
+    return EIP2718.getHashedMessageToSign(this);
   }
 
   /**
@@ -281,23 +311,23 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * Use {@link Blob4844Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Legacy.hash(this)
+    return Legacy.hash(this);
   }
 
   getMessageToVerifySignature(): Uint8Array {
-    return this.getHashedMessageToSign()
+    return this.getHashedMessageToSign();
   }
 
   /**
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Legacy.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this);
   }
 
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = super.toJSON()
+    const accessListJSON = AccessLists.getAccessListJSON(this.accessList);
+    const baseJSON = super.toJSON();
 
     return {
       ...baseJSON,
@@ -307,7 +337,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       accessList: accessListJSON,
       maxFeePerBlobGas: bigIntToHex(this.maxFeePerBlobGas),
       blobVersionedHashes: this.blobVersionedHashes,
-    }
+    };
   }
 
   addSignature(
@@ -316,9 +346,9 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
     s: Uint8Array | bigint,
     convertV: boolean = false,
   ): Blob4844Tx {
-    r = toBytes(r)
-    s = toBytes(s)
-    const opts = { ...this.txOptions, common: this.common }
+    r = toBytes(r);
+    s = toBytes(s);
+    const opts = { ...this.txOptions, common: this.common };
 
     return createBlob4844Tx(
       {
@@ -341,15 +371,15 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
         kzgProofs: this.kzgProofs,
       },
       opts,
-    )
+    );
   }
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
-    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
-    return errorStr
+    let errorStr = this._getSharedErrorPostfix();
+    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`;
+    return errorStr;
   }
 
   /**
@@ -359,13 +389,13 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg);
   }
 
   /**
    * @returns the number of blobs included with this transaction
    */
   public numBlobs(): number {
-    return this.blobVersionedHashes.length
+    return this.blobVersionedHashes.length;
   }
 }

@@ -1,38 +1,40 @@
-import debugDefault from 'debug'
-import * as dns from 'dns'
+import * as dns from "dns";
+import debugDefault from "debug";
 
-import { ENR } from './enr.js'
+import { ENR } from "./enr.js";
 
-import type { DNSOptions, PeerInfo } from '../types.js'
-import type { Common } from '@ethereumjs/common'
+import type { Common } from "@ethereumjs/common";
+import type { DNSOptions, PeerInfo } from "../types.js";
 
-const debug = debugDefault('devp2p:dns:dns')
+const debug = debugDefault("devp2p:dns:dns");
 
 type SearchContext = {
-  domain: string
-  publicKey: string
-  visits: { [key: string]: boolean }
-}
+  domain: string;
+  publicKey: string;
+  visits: { [key: string]: boolean };
+};
 
 export class DNS {
-  protected _DNSTreeCache: { [key: string]: string }
-  protected readonly _errorTolerance: number = 10
+  protected _DNSTreeCache: { [key: string]: string };
+  protected readonly _errorTolerance: number = 10;
 
-  protected _common?: Common
+  protected _common?: Common;
 
-  private DEBUG: boolean
+  private DEBUG: boolean;
 
   constructor(options: DNSOptions = {}) {
-    this._DNSTreeCache = {}
+    this._DNSTreeCache = {};
 
-    if (typeof options.dnsServerAddress === 'string') {
-      dns.promises.setServers([options.dnsServerAddress])
+    if (typeof options.dnsServerAddress === "string") {
+      dns.promises.setServers([options.dnsServerAddress]);
     }
 
-    this._common = options.common
+    this._common = options.common;
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof window === "undefined"
+        ? (process?.env?.DEBUG?.includes("ethjs") ?? false)
+        : false;
   }
 
   /**
@@ -45,32 +47,38 @@ export class DNS {
    * @param {string[]}        dnsNetworks enrTree strings (See EIP-1459 for format)
    * @return {PeerInfo}
    */
-  async getPeers(maxQuantity: number, dnsNetworks: string[]): Promise<PeerInfo[]> {
-    let totalSearches: number = 0
-    const peers: PeerInfo[] = []
+  async getPeers(
+    maxQuantity: number,
+    dnsNetworks: string[],
+  ): Promise<PeerInfo[]> {
+    let totalSearches: number = 0;
+    const peers: PeerInfo[] = [];
 
-    const networkIndex = Math.floor(Math.random() * dnsNetworks.length)
-    const { publicKey, domain } = ENR.parseTree(dnsNetworks[networkIndex])
+    const networkIndex = Math.floor(Math.random() * dnsNetworks.length);
+    const { publicKey, domain } = ENR.parseTree(dnsNetworks[networkIndex]);
 
-    while (peers.length < maxQuantity && totalSearches < maxQuantity + this._errorTolerance) {
+    while (
+      peers.length < maxQuantity &&
+      totalSearches < maxQuantity + this._errorTolerance
+    ) {
       const context: SearchContext = {
         domain,
         publicKey,
         visits: {},
-      }
+      };
 
-      const peer = await this._search(domain, context)
+      const peer = await this._search(domain, context);
 
       if (this._isNewPeer(peer, peers)) {
-        peers.push(peer)
+        peers.push(peer);
         if (this.DEBUG) {
-          debug(`got new peer candidate from DNS address=${peer.address}`)
+          debug(`got new peer candidate from DNS address=${peer.address}`);
         }
       }
 
-      totalSearches++
+      totalSearches++;
     }
-    return peers
+    return peers;
   }
 
   /**
@@ -81,41 +89,44 @@ export class DNS {
    * @param  {SearchContext} context
    * @return {PeerInfo | null}
    */
-  private async _search(subdomain: string, context: SearchContext): Promise<PeerInfo | null> {
-    const entry = await this._getTXTRecord(subdomain, context)
-    context.visits[subdomain] = true
+  private async _search(
+    subdomain: string,
+    context: SearchContext,
+  ): Promise<PeerInfo | null> {
+    const entry = await this._getTXTRecord(subdomain, context);
+    context.visits[subdomain] = true;
 
-    let next: string
-    let branches: string[]
+    let next: string;
+    let branches: string[];
 
     try {
       switch (this._getEntryType(entry)) {
         case ENR.ROOT_PREFIX:
-          next = ENR.parseAndVerifyRoot(entry, context.publicKey, this._common)
-          return await this._search(next, context)
+          next = ENR.parseAndVerifyRoot(entry, context.publicKey, this._common);
+          return await this._search(next, context);
         case ENR.BRANCH_PREFIX:
-          branches = ENR.parseBranch(entry)
-          next = this._selectRandomPath(branches, context)
-          return await this._search(next, context)
+          branches = ENR.parseBranch(entry);
+          next = this._selectRandomPath(branches, context);
+          return await this._search(next, context);
         case ENR.RECORD_PREFIX:
-          return ENR.parseAndVerifyRecord(entry, this._common)
+          return ENR.parseAndVerifyRecord(entry, this._common);
         default:
-          return null
+          return null;
       }
     } catch (error: any) {
       if (this.DEBUG) {
-        debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
+        debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`);
       }
-      return null
+      return null;
     }
   }
 
   private _getEntryType(entry: string): string {
-    if (entry.startsWith(ENR.ROOT_PREFIX)) return ENR.ROOT_PREFIX
-    if (entry.startsWith(ENR.BRANCH_PREFIX)) return ENR.BRANCH_PREFIX
-    if (entry.startsWith(ENR.RECORD_PREFIX)) return ENR.RECORD_PREFIX
+    if (entry.startsWith(ENR.ROOT_PREFIX)) return ENR.ROOT_PREFIX;
+    if (entry.startsWith(ENR.BRANCH_PREFIX)) return ENR.BRANCH_PREFIX;
+    if (entry.startsWith(ENR.RECORD_PREFIX)) return ENR.RECORD_PREFIX;
 
-    return ''
+    return "";
   }
 
   /**
@@ -131,27 +142,30 @@ export class DNS {
    * @param {SearchContext} context
    * @return {String}       subdomain
    */
-  private _selectRandomPath(branches: string[], context: SearchContext): string {
+  private _selectRandomPath(
+    branches: string[],
+    context: SearchContext,
+  ): string {
     // Identify domains already visited in this traversal of the DNS tree.
     // Then filter against them to prevent cycles.
-    const circularRefs: { [key: number]: boolean } = {}
+    const circularRefs: { [key: number]: boolean } = {};
     for (const [idx, subdomain] of branches.entries()) {
       if (context.visits[subdomain]) {
-        circularRefs[idx] = true
+        circularRefs[idx] = true;
       }
     }
     // If all possible paths are circular...
     if (Object.keys(circularRefs).length === branches.length) {
-      throw new Error('Unresolvable circular path detected')
+      throw new Error("Unresolvable circular path detected");
     }
 
     // Randomly select a viable path
-    let index
+    let index;
     do {
-      index = Math.floor(Math.random() * branches.length)
-    } while (circularRefs[index])
+      index = Math.floor(Math.random() * branches.length);
+    } while (circularRefs[index]);
 
-    return branches[index]
+    return branches[index];
   }
 
   /**
@@ -162,27 +176,33 @@ export class DNS {
    * @param  {SearchContext = {}} context
    * @return {string}
    */
-  private async _getTXTRecord(subdomain: string, context: SearchContext): Promise<string> {
+  private async _getTXTRecord(
+    subdomain: string,
+    context: SearchContext,
+  ): Promise<string> {
     if (this._DNSTreeCache[subdomain]) {
-      return this._DNSTreeCache[subdomain]
+      return this._DNSTreeCache[subdomain];
     }
 
     // Location is either the top level tree entry host or a subdomain of it.
     const location =
-      subdomain !== context.domain ? `${subdomain}.${context.domain}` : context.domain
+      subdomain !== context.domain
+        ? `${subdomain}.${context.domain}`
+        : context.domain;
 
-    const response = await dns.promises.resolve(location, 'TXT')
+    const response = await dns.promises.resolve(location, "TXT");
 
     if (response.length === 0)
-      throw new Error('Received empty result array while fetching TXT record')
-    if (response[0].length === 0) throw new Error('Received empty TXT record')
+      throw new Error("Received empty result array while fetching TXT record");
+    if (response[0].length === 0) throw new Error("Received empty TXT record");
     // Branch entries can be an array of strings of comma delimited subdomains, with
     // some subdomain strings split across the array elements
     // (e.g btw end of arr[0] and beginning of arr[1])
-    const result = response[0].length > 1 ? response[0].join('') : response[0][0]
+    const result =
+      response[0].length > 1 ? response[0].join("") : response[0][0];
 
-    this._DNSTreeCache[subdomain] = result
-    return result
+    this._DNSTreeCache[subdomain] = result;
+    return result;
   }
 
   /**
@@ -195,16 +215,19 @@ export class DNS {
    * @param  {PeerInfo[]} peers
    * @return {boolean}
    */
-  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): peer is PeerInfo {
-    if (peer === null || peer.address === undefined) return false
+  private _isNewPeer(
+    peer: PeerInfo | null,
+    peers: PeerInfo[],
+  ): peer is PeerInfo {
+    if (peer === null || peer.address === undefined) return false;
 
     for (const existingPeer of peers) {
       if (peer.address === existingPeer.address) {
-        return false
+        return false;
       }
     }
 
-    return true
+    return true;
   }
 
   /**
@@ -213,6 +236,6 @@ export class DNS {
    * @param {any} mock TestDouble fn
    */
   __setNativeDNSModuleResolve(mock: any) {
-    dns.promises.resolve = mock.resolve
+    dns.promises.resolve = mock.resolve;
   }
 }

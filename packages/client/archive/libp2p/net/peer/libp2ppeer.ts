@@ -1,23 +1,24 @@
 //@ts-nocheck
 // cspell:ignore psender pnode muxed muxer
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from "@multiformats/multiaddr";
 
-import { Peer } from '../../../src/net/peer/peer'
-import { Libp2pSender } from '../libp2psender'
-import { Event } from '../../../src/types'
+import { Peer } from "../../../src/net/peer/peer";
+import { Event } from "../../../src/types";
+import { Libp2pSender } from "../libp2psender";
 
-import { Libp2pNode } from './libp2pnode'
+import { Libp2pNode } from "./libp2pnode";
 
-import type { PeerOptions } from '../../../src/net/peer/peer'
-import type { Protocol } from '../../../src/net/protocol'
-import type { Libp2pServer } from '../../../src/net/server'
-import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { PeerId, isPeerId } from '@libp2p/interface-peer-id'
+import { PeerId, isPeerId } from "@libp2p/interface-peer-id";
+import type { Multiaddr } from "@multiformats/multiaddr";
+import type { MuxedStream } from "libp2p-interfaces/dist/src/stream-muxer/types";
+import type { PeerOptions } from "../../../src/net/peer/peer";
+import type { Protocol } from "../../../src/net/protocol";
+import type { Libp2pServer } from "../../../src/net/server";
 
-export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+export interface Libp2pPeerOptions
+  extends Omit<PeerOptions, "address" | "transport"> {
   /* Multiaddrs to listen on */
-  multiaddrs?: Multiaddr[]
+  multiaddrs?: Multiaddr[];
 }
 
 /**
@@ -43,20 +44,22 @@ export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transp
  * ```
  */
 export class Libp2pPeer extends Peer {
-  private multiaddrs: Multiaddr[]
-  private connected: boolean
+  private multiaddrs: Multiaddr[];
+  private connected: boolean;
 
   /**
    * Create new libp2p peer
    */
   constructor(options: Libp2pPeerOptions) {
-    const multiaddrs = options.multiaddrs ?? [multiaddr('/ip4/0.0.0.0/tcp/0')]
-    const address = multiaddrs.map((ma) => ma.toString().split('/p2p')[0]).join(',')
+    const multiaddrs = options.multiaddrs ?? [multiaddr("/ip4/0.0.0.0/tcp/0")];
+    const address = multiaddrs
+      .map((ma) => ma.toString().split("/p2p")[0])
+      .join(",");
 
-    super({ ...options, transport: 'libp2p', address })
+    super({ ...options, transport: "libp2p", address });
 
-    this.multiaddrs = multiaddrs
-    this.connected = false
+    this.multiaddrs = multiaddrs;
+    this.connected = false;
   }
 
   /**
@@ -64,26 +67,30 @@ export class Libp2pPeer extends Peer {
    */
   async connect(): Promise<void> {
     if (this.connected) {
-      return
+      return;
     }
-    const peerId = PeerId.createFromB58String(this.id)
-    const addresses = { listen: ['/ip4/0.0.0.0/tcp/0'] }
-    const node = new Libp2pNode({ peerId, addresses })
-    await node.start()
+    const peerId = PeerId.createFromB58String(this.id);
+    const addresses = { listen: ["/ip4/0.0.0.0/tcp/0"] };
+    const node = new Libp2pNode({ peerId, addresses });
+    await node.start();
     for (const ma of this.multiaddrs) {
-      await node.dial(ma as any)
-      await this.bindProtocols(node, ma)
+      await node.dial(ma as any);
+      await this.bindProtocols(node, ma);
     }
-    this.config.events.emit(Event.PEER_CONNECTED, this)
+    this.config.events.emit(Event.PEER_CONNECTED, this);
   }
 
   /**
    * Accept new peer connection from a libp2p server
    */
-  async accept(protocol: Protocol, stream: MuxedStream, server: Libp2pServer): Promise<void> {
-    await this.bindProtocol(protocol, new Libp2pSender(stream))
-    this.inbound = true
-    this.server = server
+  async accept(
+    protocol: Protocol,
+    stream: MuxedStream,
+    server: Libp2pServer,
+  ): Promise<void> {
+    await this.bindProtocol(protocol, new Libp2pSender(stream));
+    this.inbound = true;
+    this.server = server;
   }
 
   /**
@@ -99,20 +106,22 @@ export class Libp2pPeer extends Peer {
   ): Promise<void> {
     await Promise.all(
       this.protocols.map(async (p) => {
-        await p.open()
-        const protocol = `/${p.name}/${p.versions[0]}`
+        await p.open();
+        const protocol = `/${p.name}/${p.versions[0]}`;
         try {
-          const { stream } = await node.dialProtocol(peer as any, protocol)
-          await this.bindProtocol(p, new Libp2pSender(stream))
+          const { stream } = await node.dialProtocol(peer as any, protocol);
+          await this.bindProtocol(p, new Libp2pSender(stream));
         } catch (err: any) {
-          const peerInfo = isPeerId(peer) ? `id=${peer.toB58String()}` : `multiaddr=${peer}`
+          const peerInfo = isPeerId(peer)
+            ? `id=${peer.toB58String()}`
+            : `multiaddr=${peer}`;
           this.config.logger.debug(
             `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`,
-          )
+          );
         }
       }),
-    )
-    this.server = server
-    this.connected = true
+    );
+    this.server = server;
+    this.connected = true;
   }
 }

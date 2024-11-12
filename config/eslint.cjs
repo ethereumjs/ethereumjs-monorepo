@@ -5,7 +5,6 @@ module.exports = {
     'github',
     'implicit-dependencies',
     'import',
-    'simple-import-sort',
     'ethereumjs',
   ],
   env: {
@@ -86,7 +85,7 @@ module.exports = {
     'import/no-useless-path-segments': 'error',
     'import/no-webpack-loader-syntax': 'error',
     'import/order': [
-      'error',
+      'off',
       {
         alphabetize: {
           order: 'asc',
@@ -104,8 +103,7 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-const': 'error',
-    'simple-import-sort/exports': 'error',
-    'sort-imports': ['error', { ignoreDeclarationSort: true }],
+    'sort-imports': ['off', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
   },
   parserOptions: {

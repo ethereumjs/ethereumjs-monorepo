@@ -1,51 +1,59 @@
-import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
+import { BlockHeader, createBlock, createBlockHeader } from "@ethereumjs/block";
 import {
   Common,
   Goerli,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
-} from '@ethereumjs/common'
-import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
-import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
+} from "@ethereumjs/common";
+import { MerkleStateManager } from "@ethereumjs/statemanager";
+import { createFeeMarket1559Tx, createLegacyTx } from "@ethereumjs/tx";
+import { Address, equalsBytes, hexToBytes } from "@ethereumjs/util";
+import { AbstractLevel } from "abstract-level";
 // import { keccak256 } from 'ethereum-cryptography/keccak'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, it, vi } from "vitest";
 
 // import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Miner } from '../../src/miner/index.js'
-import { FullEthereumService } from '../../src/service/index.js'
+import { Config } from "../../src/config.js";
+import { Miner } from "../../src/miner/index.js";
+import { FullEthereumService } from "../../src/service/index.js";
 // import { Event } from '../../src/types'
-import { wait } from '../integration/util.js'
+import { wait } from "../integration/util.js";
 
-import type { FullSynchronizer } from '../../src/sync/index.js'
-import type { Block } from '@ethereumjs/block'
-import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
-import type { VM } from '@ethereumjs/vm'
+import type { Block } from "@ethereumjs/block";
+import type { Blockchain, CliqueConsensus } from "@ethereumjs/blockchain";
+import type { VM } from "@ethereumjs/vm";
+import type { FullSynchronizer } from "../../src/sync/index.js";
 
 const A = {
-  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
-}
+  address: new Address(
+    hexToBytes("0x0b90087d864e82a284dca15923f3776de6bb016f"),
+  ),
+  privateKey: hexToBytes(
+    "0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993",
+  ),
+};
 
 const B = {
-  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
-}
+  address: new Address(
+    hexToBytes("0x6f62d8382bf2587361db73ceca28be91b2acb6df"),
+  ),
+  privateKey: hexToBytes(
+    "0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6",
+  ),
+};
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
-  await vm.stateManager.checkpoint()
-  await vm.stateManager.modifyAccountFields(address, { balance })
-  await vm.stateManager.commit()
-}
+  await vm.stateManager.checkpoint();
+  await vm.stateManager.modifyAccountFields(address, { balance });
+  await vm.stateManager.commit();
+};
 
-BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+BlockHeader.prototype["_consensusFormatValidation"] = vi.fn();
 
 // Stub out setStateRoot so txPool.validate checks will pass since correct state root
 // doesn't exist in fakeChain state anyway
-MerkleStateManager.prototype.setStateRoot = vi.fn()
+MerkleStateManager.prototype.setStateRoot = vi.fn();
 
 class FakeChain {
   open() {}
@@ -55,19 +63,19 @@ class FakeChain {
     return {
       latest: createBlockHeader(),
       height: BigInt(0),
-    }
+    };
   }
   get blocks() {
     return {
       latest: createBlock(),
       height: BigInt(0),
-    }
+    };
   }
   getBlock() {
-    return createBlockHeader()
+    return createBlockHeader();
   }
   getCanonicalHeadHeader() {
-    return createBlockHeader()
+    return createBlockHeader();
   }
   blockchain: any = {
     putBlock: async () => {},
@@ -79,10 +87,10 @@ class FakeChain {
     },
     validateHeader: () => {},
     getIteratorHead: () => {
-      return createBlock({ header: { number: 1 } })
+      return createBlock({ header: { number: 1 } });
     },
     getTotalDifficulty: () => {
-      return 1n
+      return 1n;
     },
     // eslint-disable-next-line no-invalid-this
     shallowCopy: () => this.blockchain,
@@ -90,23 +98,24 @@ class FakeChain {
     events: {
       addListener: () => {},
     },
-  }
+  };
 }
 
-const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
+const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]];
 
 const consensusConfig = {
   clique: {
     period: 10,
     epoch: 30000,
   },
-}
+};
 const defaultChainData = {
   config: {
     chainId: 123456,
     homesteadBlock: 0,
     eip150Block: 0,
-    eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    eip150Hash:
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
     eip155Block: 0,
     eip158Block: 0,
     byzantiumBlock: 0,
@@ -117,29 +126,30 @@ const defaultChainData = {
     londonBlock: 0,
     ...consensusConfig,
   },
-  nonce: '0x0',
-  timestamp: '0x614b3731',
-  gasLimit: '0x47b760',
-  difficulty: '0x1',
-  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-  coinbase: '0x0000000000000000000000000000000000000000',
-  number: '0x0',
-  gasUsed: '0x0',
-  parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  nonce: "0x0",
+  timestamp: "0x614b3731",
+  gasLimit: "0x47b760",
+  difficulty: "0x1",
+  mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  coinbase: "0x0000000000000000000000000000000000000000",
+  number: "0x0",
+  gasUsed: "0x0",
+  parentHash:
+    "0x0000000000000000000000000000000000000000000000000000000000000000",
   baseFeePerGas: 7,
-}
-const addr = A.address.toString().slice(2)
+};
+const addr = A.address.toString().slice(2);
 
-const extraData = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+const extraData = "0x" + "0".repeat(64) + addr + "0".repeat(130);
 const chainData = {
   ...defaultChainData,
   extraData,
-  alloc: { [addr]: { balance: '0x10000000000000000000' } },
-}
+  alloc: { [addr]: { balance: "0x10000000000000000000" } },
+};
 const customCommon = createCommonFromGethGenesis(chainData, {
-  chain: 'devnet',
+  chain: "devnet",
   hardfork: Hardfork.Berlin,
-})
+});
 
 const customConfig = new Config({
   accountCache: 10000,
@@ -147,9 +157,9 @@ const customConfig = new Config({
   accounts,
   mine: true,
   common: customCommon,
-})
+});
 
-const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
+const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin });
 
 const goerliConfig = new Config({
   accountCache: 10000,
@@ -157,7 +167,7 @@ const goerliConfig = new Config({
   accounts,
   mine: true,
   common: customCommon,
-})
+});
 
 const createTx = (
   from = A,
@@ -174,13 +184,13 @@ const createTx = (
     gasLimit,
     to: to.address,
     value,
-  }
-  const tx = createLegacyTx(txData, { common })
-  const signedTx = tx.sign(from.privateKey)
-  return signedTx
-}
+  };
+  const tx = createLegacyTx(txData, { common });
+  const signedTx = tx.sign(from.privateKey);
+  return signedTx;
+};
 
-const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+const txA01 = createTx(); // A -> B, nonce: 0, value: 1, normal gasPrice
 const txA011 = createTx(
   // A -> B, nonce: 0, value: 1, normal gasPrice, mainnet as chain
   A,
@@ -190,162 +200,178 @@ const txA011 = createTx(
   1000000000,
   100000,
   goerliCommon,
-) // A -> B, nonce: 0, value: 1, normal gasPrice
+); // A -> B, nonce: 0, value: 1, normal gasPrice
 
-const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
-const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
-const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
+const txA02 = createTx(A, B, 1, 1, 2000000000); // A -> B, nonce: 1, value: 1, 2x gasPrice
+const txA03 = createTx(A, B, 2, 1, 3000000000); // A -> B, nonce: 2, value: 1, 3x gasPrice
+const txB01 = createTx(B, A, 0, 1, 2500000000); // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
-describe('should initialize correctly', () => {
-  const chain = new FakeChain() as any
+describe("should initialize correctly", () => {
+  const chain = new FakeChain() as any;
   const service = new FullEthereumService({
     config: customConfig,
     chain,
-  })
-  it('should start/stop', async () => {
-    const miner = new Miner({ config: customConfig, service })
-    assert.notOk(miner.running)
-    miner.start()
-    assert.ok(miner.running)
-    await wait(100)
-    miner.stop()
-    assert.notOk(miner.running)
-  })
+  });
+  it("should start/stop", async () => {
+    const miner = new Miner({ config: customConfig, service });
+    assert.notOk(miner.running);
+    miner.start();
+    assert.ok(miner.running);
+    await wait(100);
+    miner.stop();
+    assert.notOk(miner.running);
+  });
 
-  it('Should not start when config.mine=false', () => {
-    const configMineFalse = new Config({ accounts, mine: false })
-    const miner = new Miner({ config: configMineFalse, service })
-    miner.start()
-    assert.notOk(miner.running, 'miner should not start when config.mine=false')
-  })
-})
+  it("Should not start when config.mine=false", () => {
+    const configMineFalse = new Config({ accounts, mine: false });
+    const miner = new Miner({ config: configMineFalse, service });
+    miner.start();
+    assert.notOk(
+      miner.running,
+      "miner should not start when config.mine=false",
+    );
+  });
+});
 
-describe('assembleBlocks() -> with a single tx', async () => {
-  const chain = new FakeChain() as any
+describe("assembleBlocks() -> with a single tx", async () => {
+  const chain = new FakeChain() as any;
   const service = new FullEthereumService({
     config: customConfig,
     chain,
-  })
-  const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
-  const { txPool } = service
-  await service.execution.open()
-  const { vm } = service.execution
+  });
+  const miner = new Miner({
+    config: customConfig,
+    service,
+    skipHardForkValidation: true,
+  });
+  const { txPool } = service;
+  await service.execution.open();
+  const { vm } = service.execution;
 
-  txPool.start()
-  miner.start()
+  txPool.start();
+  miner.start();
 
-  await setBalance(vm, A.address, BigInt('200000000000001'))
+  await setBalance(vm, A.address, BigInt("200000000000001"));
 
   // add tx
-  await txPool.add(txA01)
+  await txPool.add(txA01);
 
   // disable consensus to skip PoA block signer validation
-  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
-    A.address,
-  ] // stub
+  (
+    (vm.blockchain as Blockchain).consensus as CliqueConsensus
+  ).cliqueActiveSigners = () => [A.address]; // stub
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('should include tx in new block', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'new block should include tx')
-    })
-    miner.stop()
-    txPool.stop()
-  }
-  await (miner as any).queueNextAssembly(0)
-  await wait(500)
-})
+    it("should include tx in new block", () => {
+      assert.equal(
+        blocks[0].transactions.length,
+        1,
+        "new block should include tx",
+      );
+    });
+    miner.stop();
+    txPool.stop();
+  };
+  await (miner as any).queueNextAssembly(0);
+  await wait(500);
+});
 
-describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
-  const chain = new FakeChain() as any
+describe("assembleBlocks() -> with a hardfork mismatching tx", async () => {
+  const chain = new FakeChain() as any;
   const service = new FullEthereumService({
     config: goerliConfig,
     chain,
-  })
+  });
 
   // no skipHardForkValidation
-  const miner = new Miner({ config: goerliConfig, service })
-  const { txPool } = service
-  await service.execution.setupMerkleVM()
-  const { vm } = service.execution
-  txPool.start()
-  miner.start()
+  const miner = new Miner({ config: goerliConfig, service });
+  const { txPool } = service;
+  await service.execution.setupMerkleVM();
+  const { vm } = service.execution;
+  txPool.start();
+  miner.start();
 
-  await setBalance(vm, A.address, BigInt('200000000000001'))
+  await setBalance(vm, A.address, BigInt("200000000000001"));
 
   // add tx
-  txA011.common.setHardfork(Hardfork.Paris)
-  it('should add tx to pool', async () => {
-    await txPool.add(txA011)
-    assert.equal(txPool.txsInPool, 1, 'transaction should be in pool')
-  })
+  txA011.common.setHardfork(Hardfork.Paris);
+  it("should add tx to pool", async () => {
+    await txPool.add(txA011);
+    assert.equal(txPool.txsInPool, 1, "transaction should be in pool");
+  });
 
   // disable consensus to skip PoA block signer validation
-  ;((vm.blockchain as Blockchain).consensus as CliqueConsensus).cliqueActiveSigners = () => [
-    A.address,
-  ] // stub
+  (
+    (vm.blockchain as Blockchain).consensus as CliqueConsensus
+  ).cliqueActiveSigners = () => [A.address]; // stub
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('should not include tx', () => {
+    it("should not include tx", () => {
       assert.equal(
         blocks[0].transactions.length,
         0,
-        'new block should not include tx due to hardfork mismatch',
-      )
-      assert.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
-    })
-    miner.stop()
-    txPool.stop()
-  }
-  await (miner as any).queueNextAssembly(0)
-  await wait(500)
-})
+        "new block should not include tx due to hardfork mismatch",
+      );
+      assert.equal(txPool.txsInPool, 1, "transaction should remain in pool");
+    });
+    miner.stop();
+    txPool.stop();
+  };
+  await (miner as any).queueNextAssembly(0);
+  await wait(500);
+});
 
-describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce', async () => {
-  const chain = new FakeChain() as any
+describe("assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce", async () => {
+  const chain = new FakeChain() as any;
   const _config = {
     ...customConfig,
-  }
+  };
   const service = new FullEthereumService({
     config: customConfig,
     chain,
-  })
-  const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
-  const { txPool } = service
-  await service.execution.open()
-  const { vm } = service.execution
-  txPool.start()
-  miner.start()
+  });
+  const miner = new Miner({
+    config: customConfig,
+    service,
+    skipHardForkValidation: true,
+  });
+  const { txPool } = service;
+  await service.execution.open();
+  const { vm } = service.execution;
+  txPool.start();
+  miner.start();
 
-  await setBalance(vm, A.address, BigInt('400000000000001'))
-  await setBalance(vm, B.address, BigInt('400000000000001'))
+  await setBalance(vm, A.address, BigInt("400000000000001"));
+  await setBalance(vm, B.address, BigInt("400000000000001"));
 
   // add txs
-  await txPool.add(txA01)
-  await txPool.add(txA02)
-  await txPool.add(txA03)
-  await txPool.add(txB01)
+  await txPool.add(txA01);
+  await txPool.add(txA02);
+  await txPool.add(txA03);
+  await txPool.add(txB01);
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  (vm.blockchain as any)._validateConsensus = false;
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('should be properly ordered by gasPrice and nonce', () => {
-      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
-      const expectedOrder = [txB01, txA01, txA02, txA03]
+    it("should be properly ordered by gasPrice and nonce", () => {
+      const msg =
+        "txs in block should be properly ordered by gasPrice and nonce";
+      const expectedOrder = [txB01, txA01, txA02, txA03];
       for (const [index, tx] of expectedOrder.entries()) {
-        const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        const txHash = blocks[0].transactions[index]?.hash();
+        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg);
       }
-    })
-    miner.stop()
-    txPool.stop()
-  }
-  await (miner as any).queueNextAssembly(0)
-  await wait(500)
-})
+    });
+    miner.stop();
+    txPool.stop();
+  };
+  await (miner as any).queueNextAssembly(0);
+  await wait(500);
+});
 
-describe('assembleBlocks() -> with saveReceipts', async () => {
-  const chain = new FakeChain() as any
+describe("assembleBlocks() -> with saveReceipts", async () => {
+  const chain = new FakeChain() as any;
   const config = new Config({
     accountCache: 10000,
     storageCache: 1000,
@@ -353,181 +379,203 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
     mine: true,
     common: customCommon,
     saveReceipts: true,
-  })
+  });
   const service = new FullEthereumService({
     config,
     chain,
     metaDB: new AbstractLevel({
       encodings: { utf8: true, buffer: true },
     }),
-  })
-  const miner = new Miner({ config, service, skipHardForkValidation: true })
-  const { txPool } = service
-  await service.execution.open()
-  const { vm, receiptsManager } = service.execution
-  txPool.start()
-  miner.start()
-  it('should initialize receiptsManager', () => {
-    assert.ok(receiptsManager, 'receiptsManager should be initialized')
-  })
+  });
+  const miner = new Miner({ config, service, skipHardForkValidation: true });
+  const { txPool } = service;
+  await service.execution.open();
+  const { vm, receiptsManager } = service.execution;
+  txPool.start();
+  miner.start();
+  it("should initialize receiptsManager", () => {
+    assert.ok(receiptsManager, "receiptsManager should be initialized");
+  });
 
-  await setBalance(vm, A.address, BigInt('400000000000001'))
-  await setBalance(vm, B.address, BigInt('400000000000001'))
+  await setBalance(vm, A.address, BigInt("400000000000001"));
+  await setBalance(vm, B.address, BigInt("400000000000001"));
 
   // add txs
-  await txPool.add(txA01)
-  await txPool.add(txA02)
-  await txPool.add(txA03)
-  await txPool.add(txB01)
+  await txPool.add(txA01);
+  await txPool.add(txA02);
+  await txPool.add(txA03);
+  await txPool.add(txB01);
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  (vm.blockchain as any)._validateConsensus = false;
 
   chain.putBlocks = async (blocks: Block[]) => {
-    it('should be properly ordered by gasPrice and nonce', async () => {
-      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
-      const expectedOrder = [txB01, txA01, txA02, txA03]
+    it("should be properly ordered by gasPrice and nonce", async () => {
+      const msg =
+        "txs in block should be properly ordered by gasPrice and nonce";
+      const expectedOrder = [txB01, txA01, txA02, txA03];
       for (const [index, tx] of expectedOrder.entries()) {
-        const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        const txHash = blocks[0].transactions[index]?.hash();
+        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg);
       }
-    })
-    miner.stop()
-    txPool.stop()
-  }
-  await (miner as any).queueNextAssembly(0)
-  it('should save receipt', async () => {
-    const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.ok(receipt, 'receipt should be saved')
-  })
-  it('should save receipt', async () => {
-    let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.ok(receipt, 'receipt should be saved')
-    receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    });
+    miner.stop();
+    txPool.stop();
+  };
+  await (miner as any).queueNextAssembly(0);
+  it("should save receipt", async () => {
+    const receipt = await receiptsManager!.getReceipts(txB01.hash());
+    assert.ok(receipt, "receipt should be saved");
+  });
+  it("should save receipt", async () => {
+    let receipt = await receiptsManager!.getReceipts(txA01.hash());
+    assert.ok(receipt, "receipt should be saved");
+    receipt = await receiptsManager!.getReceipts(txA02.hash());
+    assert.ok(receipt, "receipt should be saved");
 
-    receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    receipt = await receiptsManager!.getReceipts(txA03.hash());
+    assert.ok(receipt, "receipt should be saved");
 
-    await wait(500)
-  })
-})
+    await wait(500);
+  });
+});
 
-describe('assembleBlocks() -> should not include tx under the baseFee', async () => {
+describe("assembleBlocks() -> should not include tx under the baseFee", async () => {
   const customChainParams = {
     hardforks: [
-      { name: 'chainstart', block: 0 },
-      { name: 'london', block: 0 },
+      { name: "chainstart", block: 0 },
+      { name: "london", block: 0 },
     ],
-  }
+  };
   const common = createCustomCommon(customChainParams, Goerli, {
     hardfork: Hardfork.London,
-  })
+  });
   const config = new Config({
     accountCache: 10000,
     storageCache: 1000,
     accounts,
     mine: true,
     common,
-  })
-  const chain = new FakeChain() as any
-  const block = createBlock({}, { common })
-  Object.defineProperty(chain, 'headers', {
+  });
+  const chain = new FakeChain() as any;
+  const block = createBlock({}, { common });
+  Object.defineProperty(chain, "headers", {
     get() {
-      return { latest: block.header, height: block.header.number }
+      return { latest: block.header, height: block.header.number };
     },
-  })
-  Object.defineProperty(chain, 'blocks', {
+  });
+  Object.defineProperty(chain, "blocks", {
     get() {
-      return { latest: block }
+      return { latest: block };
     },
-  })
+  });
   const service = new FullEthereumService({
     config,
     chain,
-  })
-  const miner = new Miner({ config, service, skipHardForkValidation: true })
-  const { txPool } = service
-  await service.execution.open()
-  const { vm } = service.execution
-  txPool.start()
-  miner.start()
+  });
+  const miner = new Miner({ config, service, skipHardForkValidation: true });
+  const { txPool } = service;
+  await service.execution.open();
+  const { vm } = service.execution;
+  txPool.start();
+  miner.start();
 
   // the default block baseFee will be 7
   // add tx with maxFeePerGas of 6
-  const tx = createFeeMarket1559Tx({ to: B.address, maxFeePerGas: 6 }, { common }).sign(
-    A.privateKey,
-  )
+  const tx = createFeeMarket1559Tx(
+    { to: B.address, maxFeePerGas: 6 },
+    { common },
+  ).sign(A.privateKey);
   try {
-    await txPool.add(tx, true)
+    await txPool.add(tx, true);
   } catch {
-    assert.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
+    assert.fail(
+      "txPool should throw trying to add a tx with an invalid maxFeePerGas",
+    );
   }
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
-  ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
-    assert.equal(block.transactions.length, 0, 'should not include tx')
-    miner.stop()
-    txPool.stop()
-  }
-  await wait(500)
-  await (miner as any).queueNextAssembly(0)
-  await wait(500)
-})
+  (vm.blockchain as any)._validateConsensus = false;
+  (service.synchronizer as FullSynchronizer).handleNewBlock = async (
+    block: Block,
+  ) => {
+    assert.equal(block.transactions.length, 0, "should not include tx");
+    miner.stop();
+    txPool.stop();
+  };
+  await wait(500);
+  await (miner as any).queueNextAssembly(0);
+  await wait(500);
+});
 
 describe("assembleBlocks() -> should stop assembling a block after it's full", async () => {
-  const chain = new FakeChain() as any
-  const gasLimit = 100000
-  const block = createBlock({ header: { gasLimit } }, { common: customCommon, setHardfork: true })
-  Object.defineProperty(chain, 'headers', {
+  const chain = new FakeChain() as any;
+  const gasLimit = 100000;
+  const block = createBlock(
+    { header: { gasLimit } },
+    { common: customCommon, setHardfork: true },
+  );
+  Object.defineProperty(chain, "headers", {
     get() {
-      return { latest: block.header, height: BigInt(0) }
+      return { latest: block.header, height: BigInt(0) };
     },
-  })
-  Object.defineProperty(chain, 'blocks', {
+  });
+  Object.defineProperty(chain, "blocks", {
     get() {
-      return { latest: block, height: BigInt(0) }
+      return { latest: block, height: BigInt(0) };
     },
-  })
+  });
   const service = new FullEthereumService({
     config: customConfig,
     chain,
-  })
-  await service.execution.open()
-  const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
-  const { txPool } = service
-  const { vm } = service.execution
-  txPool.start()
-  miner.start()
+  });
+  await service.execution.open();
+  const miner = new Miner({
+    config: customConfig,
+    service,
+    skipHardForkValidation: true,
+  });
+  const { txPool } = service;
+  const { vm } = service.execution;
+  txPool.start();
+  miner.start();
 
-  await setBalance(vm, A.address, BigInt('200000000000001'))
+  await setBalance(vm, A.address, BigInt("200000000000001"));
 
   // add txs
-  const data = '0xfe' // INVALID opcode, consumes all gas
+  const data = "0xfe"; // INVALID opcode, consumes all gas
   const tx1FillsBlockGasLimit = createLegacyTx(
-    { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
+    { gasLimit: gasLimit - 1, data, gasPrice: BigInt("1000000000") },
     { common: customCommon },
-  ).sign(A.privateKey)
+  ).sign(A.privateKey);
   const tx2ExceedsBlockGasLimit = createLegacyTx(
-    { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
+    {
+      gasLimit: 21000,
+      to: B.address,
+      nonce: 1,
+      gasPrice: BigInt("1000000000"),
+    },
     { common: customCommon },
-  ).sign(A.privateKey)
-  await txPool.add(tx1FillsBlockGasLimit)
-  await txPool.add(tx2ExceedsBlockGasLimit)
+  ).sign(A.privateKey);
+  await txPool.add(tx1FillsBlockGasLimit);
+  await txPool.add(tx2ExceedsBlockGasLimit);
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  (vm.blockchain as any)._validateConsensus = false;
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('should include tx', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'only one tx should be included')
-    })
-    miner.stop()
-    txPool.stop()
-  }
-  await miner['queueNextAssembly'](0)
-  await wait(500)
-})
+    it("should include tx", () => {
+      assert.equal(
+        blocks[0].transactions.length,
+        1,
+        "only one tx should be included",
+      );
+    });
+    miner.stop();
+    txPool.stop();
+  };
+  await miner["queueNextAssembly"](0);
+  await wait(500);
+});
 /*****************************************************************************************
  *  Skipping the next three tests because they timeout quite often in CI runs where
  *  vitest is running them in parallel with other tests.  These tests should be rewritten

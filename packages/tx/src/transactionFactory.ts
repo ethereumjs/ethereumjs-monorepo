@@ -1,14 +1,26 @@
-import { fetchFromProvider, getProvider } from '@ethereumjs/util'
+import { fetchFromProvider, getProvider } from "@ethereumjs/util";
 
-import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.js'
-import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.js'
-import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.js'
-import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.js'
+import {
+  createFeeMarket1559Tx,
+  createFeeMarket1559TxFromRLP,
+} from "./1559/constructors.js";
+import {
+  createAccessList2930Tx,
+  createAccessList2930TxFromRLP,
+} from "./2930/constructors.js";
+import {
+  createBlob4844Tx,
+  createBlob4844TxFromRLP,
+} from "./4844/constructors.js";
+import {
+  createEOACode7702Tx,
+  createEOACode7702TxFromRLP,
+} from "./7702/constructors.js";
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
-} from './legacy/constructors.js'
+} from "./legacy/constructors.js";
 import {
   TransactionType,
   isAccessList2930TxData,
@@ -16,11 +28,11 @@ import {
   isEOACode7702TxData,
   isFeeMarket1559TxData,
   isLegacyTxData,
-} from './types.js'
-import { normalizeTxParams } from './util.js'
+} from "./types.js";
+import { normalizeTxParams } from "./util.js";
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
-import type { EthersProvider } from '@ethereumjs/util'
+import type { EthersProvider } from "@ethereumjs/util";
+import type { Transaction, TxData, TxOptions, TypedTxData } from "./types.js";
 /**
  * Create a transaction from a `txData` object
  *
@@ -31,22 +43,24 @@ export function createTx<T extends TransactionType>(
   txData: TypedTxData,
   txOptions: TxOptions = {},
 ): Transaction[T] {
-  if (!('type' in txData) || txData.type === undefined) {
+  if (!("type" in txData) || txData.type === undefined) {
     // Assume legacy transaction
-    return createLegacyTx(txData, txOptions) as Transaction[T]
+    return createLegacyTx(txData, txOptions) as Transaction[T];
   } else {
     if (isLegacyTxData(txData)) {
-      return createLegacyTx(txData, txOptions) as Transaction[T]
+      return createLegacyTx(txData, txOptions) as Transaction[T];
     } else if (isAccessList2930TxData(txData)) {
-      return createAccessList2930Tx(txData, txOptions) as Transaction[T]
+      return createAccessList2930Tx(txData, txOptions) as Transaction[T];
     } else if (isFeeMarket1559TxData(txData)) {
-      return createFeeMarket1559Tx(txData, txOptions) as Transaction[T]
+      return createFeeMarket1559Tx(txData, txOptions) as Transaction[T];
     } else if (isBlob4844TxData(txData)) {
-      return createBlob4844Tx(txData, txOptions) as Transaction[T]
+      return createBlob4844Tx(txData, txOptions) as Transaction[T];
     } else if (isEOACode7702TxData(txData)) {
-      return createEOACode7702Tx(txData, txOptions) as Transaction[T]
+      return createEOACode7702Tx(txData, txOptions) as Transaction[T];
     } else {
-      throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
+      throw new Error(
+        `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
+      );
     }
   }
 }
@@ -65,18 +79,18 @@ export function createTxFromRLP<T extends TransactionType>(
     // Determine the type.
     switch (data[0]) {
       case TransactionType.AccessListEIP2930:
-        return createAccessList2930TxFromRLP(data, txOptions) as Transaction[T]
+        return createAccessList2930TxFromRLP(data, txOptions) as Transaction[T];
       case TransactionType.FeeMarketEIP1559:
-        return createFeeMarket1559TxFromRLP(data, txOptions) as Transaction[T]
+        return createFeeMarket1559TxFromRLP(data, txOptions) as Transaction[T];
       case TransactionType.BlobEIP4844:
-        return createBlob4844TxFromRLP(data, txOptions) as Transaction[T]
+        return createBlob4844TxFromRLP(data, txOptions) as Transaction[T];
       case TransactionType.EOACodeEIP7702:
-        return createEOACode7702TxFromRLP(data, txOptions) as Transaction[T]
+        return createEOACode7702TxFromRLP(data, txOptions) as Transaction[T];
       default:
-        throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
+        throw new Error(`TypedTransaction with ID ${data[0]} unknown`);
     }
   } else {
-    return createLegacyTxFromRLP(data, txOptions) as Transaction[T]
+    return createLegacyTxFromRLP(data, txOptions) as Transaction[T];
   }
 }
 
@@ -94,12 +108,12 @@ export function createTxFromBlockBodyData(
   txOptions: TxOptions = {},
 ) {
   if (data instanceof Uint8Array) {
-    return createTxFromRLP(data, txOptions)
+    return createTxFromRLP(data, txOptions);
   } else if (Array.isArray(data)) {
     // It is a legacy transaction
-    return createLegacyTxFromBytesArray(data, txOptions)
+    return createLegacyTxFromBytesArray(data, txOptions);
   } else {
-    throw new Error('Cannot decode transaction: unknown type input')
+    throw new Error("Cannot decode transaction: unknown type input");
   }
 }
 
@@ -114,7 +128,7 @@ export async function createTxFromRPC<T extends TransactionType>(
   txData: TxData[T],
   txOptions: TxOptions = {},
 ): Promise<Transaction[T]> {
-  return createTx(normalizeTxParams(txData), txOptions)
+  return createTx(normalizeTxParams(txData), txOptions);
 }
 
 /**
@@ -129,13 +143,13 @@ export async function createTxFromJSONRPCProvider(
   txHash: string,
   txOptions?: TxOptions,
 ) {
-  const prov = getProvider(provider)
+  const prov = getProvider(provider);
   const txData = await fetchFromProvider(prov, {
-    method: 'eth_getTransactionByHash',
+    method: "eth_getTransactionByHash",
     params: [txHash],
-  })
+  });
   if (txData === null) {
-    throw new Error('No data returned from provider')
+    throw new Error("No data returned from provider");
   }
-  return createTxFromRPC(txData, txOptions)
+  return createTxFromRPC(txData, txOptions);
 }

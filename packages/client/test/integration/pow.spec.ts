@@ -1,29 +1,36 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createAddressFromPrivateKey, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { rmSync } from 'fs'
-import { assert, describe, it } from 'vitest'
+import { rmSync } from "fs";
+import { Hardfork, createCommonFromGethGenesis } from "@ethereumjs/common";
+import {
+  createAddressFromPrivateKey,
+  hexToBytes,
+  parseGethGenesisState,
+} from "@ethereumjs/util";
+import { assert, describe, it } from "vitest";
 
-import { Config } from '../../src/index.js'
-import { createInlineClient } from '../sim/simutils.js'
+import { Config } from "../../src/index.js";
+import { createInlineClient } from "../sim/simutils.js";
 
-import type { Address } from '@ethereumjs/util'
+import type { Address } from "@ethereumjs/util";
 
-const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
-const minerAddress = createAddressFromPrivateKey(pk)
+const pk = hexToBytes(
+  "0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe",
+);
+const minerAddress = createAddressFromPrivateKey(pk);
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   if (cleanStart) {
-    rmSync(`datadir/devnet`, { recursive: true, force: true })
+    rmSync(`datadir/devnet`, { recursive: true, force: true });
   }
-  const addr = prefundAddress.toString().slice(2)
-  const consensusConfig = { ethash: true }
+  const addr = prefundAddress.toString().slice(2);
+  const consensusConfig = { ethash: true };
 
   const defaultChainData = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
       eip150Block: 0,
-      eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      eip150Hash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
       eip155Block: 0,
       eip158Block: 0,
       byzantiumBlock: 0,
@@ -34,28 +41,30 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
       londonBlock: 0,
       ...consensusConfig,
     },
-    nonce: '0x0',
-    timestamp: '0x614b3731',
-    gasLimit: '0x47b760',
-    difficulty: '0x1',
-    mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    coinbase: '0x0000000000000000000000000000000000000000',
-    number: '0x0',
-    gasUsed: '0x0',
-    parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    nonce: "0x0",
+    timestamp: "0x614b3731",
+    gasLimit: "0x47b760",
+    difficulty: "0x1",
+    mixHash:
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+    coinbase: "0x0000000000000000000000000000000000000000",
+    number: "0x0",
+    gasUsed: "0x0",
+    parentHash:
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
     baseFeePerGas: 7,
-  }
-  const extraData = '0x' + '0'.repeat(32)
+  };
+  const extraData = "0x" + "0".repeat(32);
   const chainData = {
     ...defaultChainData,
     extraData,
-    alloc: { [addr]: { balance: '0x10000000000000000000' } },
-  }
+    alloc: { [addr]: { balance: "0x10000000000000000000" } },
+  };
   const common = createCommonFromGethGenesis(chainData, {
-    chain: 'devnet',
+    chain: "devnet",
     hardfork: Hardfork.London,
-  })
-  const customGenesisState = parseGethGenesisState(chainData)
+  });
+  const customGenesisState = parseGethGenesisState(chainData);
 
   const config = new Config({
     common,
@@ -66,33 +75,33 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     port: 30304,
     maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
     maxFetcherJobs: 10,
-    datadir: 'devnet',
+    datadir: "devnet",
     accounts: [[minerAddress, pk]],
     mine: true,
-  })
+  });
 
-  const client = await createInlineClient(config, common, customGenesisState)
-  return client
+  const client = await createInlineClient(config, common, customGenesisState);
+  return client;
 }
 
-describe('PoW client test', async () => {
-  const client = await setupPowDevnet(minerAddress, true)
-  const started = client.started
-  it('starts the client successfully', () => {
-    assert.ok(started, 'client started successfully')
-  }, 60000)
+describe("PoW client test", async () => {
+  const client = await setupPowDevnet(minerAddress, true);
+  const started = client.started;
+  it("starts the client successfully", () => {
+    assert.ok(started, "client started successfully");
+  }, 60000);
   const message: string = await new Promise((resolve) => {
-    client.config.logger.on('data', (data: any) => {
-      if (data.message.includes('Miner: Found PoW solution') === true) {
-        resolve(data.message)
+    client.config.logger.on("data", (data: any) => {
+      if (data.message.includes("Miner: Found PoW solution") === true) {
+        resolve(data.message);
       }
-    })
-  })
-  it('should find a PoW solution', () => {
-    assert.ok(message.includes('Miner: Found PoW solution'))
-  })
-  await client.stop()
-  it('should stop client', () => {
-    assert.ok(client.started === false, 'client stopped successfully')
-  })
-})
+    });
+  });
+  it("should find a PoW solution", () => {
+    assert.ok(message.includes("Miner: Found PoW solution"));
+  });
+  await client.stop();
+  it("should stop client", () => {
+    assert.ok(client.started === false, "client stopped successfully");
+  });
+});

@@ -1,18 +1,18 @@
-import { bytesToBigInt, toBytes } from '@ethereumjs/util'
+import { bytesToBigInt, toBytes } from "@ethereumjs/util";
 
-import type { FeeMarket1559Tx } from './1559/tx.js'
-import type { AccessList2930Transaction } from './2930/tx.js'
-import type { Blob4844Tx } from './4844/tx.js'
-import type { EOACode7702Transaction } from './7702/tx.js'
-import type { LegacyTx } from './legacy/tx.js'
-import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
+import type { Common, Hardfork, ParamsDict } from "@ethereumjs/common";
 import type {
   Address,
   AddressLike,
   BigIntLike,
   BytesLike,
   PrefixedHexString,
-} from '@ethereumjs/util'
+} from "@ethereumjs/util";
+import type { FeeMarket1559Tx } from "./1559/tx.js";
+import type { AccessList2930Transaction } from "./2930/tx.js";
+import type { Blob4844Tx } from "./4844/tx.js";
+import type { EOACode7702Transaction } from "./7702/tx.js";
+import type { LegacyTx } from "./legacy/tx.js";
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
@@ -63,7 +63,7 @@ export interface TxOptions {
    *
    * Current default hardfork: `istanbul`
    */
-  common?: Common
+  common?: Common;
   /**
    * Tx parameters sorted by EIP can be found in the exported `paramsTx` dictionary,
    * which is internally passed to the associated `@ethereumjs/common` instance which
@@ -80,7 +80,7 @@ export interface TxOptions {
    * params['1']['txGas'] = 30000 // 21000
    * ```
    */
-  params?: ParamsDict
+  params?: ParamsDict;
   /**
    * A transaction object by default gets frozen along initialization. This gives you
    * strong additional security guarantees on the consistency of the tx parameters.
@@ -92,56 +92,60 @@ export interface TxOptions {
    *
    * Default: true
    */
-  freeze?: boolean
+  freeze?: boolean;
 
   /**
    * Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
    * Gas cost for initcode size analysis will still be charged. Use with caution.
    */
-  allowUnlimitedInitCodeSize?: boolean
+  allowUnlimitedInitCodeSize?: boolean;
 }
 
-export function isAccessListBytes(input: AccessListBytes | AccessList): input is AccessListBytes {
+export function isAccessListBytes(
+  input: AccessListBytes | AccessList,
+): input is AccessListBytes {
   if (input.length === 0) {
-    return true
+    return true;
   }
-  const firstItem = input[0]
+  const firstItem = input[0];
   if (Array.isArray(firstItem)) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
-export function isAccessList(input: AccessListBytes | AccessList): input is AccessList {
-  return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
+export function isAccessList(
+  input: AccessListBytes | AccessList,
+): input is AccessList {
+  return !isAccessListBytes(input); // This is exactly the same method, except the output is negated.
 }
 
 export function isAuthorizationListBytes(
   input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationListBytes {
   if (input.length === 0) {
-    return true
+    return true;
   }
-  const firstItem = input[0]
+  const firstItem = input[0];
   if (Array.isArray(firstItem)) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 export function isAuthorizationList(
   input: AuthorizationListBytes | AuthorizationList,
 ): input is AuthorizationList {
-  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
+  return !isAuthorizationListBytes(input); // This is exactly the same method, except the output is negated.
 }
 
 export interface TransactionCache {
-  hash?: Uint8Array
+  hash?: Uint8Array;
   dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-  senderPubKey?: Uint8Array
+    value: bigint;
+    hardfork: string | Hardfork;
+  };
+  senderPubKey?: Uint8Array;
 }
 
 /**
@@ -156,140 +160,159 @@ export enum TransactionType {
 }
 
 export interface Transaction {
-  [TransactionType.Legacy]: LegacyTx
-  [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx
-  [TransactionType.AccessListEIP2930]: AccessList2930Transaction
-  [TransactionType.BlobEIP4844]: Blob4844Tx
-  [TransactionType.EOACodeEIP7702]: EOACode7702Transaction
+  [TransactionType.Legacy]: LegacyTx;
+  [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx;
+  [TransactionType.AccessListEIP2930]: AccessList2930Transaction;
+  [TransactionType.BlobEIP4844]: Blob4844Tx;
+  [TransactionType.EOACodeEIP7702]: EOACode7702Transaction;
 }
 
-export type TypedTransaction = Transaction[TransactionType]
+export type TypedTransaction = Transaction[TransactionType];
 
 export function isLegacyTx(tx: TypedTransaction): tx is LegacyTx {
-  return tx.type === TransactionType.Legacy
+  return tx.type === TransactionType.Legacy;
 }
 
-export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Transaction {
-  return tx.type === TransactionType.AccessListEIP2930
+export function isAccessList2930Tx(
+  tx: TypedTransaction,
+): tx is AccessList2930Transaction {
+  return tx.type === TransactionType.AccessListEIP2930;
 }
 
 export function isFeeMarket1559Tx(tx: TypedTransaction): tx is FeeMarket1559Tx {
-  return tx.type === TransactionType.FeeMarketEIP1559
+  return tx.type === TransactionType.FeeMarketEIP1559;
 }
 
 export function isBlob4844Tx(tx: TypedTransaction): tx is Blob4844Tx {
-  return tx.type === TransactionType.BlobEIP4844
+  return tx.type === TransactionType.BlobEIP4844;
 }
 
-export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Transaction {
-  return tx.type === TransactionType.EOACodeEIP7702
+export function isEOACode7702Tx(
+  tx: TypedTransaction,
+): tx is EOACode7702Transaction {
+  return tx.type === TransactionType.EOACodeEIP7702;
 }
 
-export interface TransactionInterface<T extends TransactionType = TransactionType> {
-  readonly common: Common
-  readonly nonce: bigint
-  readonly gasLimit: bigint
-  readonly to?: Address
-  readonly value: bigint
-  readonly data: Uint8Array
-  readonly v?: bigint
-  readonly r?: bigint
-  readonly s?: bigint
-  readonly cache: TransactionCache
-  supports(capability: Capability): boolean
-  type: TransactionType
-  getIntrinsicGas(): bigint
-  getDataGas(): bigint
-  getUpfrontCost(): bigint
-  toCreationAddress(): boolean
-  raw(): TxValuesArray[T]
-  serialize(): Uint8Array
-  getMessageToSign(): Uint8Array | Uint8Array[]
-  getHashedMessageToSign(): Uint8Array
-  hash(): Uint8Array
-  getMessageToVerifySignature(): Uint8Array
-  getValidationErrors(): string[]
-  isSigned(): boolean
-  isValid(): boolean
-  verifySignature(): boolean
-  getSenderAddress(): Address
-  getSenderPublicKey(): Uint8Array
-  sign(privateKey: Uint8Array): Transaction[T]
-  toJSON(): JSONTx
-  errorStr(): string
+export interface TransactionInterface<
+  T extends TransactionType = TransactionType,
+> {
+  readonly common: Common;
+  readonly nonce: bigint;
+  readonly gasLimit: bigint;
+  readonly to?: Address;
+  readonly value: bigint;
+  readonly data: Uint8Array;
+  readonly v?: bigint;
+  readonly r?: bigint;
+  readonly s?: bigint;
+  readonly cache: TransactionCache;
+  supports(capability: Capability): boolean;
+  type: TransactionType;
+  getIntrinsicGas(): bigint;
+  getDataGas(): bigint;
+  getUpfrontCost(): bigint;
+  toCreationAddress(): boolean;
+  raw(): TxValuesArray[T];
+  serialize(): Uint8Array;
+  getMessageToSign(): Uint8Array | Uint8Array[];
+  getHashedMessageToSign(): Uint8Array;
+  hash(): Uint8Array;
+  getMessageToVerifySignature(): Uint8Array;
+  getValidationErrors(): string[];
+  isSigned(): boolean;
+  isValid(): boolean;
+  verifySignature(): boolean;
+  getSenderAddress(): Address;
+  getSenderPublicKey(): Uint8Array;
+  sign(privateKey: Uint8Array): Transaction[T];
+  toJSON(): JSONTx;
+  errorStr(): string;
 }
 
 export interface LegacyTxInterface<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {}
 
-export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
-  extends TransactionInterface<T> {
-  readonly chainId: bigint
-  getMessageToSign(): Uint8Array
+export interface EIP2718CompatibleTx<
+  T extends TransactionType = TransactionType,
+> extends TransactionInterface<T> {
+  readonly chainId: bigint;
+  getMessageToSign(): Uint8Array;
 }
 
-export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP2718CompatibleTx<T> {
-  readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
+export interface EIP2930CompatibleTx<
+  T extends TransactionType = TransactionType,
+> extends EIP2718CompatibleTx<T> {
+  readonly accessList: AccessListBytes;
+  readonly AccessListJSON: AccessList;
 }
 
-export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP2930CompatibleTx<T> {
-  readonly maxPriorityFeePerGas: bigint
-  readonly maxFeePerGas: bigint
+export interface EIP1559CompatibleTx<
+  T extends TransactionType = TransactionType,
+> extends EIP2930CompatibleTx<T> {
+  readonly maxPriorityFeePerGas: bigint;
+  readonly maxFeePerGas: bigint;
 }
 
-export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP1559CompatibleTx<T> {
-  readonly maxFeePerBlobGas: bigint
-  blobVersionedHashes: Uint8Array[]
-  blobs?: Uint8Array[]
-  kzgCommitments?: Uint8Array[]
-  kzgProofs?: Uint8Array[]
-  serializeNetworkWrapper(): Uint8Array
-  numBlobs(): number
+export interface EIP4844CompatibleTx<
+  T extends TransactionType = TransactionType,
+> extends EIP1559CompatibleTx<T> {
+  readonly maxFeePerBlobGas: bigint;
+  blobVersionedHashes: Uint8Array[];
+  blobs?: Uint8Array[];
+  kzgCommitments?: Uint8Array[];
+  kzgProofs?: Uint8Array[];
+  serializeNetworkWrapper(): Uint8Array;
+  numBlobs(): number;
 }
 
-export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP1559CompatibleTx<T> {
+export interface EIP7702CompatibleTx<
+  T extends TransactionType = TransactionType,
+> extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
-  readonly authorizationList: AuthorizationListBytes
+  readonly authorizationList: AuthorizationListBytes;
 }
 
 export interface TxData {
-  [TransactionType.Legacy]: LegacyTxData
-  [TransactionType.AccessListEIP2930]: AccessList2930TxData
-  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
-  [TransactionType.BlobEIP4844]: BlobEIP4844TxData
-  [TransactionType.EOACodeEIP7702]: EOACode7702TxData
+  [TransactionType.Legacy]: LegacyTxData;
+  [TransactionType.AccessListEIP2930]: AccessList2930TxData;
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData;
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxData;
+  [TransactionType.EOACodeEIP7702]: EOACode7702TxData;
 }
 
-export type TypedTxData = TxData[TransactionType]
+export type TypedTxData = TxData[TransactionType];
 
 export function isLegacyTxData(txData: TypedTxData): txData is LegacyTxData {
-  const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === TransactionType.Legacy
+  const txType = Number(bytesToBigInt(toBytes(txData.type)));
+  return txType === TransactionType.Legacy;
 }
 
-export function isAccessList2930TxData(txData: TypedTxData): txData is AccessList2930TxData {
-  const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === TransactionType.AccessListEIP2930
+export function isAccessList2930TxData(
+  txData: TypedTxData,
+): txData is AccessList2930TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)));
+  return txType === TransactionType.AccessListEIP2930;
 }
 
-export function isFeeMarket1559TxData(txData: TypedTxData): txData is FeeMarketEIP1559TxData {
-  const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === TransactionType.FeeMarketEIP1559
+export function isFeeMarket1559TxData(
+  txData: TypedTxData,
+): txData is FeeMarketEIP1559TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)));
+  return txType === TransactionType.FeeMarketEIP1559;
 }
 
-export function isBlob4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
-  const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === TransactionType.BlobEIP4844
+export function isBlob4844TxData(
+  txData: TypedTxData,
+): txData is BlobEIP4844TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)));
+  return txType === TransactionType.BlobEIP4844;
 }
 
-export function isEOACode7702TxData(txData: TypedTxData): txData is EOACode7702TxData {
-  const txType = Number(bytesToBigInt(toBytes(txData.type)))
-  return txType === TransactionType.EOACodeEIP7702
+export function isEOACode7702TxData(
+  txData: TypedTxData,
+): txData is EOACode7702TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)));
+  return txType === TransactionType.EOACodeEIP7702;
 }
 
 /**
@@ -299,54 +322,54 @@ export type LegacyTxData = {
   /**
    * The transaction's nonce.
    */
-  nonce?: BigIntLike
+  nonce?: BigIntLike;
 
   /**
    * The transaction's gas price.
    */
-  gasPrice?: BigIntLike | null
+  gasPrice?: BigIntLike | null;
 
   /**
    * The transaction's gas limit.
    */
-  gasLimit?: BigIntLike
+  gasLimit?: BigIntLike;
 
   /**
    * The transaction's the address is sent to.
    */
-  to?: AddressLike | ''
+  to?: AddressLike | "";
 
   /**
    * The amount of Ether sent.
    */
-  value?: BigIntLike
+  value?: BigIntLike;
 
   /**
    * This will contain the data of the message or the init of a contract.
    */
-  data?: BytesLike | ''
+  data?: BytesLike | "";
 
   /**
    * EC recovery ID.
    */
-  v?: BigIntLike
+  v?: BigIntLike;
 
   /**
    * EC signature parameter.
    */
-  r?: BigIntLike
+  r?: BigIntLike;
 
   /**
    * EC signature parameter.
    */
-  s?: BigIntLike
+  s?: BigIntLike;
 
   /**
    * The transaction type
    */
 
-  type?: BigIntLike
-}
+  type?: BigIntLike;
+};
 
 /**
  * {@link AccessList2930Transaction} data.
@@ -355,12 +378,12 @@ export interface AccessList2930TxData extends LegacyTxData {
   /**
    * The transaction's chain ID
    */
-  chainId?: BigIntLike
+  chainId?: BigIntLike;
 
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
-  accessList?: AccessListBytes | AccessList | null
+  accessList?: AccessListBytes | AccessList | null;
 }
 
 /**
@@ -371,15 +394,15 @@ export interface FeeMarketEIP1559TxData extends AccessList2930TxData {
    * The transaction's gas price, inherited from {@link Transaction}.  This property is not used for EIP1559
    * transactions and should always be undefined for this specific transaction type.
    */
-  gasPrice?: never | null
+  gasPrice?: never | null;
   /**
    * The maximum inclusion fee per gas (this fee is given to the miner)
    */
-  maxPriorityFeePerGas?: BigIntLike
+  maxPriorityFeePerGas?: BigIntLike;
   /**
    * The maximum total fee
    */
-  maxFeePerGas?: BigIntLike
+  maxFeePerGas?: BigIntLike;
 }
 
 /**
@@ -389,48 +412,48 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  blobVersionedHashes?: BytesLike[]
+  blobVersionedHashes?: BytesLike[];
   /**
    * The maximum fee per blob gas paid for the transaction
    */
-  maxFeePerBlobGas?: BigIntLike
+  maxFeePerBlobGas?: BigIntLike;
   /**
    * The blobs associated with a transaction
    */
-  blobs?: BytesLike[]
+  blobs?: BytesLike[];
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
-  kzgCommitments?: BytesLike[]
+  kzgCommitments?: BytesLike[];
   /**
    * The KZG proofs associated with the transaction
    */
-  kzgProofs?: BytesLike[]
+  kzgProofs?: BytesLike[];
   /**
    * An array of arbitrary strings that blobs are to be constructed from
    */
-  blobsData?: string[]
+  blobsData?: string[];
 }
 
 /**
  * {@link EOACode7702Tx} data.
  */
 export interface EOACode7702TxData extends FeeMarketEIP1559TxData {
-  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+  authorizationList?: AuthorizationListBytes | AuthorizationList | never;
 }
 
 export interface TxValuesArray {
-  [TransactionType.Legacy]: LegacyTxValuesArray
-  [TransactionType.AccessListEIP2930]: AccessList2930TxValuesArray
-  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
-  [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
-  [TransactionType.EOACodeEIP7702]: EOACode7702TxValuesArray
+  [TransactionType.Legacy]: LegacyTxValuesArray;
+  [TransactionType.AccessListEIP2930]: AccessList2930TxValuesArray;
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray;
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray;
+  [TransactionType.EOACodeEIP7702]: EOACode7702TxValuesArray;
 }
 
 /**
  * Bytes values array for a legacy {@link Transaction}
  */
-type LegacyTxValuesArray = Uint8Array[]
+type LegacyTxValuesArray = Uint8Array[];
 
 /**
  * Bytes values array for an {@link AccessList2930Transaction}
@@ -447,7 +470,7 @@ type AccessList2930TxValuesArray = [
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
-]
+];
 
 /**
  * Bytes values array for a {@link FeeMarket1559Tx}
@@ -465,7 +488,7 @@ type FeeMarketEIP1559TxValuesArray = [
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
-]
+];
 
 /**
  * Bytes values array for a {@link EOACode7702Transaction}
@@ -484,7 +507,7 @@ type EOACode7702TxValuesArray = [
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
-]
+];
 
 /**
  * Bytes values array for a {@link Blob4844Tx}
@@ -504,16 +527,16 @@ type BlobEIP4844TxValuesArray = [
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
-]
+];
 
 export type BlobEIP4844NetworkValuesArray = [
   BlobEIP4844TxValuesArray,
   Uint8Array[],
   Uint8Array[],
   Uint8Array[],
-]
+];
 
-type JSONAccessListItem = { address: string; storageKeys: string[] }
+type JSONAccessListItem = { address: string; storageKeys: string[] };
 
 /**
  * Generic interface for all tx types with a
@@ -524,58 +547,58 @@ type JSONAccessListItem = { address: string; storageKeys: string[] }
  * (an EIP1559 tx e.g. lacks a `gasPrice`).
  */
 export interface JSONTx {
-  nonce?: PrefixedHexString
-  gasPrice?: PrefixedHexString
-  gasLimit?: PrefixedHexString
-  to?: PrefixedHexString
-  data?: PrefixedHexString
-  v?: PrefixedHexString
-  r?: PrefixedHexString
-  s?: PrefixedHexString
-  value?: PrefixedHexString
-  chainId?: PrefixedHexString
-  accessList?: JSONAccessListItem[] // TODO should this not be AccessList?
-  authorizationList?: AuthorizationList
-  type?: PrefixedHexString
-  maxPriorityFeePerGas?: PrefixedHexString
-  maxFeePerGas?: PrefixedHexString
-  maxFeePerBlobGas?: PrefixedHexString
-  blobVersionedHashes?: PrefixedHexString[]
-  yParity?: PrefixedHexString
+  nonce?: PrefixedHexString;
+  gasPrice?: PrefixedHexString;
+  gasLimit?: PrefixedHexString;
+  to?: PrefixedHexString;
+  data?: PrefixedHexString;
+  v?: PrefixedHexString;
+  r?: PrefixedHexString;
+  s?: PrefixedHexString;
+  value?: PrefixedHexString;
+  chainId?: PrefixedHexString;
+  accessList?: JSONAccessListItem[]; // TODO should this not be AccessList?
+  authorizationList?: AuthorizationList;
+  type?: PrefixedHexString;
+  maxPriorityFeePerGas?: PrefixedHexString;
+  maxFeePerGas?: PrefixedHexString;
+  maxFeePerBlobGas?: PrefixedHexString;
+  blobVersionedHashes?: PrefixedHexString[];
+  yParity?: PrefixedHexString;
 }
 
 export type JSONBlobTxNetworkWrapper = JSONTx & {
-  blobs: PrefixedHexString[]
-  kzgCommitments: PrefixedHexString[]
-  kzgProofs: PrefixedHexString[]
-}
+  blobs: PrefixedHexString[];
+  kzgCommitments: PrefixedHexString[];
+  kzgProofs: PrefixedHexString[];
+};
 
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
 export interface JSONRPCTx {
-  blockHash: string | null // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
-  blockNumber: string | null // QUANTITY - block number where this transaction was in. null when it's pending.
-  from: string // DATA, 20 Bytes - address of the sender.
-  gas: string // QUANTITY - gas provided by the sender.
-  gasPrice: string // QUANTITY - gas price provided by the sender in wei. If EIP-1559 tx, defaults to maxFeePerGas.
-  maxFeePerGas?: string // QUANTITY - max total fee per gas provided by the sender in wei.
-  maxPriorityFeePerGas?: string // QUANTITY - max priority fee per gas provided by the sender in wei.
-  type: string // QUANTITY - EIP-2718 Typed Transaction type
-  accessList?: JSONTx['accessList'] // EIP-2930 access list
-  chainId?: string // Chain ID that this transaction is valid on.
-  hash: string // DATA, 32 Bytes - hash of the transaction.
-  input: string // DATA - the data send along with the transaction.
-  nonce: string // QUANTITY - the number of transactions made by the sender prior to this one.
-  to: string | null /// DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
-  transactionIndex: string | null // QUANTITY - integer of the transactions index position in the block. null when it's pending.
-  value: string // QUANTITY - value transferred in Wei.
-  v: string // QUANTITY - ECDSA recovery id
-  r: string // DATA, 32 Bytes - ECDSA signature r
-  s: string // DATA, 32 Bytes - ECDSA signature s
-  maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
-  blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
-  yParity?: string // DATA - parity of the y-coordinate of the public key
+  blockHash: string | null; // DATA, 32 Bytes - hash of the block where this transaction was in. null when it's pending.
+  blockNumber: string | null; // QUANTITY - block number where this transaction was in. null when it's pending.
+  from: string; // DATA, 20 Bytes - address of the sender.
+  gas: string; // QUANTITY - gas provided by the sender.
+  gasPrice: string; // QUANTITY - gas price provided by the sender in wei. If EIP-1559 tx, defaults to maxFeePerGas.
+  maxFeePerGas?: string; // QUANTITY - max total fee per gas provided by the sender in wei.
+  maxPriorityFeePerGas?: string; // QUANTITY - max priority fee per gas provided by the sender in wei.
+  type: string; // QUANTITY - EIP-2718 Typed Transaction type
+  accessList?: JSONTx["accessList"]; // EIP-2930 access list
+  chainId?: string; // Chain ID that this transaction is valid on.
+  hash: string; // DATA, 32 Bytes - hash of the transaction.
+  input: string; // DATA - the data send along with the transaction.
+  nonce: string; // QUANTITY - the number of transactions made by the sender prior to this one.
+  to: string | null; /// DATA, 20 Bytes - address of the receiver. null when it's a contract creation transaction.
+  transactionIndex: string | null; // QUANTITY - integer of the transactions index position in the block. null when it's pending.
+  value: string; // QUANTITY - value transferred in Wei.
+  v: string; // QUANTITY - ECDSA recovery id
+  r: string; // DATA, 32 Bytes - ECDSA signature r
+  s: string; // DATA, 32 Bytes - ECDSA signature s
+  maxFeePerBlobGas?: string; // QUANTITY - max data fee for blob transactions
+  blobVersionedHashes?: string[]; // DATA - array of 32 byte versioned hashes for blob transactions
+  yParity?: string; // DATA - parity of the y-coordinate of the public key
 }
 
 /*
@@ -583,28 +606,28 @@ export interface JSONRPCTx {
  */
 
 export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
+  address: PrefixedHexString;
+  storageKeys: PrefixedHexString[];
+};
 
 /*
  * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
  */
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
-export type AccessListBytes = AccessListBytesItem[]
-export type AccessList = AccessListItem[]
+export type AccessListBytesItem = [Uint8Array, Uint8Array[]];
+export type AccessListBytes = AccessListBytesItem[];
+export type AccessList = AccessListItem[];
 
 /**
  * Authorization list types
  */
 export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
+  chainId: PrefixedHexString;
+  address: PrefixedHexString;
+  nonce: PrefixedHexString;
+  yParity: PrefixedHexString;
+  r: PrefixedHexString;
+  s: PrefixedHexString;
+};
 
 // Tuple of [chain_id, address, [nonce], y_parity, r, s]
 export type AuthorizationListBytesItem = [
@@ -614,6 +637,6 @@ export type AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
   Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
+];
+export type AuthorizationListBytes = AuthorizationListBytesItem[];
+export type AuthorizationList = AuthorizationListItem[];

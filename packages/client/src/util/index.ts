@@ -1,32 +1,34 @@
+import { readFileSync } from "fs";
+import { platform } from "os";
 /**
  * @module util
  */
-import { bytesToHex } from '@ethereumjs/util'
-import { readFileSync } from 'fs'
-import { platform } from 'os'
+import { bytesToHex } from "@ethereumjs/util";
 
-export * from './parse.js'
-export * from './rpc.js'
+export * from "./parse.js";
+export * from "./rpc.js";
 
 export function short(bytes: Uint8Array | string): string {
-  if (bytes === null || bytes === undefined || bytes === '') return ''
-  const bytesString = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
-  let str = bytesString.substring(0, 6) + '…'
+  if (bytes === null || bytes === undefined || bytes === "") return "";
+  const bytesString = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes;
+  let str = bytesString.substring(0, 6) + "…";
   if (bytesString.length === 66) {
-    str += bytesString.substring(62)
+    str += bytesString.substring(62);
   }
-  return str
+  return str;
 }
 
 export function getClientVersion() {
   const packageJSON = JSON.parse(
     readFileSync(
-      '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-      'utf-8',
+      "/" +
+        import.meta.url.split("client")[0].split("file:///")[1] +
+        "client/package.json",
+      "utf-8",
     ),
-  )
-  const { version } = process
-  return `EthereumJS/${packageJSON.version}/${platform()}/node${version.substring(1)}`
+  );
+  const { version } = process;
+  return `EthereumJS/${packageJSON.version}/${platform()}/node${version.substring(1)}`;
 }
 
 /**
@@ -34,23 +36,23 @@ export function getClientVersion() {
  * @param time the number of seconds
  */
 export function timeDuration(time: number) {
-  const min = 60
-  const hour = min * 60
-  const day = hour * 24
-  let str = ''
+  const min = 60;
+  const hour = min * 60;
+  const day = hour * 24;
+  let str = "";
   if (time > day) {
-    str = `${Math.floor(time / day)} day`
+    str = `${Math.floor(time / day)} day`;
   } else if (time > hour) {
-    str = `${Math.floor(time / hour)} hour`
+    str = `${Math.floor(time / hour)} hour`;
   } else if (time > min) {
-    str = `${Math.floor(time / min)} min`
+    str = `${Math.floor(time / min)} min`;
   } else {
-    str = `${Math.floor(time)} sec`
+    str = `${Math.floor(time)} sec`;
   }
-  if (str.substring(0, 2) !== '1 ') {
-    str += 's'
+  if (str.substring(0, 2) !== "1 ") {
+    str += "s";
   }
-  return str
+  return str;
 }
 
 /**
@@ -58,19 +60,21 @@ export function timeDuration(time: number) {
  * @param timestamp the timestamp to diff (in seconds) from now
  */
 export function timeDiff(timestamp: number) {
-  const diff = new Date().getTime() / 1000 - timestamp
-  return timeDuration(diff)
+  const diff = new Date().getTime() / 1000 - timestamp;
+  return timeDuration(diff);
 }
 
 // Dynamically load v8 for tracking mem stats
-export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+export const isBrowser = new Function(
+  "try {return this===window;}catch(e){ return false;}",
+);
 export type V8Engine = {
-  getHeapStatistics: () => { heap_size_limit: number; used_heap_size: number }
-}
-let v8Engine: V8Engine | null = null
+  getHeapStatistics: () => { heap_size_limit: number; used_heap_size: number };
+};
+let v8Engine: V8Engine | null = null;
 export async function getV8Engine(): Promise<V8Engine | null> {
   if (isBrowser() === false && v8Engine === null) {
-    v8Engine = (await import('node:v8')) as V8Engine
+    v8Engine = (await import("node:v8")) as V8Engine;
   }
-  return v8Engine
+  return v8Engine;
 }

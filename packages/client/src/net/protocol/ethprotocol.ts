@@ -1,5 +1,8 @@
-import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
-import { RLP } from '@ethereumjs/rlp'
+import {
+  createBlockFromBytesArray,
+  createBlockHeaderFromBytesArray,
+} from "@ethereumjs/block";
+import { RLP } from "@ethereumjs/rlp";
 import {
   Blob4844Tx,
   createBlob4844TxFromSerializedNetworkWrapper,
@@ -10,7 +13,7 @@ import {
   isEOACode7702Tx,
   isFeeMarket1559Tx,
   isLegacyTx,
-} from '@ethereumjs/tx'
+} from "@ethereumjs/tx";
 import {
   BIGINT_0,
   bigIntToUnpaddedBytes,
@@ -20,78 +23,88 @@ import {
   hexToBytes,
   intToUnpaddedBytes,
   isNestedUint8Array,
-} from '@ethereumjs/util'
-import { encodeReceipt } from '@ethereumjs/vm'
+} from "@ethereumjs/util";
+import { encodeReceipt } from "@ethereumjs/vm";
 
-import { Protocol } from './protocol.js'
+import { Protocol } from "./protocol.js";
 
-import type { Chain } from '../../blockchain/index.js'
-import type { TxReceiptWithType } from '../../execution/receipt.js'
-import type { Message, ProtocolOptions } from './protocol.js'
 import type {
   Block,
   BlockBodyBytes,
   BlockBytes,
   BlockHeader,
   BlockHeaderBytes,
-} from '@ethereumjs/block'
-import type { Log } from '@ethereumjs/evm'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+} from "@ethereumjs/block";
+import type { Log } from "@ethereumjs/evm";
+import type { TypedTransaction } from "@ethereumjs/tx";
+import type { PrefixedHexString } from "@ethereumjs/util";
+import type {
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+} from "@ethereumjs/vm";
+import type { Chain } from "../../blockchain/index.js";
+import type { TxReceiptWithType } from "../../execution/receipt.js";
+import type { Message, ProtocolOptions } from "./protocol.js";
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
-  chain: Chain
+  chain: Chain;
 }
 
 type GetBlockHeadersOpts = {
   /* Request id (default: next internal id) */
-  reqId?: bigint
+  reqId?: bigint;
   /* The block's number or hash */
-  block: bigint | Uint8Array
+  block: bigint | Uint8Array;
   /* Max number of blocks to return */
-  max: number
+  max: number;
   /* Number of blocks to skip apart (default: 0) */
-  skip?: number
+  skip?: number;
   /* Fetch blocks in reverse (default: false) */
-  reverse?: boolean
-}
+  reverse?: boolean;
+};
 
 type GetBlockBodiesOpts = {
   /* Request id (default: next internal id) */
-  reqId?: bigint
+  reqId?: bigint;
   /* The block hashes */
-  hashes: Uint8Array[]
-}
+  hashes: Uint8Array[];
+};
 
 type GetPooledTransactionsOpts = {
   /* Request id (default: next internal id) */
-  reqId?: bigint
+  reqId?: bigint;
   /* The tx hashes */
-  hashes: Uint8Array[]
-}
+  hashes: Uint8Array[];
+};
 
 type GetReceiptsOpts = {
   /* Request id (default: next internal id) */
-  reqId?: bigint
+  reqId?: bigint;
   /* The block hashes to request receipts for */
-  hashes: Uint8Array[]
-}
+  hashes: Uint8Array[];
+};
 
 /*
  * Messages with responses that are added as
  * methods in camelCase to BoundProtocol.
  */
 export interface EthProtocolMethods {
-  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<[bigint, BlockHeader[]]>
-  getBlockBodies: (opts: GetBlockBodiesOpts) => Promise<[bigint, BlockBodyBytes[]]>
-  getPooledTransactions: (opts: GetPooledTransactionsOpts) => Promise<[bigint, TypedTransaction[]]>
-  getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>
+  getBlockHeaders: (
+    opts: GetBlockHeadersOpts,
+  ) => Promise<[bigint, BlockHeader[]]>;
+  getBlockBodies: (
+    opts: GetBlockBodiesOpts,
+  ) => Promise<[bigint, BlockBodyBytes[]]>;
+  getPooledTransactions: (
+    opts: GetPooledTransactionsOpts,
+  ) => Promise<[bigint, TypedTransaction[]]>;
+  getReceipts: (opts: GetReceiptsOpts) => Promise<[bigint, TxReceipt[]]>;
 }
 
 function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
-  throw new Error(errorMsg)
+  throw new Error(errorMsg);
 }
 
 /**
@@ -99,51 +112,61 @@ function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
-  private chain: Chain
-  private nextReqId = BIGINT_0
+  private chain: Chain;
+  private nextReqId = BIGINT_0;
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
-      name: 'NewBlockHashes',
+      name: "NewBlockHashes",
       code: 0x01,
-      encode: (hashes: any[]) => hashes.map((hn) => [hn[0], bigIntToUnpaddedBytes(hn[1])]),
-      decode: (hashes: any[]) => hashes.map((hn) => [hn[0], bytesToBigInt(hn[1])]),
+      encode: (hashes: any[]) =>
+        hashes.map((hn) => [hn[0], bigIntToUnpaddedBytes(hn[1])]),
+      decode: (hashes: any[]) =>
+        hashes.map((hn) => [hn[0], bytesToBigInt(hn[1])]),
     },
     {
-      name: 'Transactions',
+      name: "Transactions",
       code: 0x02,
       encode: (txs: TypedTransaction[]) => {
-        const serializedTxs = []
+        const serializedTxs = [];
         for (const tx of txs) {
           // Don't automatically broadcast blob transactions - they should only be announced using NewPooledTransactionHashes
-          if (tx instanceof Blob4844Tx) continue
-          serializedTxs.push(tx.serialize())
+          if (tx instanceof Blob4844Tx) continue;
+          serializedTxs.push(tx.serialize());
         }
-        return serializedTxs
+        return serializedTxs;
       },
       decode: (txs: Uint8Array[]) => {
-        if (!this.config.synchronized) return
-        const common = this.config.chainCommon.copy()
+        if (!this.config.synchronized) return;
+        const common = this.config.chainCommon.copy();
         common.setHardforkBy({
           blockNumber:
             this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BIGINT_0, // Use chainstart,
-          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
-        })
-        return txs.map((txData) => createTxFromRLP(txData, { common }))
+          timestamp:
+            this.chain.headers.latest?.timestamp ??
+            Math.floor(Date.now() / 1000),
+        });
+        return txs.map((txData) => createTxFromRLP(txData, { common }));
       },
     },
     {
-      name: 'GetBlockHeaders',
+      name: "GetBlockHeaders",
       code: 0x03,
       response: 0x04,
-      encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
+      encode: ({
+        reqId,
+        block,
+        max,
+        skip = 0,
+        reverse = false,
+      }: GetBlockHeadersOpts) => [
         bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
         [
-          typeof block === 'bigint' ? bigIntToUnpaddedBytes(block) : block,
+          typeof block === "bigint" ? bigIntToUnpaddedBytes(block) : block,
           intToUnpaddedBytes(max),
           intToUnpaddedBytes(skip),
           intToUnpaddedBytes(!reverse ? 0 : 1),
@@ -158,23 +181,29 @@ export class EthProtocol extends Protocol {
       }),
     },
     {
-      name: 'BlockHeaders',
+      name: "BlockHeaders",
       code: 0x04,
-      encode: ({ reqId, headers }: { reqId: bigint; headers: BlockHeader[] }) => [
-        bigIntToUnpaddedBytes(reqId),
-        headers.map((h) => h.raw()),
-      ],
+      encode: ({
+        reqId,
+        headers,
+      }: {
+        reqId: bigint;
+        headers: BlockHeader[];
+      }) => [bigIntToUnpaddedBytes(reqId), headers.map((h) => h.raw())],
       decode: ([reqId, headers]: [Uint8Array, BlockHeaderBytes[]]) => [
         bytesToBigInt(reqId),
         headers.map((h) => {
-          const common = this.config.chainCommon
-          const header = createBlockHeaderFromBytesArray(h, { common, setHardfork: true })
-          return header
+          const common = this.config.chainCommon;
+          const header = createBlockHeaderFromBytesArray(h, {
+            common,
+            setHardfork: true,
+          });
+          return header;
         }),
       ],
     },
     {
-      name: 'GetBlockBodies',
+      name: "GetBlockBodies",
       code: 0x05,
       response: 0x06,
       encode: ({ reqId, hashes }: GetBlockBodiesOpts) => [
@@ -187,18 +216,27 @@ export class EthProtocol extends Protocol {
       }),
     },
     {
-      name: 'BlockBodies',
+      name: "BlockBodies",
       code: 0x06,
-      encode: ({ reqId, bodies }: { reqId: bigint; bodies: BlockBodyBytes[] }) => [
-        bigIntToUnpaddedBytes(reqId),
+      encode: ({
+        reqId,
+        bodies,
+      }: {
+        reqId: bigint;
+        bodies: BlockBodyBytes[];
+      }) => [bigIntToUnpaddedBytes(reqId), bodies],
+      decode: ([reqId, bodies]: [Uint8Array, BlockBodyBytes[]]) => [
+        bytesToBigInt(reqId),
         bodies,
       ],
-      decode: ([reqId, bodies]: [Uint8Array, BlockBodyBytes[]]) => [bytesToBigInt(reqId), bodies],
     },
     {
-      name: 'NewBlock',
+      name: "NewBlock",
       code: 0x07,
-      encode: ([block, td]: [Block, bigint]) => [block.raw(), bigIntToUnpaddedBytes(td)],
+      encode: ([block, td]: [Block, bigint]) => [
+        block.raw(),
+        bigIntToUnpaddedBytes(td),
+      ],
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
         createBlockFromBytesArray(block, {
           common: this.config.chainCommon,
@@ -208,33 +246,43 @@ export class EthProtocol extends Protocol {
       ],
     },
     {
-      name: 'NewPooledTransactionHashes',
+      name: "NewPooledTransactionHashes",
       code: 0x08,
       // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
       // `hashes: Uint8Array[]` to an tuple of arrays of `types, sizes, hashes`, where types corresponds to the
       // transaction type, sizes is the size of each encoded transaction in bytes, and the transaction hashes
-      encode: (params: Uint8Array[] | [types: number[], sizes: number[], hashes: Uint8Array[]]) => {
+      encode: (
+        params:
+          | Uint8Array[]
+          | [types: number[], sizes: number[], hashes: Uint8Array[]],
+      ) => {
         return isNestedUint8Array(params) === true
           ? params
           : [
               bytesToHex(new Uint8Array(params[0])), // This matches the Geth implementation of this parameter (which is currently different than the spec)
               params[1],
               params[2],
-            ]
+            ];
       },
       decode: (
-        params: Uint8Array[] | [types: PrefixedHexString, sizes: number[], hashes: Uint8Array[]],
+        params:
+          | Uint8Array[]
+          | [types: PrefixedHexString, sizes: number[], hashes: Uint8Array[]],
       ) => {
         if (isNestedUint8Array(params) === true) {
-          return params
+          return params;
         } else {
-          const [types, sizes, hashes] = params as [PrefixedHexString, number[], Uint8Array[]]
-          return [hexToBytes(types), sizes.map((size) => BigInt(size)), hashes]
+          const [types, sizes, hashes] = params as [
+            PrefixedHexString,
+            number[],
+            Uint8Array[],
+          ];
+          return [hexToBytes(types), sizes.map((size) => BigInt(size)), hashes];
         }
       },
     },
     {
-      name: 'GetPooledTransactions',
+      name: "GetPooledTransactions",
       code: 0x09,
       response: 0x0a,
       encode: ({ reqId, hashes }: GetPooledTransactionsOpts) => [
@@ -247,53 +295,64 @@ export class EthProtocol extends Protocol {
       }),
     },
     {
-      name: 'PooledTransactions',
+      name: "PooledTransactions",
       code: 0x0a,
       encode: ({ reqId, txs }: { reqId: bigint; txs: TypedTransaction[] }) => {
-        const serializedTxs = []
+        const serializedTxs = [];
         for (const tx of txs) {
           // serialize txs as per type
           if (isBlob4844Tx(tx)) {
-            serializedTxs.push(tx.serializeNetworkWrapper())
-          } else if (isFeeMarket1559Tx(tx) || isAccessList2930Tx(tx) || isEOACode7702Tx(tx)) {
-            serializedTxs.push(tx.serialize())
+            serializedTxs.push(tx.serializeNetworkWrapper());
+          } else if (
+            isFeeMarket1559Tx(tx) ||
+            isAccessList2930Tx(tx) ||
+            isEOACode7702Tx(tx)
+          ) {
+            serializedTxs.push(tx.serialize());
           } else if (isLegacyTx(tx)) {
-            serializedTxs.push(tx.raw())
+            serializedTxs.push(tx.raw());
           } else {
             // Dual use for this typeguard:
             // 1. to enable typescript to throw build errors if any tx is missing above
             // 2. to throw error in runtime if some corruption happens
-            exhaustiveTypeGuard(tx, `Invalid transaction type=${(tx as TypedTransaction).type}`)
+            exhaustiveTypeGuard(
+              tx,
+              `Invalid transaction type=${(tx as TypedTransaction).type}`,
+            );
           }
         }
 
-        return [bigIntToUnpaddedBytes(reqId), serializedTxs]
+        return [bigIntToUnpaddedBytes(reqId), serializedTxs];
       },
       decode: ([reqId, txs]: [Uint8Array, any[]]) => {
-        const common = this.config.chainCommon.copy()
+        const common = this.config.chainCommon.copy();
         common.setHardforkBy({
           blockNumber:
             this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
             BIGINT_0, // Use chainstart,
-          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
-        })
+          timestamp:
+            this.chain.headers.latest?.timestamp ??
+            Math.floor(Date.now() / 1000),
+        });
         return [
           bytesToBigInt(reqId),
           txs.map((txData) => {
             // Blob transactions are deserialized with network wrapper
             if (txData[0] === 3) {
-              return createBlob4844TxFromSerializedNetworkWrapper(txData, { common })
+              return createBlob4844TxFromSerializedNetworkWrapper(txData, {
+                common,
+              });
             } else {
-              return createTxFromBlockBodyData(txData, { common })
+              return createTxFromBlockBodyData(txData, { common });
             }
           }),
-        ]
+        ];
       },
     },
     {
-      name: 'GetReceipts',
+      name: "GetReceipts",
       code: 0x0f,
       response: 0x10,
       encode: ({ reqId, hashes }: { reqId: bigint; hashes: Uint8Array[] }) => [
@@ -306,71 +365,75 @@ export class EthProtocol extends Protocol {
       }),
     },
     {
-      name: 'Receipts',
+      name: "Receipts",
       code: 0x10,
-      encode: ({ reqId, receipts }: { reqId: bigint; receipts: TxReceiptWithType[] }) => {
-        const serializedReceipts = []
+      encode: ({
+        reqId,
+        receipts,
+      }: {
+        reqId: bigint;
+        receipts: TxReceiptWithType[];
+      }) => {
+        const serializedReceipts = [];
         for (const receipt of receipts) {
-          const encodedReceipt = encodeReceipt(receipt, receipt.txType)
-          serializedReceipts.push(encodedReceipt)
+          const encodedReceipt = encodeReceipt(receipt, receipt.txType);
+          serializedReceipts.push(encodedReceipt);
         }
-        return [bigIntToUnpaddedBytes(reqId), serializedReceipts]
+        return [bigIntToUnpaddedBytes(reqId), serializedReceipts];
       },
       decode: ([reqId, receipts]: [Uint8Array, Uint8Array[]]) => [
         bytesToBigInt(reqId),
         receipts.map((r) => {
           // Legacy receipt if r[0] >= 0xc0, otherwise typed receipt with first byte as TransactionType
-          const decoded = RLP.decode(r[0] >= 0xc0 ? r : r.subarray(1))
-          const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] = decoded as [
-            Uint8Array,
-            Uint8Array,
-            Uint8Array,
-            Log[],
-          ]
+          const decoded = RLP.decode(r[0] >= 0xc0 ? r : r.subarray(1));
+          const [stateRootOrStatus, cumulativeGasUsed, logsBloom, logs] =
+            decoded as [Uint8Array, Uint8Array, Uint8Array, Log[]];
           const receipt = {
             cumulativeBlockGasUsed: bytesToBigInt(cumulativeGasUsed),
             bitvector: logsBloom,
             logs,
-          } as TxReceipt
+          } as TxReceipt;
           if (stateRootOrStatus.length === 32) {
-            ;(receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus
+            (receipt as PreByzantiumTxReceipt).stateRoot = stateRootOrStatus;
           } else {
-            ;(receipt as PostByzantiumTxReceipt).status = bytesToInt(stateRootOrStatus) as 0 | 1
+            (receipt as PostByzantiumTxReceipt).status = bytesToInt(
+              stateRootOrStatus,
+            ) as 0 | 1;
           }
-          return receipt
+          return receipt;
         }),
       ],
     },
-  ]
+  ];
 
   /**
    * Create eth protocol
    */
   constructor(options: EthProtocolOptions) {
-    super(options)
+    super(options);
 
-    this.chain = options.chain
+    this.chain = options.chain;
   }
 
   /**
    * Name of protocol
    */
   get name() {
-    return 'eth'
+    return "eth";
   }
 
   /**
    * Protocol versions supported
    */
   get versions() {
-    return [66, 67, 68]
+    return [66, 67, 68];
   }
 
   /**
    * Messages defined by this protocol
    */
   get messages() {
-    return this.protocolMessages
+    return this.protocolMessages;
   }
 
   /**
@@ -378,10 +441,10 @@ export class EthProtocol extends Protocol {
    */
   async open(): Promise<boolean | void> {
     if (this.opened) {
-      return false
+      return false;
     }
-    await this.chain.open()
-    this.opened = true
+    await this.chain.open();
+    this.opened = true;
   }
 
   /**
@@ -393,8 +456,10 @@ export class EthProtocol extends Protocol {
       td: bigIntToUnpaddedBytes(this.chain.blocks.td),
       bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash(),
-      latestBlock: bigIntToUnpaddedBytes(this.chain.blocks.latest!.header.number),
-    }
+      latestBlock: bigIntToUnpaddedBytes(
+        this.chain.blocks.latest!.header.number,
+      ),
+    };
   }
 
   /**
@@ -407,6 +472,6 @@ export class EthProtocol extends Protocol {
       td: bytesToBigInt(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash,
-    }
+    };
   }
 }

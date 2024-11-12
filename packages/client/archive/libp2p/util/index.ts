@@ -1,26 +1,26 @@
+import { platform } from "os";
 /**
  * @module util
  */
-import { bytesToHex } from '@ethereumjs/util'
-import { platform } from 'os'
+import { bytesToHex } from "@ethereumjs/util";
 
-import { version as packageVersion } from '../../package.json'
+import { version as packageVersion } from "../../package.json";
 
-export * from '../../src/util/parse'
+export * from "../../src/util/parse";
 
 export function short(bytes: Uint8Array | string): string {
-  if (bytes === null || bytes === undefined || bytes === '') return ''
-  const bytesString = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
-  let str = bytesString.substring(0, 6) + '…'
+  if (bytes === null || bytes === undefined || bytes === "") return "";
+  const bytesString = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes;
+  let str = bytesString.substring(0, 6) + "…";
   if (bytesString.length === 66) {
-    str += bytesString.substring(62)
+    str += bytesString.substring(62);
   }
-  return str
+  return str;
 }
 
 export function getClientVersion() {
-  const { version } = process
-  return `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
+  const { version } = process;
+  return `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`;
 }
 
 /**
@@ -28,23 +28,23 @@ export function getClientVersion() {
  * @param time the number of seconds
  */
 export function timeDuration(time: number) {
-  const min = 60
-  const hour = min * 60
-  const day = hour * 24
-  let str = ''
+  const min = 60;
+  const hour = min * 60;
+  const day = hour * 24;
+  let str = "";
   if (time > day) {
-    str = `${Math.floor(time / day)} day`
+    str = `${Math.floor(time / day)} day`;
   } else if (time > hour) {
-    str = `${Math.floor(time / hour)} hour`
+    str = `${Math.floor(time / hour)} hour`;
   } else if (time > min) {
-    str = `${Math.floor(time / min)} min`
+    str = `${Math.floor(time / min)} min`;
   } else {
-    str = `${Math.floor(time)} sec`
+    str = `${Math.floor(time)} sec`;
   }
-  if (str.substring(0, 2) !== '1 ') {
-    str += 's'
+  if (str.substring(0, 2) !== "1 ") {
+    str += "s";
   }
-  return str
+  return str;
 }
 
 /**
@@ -52,6 +52,6 @@ export function timeDuration(time: number) {
  * @param timestamp the timestamp to diff (in seconds) from now
  */
 export function timeDiff(timestamp: number) {
-  const diff = new Date().getTime() / 1000 - timestamp
-  return timeDuration(diff)
+  const diff = new Date().getTime() / 1000 - timestamp;
+  return timeDuration(diff);
 }

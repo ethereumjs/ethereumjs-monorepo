@@ -1,22 +1,29 @@
-import type { Bloom } from './bloom/index.js'
-import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
-import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
+import type { Block, BlockOptions, HeaderData } from "@ethereumjs/block";
+import type {
+  Common,
+  ParamsDict,
+  StateManagerInterface,
+} from "@ethereumjs/common";
 import type {
   EVMInterface,
   EVMMockBlockchainInterface,
   EVMOpts,
   EVMResult,
   Log,
-} from '@ethereumjs/evm'
-import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
+} from "@ethereumjs/evm";
+import type { AccessList, TypedTransaction } from "@ethereumjs/tx";
 import type {
   BigIntLike,
   CLRequest,
   CLRequestType,
   PrefixedHexString,
   WithdrawalData,
-} from '@ethereumjs/util'
-export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
+} from "@ethereumjs/util";
+import type { Bloom } from "./bloom/index.js";
+export type TxReceipt =
+  | PreByzantiumTxReceipt
+  | PostByzantiumTxReceipt
+  | EIP4844BlobTxReceipt;
 
 /**
  * Abstract interface with common transaction receipt fields
@@ -25,15 +32,15 @@ export interface BaseTxReceipt {
   /**
    * Cumulative gas used in the block including this tx
    */
-  cumulativeBlockGasUsed: bigint
+  cumulativeBlockGasUsed: bigint;
   /**
    * Bloom bitvector
    */
-  bitvector: Uint8Array
+  bitvector: Uint8Array;
   /**
    * Logs emitted
    */
-  logs: Log[]
+  logs: Log[];
 }
 
 /**
@@ -44,7 +51,7 @@ export interface PreByzantiumTxReceipt extends BaseTxReceipt {
   /**
    * Intermediary state root
    */
-  stateRoot: Uint8Array
+  stateRoot: Uint8Array;
 }
 
 /**
@@ -55,7 +62,7 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
   /**
    * Status of transaction, `1` if successful, `0` if an exception occurred
    */
-  status: 0 | 1
+  status: 0 | 1;
 }
 
 export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
@@ -65,33 +72,33 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
    * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
    * and is only provided as part of receipt metadata.
    */
-  blobGasUsed: bigint
+  blobGasUsed: bigint;
   /**
    * blob gas price for block transaction was included in
    *
    * Note: This values is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
    */
-  blobGasPrice: bigint
+  blobGasPrice: bigint;
 }
 
 export type EVMProfilerOpts = {
-  enabled: boolean
+  enabled: boolean;
   // extra options here (such as use X hardfork for gas)
-}
+};
 
 export type VMEvent = {
-  beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
-  afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
-  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
-  afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
-}
+  beforeBlock: (data: Block, resolve?: (result?: any) => void) => void;
+  afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void;
+  beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void;
+  afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void;
+};
 
 export type VMProfilerOpts = {
   //evmProfilerOpts: EVMProfilerOpts
-  reportAfterTx?: boolean
-  reportAfterBlock?: boolean
-}
+  reportAfterTx?: boolean;
+  reportAfterBlock?: boolean;
+};
 
 /**
  * Options for instantiating a {@link VM}.
@@ -118,15 +125,15 @@ export interface VMOpts {
    * - `hardfork`: `paris`
    * - `eips`: `[]`
    */
-  common?: Common
+  common?: Common;
   /**
    * A {@link StateManager} instance to use as the state store
    */
-  stateManager?: StateManagerInterface
+  stateManager?: StateManagerInterface;
   /**
    * A {@link Blockchain} object for storing/retrieving blocks
    */
-  blockchain?: EVMMockBlockchainInterface
+  blockchain?: EVMMockBlockchainInterface;
   /**
    * If true, create entries in the state tree for the precompiled contracts, saving some gas the
    * first time each of them is called.
@@ -140,7 +147,7 @@ export interface VMOpts {
    *
    * Default: `false`
    */
-  activatePrecompiles?: boolean
+  activatePrecompiles?: boolean;
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
@@ -151,7 +158,7 @@ export interface VMOpts {
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  setHardfork?: boolean | BigIntLike
+  setHardfork?: boolean | BigIntLike;
   /**
    * VM parameters sorted by EIP can be found in the exported `paramsVM` dictionary,
    * which is internally passed to the associated `@ethereumjs/common` instance which
@@ -168,12 +175,12 @@ export interface VMOpts {
    * params['1559']['elasticityMultiplier'] = 10 // 2
    * ```
    */
-  params?: ParamsDict
+  params?: ParamsDict;
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVMInterface
+  evm?: EVMInterface;
 
   /**
    * Often there is no need to provide a full custom EVM but only a few options need to be
@@ -181,9 +188,9 @@ export interface VMOpts {
    *
    * Note: This option will throw if used in conjunction with a full custom EVM passed.
    */
-  evmOpts?: EVMOpts
+  evmOpts?: EVMOpts;
 
-  profilerOpts?: VMProfilerOpts
+  profilerOpts?: VMProfilerOpts;
 }
 
 /**
@@ -199,12 +206,12 @@ export interface BuilderOpts extends BlockOptions {
    *
    * Default: true
    */
-  putBlockIntoBlockchain?: boolean
+  putBlockIntoBlockchain?: boolean;
   /**
    * Provide a clique signer's privateKey to seal this block.
    * Will throw if provided on a non-PoA chain.
    */
-  cliqueSigner?: Uint8Array
+  cliqueSigner?: Uint8Array;
 }
 
 /**
@@ -214,19 +221,19 @@ export interface BuildBlockOpts {
   /**
    * The parent block
    */
-  parentBlock: Block
+  parentBlock: Block;
 
   /**
    * The block header data to use.
    * Defaults used for any values not provided.
    */
-  headerData?: HeaderData
+  headerData?: HeaderData;
 
-  withdrawals?: WithdrawalData[]
+  withdrawals?: WithdrawalData[];
   /**
    * The block and builder options to use.
    */
-  blockOpts?: BuilderOpts
+  blockOpts?: BuilderOpts;
 }
 
 /**
@@ -237,13 +244,13 @@ export interface SealBlockOpts {
    * For PoW, the nonce.
    * Overrides the value passed in the constructor.
    */
-  nonce?: Uint8Array
+  nonce?: Uint8Array;
 
   /**
    * For PoW, the mixHash.
    * Overrides the value passed in the constructor.
    */
-  mixHash?: Uint8Array
+  mixHash?: Uint8Array;
 }
 
 /**
@@ -253,11 +260,11 @@ export interface RunBlockOpts {
   /**
    * The @ethereumjs/block to process
    */
-  block: Block
+  block: Block;
   /**
    * Root of the state trie
    */
-  root?: Uint8Array
+  root?: Uint8Array;
   /**
    * Clearing the StateManager cache.
    *
@@ -265,60 +272,60 @@ export interface RunBlockOpts {
    *
    * Default: true
    */
-  clearCache?: boolean
+  clearCache?: boolean;
   /**
    * Whether to generate the stateRoot and other related fields.
    * If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
    * If `false`, `runBlock` throws if any fields do not match.
    * Defaults to `false`.
    */
-  generate?: boolean
+  generate?: boolean;
 
   /**
    * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
    */
-  parentStateRoot?: Uint8Array
+  parentStateRoot?: Uint8Array;
 
   /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
    * the transactions, the transaction trie and the uncle hash.
    */
-  skipBlockValidation?: boolean
+  skipBlockValidation?: boolean;
   /**
    * If true, skips the hardfork validation of vm, block
    * and tx
    */
-  skipHardForkValidation?: boolean
+  skipHardForkValidation?: boolean;
   /**
    * if true, will skip "Header validation"
    * If the block has been picked from the blockchain to be executed,
    * header has already been validated, and can be skipped especially when
    * consensus of the chain has moved ahead.
    */
-  skipHeaderValidation?: boolean
+  skipHeaderValidation?: boolean;
   /**
    * If true, skips the nonce check
    */
-  skipNonce?: boolean
+  skipNonce?: boolean;
   /**
    * If true, checks the balance of the `from` account for the transaction and sets its
    * balance equal equal to the upfront cost (gas limit * gas price + transaction value)
    */
-  skipBalance?: boolean
+  skipBalance?: boolean;
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  setHardfork?: boolean
+  setHardfork?: boolean;
 
   /**
    * If true, adds a hashedKey -> preimages mapping of all touched accounts
    * to the `RunTxResult` returned.
    */
-  reportPreimages?: boolean
+  reportPreimages?: boolean;
 }
 
 /**
@@ -328,55 +335,55 @@ export interface ApplyBlockResult {
   /**
    * The Bloom filter
    */
-  bloom: Bloom
+  bloom: Bloom;
   /**
    * The gas used after executing the block
    */
-  gasUsed: bigint
+  gasUsed: bigint;
   /**
    * The receipt root after executing the block
    */
-  receiptsRoot: Uint8Array
+  receiptsRoot: Uint8Array;
   /**
    * Receipts generated for transactions in the block
    */
-  receipts: TxReceipt[]
+  receipts: TxReceipt[];
   /**
    * Results of executing the transactions in the block
    */
-  results: RunTxResult[]
+  results: RunTxResult[];
   /**
    * Preimages mapping of the touched accounts from the block (see reportPreimages option)
    */
-  preimages?: Map<PrefixedHexString, Uint8Array>
+  preimages?: Map<PrefixedHexString, Uint8Array>;
 }
 
 /**
  * Result of {@link runBlock}
  */
-export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
+export interface RunBlockResult extends Omit<ApplyBlockResult, "bloom"> {
   /**
    * The stateRoot after executing the block
    */
-  stateRoot: Uint8Array
+  stateRoot: Uint8Array;
   /**
    * The bloom filter of the LOGs (events) after executing the block
    */
-  logsBloom: Uint8Array
+  logsBloom: Uint8Array;
 
   /**
    * The requestsHash for any CL requests in the block
    */
-  requestsHash?: Uint8Array
+  requestsHash?: Uint8Array;
   /**
    * Any CL requests that were processed in the course of this block
    */
-  requests?: CLRequest<CLRequestType>[]
+  requests?: CLRequest<CLRequestType>[];
 }
 
 export interface AfterBlockEvent extends RunBlockResult {
   // The block which just finished processing
-  block: Block
+  block: Block;
 }
 
 /**
@@ -387,32 +394,32 @@ export interface RunTxOpts {
    * The `@ethereumjs/block` the `tx` belongs to.
    * If omitted, a default blank block will be used.
    */
-  block?: Block
+  block?: Block;
   /**
    * An `@ethereumjs/tx` to run
    */
-  tx: TypedTransaction
+  tx: TypedTransaction;
   /**
    * If true, skips the nonce check
    */
-  skipNonce?: boolean
+  skipNonce?: boolean;
 
   /**
    * Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
    */
-  skipBalance?: boolean
+  skipBalance?: boolean;
 
   /**
    * If true, skips the validation of the tx's gas limit
    * against the block's gas limit.
    */
-  skipBlockGasLimitValidation?: boolean
+  skipBlockGasLimitValidation?: boolean;
 
   /**
    * If true, skips the hardfork validation of vm, block
    * and tx
    */
-  skipHardForkValidation?: boolean
+  skipHardForkValidation?: boolean;
 
   /**
    * If true, adds a generated EIP-2930 access list
@@ -424,18 +431,18 @@ export interface RunTxOpts {
    * Note: if this option is used with a custom {@link StateManager} implementation
    * {@link StateManager.generateAccessList} must be implemented.
    */
-  reportAccessList?: boolean
+  reportAccessList?: boolean;
 
   /**
    * If true, adds a hashedKey -> preimages mapping of all touched accounts
    * to the `RunTxResult` returned.
    */
-  reportPreimages?: boolean
+  reportPreimages?: boolean;
 
   /**
    * To obtain an accurate tx receipt input the block gas used up until this tx.
    */
-  blockGasUsed?: bigint
+  blockGasUsed?: bigint;
 }
 
 /**
@@ -445,54 +452,54 @@ export interface RunTxResult extends EVMResult {
   /**
    * Bloom filter resulted from transaction
    */
-  bloom: Bloom
+  bloom: Bloom;
 
   /**
    * The amount of ether used by this transaction
    */
-  amountSpent: bigint
+  amountSpent: bigint;
 
   /**
    * The tx receipt
    */
-  receipt: TxReceipt
+  receipt: TxReceipt;
 
   /**
    * The amount of gas used in this transaction, which is paid for
    * This contains the gas units that have been used on execution, plus the upfront cost,
    * which consists of calldata cost, intrinsic cost and optionally the access list costs
    */
-  totalGasSpent: bigint
+  totalGasSpent: bigint;
 
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
-  gasRefund: bigint
+  gasRefund: bigint;
 
   /**
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
-  accessList?: AccessList
+  accessList?: AccessList;
 
   /**
    * Preimages mapping of the touched accounts from the tx (see `reportPreimages` option)
    */
-  preimages?: Map<PrefixedHexString, Uint8Array>
+  preimages?: Map<PrefixedHexString, Uint8Array>;
 
   /**
    * The value that accrues to the miner by this transaction
    */
-  minerValue: bigint
+  minerValue: bigint;
 
   /**
    * This is the blob gas units times the fee per blob gas for 4844 transactions
    */
-  blobGasUsed?: bigint
+  blobGasUsed?: bigint;
 }
 
 export interface AfterTxEvent extends RunTxResult {
   /**
    * The transaction which just got finished
    */
-  transaction: TypedTransaction
+  transaction: TypedTransaction;
 }

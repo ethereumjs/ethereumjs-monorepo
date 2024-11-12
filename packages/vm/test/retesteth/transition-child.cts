@@ -1,11 +1,11 @@
+import { readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
 import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
 
 import { VM } from '../../dist/cjs'
 import { BlockBuilder } from '../../dist/cjs/buildBlock'

@@ -1,28 +1,36 @@
-import { ETH as Devp2pETH, RLPx as Devp2pRLPx, SNAP as Devp2pSNAP } from '@ethereumjs/devp2p'
-import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import {
+  ETH as Devp2pETH,
+  RLPx as Devp2pRLPx,
+  SNAP as Devp2pSNAP,
+} from "@ethereumjs/devp2p";
+import { randomBytes, unprefixedHexToBytes } from "@ethereumjs/util";
 
-import { Event } from '../../types.js'
-import { RlpxSender } from '../protocol/index.js'
+import { Event } from "../../types.js";
+import { RlpxSender } from "../protocol/index.js";
 
-import { Peer } from './peer.js'
+import { Peer } from "./peer.js";
 
-import type { Protocol } from '../protocol/index.js'
-import type { RlpxServer } from '../server/index.js'
-import type { PeerOptions } from './peer.js'
-import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
+import type {
+  Capabilities as Devp2pCapabilities,
+  Peer as Devp2pRlpxPeer,
+} from "@ethereumjs/devp2p";
+import type { Protocol } from "../protocol/index.js";
+import type { RlpxServer } from "../server/index.js";
+import type { PeerOptions } from "./peer.js";
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
   eth67: Devp2pETH.eth67,
   eth68: Devp2pETH.eth68,
-}
+};
 
-export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+export interface RlpxPeerOptions
+  extends Omit<PeerOptions, "address" | "transport"> {
   /* Peer hostname or ip address */
-  host: string
+  host: string;
 
   /* Peer port */
-  port: number
+  port: number;
 }
 
 /**
@@ -48,27 +56,27 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * ```
  */
 export class RlpxPeer extends Peer {
-  private host: string
-  private port: number
-  public rlpx: Devp2pRLPx | null
-  public rlpxPeer: Devp2pRlpxPeer | null
-  public connected: boolean
+  private host: string;
+  private port: number;
+  public rlpx: Devp2pRLPx | null;
+  public rlpxPeer: Devp2pRlpxPeer | null;
+  public connected: boolean;
   /**
    * Create new devp2p/rlpx peer
    */
   constructor(options: RlpxPeerOptions) {
-    const address = `${options.host}:${options.port}`
+    const address = `${options.host}:${options.port}`;
     super({
       ...options,
-      transport: 'rlpx',
+      transport: "rlpx",
       address,
-    })
+    });
 
-    this.host = options.host
-    this.port = options.port
-    this.rlpx = null
-    this.rlpxPeer = null
-    this.connected = false
+    this.host = options.host;
+    this.port = options.port;
+    this.rlpx = null;
+    this.rlpxPeer = null;
+    this.connected = false;
   }
 
   /**
@@ -76,18 +84,19 @@ export class RlpxPeer extends Peer {
    * @param protocols protocol instances
    */
   static capabilities(protocols: Protocol[]): Devp2pCapabilities[] {
-    const capabilities: Devp2pCapabilities[] = []
+    const capabilities: Devp2pCapabilities[] = [];
     for (const protocol of protocols) {
-      const { name, versions } = protocol
-      const keys = versions.map((v: number) => name + String(v))
+      const { name, versions } = protocol;
+      const keys = versions.map((v: number) => name + String(v));
       for (const key of keys) {
-        const capability = devp2pCapabilities[key as keyof typeof devp2pCapabilities]
+        const capability =
+          devp2pCapabilities[key as keyof typeof devp2pCapabilities];
         if (capability !== undefined) {
-          capabilities.push(capability)
+          capabilities.push(capability);
         }
       }
     }
-    return capabilities
+    return capabilities;
   }
 
   /**
@@ -95,44 +104,44 @@ export class RlpxPeer extends Peer {
    */
   async connect(): Promise<void> {
     if (this.connected) {
-      return
+      return;
     }
-    const key = randomBytes(32)
-    await Promise.all(this.protocols.map((p) => p.open()))
+    const key = randomBytes(32);
+    await Promise.all(this.protocols.map((p) => p.open()));
     this.rlpx = new Devp2pRLPx(key, {
       capabilities: RlpxPeer.capabilities(this.protocols),
       common: this.config.chainCommon,
-    })
+    });
     await this.rlpx.connect({
       id: unprefixedHexToBytes(this.id),
       address: this.host,
       tcpPort: this.port,
-    })
+    });
 
     const peerErrorHandler = (_: Devp2pRlpxPeer, error: Error) => {
-      this.config.events.emit(Event.PEER_ERROR, error, this)
-    }
-    const peerErrorHandlerBound = peerErrorHandler.bind(this)
+      this.config.events.emit(Event.PEER_ERROR, error, this);
+    };
+    const peerErrorHandlerBound = peerErrorHandler.bind(this);
     const peerAddedHandler = async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
-        await this.bindProtocols(rlpxPeer)
-        this.config.events.emit(Event.PEER_CONNECTED, this)
+        await this.bindProtocols(rlpxPeer);
+        this.config.events.emit(Event.PEER_CONNECTED, this);
       } catch (error: any) {
-        this.config.events.emit(Event.PEER_ERROR, error, this)
+        this.config.events.emit(Event.PEER_ERROR, error, this);
       }
-    }
+    };
     const peerRemovedHandler = (rlpxPeer: Devp2pRlpxPeer) => {
       if (rlpxPeer !== this.rlpxPeer) {
-        return
+        return;
       }
-      this.rlpxPeer = null
-      this.connected = false
-      this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      this.rlpx?.events.removeListener('peer:error', peerErrorHandlerBound)
-    }
-    this.rlpx.events.on('peer:error', peerErrorHandlerBound)
-    this.rlpx.events.once('peer:added', peerAddedHandler.bind(this))
-    this.rlpx.events.once('peer:removed', peerRemovedHandler.bind(this))
+      this.rlpxPeer = null;
+      this.connected = false;
+      this.config.events.emit(Event.PEER_DISCONNECTED, this);
+      this.rlpx?.events.removeListener("peer:error", peerErrorHandlerBound);
+    };
+    this.rlpx.events.on("peer:error", peerErrorHandlerBound);
+    this.rlpx.events.once("peer:added", peerAddedHandler.bind(this));
+    this.rlpx.events.once("peer:removed", peerRemovedHandler.bind(this));
   }
 
   /**
@@ -140,10 +149,10 @@ export class RlpxPeer extends Peer {
    */
   async accept(rlpxPeer: Devp2pRlpxPeer, server: RlpxServer): Promise<void> {
     if (this.connected) {
-      return
+      return;
     }
-    await this.bindProtocols(rlpxPeer)
-    this.server = server
+    await this.bindProtocols(rlpxPeer);
+    this.server = server;
   }
 
   /**
@@ -151,35 +160,39 @@ export class RlpxPeer extends Peer {
    * @param rlpxPeer rlpx native peer
    */
   private async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
-    this.rlpxPeer = rlpxPeer
+    this.rlpxPeer = rlpxPeer;
     await Promise.all(
       rlpxPeer.getProtocols().map((rlpxProtocol) => {
-        const name = rlpxProtocol.constructor.name.toLowerCase()
-        const protocol = this.protocols.find((p) => p.name === name)
+        const name = rlpxProtocol.constructor.name.toLowerCase();
+        const protocol = this.protocols.find((p) => p.name === name);
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
-        if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pSNAP)
+        if (protocol && name !== "snap") {
+          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pSNAP);
           return this.addProtocol(sender, protocol).then(() => {
-            if (name === 'eth') {
+            if (name === "eth") {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
-                .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
+                .filter((p) => p.constructor.name.toLowerCase() === "snap")[0];
               const snapProtocol =
                 snapRlpxProtocol !== undefined
                   ? this.protocols.find(
-                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase(),
+                      (p) =>
+                        p.name ===
+                        snapRlpxProtocol?.constructor.name.toLowerCase(),
                     )
-                  : undefined
+                  : undefined;
               if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(snapRlpxProtocol as Devp2pETH | Devp2pSNAP)
-                return this.addProtocol(snapSender, snapProtocol)
+                const snapSender = new RlpxSender(
+                  snapRlpxProtocol as Devp2pETH | Devp2pSNAP,
+                );
+                return this.addProtocol(snapSender, snapProtocol);
               }
             }
-          })
+          });
         }
       }),
-    )
-    this.connected = true
+    );
+    this.connected = true;
   }
 }

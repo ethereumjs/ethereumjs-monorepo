@@ -4,36 +4,36 @@
  * @memberof module:net/peer
  */
 
-import { NOISE } from '@chainsafe/libp2p-noise'
-import Libp2p from 'libp2p'
-import Bootstrap from 'libp2p-bootstrap'
+import { NOISE } from "@chainsafe/libp2p-noise";
+import Libp2p from "libp2p";
+import Bootstrap from "libp2p-bootstrap";
 
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from "@libp2p/interface-peer-id";
+import type { Multiaddr } from "@multiformats/multiaddr";
 
-const MPLEX = require('libp2p-mplex')
-const Websockets = require('libp2p-websockets')
-const filters = require('libp2p-websockets/src/filters')
+const MPLEX = require("libp2p-mplex");
+const Websockets = require("libp2p-websockets");
+const filters = require("libp2p-websockets/src/filters");
 
 export interface Libp2pNodeOptions {
   /* Peer id */
-  peerId: PeerId
+  peerId: PeerId;
 
   /* Addresses */
   addresses?: {
-    listen?: string[]
-    announce?: string[]
-    announceFilter?: (ma: Multiaddr[]) => Multiaddr[]
-  }
+    listen?: string[];
+    announce?: string[];
+    announceFilter?: (ma: Multiaddr[]) => Multiaddr[];
+  };
 
   /* Bootnodes */
-  bootnodes?: Multiaddr[]
+  bootnodes?: Multiaddr[];
 }
 
 export class Libp2pNode extends Libp2p {
   constructor(options: Libp2pNodeOptions) {
-    const wsTransportKey = Websockets.prototype[Symbol.toStringTag]
-    options.bootnodes = options.bootnodes ?? []
+    const wsTransportKey = Websockets.prototype[Symbol.toStringTag];
+    options.bootnodes = options.bootnodes ?? [];
 
     super({
       peerId: options.peerId,
@@ -42,7 +42,7 @@ export class Libp2pNode extends Libp2p {
         transport: [Websockets],
         streamMuxer: [MPLEX],
         connEncryption: [NOISE],
-        [<any>'peerDiscovery']: [Bootstrap],
+        [<any>"peerDiscovery"]: [Bootstrap],
       },
       config: {
         transport: {
@@ -59,6 +59,6 @@ export class Libp2pNode extends Libp2p {
           },
         },
       },
-    })
+    });
   }
 }
