@@ -246,7 +246,7 @@ Read the [API docs](docs/).
 
 ### Upgrade Helpers in bytes-Module
 
-Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
+Depending on the extent of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
 
 We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
 
