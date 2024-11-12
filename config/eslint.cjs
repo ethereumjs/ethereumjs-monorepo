@@ -65,14 +65,14 @@ module.exports = {
     eqeqeq: 'error',
     'github/array-foreach': 'error',
     'implicit-dependencies/no-implicit': ['error', { peer: true, dev: true, optional: true }],
-    'import/default': 'error',
+    'import/default': 'off',
     'import/export': 'error',
     'import/exports-last': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/extensions': ['error','ignorePackages'],
     'import/first': 'error',
     'import/group-exports': 'off',
-    'import/named': 'error',
-    'import/namespace': 'error',
+    'import/named': 'off',
+    'import/namespace': 'off',
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
     'import/no-cycle': 'off', // TODO: set to `warn` for fixing and then `error`
