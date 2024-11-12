@@ -5,7 +5,7 @@ import {
   Mainnet,
   createCustomCommon,
 } from "@ethereumjs/common";
-import { type KZG } from "@ethereumjs/util";
+import type { KZG } from "@ethereumjs/util";
 
 import type { HardforkTransitionConfig } from "@ethereumjs/common";
 
@@ -284,7 +284,7 @@ function setupCommonWithNetworks(
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g);
   if (eips) {
-    common.setEIPs(eips.map((e: string) => parseInt(e)));
+    common.setEIPs(eips.map((e: string) => Number.parseInt(e)));
   }
   return common;
 }
@@ -318,8 +318,8 @@ export function getCommon(network: string, kzg?: KZG): Common {
     const start = networkLowercase.match("tomergeatdiff")!.index!;
     const end = start + "tomergeatdiff".length;
     const startNetwork = network.substring(0, start); // HF before the merge
-    const TTD = Number("0x" + network.substring(end)); // Total difficulty to transition to PoS
-    return setupCommonWithNetworks(startNetwork, TTD, undefined, kzg);
+    const ttd = Number("0x" + network.substring(end)); // Total difficulty to transition to PoS
+    return setupCommonWithNetworks(startNetwork, ttd, undefined, kzg);
   } else if (networkLowercase === "shanghaitocancunattime15k") {
     return setupCommonWithNetworks("Shanghai", undefined, 15000, kzg);
   } else if (networkLowercase === "cancuntopragueattime15k") {

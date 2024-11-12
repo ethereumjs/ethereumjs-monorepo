@@ -413,7 +413,10 @@ export class VerkleTree {
           `Creating new internal node at path ${bytesToHex(pathToNode)}`,
           ["put"],
         );
-    } else if (!isLeafVerkleNode(nearestNode)) {
+    } else if (isLeafVerkleNode(nearestNode)) {
+      // Nearest node is a leaf node and new leaf node is actually being deleted
+      return;
+    } else {
       // Nearest node is an internal node.  We need to update the appropriate child reference
       // to the new leaf node
       internalNode = nearestNode;
@@ -456,9 +459,6 @@ export class VerkleTree {
           )}`,
           ["put"],
         );
-    } else {
-      // Nearest node is a leaf node and new leaf node is actually being deleted
-      return;
     }
     return { node: internalNode, lastPath: pathToNode };
   }

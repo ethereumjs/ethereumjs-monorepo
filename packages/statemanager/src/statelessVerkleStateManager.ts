@@ -508,12 +508,10 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       const basicDataBytes = encodeVerkleLeafBasicData(account);
 
       this._state[bytesToHex(basicDataKey)] = bytesToHex(basicDataBytes);
+    } else if (account !== undefined) {
+      this._caches?.account?.put(address, account, true);
     } else {
-      if (account !== undefined) {
-        this._caches?.account?.put(address, account, true);
-      } else {
-        this._caches?.account?.del(address);
-      }
+      this._caches?.account?.del(address);
     }
   }
 

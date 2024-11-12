@@ -17,7 +17,7 @@ import type {
 
 const enginePrefix = "[ CL ] ";
 
-enum logLevel {
+enum LogLevel {
   ERROR = "error",
   WARN = "warn",
   INFO = "info",
@@ -57,7 +57,7 @@ type PayloadToPayloadStats = {
 const logCLStatus = (
   logger: winston.Logger,
   logMsg: string,
-  logLevel: logLevel,
+  logLevel: LogLevel,
 ) => {
   logger[logLevel](enginePrefix + logMsg);
 };
@@ -229,7 +229,7 @@ export class CLConnectionManager {
       logCLStatus(
         this.config.logger,
         `Initial consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(update)}`,
-        logLevel.INFO,
+        LogLevel.INFO,
       );
     }
     this._lastForkchoiceUpdate = update;
@@ -242,7 +242,7 @@ export class CLConnectionManager {
       logCLStatus(
         this.config.logger,
         `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`,
-        logLevel.INFO,
+        LogLevel.INFO,
       );
     }
     this._lastPayload = payload;
@@ -309,7 +309,7 @@ export class CLConnectionManager {
           logCLStatus(
             this.config.logger,
             "Losing consensus client connection...",
-            logLevel.WARN,
+            LogLevel.WARN,
           );
         }
       } else {
@@ -317,7 +317,7 @@ export class CLConnectionManager {
         logCLStatus(
           this.config.logger,
           "Consensus client disconnected",
-          logLevel.WARN,
+          LogLevel.WARN,
         );
       }
     } else {
@@ -328,7 +328,7 @@ export class CLConnectionManager {
         logCLStatus(
           this.config.logger,
           "Waiting for consensus client to connect...",
-          logLevel.INFO,
+          LogLevel.INFO,
         );
         if (this._inActivityCb !== undefined) {
           this._inActivityCb();
@@ -345,12 +345,12 @@ export class CLConnectionManager {
         logCLStatus(
           this.config.logger,
           "CL client connection is needed, Merge HF happening soon",
-          logLevel.WARN,
+          LogLevel.WARN,
         );
         logCLStatus(
           this.config.logger,
           "(no CL <-> EL communication yet, connection might be in a workable state though)",
-          logLevel.WARN,
+          LogLevel.WARN,
         );
       }
     }
@@ -363,12 +363,12 @@ export class CLConnectionManager {
         logCLStatus(
           this.config.logger,
           "Paris (Merge) HF activated, CL client connection is needed for continued block processing",
-          logLevel.INFO,
+          LogLevel.INFO,
         );
         logCLStatus(
           this.config.logger,
           "(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)",
-          logLevel.INFO,
+          LogLevel.INFO,
         );
       }
       this.oneTimeMergeCLConnectionCheck = true;
@@ -384,18 +384,12 @@ export class CLConnectionManager {
     }
     if (!this.config.synchronized) {
       this.config.logger.info("");
-      if (!this._lastPayload) {
-        logCLStatus(
-          this.config.logger,
-          "No consensus payload received yet",
-          logLevel.INFO,
-        );
-      } else {
+      if (this._lastPayload) {
         const payloadMsg = this._getPayloadLogMsg(this._lastPayload);
         logCLStatus(
           this.config.logger,
           `Last consensus payload received  ${payloadMsg}`,
-          logLevel.INFO,
+          LogLevel.INFO,
         );
         const count = this._payloadToPayloadStats["blockCount"];
         const min = this._payloadToPayloadStats["minBlockNumber"];
@@ -413,9 +407,15 @@ export class CLConnectionManager {
           `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
             txsMsg.length > 0 ? txsMsg.join("|") : "0"
           }`,
-          logLevel.DEBUG,
+          LogLevel.DEBUG,
         );
         this.clearPayloadStats();
+      } else {
+        logCLStatus(
+          this.config.logger,
+          "No consensus payload received yet",
+          LogLevel.INFO,
+        );
       }
     }
   }
@@ -430,7 +430,7 @@ export class CLConnectionManager {
       logCLStatus(
         this.config.logger,
         `New consensus payload received  ${payloadMsg}`,
-        logLevel.INFO,
+        LogLevel.INFO,
       );
     }
   }
@@ -443,19 +443,19 @@ export class CLConnectionManager {
       return;
     }
     if (!this.config.synchronized) {
-      if (!this._lastForkchoiceUpdate) {
-        logCLStatus(
-          this.config.logger,
-          `No consensus forkchoice update received yet`,
-          logLevel.INFO,
-        );
-      } else {
+      if (this._lastForkchoiceUpdate) {
         logCLStatus(
           this.config.logger,
           `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
             this._lastForkchoiceUpdate,
           )}`,
-          logLevel.INFO,
+          LogLevel.INFO,
+        );
+      } else {
+        logCLStatus(
+          this.config.logger,
+          `No consensus forkchoice update received yet`,
+          LogLevel.INFO,
         );
       }
     }
@@ -471,7 +471,7 @@ export class CLConnectionManager {
         `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
           this._lastForkchoiceUpdate,
         )}`,
-        logLevel.INFO,
+        LogLevel.INFO,
       );
     }
   }
@@ -485,8 +485,8 @@ export function middleware(
   methodFn: (params: any[]) => Promise<any>,
   handler: (params: any[], response: any, errormsg: any) => void,
 ): any {
-  return function (params: any[] = []) {
-    return methodFn(params)
+  return (params: any[] = []) =>
+    methodFn(params)
       .then((response) => {
         handler(params, response, undefined);
         return response;
@@ -495,5 +495,4 @@ export function middleware(
         handler(params, undefined, e.message);
         throw e;
       });
-  };
 }

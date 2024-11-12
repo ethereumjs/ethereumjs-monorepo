@@ -1,6 +1,6 @@
 import Benchmark from "benchmark";
 import { mainnetBlocks } from "./mainnetBlocks.js";
-import { BenchmarksType } from "./util.js";
+import type { BenchmarksType } from "./util.js";
 
 // Add an import and a BENCHMARKS entry to list a new benchmark
 const BENCHMARKS: BenchmarksType = {

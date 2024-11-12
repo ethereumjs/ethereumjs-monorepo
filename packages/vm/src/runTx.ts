@@ -493,7 +493,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList;
-    const MAGIC = new Uint8Array([5]);
+    const magic = new Uint8Array([5]);
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i];
@@ -527,7 +527,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       const r = data[4];
 
       const rlpdSignedMessage = RLP.encode([chainId, address, nonce]);
-      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage));
+      const toSign = keccak256(concatBytes(magic, rlpdSignedMessage));
       let pubKey;
       try {
         pubKey = ecrecover(toSign, yParity, r, s);
@@ -687,10 +687,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         `Subtract tx gasRefund (${gasRefund}) from totalGasSpent (-> ${results.totalGasSpent})`,
       );
     }
-  } else {
-    if (vm.DEBUG) {
-      debug(`No tx gasRefund`);
-    }
+  } else if (vm.DEBUG) {
+    debug(`No tx gasRefund`);
   }
   results.amountSpent = results.totalGasSpent * gasPrice;
 
@@ -923,7 +921,22 @@ export async function generateTxReceipt(
     );
   }
 
-  if (!tx.supports(Capability.EIP2718TypedTransaction)) {
+  if (tx.supports(Capability.EIP2718TypedTransaction)) {
+    // Typed EIP-2718 Transaction
+    if (isBlob4844Tx(tx)) {
+      receipt = {
+        blobGasUsed,
+        blobGasPrice,
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as EIP4844BlobTxReceipt;
+    } else {
+      receipt = {
+        status: txResult.execResult.exceptionError ? 0 : 1,
+        ...baseReceipt,
+      } as PostByzantiumTxReceipt;
+    }
+  } else {
     // Legacy transaction
     if (vm.common.gteHardfork(Hardfork.Byzantium)) {
       // Post-Byzantium
@@ -938,21 +951,6 @@ export async function generateTxReceipt(
         stateRoot,
         ...baseReceipt,
       } as PreByzantiumTxReceipt;
-    }
-  } else {
-    // Typed EIP-2718 Transaction
-    if (isBlob4844Tx(tx)) {
-      receipt = {
-        blobGasUsed,
-        blobGasPrice,
-        status: txResult.execResult.exceptionError ? 0 : 1,
-        ...baseReceipt,
-      } as EIP4844BlobTxReceipt;
-    } else {
-      receipt = {
-        status: txResult.execResult.exceptionError ? 0 : 1,
-        ...baseReceipt,
-      } as PostByzantiumTxReceipt;
     }
   }
   return receipt;

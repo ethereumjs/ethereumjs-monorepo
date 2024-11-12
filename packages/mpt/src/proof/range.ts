@@ -1,11 +1,11 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { equalsBytes } from "@ethereumjs/util";
 
-import { createMPTFromProof } from '../index.js'
-import { MerklePatriciaTrie } from '../mpt.js'
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
-import { nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
+import { createMPTFromProof } from "../index.js";
+import { MerklePatriciaTrie } from "../mpt.js";
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from "../node/index.js";
+import { nibblesCompare, nibblesTypeToPackedBytes } from "../util/nibbles.js";
 
-import type { HashKeysFunction, MPTNode, Nibbles } from '../types.js'
+import type { HashKeysFunction, MPTNode, Nibbles } from "../types.js";
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -36,22 +36,25 @@ async function unset(
      */
     if (removeLeft) {
       for (let i = 0; i < key[pos]; i++) {
-        child.setBranch(i, null)
+        child.setBranch(i, null);
       }
     } else {
       for (let i = key[pos] + 1; i < 16; i++) {
-        child.setBranch(i, null)
+        child.setBranch(i, null);
       }
     }
 
     // record this node on the stack
-    stack.push(child)
+    stack.push(child);
 
     // continue to the next node
-    const next = child.getBranch(key[pos])
-    const _child = next && (await trie.lookupNode(next))
-    return unset(trie, child, _child, key, pos + 1, removeLeft, stack)
-  } else if (child instanceof ExtensionMPTNode || child instanceof LeafMPTNode) {
+    const next = child.getBranch(key[pos]);
+    const _child = next && (await trie.lookupNode(next));
+    return unset(trie, child, _child, key, pos + 1, removeLeft, stack);
+  } else if (
+    child instanceof ExtensionMPTNode ||
+    child instanceof LeafMPTNode
+  ) {
     /**
      * This node is an extension node or lead node,
      * if node._nibbles is less or greater than the target key,
@@ -59,42 +62,51 @@ async function unset(
      */
     if (
       key.length - pos < child.keyLength() ||
-      nibblesCompare(child._nibbles, key.slice(pos, pos + child.keyLength())) !== 0
+      nibblesCompare(
+        child._nibbles,
+        key.slice(pos, pos + child.keyLength()),
+      ) !== 0
     ) {
       if (removeLeft) {
         if (nibblesCompare(child._nibbles, key.slice(pos)) < 0) {
-          ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
+          (parent as BranchMPTNode).setBranch(key[pos - 1], null);
         }
-      } else {
-        if (nibblesCompare(child._nibbles, key.slice(pos)) > 0) {
-          ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
-        }
+      } else if (nibblesCompare(child._nibbles, key.slice(pos)) > 0) {
+        (parent as BranchMPTNode).setBranch(key[pos - 1], null);
       }
-      return pos - 1
+      return pos - 1;
     }
 
     if (child instanceof LeafMPTNode) {
       // This node is a leaf node, directly remove it from parent
-      ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
-      return pos - 1
+      (parent as BranchMPTNode).setBranch(key[pos - 1], null);
+      return pos - 1;
     } else {
-      const _child = await trie.lookupNode(child.value())
+      const _child = await trie.lookupNode(child.value());
       if (_child instanceof LeafMPTNode) {
         // The child of this node is leaf node, remove it from parent too
-        ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
-        return pos - 1
+        (parent as BranchMPTNode).setBranch(key[pos - 1], null);
+        return pos - 1;
       }
 
       // record this node on the stack
-      stack.push(child)
+      stack.push(child);
 
       // continue to the next node
-      return unset(trie, child, _child, key, pos + child.keyLength(), removeLeft, stack)
+      return unset(
+        trie,
+        child,
+        _child,
+        key,
+        pos + child.keyLength(),
+        removeLeft,
+        stack,
+      );
     }
   } else if (child === null) {
-    return pos - 1
+    return pos - 1;
   } else {
-    throw new Error('invalid node')
+    throw new Error("invalid node");
   }
 }
 
@@ -111,15 +123,15 @@ async function unsetInternal(
   right: Nibbles,
 ): Promise<boolean> {
   // Key position
-  let pos = 0
+  let pos = 0;
   // Parent node
-  let parent: MPTNode | null = null
+  let parent: MPTNode | null = null;
   // Current node
-  let node: MPTNode | null = await trie.lookupNode(trie.root())
-  let shortForkLeft!: number
-  let shortForkRight!: number
+  let node: MPTNode | null = await trie.lookupNode(trie.root());
+  let shortForkLeft!: number;
+  let shortForkRight!: number;
   // A stack of modified nodes.
-  const stack: MPTNode[] = []
+  const stack: MPTNode[] = [];
 
   // 1. Find the fork point of `left` and `right`
 
@@ -127,90 +139,96 @@ async function unsetInternal(
   while (true) {
     if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
       // record this node on the stack
-      stack.push(node)
+      stack.push(node);
 
       if (left.length - pos < node.keyLength()) {
-        shortForkLeft = nibblesCompare(left.slice(pos), node._nibbles)
+        shortForkLeft = nibblesCompare(left.slice(pos), node._nibbles);
       } else {
-        shortForkLeft = nibblesCompare(left.slice(pos, pos + node.keyLength()), node._nibbles)
+        shortForkLeft = nibblesCompare(
+          left.slice(pos, pos + node.keyLength()),
+          node._nibbles,
+        );
       }
 
       if (right.length - pos < node.keyLength()) {
-        shortForkRight = nibblesCompare(right.slice(pos), node._nibbles)
+        shortForkRight = nibblesCompare(right.slice(pos), node._nibbles);
       } else {
-        shortForkRight = nibblesCompare(right.slice(pos, pos + node.keyLength()), node._nibbles)
+        shortForkRight = nibblesCompare(
+          right.slice(pos, pos + node.keyLength()),
+          node._nibbles,
+        );
       }
 
       // If one of `left` and `right` is not equal to node._nibbles, it means we found the fork point
       if (shortForkLeft !== 0 || shortForkRight !== 0) {
-        break
+        break;
       }
 
       if (node instanceof LeafMPTNode) {
         // it shouldn't happen
-        throw new Error('invalid node')
+        throw new Error("invalid node");
       }
 
       // continue to the next node
-      parent = node
-      pos += node.keyLength()
-      node = await trie.lookupNode(node.value())
+      parent = node;
+      pos += node.keyLength();
+      node = await trie.lookupNode(node.value());
     } else if (node instanceof BranchMPTNode) {
       // record this node on the stack
-      stack.push(node)
+      stack.push(node);
 
-      const leftNode = node.getBranch(left[pos])
-      const rightNode = node.getBranch(right[pos])
+      const leftNode = node.getBranch(left[pos]);
+      const rightNode = node.getBranch(right[pos]);
 
       // One of `left` and `right` is `null`, stop searching
       if (leftNode === null || rightNode === null) {
-        break
+        break;
       }
 
       // Stop searching if `left` and `right` are not equal
-      if (!(leftNode instanceof Uint8Array)) {
-        if (rightNode instanceof Uint8Array) {
-          break
-        }
-
-        if (leftNode.length !== rightNode.length) {
-          break
-        }
-
-        let abort = false
-        for (let i = 0; i < leftNode.length; i++) {
-          if (!equalsBytes(leftNode[i], rightNode[i])) {
-            abort = true
-            break
-          }
-        }
-        if (abort) {
-          break
-        }
-      } else {
+      if (leftNode instanceof Uint8Array) {
         if (!(rightNode instanceof Uint8Array)) {
-          break
+          break;
         }
 
         if (!equalsBytes(leftNode, rightNode)) {
-          break
+          break;
+        }
+      } else {
+        if (rightNode instanceof Uint8Array) {
+          break;
+        }
+
+        if (leftNode.length !== rightNode.length) {
+          break;
+        }
+
+        let abort = false;
+        for (let i = 0; i < leftNode.length; i++) {
+          if (!equalsBytes(leftNode[i], rightNode[i])) {
+            abort = true;
+            break;
+          }
+        }
+        if (abort) {
+          break;
         }
       }
 
       // continue to the next node
-      parent = node
-      node = await trie.lookupNode(leftNode)
-      pos += 1
+      parent = node;
+      node = await trie.lookupNode(leftNode);
+      pos += 1;
     } else {
-      throw new Error('invalid node')
+      throw new Error("invalid node");
     }
   }
 
   // 2. Starting from the fork point, delete all nodes between `left` and `right`
 
   const saveStack = (key: Nibbles, stack: MPTNode[]) => {
-    return trie.saveStack(key, stack, [])
-  }
+    return trie.saveStack(key, stack, []);
+  };
 
   if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
     /**
@@ -223,67 +241,83 @@ async function unsetInternal(
      */
     const removeSelfFromParentAndSaveStack = async (key: Nibbles) => {
       if (parent === null) {
-        return true
+        return true;
       }
 
-      stack.pop()
-      ;(parent as BranchMPTNode).setBranch(key[pos - 1], null)
-      await saveStack(key.slice(0, pos - 1), stack)
-      return false
-    }
+      stack.pop();
+      (parent as BranchMPTNode).setBranch(key[pos - 1], null);
+      await saveStack(key.slice(0, pos - 1), stack);
+      return false;
+    };
 
     if (shortForkLeft === -1 && shortForkRight === -1) {
-      throw new Error('invalid range')
+      throw new Error("invalid range");
     }
 
     if (shortForkLeft === 1 && shortForkRight === 1) {
-      throw new Error('invalid range')
+      throw new Error("invalid range");
     }
 
     if (shortForkLeft !== 0 && shortForkRight !== 0) {
       // Unset the entire trie
-      return removeSelfFromParentAndSaveStack(left)
+      return removeSelfFromParentAndSaveStack(left);
     }
 
     // Unset left node
     if (shortForkRight !== 0) {
       if (node instanceof LeafMPTNode) {
-        return removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left);
       }
 
-      const child = await trie.lookupNode(node._value)
+      const child = await trie.lookupNode(node._value);
       if (child instanceof LeafMPTNode) {
-        return removeSelfFromParentAndSaveStack(left)
+        return removeSelfFromParentAndSaveStack(left);
       }
 
-      const endPos = await unset(trie, node, child, left.slice(pos), node.keyLength(), false, stack)
-      await saveStack(left.slice(0, pos + endPos), stack)
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        left.slice(pos),
+        node.keyLength(),
+        false,
+        stack,
+      );
+      await saveStack(left.slice(0, pos + endPos), stack);
 
-      return false
+      return false;
     }
 
     // Unset right node
     if (shortForkLeft !== 0) {
       if (node instanceof LeafMPTNode) {
-        return removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right);
       }
 
-      const child = await trie.lookupNode(node._value)
+      const child = await trie.lookupNode(node._value);
       if (child instanceof LeafMPTNode) {
-        return removeSelfFromParentAndSaveStack(right)
+        return removeSelfFromParentAndSaveStack(right);
       }
 
-      const endPos = await unset(trie, node, child, right.slice(pos), node.keyLength(), true, stack)
-      await saveStack(right.slice(0, pos + endPos), stack)
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        right.slice(pos),
+        node.keyLength(),
+        true,
+        stack,
+      );
+      await saveStack(right.slice(0, pos + endPos), stack);
 
-      return false
+      return false;
     }
 
-    return false
+    return false;
   } else if (node instanceof BranchMPTNode) {
     // Unset all internal nodes in the forkPoint
     for (let i = left[pos] + 1; i < right[pos]; i++) {
-      node.setBranch(i, null)
+      node.setBranch(i, null);
     }
 
     {
@@ -292,24 +326,40 @@ async function unsetInternal(
        * Since we need to unset both left and right nodes once,
        * we need to make a copy here.
        */
-      const _stack = [...stack]
-      const next = node.getBranch(left[pos])
-      const child = next && (await trie.lookupNode(next))
-      const endPos = await unset(trie, node, child, left.slice(pos), 1, false, _stack)
-      await saveStack(left.slice(0, pos + endPos), _stack)
+      const _stack = [...stack];
+      const next = node.getBranch(left[pos]);
+      const child = next && (await trie.lookupNode(next));
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        left.slice(pos),
+        1,
+        false,
+        _stack,
+      );
+      await saveStack(left.slice(0, pos + endPos), _stack);
     }
 
     {
-      const _stack = [...stack]
-      const next = node.getBranch(right[pos])
-      const child = next && (await trie.lookupNode(next))
-      const endPos = await unset(trie, node, child, right.slice(pos), 1, true, _stack)
-      await saveStack(right.slice(0, pos + endPos), _stack)
+      const _stack = [...stack];
+      const next = node.getBranch(right[pos]);
+      const child = next && (await trie.lookupNode(next));
+      const endPos = await unset(
+        trie,
+        node,
+        child,
+        right.slice(pos),
+        1,
+        true,
+        _stack,
+      );
+      await saveStack(right.slice(0, pos + endPos), _stack);
     }
 
-    return false
+    return false;
   } else {
-    throw new Error('invalid node')
+    throw new Error("invalid node");
   }
 }
 
@@ -330,18 +380,18 @@ async function verifyMPTWithMerkleProof(
   const proofTrie = await createMPTFromProof(proof, {
     root: rootHash,
     useKeyHashingFunction,
-  })
+  });
   try {
-    const value = await proofTrie.get(key, true)
+    const value = await proofTrie.get(key, true);
     return {
       trie: proofTrie,
       value,
-    }
+    };
   } catch (err: any) {
-    if (err.message === 'Missing node in DB') {
-      throw new Error('Invalid proof provided')
+    if (err.message === "Missing node in DB") {
+      throw new Error("Invalid proof provided");
     } else {
-      throw err
+      throw err;
     }
   }
 }
@@ -352,37 +402,43 @@ async function verifyMPTWithMerkleProof(
  * @param trie - trie object.
  * @param key - given path.
  */
-async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<boolean> {
-  let pos = 0
-  let node: MPTNode | null = await trie.lookupNode(trie.root())
+async function hasRightElement(
+  trie: MerklePatriciaTrie,
+  key: Nibbles,
+): Promise<boolean> {
+  let pos = 0;
+  let node: MPTNode | null = await trie.lookupNode(trie.root());
   while (node !== null) {
     if (node instanceof BranchMPTNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
         if (node.getBranch(i) !== null) {
-          return true
+          return true;
         }
       }
 
-      const next = node.getBranch(key[pos])
-      node = next && (await trie.lookupNode(next))
-      pos += 1
+      const next = node.getBranch(key[pos]);
+      node = next && (await trie.lookupNode(next));
+      pos += 1;
     } else if (node instanceof ExtensionMPTNode) {
       if (
         key.length - pos < node.keyLength() ||
-        nibblesCompare(node._nibbles, key.slice(pos, pos + node.keyLength())) !== 0
+        nibblesCompare(
+          node._nibbles,
+          key.slice(pos, pos + node.keyLength()),
+        ) !== 0
       ) {
-        return nibblesCompare(node._nibbles, key.slice(pos)) > 0
+        return nibblesCompare(node._nibbles, key.slice(pos)) > 0;
       }
 
-      pos += node.keyLength()
-      node = await trie.lookupNode(node._value)
+      pos += node.keyLength();
+      node = await trie.lookupNode(node._value);
     } else if (node instanceof LeafMPTNode) {
-      return false
+      return false;
     } else {
-      throw new Error('invalid node')
+      throw new Error("invalid node");
     }
   }
-  return false
+  return false;
 }
 
 /**
@@ -424,32 +480,32 @@ export async function verifyRangeProof(
   useKeyHashingFunction: HashKeysFunction,
 ): Promise<boolean> {
   if (keys.length !== values.length) {
-    throw new Error('invalid keys length or values length')
+    throw new Error("invalid keys length or values length");
   }
 
   // Make sure the keys are in order
   for (let i = 0; i < keys.length - 1; i++) {
     if (nibblesCompare(keys[i], keys[i + 1]) >= 0) {
-      throw new Error('invalid keys order')
+      throw new Error("invalid keys order");
     }
   }
   // Make sure all values are present
   for (const value of values) {
     if (value.length === 0) {
-      throw new Error('invalid values')
+      throw new Error("invalid values");
     }
   }
 
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
-    const trie = new MerklePatriciaTrie({ useKeyHashingFunction })
+    const trie = new MerklePatriciaTrie({ useKeyHashingFunction });
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
+      await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i]);
     }
     if (!equalsBytes(rootHash, trie.root())) {
-      throw new Error('invalid all elements proof: root mismatch')
+      throw new Error("invalid all elements proof: root mismatch");
     }
-    return false
+    return false;
   }
 
   if (proof !== null && firstKey !== null && lastKey === null) {
@@ -460,20 +516,20 @@ export async function verifyRangeProof(
         nibblesTypeToPackedBytes(firstKey),
         proof,
         useKeyHashingFunction,
-      )
+      );
 
       if (value !== null || (await hasRightElement(trie, firstKey))) {
-        throw new Error('invalid zero element proof: value mismatch')
+        throw new Error("invalid zero element proof: value mismatch");
       }
 
-      return false
+      return false;
     }
   }
 
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time',
-    )
+      "invalid all elements proof: proof, firstKey, lastKey must be null at the same time",
+    );
   }
 
   // One element proof
@@ -483,48 +539,52 @@ export async function verifyRangeProof(
       nibblesTypeToPackedBytes(firstKey),
       proof,
       useKeyHashingFunction,
-    )
+    );
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
-      throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
+      throw new Error(
+        "invalid one element proof: firstKey should be equal to keys[0]",
+      );
     }
     if (value === null || !equalsBytes(value, values[0])) {
-      throw new Error('invalid one element proof: value mismatch')
+      throw new Error("invalid one element proof: value mismatch");
     }
 
-    return hasRightElement(trie, firstKey)
+    return hasRightElement(trie, firstKey);
   }
 
   // Two edge elements proof
   if (nibblesCompare(firstKey, lastKey) >= 0) {
-    throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
+    throw new Error(
+      "invalid two edge elements proof: firstKey should be less than lastKey",
+    );
   }
   if (firstKey.length !== lastKey.length) {
     throw new Error(
-      'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey',
-    )
+      "invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey",
+    );
   }
 
   const trie = await createMPTFromProof(proof, {
     useKeyHashingFunction,
     root: rootHash,
-  })
+  });
 
   // Remove all nodes between two edge proofs
-  const empty = await unsetInternal(trie, firstKey, lastKey)
+  const empty = await unsetInternal(trie, firstKey, lastKey);
   if (empty) {
-    trie.root(trie.EMPTY_TRIE_ROOT)
+    trie.root(trie.EMPTY_TRIE_ROOT);
   }
 
   // Put all elements to the trie
   for (let i = 0; i < keys.length; i++) {
-    await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
+    await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i]);
   }
 
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {
-    throw new Error('invalid two edge elements proof: root mismatch')
+    throw new Error("invalid two edge elements proof: root mismatch");
   }
 
-  return hasRightElement(trie, keys[keys.length - 1])
+  return hasRightElement(trie, keys[keys.length - 1]);
 }

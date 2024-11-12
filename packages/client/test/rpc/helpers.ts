@@ -54,7 +54,7 @@ type WithEngineMiddleware = {
   unlessFn?: (req: IncomingMessage) => boolean;
 };
 
-type createClientArgs = {
+type CreateClientArgs = {
   minerCoinbase: string;
   includeVM: boolean; // Instantiates the VM when creating the test client
   commonChain: Common;
@@ -99,7 +99,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config);
 }
 
-export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<CreateClientArgs> = {}) {
   const common: Common =
     clientOpts.commonChain ?? new Common({ chain: Mainnet });
   const genesisState =

@@ -51,7 +51,7 @@ export class DNS {
     maxQuantity: number,
     dnsNetworks: string[],
   ): Promise<PeerInfo[]> {
-    let totalSearches: number = 0;
+    let totalSearches = 0;
     const peers: PeerInfo[] = [];
 
     const networkIndex = Math.floor(Math.random() * dnsNetworks.length);

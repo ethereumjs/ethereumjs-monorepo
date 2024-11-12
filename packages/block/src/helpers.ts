@@ -23,9 +23,7 @@ import type { BlockHeaderBytes, HeaderData } from "./types.js";
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
  * @param {string} input string to check, convert, and return
  */
-export const numberToHex = function (
-  input?: string,
-): PrefixedHexString | undefined {
+export const numberToHex = (input?: string): PrefixedHexString | undefined => {
   if (input === undefined) return undefined;
   if (!isHexString(input)) {
     const regex = new RegExp(/^\d+$/); // test to make sure input contains only digits
@@ -33,7 +31,7 @@ export const numberToHex = function (
       const msg = `Cannot convert string to hex string. numberToHex only supports 0x-prefixed hex or integer strings but the given string was: ${input}`;
       throw new Error(msg);
     }
-    return `0x${parseInt(input, 10).toString(16)}`;
+    return `0x${Number.parseInt(input, 10).toString(16)}`;
   }
   return input;
 };
@@ -127,11 +125,11 @@ export const fakeExponential = (
 ) => {
   let i = BIGINT_1;
   let output = BIGINT_0;
-  let numerator_accumulator = factor * denominator;
-  while (numerator_accumulator > BIGINT_0) {
-    output += numerator_accumulator;
-    numerator_accumulator =
-      (numerator_accumulator * numerator) / (denominator * i);
+  let numeratorAccumulator = factor * denominator;
+  while (numeratorAccumulator > BIGINT_0) {
+    output += numeratorAccumulator;
+    numeratorAccumulator =
+      (numeratorAccumulator * numerator) / (denominator * i);
     i++;
   }
 

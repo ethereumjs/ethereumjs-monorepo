@@ -42,8 +42,8 @@ type PrecompileAvailabilityCheckType =
   | PrecompileAvailabilityCheckTypeEIP;
 
 enum PrecompileAvailabilityCheck {
-  EIP,
-  Hardfork,
+  EIP = 0,
+  Hardfork = 1,
 }
 
 interface PrecompileAvailabilityCheckTypeHardfork {

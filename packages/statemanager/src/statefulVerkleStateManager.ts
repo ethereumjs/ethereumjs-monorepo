@@ -262,12 +262,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         // Delete account
         await this.deleteAccount(address);
       }
+    } else if (account !== undefined) {
+      this._caches?.account?.put(address, account, true);
     } else {
-      if (account !== undefined) {
-        this._caches?.account?.put(address, account, true);
-      } else {
-        this._caches?.account?.del(address);
-      }
+      this._caches?.account?.del(address);
     }
   };
 

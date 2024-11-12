@@ -39,8 +39,8 @@ export abstract class Execution {
   >;
   protected chain: Chain;
 
-  public running: boolean = false;
-  public started: boolean = false;
+  public running = false;
+  public started = false;
 
   /**
    * Create new execution module

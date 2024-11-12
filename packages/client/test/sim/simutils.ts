@@ -70,7 +70,7 @@ export async function waitForELOnline(client: Client): Promise<string> {
 async function isPortInUse(port: number): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     const server = net.createServer();
-    server.once("error", function (err) {
+    server.once("error", (err) => {
       if ((err as unknown as { code: string }).code === "EADDRINUSE") {
         resolve(true);
       } else {
@@ -78,7 +78,7 @@ async function isPortInUse(port: number): Promise<boolean> {
       }
     });
 
-    server.once("listening", function () {
+    server.once("listening", () => {
       // close the server if listening doesn't fail
       server.close(() => {
         resolve(false);
@@ -180,16 +180,14 @@ export function runNetwork(
         lastPrintedDot = false;
       }
       process.stdout.write(`data:${runProcPrefix}: ${runProc.pid}: ${str}`); // str already contains a new line. console.log adds a new line
-    } else {
-      if (str.includes("Synchronized") === true) {
-        process.stdout.write(".");
-        lastPrintedDot = true;
-      } else if (
-        str.includes("Synced") === true &&
-        str.includes("skipped") === false
-      ) {
-        process.stdout.write("`");
-      }
+    } else if (str.includes("Synchronized") === true) {
+      process.stdout.write(".");
+      lastPrintedDot = true;
+    } else if (
+      str.includes("Synced") === true &&
+      str.includes("skipped") === false
+    ) {
+      process.stdout.write("`");
     }
   });
   runProc.stderr.on("data", (chunk) => {
@@ -240,11 +238,9 @@ export function runNetwork(
           lastPrintedDot = false;
         }
         process.stdout.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`); // str already contains a new line. console.log adds a new line
-      } else {
-        if (str.includes("Synchronized") === true) {
-          process.stdout.write(".");
-          lastPrintedDot = true;
-        }
+      } else if (str.includes("Synchronized") === true) {
+        process.stdout.write(".");
+        lastPrintedDot = true;
       }
     });
     peerRunProc.stderr.on("data", (chunk) => {
@@ -416,7 +412,7 @@ export const runBlobTx = async (
 export const createBlobTxs = async (
   numTxs: number,
   pkey: Uint8Array,
-  startNonce: number = 0,
+  startNonce = 0,
   txMeta: {
     to?: PrefixedHexString;
     value?: bigint;
@@ -477,7 +473,7 @@ export async function createInlineClient(
   common: Common,
   customGenesisState: GenesisState,
   datadir: string = Config.DATADIR_DEFAULT,
-  memoryDB: boolean = false,
+  memoryDB = false,
 ) {
   let chainDB;
   let stateDB;

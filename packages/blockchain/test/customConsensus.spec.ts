@@ -10,7 +10,7 @@ import { testnetData } from "./testdata/testnet.js";
 import type { Block, BlockHeader } from "@ethereumjs/block";
 import type { Consensus, ConsensusDict } from "../src/index.js";
 
-class fibonacciConsensus implements Consensus {
+class FibonacciConsensus implements Consensus {
   algorithm: string;
   constructor() {
     this.algorithm = "fibonacciConsensus";
@@ -47,7 +47,7 @@ class fibonacciConsensus implements Consensus {
 
 testnetData.consensus.algorithm = "fibonacci";
 const consensusDict: ConsensusDict = {};
-consensusDict["fibonacci"] = new fibonacciConsensus();
+consensusDict["fibonacci"] = new FibonacciConsensus();
 
 describe("Optional consensus parameter in blockchain constructor", () => {
   it("blockchain constructor should work with custom consensus", async () => {
@@ -62,7 +62,7 @@ describe("Optional consensus parameter in blockchain constructor", () => {
         consensusDict,
       });
       assert.equal(
-        (blockchain.consensus as fibonacciConsensus).algorithm,
+        (blockchain.consensus as FibonacciConsensus).algorithm,
         "fibonacciConsensus",
         "consensus algorithm matches",
       );

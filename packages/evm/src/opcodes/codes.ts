@@ -72,155 +72,155 @@ const asyncAndDynamicGasOp = (name: string) => {
 const opcodes: OpcodeEntry = {
   // 0x0 range - arithmetic ops
   // name, async
-  0x00: defaultOp("STOP"),
-  0x01: defaultOp("ADD"),
-  0x02: defaultOp("MUL"),
-  0x03: defaultOp("SUB"),
-  0x04: defaultOp("DIV"),
-  0x05: defaultOp("SDIV"),
-  0x06: defaultOp("MOD"),
-  0x07: defaultOp("SMOD"),
-  0x08: defaultOp("ADDMOD"),
-  0x09: defaultOp("MULMOD"),
-  0x0a: dynamicGasOp("EXP"),
-  0x0b: defaultOp("SIGNEXTEND"),
+  0: defaultOp("STOP"),
+  1: defaultOp("ADD"),
+  2: defaultOp("MUL"),
+  3: defaultOp("SUB"),
+  4: defaultOp("DIV"),
+  5: defaultOp("SDIV"),
+  6: defaultOp("MOD"),
+  7: defaultOp("SMOD"),
+  8: defaultOp("ADDMOD"),
+  9: defaultOp("MULMOD"),
+  10: dynamicGasOp("EXP"),
+  11: defaultOp("SIGNEXTEND"),
 
   // 0x10 range - bit ops
-  0x10: defaultOp("LT"),
-  0x11: defaultOp("GT"),
-  0x12: defaultOp("SLT"),
-  0x13: defaultOp("SGT"),
-  0x14: defaultOp("EQ"),
-  0x15: defaultOp("ISZERO"),
-  0x16: defaultOp("AND"),
-  0x17: defaultOp("OR"),
-  0x18: defaultOp("XOR"),
-  0x19: defaultOp("NOT"),
-  0x1a: defaultOp("BYTE"),
+  16: defaultOp("LT"),
+  17: defaultOp("GT"),
+  18: defaultOp("SLT"),
+  19: defaultOp("SGT"),
+  20: defaultOp("EQ"),
+  21: defaultOp("ISZERO"),
+  22: defaultOp("AND"),
+  23: defaultOp("OR"),
+  24: defaultOp("XOR"),
+  25: defaultOp("NOT"),
+  26: defaultOp("BYTE"),
 
   // 0x20 range - crypto
-  0x20: dynamicGasOp("KECCAK256"),
+  32: dynamicGasOp("KECCAK256"),
 
   // 0x30 range - closure state
-  0x30: asyncOp("ADDRESS"),
-  0x31: asyncAndDynamicGasOp("BALANCE"),
-  0x32: asyncOp("ORIGIN"),
-  0x33: asyncOp("CALLER"),
-  0x34: asyncOp("CALLVALUE"),
-  0x35: asyncOp("CALLDATALOAD"),
-  0x36: asyncOp("CALLDATASIZE"),
-  0x37: asyncAndDynamicGasOp("CALLDATACOPY"),
-  0x38: defaultOp("CODESIZE"),
-  0x39: dynamicGasOp("CODECOPY"),
-  0x3a: defaultOp("GASPRICE"),
-  0x3b: asyncAndDynamicGasOp("EXTCODESIZE"),
-  0x3c: asyncAndDynamicGasOp("EXTCODECOPY"),
+  48: asyncOp("ADDRESS"),
+  49: asyncAndDynamicGasOp("BALANCE"),
+  50: asyncOp("ORIGIN"),
+  51: asyncOp("CALLER"),
+  52: asyncOp("CALLVALUE"),
+  53: asyncOp("CALLDATALOAD"),
+  54: asyncOp("CALLDATASIZE"),
+  55: asyncAndDynamicGasOp("CALLDATACOPY"),
+  56: defaultOp("CODESIZE"),
+  57: dynamicGasOp("CODECOPY"),
+  58: defaultOp("GASPRICE"),
+  59: asyncAndDynamicGasOp("EXTCODESIZE"),
+  60: asyncAndDynamicGasOp("EXTCODECOPY"),
 
   // '0x40' range - block operations
-  0x40: asyncOp("BLOCKHASH"),
-  0x41: asyncOp("COINBASE"),
-  0x42: asyncOp("TIMESTAMP"),
-  0x43: asyncOp("NUMBER"),
-  0x44: asyncOp("DIFFICULTY"),
-  0x45: asyncOp("GASLIMIT"),
+  64: asyncOp("BLOCKHASH"),
+  65: asyncOp("COINBASE"),
+  66: asyncOp("TIMESTAMP"),
+  67: asyncOp("NUMBER"),
+  68: asyncOp("DIFFICULTY"),
+  69: asyncOp("GASLIMIT"),
 
   // 0x50 range - 'storage' and execution
-  0x50: defaultOp("POP"),
-  0x51: dynamicGasOp("MLOAD"),
-  0x52: dynamicGasOp("MSTORE"),
-  0x53: dynamicGasOp("MSTORE8"),
-  0x54: asyncAndDynamicGasOp("SLOAD"),
-  0x55: asyncAndDynamicGasOp("SSTORE"),
-  0x56: defaultOp("JUMP"),
-  0x57: defaultOp("JUMPI"),
-  0x58: defaultOp("PC"),
-  0x59: defaultOp("MSIZE"),
-  0x5a: defaultOp("GAS"),
-  0x5b: defaultOp("JUMPDEST"),
+  80: defaultOp("POP"),
+  81: dynamicGasOp("MLOAD"),
+  82: dynamicGasOp("MSTORE"),
+  83: dynamicGasOp("MSTORE8"),
+  84: asyncAndDynamicGasOp("SLOAD"),
+  85: asyncAndDynamicGasOp("SSTORE"),
+  86: defaultOp("JUMP"),
+  87: defaultOp("JUMPI"),
+  88: defaultOp("PC"),
+  89: defaultOp("MSIZE"),
+  90: defaultOp("GAS"),
+  91: defaultOp("JUMPDEST"),
 
   // 0x60, range
-  0x60: defaultOp("PUSH"),
-  0x61: defaultOp("PUSH"),
-  0x62: defaultOp("PUSH"),
-  0x63: defaultOp("PUSH"),
-  0x64: defaultOp("PUSH"),
-  0x65: defaultOp("PUSH"),
-  0x66: defaultOp("PUSH"),
-  0x67: defaultOp("PUSH"),
-  0x68: defaultOp("PUSH"),
-  0x69: defaultOp("PUSH"),
-  0x6a: defaultOp("PUSH"),
-  0x6b: defaultOp("PUSH"),
-  0x6c: defaultOp("PUSH"),
-  0x6d: defaultOp("PUSH"),
-  0x6e: defaultOp("PUSH"),
-  0x6f: defaultOp("PUSH"),
-  0x70: defaultOp("PUSH"),
-  0x71: defaultOp("PUSH"),
-  0x72: defaultOp("PUSH"),
-  0x73: defaultOp("PUSH"),
-  0x74: defaultOp("PUSH"),
-  0x75: defaultOp("PUSH"),
-  0x76: defaultOp("PUSH"),
-  0x77: defaultOp("PUSH"),
-  0x78: defaultOp("PUSH"),
-  0x79: defaultOp("PUSH"),
-  0x7a: defaultOp("PUSH"),
-  0x7b: defaultOp("PUSH"),
-  0x7c: defaultOp("PUSH"),
-  0x7d: defaultOp("PUSH"),
-  0x7e: defaultOp("PUSH"),
-  0x7f: defaultOp("PUSH"),
+  96: defaultOp("PUSH"),
+  97: defaultOp("PUSH"),
+  98: defaultOp("PUSH"),
+  99: defaultOp("PUSH"),
+  100: defaultOp("PUSH"),
+  101: defaultOp("PUSH"),
+  102: defaultOp("PUSH"),
+  103: defaultOp("PUSH"),
+  104: defaultOp("PUSH"),
+  105: defaultOp("PUSH"),
+  106: defaultOp("PUSH"),
+  107: defaultOp("PUSH"),
+  108: defaultOp("PUSH"),
+  109: defaultOp("PUSH"),
+  110: defaultOp("PUSH"),
+  111: defaultOp("PUSH"),
+  112: defaultOp("PUSH"),
+  113: defaultOp("PUSH"),
+  114: defaultOp("PUSH"),
+  115: defaultOp("PUSH"),
+  116: defaultOp("PUSH"),
+  117: defaultOp("PUSH"),
+  118: defaultOp("PUSH"),
+  119: defaultOp("PUSH"),
+  120: defaultOp("PUSH"),
+  121: defaultOp("PUSH"),
+  122: defaultOp("PUSH"),
+  123: defaultOp("PUSH"),
+  124: defaultOp("PUSH"),
+  125: defaultOp("PUSH"),
+  126: defaultOp("PUSH"),
+  127: defaultOp("PUSH"),
 
-  0x80: defaultOp("DUP"),
-  0x81: defaultOp("DUP"),
-  0x82: defaultOp("DUP"),
-  0x83: defaultOp("DUP"),
-  0x84: defaultOp("DUP"),
-  0x85: defaultOp("DUP"),
-  0x86: defaultOp("DUP"),
-  0x87: defaultOp("DUP"),
-  0x88: defaultOp("DUP"),
-  0x89: defaultOp("DUP"),
-  0x8a: defaultOp("DUP"),
-  0x8b: defaultOp("DUP"),
-  0x8c: defaultOp("DUP"),
-  0x8d: defaultOp("DUP"),
-  0x8e: defaultOp("DUP"),
-  0x8f: defaultOp("DUP"),
+  128: defaultOp("DUP"),
+  129: defaultOp("DUP"),
+  130: defaultOp("DUP"),
+  131: defaultOp("DUP"),
+  132: defaultOp("DUP"),
+  133: defaultOp("DUP"),
+  134: defaultOp("DUP"),
+  135: defaultOp("DUP"),
+  136: defaultOp("DUP"),
+  137: defaultOp("DUP"),
+  138: defaultOp("DUP"),
+  139: defaultOp("DUP"),
+  140: defaultOp("DUP"),
+  141: defaultOp("DUP"),
+  142: defaultOp("DUP"),
+  143: defaultOp("DUP"),
 
-  0x90: defaultOp("SWAP"),
-  0x91: defaultOp("SWAP"),
-  0x92: defaultOp("SWAP"),
-  0x93: defaultOp("SWAP"),
-  0x94: defaultOp("SWAP"),
-  0x95: defaultOp("SWAP"),
-  0x96: defaultOp("SWAP"),
-  0x97: defaultOp("SWAP"),
-  0x98: defaultOp("SWAP"),
-  0x99: defaultOp("SWAP"),
-  0x9a: defaultOp("SWAP"),
-  0x9b: defaultOp("SWAP"),
-  0x9c: defaultOp("SWAP"),
-  0x9d: defaultOp("SWAP"),
-  0x9e: defaultOp("SWAP"),
-  0x9f: defaultOp("SWAP"),
+  144: defaultOp("SWAP"),
+  145: defaultOp("SWAP"),
+  146: defaultOp("SWAP"),
+  147: defaultOp("SWAP"),
+  148: defaultOp("SWAP"),
+  149: defaultOp("SWAP"),
+  150: defaultOp("SWAP"),
+  151: defaultOp("SWAP"),
+  152: defaultOp("SWAP"),
+  153: defaultOp("SWAP"),
+  154: defaultOp("SWAP"),
+  155: defaultOp("SWAP"),
+  156: defaultOp("SWAP"),
+  157: defaultOp("SWAP"),
+  158: defaultOp("SWAP"),
+  159: defaultOp("SWAP"),
 
-  0xa0: dynamicGasOp("LOG"),
-  0xa1: dynamicGasOp("LOG"),
-  0xa2: dynamicGasOp("LOG"),
-  0xa3: dynamicGasOp("LOG"),
-  0xa4: dynamicGasOp("LOG"),
+  160: dynamicGasOp("LOG"),
+  161: dynamicGasOp("LOG"),
+  162: dynamicGasOp("LOG"),
+  163: dynamicGasOp("LOG"),
+  164: dynamicGasOp("LOG"),
 
   // '0xf0' range - closures
-  0xf0: asyncAndDynamicGasOp("CREATE"),
-  0xf1: asyncAndDynamicGasOp("CALL"),
-  0xf2: asyncAndDynamicGasOp("CALLCODE"),
-  0xf3: dynamicGasOp("RETURN"),
+  240: asyncAndDynamicGasOp("CREATE"),
+  241: asyncAndDynamicGasOp("CALL"),
+  242: asyncAndDynamicGasOp("CALLCODE"),
+  243: dynamicGasOp("RETURN"),
 
   // '0x70', range - other
-  0xfe: defaultOp("INVALID"),
-  0xff: asyncAndDynamicGasOp("SELFDESTRUCT"),
+  254: defaultOp("INVALID"),
+  255: asyncAndDynamicGasOp("SELFDESTRUCT"),
 };
 
 // Array of hard forks in order. These changes are repeatedly applied to `opcodes` until the hard fork is in the future based upon the common
@@ -232,52 +232,52 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
     hardfork: Hardfork.Homestead,
     opcodes: {
-      0xf4: asyncAndDynamicGasOp("DELEGATECALL"), // EIP-7
+      244: asyncAndDynamicGasOp("DELEGATECALL"), // EIP-7
     },
   },
   {
     hardfork: Hardfork.TangerineWhistle,
     opcodes: {
-      0x54: asyncAndDynamicGasOp("SLOAD"),
-      0xf1: asyncAndDynamicGasOp("CALL"),
-      0xf2: asyncAndDynamicGasOp("CALLCODE"),
-      0x3b: asyncAndDynamicGasOp("EXTCODESIZE"),
-      0x3c: asyncAndDynamicGasOp("EXTCODECOPY"),
-      0xf4: asyncAndDynamicGasOp("DELEGATECALL"), // EIP-7
-      0xff: asyncAndDynamicGasOp("SELFDESTRUCT"),
-      0x31: asyncAndDynamicGasOp("BALANCE"),
+      84: asyncAndDynamicGasOp("SLOAD"),
+      241: asyncAndDynamicGasOp("CALL"),
+      242: asyncAndDynamicGasOp("CALLCODE"),
+      59: asyncAndDynamicGasOp("EXTCODESIZE"),
+      60: asyncAndDynamicGasOp("EXTCODECOPY"),
+      244: asyncAndDynamicGasOp("DELEGATECALL"), // EIP-7
+      255: asyncAndDynamicGasOp("SELFDESTRUCT"),
+      49: asyncAndDynamicGasOp("BALANCE"),
     },
   },
   {
     hardfork: Hardfork.Byzantium,
     opcodes: {
-      0xfd: dynamicGasOp("REVERT"), // EIP-140
-      0xfa: asyncAndDynamicGasOp("STATICCALL"), // EIP-214
-      0x3d: asyncOp("RETURNDATASIZE"), // EIP-211
-      0x3e: asyncAndDynamicGasOp("RETURNDATACOPY"), // EIP-211
+      253: dynamicGasOp("REVERT"), // EIP-140
+      250: asyncAndDynamicGasOp("STATICCALL"), // EIP-214
+      61: asyncOp("RETURNDATASIZE"), // EIP-211
+      62: asyncAndDynamicGasOp("RETURNDATACOPY"), // EIP-211
     },
   },
   {
     hardfork: Hardfork.Constantinople,
     opcodes: {
-      0x1b: defaultOp("SHL"), // EIP-145
-      0x1c: defaultOp("SHR"), // EIP-145
-      0x1d: defaultOp("SAR"), // EIP-145
-      0x3f: asyncAndDynamicGasOp("EXTCODEHASH"), // EIP-1052
-      0xf5: asyncAndDynamicGasOp("CREATE2"), // EIP-1014
+      27: defaultOp("SHL"), // EIP-145
+      28: defaultOp("SHR"), // EIP-145
+      29: defaultOp("SAR"), // EIP-145
+      63: asyncAndDynamicGasOp("EXTCODEHASH"), // EIP-1052
+      245: asyncAndDynamicGasOp("CREATE2"), // EIP-1014
     },
   },
   {
     hardfork: Hardfork.Istanbul,
     opcodes: {
-      0x46: defaultOp("CHAINID"), // EIP-1344
-      0x47: defaultOp("SELFBALANCE"), // EIP-1884
+      70: defaultOp("CHAINID"), // EIP-1344
+      71: defaultOp("SELFBALANCE"), // EIP-1884
     },
   },
   {
     hardfork: Hardfork.Paris,
     opcodes: {
-      0x44: asyncOp("PREVRANDAO"), // EIP-4399
+      68: asyncOp("PREVRANDAO"), // EIP-4399
     },
   },
 ];
@@ -286,92 +286,92 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
     eip: 663,
     opcodes: {
-      0xe6: defaultOp("DUPN"),
-      0xe7: defaultOp("SWAPN"),
-      0xe8: defaultOp("EXCHANGE"),
+      230: defaultOp("DUPN"),
+      231: defaultOp("SWAPN"),
+      232: defaultOp("EXCHANGE"),
     },
   },
   {
     eip: 1153,
     opcodes: {
-      0x5c: defaultOp("TLOAD"),
-      0x5d: defaultOp("TSTORE"),
+      92: defaultOp("TLOAD"),
+      93: defaultOp("TSTORE"),
     },
   },
   {
     eip: 3198,
     opcodes: {
-      0x48: defaultOp("BASEFEE"),
+      72: defaultOp("BASEFEE"),
     },
   },
   {
     eip: 3855,
     opcodes: {
-      0x5f: defaultOp("PUSH0"),
+      95: defaultOp("PUSH0"),
     },
   },
   {
     eip: 4200,
     opcodes: {
-      0xe0: defaultOp("RJUMP"),
-      0xe1: defaultOp("RJUMPI"),
-      0xe2: defaultOp("RJUMPV"),
+      224: defaultOp("RJUMP"),
+      225: defaultOp("RJUMPI"),
+      226: defaultOp("RJUMPV"),
     },
   },
   {
     eip: 4750,
     opcodes: {
-      0xe3: defaultOp("CALLF"),
-      0xe4: defaultOp("RETF"),
+      227: defaultOp("CALLF"),
+      228: defaultOp("RETF"),
     },
   },
   {
     eip: 4844,
     opcodes: {
-      0x49: defaultOp("BLOBHASH"),
+      73: defaultOp("BLOBHASH"),
     },
   },
   {
     eip: 5656,
     opcodes: {
-      0x5e: dynamicGasOp("MCOPY"),
+      94: dynamicGasOp("MCOPY"),
     },
   },
   {
     eip: 6206,
     opcodes: {
-      0xe5: defaultOp("JUMPF"),
+      229: defaultOp("JUMPF"),
     },
   },
   {
     eip: 7069,
     opcodes: {
-      0xf7: defaultOp("RETURNDATALOAD"),
-      0xf8: asyncAndDynamicGasOp("EXTCALL"),
-      0xf9: asyncAndDynamicGasOp("EXTDELEGATECALL"),
-      0xfb: asyncAndDynamicGasOp("EXTSTATICCALL"),
+      247: defaultOp("RETURNDATALOAD"),
+      248: asyncAndDynamicGasOp("EXTCALL"),
+      249: asyncAndDynamicGasOp("EXTDELEGATECALL"),
+      251: asyncAndDynamicGasOp("EXTSTATICCALL"),
     },
   },
   {
     eip: 7480,
     opcodes: {
-      0xd0: defaultOp("DATALOAD"),
-      0xd1: defaultOp("DATALOADN"),
-      0xd2: defaultOp("DATASIZE"),
-      0xd3: dynamicGasOp("DATACOPY"),
+      208: defaultOp("DATALOAD"),
+      209: defaultOp("DATALOADN"),
+      210: defaultOp("DATASIZE"),
+      211: dynamicGasOp("DATACOPY"),
     },
   },
   {
     eip: 7516,
     opcodes: {
-      0x4a: defaultOp("BLOBBASEFEE"),
+      74: defaultOp("BLOBBASEFEE"),
     },
   },
   {
     eip: 7620,
     opcodes: {
-      0xec: asyncAndDynamicGasOp("EOFCREATE"),
-      0xee: asyncAndDynamicGasOp("RETURNCONTRACT"),
+      236: asyncAndDynamicGasOp("EOFCREATE"),
+      238: asyncAndDynamicGasOp("RETURNCONTRACT"),
     },
   },
 ];
@@ -385,7 +385,7 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
 function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
   const result: OpcodeList = new Map();
   for (const [key, value] of Object.entries(opcodes)) {
-    const code = parseInt(key, 10);
+    const code = Number.parseInt(key, 10);
     if (isNaN(value.fee)) value.fee = 0;
     result.set(
       code,
@@ -502,11 +502,11 @@ export function getOpcodesForHF(
     };
   }
 
-  const INVALID = opcodeMap[0xfe];
+  const invalid = opcodeMap[0xfe];
 
   for (let i = 0x0; i <= 0xff; i++) {
     if (opcodeMap[i] === undefined) {
-      opcodeMap[i] = INVALID;
+      opcodeMap[i] = invalid;
     }
   }
 

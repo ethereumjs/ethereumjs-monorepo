@@ -1,4 +1,4 @@
-import { Common } from '@ethereumjs/common'
+import { Common } from "@ethereumjs/common";
 import {
   BIGINT_0,
   BIGINT_27,
@@ -7,18 +7,18 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   toBytes,
-} from '@ethereumjs/util'
+} from "@ethereumjs/util";
 
-import { BaseTransaction } from '../baseTransaction.js'
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { paramsTx } from '../params.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import { BaseTransaction } from "../baseTransaction.js";
+import * as eip1559 from "../capabilities/eip1559.js";
+import * as eip2718 from "../capabilities/eip2718.js";
+import * as eip2930 from "../capabilities/eip2930.js";
+import * as Legacy from "../capabilities/legacy.js";
+import { paramsTx } from "../params.js";
+import { TransactionType } from "../types.js";
+import { AccessLists, validateNotArray } from "../util.js";
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from "./constructors.js";
 
 import type {
   AccessList,
@@ -27,10 +27,11 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   JSONTx,
   TxOptions,
-} from '../types.js'
+} from "../types.js";
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559];
+export type TxValuesArray =
+  AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559];
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -40,13 +41,13 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  */
 export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public readonly chainId: bigint
-  public readonly accessList: AccessListBytes
-  public readonly AccessListJSON: AccessList
-  public readonly maxPriorityFeePerGas: bigint
-  public readonly maxFeePerGas: bigint
+  public readonly chainId: bigint;
+  public readonly accessList: AccessListBytes;
+  public readonly AccessListJSON: AccessList;
+  public readonly maxPriorityFeePerGas: bigint;
+  public readonly maxFeePerGas: bigint;
 
-  public readonly common: Common
+  public readonly common: Common;
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -56,58 +57,66 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts);
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData;
 
-    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
-    if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
+    this.common =
+      opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN });
+    if (
+      chainId !== undefined &&
+      bytesToBigInt(toBytes(chainId)) !== this.common.chainId()
+    ) {
       throw new Error(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
-      )
+      );
     }
-    this.common.updateParams(opts.params ?? paramsTx)
-    this.chainId = this.common.chainId()
+    this.common.updateParams(opts.params ?? paramsTx);
+    this.chainId = this.common.chainId();
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw new Error("EIP-1559 not enabled on Common");
     }
-    this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
+    this.activeCapabilities = this.activeCapabilities.concat([
+      1559, 2718, 2930,
+    ]);
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    const accessListData = AccessLists.getAccessListData(accessList ?? []);
+    this.accessList = accessListData.accessList;
+    this.AccessListJSON = accessListData.AccessListJSON;
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    AccessLists.verifyAccessList(this.accessList);
 
-    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
-    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas));
+    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas));
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
-    })
+    });
 
-    validateNotArray(txData)
+    validateNotArray(txData);
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
-      throw new Error(msg)
+      const msg = this._errorMsg(
+        "gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)",
+      );
+      throw new Error(msg);
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
       const msg = this._errorMsg(
-        'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
-      )
-      throw new Error(msg)
+        "maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)",
+      );
+      throw new Error(msg);
     }
 
-    EIP2718.validateYParity(this)
-    Legacy.validateHighS(this)
+    eip2718.validateYParity(this);
+    Legacy.validateHighS(this);
 
-    const freeze = opts?.freeze ?? true
+    const freeze = opts?.freeze ?? true;
     if (freeze) {
-      Object.freeze(this)
+      Object.freeze(this);
     }
   }
 
@@ -115,7 +124,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * The amount of gas paid for the data in this tx
    */
   getDataGas(): bigint {
-    return EIP2930.getDataGas(this)
+    return eip2930.getDataGas(this);
   }
 
   /**
@@ -123,7 +132,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * @param baseFee Base fee retrieved from block
    */
   getEffectivePriorityFee(baseFee: bigint): bigint {
-    return EIP1559.getEffectivePriorityFee(this, baseFee)
+    return eip1559.getEffectivePriorityFee(this, baseFee);
   }
 
   /**
@@ -131,7 +140,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
-    return EIP1559.getUpfrontCost(this, baseFee)
+    return eip1559.getUpfrontCost(this, baseFee);
   }
 
   /**
@@ -161,7 +170,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
-    ]
+    ];
   }
 
   /**
@@ -175,7 +184,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2718.serialize(this)
+    return eip2718.serialize(this);
   }
 
   /**
@@ -190,7 +199,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * ```
    */
   getMessageToSign(): Uint8Array {
-    return EIP2718.serialize(this, this.raw().slice(0, 9))
+    return eip2718.serialize(this, this.raw().slice(0, 9));
   }
 
   /**
@@ -201,7 +210,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2718.getHashedMessageToSign(this)
+    return eip2718.getHashedMessageToSign(this);
   }
 
   /**
@@ -211,32 +220,32 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * Use {@link FeeMarket1559Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Legacy.hash(this)
+    return Legacy.hash(this);
   }
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
    */
   public getMessageToVerifySignature(): Uint8Array {
-    return this.getHashedMessageToSign()
+    return this.getHashedMessageToSign();
   }
 
   /**
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Legacy.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this);
   }
 
   addSignature(
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false,
+    convertV = false,
   ): FeeMarket1559Tx {
-    r = toBytes(r)
-    s = toBytes(s)
-    const opts = { ...this.txOptions, common: this.common }
+    r = toBytes(r);
+    s = toBytes(s);
+    const opts = { ...this.txOptions, common: this.common };
 
     return createFeeMarket1559Tx(
       {
@@ -254,15 +263,15 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
         s: bytesToBigInt(s),
       },
       opts,
-    )
+    );
   }
 
   /**
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = super.toJSON()
+    const accessListJSON = AccessLists.getAccessListJSON(this.accessList);
+    const baseJSON = super.toJSON();
 
     return {
       ...baseJSON,
@@ -270,16 +279,16 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
-    }
+    };
   }
 
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
-    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
-    return errorStr
+    let errorStr = this._getSharedErrorPostfix();
+    errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`;
+    return errorStr;
   }
 
   /**
@@ -289,6 +298,6 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg);
   }
 }

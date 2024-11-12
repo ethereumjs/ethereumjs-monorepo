@@ -319,12 +319,8 @@ export class EVM implements EVMInterface {
           );
         }
         return { execResult: OOGResult(message.gasLimit) };
-      } else {
-        if (this.DEBUG) {
-          debugGas(
-            `callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`,
-          );
-        }
+      } else if (this.DEBUG) {
+        debugGas(`callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`);
       }
     }
 
@@ -356,12 +352,10 @@ export class EVM implements EVMInterface {
             );
           }
           return { execResult: OOGResult(message.gasLimit) };
-        } else {
-          if (this.DEBUG) {
-            debugGas(
-              `Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`,
-            );
-          }
+        } else if (this.DEBUG) {
+          debugGas(
+            `Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`,
+          );
         }
       }
       toAccount = new Account();
@@ -518,12 +512,10 @@ export class EVM implements EVMInterface {
           );
         }
         return { execResult: OOGResult(message.gasLimit) };
-      } else {
-        if (this.DEBUG) {
-          debugGas(
-            `ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`,
-          );
-        }
+      } else if (this.DEBUG) {
+        debugGas(
+          `ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`,
+        );
       }
     }
 
@@ -672,54 +664,46 @@ export class EVM implements EVMInterface {
       ) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) };
-        } else if (
-          // TODO check if this is correct
-          // Also likely cleanup this eofCallData stuff
-          /*(message.depth > 0 && message.eofCallData === undefined) ||
-          (message.depth === 0 && !isEOF(message.code))*/
-          !isEOF(message.code)
-        ) {
+        } else if (isEOF(message.code)) {
+          // 3541 is active and current runtime mode is EOF
+          result.executionGasUsed = totalGas;
+        } else {
           // TODO the message.eof was flagged for this to work for this first
           // Running into Legacy mode: unable to deploy EOF contract
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) };
-        } else {
-          // 3541 is active and current runtime mode is EOF
-          result.executionGasUsed = totalGas;
         }
       } else {
         result.executionGasUsed = totalGas;
       }
-    } else {
-      if (this.common.gteHardfork(Hardfork.Homestead)) {
-        if (!allowedCodeSize) {
-          if (this.DEBUG) {
-            debug(`Code size exceeds maximum code size (>= SpuriousDragon)`);
-          }
-          result = {
-            ...result,
-            ...CodesizeExceedsMaximumError(message.gasLimit),
-          };
-        } else {
-          if (this.DEBUG) {
-            debug(`Contract creation: out of gas`);
-          }
-          result = { ...result, ...OOGResult(message.gasLimit) };
+    } else if (this.common.gteHardfork(Hardfork.Homestead)) {
+      if (allowedCodeSize) {
+        if (this.DEBUG) {
+          debug(`Contract creation: out of gas`);
         }
+        result = { ...result, ...OOGResult(message.gasLimit) };
       } else {
-        // we are in Frontier
-        if (totalGas - returnFee <= message.gasLimit) {
-          // we cannot pay the code deposit fee (but the deposit code actually did run)
-          if (this.DEBUG) {
-            debug(`Not enough gas to pay the code deposit fee (Frontier)`);
-          }
-          result = { ...result, ...COOGResult(totalGas - returnFee) };
-          CodestoreOOG = true;
-        } else {
-          if (this.DEBUG) {
-            debug(`Contract creation: out of gas`);
-          }
-          result = { ...result, ...OOGResult(message.gasLimit) };
+        if (this.DEBUG) {
+          debug(`Code size exceeds maximum code size (>= SpuriousDragon)`);
         }
+        result = {
+          ...result,
+          ...CodesizeExceedsMaximumError(message.gasLimit),
+        };
+      }
+    } else {
+      // we are in Frontier
+      if (totalGas - returnFee <= message.gasLimit) {
+        // we cannot pay the code deposit fee (but the deposit code actually did run)
+        if (this.DEBUG) {
+          debug(`Not enough gas to pay the code deposit fee (Frontier)`);
+        }
+        result = { ...result, ...COOGResult(totalGas - returnFee) };
+        CodestoreOOG = true;
+      } else {
+        if (this.DEBUG) {
+          debug(`Contract creation: out of gas`);
+        }
+        result = { ...result, ...OOGResult(message.gasLimit) };
       }
     }
 

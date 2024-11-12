@@ -33,7 +33,7 @@ export class VM {
   readonly evm: EVMInterface;
 
   protected readonly _opts: VMOpts;
-  protected _isInitialized: boolean = false;
+  protected _isInitialized = false;
 
   protected readonly _setHardfork: boolean | BigIntLike;
 

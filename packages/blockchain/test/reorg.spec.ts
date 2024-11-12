@@ -34,47 +34,47 @@ describe("reorg tests", () => {
       { common },
     );
 
-    const blocks_lowTD: Block[] = [];
-    const blocks_highTD: Block[] = [];
+    const blocksLowTd: Block[] = [];
+    const blocksHighTd: Block[] = [];
 
-    blocks_lowTD.push(generateConsecutiveBlock(genesis, 0));
+    blocksLowTd.push(generateConsecutiveBlock(genesis, 0));
 
-    let TD_Low = genesis.header.difficulty + blocks_lowTD[0].header.difficulty;
-    let TD_High = genesis.header.difficulty;
+    let tdLow = genesis.header.difficulty + blocksLowTd[0].header.difficulty;
+    let tdHigh = genesis.header.difficulty;
 
     // Keep generating blocks until the Total Difficulty (TD) of the High TD chain is higher than the TD of the Low TD chain
     // This means that the block number of the high TD chain is 1 lower than the low TD chain
 
-    while (TD_High < TD_Low) {
-      blocks_lowTD.push(
-        generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0),
+    while (tdHigh < tdLow) {
+      blocksLowTd.push(
+        generateConsecutiveBlock(blocksLowTd[blocksLowTd.length - 1], 0),
       );
-      blocks_highTD.push(
+      blocksHighTd.push(
         generateConsecutiveBlock(
-          blocks_highTD[blocks_highTD.length - 1] ?? genesis,
+          blocksHighTd[blocksHighTd.length - 1] ?? genesis,
           1,
         ),
       );
 
-      TD_Low += blocks_lowTD[blocks_lowTD.length - 1].header.difficulty;
-      TD_High += blocks_highTD[blocks_highTD.length - 1].header.difficulty;
+      tdLow += blocksLowTd[blocksLowTd.length - 1].header.difficulty;
+      tdHigh += blocksHighTd[blocksHighTd.length - 1].header.difficulty;
     }
 
     // sanity check
-    const lowTDBlock = blocks_lowTD[blocks_lowTD.length - 1];
-    const highTDBlock = blocks_highTD[blocks_highTD.length - 1];
+    const lowTDBlock = blocksLowTd[blocksLowTd.length - 1];
+    const highTDBlock = blocksHighTd[blocksHighTd.length - 1];
 
-    const number_lowTD = lowTDBlock.header.number;
-    const number_highTD = highTDBlock.header.number;
+    const numberLowTd = lowTDBlock.header.number;
+    const numberHighTd = highTDBlock.header.number;
 
     // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
     assert.ok(
-      number_lowTD > number_highTD,
+      numberLowTd > numberHighTd,
       "low TD should have a lower TD than the reported high TD",
     );
     assert.ok(
-      blocks_lowTD[blocks_lowTD.length - 1].header.number >
-        blocks_highTD[blocks_highTD.length - 1].header.number,
+      blocksLowTd[blocksLowTd.length - 1].header.number >
+        blocksHighTd[blocksHighTd.length - 1].header.number,
       "low TD block should have a higher number than high TD block",
     );
   });
@@ -106,7 +106,7 @@ describe("reorg tests", () => {
     const beneficiary1 = new Address(new Uint8Array(20).fill(1));
     const beneficiary2 = new Address(new Uint8Array(20).fill(2));
 
-    const block1_low = createBlock(
+    const block1Low = createBlock(
       {
         header: {
           ...base,
@@ -117,13 +117,13 @@ describe("reorg tests", () => {
       },
       { common },
     );
-    const block2_low = createBlock(
+    const block2Low = createBlock(
       {
         header: {
           ...base,
           number: 2,
-          parentHash: block1_low.hash(),
-          timestamp: block1_low.header.timestamp + BigInt(30),
+          parentHash: block1Low.hash(),
+          timestamp: block1Low.header.timestamp + BigInt(30),
           nonce,
           coinbase: beneficiary1,
         },
@@ -131,7 +131,7 @@ describe("reorg tests", () => {
       { common },
     );
 
-    const block1_high = createBlock(
+    const block1High = createBlock(
       {
         header: {
           ...base,
@@ -142,24 +142,24 @@ describe("reorg tests", () => {
       },
       { common },
     );
-    const block2_high = createBlock(
+    const block2High = createBlock(
       {
         header: {
           ...base,
           number: 2,
-          parentHash: block1_high.hash(),
-          timestamp: block1_high.header.timestamp + BigInt(15),
+          parentHash: block1High.hash(),
+          timestamp: block1High.header.timestamp + BigInt(15),
         },
       },
       { common },
     );
-    const block3_high = createBlock(
+    const block3High = createBlock(
       {
         header: {
           ...base,
           number: 3,
-          parentHash: block2_high.hash(),
-          timestamp: block2_high.header.timestamp + BigInt(15),
+          parentHash: block2High.hash(),
+          timestamp: block2High.header.timestamp + BigInt(15),
           nonce,
           coinbase: beneficiary2,
         },
@@ -167,9 +167,9 @@ describe("reorg tests", () => {
       { common },
     );
 
-    await blockchain.putBlocks([block1_low, block2_low]);
+    await blockchain.putBlocks([block1Low, block2Low]);
 
-    await blockchain.putBlocks([block1_high, block2_high, block3_high]);
+    await blockchain.putBlocks([block1High, block2High, block3High]);
 
     let signerStates = (blockchain.consensus as CliqueConsensus)
       ._cliqueLatestSignerStates;
@@ -189,7 +189,7 @@ describe("reorg tests", () => {
       !signerVotes.find(
         (v: any) =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(cliqueSigner(block1_low.header)) &&
+          v[1][0].equal(cliqueSigner(block1Low.header)) &&
           v[1][1].equal(beneficiary1) &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
@@ -201,7 +201,7 @@ describe("reorg tests", () => {
     assert.ok(
       !blockSigners.find(
         (s: any) =>
-          s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1_low.header)),
+          s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1Low.header)),
       ),
       "should not find reorged block signer",
     );
@@ -225,7 +225,7 @@ describe("reorg tests", () => {
     assert.ok(
       !!blockSigners.find(
         (s: any) =>
-          s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
+          s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3High.header)),
       ),
       "should find reorged block signer",
     );

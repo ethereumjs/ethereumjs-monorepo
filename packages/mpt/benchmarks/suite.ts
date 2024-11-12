@@ -11,8 +11,8 @@ export function createSuite(db: DB<string, string>) {
   const trie = new MerklePatriciaTrie({ db });
   const checkpointTrie = new MerklePatriciaTrie({ db });
 
-  const ROUNDS = 1000;
-  const KEY_SIZE = 32;
+  const rounds = 1000;
+  const keySize = 32;
 
   run(async () => {
     // random.ts
@@ -28,9 +28,9 @@ export function createSuite(db: DB<string, string>) {
       ["1k-1k-32-mir", 1000, true],
     ]) {
       await mark(title, async () => {
-        let key = new Uint8Array(KEY_SIZE);
+        let key = new Uint8Array(keySize);
 
-        for (let i = 0; i <= ROUNDS; i++) {
+        for (let i = 0; i <= rounds; i++) {
           key = keccak256(key);
 
           if (symmetric) {

@@ -53,7 +53,7 @@ export class RLPx {
   protected _peers: Map<string, net.Socket | Peer>;
 
   protected _refillIntervalId: NodeJS.Timeout;
-  protected _refillIntervalSelectionCounter: number = 0;
+  protected _refillIntervalSelectionCounter = 0;
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array;
 
@@ -118,8 +118,8 @@ export class RLPx {
     this._peers = new Map();
     this._peersQueue = [];
     this._peersLRU = new LRUCache({ max: 25000 });
-    const REFILL_INTERVAL = 10000; // 10 sec * 1000
-    const refillIntervalSubdivided = Math.floor(REFILL_INTERVAL / 10);
+    const refillInterval = 10000; // 10 sec * 1000
+    const refillIntervalSubdivided = Math.floor(refillInterval / 10);
     this._refillIntervalId = setInterval(
       () => this._refillConnections(),
       refillIntervalSubdivided,

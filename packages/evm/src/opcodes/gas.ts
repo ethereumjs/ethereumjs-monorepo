@@ -64,13 +64,17 @@ async function eip7702GasCost(
 // The dynamic gas handler methods take a runState and a gas BN
 // The gas BN is necessary, since the base fee needs to be included,
 // to calculate the max call gas for the call opcodes correctly.
-export interface AsyncDynamicGasHandler {
-  (runState: RunState, gas: bigint, common: Common): Promise<bigint>;
-}
+export type AsyncDynamicGasHandler = (
+  runState: RunState,
+  gas: bigint,
+  common: Common,
+) => Promise<bigint>;
 
-export interface SyncDynamicGasHandler {
-  (runState: RunState, gas: bigint, common: Common): bigint;
-}
+export type SyncDynamicGasHandler = (
+  runState: RunState,
+  gas: bigint,
+  common: Common,
+) => bigint;
 
 export const dynamicGasHandlers: Map<
   number,
@@ -79,7 +83,7 @@ export const dynamicGasHandlers: Map<
   [
     /* EXP */
     0x0a,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [_base, exponent] = runState.stack.peek(2);
       if (exponent === BIGINT_0) {
         return gas;
@@ -99,7 +103,7 @@ export const dynamicGasHandlers: Map<
   [
     /* KECCAK256 */
     0x20,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [offset, length] = runState.stack.peek(2);
       gas += subMemUsage(runState, offset, length, common);
       gas += common.param("keccak256WordGas") * divCeil(length, BIGINT_32);
@@ -109,7 +113,7 @@ export const dynamicGasHandlers: Map<
   [
     /* BALANCE */
     0x31,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const address = createAddressFromStackBigInt(runState.stack.peek()[0]);
       let charge2929Gas = true;
       if (common.isActivatedEIP(6800)) {
@@ -139,7 +143,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CALLDATACOPY */
     0x37,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3);
 
       gas += subMemUsage(runState, memOffset, dataLength, common);
@@ -152,7 +156,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CODECOPY */
     0x39,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [memOffset, _codeOffset, dataLength] = runState.stack.peek(3);
 
       gas += subMemUsage(runState, memOffset, dataLength, common);
@@ -184,7 +188,7 @@ export const dynamicGasHandlers: Map<
   [
     /* EXTCODESIZE */
     0x3b,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const address = createAddressFromStackBigInt(runState.stack.peek()[0]);
 
       let charge2929Gas = true;
@@ -224,7 +228,7 @@ export const dynamicGasHandlers: Map<
   [
     /* EXTCODECOPY */
     0x3c,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [addressBigInt, memOffset, _codeOffset, dataLength] =
         runState.stack.peek(4);
       const address = createAddressFromStackBigInt(addressBigInt);
@@ -288,7 +292,7 @@ export const dynamicGasHandlers: Map<
   [
     /* RETURNDATACOPY */
     0x3e,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3);
 
       if (
@@ -313,7 +317,7 @@ export const dynamicGasHandlers: Map<
   [
     /* EXTCODEHASH */
     0x3f,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const address = createAddressFromStackBigInt(runState.stack.peek()[0]);
       let charge2929Gas = true;
 
@@ -349,7 +353,7 @@ export const dynamicGasHandlers: Map<
   [
     /* MLOAD */
     0x51,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const pos = runState.stack.peek()[0];
       gas += subMemUsage(runState, pos, BIGINT_32, common);
       return gas;
@@ -358,7 +362,7 @@ export const dynamicGasHandlers: Map<
   [
     /* MSTORE */
     0x52,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const offset = runState.stack.peek()[0];
       gas += subMemUsage(runState, offset, BIGINT_32, common);
       return gas;
@@ -367,7 +371,7 @@ export const dynamicGasHandlers: Map<
   [
     /* MSTORE8 */
     0x53,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const offset = runState.stack.peek()[0];
       gas += subMemUsage(runState, offset, BIGINT_1, common);
       return gas;
@@ -376,7 +380,7 @@ export const dynamicGasHandlers: Map<
   [
     /* SLOAD */
     0x54,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const key = runState.stack.peek()[0];
       const keyBuf = setLengthLeft(bigIntToBytes(key), 32);
 
@@ -411,7 +415,7 @@ export const dynamicGasHandlers: Map<
   [
     /* SSTORE */
     0x55,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE);
       }
@@ -494,7 +498,7 @@ export const dynamicGasHandlers: Map<
   [
     /* MCOPY */
     0x5e,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [dst, src, length] = runState.stack.peek(3);
       const wordsCopied = (length + BIGINT_31) / BIGINT_32;
       gas += BIGINT_3 * wordsCopied;
@@ -506,7 +510,7 @@ export const dynamicGasHandlers: Map<
   [
     /* LOG */
     0xa0,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE);
       }
@@ -529,7 +533,7 @@ export const dynamicGasHandlers: Map<
   /* DATACOPY */
   [
     0xd3,
-    async function (runState, gas, common) {
+    async (runState, gas, common) => {
       const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3);
 
       gas += subMemUsage(runState, memOffset, dataLength, common);
@@ -542,7 +546,7 @@ export const dynamicGasHandlers: Map<
   /* EOFCREATE */
   [
     0xec,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       // Note: TX_CREATE_COST is in the base fee (this is 32000 and same as CREATE / CREATE2)
 
       // Note: in `gas.ts` programCounter is not yet incremented (which it is in `functions.ts`)
@@ -588,7 +592,7 @@ export const dynamicGasHandlers: Map<
   /* RETURNCONTRACT */
   [
     0xee,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       // Pop stack values
       const [auxDataOffset, auxDataSize] = runState.stack.peek(2);
 
@@ -601,7 +605,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CREATE */
     0xf0,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE);
       }
@@ -633,7 +637,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CALL */
     0xf1,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [
         currentGasLimit,
         toAddr,
@@ -735,7 +739,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CALLCODE */
     0xf2,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [
         currentGasLimit,
         toAddr,
@@ -798,7 +802,7 @@ export const dynamicGasHandlers: Map<
   [
     /* RETURN */
     0xf3,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [offset, length] = runState.stack.peek(2);
       gas += subMemUsage(runState, offset, length, common);
       return gas;
@@ -807,7 +811,7 @@ export const dynamicGasHandlers: Map<
   [
     /* DELEGATECALL */
     0xf4,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [
         currentGasLimit,
         toAddr,
@@ -866,7 +870,7 @@ export const dynamicGasHandlers: Map<
   [
     /* CREATE2 */
     0xf5,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE);
       }
@@ -899,7 +903,7 @@ export const dynamicGasHandlers: Map<
   /* EXTCALL */
   [
     0xf8,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
       // Peek stack values
@@ -972,7 +976,7 @@ export const dynamicGasHandlers: Map<
   /* EXTDELEGATECALL */
   [
     0xf9,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
       // Peek stack values
@@ -1024,7 +1028,7 @@ export const dynamicGasHandlers: Map<
   [
     /* STATICCALL */
     0xfa,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [
         currentGasLimit,
         toAddr,
@@ -1080,7 +1084,7 @@ export const dynamicGasHandlers: Map<
   /* EXTSTATICCALL */
   [
     0xfb,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
       // Peek stack values
@@ -1132,7 +1136,7 @@ export const dynamicGasHandlers: Map<
   [
     /* REVERT */
     0xfd,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       const [offset, length] = runState.stack.peek(2);
       gas += subMemUsage(runState, offset, length, common);
       return gas;
@@ -1141,7 +1145,7 @@ export const dynamicGasHandlers: Map<
   [
     /* SELFDESTRUCT */
     0xff,
-    async function (runState, gas, common): Promise<bigint> {
+    async (runState, gas, common): Promise<bigint> => {
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE);
       }

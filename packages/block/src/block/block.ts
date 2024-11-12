@@ -317,10 +317,7 @@ export class Block {
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
    */
-  async validateData(
-    onlyHeader: boolean = false,
-    verifyTxs: boolean = true,
-  ): Promise<void> {
+  async validateData(onlyHeader = false, verifyTxs = true): Promise<void> {
     if (verifyTxs) {
       const txErrors = this.getTransactionsValidationErrors();
       if (txErrors.length > 0) {

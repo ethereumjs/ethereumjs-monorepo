@@ -1,6 +1,10 @@
-import { createBlock } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { AccessList2930Transaction, FeeMarket1559Tx, LegacyTx } from '@ethereumjs/tx'
+import { createBlock } from "@ethereumjs/block";
+import { Common, Hardfork, Mainnet } from "@ethereumjs/common";
+import {
+  AccessList2930Transaction,
+  FeeMarket1559Tx,
+  LegacyTx,
+} from "@ethereumjs/tx";
 import {
   Account,
   Address,
@@ -10,34 +14,34 @@ import {
   hexToBytes,
   privateToAddress,
   setLengthLeft,
-} from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+} from "@ethereumjs/util";
+import { assert, describe, it } from "vitest";
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from "../../../src/index.js";
 
-import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
+import type { TransactionType, TypedTransaction } from "@ethereumjs/tx";
 
 const common = new Common({
   eips: [1559, 2718, 2930],
   chain: Mainnet,
   hardfork: Hardfork.London,
-})
+});
 
 // Small hack to hack in the activation block number
 // (Otherwise there would be need for a custom chain only for testing purposes)
-common.hardforkBlock = function (hardfork: string | undefined) {
-  if (hardfork === 'london') {
-    return BigInt(1)
-  } else if (hardfork === 'dao') {
+common.hardforkBlock = (hardfork: string | undefined) => {
+  if (hardfork === "london") {
+    return BigInt(1);
+  } else if (hardfork === "dao") {
     // Avoid DAO HF side-effects
-    return BigInt(99)
+    return BigInt(99);
   }
-  return BigInt(0)
-}
+  return BigInt(0);
+};
 
-const coinbase = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
-const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
-const sender = new Address(privateToAddress(pkey))
+const coinbase = new Address(hexToBytes(`0x${"11".repeat(20)}`));
+const pkey = hexToBytes(`0x${"20".repeat(32)}`);
+const sender = new Address(privateToAddress(pkey));
 
 /**
  * Creates an EIP1559 block
@@ -45,10 +49,14 @@ const sender = new Address(privateToAddress(pkey))
  * @param transaction - the transaction in the block
  * @param txType - the txType to use
  */
-function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
-  const signed = transaction.sign(pkey)
-  const json = <any>signed.toJSON()
-  json.type = txType
+function makeBlock(
+  baseFee: bigint,
+  transaction: TypedTransaction,
+  txType: TransactionType,
+) {
+  const signed = transaction.sign(pkey);
+  const json = <any>signed.toJSON();
+  json.type = txType;
   const block = createBlock(
     {
       header: {
@@ -60,12 +68,12 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
       transactions: [json],
     },
     { common },
-  )
-  return block
+  );
+  return block;
 }
 
-describe('EIP1559 tests', () => {
-  it('test EIP1559 with all transaction types', async () => {
+describe("EIP1559 tests", () => {
+  it("test EIP1559 with all transaction types", async () => {
     const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: Units.gwei(5),
@@ -76,18 +84,18 @@ describe('EIP1559 tests', () => {
       {
         common,
       },
-    )
-    const block = makeBlock(Units.gwei(1), tx, 2)
-    const vm = await createVM({ common })
-    await vm.stateManager.putAccount(sender, new Account())
-    let account = await vm.stateManager.getAccount(sender)
-    const balance = Units.gwei(210000)
-    account!.balance = balance
-    await vm.stateManager.putAccount(sender, account!)
+    );
+    const block = makeBlock(Units.gwei(1), tx, 2);
+    const vm = await createVM({ common });
+    await vm.stateManager.putAccount(sender, new Account());
+    let account = await vm.stateManager.getAccount(sender);
+    const balance = Units.gwei(210000);
+    account!.balance = balance;
+    await vm.stateManager.putAccount(sender, account!);
     const results = await runTx(vm, {
       tx: block.transactions[0],
       block,
-    })
+    });
 
     // Situation:
     // Base fee is 1 GWEI
@@ -95,16 +103,20 @@ describe('EIP1559 tests', () => {
     // It is also willing to tip the miner 2 GWEI (at most)
     // Thus, miner should get 21000*2 GWei, and the 21000*1 GWei is burned
 
-    let expectedCost = Units.gwei(21000) * BigInt(3)
-    let expectedMinerBalance = Units.gwei(21000) * BigInt(2)
-    let expectedAccountBalance = balance - expectedCost
+    let expectedCost = Units.gwei(21000) * BigInt(3);
+    let expectedMinerBalance = Units.gwei(21000) * BigInt(2);
+    let expectedAccountBalance = balance - expectedCost;
 
-    let miner = await vm.stateManager.getAccount(coinbase)
+    let miner = await vm.stateManager.getAccount(coinbase);
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
-    account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results.amountSpent, expectedCost, 'reported cost correct')
+    assert.equal(miner!.balance, expectedMinerBalance, "miner balance correct");
+    account = await vm.stateManager.getAccount(sender);
+    assert.equal(
+      account!.balance,
+      expectedAccountBalance,
+      "account balance correct",
+    );
+    assert.equal(results.amountSpent, expectedCost, "reported cost correct");
 
     const tx2 = new AccessList2930Transaction(
       {
@@ -113,26 +125,30 @@ describe('EIP1559 tests', () => {
         to: createZeroAddress(),
       },
       { common },
-    )
-    const block2 = makeBlock(Units.gwei(1), tx2, 1)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
-    await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
+    );
+    const block2 = makeBlock(Units.gwei(1), tx2, 1);
+    await vm.stateManager.modifyAccountFields(sender, { balance });
+    await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) });
     const results2 = await runTx(vm, {
       tx: block2.transactions[0],
       block: block2,
       skipNonce: true,
-    })
+    });
 
-    expectedCost = Units.gwei(21000) * BigInt(5)
-    expectedMinerBalance = Units.gwei(21000) * BigInt(4)
-    expectedAccountBalance = balance - expectedCost
+    expectedCost = Units.gwei(21000) * BigInt(5);
+    expectedMinerBalance = Units.gwei(21000) * BigInt(4);
+    expectedAccountBalance = balance - expectedCost;
 
-    miner = await vm.stateManager.getAccount(coinbase)
+    miner = await vm.stateManager.getAccount(coinbase);
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
-    account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results2.amountSpent, expectedCost, 'reported cost correct')
+    assert.equal(miner!.balance, expectedMinerBalance, "miner balance correct");
+    account = await vm.stateManager.getAccount(sender);
+    assert.equal(
+      account!.balance,
+      expectedAccountBalance,
+      "account balance correct",
+    );
+    assert.equal(results2.amountSpent, expectedCost, "reported cost correct");
 
     const tx3 = new LegacyTx(
       {
@@ -141,30 +157,34 @@ describe('EIP1559 tests', () => {
         to: createZeroAddress(),
       },
       { common },
-    )
-    const block3 = makeBlock(Units.gwei(1), tx3, 0)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
-    await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) })
+    );
+    const block3 = makeBlock(Units.gwei(1), tx3, 0);
+    await vm.stateManager.modifyAccountFields(sender, { balance });
+    await vm.stateManager.modifyAccountFields(coinbase, { balance: BigInt(0) });
     const results3 = await runTx(vm, {
       tx: block3.transactions[0],
       block: block3,
       skipNonce: true,
-    })
+    });
 
-    expectedCost = Units.gwei(21000) * BigInt(5)
-    expectedMinerBalance = Units.gwei(21000) * BigInt(4)
-    expectedAccountBalance = balance - expectedCost
+    expectedCost = Units.gwei(21000) * BigInt(5);
+    expectedMinerBalance = Units.gwei(21000) * BigInt(4);
+    expectedAccountBalance = balance - expectedCost;
 
-    miner = await vm.stateManager.getAccount(coinbase)
+    miner = await vm.stateManager.getAccount(coinbase);
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
-    account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results3.amountSpent, expectedCost, 'reported cost correct')
-  })
+    assert.equal(miner!.balance, expectedMinerBalance, "miner balance correct");
+    account = await vm.stateManager.getAccount(sender);
+    assert.equal(
+      account!.balance,
+      expectedAccountBalance,
+      "account balance correct",
+    );
+    assert.equal(results3.amountSpent, expectedCost, "reported cost correct");
+  });
 
-  it('gasPrice uses the effective gas price', async () => {
-    const contractAddress = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
+  it("gasPrice uses the effective gas price", async () => {
+    const contractAddress = new Address(hexToBytes(`0x${"20".repeat(20)}`));
     const tx = new FeeMarket1559Tx(
       {
         maxFeePerGas: Units.gwei(5),
@@ -175,11 +195,11 @@ describe('EIP1559 tests', () => {
       {
         common,
       },
-    )
-    const block = makeBlock(Units.gwei(1), tx, 2)
-    const vm = await createVM({ common })
-    const balance = Units.gwei(210000) * BigInt(10)
-    await vm.stateManager.modifyAccountFields(sender, { balance })
+    );
+    const block = makeBlock(Units.gwei(1), tx, 2);
+    const vm = await createVM({ common });
+    const balance = Units.gwei(210000) * BigInt(10);
+    await vm.stateManager.modifyAccountFields(sender, { balance });
 
     /**
      * GASPRICE
@@ -191,15 +211,15 @@ describe('EIP1559 tests', () => {
      */
 
     // (This code returns the reported GASPRICE)
-    const code = hexToBytes('0x3A60005260206000F3')
-    await vm.stateManager.putCode(contractAddress, code)
+    const code = hexToBytes("0x3A60005260206000F3");
+    await vm.stateManager.putCode(contractAddress, code);
 
-    const result = await runTx(vm, { tx: block.transactions[0], block })
-    const returnValue = result.execResult.returnValue
+    const result = await runTx(vm, { tx: block.transactions[0], block });
+    const returnValue = result.execResult.returnValue;
 
-    const expectedCost = Units.gwei(3)
-    const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32)
+    const expectedCost = Units.gwei(3);
+    const expectedReturn = setLengthLeft(bigIntToBytes(expectedCost), 32);
 
-    assert.deepEqual(returnValue, expectedReturn)
-  })
-})
+    assert.deepEqual(returnValue, expectedReturn);
+  });
+});

@@ -2,9 +2,9 @@ import type { Common } from "@ethereumjs/common";
 import type { debug } from "debug";
 import type { EVMInterface, ExecResult } from "../types.js";
 
-export interface PrecompileFunc {
-  (input: PrecompileInput): Promise<ExecResult> | ExecResult;
-}
+export type PrecompileFunc = (
+  input: PrecompileInput,
+) => Promise<ExecResult> | ExecResult;
 
 export interface PrecompileInput {
   data: Uint8Array;

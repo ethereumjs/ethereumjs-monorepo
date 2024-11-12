@@ -55,11 +55,11 @@ export interface BlobsBundle {
 const MAX_PAYLOAD_CACHE = 2;
 
 enum AddTxResult {
-  Success,
-  BlockFull,
-  SkippedByGasLimit,
-  SkippedByErrors,
-  RemovedByErrors,
+  Success = 0,
+  BlockFull = 1,
+  SkippedByGasLimit = 2,
+  SkippedByErrors = 3,
+  RemovedByErrors = 4,
 }
 
 export class PendingBlock {

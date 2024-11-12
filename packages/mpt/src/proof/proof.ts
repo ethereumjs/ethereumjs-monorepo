@@ -104,7 +104,7 @@ export async function createMerkleProof(
 export async function updateMPTFromMerkleProof(
   trie: MerklePatriciaTrie,
   proof: Proof,
-  shouldVerifyRoot: boolean = false,
+  shouldVerifyRoot = false,
 ) {
   trie["DEBUG"] &&
     trie["debug"](`Saving (${proof.length}) proof nodes in DB`, ["from_proof"]);

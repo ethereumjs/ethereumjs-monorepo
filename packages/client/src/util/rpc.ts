@@ -267,5 +267,5 @@ export function createWsRPCServerListener(
     });
   });
   // Only return something if a new server was created
-  return !opts.httpServer ? httpServer : undefined;
+  return opts.httpServer ? undefined : httpServer;
 }

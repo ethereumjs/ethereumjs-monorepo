@@ -188,10 +188,10 @@ const types: Types = {
     neighbours: 0x04,
   },
   byType: {
-    0x01: "ping",
-    0x02: "pong",
-    0x03: "findneighbours",
-    0x04: "neighbours",
+    1: "ping",
+    2: "pong",
+    3: "findneighbours",
+    4: "neighbours",
   },
 };
 

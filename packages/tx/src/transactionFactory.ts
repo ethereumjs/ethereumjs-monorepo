@@ -46,22 +46,20 @@ export function createTx<T extends TransactionType>(
   if (!("type" in txData) || txData.type === undefined) {
     // Assume legacy transaction
     return createLegacyTx(txData, txOptions) as Transaction[T];
+  } else if (isLegacyTxData(txData)) {
+    return createLegacyTx(txData, txOptions) as Transaction[T];
+  } else if (isAccessList2930TxData(txData)) {
+    return createAccessList2930Tx(txData, txOptions) as Transaction[T];
+  } else if (isFeeMarket1559TxData(txData)) {
+    return createFeeMarket1559Tx(txData, txOptions) as Transaction[T];
+  } else if (isBlob4844TxData(txData)) {
+    return createBlob4844Tx(txData, txOptions) as Transaction[T];
+  } else if (isEOACode7702TxData(txData)) {
+    return createEOACode7702Tx(txData, txOptions) as Transaction[T];
   } else {
-    if (isLegacyTxData(txData)) {
-      return createLegacyTx(txData, txOptions) as Transaction[T];
-    } else if (isAccessList2930TxData(txData)) {
-      return createAccessList2930Tx(txData, txOptions) as Transaction[T];
-    } else if (isFeeMarket1559TxData(txData)) {
-      return createFeeMarket1559Tx(txData, txOptions) as Transaction[T];
-    } else if (isBlob4844TxData(txData)) {
-      return createBlob4844Tx(txData, txOptions) as Transaction[T];
-    } else if (isEOACode7702TxData(txData)) {
-      return createEOACode7702Tx(txData, txOptions) as Transaction[T];
-    } else {
-      throw new Error(
-        `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
-      );
-    }
+    throw new Error(
+      `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
+    );
   }
 }
 

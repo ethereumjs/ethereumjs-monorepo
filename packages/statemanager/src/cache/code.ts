@@ -187,12 +187,10 @@ export class CodeCache extends Cache {
         } else {
           this._orderedMapCache!.eraseElementByKey(addressHex);
         }
+      } else if (this._lruCache) {
+        this._lruCache.set(addressHex, elem);
       } else {
-        if (this._lruCache) {
-          this._lruCache.set(addressHex, elem);
-        } else {
-          this._orderedMapCache!.setElement(addressHex, elem);
-        }
+        this._orderedMapCache!.setElement(addressHex, elem);
       }
     }
   }

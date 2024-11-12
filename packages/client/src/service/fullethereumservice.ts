@@ -127,7 +127,7 @@ export class FullEthereumService extends Service {
   /**
    * Helper to switch to {@link BeaconSynchronizer}
    */
-  async switchToBeaconSync(skipOpen: boolean = false) {
+  async switchToBeaconSync(skipOpen = false) {
     if (this.synchronizer instanceof FullSynchronizer) {
       await this.synchronizer.stop();
       await this.synchronizer.close();

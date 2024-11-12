@@ -217,14 +217,14 @@ describe("runBlock() -> successful API parameter usage", async () => {
     }
 
     const vm = await createVM({ common: common1, setHardfork: true });
-    const vm_noSelect = await createVM({ common: common2 });
+    const vmNoSelect = await createVM({ common: common2 });
 
     const txResultMuirGlacier = await runBlock(vm, {
       block: getBlock(common1),
       skipBlockValidation: true,
       generate: true,
     });
-    const txResultChainstart = await runBlock(vm_noSelect, {
+    const txResultChainstart = await runBlock(vmNoSelect, {
       block: getBlock(common2),
       skipBlockValidation: true,
       generate: true,

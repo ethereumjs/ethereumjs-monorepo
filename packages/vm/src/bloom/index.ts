@@ -17,12 +17,12 @@ export class Bloom {
     } else {
       this.keccakFunction = keccak256;
     }
-    if (!bitvector) {
-      this.bitvector = new Uint8Array(BYTE_SIZE);
-    } else {
+    if (bitvector) {
       if (bitvector.length !== BYTE_SIZE)
         throw new Error("bitvectors must be 2048 bits long");
       this.bitvector = bitvector;
+    } else {
+      this.bitvector = new Uint8Array(BYTE_SIZE);
     }
   }
 

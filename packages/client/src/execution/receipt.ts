@@ -1,4 +1,4 @@
-import { RLP } from '@ethereumjs/rlp'
+import { RLP } from "@ethereumjs/rlp";
 import {
   BIGINT_0,
   bigIntToBytes,
@@ -7,28 +7,34 @@ import {
   equalsBytes,
   intToBytes,
   utf8ToBytes,
-} from '@ethereumjs/util'
-import { Bloom } from '@ethereumjs/vm'
+} from "@ethereumjs/util";
+import { Bloom } from "@ethereumjs/vm";
 
-import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
+import { DBKey, MetaDBManager } from "../util/metaDBManager.js";
 
-import type { Block } from '@ethereumjs/block'
-import type { Log } from '@ethereumjs/evm'
-import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
-import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { Block } from "@ethereumjs/block";
+import type { Log } from "@ethereumjs/evm";
+import type { TransactionType, TypedTransaction } from "@ethereumjs/tx";
+import type {
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  TxReceipt,
+} from "@ethereumjs/vm";
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:
  *  - txType: byte prefix for serializing typed tx receipts
  */
-export type TxReceiptWithType = PreByzantiumTxReceiptWithType | PostByzantiumTxReceiptWithType
+export type TxReceiptWithType =
+  | PreByzantiumTxReceiptWithType
+  | PostByzantiumTxReceiptWithType;
 interface PreByzantiumTxReceiptWithType extends PreByzantiumTxReceipt {
   /* EIP-2718 Typed Transaction Envelope type */
-  txType: TransactionType
+  txType: TransactionType;
 }
 interface PostByzantiumTxReceiptWithType extends PostByzantiumTxReceipt {
   /* EIP-2718 Typed Transaction Envelope type */
-  txType: TransactionType
+  txType: TransactionType;
 }
 
 /**
@@ -39,61 +45,65 @@ type GetReceiptByTxHashReturn = [
   blockHash: Uint8Array,
   txIndex: number,
   logIndex: number,
-]
+];
 type GetLogsReturn = {
-  log: Log
-  block: Block
-  tx: TypedTransaction
-  txIndex: number
-  logIndex: number
-}[]
+  log: Log;
+  block: Block;
+  tx: TypedTransaction;
+  txIndex: number;
+  logIndex: number;
+}[];
 
 /**
  * Indexes
  */
-type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
+type TxHashIndex = [blockHash: Uint8Array, txIndex: number];
 
 enum IndexType {
-  TxHash,
+  TxHash = 0,
 }
 enum IndexOperation {
-  Save,
-  Delete,
+  Save = 0,
+  Delete = 1,
 }
 
 /**
  * Storage encodings
  */
-type rlpLog = Log
-type rlpReceipt = [postStateOrStatus: Uint8Array, cumulativeGasUsed: Uint8Array, logs: rlpLog[]]
-type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
+type RlpLog = Log;
+type RlpReceipt = [
+  postStateOrStatus: Uint8Array,
+  cumulativeGasUsed: Uint8Array,
+  logs: RlpLog[],
+];
+type RlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array];
 
 enum RlpConvert {
-  Encode,
-  Decode,
+  Encode = 0,
+  Decode = 1,
 }
 enum RlpType {
-  Receipts,
-  Logs,
-  TxHash,
+  Receipts = 0,
+  Logs = 1,
+  TxHash = 2,
 }
-type rlpOut = Log[] | TxReceipt[] | TxHashIndex
+type RlpOut = Log[] | TxReceipt[] | TxHashIndex;
 
 export class ReceiptsManager extends MetaDBManager {
   /**
    * Limit of logs to return in getLogs
    */
-  GET_LOGS_LIMIT = 10000
+  GET_LOGS_LIMIT = 10000;
 
   /**
    * Size limit for the getLogs response in megabytes
    */
-  GET_LOGS_LIMIT_MEGABYTES = 150
+  GET_LOGS_LIMIT_MEGABYTES = 150;
 
   /**
    * Block range limit for getLogs
    */
-  GET_LOGS_BLOCK_RANGE_LIMIT = 2500
+  GET_LOGS_BLOCK_RANGE_LIMIT = 2500;
 
   /**
    * Saves receipts to db. Also saves tx hash indexes if within txLookupLimit,
@@ -102,14 +112,14 @@ export class ReceiptsManager extends MetaDBManager {
    * @param receipts the receipts to save
    */
   async saveReceipts(block: Block, receipts: TxReceipt[]) {
-    const encoded = this.rlp(RlpConvert.Encode, RlpType.Receipts, receipts)
-    await this.put(DBKey.Receipts, block.hash(), encoded)
-    void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+    const encoded = this.rlp(RlpConvert.Encode, RlpType.Receipts, receipts);
+    await this.put(DBKey.Receipts, block.hash(), encoded);
+    void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block);
   }
 
   async deleteReceipts(block: Block) {
-    await this.delete(DBKey.Receipts, block.hash())
-    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
+    await this.delete(DBKey.Receipts, block.hash());
+    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block);
   }
 
   /**
@@ -122,51 +132,53 @@ export class ReceiptsManager extends MetaDBManager {
     blockHash: Uint8Array,
     calcBloom?: boolean,
     includeTxType?: true,
-  ): Promise<TxReceiptWithType[]>
+  ): Promise<TxReceiptWithType[]>;
   async getReceipts(
     blockHash: Uint8Array,
     calcBloom?: boolean,
     includeTxType?: false,
-  ): Promise<TxReceipt[]>
+  ): Promise<TxReceipt[]>;
   async getReceipts(
     blockHash: Uint8Array,
     calcBloom = false,
     includeTxType = false,
   ): Promise<TxReceipt[] | TxReceiptWithType[]> {
-    const encoded = await this.get(DBKey.Receipts, blockHash)
-    if (!encoded) return []
-    let receipts = this.rlp(RlpConvert.Decode, RlpType.Receipts, encoded)
+    const encoded = await this.get(DBKey.Receipts, blockHash);
+    if (!encoded) return [];
+    let receipts = this.rlp(RlpConvert.Decode, RlpType.Receipts, encoded);
     if (calcBloom) {
       receipts = receipts.map((r) => {
-        r.bitvector = this.logsBloom(r.logs).bitvector
-        return r
-      })
+        r.bitvector = this.logsBloom(r.logs).bitvector;
+        return r;
+      });
     }
     if (includeTxType) {
-      const block = await this.chain.getBlock(blockHash)
+      const block = await this.chain.getBlock(blockHash);
       receipts = (receipts as TxReceiptWithType[]).map((r, i) => {
-        r.txType = block.transactions[i].type
-        return r
-      })
+        r.txType = block.transactions[i].type;
+        return r;
+      });
     }
-    return receipts
+    return receipts;
   }
 
   /**
    * Returns receipt by tx hash with additional metadata for the JSON RPC response, or null if not found
    * @param txHash the tx hash
    */
-  async getReceiptByTxHash(txHash: Uint8Array): Promise<GetReceiptByTxHashReturn | null> {
-    const txHashIndex = await this.getIndex(IndexType.TxHash, txHash)
-    if (!txHashIndex) return null
-    const [blockHash, txIndex] = txHashIndex
-    const receipts = await this.getReceipts(blockHash)
-    if (receipts.length === 0) return null
-    let logIndex = 0
-    receipts.slice(0, txIndex).map((r) => (logIndex += r.logs.length))
-    const receipt = receipts[txIndex]
-    receipt.bitvector = this.logsBloom(receipt.logs).bitvector
-    return [receipt, blockHash, txIndex, logIndex]
+  async getReceiptByTxHash(
+    txHash: Uint8Array,
+  ): Promise<GetReceiptByTxHashReturn | null> {
+    const txHashIndex = await this.getIndex(IndexType.TxHash, txHash);
+    if (!txHashIndex) return null;
+    const [blockHash, txIndex] = txHashIndex;
+    const receipts = await this.getReceipts(blockHash);
+    if (receipts.length === 0) return null;
+    let logIndex = 0;
+    receipts.slice(0, txIndex).map((r) => (logIndex += r.logs.length));
+    const receipt = receipts[txIndex];
+    receipt.bitvector = this.logsBloom(receipt.logs).bitvector;
+    return [receipt, blockHash, txIndex, logIndex];
   }
 
   /**
@@ -178,14 +190,14 @@ export class ReceiptsManager extends MetaDBManager {
     addresses?: Uint8Array[],
     topics: (Uint8Array | Uint8Array[] | null)[] = [],
   ): Promise<GetLogsReturn> {
-    const returnedLogs: GetLogsReturn = []
-    let returnedLogsSize = 0
+    const returnedLogs: GetLogsReturn = [];
+    let returnedLogsSize = 0;
     for (let i = from.header.number; i <= to.header.number; i++) {
-      const block = await this.chain.getBlock(i)
-      const receipts = await this.getReceipts(block.hash())
-      if (receipts.length === 0) continue
-      let logs: GetLogsReturn = []
-      let logIndex = 0
+      const block = await this.chain.getBlock(i);
+      const receipts = await this.getReceipts(block.hash());
+      if (receipts.length === 0) continue;
+      let logs: GetLogsReturn = [];
+      let logIndex = 0;
       for (const [receiptIndex, receipt] of receipts.entries()) {
         logs.push(
           ...receipt.logs.map((log) => ({
@@ -195,10 +207,12 @@ export class ReceiptsManager extends MetaDBManager {
             txIndex: receiptIndex,
             logIndex: logIndex++,
           })),
-        )
+        );
       }
       if (addresses && addresses.length > 0) {
-        logs = logs.filter((l) => addresses.some((a) => equalsBytes(a, l.log[0])))
+        logs = logs.filter((l) =>
+          addresses.some((a) => equalsBytes(a, l.log[0])),
+        );
       }
       if (topics.length > 0) {
         // From https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_newfilter/:
@@ -213,27 +227,27 @@ export class ReceiptsManager extends MetaDBManager {
           for (const [i, topic] of topics.entries()) {
             if (Array.isArray(topic)) {
               // Can match any items in this array
-              if (!topic.find((t) => equalsBytes(t, l.log[1][i]))) return false
-            } else if (!topic) {
-              // If null then can match any
-            } else {
+              if (!topic.find((t) => equalsBytes(t, l.log[1][i]))) return false;
+            } else if (topic) {
               // If a value is specified then it must match
-              if (!equalsBytes(topic, l.log[1][i])) return false
+              if (!equalsBytes(topic, l.log[1][i])) return false;
+            } else {
+              // If null then can match any
             }
-            return true
+            return true;
           }
-        })
+        });
       }
-      returnedLogs.push(...logs)
-      returnedLogsSize += utf8ToBytes(JSON.stringify(logs)).byteLength
+      returnedLogs.push(...logs);
+      returnedLogsSize += utf8ToBytes(JSON.stringify(logs)).byteLength;
       if (
         returnedLogs.length >= this.GET_LOGS_LIMIT ||
         returnedLogsSize >= this.GET_LOGS_LIMIT_MEGABYTES * 1048576
       ) {
-        break
+        break;
       }
     }
-    return returnedLogs
+    return returnedLogs;
   }
 
   /**
@@ -246,38 +260,52 @@ export class ReceiptsManager extends MetaDBManager {
     operation: IndexOperation,
     type: IndexType.TxHash,
     value: Block,
-  ): Promise<void>
-  private async updateIndex(operation: IndexOperation, type: IndexType, value: any): Promise<void> {
+  ): Promise<void>;
+  private async updateIndex(
+    operation: IndexOperation,
+    type: IndexType,
+    value: any,
+  ): Promise<void> {
     switch (type) {
       case IndexType.TxHash: {
-        const block = value
+        const block = value;
         if (operation === IndexOperation.Save) {
           const withinTxLookupLimit =
             this.config.txLookupLimit === 0 ||
-            this.chain.headers.height - BigInt(this.config.txLookupLimit) < block.header.number
+            this.chain.headers.height - BigInt(this.config.txLookupLimit) <
+              block.header.number;
           if (withinTxLookupLimit) {
             for (const [i, tx] of block.transactions.entries()) {
-              const index: TxHashIndex = [block.hash(), i]
-              const encoded = this.rlp(RlpConvert.Encode, RlpType.TxHash, index)
-              await this.put(DBKey.TxHash, tx.hash(), encoded)
+              const index: TxHashIndex = [block.hash(), i];
+              const encoded = this.rlp(
+                RlpConvert.Encode,
+                RlpType.TxHash,
+                index,
+              );
+              await this.put(DBKey.TxHash, tx.hash(), encoded);
             }
           }
           if (this.config.txLookupLimit > 0) {
             // Remove tx hashes for one block past txLookupLimit
-            const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
-            if (limit < BIGINT_0) return
-            const blockDelIndexes = await this.chain.getBlock(limit)
-            void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
+            const limit =
+              this.chain.headers.height - BigInt(this.config.txLookupLimit);
+            if (limit < BIGINT_0) return;
+            const blockDelIndexes = await this.chain.getBlock(limit);
+            void this.updateIndex(
+              IndexOperation.Delete,
+              IndexType.TxHash,
+              blockDelIndexes,
+            );
           }
         } else if (operation === IndexOperation.Delete) {
           for (const tx of block.transactions) {
-            await this.delete(DBKey.TxHash, tx.hash())
+            await this.delete(DBKey.TxHash, tx.hash());
           }
         }
-        break
+        break;
       }
       default:
-        throw new Error('Unsupported index type')
+        throw new Error("Unsupported index type");
     }
   }
 
@@ -286,16 +314,22 @@ export class ReceiptsManager extends MetaDBManager {
    * @param type the {@link IndexType}
    * @param value for {@link IndexType.TxHash}, the txHash to get
    */
-  private async getIndex(type: IndexType.TxHash, value: Uint8Array): Promise<TxHashIndex | null>
-  private async getIndex(type: IndexType, value: Uint8Array): Promise<any | null> {
+  private async getIndex(
+    type: IndexType.TxHash,
+    value: Uint8Array,
+  ): Promise<TxHashIndex | null>;
+  private async getIndex(
+    type: IndexType,
+    value: Uint8Array,
+  ): Promise<any | null> {
     switch (type) {
       case IndexType.TxHash: {
-        const encoded = await this.get(DBKey.TxHash, value)
-        if (!encoded) return null
-        return this.rlp(RlpConvert.Decode, RlpType.TxHash, encoded)
+        const encoded = await this.get(DBKey.TxHash, value);
+        if (!encoded) return null;
+        return this.rlp(RlpConvert.Decode, RlpType.TxHash, encoded);
       }
       default:
-        throw new Error('Unsupported index type')
+        throw new Error("Unsupported index type");
     }
   }
 
@@ -305,23 +339,35 @@ export class ReceiptsManager extends MetaDBManager {
    * @param type one of {@link RlpType}
    * @param value the value to encode or decode
    */
-  private rlp(conversion: RlpConvert.Encode, type: RlpType, value: rlpOut): Uint8Array
+  private rlp(
+    conversion: RlpConvert.Encode,
+    type: RlpType,
+    value: RlpOut,
+  ): Uint8Array;
   private rlp(
     conversion: RlpConvert.Decode,
     type: RlpType.Receipts,
     values: Uint8Array,
-  ): TxReceipt[]
-  private rlp(conversion: RlpConvert.Decode, type: RlpType.Logs, value: rlpLog[]): Log[]
-  private rlp(conversion: RlpConvert.Decode, type: RlpType.TxHash, value: Uint8Array): TxHashIndex
+  ): TxReceipt[];
+  private rlp(
+    conversion: RlpConvert.Decode,
+    type: RlpType.Logs,
+    value: RlpLog[],
+  ): Log[];
+  private rlp(
+    conversion: RlpConvert.Decode,
+    type: RlpType.TxHash,
+    value: Uint8Array,
+  ): TxHashIndex;
   private rlp(
     conversion: RlpConvert,
     type: RlpType,
-    value: Uint8Array | rlpOut,
-  ): Uint8Array | rlpOut {
+    value: Uint8Array | RlpOut,
+  ): Uint8Array | RlpOut {
     switch (type) {
       case RlpType.Receipts:
         if (conversion === RlpConvert.Encode) {
-          value = value as TxReceipt[]
+          value = value as TxReceipt[];
           return RLP.encode(
             value.map((r) => [
               (r as PreByzantiumTxReceipt).stateRoot ??
@@ -329,45 +375,49 @@ export class ReceiptsManager extends MetaDBManager {
               bigIntToBytes(r.cumulativeBlockGasUsed),
               this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
             ]),
-          )
+          );
         } else {
-          const decoded = RLP.decode(value as Uint8Array) as unknown as rlpReceipt[]
+          const decoded = RLP.decode(
+            value as Uint8Array,
+          ) as unknown as RlpReceipt[];
           return decoded.map((r) => {
-            const gasUsed = r[1]
-            const logs = this.rlp(RlpConvert.Decode, RlpType.Logs, r[2])
+            const gasUsed = r[1];
+            const logs = this.rlp(RlpConvert.Decode, RlpType.Logs, r[2]);
             if (r[0].length === 32) {
               // Pre-Byzantium Receipt
               return {
                 stateRoot: r[0],
                 cumulativeBlockGasUsed: bytesToBigInt(gasUsed),
                 logs,
-              } as PreByzantiumTxReceipt
+              } as PreByzantiumTxReceipt;
             } else {
               // Post-Byzantium Receipt
               return {
                 status: bytesToInt(r[0]),
                 cumulativeBlockGasUsed: bytesToBigInt(gasUsed),
                 logs,
-              } as PostByzantiumTxReceipt
+              } as PostByzantiumTxReceipt;
             }
-          })
+          });
         }
       case RlpType.Logs:
         if (conversion === RlpConvert.Encode) {
-          return RLP.encode(value as Log[])
+          return RLP.encode(value as Log[]);
         } else {
-          return RLP.decode(value as Uint8Array) as Log[]
+          return RLP.decode(value as Uint8Array) as Log[];
         }
       case RlpType.TxHash:
         if (conversion === RlpConvert.Encode) {
-          const [blockHash, txIndex] = value as TxHashIndex
-          return RLP.encode([blockHash, intToBytes(txIndex)])
+          const [blockHash, txIndex] = value as TxHashIndex;
+          return RLP.encode([blockHash, intToBytes(txIndex)]);
         } else {
-          const [blockHash, txIndex] = RLP.decode(value as Uint8Array) as unknown as rlpTxHash
-          return [blockHash, bytesToInt(txIndex)] as TxHashIndex
+          const [blockHash, txIndex] = RLP.decode(
+            value as Uint8Array,
+          ) as unknown as RlpTxHash;
+          return [blockHash, bytesToInt(txIndex)] as TxHashIndex;
         }
       default:
-        throw new Error('Unknown rlp conversion')
+        throw new Error("Unknown rlp conversion");
     }
   }
 
@@ -375,18 +425,18 @@ export class ReceiptsManager extends MetaDBManager {
    * Returns the logs bloom for a receipt's logs
    * @param logs
    */
-  private logsBloom(logs: rlpLog[]) {
-    const bloom = new Bloom()
+  private logsBloom(logs: RlpLog[]) {
+    const bloom = new Bloom();
     for (let i = 0; i < logs.length; i++) {
-      const log = logs[i]
+      const log = logs[i];
       // add the address
-      bloom.add(log[0])
+      bloom.add(log[0]);
       // add the topics
-      const topics = log[1]
+      const topics = log[1];
       for (let q = 0; q < topics.length; q++) {
-        bloom.add(topics[q])
+        bloom.add(topics[q]);
       }
     }
-    return bloom
+    return bloom;
   }
 }

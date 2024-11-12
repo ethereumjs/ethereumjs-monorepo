@@ -100,7 +100,7 @@ const args: ClientOpts = yargs
   .option("chainId", {
     describe: "Chain ID",
     choices: Object.entries(Chain)
-      .map((n) => parseInt(n[1] as string))
+      .map((n) => Number.parseInt(n[1] as string))
       .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ["customChain", "customGenesisState", "gethGenesis"], // Disallows custom chain data and chainId
@@ -110,7 +110,7 @@ const args: ClientOpts = yargs
     deprecated: true,
     deprecate: "use --chainId instead",
     choices: Object.entries(Chain)
-      .map((n) => parseInt(n[1] as string))
+      .map((n) => Number.parseInt(n[1] as string))
       .filter((el) => !isNaN(el)),
     default: undefined,
     conflicts: ["customChain", "customGenesisState", "gethGenesis"], // Disallows custom chain data and networkId
@@ -579,7 +579,7 @@ async function executeBlocks(client: EthereumClient) {
   try {
     const blockRange = (args.executeBlocks as string).split("-").map((val) => {
       const reNum = /([0-9]+)/.exec(val);
-      const num = reNum ? parseInt(reNum[1]) : 0;
+      const num = reNum ? Number.parseInt(reNum[1]) : 0;
       const reTxs = /[0-9]+\[(.*)\]/.exec(val);
       const txs = reTxs ? reTxs[1].split(",") : [];
       return [num, txs];
@@ -872,7 +872,7 @@ async function inputAccounts() {
   });
 
   // Hide key input
-  (rl as any).input.on("keypress", function () {
+  (rl as any).input.on("keypress", () => {
     // get the number of characters entered so far:
     const len = (rl as any).line.length;
     // move cursor back to the beginning of the input:
@@ -894,7 +894,15 @@ async function inputAccounts() {
   try {
     const addresses = args.unlock!.split(",");
     const isFile = existsSync(path.resolve(addresses[0]));
-    if (!isFile) {
+    if (isFile) {
+      const acc = readFileSync(path.resolve(args.unlock!), "utf-8").replace(
+        /(\r\n|\n|\r)/gm,
+        "",
+      );
+      const privKey = hexToBytes(`0x${acc}`); // See docs: acc has to be non-zero prefixed in the file
+      const derivedAddress = createAddressFromPrivateKey(privKey);
+      accounts.push([derivedAddress, privKey]);
+    } else {
       for (const addressString of addresses) {
         const address = createAddressFromString(addressString);
         const inputKey = (await question(
@@ -912,14 +920,6 @@ async function inputAccounts() {
           process.exit();
         }
       }
-    } else {
-      const acc = readFileSync(path.resolve(args.unlock!), "utf-8").replace(
-        /(\r\n|\n|\r)/gm,
-        "",
-      );
-      const privKey = hexToBytes(`0x${acc}`); // See docs: acc has to be non-zero prefixed in the file
-      const derivedAddress = createAddressFromPrivateKey(privKey);
-      accounts.push([derivedAddress, privKey]);
     }
   } catch (e: any) {
     console.error(`Encountered error unlocking account:\n${e.message}`);

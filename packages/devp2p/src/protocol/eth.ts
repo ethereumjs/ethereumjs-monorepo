@@ -24,12 +24,12 @@ import type { SendMethod } from "../types.js";
 export class ETH extends Protocol {
   protected _status: ETH.StatusMsg | null = null;
   protected _peerStatus: ETH.StatusMsg | null = null;
-  private DEBUG: boolean = false;
+  private DEBUG = false;
 
   // Eth64
-  protected _hardfork: string = "chainstart";
+  protected _hardfork = "chainstart";
   protected _latestBlock = BIGINT_0;
-  protected _forkHash: string = "";
+  protected _forkHash = "";
   protected _nextForkBlock = BIGINT_0;
 
   constructor(version: number, peer: Peer, send: SendMethod) {

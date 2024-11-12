@@ -1,3 +1,4 @@
+'use strict'
 const { hdkey } = require('@ethereumjs/wallet')
 
 const wallet = hdkey.EthereumHDKey.fromMnemonic(

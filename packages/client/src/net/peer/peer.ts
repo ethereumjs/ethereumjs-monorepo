@@ -56,7 +56,7 @@ export abstract class Peer extends EventEmitter {
     If false, adds incoming messages to handleMessageQueue,
     which are handled after the peer is added to the pool.
   */
-  public pooled: boolean = false;
+  public pooled = false;
 
   /**
    * Create new peer
@@ -99,11 +99,11 @@ export abstract class Peer extends EventEmitter {
       return;
     }
     let block: bigint | Uint8Array;
-    if (!this.eth!.updatedBestHeader) {
+    if (this.eth!.updatedBestHeader) {
+      block = this.getPotentialBestHeaderNum();
+    } else {
       // If there is no updated best header stored yet, start with the status hash
       block = this.eth!.status.bestHash;
-    } else {
-      block = this.getPotentialBestHeaderNum();
     }
     const result = await this.eth!.getBlockHeaders({
       block,
@@ -143,8 +143,8 @@ export abstract class Peer extends EventEmitter {
       const bestHeaderNum = this.eth!.updatedBestHeader.number;
       const nowSec = Math.floor(Date.now() / 1000);
       const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp);
-      const SLOT_TIME = 12;
-      const diffBlocks = BigInt(Math.floor(diffSec / SLOT_TIME));
+      const slotTime = 12;
+      const diffBlocks = BigInt(Math.floor(diffSec / slotTime));
       forwardCalculatedNum = bestHeaderNum + diffBlocks;
     }
     const best =

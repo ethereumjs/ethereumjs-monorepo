@@ -14,13 +14,13 @@ const encodingOpts = { keyEncoding: "view", valueEncoding: "view" };
  * remain backward compat.
  */
 export enum DBKey {
-  Receipts,
-  TxHash,
-  SkeletonBlock,
-  SkeletonBlockHashToNumber,
-  SkeletonStatus,
-  SkeletonUnfinalizedBlockByHash,
-  Preimage,
+  Receipts = 0,
+  TxHash = 1,
+  SkeletonBlock = 2,
+  SkeletonBlockHashToNumber = 3,
+  SkeletonStatus = 4,
+  SkeletonUnfinalizedBlockByHash = 5,
+  Preimage = 6,
 }
 
 export interface MetaDBManagerOptions {

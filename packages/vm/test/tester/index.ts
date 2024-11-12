@@ -69,15 +69,15 @@ async function runTests() {
     process.exit(1);
   }
 
-  const RUN_PROFILER: boolean = argv.profile ?? false;
+  const runProfiler: boolean = argv.profile ?? false;
 
-  const FORK_CONFIG: string =
+  const forkConfig: string =
     argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG;
-  const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG);
+  const forkConfigTestSuite = getRequiredForkConfigAlias(forkConfig);
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
-  const FORK_CONFIG_VM =
-    FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1);
+  const forkConfigVm =
+    forkConfig.charAt(0).toLowerCase() + forkConfig.substring(1);
 
   /**
    * Configuration for getting the tests from the ethereum/tests repository
@@ -99,7 +99,7 @@ async function runTests() {
       argv.runSkipped !== undefined ? "NONE" : "ALL",
     ),
     runSkipped: getSkipTests(argv.runSkipped, "NONE"),
-    forkConfig: FORK_CONFIG_TEST_SUITE,
+    forkConfig: forkConfigTestSuite,
     file: argv.file,
     test: argv.test,
     dir: argv.dir,
@@ -147,9 +147,9 @@ async function runTests() {
     bls: EVMBLSInterface;
     bn254: EVMBN254Interface;
   } = {
-    forkConfigVM: FORK_CONFIG_VM,
-    forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-    common: getCommon(FORK_CONFIG_VM, kzg),
+    forkConfigVM: forkConfigVm,
+    forkConfigTestSuite: forkConfigTestSuite,
+    common: getCommon(forkConfigVm, kzg),
     jsontrace: argv.jsontrace,
     dist: argv.dist,
     data: argv.data, // GeneralStateTests
@@ -158,7 +158,7 @@ async function runTests() {
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
     bls,
-    profile: RUN_PROFILER,
+    profile: runProfiler,
     bn254,
   };
 
@@ -182,7 +182,7 @@ async function runTests() {
 
   const expectedTests: number | undefined =
     argv["verify-test-amount-alltests"] > 0
-      ? getExpectedTests(FORK_CONFIG_VM, name)
+      ? getExpectedTests(forkConfigVm, name)
       : argv["expected-test-amount"] !== undefined &&
           argv["expected-test-amount"] > 0
         ? argv["expected-test-amount"]
@@ -269,7 +269,7 @@ async function runTests() {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      const dirs = getTestDirs(FORK_CONFIG_VM, name);
+      const dirs = getTestDirs(forkConfigVm, name);
       console.time("Total (including setup)");
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {

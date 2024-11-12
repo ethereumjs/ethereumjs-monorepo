@@ -1,17 +1,17 @@
-import { Block } from "@ethereumjs/block";
-import { Common } from "@ethereumjs/common";
+import type { Block } from "@ethereumjs/block";
+import type { Common } from "@ethereumjs/common";
 import { MerkleStateManager } from "@ethereumjs/statemanager";
 import {
   Account,
   Address,
   BIGINT_0,
-  PrefixedHexString,
+  type PrefixedHexString,
   equalsBytes,
   hexToBytes,
   isHexString,
   toBytes,
 } from "@ethereumjs/util";
-import { RunBlockResult } from "@ethereumjs/vm";
+import type { RunBlockResult } from "@ethereumjs/vm";
 import { Mockchain } from "./mockchain.js";
 
 export interface BenchmarkType {
@@ -64,7 +64,7 @@ export async function getPreState(
 }
 
 export function getBlockchain(blockhashes: any): Mockchain {
-  let mockchain = new Mockchain();
+  const mockchain = new Mockchain();
   for (const blockNum in blockhashes) {
     const hash = blockhashes[blockNum];
     mockchain.putBlockHash(BigInt(blockNum), toBytes(hash));
@@ -88,9 +88,9 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
     if (receipts) {
       let cumGasUsed = BIGINT_0;
       for (let index = 0; index < receipts.length; index++) {
-        let gasUsedExpected = receipts[index].cumulativeBlockGasUsed;
-        let cumGasUsedActual = receipts[index].cumulativeBlockGasUsed;
-        let gasUsed = cumGasUsedActual - cumGasUsed;
+        const gasUsedExpected = receipts[index].cumulativeBlockGasUsed;
+        const cumGasUsedActual = receipts[index].cumulativeBlockGasUsed;
+        const gasUsed = cumGasUsedActual - cumGasUsed;
         if (gasUsed !== gasUsedExpected) {
           console.log(`[DEBUG]
             Transaction at index ${index} of block ${block.header.number}

@@ -22,7 +22,7 @@ import { keccak256 } from "ethereum-cryptography/keccak.js";
 import { OriginalStorageCache } from "./cache/index.js";
 import { modifyAccountFields } from "./util.js";
 
-import { type MerkleStateManagerOpts } from "./index.js";
+import type { MerkleStateManagerOpts } from "./index.js";
 
 import type {
   AccountFields,
@@ -169,12 +169,10 @@ export class MerkleStateManager implements StateManagerInterface {
       } else {
         await trie.del(address.bytes);
       }
+    } else if (account !== undefined) {
+      this._caches.account?.put(address, account);
     } else {
-      if (account !== undefined) {
-        this._caches.account?.put(address, account);
-      } else {
-        this._caches.account?.del(address);
-      }
+      this._caches.account?.del(address);
     }
   }
 
@@ -594,10 +592,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
-  async setStateRoot(
-    stateRoot: Uint8Array,
-    clearCache: boolean = true,
-  ): Promise<void> {
+  async setStateRoot(stateRoot: Uint8Array, clearCache = true): Promise<void> {
     await this.flush();
 
     if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
@@ -698,11 +693,7 @@ export class MerkleStateManager implements StateManagerInterface {
     for (const address of addresses) {
       const addr = createAddressFromString(address);
       const state = initState[address];
-      if (!Array.isArray(state)) {
-        // Prior format: address -> balance
-        const account = createAccount({ balance: state });
-        await this.putAccount(addr, account);
-      } else {
+      if (Array.isArray(state)) {
         // New format: address -> [balance, code, storage]
         const [balance, code, storage, nonce] = state;
         const account = createAccount({ balance, nonce });
@@ -715,6 +706,10 @@ export class MerkleStateManager implements StateManagerInterface {
             await this.putStorage(addr, toBytes(key), toBytes(value));
           }
         }
+      } else {
+        // Prior format: address -> balance
+        const account = createAccount({ balance: state });
+        await this.putAccount(addr, account);
       }
     }
     await this.flush();
@@ -753,7 +748,7 @@ export class MerkleStateManager implements StateManagerInterface {
     const common = this.common.copy();
     common.setHardfork(this.common.hardfork());
 
-    const cacheSize = !downlevelCaches ? this._trie["_opts"]["cacheSize"] : 0;
+    const cacheSize = downlevelCaches ? 0 : this._trie["_opts"]["cacheSize"];
     const trie = this._trie.shallowCopy(false, { cacheSize });
     const prefixCodeHashes = this._prefixCodeHashes;
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys;

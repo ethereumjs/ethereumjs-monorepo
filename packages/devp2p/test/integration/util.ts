@@ -69,7 +69,7 @@ export function destroyDPTs(dpts: DPT[]) {
 
 export function getTestRLPXs(
   numRLPXs: number,
-  maxPeers: number = 10,
+  maxPeers = 10,
   basePort: number,
   capabilities?: Capabilities[],
   common?: Object | Common,
@@ -153,12 +153,12 @@ export function twoPeerMsgExchange3(
   rlpxs[0]["_dpt"]!.addPeer(peer).catch(() => {
     throw new Error("Peering failed");
   });
-  rlpxs[0].events.on("peer:added", function (peer: any) {
+  rlpxs[0].events.on("peer:added", (peer: any) => {
     const protocol = peer.getProtocols()[0];
     opts.sendMessage(rlpxs, protocol);
   });
 
-  rlpxs[1].events.on("peer:added", function (peer: any) {
+  rlpxs[1].events.on("peer:added", (peer: any) => {
     const protocol = peer.getProtocols()[0];
     protocol.events.on("message", async (code: any, payload: any) => {
       opts.receiveMessage(rlpxs, protocol, code, payload);

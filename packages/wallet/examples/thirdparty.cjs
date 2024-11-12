@@ -1,3 +1,4 @@
+'use strict'
 const { thirdparty } = require('@ethereumjs/wallet')
 
 const wallet = thirdparty.fromQuorumWallet('mySecretQuorumWalletPassphrase', 'myPublicQuorumUserId')

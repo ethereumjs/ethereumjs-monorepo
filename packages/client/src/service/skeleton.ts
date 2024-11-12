@@ -648,17 +648,15 @@ export class Skeleton extends MetaDBManager {
           }
         }
       }
-    } else {
-      if (this.synchronized) {
-        const diff = Date.now() - this.lastSyncDate;
-        if (diff >= this.config.syncedStateRemovalPeriod) {
-          this.synchronized = false;
-          this.config.logger.info(
-            `Cl (skeleton) sync status reset (no chain updates for ${Math.round(
-              diff / 1000,
-            )} seconds).`,
-          );
-        }
+    } else if (this.synchronized) {
+      const diff = Date.now() - this.lastSyncDate;
+      if (diff >= this.config.syncedStateRemovalPeriod) {
+        this.synchronized = false;
+        this.config.logger.info(
+          `Cl (skeleton) sync status reset (no chain updates for ${Math.round(
+            diff / 1000,
+          )} seconds).`,
+        );
       }
     }
 
@@ -1036,10 +1034,7 @@ export class Skeleton extends MetaDBManager {
    * Writes skeleton blocks to the db by number
    * @returns number of blocks saved
    */
-  async putBlocks(
-    blocks: Block[],
-    skipForwardFill: boolean = false,
-  ): Promise<number> {
+  async putBlocks(blocks: Block[], skipForwardFill = false): Promise<number> {
     return this.runWithLock<number>(async () => {
       // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
@@ -1267,7 +1262,7 @@ export class Skeleton extends MetaDBManager {
   /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
-  async fillCanonicalChain(skipUpdateEmit: boolean = false) {
+  async fillCanonicalChain(skipUpdateEmit = false) {
     if (this.filling) return;
     this.filling = true;
 
@@ -1316,7 +1311,11 @@ export class Skeleton extends MetaDBManager {
         // This can happen
         //   i) Only if canonicalHeadReset was flagged on causing skeleton to change its tail canonicality
         // Else we should back step and fetch again as it indicates some concurrency/db errors
-        if (!this.status.canonicalHeadReset) {
+        if (this.status.canonicalHeadReset) {
+          this.config.logger.debug(
+            `fillCanonicalChain block number=${number} not found canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`,
+          );
+        } else {
           this.config.logger.debug(
             `fillCanonicalChain block number=${number} not found, backStepping...`,
           );
@@ -1325,10 +1324,6 @@ export class Skeleton extends MetaDBManager {
             // has not been flagged or else the chain tail has already been reset by sethead
             await this.backStep(number);
           });
-        } else {
-          this.config.logger.debug(
-            `fillCanonicalChain block number=${number} not found canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`,
-          );
         }
         break;
       }
@@ -1363,15 +1358,15 @@ export class Skeleton extends MetaDBManager {
           if (errorMsg.includes("block") && errorMsg.includes("not found")) {
             // see if backstepping is required ot this is just canonicalHeadReset
             await this.runWithLock<void>(async () => {
-              if (!this.status.canonicalHeadReset) {
+              if (this.status.canonicalHeadReset) {
+                this.config.logger.debug(
+                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`,
+                );
+              } else {
                 this.config.logger.debug(
                   `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`,
                 );
                 await this.backStep(number);
-              } else {
-                this.config.logger.debug(
-                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`,
-                );
               }
             });
           } else {
@@ -1481,7 +1476,7 @@ export class Skeleton extends MetaDBManager {
    */
   private async putBlock(
     block: Block,
-    onlyUnfinalized: boolean = false,
+    onlyUnfinalized = false,
   ): Promise<boolean> {
     // Serialize the block with its hardfork so that its easy to load the block latter
     const rlp = this.serialize({
@@ -1555,7 +1550,7 @@ export class Skeleton extends MetaDBManager {
    */
   async getBlockByHash(
     hash: Uint8Array,
-    onlyCanonical: boolean = false,
+    onlyCanonical = false,
   ): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash);
     if (number) {
@@ -1698,14 +1693,12 @@ export class Skeleton extends MetaDBManager {
 
     if (peers === undefined || peers === 0) {
       this.lastsyncedAt = 0;
-    } else {
-      if (
-        status === "SYNCING" &&
-        lastStatus !== undefined &&
-        (lastStatus !== status || this.lastsyncedAt === 0)
-      ) {
-        this.lastsyncedAt = Date.now();
-      }
+    } else if (
+      status === "SYNCING" &&
+      lastStatus !== undefined &&
+      (lastStatus !== status || this.lastsyncedAt === 0)
+    ) {
+      this.lastsyncedAt = Date.now();
     }
 
     if (status !== "EXECUTING") {
@@ -1722,10 +1715,8 @@ export class Skeleton extends MetaDBManager {
 
     if (status !== "SYNCED") {
       this.syncedchain = 0;
-    } else {
-      if (this.syncedchain === 0) {
-        this.syncedchain = Date.now();
-      }
+    } else if (this.syncedchain === 0) {
+      this.syncedchain = Date.now();
     }
 
     if (fetching === false) {
@@ -1737,9 +1728,7 @@ export class Skeleton extends MetaDBManager {
       this.lastfetched = subchain0.tail;
     }
 
-    if (!this.filling) {
-      this.lastfilledAt = 0;
-    } else {
+    if (this.filling) {
       if (
         this.lastfilledAt === 0 ||
         this.lastfilled !== this.chain.blocks.height
@@ -1747,6 +1736,8 @@ export class Skeleton extends MetaDBManager {
         this.lastfilledAt = Date.now();
       }
       this.lastfilled = this.chain.blocks.height;
+    } else {
+      this.lastfilledAt = 0;
     }
 
     let extraStatus;
@@ -1787,31 +1778,26 @@ export class Skeleton extends MetaDBManager {
               ? "filling stalled?"
               : "filling";
           extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`;
+        } else if (fetching === true) {
+          scenario =
+            Date.now() - this.lastfetchedAt > STALE_WINDOW
+              ? "backfill stalled?"
+              : "backfilling";
+          extraStatus = ` (${scenario} tail=${subchain0.tail} | el=${this.chain.blocks.height} cl=${subchain0?.head})`;
         } else {
-          if (fetching === true) {
-            scenario =
-              Date.now() - this.lastfetchedAt > STALE_WINDOW
-                ? "backfill stalled?"
-                : "backfilling";
-            extraStatus = ` (${scenario} tail=${subchain0.tail} | el=${this.chain.blocks.height} cl=${subchain0?.head})`;
+          if (subchain0 === undefined) {
+            scenario = "awaiting fcu";
+          } else if (peers === undefined || peers === 0) {
+            scenario = "awaiting peers";
+          } else if (Date.now() - this.lastFcuTime > STALE_WINDOW) {
+            scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`;
           } else {
-            if (subchain0 === undefined) {
-              scenario = "awaiting fcu";
-            } else if (peers === undefined || peers === 0) {
-              scenario = "awaiting peers";
-            } else {
-              if (Date.now() - this.lastFcuTime > STALE_WINDOW) {
-                scenario =
-                  this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`;
-              } else {
-                scenario =
-                  Date.now() - this.lastsyncedAt > STALE_WINDOW
-                    ? `sync stalled?`
-                    : `awaiting sync`;
-              }
-            }
-            extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`;
+            scenario =
+              Date.now() - this.lastsyncedAt > STALE_WINDOW
+                ? `sync stalled?`
+                : `awaiting sync`;
           }
+          extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`;
         }
         break;
 
@@ -1855,61 +1841,56 @@ export class Skeleton extends MetaDBManager {
 
         if (vmexecution?.started === true) {
           vmlogInfo = `${vmlogInfo} executing=${vmexecution?.running}`;
+        } else if (snapsync === undefined) {
+          snapLogInfo = `snapsync=false`;
         } else {
-          if (snapsync === undefined) {
-            snapLogInfo = `snapsync=false`;
-          } else {
-            const { snapTargetHeight, snapTargetRoot, snapTargetHash } =
-              snapsync;
-            if (snapsync.done === true) {
-              snapLogInfo = `snapsync=synced height=${snapTargetHeight} hash=${short(
-                snapTargetHash ?? "na",
-              )} root=${short(snapTargetRoot ?? "na")}`;
-            } else if (snapsync.syncing) {
-              const accountsDone = formatBigDecimal(
-                snapsync.accountFetcher.first * BIGINT_100,
-                BIGINT_2EXP256,
-                BIGINT_100,
-              );
-              const storageReqsDone = formatBigDecimal(
-                snapsync.storageFetcher.first * BIGINT_100,
-                snapsync.storageFetcher.count,
-                BIGINT_100,
-              );
-              const codeReqsDone = formatBigDecimal(
-                snapsync.byteCodeFetcher.first * BIGINT_100,
-                snapsync.byteCodeFetcher.count,
-                BIGINT_100,
-              );
+          const { snapTargetHeight, snapTargetRoot, snapTargetHash } = snapsync;
+          if (snapsync.done === true) {
+            snapLogInfo = `snapsync=synced height=${snapTargetHeight} hash=${short(
+              snapTargetHash ?? "na",
+            )} root=${short(snapTargetRoot ?? "na")}`;
+          } else if (snapsync.syncing) {
+            const accountsDone = formatBigDecimal(
+              snapsync.accountFetcher.first * BIGINT_100,
+              BIGINT_2EXP256,
+              BIGINT_100,
+            );
+            const storageReqsDone = formatBigDecimal(
+              snapsync.storageFetcher.first * BIGINT_100,
+              snapsync.storageFetcher.count,
+              BIGINT_100,
+            );
+            const codeReqsDone = formatBigDecimal(
+              snapsync.byteCodeFetcher.first * BIGINT_100,
+              snapsync.byteCodeFetcher.count,
+              BIGINT_100,
+            );
 
-              const snapprogress = `accounts=${accountsDone}% storage=${storageReqsDone}% of ${snapsync.storageFetcher.count} codes=${codeReqsDone}% of ${snapsync.byteCodeFetcher.count}`;
+            const snapprogress = `accounts=${accountsDone}% storage=${storageReqsDone}% of ${snapsync.storageFetcher.count} codes=${codeReqsDone}% of ${snapsync.byteCodeFetcher.count}`;
 
-              let stage = "snapsync=??";
-              stage = `snapsync=accounts`;
-              // move the stage along
-              if (snapsync.accountFetcher.done === true) {
-                stage = `snapsync=storage&codes`;
-              }
-              if (
-                snapsync.storageFetcher.done === true &&
-                snapsync.byteCodeFetcher.done === true
-              ) {
-                stage = `snapsync=trienodes`;
-              }
-              if (snapsync.trieNodeFetcher.done === true) {
-                stage = `finished`;
-              }
-
-              snapLogInfo = `${stage} ${snapprogress} (hash=${short(
-                snapTargetHash ?? "na",
-              )} root=${short(snapTargetRoot ?? "na")})`;
-            } else {
-              if (this.synchronized) {
-                snapLogInfo = `snapsync=??`;
-              } else {
-                snapLogInfo = `snapsync awaiting cl synchronization`;
-              }
+            let stage = "snapsync=??";
+            stage = `snapsync=accounts`;
+            // move the stage along
+            if (snapsync.accountFetcher.done === true) {
+              stage = `snapsync=storage&codes`;
             }
+            if (
+              snapsync.storageFetcher.done === true &&
+              snapsync.byteCodeFetcher.done === true
+            ) {
+              stage = `snapsync=trienodes`;
+            }
+            if (snapsync.trieNodeFetcher.done === true) {
+              stage = `finished`;
+            }
+
+            snapLogInfo = `${stage} ${snapprogress} (hash=${short(
+              snapTargetHash ?? "na",
+            )} root=${short(snapTargetRoot ?? "na")})`;
+          } else if (this.synchronized) {
+            snapLogInfo = `snapsync=??`;
+          } else {
+            snapLogInfo = `snapsync awaiting cl synchronization`;
           }
         }
 

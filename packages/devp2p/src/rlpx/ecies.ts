@@ -77,8 +77,8 @@ export class ECIES {
   protected _remoteNonce: Uint8Array | null = null;
   protected _initMsg: Uint8Array | null | undefined = null;
   protected _remoteInitMsg: Uint8Array | null = null;
-  protected _gotEIP8Auth: boolean = false;
-  protected _gotEIP8Ack: boolean = false;
+  protected _gotEIP8Auth = false;
+  protected _gotEIP8Ack = false;
   protected _ingressAes: Decipher | null = null;
   protected _egressAes: Decipher | null = null;
   protected _ingressMac: MAC | null = null;
@@ -141,10 +141,10 @@ export class ECIES {
       .digest(); // MAC key
 
     // encrypt
-    const IV = getRandomBytesSync(16);
-    const cipher = crypto.createCipheriv("aes-128-ctr", ekey, IV);
+    const iv = getRandomBytesSync(16);
+    const cipher = crypto.createCipheriv("aes-128-ctr", ekey, iv);
     const encryptedData = Uint8Array.from(cipher.update(data));
-    const dataIV = concatBytes(IV, encryptedData);
+    const dataIV = concatBytes(iv, encryptedData);
 
     // create tag
     if (!sharedMacData) {
@@ -195,9 +195,9 @@ export class ECIES {
     assertEq(_tag, tag, "should have valid tag", debug);
 
     // decrypt data
-    const IV = dataIV.subarray(0, 16);
+    const iv = dataIV.subarray(0, 16);
     const encryptedData = dataIV.subarray(16);
-    const decipher = crypto.createDecipheriv("aes-128-ctr", ekey, IV);
+    const decipher = crypto.createDecipheriv("aes-128-ctr", ekey, iv);
     return Uint8Array.from(decipher.update(encryptedData));
   }
 
@@ -209,7 +209,7 @@ export class ECIES {
     const hNonce = this._keccakFunction(nonceMaterial);
 
     if (!this._ephemeralSharedSecret) return;
-    const IV = new Uint8Array(16).fill(0x00);
+    const iv = new Uint8Array(16).fill(0x00);
     const sharedSecret = this._keccakFunction(
       concatBytes(this._ephemeralSharedSecret, hNonce),
     );
@@ -217,8 +217,8 @@ export class ECIES {
     const aesSecret = this._keccakFunction(
       concatBytes(this._ephemeralSharedSecret, sharedSecret),
     );
-    this._ingressAes = crypto.createDecipheriv("aes-256-ctr", aesSecret, IV);
-    this._egressAes = crypto.createDecipheriv("aes-256-ctr", aesSecret, IV);
+    this._ingressAes = crypto.createDecipheriv("aes-256-ctr", aesSecret, iv);
+    this._egressAes = crypto.createDecipheriv("aes-256-ctr", aesSecret, iv);
 
     const macSecret = this._keccakFunction(
       concatBytes(this._ephemeralSharedSecret, aesSecret),
@@ -289,7 +289,14 @@ export class ECIES {
     let remotePublicKey = null;
     let nonce = null;
 
-    if (!this._gotEIP8Auth) {
+    if (this._gotEIP8Auth) {
+      const decoded = unstrictDecode(decrypted) as Uint8Array[];
+
+      signature = decoded[0].subarray(0, 64);
+      recoveryId = decoded[0][64];
+      remotePublicKey = id2pk(decoded[1]);
+      nonce = decoded[2];
+    } else {
       assertEq(decrypted.length, 194, "invalid packet length", debug);
 
       signature = decrypted.subarray(0, 64);
@@ -297,13 +304,6 @@ export class ECIES {
       heId = decrypted.subarray(65, 97); // 32 bytes
       remotePublicKey = id2pk(decrypted.subarray(97, 161));
       nonce = decrypted.subarray(161, 193);
-    } else {
-      const decoded = unstrictDecode(decrypted) as Uint8Array[];
-
-      signature = decoded[0].subarray(0, 64);
-      recoveryId = decoded[0][64];
-      remotePublicKey = id2pk(decoded[1]);
-      nonce = decoded[2];
     }
 
     // parse packet
@@ -393,17 +393,17 @@ export class ECIES {
     let remoteEphemeralPublicKey = null;
     let remoteNonce = null;
 
-    if (!this._gotEIP8Ack) {
+    if (this._gotEIP8Ack) {
+      const decoded = unstrictDecode(decrypted) as Uint8Array[];
+
+      remoteEphemeralPublicKey = id2pk(decoded[0]);
+      remoteNonce = decoded[1];
+    } else {
       assertEq(decrypted.length, 97, "invalid packet length", debug);
       assertEq(decrypted[96], 0, "invalid postfix", debug);
 
       remoteEphemeralPublicKey = id2pk(decrypted.subarray(0, 64));
       remoteNonce = decrypted.subarray(64, 96);
-    } else {
-      const decoded = unstrictDecode(decrypted) as Uint8Array[];
-
-      remoteEphemeralPublicKey = id2pk(decoded[0]);
-      remoteNonce = decoded[1];
     }
 
     // parse packet

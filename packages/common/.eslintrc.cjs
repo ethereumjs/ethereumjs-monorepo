@@ -1,3 +1,4 @@
+'use strict'
 module.exports = {
   extends: '../../config/eslint.cjs',
   parserOptions: {

@@ -76,7 +76,7 @@ describe("sharding/eip4844 hardfork tests", async () => {
     const eth2res = await (
       await fetch("http://127.0.0.1:9596/eth/v1/beacon/headers")
     ).json();
-    const start = parseInt(eth2res.data[0].header.message.slot) - 1;
+    const start = Number.parseInt(eth2res.data[0].header.message.slot) - 1;
     let eth2kzgs;
     for (let i = 0; i < 5; i++) {
       const res = await (

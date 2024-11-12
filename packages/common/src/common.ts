@@ -107,12 +107,12 @@ export class Common {
    */
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
-      if (!(eip in this._params)) {
-        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)); // copy
-      } else {
+      if (eip in this._params) {
         this._params[eip] = JSON.parse(
           JSON.stringify({ ...this._params[eip], ...params[eip] }),
         ); // copy
+      } else {
+        this._params[eip] = JSON.parse(JSON.stringify(paramsConfig)); // copy
       }
     }
 

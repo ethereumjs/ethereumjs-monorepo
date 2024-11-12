@@ -366,7 +366,7 @@ describe(method, () => {
     const rpc = getRPCClient(server);
     const res = await rpc.request(method, ["0x1", "latest", [50, 60]]);
     assert.equal(
-      parseInt(res.result.reward[0][0]),
+      Number.parseInt(res.result.reward[0][0]),
       0,
       "Should return 0 for empty block reward percentiles",
     );

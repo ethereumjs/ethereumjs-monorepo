@@ -155,7 +155,7 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict
 
 // KDF
 
-const enum KDFFunctions {
+enum KDFFunctions {
   PBKDF = 'pbkdf2',
   Scrypt = 'scrypt',
 }

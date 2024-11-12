@@ -141,8 +141,8 @@ describe(`valid verkle network setup`, async () => {
     }
 
     const rangeSplit = numberOrRange.split("..");
-    const startSlot = parseInt(rangeSplit[0]);
-    const endSlot = parseInt(rangeSplit[1] ?? rangeSplit[0]);
+    const startSlot = Number.parseInt(rangeSplit[0]);
+    const endSlot = Number.parseInt(rangeSplit[1] ?? rangeSplit[0]);
     let parent = await fetchExecutionPayload(
       process.env.PEER_BEACON_URL,
       startSlot - 1,

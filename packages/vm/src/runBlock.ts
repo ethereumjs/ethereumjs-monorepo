@@ -191,10 +191,8 @@ export async function runBlock(
         throw Error(`Verkle proof verification failed`);
       }
     }
-  } else {
-    if (typeof stateManager.initVerkleExecutionWitness === "function") {
-      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`);
-    }
+  } else if (typeof stateManager.initVerkleExecutionWitness === "function") {
+    throw Error(`StatelessVerkleStateManager can't execute merkle blocks`);
   }
 
   // check for DAO support and if we should apply the DAO fork

@@ -1,3 +1,4 @@
+'use strict'
 const { Wallet } = require('@ethereumjs/wallet')
 
 const wallet = Wallet.generate()

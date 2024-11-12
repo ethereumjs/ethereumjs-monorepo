@@ -82,7 +82,7 @@ export class StorageFetcher extends Fetcher<
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[];
 
-  accountToHighestKnownHash: Map<String, Uint8Array>;
+  accountToHighestKnownHash: Map<string, Uint8Array>;
 
   /**
    * Create new storage fetcher
@@ -100,7 +100,7 @@ export class StorageFetcher extends Fetcher<
       this.storageRequests.length,
     );
 
-    this.accountToHighestKnownHash = new Map<String, Uint8Array>();
+    this.accountToHighestKnownHash = new Map<string, Uint8Array>();
     this.debug = debugDefault("client:fetcher:storage");
     if (this.storageRequests.length > 0) {
       const fullJob = {
@@ -397,10 +397,7 @@ export class StorageFetcher extends Fetcher<
           // single account requests should check if task range is satisfied since origin and limit
           // are being respected
           if (task.multi === false) {
-            if (!hasRightElement) {
-              // all data has been fetched for account storage trie
-              completed = true;
-            } else {
+            if (hasRightElement) {
               if (this.isMissingRightRange(limit, rangeResult)) {
                 this.DEBUG &&
                   this.debug(
@@ -412,6 +409,9 @@ export class StorageFetcher extends Fetcher<
               } else {
                 completed = true;
               }
+            } else {
+              // all data has been fetched for account storage trie
+              completed = true;
             }
             return Object.assign([], [rangeResult.slots], { completed });
           }

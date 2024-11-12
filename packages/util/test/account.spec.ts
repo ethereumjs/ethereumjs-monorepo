@@ -247,7 +247,7 @@ describe("Account", () => {
 
 describe("Utility Functions", () => {
   it("isValidPrivate", () => {
-    const SECP256K1_N = BigInt(
+    const secp256k1N = BigInt(
       "0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141",
     );
 
@@ -280,17 +280,17 @@ describe("Utility Functions", () => {
     );
 
     assert.notOk(
-      isValidPrivate(hexToBytes(`0x${SECP256K1_N.toString(16)}`)),
+      isValidPrivate(hexToBytes(`0x${secp256k1N.toString(16)}`)),
       "should fail on invalid curve (== N)",
     );
 
     assert.notOk(
-      isValidPrivate(hexToBytes(`0x${(SECP256K1_N + BigInt(1)).toString(16)}`)),
+      isValidPrivate(hexToBytes(`0x${(secp256k1N + BigInt(1)).toString(16)}`)),
       "should fail on invalid curve (>= N)",
     );
 
     assert.ok(
-      isValidPrivate(hexToBytes(`0x${(SECP256K1_N - BigInt(1)).toString(16)}`)),
+      isValidPrivate(hexToBytes(`0x${(secp256k1N - BigInt(1)).toString(16)}`)),
       "should work otherwise (< N)",
     );
   });
@@ -425,7 +425,7 @@ describe("Utility Functions", () => {
     );
 
     assert.throws(
-      function () {
+      () => {
         importPublic((<unknown>pubKey) as Uint8Array);
       },
       undefined,
@@ -461,7 +461,7 @@ describe("Utility Functions", () => {
       "0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d",
     );
     assert.throws(
-      function () {
+      () => {
         publicToAddress(pubKey, true);
       },
       undefined,
@@ -473,7 +473,7 @@ describe("Utility Functions", () => {
       "0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744",
     );
     assert.throws(
-      function () {
+      () => {
         publicToAddress(pubKey);
       },
       undefined,
@@ -484,7 +484,7 @@ describe("Utility Functions", () => {
     pubKey =
       "0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d" as any;
     assert.throws(
-      function () {
+      () => {
         publicToAddress(pubKey);
       },
       undefined,
@@ -510,7 +510,7 @@ describe("Utility Functions", () => {
       "0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a",
     );
     assert.throws(
-      function () {
+      () => {
         privateToPublic(privateKey);
       },
       undefined,
@@ -522,7 +522,7 @@ describe("Utility Functions", () => {
       "0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c",
     );
     assert.throws(
-      function () {
+      () => {
         privateToPublic(privateKey);
       },
       undefined,
@@ -602,7 +602,7 @@ describe("Utility Functions", () => {
   it("generateAddress wt.testh non-buffer inputs", () => {
     // cspell:enable
     assert.throws(
-      function () {
+      () => {
         generateAddress(
           (<unknown>"0x990ccf8a0de58091c028d6ff76bb235ee67c1c39") as Uint8Array,
           toBytes(0),
@@ -614,7 +614,7 @@ describe("Utility Functions", () => {
     );
 
     assert.throws(
-      function () {
+      () => {
         generateAddress(
           toBytes("0x990ccf8a0de58091c028d6ff76bb235ee67c1c39"),
           (<unknown>0) as Uint8Array,
@@ -646,7 +646,7 @@ describe("Utility Functions", () => {
     const { address, salt, initCode } = eip1404ExamplesData[0];
 
     assert.throws(
-      function () {
+      () => {
         generateAddress2(
           (<unknown>address) as Uint8Array,
           hexToBytes(salt as PrefixedHexString),
@@ -659,7 +659,7 @@ describe("Utility Functions", () => {
     );
 
     assert.throws(
-      function () {
+      () => {
         generateAddress2(
           hexToBytes(address as PrefixedHexString),
           (<unknown>salt) as Uint8Array,
@@ -672,7 +672,7 @@ describe("Utility Functions", () => {
     );
 
     assert.throws(
-      function () {
+      () => {
         generateAddress2(
           hexToBytes(address as PrefixedHexString),
           hexToBytes(salt as PrefixedHexString),
@@ -800,7 +800,7 @@ describe("Utility Functions", () => {
 
     it("input format", () => {
       assert.throws(
-        function () {
+        () => {
           toChecksumAddress(
             "52908400098527886E0F7030069857D2E4169EE7".toLowerCase(),
           );
@@ -811,7 +811,7 @@ describe("Utility Functions", () => {
       );
 
       assert.throws(
-        function () {
+        () => {
           toChecksumAddress(
             "0xde709f2102306220921060314715629080e2fb77",
             "1234" as any,
@@ -842,13 +842,16 @@ describe("Utility Functions", () => {
           for (const addr of addresses) {
             assert.ok(isValidChecksumAddress(addr, Number(chainId)));
             assert.ok(
-              isValidChecksumAddress(addr, intToBytes(parseInt(chainId))),
+              isValidChecksumAddress(
+                addr,
+                intToBytes(Number.parseInt(chainId)),
+              ),
             );
             assert.ok(isValidChecksumAddress(addr, BigInt(chainId)));
             assert.ok(
               isValidChecksumAddress(
                 addr,
-                `0x${padToEven(intToHex(parseInt(chainId)).slice(2))}`,
+                `0x${padToEven(intToHex(Number.parseInt(chainId)).slice(2))}`,
               ),
             );
           }

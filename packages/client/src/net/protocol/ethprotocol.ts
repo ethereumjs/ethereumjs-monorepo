@@ -169,7 +169,7 @@ export class EthProtocol extends Protocol {
           typeof block === "bigint" ? bigIntToUnpaddedBytes(block) : block,
           intToUnpaddedBytes(max),
           intToUnpaddedBytes(skip),
-          intToUnpaddedBytes(!reverse ? 0 : 1),
+          intToUnpaddedBytes(reverse ? 1 : 0),
         ],
       ],
       decode: ([reqId, [block, max, skip, reverse]]: any) => ({

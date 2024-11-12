@@ -121,11 +121,11 @@ export class Blockchain implements BlockchainInterface {
     if (opts.common) {
       this.common = opts.common;
     } else {
-      const DEFAULT_CHAIN = Mainnet;
-      const DEFAULT_HARDFORK = Hardfork.Chainstart;
+      const defaultChain = Mainnet;
+      const defaultHardfork = Hardfork.Chainstart;
       this.common = new Common({
-        chain: DEFAULT_CHAIN,
-        hardfork: DEFAULT_HARDFORK,
+        chain: defaultChain,
+        hardfork: defaultHardfork,
       });
     }
 
@@ -237,10 +237,7 @@ export class Blockchain implements BlockchainInterface {
     });
   }
 
-  private async getHead(
-    name: string,
-    returnUndefinedIfNotSet: boolean = false,
-  ) {
+  private async getHead(name: string, returnUndefinedIfNotSet = false) {
     const headHash = this._heads[name];
     if (headHash === undefined && returnUndefinedIfNotSet) {
       return undefined;

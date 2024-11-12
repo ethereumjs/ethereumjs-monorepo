@@ -61,7 +61,7 @@ export class VMExecution extends Execution {
   public vm!: VM;
   public merkleVM: VM | undefined;
   public verkleVM: VM | undefined;
-  public hardfork: string = "";
+  public hardfork = "";
   /* Whether canonical chain execution has stayed valid or ran into an invalid block */
   public chainStatus: ChainStatus | null = null;
 
@@ -229,7 +229,7 @@ export class VMExecution extends Execution {
 
   async transitionToVerkle(
     merkleStateRoot: Uint8Array,
-    assignToVM: boolean = true,
+    assignToVM = true,
   ): Promise<void> {
     if (typeof this.vm.stateManager.initVerkleExecutionWitness === "function") {
       return;
@@ -387,8 +387,8 @@ export class VMExecution extends Execution {
   async runWithoutSetHead(
     opts: RunBlockOpts & { parentBlock?: Block },
     receipts?: TxReceipt[],
-    blocking: boolean = false,
-    skipBlockchain: boolean = false,
+    blocking = false,
+    skipBlockchain = false,
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown)
@@ -1119,12 +1119,12 @@ export class VMExecution extends Execution {
           }
         }
         if (count === 0) {
-          if (!allTxs) {
+          if (allTxs) {
+            this.config.logger.info(`Block has 0 transactions (no execution)`);
+          } else {
             this.config.logger.warn(
               `Block number ${first} contains no txs with provided hashes`,
             );
-          } else {
-            this.config.logger.info(`Block has 0 transactions (no execution)`);
           }
         }
       }

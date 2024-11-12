@@ -155,9 +155,9 @@ export class AccountFetcher extends Fetcher<
     try {
       // in next iterations we might make this dynamic depending on how far off we are from the
       // vmhead
-      const accountFetch = !this.fetcherDoneFlags.accountFetcher.done
-        ? super.blockingFetch()
-        : null;
+      const accountFetch = this.fetcherDoneFlags.accountFetcher.done
+        ? null
+        : super.blockingFetch();
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(
         `Snapsync: running accountFetch=${accountFetch !== null}`,
@@ -176,22 +176,22 @@ export class AccountFetcher extends Fetcher<
         throw Error("accountFetcher finished without completing the sync");
       }
 
-      const storageFetch = !this.fetcherDoneFlags.storageFetcher.done
-        ? this.storageFetcher.blockingFetch().then(
+      const storageFetch = this.fetcherDoneFlags.storageFetcher.done
+        ? null
+        : this.storageFetcher.blockingFetch().then(
             () => this.snapFetchersCompleted(StorageFetcher),
             () => {
               throw Error("Snap fetcher failed to exit");
             },
-          )
-        : null;
-      const codeFetch = !this.fetcherDoneFlags.byteCodeFetcher.done
-        ? this.byteCodeFetcher.blockingFetch().then(
+          );
+      const codeFetch = this.fetcherDoneFlags.byteCodeFetcher.done
+        ? null
+        : this.byteCodeFetcher.blockingFetch().then(
             () => this.snapFetchersCompleted(ByteCodeFetcher),
             () => {
               throw Error("Snap fetcher failed to exit");
             },
-          )
-        : null;
+          );
 
       this.config.superMsg(
         `Snapsync: running storageFetch=${storageFetch !== null} codeFetch=${codeFetch !== null}`,

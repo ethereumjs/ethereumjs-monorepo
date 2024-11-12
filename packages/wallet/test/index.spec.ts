@@ -82,7 +82,7 @@ describe('Wallet tests', () => {
     )
 
     assert.throws(
-      function () {
+      () => {
         Wallet.fromPublicKey(
           hexToBytes('0x030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d'),
         )
@@ -105,7 +105,7 @@ describe('Wallet tests', () => {
     )
 
     assert.throws(
-      function () {
+      () => {
         Wallet.fromPublicKey(pubKey).getPrivateKey()
       },
       'This is a public key only wallet',
@@ -223,7 +223,7 @@ describe('Wallet tests', () => {
         .toString(radix)
         .padStart(keys.length, '0')
         .split('')
-        .map((v) => parseInt(v, 10))
+        .map((v) => Number.parseInt(v, 10))
       const obj: any = {}
       ;(zip(selectors, keys) as [number, string][]).forEach(([sel, k]: [number, string]) => {
         if ((objs as any)[sel].hasOwnProperty(k) === true) {
@@ -777,20 +777,20 @@ describe('Wallet tests', () => {
 
   describe('.fromEthSale()', () => {
     // Generated using https://github.com/ethereum/pyethsaletool/ [4afd19ad60cee8d09b645555180bc3a7c8a25b67]
-    it('should work with short password (8 characters)', async function () {
+    it('should work with short password (8 characters)', async () => {
       const json =
         '{"encseed": "81ffdfaf2736310ce87df268b53169783e8420b98f3405fb9364b96ac0feebfb62f4cf31e0d25f1ded61f083514dd98c3ce1a14a24d7618fd513b6d97044725c7d2e08a7d9c2061f2c8a05af01f06755c252f04cab20fee2a4778130440a9344", "ethaddr": "22f8c5dd4a0a9d59d580667868df2da9592ab292", "email": "hello@ethereum.org", "btcaddr": "1DHW32MFwHxU2nk2SLAQq55eqFotT9jWcq"}'
       const wallet = await Wallet.fromEthSale(json, 'testtest')
       assert.deepEqual(wallet.getAddressString(), '0x22f8c5dd4a0a9d59d580667868df2da9592ab292')
     }, 30000)
-    it('should work with long password (19 characters)', async function () {
+    it('should work with long password (19 characters)', async () => {
       const json =
         '{"encseed": "0c7e462bd67c6840ed2fa291090b2f46511b798d34492e146d6de148abbccba45d8fcfc06bea2e5b9d6c5d17b51a9a046c1054a032f24d96a56614a14dcd02e3539685d7f09b93180067160f3a9db648ccca610fc2f983fc65bf973304cbf5b6", "ethaddr": "c90b232231c83b462723f473b35cb8b1db868108", "email": "thisisalongpassword@test.com", "btcaddr": "1Cy2fN2ov5BrMkzgrzE34YadCH2yLMNkTE"}'
       const wallet = await Wallet.fromEthSale(json, 'thisisalongpassword')
       assert.deepEqual(wallet.getAddressString(), '0xc90b232231c83b462723f473b35cb8b1db868108')
     }, 30000)
     // From https://github.com/ryepdx/pyethrecover/blob/master/test_wallets/ico.json
-    it("should work with pyethrecover's wallet", async function () {
+    it("should work with pyethrecover's wallet", async () => {
       const json =
         '{"encseed": "8b4001bf61a10760d8e0876fb791e4ebeb85962f565c71697c789c23d1ade4d1285d80b2383ae5fc419ecf5319317cd94200b65df0cc50d659cbbc4365fc08e8", "ethaddr": "83b6371ba6bd9a47f82a7c4920835ef4be08f47b", "bkp": "9f566775e56486f69413c59f7ef923bc", "btcaddr": "1Nzg5v6uRCAa6Fk3CUU5qahWxEDZdZ1pBm"}'
       const wallet = await Wallet.fromEthSale(json, 'password123')
@@ -804,7 +804,7 @@ describe('Wallet tests', () => {
     //   const wallet = Thirdparty.fromEtherWallet(etherWalletUnencrypted)
     //   assert.deepEqual(wallet.getAddressString(), '0x9d6abd11d36cc20d4836c25967f1d9efe6b1a27c')
     // })
-    it('should work with encrypted input', async function () {
+    it('should work with encrypted input', async () => {
       const etherWalletEncrypted =
         '{"address":"0x9d6abd11d36cc20d4836c25967f1d9efe6b1a27c","encrypted":true,"locked":true,"hash":"b7a6621e8b125a17234d3e5c35522696a84134d98d07eab2479d020a8613c4bd","private":"U2FsdGVkX1/hGPYlTZYGhzdwvtkoZfkeII4Ga4pSd/Ak373ORnwZE4nf/FFZZFcDTSH1X1+AmewadrW7dqvwr76QMYQVlihpPaFV307hWgKckkG0Mf/X4gJIQQbDPiKdcff9","public":"U2FsdGVkX1/awUDAekZQbEiXx2ct4ugXwgBllY0Hz+IwYkHiEhhxH+obu7AF7PCU2Vq5c0lpCzBUSvk2EvFyt46bw1OYIijw0iOr7fWMJEkz3bfN5mt9pYJIiPzN0gxM8u4mrmqLPUG2SkoZhWz4NOlqRUHZq7Ep6aWKz7KlEpzP9IrvDYwGubci4h+9wsspqtY1BdUJUN59EaWZSuOw1g=="}'
       const wallet = await Thirdparty.fromEtherWallet(etherWalletEncrypted, 'testtest')
@@ -828,7 +828,7 @@ describe('Wallet tests', () => {
 
   it('raw new Wallet() init', () => {
     assert.throws(
-      function () {
+      () => {
         new Wallet(fixturePrivateKeyBytes, fixturePublicKeyBytes)
       },
       'Cannot supply both a private and a public key to the constructor',

@@ -192,7 +192,7 @@ describe("[TxPool]", async () => {
 
   const txA01 = createTx(); // A -> B, nonce: 0, value: 1
   const txA02 = createTx(A, B, 0, 2, 10); // A -> B, nonce: 0, value: 2 (different hash)
-  const txA02_Underpriced = createTx(A, B, 0, 2, 9); // A -> B, nonce: 0, gas price is too low to replace txn
+  const txA02Underpriced = createTx(A, B, 0, 2, 9); // A -> B, nonce: 0, gas price is too low to replace txn
   const txB01 = createTx(B, A); // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5); // B -> A, nonce: 1, value: 5
 
@@ -308,7 +308,9 @@ describe("[TxPool]", async () => {
 
     for (const line of textLines) {
       if (pattern.test(line)) {
-        feeMarketEip1559TransactionCountInPool = parseInt(line.split(" ")[1]);
+        feeMarketEip1559TransactionCountInPool = Number.parseInt(
+          line.split(" ")[1],
+        );
       }
     }
 
@@ -339,7 +341,7 @@ describe("[TxPool]", async () => {
 
   it("announcedTxHashes() -> TX_RETRIEVAL_LIMIT", async () => {
     const { pool } = setup();
-    const TX_RETRIEVAL_LIMIT: number = pool["TX_RETRIEVAL_LIMIT"];
+    const txRetrievalLimit: number = pool["TX_RETRIEVAL_LIMIT"];
 
     pool.open();
     pool.start();
@@ -349,7 +351,7 @@ describe("[TxPool]", async () => {
         getPooledTransactions: (res: any) => {
           assert.equal(
             res["hashes"].length,
-            TX_RETRIEVAL_LIMIT,
+            txRetrievalLimit,
             "should limit to TX_RETRIEVAL_LIMIT",
           );
           return [null, []];
@@ -359,7 +361,7 @@ describe("[TxPool]", async () => {
     const peerPool = new PeerPool({ config });
 
     const hashes = [];
-    for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
+    for (let i = 1; i <= txRetrievalLimit + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
       hashes.push(hexToBytes(`0x${i.toString().padStart(64, "0")}`)); // '0x0000000000000000000000000000000000000000000000000000000000000001',...
     }
@@ -459,7 +461,7 @@ describe("[TxPool]", async () => {
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool);
 
     try {
-      await pool.add(txA02_Underpriced);
+      await pool.add(txA02Underpriced);
       assert.fail("should fail adding underpriced txn to txpool");
     } catch (e: any) {
       assert.ok(
@@ -467,10 +469,10 @@ describe("[TxPool]", async () => {
         "successfully failed adding underpriced txn",
       );
       const poolObject = pool["handled"].get(
-        bytesToUnprefixedHex(txA02_Underpriced.hash()),
+        bytesToUnprefixedHex(txA02Underpriced.hash()),
       );
       assert.equal(poolObject?.error, e, "should have an errored poolObject");
-      const poolTxs = pool.getByHash([txA02_Underpriced.hash()]);
+      const poolTxs = pool.getByHash([txA02Underpriced.hash()]);
       assert.equal(poolTxs.length, 0, `should not be added in pool`);
     }
     assert.equal(pool.pool.size, 1, "pool size 1");
@@ -508,7 +510,7 @@ describe("[TxPool]", async () => {
 
     pool.open();
     pool.start();
-    const txs = [txA01, txA02_Underpriced];
+    const txs = [txA01, txA02Underpriced];
     const peer: any = {
       eth: {
         getPooledTransactions: () => {
@@ -519,7 +521,7 @@ describe("[TxPool]", async () => {
     const peerPool = new PeerPool({ config });
 
     await pool.handleAnnouncedTxHashes(
-      [txA01.hash(), txA02_Underpriced.hash()],
+      [txA01.hash(), txA02Underpriced.hash()],
       peer,
       peerPool,
     );

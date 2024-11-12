@@ -320,7 +320,7 @@ describe("[CLI]", () => {
         assert.ok(message.includes("engine"), "engine ws started");
         await wait(600);
         const client = Client.websocket({ url: "ws://0.0.0.0:" + customPort });
-        (client as any).ws.on("open", async function () {
+        (client as any).ws.on("open", async () => {
           const res = await client.request(
             "engine_exchangeCapabilities",
             [],
@@ -357,7 +357,7 @@ describe("[CLI]", () => {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         await wait(600);
         const client = Client.websocket({ url: "ws://0.0.0.0:" + customPort });
-        (client as any).ws.on("open", async function () {
+        (client as any).ws.on("open", async () => {
           const res = await client.request("web3_clientVersion", [], 2.0);
           assert.ok(res.result.includes("EthereumJS"), "read from WS RPC");
           child.kill();

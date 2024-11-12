@@ -1,257 +1,282 @@
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
-import { Address, createAccount, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { Common, Hardfork, Mainnet } from "@ethereumjs/common";
+import { createLegacyTx } from "@ethereumjs/tx";
+import {
+  Address,
+  createAccount,
+  createAddressFromPrivateKey,
+  hexToBytes,
+} from "@ethereumjs/util";
+import { assert, describe, it } from "vitest";
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from "../../../src/index.js";
 
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from "@ethereumjs/util";
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
-describe('EIP 2929: gas cost tests', () => {
-  const initialGas = BigInt(0xffffffffff)
-  const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
-  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
+describe("EIP 2929: gas cost tests", () => {
+  const initialGas = BigInt(0xffffffffff);
+  const address = new Address(
+    hexToBytes("0x000000000000000000000000636F6E7472616374"),
+  );
+  const senderKey = hexToBytes(
+    "0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109",
+  );
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Berlin,
+    eips: [2929],
+  });
 
-  const runTest = async function (test: any) {
-    let i = 0
-    let currentGas = initialGas
-    const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step, resolve) {
-      const gasUsed = currentGas - step.gasLeft
-      currentGas = step.gasLeft
+  const runTest = async (test: any) => {
+    let i = 0;
+    let currentGas = initialGas;
+    const vm = await createVM({ common });
+    vm.evm.events!.on("step", (step, resolve) => {
+      const gasUsed = currentGas - step.gasLeft;
+      currentGas = step.gasLeft;
 
       if (test.steps.length > 0) {
         assert.equal(
           step.opcode.name,
           test.steps[i].expectedOpcode,
           `Expected Opcode: ${test.steps[i].expectedOpcode}`,
-        )
+        );
 
         // Validates the gas consumption of the (i - 1)th opcode
         // b/c the step event fires before gas is debited.
         // The first opcode of every test should be +/- irrelevant
         // (ex: PUSH) and the last opcode is always STOP
         if (i > 0) {
-          const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
+          const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed);
           assert.equal(
             true,
             gasUsed === expectedGasUsed,
             `Opcode: ${
               test.steps[i - 1].expectedOpcode
             }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,
-          )
+          );
         }
       }
-      i++
-      resolve?.()
-    })
+      i++;
+      resolve?.();
+    });
 
-    await vm.stateManager.putCode(address, hexToBytes(test.code))
+    await vm.stateManager.putCode(address, hexToBytes(test.code));
 
     const unsignedTx = createLegacyTx({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
-    })
+    });
 
-    const tx = unsignedTx.sign(senderKey)
+    const tx = unsignedTx.sign(senderKey);
 
-    const result = await runTx(vm, { tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true });
 
-    const totalGasUsed = initialGas - currentGas
-    assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
-    return result
-  }
+    const totalGasUsed = initialGas - currentGas;
+    assert.equal(
+      true,
+      totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000),
+    ); // Add tx upfront cost.
+    return result;
+  };
 
-  const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
+  const runCodeTest = async (
+    code: PrefixedHexString,
+    expectedGasUsed: bigint,
+  ) => {
     // setup the accounts for this test
     const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+      "0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109",
+    );
+    const contractAddress = new Address(
+      hexToBytes("0x00000000000000000000000000000000000000ff"),
+    );
 
-    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
-    const vm = await createVM({ common })
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Berlin,
+      eips: [2929],
+    });
+    const vm = await createVM({ common });
 
-    await vm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
+    await vm.stateManager.putCode(contractAddress, hexToBytes(code)); // setup the contract code
 
     // setup the call arguments
     const unsignedTx = createLegacyTx({
       gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),
-    })
+    });
 
-    const tx = unsignedTx.sign(privateKey)
+    const tx = unsignedTx.sign(privateKey);
 
-    const address = createAddressFromPrivateKey(privateKey)
-    const initialBalance = BigInt(10) ** BigInt(18)
+    const address = createAddressFromPrivateKey(privateKey);
+    const initialBalance = BigInt(10) ** BigInt(18);
 
-    const account = await vm.stateManager.getAccount(address)
+    const account = await vm.stateManager.getAccount(address);
     await vm.stateManager.putAccount(
       address,
       createAccount({ ...account, balance: initialBalance }),
-    )
+    );
 
-    const result = await runTx(vm, { tx, skipHardForkValidation: true })
+    const result = await runTx(vm, { tx, skipHardForkValidation: true });
 
-    assert.equal(result.totalGasSpent, expectedGasUsed)
-  }
+    assert.equal(result.totalGasSpent, expectedGasUsed);
+  };
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
   // and later checks the same operations twice against some non-precompiles. Those are
   // cheaper second time they are accessed. Lastly, it checks the BALANCE of origin and this.
-  it('should charge for warm address loads correctly', async () => {
+  it("should charge for warm address loads correctly", async () => {
     const test = {
-      code: '0x60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
+      code: "0x60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000",
       totalGasUsed: 8653,
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODEHASH', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODESIZE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'BALANCE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODEHASH', expectedGasUsed: 2600 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODESIZE', expectedGasUsed: 2600 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'BALANCE', expectedGasUsed: 2600 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODEHASH', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'EXTCODESIZE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'BALANCE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'ORIGIN', expectedGasUsed: 2 },
-        { expectedOpcode: 'BALANCE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'ADDRESS', expectedGasUsed: 2 },
-        { expectedOpcode: 'BALANCE', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'STOP', expectedGasUsed: 0 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODEHASH", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODESIZE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "BALANCE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODEHASH", expectedGasUsed: 2600 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODESIZE", expectedGasUsed: 2600 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "BALANCE", expectedGasUsed: 2600 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODEHASH", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "EXTCODESIZE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "BALANCE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "ORIGIN", expectedGasUsed: 2 },
+        { expectedOpcode: "BALANCE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "ADDRESS", expectedGasUsed: 2 },
+        { expectedOpcode: "BALANCE", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "STOP", expectedGasUsed: 0 },
       ],
-    }
+    };
 
-    const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
-  })
+    const result = await runTest(test);
+    assert.equal(undefined, result.execResult.exceptionError);
+  });
 
   // Checks `extcodecopy( 0xff,0,0,0,0)` twice, (should be expensive first time),
   // and then does `extcodecopy( this,0,0,0,0)`.
-  it('should charge for extcodecopy correctly', async () => {
+  it("should charge for extcodecopy correctly", async () => {
     const test = {
-      code: '0x60006000600060ff3c60006000600060ff3c600060006000303c00',
+      code: "0x60006000600060ff3c60006000600060ff3c600060006000303c00",
       totalGasUsed: BigInt(2835),
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(2600) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(100) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
-        { expectedOpcode: 'ADDRESS', expectedGasUsed: BigInt(2) },
-        { expectedOpcode: 'EXTCODECOPY', expectedGasUsed: BigInt(100) },
-        { expectedOpcode: 'STOP', expectedGasUsed: BigInt(0) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "EXTCODECOPY", expectedGasUsed: BigInt(2600) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "EXTCODECOPY", expectedGasUsed: BigInt(100) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "PUSH1", expectedGasUsed: BigInt(3) },
+        { expectedOpcode: "ADDRESS", expectedGasUsed: BigInt(2) },
+        { expectedOpcode: "EXTCODECOPY", expectedGasUsed: BigInt(100) },
+        { expectedOpcode: "STOP", expectedGasUsed: BigInt(0) },
       ],
-    }
+    };
 
-    const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
-  })
+    const result = await runTest(test);
+    assert.equal(undefined, result.execResult.exceptionError);
+  });
 
   // Checks `sload( 0x1)` followed by `sstore(loc: 0x01, val:0x11)`,
   // then 'naked' sstore:`sstore(loc: 0x02, val:0x11)` twice, and `sload(0x2)`, `sload(0x1)`.
-  it('should charge for sload and sstore correctly )', async () => {
+  it("should charge for sload and sstore correctly )", async () => {
     const test = {
-      code: '0x6001545060116001556011600255601160025560025460015400',
+      code: "0x6001545060116001556011600255601160025560025460015400",
       totalGasUsed: 44529,
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SLOAD', expectedGasUsed: 2100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SSTORE', expectedGasUsed: 20000 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SSTORE', expectedGasUsed: 22100 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SSTORE', expectedGasUsed: 100 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SLOAD', expectedGasUsed: 100 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'SLOAD', expectedGasUsed: 100 },
-        { expectedOpcode: 'STOP', expectedGasUsed: 0 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SLOAD", expectedGasUsed: 2100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SSTORE", expectedGasUsed: 20000 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SSTORE", expectedGasUsed: 22100 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SSTORE", expectedGasUsed: 100 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SLOAD", expectedGasUsed: 100 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "SLOAD", expectedGasUsed: 100 },
+        { expectedOpcode: "STOP", expectedGasUsed: 0 },
       ],
-    }
+    };
 
-    const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
-  })
+    const result = await runTest(test);
+    assert.equal(undefined, result.execResult.exceptionError);
+  });
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
   // and `staticcall`s the same account (cheap)
-  it('should charge for pre-compiles and staticcalls correctly', async () => {
+  it("should charge for pre-compiles and staticcalls correctly", async () => {
     const test = {
-      code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
+      code: "0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000",
       totalGasUsed: 2869,
       steps: [
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'CALL', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'CALL', expectedGasUsed: 2600 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'DUP1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
-        { expectedOpcode: 'STATICCALL', expectedGasUsed: 100 },
-        { expectedOpcode: 'POP', expectedGasUsed: 2 },
-        { expectedOpcode: 'STOP', expectedGasUsed: 0 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "CALL", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "CALL", expectedGasUsed: 2600 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "DUP1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "PUSH1", expectedGasUsed: 3 },
+        { expectedOpcode: "STATICCALL", expectedGasUsed: 100 },
+        { expectedOpcode: "POP", expectedGasUsed: 2 },
+        { expectedOpcode: "STOP", expectedGasUsed: 0 },
       ],
-    }
+    };
 
-    const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
-  })
+    const result = await runTest(test);
+    assert.equal(undefined, result.execResult.exceptionError);
+  });
 
-  it('ensure warm addresses/slots are tracked transaction-wide', async () => {
+  it("ensure warm addresses/slots are tracked transaction-wide", async () => {
     // Note: these tests were manually analyzed to check if these are correct.
     // The gas cost has been taken from these tests.
 
@@ -265,18 +290,27 @@ describe('EIP 2929: gas cost tests', () => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('0x60005460003415601357600080808080305AF15B00', BigInt(23369))
+    await runCodeTest(
+      "0x60005460003415601357600080808080305AF15B00",
+      BigInt(23369),
+    );
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('0x341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374))
+    await runCodeTest(
+      "0x341515600D57600054600080FD5B600080808080305AF160005400",
+      BigInt(25374),
+    );
 
     // call to address 0xFFFF..FF
-    const callFF = '6000808080806000195AF1'
+    const callFF = "6000808080806000195AF1";
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(`0x${callFF}60003415601B57600080808080305AF15B00`, BigInt(23909))
+    await runCodeTest(
+      `0x${callFF}60003415601B57600080808080305AF15B00`,
+      BigInt(23909),
+    );
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
       `0x341515601557${callFF}600080FD5B600080808080305AF1${callFF}00`,
       BigInt(26414),
-    )
-  })
-})
+    );
+  });
+});

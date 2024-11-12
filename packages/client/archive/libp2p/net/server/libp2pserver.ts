@@ -1,4 +1,4 @@
-import { PeerId } from "@libp2p/interface-peer-id";
+import type { PeerId } from "@libp2p/interface-peer-id";
 import { multiaddr } from "@multiformats/multiaddr";
 //@ts-nocheck
 // cspell:ignore pnode addrs

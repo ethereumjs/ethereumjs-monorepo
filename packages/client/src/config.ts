@@ -467,7 +467,7 @@ export class Config {
   /** Best known block height */
   public syncTargetHeight?: bigint;
   /** Client is in the process of shutting down */
-  public shutdown: boolean = false;
+  public shutdown = false;
 
   public readonly chainCommon: Common;
   public readonly execCommon: Common;
@@ -652,15 +652,13 @@ export class Config {
           }
         }
       }
-    } else {
-      if (this.synchronized && !this.mine && !this.isSingleNode) {
-        const diff = Date.now() - this.lastSyncDate;
-        if (diff >= this.syncedStateRemovalPeriod) {
-          this.synchronized = false;
-          this.logger.info(
-            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
-          );
-        }
+    } else if (this.synchronized && !this.mine && !this.isSingleNode) {
+      const diff = Date.now() - this.lastSyncDate;
+      if (diff >= this.syncedStateRemovalPeriod) {
+        this.synchronized = false;
+        this.logger.info(
+          `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
+        );
       }
     }
 

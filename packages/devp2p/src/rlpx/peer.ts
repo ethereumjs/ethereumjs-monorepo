@@ -32,7 +32,7 @@ const BASE_PROTOCOL_LENGTH = 16;
 
 const PING_INTERVAL = 15000; // 15 sec * 1000
 
-enum PREFIXES {
+enum Prefixes {
   HELLO = 0x00,
   DISCONNECT = 0x01,
   PING = 0x02,
@@ -255,7 +255,7 @@ export class Peer {
     if (!this._closed) {
       if (
         this._sendMessage(
-          PREFIXES.HELLO,
+          Prefixes.HELLO,
           RLP.encode(payload as never as Uint8Array[]),
         ) === true
       ) {
@@ -281,7 +281,7 @@ export class Peer {
       );
     }
     const data = RLP.encode(reason);
-    if (this._sendMessage(PREFIXES.DISCONNECT, data) !== true) return;
+    if (this._sendMessage(Prefixes.DISCONNECT, data) !== true) return;
 
     this._disconnectReason = reason;
     this._disconnectWe = true;
@@ -304,7 +304,7 @@ export class Peer {
       data = snappy.compress(data);
     }
 
-    if (this._sendMessage(PREFIXES.PING, data) !== true) return;
+    if (this._sendMessage(Prefixes.PING, data) !== true) return;
 
     clearTimeout(this._pingTimeoutId!);
     this._pingTimeoutId = setTimeout(() => {
@@ -327,7 +327,7 @@ export class Peer {
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data);
     }
-    this._sendMessage(PREFIXES.PONG, data);
+    this._sendMessage(Prefixes.PONG, data);
   }
 
   /**
@@ -336,16 +336,14 @@ export class Peer {
   _handleAuth() {
     const bytesCount = this._nextPacketSize;
     const parseData = this._socketData.subarray(0, bytesCount);
-    if (!this._eciesSession["_gotEIP8Auth"]) {
-      if (parseData.subarray(0, 1) === hexToBytes("0x04")) {
-        this._eciesSession.parseAuthPlain(parseData);
-      } else {
-        this._eciesSession["_gotEIP8Auth"] = true;
-        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2;
-        return;
-      }
-    } else {
+    if (this._eciesSession["_gotEIP8Auth"]) {
       this._eciesSession.parseAuthEIP8(parseData);
+    } else if (parseData.subarray(0, 1) === hexToBytes("0x04")) {
+      this._eciesSession.parseAuthPlain(parseData);
+    } else {
+      this._eciesSession["_gotEIP8Auth"] = true;
+      this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2;
+      return;
     }
     this._state = "Header";
     this._nextPacketSize = 32;
@@ -359,24 +357,22 @@ export class Peer {
   _handleAck() {
     const bytesCount = this._nextPacketSize;
     const parseData = this._socketData.subarray(0, bytesCount);
-    if (!this._eciesSession["_gotEIP8Ack"]) {
-      if (parseData.subarray(0, 1) === hexToBytes("0x04")) {
-        this._eciesSession.parseAckPlain(parseData);
-        this.DEBUG &&
-          this._logger(
-            `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-          );
-      } else {
-        this._eciesSession["_gotEIP8Ack"] = true;
-        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2;
-        return;
-      }
-    } else {
+    if (this._eciesSession["_gotEIP8Ack"]) {
       this._eciesSession.parseAckEIP8(parseData);
       this.DEBUG &&
         this._logger(
           `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
         );
+    } else if (parseData.subarray(0, 1) === hexToBytes("0x04")) {
+      this._eciesSession.parseAckPlain(parseData);
+      this.DEBUG &&
+        this._logger(
+          `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+        );
+    } else {
+      this._eciesSession["_gotEIP8Ack"] = true;
+      this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2;
+      return;
     }
     this._state = "Header";
     this._nextPacketSize = 32;
@@ -512,18 +508,18 @@ export class Peer {
    * @param code
    * @param msg
    */
-  _handleMessage(code: PREFIXES, msg: Uint8Array) {
+  _handleMessage(code: Prefixes, msg: Uint8Array) {
     switch (code) {
-      case PREFIXES.HELLO:
+      case Prefixes.HELLO:
         this._handleHello(msg);
         break;
-      case PREFIXES.DISCONNECT:
+      case Prefixes.DISCONNECT:
         this._handleDisconnect(msg);
         break;
-      case PREFIXES.PING:
+      case Prefixes.PING:
         this._handlePing();
         break;
-      case PREFIXES.PONG:
+      case Prefixes.PONG:
         this._handlePong();
         break;
     }
@@ -577,8 +573,8 @@ export class Peer {
     if (code === 0x80) code = 0;
 
     if (
-      code !== PREFIXES.HELLO &&
-      code !== PREFIXES.DISCONNECT &&
+      code !== Prefixes.HELLO &&
+      code !== Prefixes.DISCONNECT &&
       this._hello === null
     ) {
       return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR);
@@ -631,7 +627,7 @@ export class Peer {
         try {
           payload = RLP.decode(payload);
         } catch (e: any) {
-          if (msgCode === PREFIXES.DISCONNECT) {
+          if (msgCode === Prefixes.DISCONNECT) {
             if (compressed) {
               payload = RLP.decode(origPayload);
             } else {
@@ -721,8 +717,8 @@ export class Peer {
     return this._protocols.map((obj) => obj.protocol);
   }
 
-  getMsgPrefix(code: PREFIXES): string {
-    return PREFIXES[code];
+  getMsgPrefix(code: Prefixes): string {
+    return Prefixes[code];
   }
 
   getDisconnectPrefix(code: DISCONNECT_REASON): string {

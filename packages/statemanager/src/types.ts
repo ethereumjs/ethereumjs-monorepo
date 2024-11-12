@@ -1,4 +1,4 @@
-import { type PrefixedHexString } from "@ethereumjs/util";
+import type { PrefixedHexString } from "@ethereumjs/util";
 
 import type { Common } from "@ethereumjs/common";
 import type { MerklePatriciaTrie } from "@ethereumjs/mpt";

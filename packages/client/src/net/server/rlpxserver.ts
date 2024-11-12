@@ -140,8 +140,6 @@ export class RlpxServer extends Server {
    * Bootstrap bootnode and DNS mapped peers from the network
    */
   async bootstrap(): Promise<void> {
-    const self = this;
-
     // Bootnodes
     let promises = this.bootnodes.map((ma) => {
       const { address, port } = ma.nodeAddress();
@@ -157,7 +155,7 @@ export class RlpxServer extends Server {
     if (this.config.discDns) {
       const dnsPeers = (await this.dpt?.getDnsPeers()) ?? [];
       promises = promises.concat(
-        dnsPeers.map((node) => self.dpt!.bootstrap(node)),
+        dnsPeers.map((node) => this.dpt!.bootstrap(node)),
       );
     }
 

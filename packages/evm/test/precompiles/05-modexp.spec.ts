@@ -15,21 +15,21 @@ describe("Precompiles: MODEXP", () => {
   let common: Common;
   let evm: EVM;
   let addressStr: string;
-  let MODEXP: PrecompileFunc;
+  let modexp: PrecompileFunc;
   beforeAll(async () => {
     common = new Common({ chain: Mainnet });
     evm = await createEVM({
       common,
     });
     addressStr = "0000000000000000000000000000000000000005";
-    MODEXP = getActivePrecompiles(common).get(addressStr)!;
+    modexp = getActivePrecompiles(common).get(addressStr)!;
   });
 
   let n = 0;
   for (const [input, expect] of fuzzerTests) {
     n++;
     it(`MODEXP edge cases (issue 3168) - case ${n}`, async () => {
-      const result = await MODEXP({
+      const result = await modexp({
         data: hexToBytes(input),
         gasLimit: BigInt(0xffff),
         common,
@@ -42,7 +42,7 @@ describe("Precompiles: MODEXP", () => {
 
   it("should correctly right-pad data if input length is too short", async () => {
     const gas = BigInt(0xffff);
-    const result = await MODEXP({
+    const result = await modexp({
       data: hexToBytes("0x41"),
       gasLimit: gas,
       common,

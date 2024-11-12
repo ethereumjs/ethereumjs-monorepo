@@ -254,10 +254,10 @@ export class StorageCache extends Cache {
         } else {
           const storageMap =
             this._orderedMapCache!.getElementByKey(addressHex) ?? new Map();
-          if (!value) {
-            storageMap.delete(keyHex);
-          } else {
+          if (value) {
             storageMap.set(keyHex, value);
+          } else {
+            storageMap.delete(keyHex);
           }
           this._orderedMapCache!.setElement(addressHex, storageMap);
         }

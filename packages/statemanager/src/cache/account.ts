@@ -68,7 +68,7 @@ export class AccountCache extends Cache {
   put(
     address: Address,
     account: Account | undefined,
-    couldBePartialAccount: boolean = false,
+    couldBePartialAccount = false,
   ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes);
     this._saveCachePreState(addressHex);
@@ -189,12 +189,10 @@ export class AccountCache extends Cache {
         } else {
           this._orderedMapCache!.eraseElementByKey(addressHex);
         }
+      } else if (this._lruCache) {
+        this._lruCache!.set(addressHex, elem);
       } else {
-        if (this._lruCache) {
-          this._lruCache!.set(addressHex, elem);
-        } else {
-          this._orderedMapCache!.setElement(addressHex, elem);
-        }
+        this._orderedMapCache!.setElement(addressHex, elem);
       }
     }
   }

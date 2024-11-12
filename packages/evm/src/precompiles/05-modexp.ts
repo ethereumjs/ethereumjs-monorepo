@@ -134,14 +134,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mStart = eEnd;
   const mEnd = mStart + mLen;
 
-  if (!opts.common.isActivatedEIP(2565)) {
-    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor;
-  } else {
+  if (opts.common.isActivatedEIP(2565)) {
     gasUsed =
       (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor;
     if (gasUsed < BIGINT_200) {
       gasUsed = BIGINT_200;
     }
+  } else {
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor;
   }
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit);

@@ -280,10 +280,7 @@ export class TxPool {
    * Validates a transaction against the pool and other constraints
    * @param tx The tx to validate
    */
-  private async validate(
-    tx: TypedTransaction,
-    isLocalTransaction: boolean = false,
-  ) {
+  private async validate(tx: TypedTransaction, isLocalTransaction = false) {
     if (!tx.isSigned()) {
       throw new Error("Attempting to add tx to txpool which is not signed");
     }
@@ -380,7 +377,7 @@ export class TxPool {
    * @param tx Transaction
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
-  async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+  async add(tx: TypedTransaction, isLocalTransaction = false) {
     const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash());
     const added = Date.now();
     const address: UnprefixedAddress = tx
@@ -816,12 +813,10 @@ export class TxPool {
       } else {
         return (tx as LegacyTx).gasPrice - baseFee;
       }
+    } else if (supports1559) {
+      return (tx as FeeMarket1559Tx).maxFeePerGas;
     } else {
-      if (supports1559) {
-        return (tx as FeeMarket1559Tx).maxFeePerGas;
-      } else {
-        return (tx as LegacyTx).gasPrice;
-      }
+      return (tx as LegacyTx).gasPrice;
     }
   }
   /**

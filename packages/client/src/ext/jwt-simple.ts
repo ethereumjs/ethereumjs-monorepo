@@ -104,11 +104,11 @@ function verify(
  * @return {Object} payload
  * @api public
  */
-const decode = function jwt_decode(
+const decode = function jwtDecode(
   token: string,
   key: string,
-  noVerify: boolean = false,
-  algorithm: string = "",
+  noVerify = false,
+  algorithm = "",
 ) {
   // check token
   if (!token) {
@@ -173,10 +173,10 @@ const decode = function jwt_decode(
  * @return {String} token
  * @api public
  */
-const encode = function jwt_encode(
+const encode = function jwtEncode(
   payload: any,
   key: string,
-  algorithm: string = "",
+  algorithm = "",
   options: any = undefined,
 ) {
   // Check key

@@ -32,21 +32,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 // (side note: this was once done by tomonari-t dedicatedly for this library // cspell:disable-line
 // (please nevertheless include the original license reference))
 
-import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import { EventEmitter } from 'eventemitter3'
+import { equalsBytes, randomBytes } from "@ethereumjs/util";
+import { EventEmitter } from "eventemitter3";
 
-import type { Contact, KBucketEvent, KBucketOptions, PeerInfo } from '../types.js'
+import type {
+  Contact,
+  KBucketEvent,
+  KBucketOptions,
+  PeerInfo,
+} from "../types.js";
 
 function createNode() {
-  return { contacts: [], noSplit: false, left: null, right: null }
+  return { contacts: [], noSplit: false, left: null, right: null };
 }
 
 type KBucketNode = {
-  contacts: Contact[] | null
-  noSplit: boolean
-  left: KBucketNode | null
-  right: KBucketNode | null
-}
+  contacts: Contact[] | null;
+  noSplit: boolean;
+  left: KBucketNode | null;
+  right: KBucketNode | null;
+};
 
 /**
  * Implementation of a Kademlia DHT k-bucket used for storing
@@ -55,29 +60,29 @@ type KBucketNode = {
  * @extends EventEmitter
  */
 export class KBucket {
-  public events: EventEmitter<KBucketEvent>
-  protected _localNodeId: Uint8Array
-  protected _numberOfNodesPerKBucket: number
-  protected _numberOfNodesToPing: number
-  distance: (firstId: Uint8Array, secondId: Uint8Array) => number
-  arbiter: (incumbent: Contact, candidate: Contact) => Contact
-  protected _metadata: object
-  protected _root: KBucketNode
+  public events: EventEmitter<KBucketEvent>;
+  protected _localNodeId: Uint8Array;
+  protected _numberOfNodesPerKBucket: number;
+  protected _numberOfNodesToPing: number;
+  distance: (firstId: Uint8Array, secondId: Uint8Array) => number;
+  arbiter: (incumbent: Contact, candidate: Contact) => Contact;
+  protected _metadata: object;
+  protected _root: KBucketNode;
   /**
    *
    * @param {KBucketOptions} options
    */
   constructor(options: KBucketOptions = {}) {
-    this.events = new EventEmitter<KBucketEvent>()
-    this._localNodeId = options.localNodeId ?? randomBytes(20)
-    this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
-    this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
-    this.distance = options.distance ?? KBucket.distance
+    this.events = new EventEmitter<KBucketEvent>();
+    this._localNodeId = options.localNodeId ?? randomBytes(20);
+    this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20;
+    this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3;
+    this.distance = options.distance ?? KBucket.distance;
     // use an arbiter from options or vectorClock arbiter by default
-    this.arbiter = options.arbiter ?? KBucket.arbiter
-    this._metadata = Object.assign({}, options.metadata)
+    this.arbiter = options.arbiter ?? KBucket.arbiter;
+    this._metadata = Object.assign({}, options.metadata);
 
-    this._root = createNode()
+    this._root = createNode();
   }
 
   /**
@@ -91,7 +96,9 @@ export class KBucket {
    * @return {Contact}           Contact to updated the k-bucket with.
    */
   static arbiter(incumbent: Contact, candidate: Contact): Contact {
-    return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
+    return incumbent.vectorClock > candidate.vectorClock
+      ? incumbent
+      : candidate;
   }
 
   /**
@@ -104,15 +111,15 @@ export class KBucket {
    *                               and secondId.
    */
   static distance(firstId: Uint8Array, secondId: Uint8Array): number {
-    let distance = 0
-    let i = 0
-    const min = Math.min(firstId.length, secondId.length)
-    const max = Math.max(firstId.length, secondId.length)
+    let distance = 0;
+    let i = 0;
+    const min = Math.min(firstId.length, secondId.length);
+    const max = Math.max(firstId.length, secondId.length);
     for (; i < min; ++i) {
-      distance = distance * 256 + (firstId[i] ^ secondId[i])
+      distance = distance * 256 + (firstId[i] ^ secondId[i]);
     }
-    for (; i < max; ++i) distance = distance * 256 + 255
-    return distance
+    for (; i < max; ++i) distance = distance * 256 + 255;
+    return distance;
   }
 
   /**
@@ -122,30 +129,30 @@ export class KBucket {
    */
   add(contact: PeerInfo): KBucket {
     if (!(contact.id instanceof Uint8Array)) {
-      throw new Error('Contact must have an id')
+      throw new Error("Contact must have an id");
     }
 
-    let bitIndex = 0
-    let node = this._root
+    let bitIndex = 0;
+    let node = this._root;
 
     while (node.contacts === null) {
       // this is not a leaf node but an inner node with 'low' and 'high'
       // branches; we will check the appropriate bit of the identifier and
       // delegate to the appropriate node for further processing
-      node = this._determineNode(node, contact.id, bitIndex++)
+      node = this._determineNode(node, contact.id, bitIndex++);
     }
 
     // check if the contact already exists
-    const index = this._indexOf(node, contact.id)
+    const index = this._indexOf(node, contact.id);
     if (index >= 0) {
-      this._update(node, index, contact as Contact)
-      return this
+      this._update(node, index, contact as Contact);
+      return this;
     }
 
     if (node.contacts.length < this._numberOfNodesPerKBucket) {
-      node.contacts.push(contact as Contact)
-      this.events.emit('added', contact)
-      return this
+      node.contacts.push(contact as Contact);
+      this.events.emit("added", contact);
+      return this;
     }
 
     // the bucket is full
@@ -155,12 +162,16 @@ export class KBucket {
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
       // be added (this prevents DoS flooding with new invalid contacts)
-      this.events.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
-      return this
+      this.events.emit(
+        "ping",
+        node.contacts.slice(0, this._numberOfNodesToPing),
+        contact,
+      );
+      return this;
     }
 
-    this._split(node, bitIndex)
-    return this.add(contact)
+    this._split(node, bitIndex);
+    return this.add(contact);
   }
 
   /**
@@ -171,30 +182,39 @@ export class KBucket {
    * @param  {number} n      Integer (Default: Infinity) The maximum number of closest contacts to return
    * @return {Contact[]}          Array Maximum of n closest contacts to the node id
    */
-  closest(id: Uint8Array, n: number | undefined = Infinity): Contact[] {
+  closest(
+    id: Uint8Array,
+    n: number | undefined = Number.POSITIVE_INFINITY,
+  ): Contact[] {
     if (!(id instanceof Uint8Array)) {
-      throw new TypeError('id must be a Uint8Array')
+      throw new TypeError("id must be a Uint8Array");
     }
 
-    if ((!Number.isInteger(n) && n !== Infinity) || n <= 0) {
-      throw new TypeError('n is not positive number')
+    if ((!Number.isInteger(n) && n !== Number.POSITIVE_INFINITY) || n <= 0) {
+      throw new TypeError("n is not positive number");
     }
 
-    let contacts: Contact[] = []
+    let contacts: Contact[] = [];
 
-    for (let nodes = [this._root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
-      const node = nodes.pop()!
+    for (
+      let nodes = [this._root], bitIndex = 0;
+      nodes.length > 0 && contacts.length < n;
+
+    ) {
+      const node = nodes.pop()!;
       if (node.contacts === null) {
-        const detNode = this._determineNode(node, id, bitIndex++)
-        nodes.push(node.left === detNode ? node.right! : node.left!)
-        nodes.push(detNode)
+        const detNode = this._determineNode(node, id, bitIndex++);
+        nodes.push(node.left === detNode ? node.right! : node.left!);
+        nodes.push(detNode);
       } else {
-        contacts = contacts.concat(node.contacts)
+        contacts = contacts.concat(node.contacts);
       }
     }
 
     // Sort the contacts by distance from node id and return `n` closest ones
-    return contacts.sort((a, b) => this.distance(a.id, id) - this.distance(b.id, id)).slice(0, n)
+    return contacts
+      .sort((a, b) => this.distance(a.id, id) - this.distance(b.id, id))
+      .slice(0, n);
   }
 
   /**
@@ -203,13 +223,13 @@ export class KBucket {
    * @return {number} The number of contacts held in the tree
    */
   count(): number {
-    let count = 0
+    let count = 0;
     for (const nodes = [this._root]; nodes.length > 0; ) {
-      const node = nodes.pop()!
-      if (node.contacts === null) nodes.push(node.right!, node.left!)
-      else count += node.contacts.length
+      const node = nodes.pop()!;
+      if (node.contacts === null) nodes.push(node.right!, node.left!);
+      else count += node.contacts.length;
     }
-    return count
+    return count;
   }
 
   /**
@@ -222,7 +242,11 @@ export class KBucket {
    *                           to check in the id Uint8Array.
    * @return {KBucketNode}          left leaf if id at bitIndex is 0, right leaf otherwise.
    */
-  _determineNode(node: KBucketNode, id: Uint8Array, bitIndex: number): KBucketNode {
+  _determineNode(
+    node: KBucketNode,
+    id: Uint8Array,
+    bitIndex: number,
+  ): KBucketNode {
     // **NOTE** remember that id is a Uint8Array and has granularity of
     // bytes (8 bits), whereas the bitIndex is the _bit_ index (not byte)
 
@@ -233,13 +257,13 @@ export class KBucket {
     // are extra bits to consider, this means id has less bits than what
     // bitIndex describes, id therefore is too short, and will be put in low
     // bucket
-    const bytesDescribedByBitIndex = bitIndex >> 3
-    const bitIndexWithinByte = bitIndex % 8
+    const bytesDescribedByBitIndex = bitIndex >> 3;
+    const bitIndexWithinByte = bitIndex % 8;
     if (id.length <= bytesDescribedByBitIndex && bitIndexWithinByte !== 0) {
-      return node.left!
+      return node.left!;
     }
 
-    const byteUnderConsideration = id[bytesDescribedByBitIndex]
+    const byteUnderConsideration = id[bytesDescribedByBitIndex];
 
     // byteUnderConsideration is an integer from 0 to 255 represented by 8 bits
     // where 255 is 11111111 and 0 is 00000000
@@ -249,10 +273,10 @@ export class KBucket {
     // for example, if bitIndexWithinByte is 3, we will construct 00010000 by
     // (1 << (7 - 3)) -> (1 << 4) -> 16
     if (byteUnderConsideration & (1 << (7 - bitIndexWithinByte))) {
-      return node.right!
+      return node.right!;
     }
 
-    return node.left!
+    return node.left!;
   }
 
   /**
@@ -265,16 +289,16 @@ export class KBucket {
    * @return {Contact|null}   The contact if available, otherwise null
    */
   get(id: Uint8Array): Contact | null {
-    let bitIndex = 0
+    let bitIndex = 0;
 
-    let node = this._root
+    let node = this._root;
     while (node.contacts === null) {
-      node = this._determineNode(node, id, bitIndex++)
+      node = this._determineNode(node, id, bitIndex++);
     }
 
     // index of uses contact id for matching
-    const index = this._indexOf(node, id)
-    return index >= 0 ? node.contacts[index] : null
+    const index = this._indexOf(node, id);
+    return index >= 0 ? node.contacts[index] : null;
   }
 
   /**
@@ -288,10 +312,10 @@ export class KBucket {
    */
   _indexOf(node: KBucketNode, id: Uint8Array): number {
     for (let i = 0; i < node.contacts!.length; ++i) {
-      if (equalsBytes(node.contacts![i].id, id)) return i
+      if (equalsBytes(node.contacts![i].id, id)) return i;
     }
 
-    return -1
+    return -1;
   }
 
   /**
@@ -301,20 +325,20 @@ export class KBucket {
    * @return {KBucket}        The k-bucket itself.
    */
   remove(id: Uint8Array): KBucket {
-    let bitIndex = 0
-    let node = this._root
+    let bitIndex = 0;
+    let node = this._root;
 
     while (node.contacts === null) {
-      node = this._determineNode(node, id, bitIndex++)
+      node = this._determineNode(node, id, bitIndex++);
     }
 
-    const index = this._indexOf(node, id)
+    const index = this._indexOf(node, id);
     if (index >= 0) {
-      const contact = node.contacts.splice(index, 1)[0]
-      this.events.emit('removed', contact)
+      const contact = node.contacts.splice(index, 1)[0];
+      this.events.emit("removed", contact);
     }
 
-    return this
+    return this;
   }
 
   /**
@@ -327,22 +351,22 @@ export class KBucket {
    *                           Uint8Array for navigating the binary tree
    */
   _split(node: KBucketNode, bitIndex: number) {
-    node.left = createNode()
-    node.right = createNode()
+    node.left = createNode();
+    node.right = createNode();
 
     // redistribute existing contacts amongst the two newly created nodes
     for (const contact of node.contacts!) {
-      this._determineNode(node, contact.id, bitIndex).contacts!.push(contact)
+      this._determineNode(node, contact.id, bitIndex).contacts!.push(contact);
     }
 
-    node.contacts = null // mark as inner tree node
+    node.contacts = null; // mark as inner tree node
 
     // don't split the "far away" node
     // we check where the local node would end up and mark the other one as
     // "noSplit" (i.e. "far away")
-    const detNode = this._determineNode(node, this._localNodeId, bitIndex)
-    const otherNode = node.left === detNode ? node.right : node.left
-    otherNode.noSplit = true
+    const detNode = this._determineNode(node, this._localNodeId, bitIndex);
+    const otherNode = node.left === detNode ? node.right : node.left;
+    otherNode.noSplit = true;
   }
 
   /**
@@ -353,13 +377,13 @@ export class KBucket {
    * @return {Contact[]} All of the contacts in the tree, as an array
    */
   toArray(): Contact[] {
-    let result: Contact[] = []
+    let result: Contact[] = [];
     for (const nodes = [this._root]; nodes.length > 0; ) {
-      const node = nodes.pop()!
-      if (node.contacts === null) nodes.push(node.right!, node.left!)
-      else result = result.concat(node.contacts)
+      const node = nodes.pop()!;
+      if (node.contacts === null) nodes.push(node.right!, node.left!);
+      else result = result.concat(node.contacts);
     }
-    return result
+    return result;
   }
 
   /**
@@ -371,11 +395,11 @@ export class KBucket {
    */
   *toIterable(): Iterable<Contact> {
     for (const nodes = [this._root]; nodes.length > 0; ) {
-      const node = nodes.pop()!
+      const node = nodes.pop()!;
       if (node.contacts === null) {
-        nodes.push(node.right!, node.left!)
+        nodes.push(node.right!, node.left!);
       } else {
-        yield* node.contacts
+        yield* node.contacts;
       }
     }
   }
@@ -399,19 +423,19 @@ export class KBucket {
   _update(node: KBucketNode, index: number, contact: Contact) {
     // sanity check
     if (!equalsBytes(node.contacts![index].id, contact.id)) {
-      throw new Error('wrong index for _update')
+      throw new Error("wrong index for _update");
     }
 
-    if (node.contacts === null) throw new Error('Missing node.contacts')
+    if (node.contacts === null) throw new Error("Missing node.contacts");
 
-    const incumbent = node.contacts[index]
-    const selection = this.arbiter(incumbent, contact)
+    const incumbent = node.contacts[index];
+    const selection = this.arbiter(incumbent, contact);
     // if the selection is our old contact and the candidate is some new
     // contact, then there is nothing to do
-    if (selection === incumbent && incumbent !== contact) return
+    if (selection === incumbent && incumbent !== contact) return;
 
-    node.contacts.splice(index, 1) // remove old contact
-    node.contacts.push(selection) // add more recent contact version
-    this.events.emit('updated', incumbent, selection)
+    node.contacts.splice(index, 1); // remove old contact
+    node.contacts.push(selection); // add more recent contact version
+    this.events.emit("updated", incumbent, selection);
   }
 }

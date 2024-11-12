@@ -96,12 +96,12 @@ export class Engine {
 
   private connectionManager: CLConnectionManager;
 
-  private lastNewPayloadHF: string = "";
-  private lastForkchoiceUpdatedHF: string = "";
+  private lastNewPayloadHF = "";
+  private lastForkchoiceUpdatedHF = "";
 
-  private remoteBlocks: Map<String, Block>;
-  private executedBlocks: Map<String, Block>;
-  private invalidBlocks: Map<String, Error>;
+  private remoteBlocks: Map<string, Block>;
+  private executedBlocks: Map<string, Block>;
+  private invalidBlocks: Map<string, Error>;
   private chainCache: ChainCache;
 
   private lastAnnouncementTime = Date.now();
@@ -768,7 +768,9 @@ export class Engine {
             })());
 
           // if can't be executed then return syncing/accepted
-          if (!executed) {
+          if (executed) {
+            this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block);
+          } else {
             this.config.logger.debug(
               `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
                 headBlock.hash(),
@@ -787,8 +789,6 @@ export class Engine {
               validationError: null,
             };
             return response;
-          } else {
-            this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block);
           }
         }
       }
@@ -862,7 +862,7 @@ export class Engine {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(
       Hardfork.Shanghai,
     );
-    const ts = parseInt(params[0].timestamp);
+    const ts = Number.parseInt(params[0].timestamp);
     if (shanghaiTimestamp !== null && ts >= shanghaiTimestamp) {
       throw {
         code: INVALID_PARAMS,
@@ -888,7 +888,7 @@ export class Engine {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(
       Hardfork.Cancun,
     );
-    const ts = parseInt(params[0].timestamp);
+    const ts = Number.parseInt(params[0].timestamp);
 
     const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals;
 
@@ -899,7 +899,7 @@ export class Engine {
       };
     } else if (
       shanghaiTimestamp === null ||
-      parseInt(params[0].timestamp) < shanghaiTimestamp
+      Number.parseInt(params[0].timestamp) < shanghaiTimestamp
     ) {
       if (withdrawals !== undefined && withdrawals !== null) {
         throw {
@@ -908,7 +908,7 @@ export class Engine {
             "ExecutionPayloadV1 MUST be used before Shanghai is activated",
         };
       }
-    } else if (parseInt(params[0].timestamp) >= shanghaiTimestamp) {
+    } else if (Number.parseInt(params[0].timestamp) >= shanghaiTimestamp) {
       if (withdrawals === undefined || withdrawals === null) {
         throw {
           code: INVALID_PARAMS,
@@ -956,7 +956,7 @@ export class Engine {
       Hardfork.Prague,
     );
 
-    const ts = parseInt(params[0].timestamp);
+    const ts = Number.parseInt(params[0].timestamp);
     if (pragueTimestamp !== null && ts >= pragueTimestamp) {
       throw {
         code: INVALID_PARAMS,
@@ -983,7 +983,7 @@ export class Engine {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(
       Hardfork.Prague,
     );
-    const ts = parseInt(params[0].timestamp);
+    const ts = Number.parseInt(params[0].timestamp);
     if (pragueTimestamp === null || ts < pragueTimestamp) {
       throw {
         code: UNSUPPORTED_FORK,
@@ -1448,14 +1448,12 @@ export class Engine {
               "PayloadAttributesV1 MUST be used before Shanghai is activated",
           };
         }
-      } else {
-        if (ts >= shanghaiTimestamp!) {
-          throw {
-            code: INVALID_PARAMS,
-            message:
-              "PayloadAttributesV2 MUST be used after Shanghai is activated",
-          };
-        }
+      } else if (ts >= shanghaiTimestamp!) {
+        throw {
+          code: INVALID_PARAMS,
+          message:
+            "PayloadAttributesV2 MUST be used after Shanghai is activated",
+        };
       }
       const parentBeaconBlockRoot = (payloadAttributes as PayloadAttributesV3)
         .parentBeaconBlockRoot;

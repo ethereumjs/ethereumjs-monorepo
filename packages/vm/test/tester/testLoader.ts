@@ -78,17 +78,17 @@ export function getTestFromSource(file: string, onFile: Function) {
   let test: any = null;
 
   stream
-    .on("data", function (data: string) {
+    .on("data", (data: string) => {
       contents += data;
     })
-    .on("error", function (err: Error) {
+    .on("error", (err: Error) => {
       // eslint-disable-next-line no-console
       console.warn(
         "♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.",
       );
       onFile(err);
     })
-    .on("end", function () {
+    .on("end", () => {
       try {
         test = JSON.parse(contents);
       } catch (e: any) {
@@ -120,7 +120,7 @@ export async function getTestsFromArgs(
   skipFn = (name: string) => {
     return skipTest(name, args.skipTests);
   };
-  if (new RegExp(`BlockchainTests`).test(testType)) {
+  if (/BlockchainTests/.test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`);
     skipFn = (name: string, test: any) => {
       return (
@@ -129,7 +129,7 @@ export async function getTestsFromArgs(
       );
     };
   }
-  if (new RegExp(`GeneralStateTests`).test(testType)) {
+  if (/GeneralStateTests/.test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`);
     skipFn = (name: string, test: any) => {
       return (

@@ -47,7 +47,7 @@ function mergeEvpKdfOptsWithDefaults(opts?: Partial<EvpKdfOpts>): EvpKdfOpts {
  *
  * FIXME: not optimized at all
  */
-function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>) {
+function evpKdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>) {
   const params = mergeEvpKdfOptsWithDefaults(opts)
 
   // A single EVP iteration, returns `D_i`, where block equals to `D_(i-1)`
@@ -123,12 +123,7 @@ export async function fromEtherWallet(
   const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 
   let privateKey: Uint8Array
-  if (!json.locked) {
-    if (json.private.length !== 64) {
-      throw new Error('Invalid private key length')
-    }
-    privateKey = unprefixedHexToBytes(json.private)
-  } else {
+  if (json.locked) {
     if (typeof password !== 'string') {
       throw new Error('Password required')
     }
@@ -148,12 +143,17 @@ export async function fromEtherWallet(
     }
 
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
-    const evp = evp_kdf(utf8ToBytes(password), cipher.salt, { keysize: 32, ivsize: 16 })
+    const evp = evpKdf(utf8ToBytes(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
     const pr = decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
     privateKey = unprefixedHexToBytes(bytesToUtf8(pr))
+  } else {
+    if (json.private.length !== 64) {
+      throw new Error('Invalid private key length')
+    }
+    privateKey = unprefixedHexToBytes(json.private)
   }
   const wallet = new Wallet(privateKey)
   if (wallet.getAddressString() !== json.address) {

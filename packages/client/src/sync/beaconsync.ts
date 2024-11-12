@@ -145,7 +145,13 @@ export class BeaconSynchronizer extends Synchronizer {
     const timeout = setTimeout(() => {
       this.forceSync = true;
     }, this.interval * 30);
-    if (!this.skeleton.isLinked()) {
+    if (this.skeleton.isLinked()) {
+      // It could be that the canonical chain fill got stopped midway, ideally CL
+      // would keep extending the skeleton that might trigger fillCanonicalChain
+      // but if we are already linked and CL is down, we don't need to wait
+      // for CL and just fill up the chain in meantime
+      void this.skeleton.fillCanonicalChain();
+    } else {
       while (this.running) {
         try {
           await this.sync();
@@ -155,12 +161,6 @@ export class BeaconSynchronizer extends Synchronizer {
         }
         await new Promise((resolve) => setTimeout(resolve, this.interval));
       }
-    } else {
-      // It could be that the canonical chain fill got stopped midway, ideally CL
-      // would keep extending the skeleton that might trigger fillCanonicalChain
-      // but if we are already linked and CL is down, we don't need to wait
-      // for CL and just fill up the chain in meantime
-      void this.skeleton.fillCanonicalChain();
     }
 
     this.running = false;

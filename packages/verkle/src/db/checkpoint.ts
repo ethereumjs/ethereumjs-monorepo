@@ -95,7 +95,14 @@ export class CheckpointDB implements DB {
    */
   async commit() {
     const { keyValueMap } = this.checkpoints.pop()!;
-    if (!this.hasCheckpoints()) {
+    if (this.hasCheckpoints()) {
+      // dump everything into the current (higher level) diff cache
+      const currentKeyValueMap =
+        this.checkpoints[this.checkpoints.length - 1].keyValueMap;
+      for (const [key, value] of keyValueMap.entries()) {
+        currentKeyValueMap.set(key, value);
+      }
+    } else {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = [];
       for (const [key, value] of keyValueMap.entries()) {
@@ -120,13 +127,6 @@ export class CheckpointDB implements DB {
         }
       }
       await this.batch(batchOp);
-    } else {
-      // dump everything into the current (higher level) diff cache
-      const currentKeyValueMap =
-        this.checkpoints[this.checkpoints.length - 1].keyValueMap;
-      for (const [key, value] of keyValueMap.entries()) {
-        currentKeyValueMap.set(key, value);
-      }
     }
   }
 

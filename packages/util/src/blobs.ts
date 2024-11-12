@@ -1,69 +1,74 @@
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from "ethereum-cryptography/sha256.js";
 
-import { bytesToHex, hexToBytes, utf8ToBytes } from './bytes.js'
+import { bytesToHex, hexToBytes, utf8ToBytes } from "./bytes.js";
 
-import type { KZG } from './kzg.js'
-import type { PrefixedHexString } from './types.js'
+import type { KZG } from "./kzg.js";
+import type { PrefixedHexString } from "./types.js";
 
 /**
  * These utilities for constructing blobs are borrowed from https://github.com/Inphi/eip4844-interop.git
  */
-const BYTES_PER_FIELD_ELEMENT = 32
-const FIELD_ELEMENTS_PER_BLOB = 4096
-const USEFUL_BYTES_PER_BLOB = 32 * FIELD_ELEMENTS_PER_BLOB
-const MAX_BLOBS_PER_TX = 2
-const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
-const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
+const BYTES_PER_FIELD_ELEMENT = 32;
+const FIELD_ELEMENTS_PER_BLOB = 4096;
+const USEFUL_BYTES_PER_BLOB = 32 * FIELD_ELEMENTS_PER_BLOB;
+const MAX_BLOBS_PER_TX = 2;
+const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1;
+const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB;
 
-function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
-  const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
-  pData.set(data)
-  pData[data.byteLength] = 0x80
-  return pData
+function getPadded(data: Uint8Array, blobsLen: number): Uint8Array {
+  const pData = new Uint8Array(blobsLen * USEFUL_BYTES_PER_BLOB);
+  pData.set(data);
+  pData[data.byteLength] = 0x80;
+  return pData;
 }
 
-function get_blob(data: Uint8Array): PrefixedHexString {
-  const blob = new Uint8Array(BLOB_SIZE)
+function getBlob(data: Uint8Array): PrefixedHexString {
+  const blob = new Uint8Array(BLOB_SIZE);
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
-    const chunk = new Uint8Array(32)
-    chunk.set(data.subarray(i * 31, (i + 1) * 31), 0)
-    blob.set(chunk, i * 32)
+    const chunk = new Uint8Array(32);
+    chunk.set(data.subarray(i * 31, (i + 1) * 31), 0);
+    blob.set(chunk, i * 32);
   }
 
-  return bytesToHex(blob)
+  return bytesToHex(blob);
 }
 
 export const getBlobs = (input: string) => {
-  const data = utf8ToBytes(input)
-  const len = data.byteLength
+  const data = utf8ToBytes(input);
+  const len = data.byteLength;
   if (len === 0) {
-    throw Error('invalid blob data')
+    throw Error("invalid blob data");
   }
   if (len > MAX_USEFUL_BYTES_PER_TX) {
-    throw Error('blob data is too large')
+    throw Error("blob data is too large");
   }
 
-  const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
+  const blobsLen = Math.ceil(len / USEFUL_BYTES_PER_BLOB);
 
-  const pData = get_padded(data, blobs_len)
+  const pData = getPadded(data, blobsLen);
 
-  const blobs: PrefixedHexString[] = []
-  for (let i = 0; i < blobs_len; i++) {
-    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
-    const blob = get_blob(chunk)
-    blobs.push(blob)
+  const blobs: PrefixedHexString[] = [];
+  for (let i = 0; i < blobsLen; i++) {
+    const chunk = pData.subarray(
+      i * USEFUL_BYTES_PER_BLOB,
+      (i + 1) * USEFUL_BYTES_PER_BLOB,
+    );
+    const blob = getBlob(chunk);
+    blobs.push(blob);
   }
 
-  return blobs
-}
+  return blobs;
+};
 
 export const blobsToCommitments = (kzg: KZG, blobs: PrefixedHexString[]) => {
-  const commitments: PrefixedHexString[] = []
+  const commitments: PrefixedHexString[] = [];
   for (const blob of blobs) {
-    commitments.push(kzg.blobToKzgCommitment(blob).toLowerCase() as PrefixedHexString)
+    commitments.push(
+      kzg.blobToKzgCommitment(blob).toLowerCase() as PrefixedHexString,
+    );
   }
-  return commitments
-}
+  return commitments;
+};
 
 export const blobsToProofs = (
   kzg: KZG,
@@ -72,10 +77,10 @@ export const blobsToProofs = (
 ) => {
   const proofs = blobs.map((blob, ctx) =>
     kzg.computeBlobProof(blob, commitments[ctx]).toLowerCase(),
-  ) as PrefixedHexString[]
+  ) as PrefixedHexString[];
 
-  return proofs
-}
+  return proofs;
+};
 
 /**
  * Converts a vector commitment for a given data blob to its versioned hash.  For 4844, this version
@@ -89,11 +94,11 @@ export const computeVersionedHash = (
   commitment: PrefixedHexString,
   blobCommitmentVersion: number,
 ) => {
-  const computedVersionedHash = new Uint8Array(32)
-  computedVersionedHash.set([blobCommitmentVersion], 0)
-  computedVersionedHash.set(sha256(hexToBytes(commitment)).subarray(1), 1)
-  return bytesToHex(computedVersionedHash)
-}
+  const computedVersionedHash = new Uint8Array(32);
+  computedVersionedHash.set([blobCommitmentVersion], 0);
+  computedVersionedHash.set(sha256(hexToBytes(commitment)).subarray(1), 1);
+  return bytesToHex(computedVersionedHash);
+};
 
 /**
  * Generate an array of versioned hashes from corresponding kzg commitments
@@ -101,10 +106,12 @@ export const computeVersionedHash = (
  * @returns array of versioned hashes
  * Note: assumes KZG commitments (version 1 version hashes)
  */
-export const commitmentsToVersionedHashes = (commitments: PrefixedHexString[]) => {
-  const hashes: PrefixedHexString[] = []
+export const commitmentsToVersionedHashes = (
+  commitments: PrefixedHexString[],
+) => {
+  const hashes: PrefixedHexString[] = [];
   for (const commitment of commitments) {
-    hashes.push(computeVersionedHash(commitment, 0x01))
+    hashes.push(computeVersionedHash(commitment, 0x01));
   }
-  return hashes
-}
+  return hashes;
+};

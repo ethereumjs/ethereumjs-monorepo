@@ -30,7 +30,7 @@ export class DPT {
   protected _kbucket: KBucket;
   protected _server: DPTServer;
   protected _refreshIntervalId: NodeJS.Timeout;
-  protected _refreshIntervalSelectionCounter: number = 0;
+  protected _refreshIntervalSelectionCounter = 0;
   protected _shouldFindNeighbours: boolean;
   protected _shouldGetDnsPeers: boolean;
   protected _dnsRefreshQuantity: number;
@@ -141,7 +141,7 @@ export class DPT {
   }
 
   _addPeerBatch(peers: PeerInfo[]): void {
-    const DIFF_TIME_MS = 200;
+    const diffTimeMs = 200;
     let ms = 0;
     for (const peer of peers) {
       setTimeout(() => {
@@ -149,7 +149,7 @@ export class DPT {
           this.events.emit("error", error);
         });
       }, ms);
-      ms += DIFF_TIME_MS;
+      ms += diffTimeMs;
     }
   }
 

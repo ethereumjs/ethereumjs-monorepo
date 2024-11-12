@@ -132,17 +132,15 @@ export class BoundProtocol {
       } else {
         resolver.resolve(data);
       }
+    } else if (error) {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
     } else {
-      if (error) {
-        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer);
-      } else {
-        this.config.events.emit(
-          Event.PROTOCOL_MESSAGE,
-          { name: message.name, data },
-          this.protocol.name,
-          this.peer,
-        );
-      }
+      this.config.events.emit(
+        Event.PROTOCOL_MESSAGE,
+        { name: message.name, data },
+        this.protocol.name,
+        this.peer,
+      );
     }
   }
 
@@ -200,11 +198,11 @@ export class BoundProtocol {
       await resolver.lock.acquire();
     }
     return new Promise((resolve, reject) => {
-      resolver.resolve = function (e: any) {
+      resolver.resolve = (e: any) => {
         resolver.lock.release();
         resolve(e);
       };
-      resolver.reject = function (e: any) {
+      resolver.reject = (e: any) => {
         resolver.lock.release();
         reject(e);
       };

@@ -6,7 +6,7 @@ import {
 } from "@ethereumjs/util";
 
 import { UNSUPPORTED_FORK } from "../../../error-code.js";
-import { type ChainCache } from "../types.js";
+import type { ChainCache } from "../types.js";
 
 import type { Common, Hardfork } from "@ethereumjs/common";
 import type { PrefixedHexString } from "@ethereumjs/util";

@@ -13,9 +13,9 @@ import {
 } from "@ethereumjs/util";
 
 import { BaseTransaction } from "../baseTransaction.js";
-import * as EIP1559 from "../capabilities/eip1559.js";
-import * as EIP2718 from "../capabilities/eip2718.js";
-import * as EIP2930 from "../capabilities/eip2930.js";
+import * as eip1559 from "../capabilities/eip1559.js";
+import * as eip2718 from "../capabilities/eip2718.js";
+import * as eip2930 from "../capabilities/eip2930.js";
 import * as Legacy from "../capabilities/legacy.js";
 import { LIMIT_BLOBS_PER_TX } from "../constants.js";
 import { paramsTx } from "../index.js";
@@ -136,7 +136,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
     this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) =>
       toType(vh, TypeOutput.PrefixedHexString),
     );
-    EIP2718.validateYParity(this);
+    eip2718.validateYParity(this);
     Legacy.validateHighS(this);
 
     for (const hash of this.blobVersionedHashes) {
@@ -146,7 +146,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
         throw new Error(msg);
       }
       if (
-        BigInt(parseInt(hash.slice(2, 4))) !==
+        BigInt(Number.parseInt(hash.slice(2, 4))) !==
         this.common.param("blobCommitmentVersionKzg")
       ) {
         // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
@@ -192,14 +192,14 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * @param baseFee Base fee retrieved from block
    */
   getEffectivePriorityFee(baseFee: bigint): bigint {
-    return EIP1559.getEffectivePriorityFee(this, baseFee);
+    return eip1559.getEffectivePriorityFee(this, baseFee);
   }
 
   /**
    * The amount of gas paid for the data in this tx
    */
   getDataGas(): bigint {
-    return EIP2930.getDataGas(this);
+    return eip2930.getDataGas(this);
   }
 
   /**
@@ -207,7 +207,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
-    return EIP1559.getUpfrontCost(this, baseFee);
+    return eip1559.getUpfrontCost(this, baseFee);
   }
 
   /**
@@ -253,7 +253,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2718.serialize(this);
+    return eip2718.serialize(this);
   }
 
   /**
@@ -270,7 +270,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
       );
     }
 
-    return EIP2718.serialize(this, [
+    return eip2718.serialize(this, [
       this.raw(),
       this.blobs,
       this.kzgCommitments,
@@ -290,7 +290,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * ```
    */
   getMessageToSign(): Uint8Array {
-    return EIP2718.serialize(this, this.raw().slice(0, 11));
+    return eip2718.serialize(this, this.raw().slice(0, 11));
   }
 
   /**
@@ -301,7 +301,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2718.getHashedMessageToSign(this);
+    return eip2718.getHashedMessageToSign(this);
   }
 
   /**
@@ -344,7 +344,7 @@ export class Blob4844Tx extends BaseTransaction<TransactionType.BlobEIP4844> {
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
-    convertV: boolean = false,
+    convertV = false,
   ): Blob4844Tx {
     r = toBytes(r);
     s = toBytes(s);

@@ -666,7 +666,10 @@ export class Eth {
       transaction.maxFeePerGas === undefined
     ) {
       // If no gas price or maxFeePerGas provided, set maxFeePerGas to the next base fee
-      if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
+      if (
+        transaction.type !== undefined &&
+        Number.parseInt(transaction.type) === 2
+      ) {
         transaction.maxFeePerGas = `0x${block.header.calcNextBaseFee()?.toString(16)}`;
       } else if (block.header.baseFeePerGas !== undefined) {
         transaction.gasPrice = `0x${block.header.calcNextBaseFee()?.toString(16)}`;
@@ -898,7 +901,7 @@ export class Eth {
   async getTransactionByBlockHashAndIndex(params: [PrefixedHexString, string]) {
     try {
       const [blockHash, txIndexHex] = params;
-      const txIndex = parseInt(txIndexHex, 16);
+      const txIndex = Number.parseInt(txIndexHex, 16);
       const block = await this._chain.getBlock(hexToBytes(blockHash));
       if (block.transactions.length <= txIndex) {
         return null;
@@ -925,7 +928,7 @@ export class Eth {
   ) {
     try {
       const [blockNumber, txIndexHex] = params;
-      const txIndex = parseInt(txIndexHex, 16);
+      const txIndex = Number.parseInt(txIndexHex, 16);
       const block = await getBlockByOption(blockNumber, this._chain);
       if (block.transactions.length <= txIndex) {
         return null;
@@ -1485,7 +1488,7 @@ export class Eth {
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
       // blocks to get an average gas price.
-      const blockIterations = 20 < latest.number ? 20 : latest.number;
+      const blockIterations = latest.number > 20 ? 20 : latest.number;
       let txCount = BIGINT_0;
       for (let i = 0; i < blockIterations; i++) {
         const block = await this._chain.getBlock(latest.number - BigInt(i));

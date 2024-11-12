@@ -13,7 +13,7 @@ const fixtureAddress = '0x4dcccf58c6573eb896250b0c9647a40c1673af44'
 const fixturePrivateKey = '0xf62a8ea4ab7025d151ccd84981c66278d0d3cd58ff837467cdc51229915a22d1'
 describe('HD Key tests', () => {
   it('.fromMasterSeed()', () => {
-    assert.doesNotThrow(function () {
+    assert.doesNotThrow(() => {
       EthereumHDKey.fromMasterSeed(fixtureseed)
     })
   }, 30000)
@@ -50,7 +50,7 @@ describe('HD Key tests', () => {
       'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ',
     )
     assert.throws(
-      function () {
+      () => {
         onlyPublicExtendedKey.privateExtendedKey()
       },
       /^No private key$/,
@@ -106,7 +106,7 @@ describe('HD Key tests', () => {
     const hdnode = EthereumHDKey.fromExtendedKey(
       'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ',
     )
-    assert.throws(function () {
+    assert.throws(() => {
       hdnode.getWallet().getPrivateKeyString()
     }, /^This is a public key only wallet$/)
     assert.deepEqual(

@@ -1,5 +1,10 @@
-import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
-import { RLP } from '@ethereumjs/rlp'
+import {
+  Block,
+  BlockHeader,
+  createBlock,
+  createBlockHeader,
+} from "@ethereumjs/block";
+import { RLP } from "@ethereumjs/rlp";
 import {
   BIGINT_0,
   KeyEncoding,
@@ -12,8 +17,8 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-} from '@ethereumjs/util'
-import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
+} from "@ethereumjs/util";
+import { keccak256, keccak512 } from "ethereum-cryptography/keccak.js";
 
 import {
   bytesReverse,
@@ -24,35 +29,35 @@ import {
   getFullSize,
   getSeed,
   params,
-} from './util.js'
+} from "./util.js";
 
-import type { BlockData, HeaderData } from '@ethereumjs/block'
-import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
+import type { BlockData, HeaderData } from "@ethereumjs/block";
+import type { DB, DBObject, PrefixedHexString } from "@ethereumjs/util";
 
 function xor(a: Uint8Array, b: Uint8Array) {
-  const len = Math.max(a.length, b.length)
-  const res = new Uint8Array(len)
+  const len = Math.max(a.length, b.length);
+  const res = new Uint8Array(len);
   for (let i = 0; i < len; i++) {
-    res[i] = a[i] ^ b[i]
+    res[i] = a[i] ^ b[i];
   }
-  return res
+  return res;
 }
 
 export type Solution = {
-  mixHash: Uint8Array
-  nonce: Uint8Array
-}
+  mixHash: Uint8Array;
+  nonce: Uint8Array;
+};
 
 export class Miner {
-  private blockHeader: BlockHeader
-  private block?: Block
-  private ethash: Ethash
+  private blockHeader: BlockHeader;
+  private block?: Block;
+  private ethash: Ethash;
 
-  public solution?: Solution
+  public solution?: Solution;
 
-  private currentNonce: bigint
-  private headerHash?: Uint8Array
-  private stopMining: boolean
+  private currentNonce: bigint;
+  private headerHash?: Uint8Array;
+  private stopMining: boolean;
 
   /**
    * Create a Miner object
@@ -62,23 +67,23 @@ export class Miner {
 
   constructor(mineObject: BlockHeader | Block, ethash: Ethash) {
     if (mineObject instanceof BlockHeader) {
-      this.blockHeader = mineObject
+      this.blockHeader = mineObject;
     } else if (mineObject instanceof Block) {
-      this.block = mineObject
-      this.blockHeader = mineObject.header
+      this.block = mineObject;
+      this.blockHeader = mineObject.header;
     } else {
-      throw new Error('unsupported mineObject')
+      throw new Error("unsupported mineObject");
     }
-    this.currentNonce = BIGINT_0
-    this.ethash = ethash
-    this.stopMining = false
+    this.currentNonce = BIGINT_0;
+    this.ethash = ethash;
+    this.stopMining = false;
   }
 
   /**
    * Stop the miner on the next iteration
    */
   stop() {
-    this.stopMining = true
+    this.stopMining = true;
   }
 
   /**
@@ -87,20 +92,20 @@ export class Miner {
    * @returns - `undefined` if no solution was found within the iterations, or a `BlockHeader` or `Block`
    *           with valid PoW based upon what was passed in the constructor
    */
-  async mine(iterations: number = 0): Promise<undefined | BlockHeader | Block> {
-    const solution = await this.iterate(iterations)
+  async mine(iterations = 0): Promise<undefined | BlockHeader | Block> {
+    const solution = await this.iterate(iterations);
 
     if (solution) {
       if (this.block) {
-        const data = <BlockData>this.block.toJSON()
-        data.header!.mixHash = solution.mixHash
-        data.header!.nonce = solution.nonce
-        return createBlock(data, { common: this.block.common })
+        const data = <BlockData>this.block.toJSON();
+        data.header!.mixHash = solution.mixHash;
+        data.header!.nonce = solution.nonce;
+        return createBlock(data, { common: this.block.common });
       } else {
-        const data = <HeaderData>this.blockHeader.toJSON()
-        data.mixHash = solution.mixHash
-        data.nonce = solution.nonce
-        return createBlockHeader(data, { common: this.blockHeader.common })
+        const data = <HeaderData>this.blockHeader.toJSON();
+        data.mixHash = solution.mixHash;
+        data.nonce = solution.nonce;
+        return createBlockHeader(data, { common: this.blockHeader.common });
       }
     }
   }
@@ -110,118 +115,121 @@ export class Miner {
    * @param iterations - Number of iterations to iterate over. If `-1` is passed, the loop runs until a solution is found
    * @returns - `undefined` if no solution was found, or otherwise a `Solution` object
    */
-  async iterate(iterations: number = 0): Promise<undefined | Solution> {
+  async iterate(iterations = 0): Promise<undefined | Solution> {
     if (this.solution) {
-      return this.solution
+      return this.solution;
     }
     if (!this.headerHash) {
-      this.headerHash = this.ethash.headerHash(this.blockHeader.raw())
+      this.headerHash = this.ethash.headerHash(this.blockHeader.raw());
     }
-    const headerHash = this.headerHash
-    const { number, difficulty } = this.blockHeader
+    const headerHash = this.headerHash;
+    const { number, difficulty } = this.blockHeader;
 
-    await this.ethash.loadEpoc(number)
+    await this.ethash.loadEpoc(number);
 
     while (iterations !== 0 && !this.stopMining) {
       // The promise/setTimeout construction is necessary to ensure we jump out of the event loop
       // Without this, for high-difficulty blocks JS never jumps out of the Promise
       const solution: Solution | null = await new Promise((resolve) => {
         setTimeout(() => {
-          const nonce = setLengthLeft(bigIntToBytes(this.currentNonce), 8)
+          const nonce = setLengthLeft(bigIntToBytes(this.currentNonce), 8);
 
-          const a = this.ethash.run(headerHash, nonce)
-          const result = bytesToBigInt(a.hash)
+          const a = this.ethash.run(headerHash, nonce);
+          const result = bytesToBigInt(a.hash);
 
           if (TWO_POW256 / difficulty > result) {
             const solution: Solution = {
               mixHash: a.mix,
               nonce,
-            }
-            this.solution = solution
-            resolve(solution)
-            return
+            };
+            this.solution = solution;
+            resolve(solution);
+            return;
           }
 
-          this.currentNonce++
-          iterations--
+          this.currentNonce++;
+          iterations--;
 
-          resolve(null)
-        }, 0)
-      })
+          resolve(null);
+        }, 0);
+      });
 
       if (solution !== null) {
-        return solution
+        return solution;
       }
     }
   }
 }
 
 export class Ethash {
-  dbOpts: Object
-  cacheDB?: DB<number, DBObject>
-  cache: Uint8Array[]
-  epoc?: number
-  fullSize?: number
-  cacheSize?: number
-  seed?: Uint8Array
+  dbOpts: Object;
+  cacheDB?: DB<number, DBObject>;
+  cache: Uint8Array[];
+  epoc?: number;
+  fullSize?: number;
+  cacheSize?: number;
+  seed?: Uint8Array;
 
   constructor(cacheDB?: DB<number, DBObject>) {
     this.dbOpts = {
-      valueEncoding: 'json',
-    }
-    this.cacheDB = cacheDB
-    this.cache = []
+      valueEncoding: "json",
+    };
+    this.cacheDB = cacheDB;
+    this.cache = [];
   }
 
   mkcache(cacheSize: number, seed: Uint8Array) {
-    const n = Math.floor(cacheSize / params.HASH_BYTES)
-    const o = [keccak512(seed)]
+    const n = Math.floor(cacheSize / params.HASH_BYTES);
+    const o = [keccak512(seed)];
 
-    let i
+    let i;
     for (i = 1; i < n; i++) {
-      o.push(keccak512(o[o.length - 1]))
+      o.push(keccak512(o[o.length - 1]));
     }
 
     for (let _ = 0; _ < params.CACHE_ROUNDS; _++) {
       for (i = 0; i < n; i++) {
-        const v = new DataView(o[i].buffer).getUint32(0, true) % n
-        o[i] = keccak512(xor(o[(i - 1 + n) % n], o[v]))
+        const v = new DataView(o[i].buffer).getUint32(0, true) % n;
+        o[i] = keccak512(xor(o[(i - 1 + n) % n], o[v]));
       }
     }
 
-    this.cache = o
-    return this.cache
+    this.cache = o;
+    return this.cache;
   }
 
   calcDatasetItem(i: number): Uint8Array {
-    const n = this.cache.length
-    const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES)
-    let mix = new Uint8Array(this.cache[i % n])
-    const mixView = new DataView(mix.buffer)
-    mixView.setUint32(0, mixView.getUint32(0, true) ^ i, true)
-    mix = keccak512(mix)
+    const n = this.cache.length;
+    const r = Math.floor(params.HASH_BYTES / params.WORD_BYTES);
+    let mix = new Uint8Array(this.cache[i % n]);
+    const mixView = new DataView(mix.buffer);
+    mixView.setUint32(0, mixView.getUint32(0, true) ^ i, true);
+    mix = keccak512(mix);
     for (let j = 0; j < params.DATASET_PARENTS; j++) {
-      const cacheIndex = fnv(i ^ j, new DataView(mix.buffer).getUint32((j % r) * 4, true))
-      mix = fnvBytes(mix, this.cache[cacheIndex % n])
+      const cacheIndex = fnv(
+        i ^ j,
+        new DataView(mix.buffer).getUint32((j % r) * 4, true),
+      );
+      mix = fnvBytes(mix, this.cache[cacheIndex % n]);
     }
-    return keccak512(mix)
+    return keccak512(mix);
   }
 
   run(val: Uint8Array, nonce: Uint8Array, fullSize?: number) {
     if (fullSize === undefined) {
       if (this.fullSize === undefined) {
-        throw new Error('fullSize needed')
+        throw new Error("fullSize needed");
       } else {
-        fullSize = this.fullSize
+        fullSize = this.fullSize;
       }
     }
-    const n = Math.floor(fullSize / params.HASH_BYTES)
-    const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES)
-    const s = keccak512(concatBytes(val, bytesReverse(nonce)))
-    const mixhashes = Math.floor(params.MIX_BYTES / params.HASH_BYTES)
-    let mix = concatBytes(...Array(mixhashes).fill(s))
+    const n = Math.floor(fullSize / params.HASH_BYTES);
+    const w = Math.floor(params.MIX_BYTES / params.WORD_BYTES);
+    const s = keccak512(concatBytes(val, bytesReverse(nonce)));
+    const mixhashes = Math.floor(params.MIX_BYTES / params.HASH_BYTES);
+    let mix = concatBytes(...Array(mixhashes).fill(s));
 
-    let i
+    let i;
     for (i = 0; i < params.ACCESSES; i++) {
       const p =
         (fnv(
@@ -229,28 +237,31 @@ export class Ethash {
           new DataView(mix.buffer).getUint32((i % w) * 4, true),
         ) %
           Math.floor(n / mixhashes)) *
-        mixhashes
-      const newdata: Uint8Array[] = []
+        mixhashes;
+      const newdata: Uint8Array[] = [];
       for (let j = 0; j < mixhashes; j++) {
-        newdata.push(this.calcDatasetItem(p + j))
+        newdata.push(this.calcDatasetItem(p + j));
       }
-      mix = fnvBytes(mix, concatBytes(...newdata))
+      mix = fnvBytes(mix, concatBytes(...newdata));
     }
 
-    const cmix = new Uint8Array(mix.length / 4)
-    const cmixView = new DataView(cmix.buffer)
-    const mixView = new DataView(mix.buffer)
+    const cmix = new Uint8Array(mix.length / 4);
+    const cmixView = new DataView(cmix.buffer);
+    const mixView = new DataView(mix.buffer);
     for (i = 0; i < mix.length / 4; i = i + 4) {
-      const a = fnv(mixView.getUint32(i * 4, true), mixView.getUint32((i + 1) * 4, true))
-      const b = fnv(a, mixView.getUint32((i + 2) * 4, true))
-      const c = fnv(b, mixView.getUint32((i + 3) * 4, true))
-      cmixView.setUint32(i, c, true)
+      const a = fnv(
+        mixView.getUint32(i * 4, true),
+        mixView.getUint32((i + 1) * 4, true),
+      );
+      const b = fnv(a, mixView.getUint32((i + 2) * 4, true));
+      const c = fnv(b, mixView.getUint32((i + 3) * 4, true));
+      cmixView.setUint32(i, c, true);
     }
 
     return {
       mix: cmix,
       hash: keccak256(concatBytes(s, cmix)),
-    }
+    };
   }
 
   cacheHash() {
@@ -258,79 +269,92 @@ export class Ethash {
     // We can't use `concatBytes` because calling `concatBytes(...this.cache)` results
     // in a `Max call stack size exceeded` error due to the spread operator pushing all
     // of the array elements onto the stack and the ethash cache can be quite large
-    const length = this.cache.reduce((a, arr) => a + arr.length, 0)
-    const result = new Uint8Array(length)
+    const length = this.cache.reduce((a, arr) => a + arr.length, 0);
+    const result = new Uint8Array(length);
     for (let i = 0, pad = 0; i < this.cache.length; i++) {
-      const arr = this.cache[i]
-      result.set(arr, pad)
-      pad += arr.length
+      const arr = this.cache[i];
+      result.set(arr, pad);
+      pad += arr.length;
     }
-    return keccak256(result)
+    return keccak256(result);
   }
 
   headerHash(rawHeader: Uint8Array[]) {
-    return keccak256(RLP.encode(rawHeader.slice(0, -2)))
+    return keccak256(RLP.encode(rawHeader.slice(0, -2)));
   }
 
   /**
    * Loads the seed and cache given a block number.
    */
   async loadEpoc(number: bigint) {
-    const epoc = getEpoc(number)
+    const epoc = getEpoc(number);
 
     if (this.epoc === epoc) {
-      return
+      return;
     }
 
-    this.epoc = epoc
+    this.epoc = epoc;
 
     if (!this.cacheDB) {
-      throw new Error('cacheDB needed')
+      throw new Error("cacheDB needed");
     }
 
     // gives the seed the first epoc found
-    const findLastSeed = async (epoc: number): Promise<[Uint8Array, number]> => {
+    const findLastSeed = async (
+      epoc: number,
+    ): Promise<[Uint8Array, number]> => {
       if (epoc === 0) {
-        return [new Uint8Array(32), 0]
+        return [new Uint8Array(32), 0];
       }
 
       const dbData = await this.cacheDB!.get(epoc, {
         keyEncoding: KeyEncoding.Number,
         valueEncoding: ValueEncoding.JSON,
-      })
+      });
       if (dbData !== undefined) {
         const data = {
-          cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
+          cache: (dbData.cache as PrefixedHexString[]).map((el) =>
+            hexToBytes(el),
+          ),
           fullSize: dbData.fullSize,
           cacheSize: dbData.cacheSize,
           seed: hexToBytes(dbData.seed as PrefixedHexString),
-        }
-        return [data.seed, epoc]
+        };
+        return [data.seed, epoc];
       } else {
-        return findLastSeed(epoc - 1)
+        return findLastSeed(epoc - 1);
       }
-    }
+    };
 
-    let data
+    let data;
     const dbData = await this.cacheDB!.get(epoc, {
       keyEncoding: KeyEncoding.Number,
       valueEncoding: ValueEncoding.JSON,
-    })
+    });
     if (dbData !== undefined) {
       data = {
-        cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
+        cache: (dbData.cache as PrefixedHexString[]).map((el) =>
+          hexToBytes(el),
+        ),
         fullSize: dbData.fullSize,
         cacheSize: dbData.cacheSize,
         seed: hexToBytes(dbData.seed as PrefixedHexString),
-      }
+      };
     }
-    if (!data) {
-      this.cacheSize = await getCacheSize(epoc)
-      this.fullSize = await getFullSize(epoc)
+    if (data) {
+      this.cache = data.cache.map((a: Uint8Array) => {
+        return Uint8Array.from(a);
+      });
+      this.cacheSize = data.cacheSize as number;
+      this.fullSize = data.fullSize as number;
+      this.seed = Uint8Array.from(data.seed);
+    } else {
+      this.cacheSize = await getCacheSize(epoc);
+      this.fullSize = await getFullSize(epoc);
 
-      const [seed, foundEpoc] = await findLastSeed(epoc)
-      this.seed = getSeed(seed, foundEpoc, epoc)
-      const cache = this.mkcache(this.cacheSize!, this.seed!)
+      const [seed, foundEpoc] = await findLastSeed(epoc);
+      this.seed = getSeed(seed, foundEpoc, epoc);
+      const cache = this.mkcache(this.cacheSize!, this.seed!);
       // store the generated cache
       await this.cacheDB!.put(
         epoc,
@@ -344,14 +368,7 @@ export class Ethash {
           keyEncoding: KeyEncoding.Number,
           valueEncoding: ValueEncoding.JSON,
         },
-      )
-    } else {
-      this.cache = data.cache.map((a: Uint8Array) => {
-        return Uint8Array.from(a)
-      })
-      this.cacheSize = data.cacheSize as number
-      this.fullSize = data.fullSize as number
-      this.seed = Uint8Array.from(data.seed)
+      );
     }
   }
 
@@ -362,37 +379,37 @@ export class Ethash {
    * @returns - A miner object
    */
   getMiner(mineObject: BlockHeader | Block): Miner {
-    return new Miner(mineObject, this)
+    return new Miner(mineObject, this);
   }
 
   async _verifyPOW(header: BlockHeader) {
-    const headerHash = this.headerHash(header.raw())
-    const { number, difficulty, mixHash, nonce } = header
+    const headerHash = this.headerHash(header.raw());
+    const { number, difficulty, mixHash, nonce } = header;
 
-    await this.loadEpoc(number)
-    const a = this.run(headerHash, nonce)
-    const result = bytesToBigInt(a.hash)
-    return equalsBytes(a.mix, mixHash) && TWO_POW256 / difficulty > result
+    await this.loadEpoc(number);
+    const a = this.run(headerHash, nonce);
+    const result = bytesToBigInt(a.hash);
+    return equalsBytes(a.mix, mixHash) && TWO_POW256 / difficulty > result;
   }
 
   async verifyPOW(block: Block) {
     // don't validate genesis blocks
     if (block.header.isGenesis()) {
-      return true
+      return true;
     }
 
-    const valid = await this._verifyPOW(block.header)
+    const valid = await this._verifyPOW(block.header);
     if (!valid) {
-      return false
+      return false;
     }
 
     for (let index = 0; index < block.uncleHeaders.length; index++) {
-      const valid = await this._verifyPOW(block.uncleHeaders[index])
+      const valid = await this._verifyPOW(block.uncleHeaders[index]);
       if (!valid) {
-        return false
+        return false;
       }
     }
 
-    return true
+    return true;
   }
 }

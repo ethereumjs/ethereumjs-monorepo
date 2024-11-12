@@ -301,7 +301,7 @@ export class TransitionTool {
 function getBlockchain(inputEnv: T8NEnv) {
   const blockchain = new EVMMockBlockchain();
 
-  blockchain.getBlock = async function (number?: Number) {
+  blockchain.getBlock = async (number?: number) => {
     for (const key in inputEnv.blockHashes) {
       if (Number(key) === number) {
         return {

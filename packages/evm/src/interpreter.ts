@@ -17,7 +17,7 @@ import { EOFContainerMode, validateEOF } from "./eof/container.js";
 import { setupEOF } from "./eof/setup.js";
 import { ContainerSectionType } from "./eof/verify.js";
 import { ERROR, EvmError } from "./exceptions.js";
-import { type EVMPerformanceLogger, type Timer } from "./logger.js";
+import type { EVMPerformanceLogger, Timer } from "./logger.js";
 import { Memory } from "./memory.js";
 import { Message } from "./message.js";
 import { trap } from "./opcodes/index.js";
