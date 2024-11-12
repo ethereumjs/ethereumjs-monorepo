@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { AccessList2930Transaction, FeeMarket1559Tx, LegacyTx } from '@ethereumjs/tx'
+import { AccessList2930Tx, FeeMarket1559Tx, LegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -106,7 +106,7 @@ describe('EIP1559 tests', () => {
     assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
     assert.equal(results.amountSpent, expectedCost, 'reported cost correct')
 
-    const tx2 = new AccessList2930Transaction(
+    const tx2 = new AccessList2930Tx(
       {
         gasLimit: 21000,
         gasPrice: Units.gwei(5),

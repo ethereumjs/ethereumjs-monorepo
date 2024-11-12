@@ -4,7 +4,7 @@ import { bytesToBigInt, bytesToHex, equalsBytes, validateNoLeadingZeroes } from 
 import { TransactionType } from '../types.js'
 import { txTypeBytes, validateNotArray } from '../util.js'
 
-import { EOACode7702Transaction } from './tx.js'
+import { EOACode7702Tx } from './tx.js'
 
 import type { TxOptions } from '../types.js'
 import type { TxData, TxValuesArray } from './tx.js'
@@ -20,7 +20,7 @@ import type { TxData, TxValuesArray } from './tx.js'
  * - All parameters are optional and have some basic default values
  */
 export function createEOACode7702Tx(txData: TxData, opts: TxOptions = {}) {
-  return new EOACode7702Transaction(txData, opts)
+  return new EOACode7702Tx(txData, opts)
 }
 
 /**
@@ -55,7 +55,7 @@ export function createEOACode7702TxFromBytesArray(values: TxValuesArray, opts: T
   validateNotArray({ chainId, v })
   validateNoLeadingZeroes({ nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, value, v, r, s })
 
-  return new EOACode7702Transaction(
+  return new EOACode7702Tx(
     {
       chainId: bytesToBigInt(chainId),
       nonce,
