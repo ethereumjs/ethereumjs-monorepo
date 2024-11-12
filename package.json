@@ -16,7 +16,7 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
+    "lint": "npx eslint --format codeframe --config ./config/eslint.cjs . --ext .js,.ts",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:node": "npm run test:node --workspaces --if-present",

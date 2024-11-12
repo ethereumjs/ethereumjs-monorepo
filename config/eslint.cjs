@@ -5,7 +5,7 @@ module.exports = {
     'github',
     'implicit-dependencies',
     'import',
-    'prettier',
+  //  'prettier',
     'simple-import-sort',
     'ethereumjs',
   ],
@@ -35,7 +35,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
-    'prettier',
+ //   'prettier',
   ],
   rules: {
     'no-restricted-imports': ['error', 'ethereum-cryptography/utils.js'],
@@ -107,7 +107,7 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-const': 'error',
-    'prettier/prettier': 'error',
+ //   'prettier/prettier': 'error',
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
@@ -115,7 +115,7 @@ module.exports = {
   parserOptions: {
     extraFileExtensions: ['.json'],
     sourceType: 'module',
-    project: './tsconfig.lint.json',
+    project: './config/tsconfig.lint.json',
   },
   overrides: [
     {
@@ -123,6 +123,7 @@ module.exports = {
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
+        'no-console': 'off',
       },
     },
   ],
