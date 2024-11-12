@@ -1,14 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "../packages/**/src/**/*.ts",
-    "../packages/**/test/**/*.ts",
-    "../packages/**/examples/**/*.ts",
-    "../packages/**/examples/**/*.cjs",
-    "../packages/**/examples/**/*.js",
-    "../packages/**/benchmarks/**/*.ts",
-    "../packages/**/bin/**/*.ts"
+    "../packages/**/*.ts"
   ],
+  "exclude": ["../packages/ethereum-tests/**/*,js", "../packages/client/devnets", "../packages/client/archive"],
   "compilerOptions": {
     "noEmit": true
   }

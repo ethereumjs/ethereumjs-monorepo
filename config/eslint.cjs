@@ -23,12 +23,11 @@ module.exports = {
     'rlp.cjs',
     'scripts',
     'typedoc.js',
-    'webpack.config.js',
     'vitest.config.ts',
     'vitest.config.browser.ts',
     'vitest.config.unit.ts',
-    'ethereum-tests/*',
-    'vite.*.ts'
+    'vite.*.ts',
+    "../packages/client/**/*.ts"
   ],
   extends: [
     'typestrict',
@@ -127,7 +126,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/examples/**/*.ts', '**/benchmarks/*.ts', ],
+      files: ['**/examples/**/*', '**/benchmarks/*.ts', ],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
