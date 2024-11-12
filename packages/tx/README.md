@@ -119,7 +119,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ##### Usage
 
-See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
+See the following code snippet for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
 ```ts
 // ./examples/blobTx.ts
