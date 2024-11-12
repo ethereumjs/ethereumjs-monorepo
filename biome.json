@@ -55,8 +55,7 @@
                   "kind": "interface",
                   "scope": "global"
                 },
-                "formats": ["PascalCase", "camelCase"],
-                "match": "I[A-Z]"
+                "formats": ["PascalCase", "camelCase"]
               }
             ]
           }
