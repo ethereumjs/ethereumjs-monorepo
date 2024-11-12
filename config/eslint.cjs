@@ -115,11 +115,35 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['test/**/*.ts', 'examples/**/*.ts'],
+      files: ['**/test/**/*.ts', '**/bin/**.ts', ],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
         'no-console': 'off',
+      },
+    },
+    {
+      files: ['**/examples/**/*.ts', '**/benchmarks/*.ts', ],
+      rules: {
+        'implicit-dependencies/no-implicit': 'off',
+        'import/no-extraneous-dependencies': 'off',
+        'no-console': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
+    },
+    {
+      files: ['packages/statemanager/src/**', 'packages/vm/src/**', ],
+      rules: {
+        '@typescript-eslint/no-use-before-define': 'off',
+        'no-invalid-this': 'off',
+        'no-restricted-syntax': 'off',
+      },
+    },
+    {
+      files: ['packages/wallet/**'],
+      rules: {
+        'github/array-foreach': 'warn',
+        'no-prototype-builtins': 'warn',
       },
     },
   ],
