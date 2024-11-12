@@ -46,5 +46,5 @@ jobs:
         working-directory: ${{ github.workspace }}
             
    
-      - run: npm run lint --workspaces --if-present
+      - run: npm run lint
         working-directory: ${{ github.workspace }}
