@@ -128,7 +128,7 @@ If the label is removed, the extended tests will not run anymore.
 
 For state tests you can use the `--jsontrace` flag to output opcode trace information.
 
-Blockchain tests support `--debug` to verify the postState:
+Blockchain tests support `--debug` to verify the post state:
 
 `tsx ./test/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
