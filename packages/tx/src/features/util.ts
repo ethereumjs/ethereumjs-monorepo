@@ -24,7 +24,8 @@ export function getCommon(common?: Common): Common {
  * @param bits Number of bits to check (64 or 256)
  * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
  */
-export function valueBoundaryCheck( // TODO: better method name
+export function valueBoundaryCheck(
+  // TODO: better method name
   values: { [key: string]: bigint | undefined },
   bits = 256,
   cannotEqual = false,

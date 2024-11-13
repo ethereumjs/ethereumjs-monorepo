@@ -2,11 +2,7 @@
   "name": "@ethereumjs/util",
   "version": "10.0.0-alpha.1",
   "description": "A collection of utility functions for Ethereum",
-  "keywords": [
-    "ethereum",
-    "utilities",
-    "utils"
-  ],
+  "keywords": ["ethereum", "utilities", "utils"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+util%22"
@@ -71,10 +67,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
@@ -82,9 +75,6 @@
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- util",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",

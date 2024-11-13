@@ -84,8 +84,8 @@ describe('RLPx simulator tests', () => {
   }, 30000)
   it('RLPX: remove node', async () => {
     const { rlpxs, peer } = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40504)
-    rlpxs[0]
-      ['_dpt']!.addPeer(peer)
+    // biome-ignore format: the linter doesn't like when you format this
+    rlpxs[0]['_dpt']!.addPeer(peer)
       .then((peer1) => {
         rlpxs[0].disconnect(peer1['id']!)
       })

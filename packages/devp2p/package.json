@@ -39,10 +39,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
@@ -50,9 +47,6 @@
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- devp2p",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "vitest run",
     "test:node": "npm run test",

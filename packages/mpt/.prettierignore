@@ -1,6 +1,0 @@
-node_modules
-.vscode
-dist
-.nyc_output
-*.json
-docs
