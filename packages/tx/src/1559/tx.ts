@@ -11,8 +11,8 @@ import {
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
+import * as Generic from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists } from '../util.js'
 
@@ -86,7 +86,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
+    Generic.sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
@@ -111,7 +111,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    Generic.valueBoundaryCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
@@ -330,7 +330,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this)
+    const baseJSON = Generic.getBaseJSON(this)
 
     return {
       ...baseJSON,

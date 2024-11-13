@@ -1,19 +1,29 @@
+import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   BIGINT_0,
+  BIGINT_2,
+  BIGINT_8,
   SECP256K1_ORDER_DIV_2,
+  bigIntToHex,
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   bytesToHex,
   ecrecover,
   ecsign,
   publicToAddress,
+  toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { createLegacyTx } from '../legacy/constructors.js'
 import { Capability, TransactionType } from '../types.js'
 
-import type { LegacyTxInterface, Transaction } from '../types.js'
+import * as Generic from './generic.js'
+
+import type { LegacyTx } from '../legacy/tx.js'
+import type { JSONTx, LegacyTxInterface, Transaction, TxValuesArray } from '../types.js'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
@@ -280,4 +290,153 @@ export function getSharedErrorPostfix(tx: LegacyTxInterface) {
   postfix += `signed=${isSigned} hf=${hf}`
 
   return postfix
+}
+
+/**
+ * Returns an object with the JSON representation of the transaction.
+ */
+export function toJSON(tx: LegacyTxInterface): JSONTx {
+  // TODO this is just copied. Make this execution-api compliant
+
+  const baseJSON = Generic.getBaseJSON(tx) as JSONTx
+  // TODO: fix type error below
+  baseJSON.gasPrice = bigIntToHex(tx.gasPrice)
+
+  return baseJSON
+}
+
+export function addSignature(
+  tx: LegacyTxInterface,
+  v: bigint,
+  r: Uint8Array | bigint,
+  s: Uint8Array | bigint,
+  convertV: boolean = false,
+): LegacyTx {
+  r = toBytes(r)
+  s = toBytes(s)
+  if (convertV && tx.supports(Capability.EIP155ReplayProtection)) {
+    v += tx.common.chainId() * BIGINT_2 + BIGINT_8
+  }
+
+  const opts = { ...tx.txOptions, common: tx.common }
+
+  return createLegacyTx(
+    {
+      nonce: tx.nonce,
+      gasPrice: tx.gasPrice,
+      gasLimit: tx.gasLimit,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
+      v,
+      r: bytesToBigInt(r),
+      s: bytesToBigInt(s),
+    },
+    opts,
+  )
+}
+
+/**
+ * Returns the hashed serialized unsigned tx, which can be used
+ * to sign the transaction (e.g. for sending to a hardware wallet).
+ */
+export function getHashedMessageToSign(tx: LegacyTxInterface) {
+  const message = tx.getMessageToSign()
+  return tx.keccakFunction(RLP.encode(message))
+}
+
+/**
+ * Computes a sha3-256 hash which can be used to verify the signature
+ */
+export function getMessageToVerifySignature(tx: LegacyTxInterface) {
+  if (!isSigned(tx)) {
+    const msg = errorMsg(tx, 'This transaction is not signed')
+    throw new Error(msg)
+  }
+  return getHashedMessageToSign(tx)
+}
+
+export function getUpfrontCost(tx: LegacyTxInterface): bigint {
+  return tx.gasLimit * tx.gasPrice + tx.value
+}
+
+/**
+ * Return a compact error string representation of the object
+ */
+export function errorStr(tx: LegacyTxInterface) {
+  let errorStr = getSharedErrorPostfix(tx)
+  errorStr += ` gasPrice=${tx.gasPrice}`
+  return errorStr
+}
+
+/**
+ * Returns the raw unsigned tx, which can be used
+ * to sign the transaction (e.g. for sending to a hardware wallet).
+ *
+ * Note: the raw message message format for the legacy tx is not RLP encoded
+ * and you might need to do yourself with:
+ *
+ * ```javascript
+ * import { RLP } from '@ethereumjs/rlp'
+ * const message = tx.getMessageToSign()
+ * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
+ * ```
+ */
+export function getMessageToSign(tx: LegacyTxInterface): Uint8Array[] {
+  const message = [
+    bigIntToUnpaddedBytes(tx.nonce),
+    bigIntToUnpaddedBytes(tx.gasPrice),
+    bigIntToUnpaddedBytes(tx.gasLimit),
+    tx.to !== undefined ? tx.to.bytes : new Uint8Array(0),
+    bigIntToUnpaddedBytes(tx.value),
+    tx.data,
+  ]
+
+  if (tx.supports(Capability.EIP155ReplayProtection)) {
+    message.push(bigIntToUnpaddedBytes(tx.common.chainId()))
+    message.push(unpadBytes(toBytes(0)))
+    message.push(unpadBytes(toBytes(0)))
+  }
+
+  return message
+}
+
+/**
+ * Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
+ *
+ * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
+ *
+ * For legacy txs this is also the correct format to add transactions
+ * to a block with {@link createBlockFromBytesArray} (use the `serialize()` method
+ * for typed txs).
+ *
+ * For an unsigned tx this method returns the empty Bytes values
+ * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
+ * representation have a look at {@link Transaction.getMessageToSign}.
+ */
+export function raw(tx: LegacyTxInterface): TxValuesArray[TransactionType.Legacy] {
+  return [
+    bigIntToUnpaddedBytes(tx.nonce),
+    bigIntToUnpaddedBytes(tx.gasPrice),
+    bigIntToUnpaddedBytes(tx.gasLimit),
+    tx.to !== undefined ? tx.to.bytes : new Uint8Array(0),
+    bigIntToUnpaddedBytes(tx.value),
+    tx.data,
+    tx.v !== undefined ? bigIntToUnpaddedBytes(tx.v) : new Uint8Array(0),
+    tx.r !== undefined ? bigIntToUnpaddedBytes(tx.r) : new Uint8Array(0),
+    tx.s !== undefined ? bigIntToUnpaddedBytes(tx.s) : new Uint8Array(0),
+  ]
+}
+
+/**
+ * Returns the serialized encoding of the legacy transaction.
+ *
+ * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
+ *
+ * For an unsigned tx this method uses the empty Uint8Array values for the
+ * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+ * representation for external signing use {@link Transaction.getMessageToSign}.
+ */
+export function serialize(tx: LegacyTxInterface): Uint8Array {
+  return RLP.encode(raw(tx))
 }

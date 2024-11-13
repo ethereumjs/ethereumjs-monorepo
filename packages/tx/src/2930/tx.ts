@@ -9,8 +9,8 @@ import {
 
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
+import * as Generic from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists } from '../util.js'
 
@@ -82,7 +82,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    sharedConstructor(this, { ...txData, type: TransactionType.AccessListEIP2930 }, opts)
+    Generic.sharedConstructor(this, { ...txData, type: TransactionType.AccessListEIP2930 }, opts)
     const { chainId, accessList, gasPrice } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
@@ -107,7 +107,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
-    valueBoundaryCheck({ gasPrice: this.gasPrice })
+    Generic.valueBoundaryCheck({ gasPrice: this.gasPrice })
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
@@ -305,7 +305,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this)
+    const baseJSON = Generic.getBaseJSON(this)
 
     return {
       ...baseJSON,

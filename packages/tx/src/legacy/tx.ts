@@ -11,8 +11,8 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import * as Generic from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
 
@@ -120,10 +120,10 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    sharedConstructor(this, txData, opts)
+    Generic.sharedConstructor(this, txData, opts)
 
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
-    valueBoundaryCheck({ gasPrice: this.gasPrice })
+    Generic.valueBoundaryCheck({ gasPrice: this.gasPrice })
 
     // Everything from BaseTransaction done here
     this.common.updateParams(opts.params ?? paramsTx) // TODO should this move higher?
@@ -205,17 +205,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * representation have a look at {@link Transaction.getMessageToSign}.
    */
   raw(): TxValuesArray {
-    return [
-      bigIntToUnpaddedBytes(this.nonce),
-      bigIntToUnpaddedBytes(this.gasPrice),
-      bigIntToUnpaddedBytes(this.gasLimit),
-      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
-      bigIntToUnpaddedBytes(this.value),
-      this.data,
-      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
-      this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
-      this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
-    ]
+    return Legacy.raw(this)
   }
 
   /**
@@ -228,7 +218,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * representation for external signing use {@link Transaction.getMessageToSign}.
    */
   serialize(): Uint8Array {
-    return RLP.encode(this.raw())
+    return Legacy.serialize(this)
   }
 
   /**
@@ -245,22 +235,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * ```
    */
   getMessageToSign(): Uint8Array[] {
-    const message = [
-      bigIntToUnpaddedBytes(this.nonce),
-      bigIntToUnpaddedBytes(this.gasPrice),
-      bigIntToUnpaddedBytes(this.gasLimit),
-      this.to !== undefined ? this.to.bytes : new Uint8Array(0),
-      bigIntToUnpaddedBytes(this.value),
-      this.data,
-    ]
-
-    if (this.supports(Capability.EIP155ReplayProtection)) {
-      message.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      message.push(unpadBytes(toBytes(0)))
-      message.push(unpadBytes(toBytes(0)))
-    }
-
-    return message
+    return Legacy.getMessageToSign(this)
   }
 
   /**
@@ -268,8 +243,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * to sign the transaction (e.g. for sending to a hardware wallet).
    */
   getHashedMessageToSign() {
-    const message = this.getMessageToSign()
-    return this.keccakFunction(RLP.encode(message))
+    return Legacy.getHashedMessageToSign(this)
   }
 
   /**
@@ -300,7 +274,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * The up front amount that an account must have for this transaction to be valid
    */
   getUpfrontCost(): bigint {
-    return this.gasLimit * this.gasPrice + this.value
+    return Legacy.getUpfrontCost(this)
   }
 
   /**
@@ -317,11 +291,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * Computes a sha3-256 hash which can be used to verify the signature
    */
   getMessageToVerifySignature() {
-    if (!this.isSigned()) {
-      const msg = Legacy.errorMsg(this, 'This transaction is not signed')
-      throw new Error(msg)
-    }
-    return this.getHashedMessageToSign()
+    return Legacy.getMessageToVerifySignature(this)
   }
 
   /**
@@ -337,40 +307,14 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     s: Uint8Array | bigint,
     convertV: boolean = false,
   ): LegacyTx {
-    r = toBytes(r)
-    s = toBytes(s)
-    if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BIGINT_2 + BIGINT_8
-    }
-
-    const opts = { ...this.txOptions, common: this.common }
-
-    return createLegacyTx(
-      {
-        nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
-        to: this.to,
-        value: this.value,
-        data: this.data,
-        v,
-        r: bytesToBigInt(r),
-        s: bytesToBigInt(s),
-      },
-      opts,
-    )
+    return Legacy.addSignature(this, v, r, s, convertV)
   }
 
   /**
    * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JSONTx {
-    // TODO this is just copied. Make this execution-api compliant
-
-    const baseJSON = getBaseJSON(this) as JSONTx
-    baseJSON.gasPrice = bigIntToHex(this.gasPrice)
-
-    return baseJSON
+    return Legacy.toJSON(this)
   }
 
   getValidationErrors(): string[] {
@@ -397,8 +341,6 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = Legacy.getSharedErrorPostfix(this)
-    errorStr += ` gasPrice=${this.gasPrice}`
-    return errorStr
+    return Legacy.errorStr(this)
   }
 }
