@@ -1,26 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "../packages/block/**/*.ts",
-    "../packages/blockchain/**/*.ts",
-    "../packages/client/**/*.ts",
-    "../packages/common/**/*.ts",
-    "../packages/devp2p/**/*.ts",
-    "../packages/ethash/**/*.ts",
-    "../packages/evm/**/*.ts",
-    "../packages/genesis/**/*.ts",
-    "../packages/mpt/**/*.ts",
-    "../packages/mpt/examples/**/*",
-    "../packages/rlp/**/*.ts",
-    "../packages/statemanager/**/*.ts",
-    "../packages/tx/**/*.ts",
-    "../packages/util/**/*.ts",
-    "../packages/verkle/**/*.ts",
-    "../packages/vm/**/*.ts",
-    "../packages/wallet/**/*.ts",
-    "../packages/ethereum-tests/**/*.js"
+    "../packages/**/*.ts",
+    "../packages/**/*.js",
+    "../packages/ethereum-tests/**/*.js",
+    "package.json"
   ],
-  "exclude": ["../packages/client/devnets", "../packages/client/archive", "**/ethereum-tests/**/*"],
+  "exclude": ["../packages/client/devnets", "../packages/client/archive", "**/ethereum-tests/**/*", "package.json"],
   "compilerOptions": {
     "noEmit": true
   }

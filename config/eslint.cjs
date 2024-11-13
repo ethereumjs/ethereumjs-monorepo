@@ -32,6 +32,8 @@ module.exports = {
     'devnets',
     'eslint',
     'lint-staged.config.js',
+    'tsconfig.lint.json',
+    'package.json',
   ],
   extends: [
     'typestrict',
