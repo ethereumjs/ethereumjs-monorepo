@@ -53,11 +53,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   let stateManager: StateManagerInterface
 
   if (options.stateManager === 'verkle') {
-    const verkleCrypto = options.verkleCrypto
     stateTree = await createVerkleTree()
     stateManager = new StatefulVerkleStateManager({
-      verkleCrypto,
       trie: stateTree,
+      common: options.common,
     })
   } else {
     stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
