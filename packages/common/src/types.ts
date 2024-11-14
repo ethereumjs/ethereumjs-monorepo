@@ -95,7 +95,7 @@ export interface CustomCrypto {
   ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
-  verkleCrypto?: VerkleCrypto
+  verkle?: VerkleCrypto
 }
 
 export interface BaseOpts {

@@ -7,7 +7,7 @@ const main = async () => {
     cacheSize: 0,
     db: new MapDB<Uint8Array, Uint8Array>(),
     useRootPersistence: false,
-    verkleCrypto: verkle,
+    verkle,
   })
   await tree.createRootNode()
   console.log(bytesToHex(tree.root())) // 0x0000000000000000000000000000000000000000000000000000000000000000

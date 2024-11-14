@@ -137,11 +137,11 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (vm.common.isActivatedEIP(6800)) {
     // Initialize the access witness
 
-    if (vm.common.customCrypto.verkleCrypto === undefined) {
+    if (vm.common.customCrypto.verkle === undefined) {
       throw Error('verkleCrypto required when EIP-6800 is active')
     }
     vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: vm.common.customCrypto.verkleCrypto,
+      verkleCrypto: vm.common.customCrypto.verkle,
     })
 
     if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
@@ -757,7 +757,9 @@ export async function rewardAccount(
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.verkleAccessWitness.touchTxTargetAndComputeGas(address, { sendsValue: true })
+    evm.verkleAccessWitness.touchTxTargetAndComputeGas(address, {
+      sendsValue: true,
+    })
   }
   return account
 }

@@ -155,7 +155,10 @@ describe('Verkle tree', () => {
     const rawNode = await trie['_db'].get(trie.root())
     const rootNode = decodeVerkleNode(rawNode!, verkle) as InternalVerkleNode
     // Update root node with commitment from leaf node
-    rootNode.setChild(stem1[0], { commitment: leafNode1.commitment, path: stem1 })
+    rootNode.setChild(stem1[0], {
+      commitment: leafNode1.commitment,
+      path: stem1,
+    })
     trie.root(verkle.serializeCommitment(rootNode.commitment))
     putStack.push([trie.root(), rootNode])
     await trie.saveStack(putStack)

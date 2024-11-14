@@ -93,7 +93,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       throw new Error('EIP-6800 required for verkle state management')
     }
 
-    if (opts.common.customCrypto.verkleCrypto === undefined) {
+    if (opts.common.customCrypto.verkle === undefined) {
       throw new Error('verkle crypto required')
     }
 
@@ -101,7 +101,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._trie =
       opts.trie ??
       new VerkleTree({
-        verkleCrypto: opts.common.customCrypto.verkleCrypto,
+        verkleCrypto: opts.common.customCrypto.verkle,
         db: new MapDB<Uint8Array, Uint8Array>(),
         useRootPersistence: false,
         cacheSize: 0,
@@ -110,7 +110,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
     this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
-    this.verkleCrypto = opts.common.customCrypto.verkleCrypto
+    this.verkleCrypto = opts.common.customCrypto.verkle
   }
 
   /**
@@ -329,7 +329,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         codeChunks.slice(sliceStart, sliceEnd),
       )
     }
-    await this.modifyAccountFields(address, { codeHash, codeSize: value.length })
+    await this.modifyAccountFields(address, {
+      codeHash,
+      codeSize: value.length,
+    })
   }
 
   getCode = async (address: Address): Promise<Uint8Array> => {
