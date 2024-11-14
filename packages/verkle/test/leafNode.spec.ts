@@ -24,7 +24,7 @@ describe('verkle node - leaf', () => {
       commitment,
       stem,
       values,
-      verkle,
+      verkleCrypto: verkle,
     })
 
     assert.ok(isLeafVerkleNode(node), 'typeguard should return true')
