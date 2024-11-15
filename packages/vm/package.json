@@ -2,10 +2,7 @@
   "name": "@ethereumjs/vm",
   "version": "9.0.0-alpha.1",
   "description": "An Ethereum VM implementation",
-  "keywords": [
-    "ethereum",
-    "VM"
-  ],
+  "keywords": ["ethereum", "VM"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+vm%22"
@@ -16,9 +13,7 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
-  "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>"
-  ],
+  "contributors": ["Alex Beregszaszi <alex@rtfs.hu>"],
   "type": "module",
   "sideEffects": false,
   "main": "dist/cjs/index.js",
@@ -29,10 +24,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
     "build": "../../config/cli/ts-build.sh",
@@ -44,9 +36,6 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- vm",
     "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",

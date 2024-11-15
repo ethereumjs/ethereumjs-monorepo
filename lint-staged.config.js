@@ -1,3 +1,3 @@
 module.exports = {
-  '*.{js,json,md,ts}': 'prettier --ignore-unknown --write',
+  '*.{js,json,md,ts}': 'npx @biomejs/biome check --write',
 }

@@ -463,7 +463,6 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
   } catch {
     assert.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
   }
-
   // disable consensus to skip PoA block signer validation
   ;(vm.blockchain as any)._validateConsensus = false
   ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {

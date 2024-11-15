@@ -2,10 +2,7 @@
   "name": "@ethereumjs/rlp",
   "version": "6.0.0-alpha.1",
   "description": "Recursive Length Prefix Encoding Module",
-  "keywords": [
-    "rlp",
-    "ethereum"
-  ],
+  "keywords": ["rlp", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+rlp%22"
@@ -37,11 +34,7 @@
   "bin": {
     "rlp": "bin/rlp.cjs"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src"
-  ],
+  "files": ["dist", "bin", "src"],
   "scripts": {
     "benchmarks": "node ./benchmarks/index.js",
     "build": "../../config/cli/ts-build.sh node",
@@ -50,9 +43,6 @@
     "coverage": "npx vitest --coverage --coverage.include=src run",
     "examples": "tsx ../../scripts/examples-runner.ts -- rlp",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",

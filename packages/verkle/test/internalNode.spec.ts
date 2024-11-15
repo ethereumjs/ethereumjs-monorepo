@@ -49,7 +49,10 @@ describe('verkle node - internal', () => {
       commitment: randomBytes(64),
       path: randomBytes(10),
     }
-    const children = new Array(256).fill({ commitment: new Uint8Array(64), path: new Uint8Array() })
+    const children = new Array(256).fill({
+      commitment: new Uint8Array(64),
+      path: new Uint8Array(),
+    })
     children[0] = child
     const node = new InternalVerkleNode({
       children,

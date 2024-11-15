@@ -611,7 +611,6 @@ describe('[TxPool]', async () => {
     )
 
     const { pool } = setup()
-
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       baseFeePerGas: BigInt(3000000000),
     })
@@ -635,7 +634,6 @@ describe('[TxPool]', async () => {
     )
 
     const { pool } = setup()
-
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       gasLimit: BigInt(5000),
     })

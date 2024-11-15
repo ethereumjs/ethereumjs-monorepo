@@ -232,7 +232,11 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await runBlock(vm, { block, skipBlockValidation: true, skipHardForkValidation: true })
+    await runBlock(vm, {
+      block,
+      skipBlockValidation: true,
+      skipHardForkValidation: true,
+    })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
   })
@@ -391,7 +395,12 @@ describe('runBlock() -> runtime behavior', async () => {
       { common },
     )
 
-    await runBlock(vm, { block, skipNonce: true, skipBlockValidation: true, generate: true })
+    await runBlock(vm, {
+      block,
+      skipNonce: true,
+      skipBlockValidation: true,
+      generate: true,
+    })
     const account = await vm.stateManager.getAccount(signer.address)
     assert.equal(
       account!.balance,
@@ -431,7 +440,11 @@ it('should correctly reflect generated fields', async () => {
   // which is a well known constant.
   const bytes32Zeros = new Uint8Array(32)
   const block = createBlock({
-    header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
+    header: {
+      receiptTrie: bytes32Zeros,
+      transactionsTrie: bytes32Zeros,
+      gasUsed: BigInt(1),
+    },
   })
 
   const results = await runBlockAndGetAfterBlockEvent(vm, {
@@ -688,7 +701,7 @@ describe.skip('run a verkle block', () => {
 
     const common = new Common({
       chain: Mainnet,
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
       hardfork: Hardfork.Shanghai,
       eips: [2935, 3607, 6800],
     })
@@ -702,7 +715,12 @@ describe.skip('run a verkle block', () => {
       const sm = new StatefulVerkleStateManager({ common })
       await sm['_trie'].createRootNode()
       const blockchain = await createBlockchain({ common })
-      const vm = await setupVM({ common, stateManager: sm, blockchain, genesisBlock })
+      const vm = await setupVM({
+        common,
+        stateManager: sm,
+        blockchain,
+        genesisBlock,
+      })
       await setupPreConditions(vm.stateManager, verkleJSON)
       const witness = {
         ...verkleJSON.blocks[0].witness,
