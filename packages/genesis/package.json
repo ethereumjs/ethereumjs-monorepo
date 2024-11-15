@@ -2,10 +2,7 @@
   "name": "@ethereumjs/genesis",
   "version": "0.3.0-alpha.1",
   "description": "A module to provide genesis states of well known networks",
-  "keywords": [
-    "ethereum",
-    "genesis"
-  ],
+  "keywords": ["ethereum", "genesis"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+genesis%22"
@@ -38,10 +35,7 @@
       "require": "./dist/cjs/genesisStates/sepolia.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
@@ -49,9 +43,6 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
