@@ -342,7 +342,8 @@ export function addSignature(
  */
 export function getHashedMessageToSign(tx: LegacyTxInterface) {
   const message = tx.getMessageToSign()
-  return tx.keccakFunction(RLP.encode(message))
+  const keccak = tx.common.customCrypto.keccak256 ?? keccak256
+  return keccak(RLP.encode(message))
 }
 
 /**

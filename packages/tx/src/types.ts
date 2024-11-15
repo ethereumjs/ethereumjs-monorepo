@@ -25,6 +25,23 @@ export enum Capability {
   EIP155ReplayProtection = 155,
 
   /**
+   * The tx supports the "legacy gas market": it has a `gasPrice` property
+   */
+  LegacyGasMarket = 'LegacyGasMarket',
+
+  /**
+   * The tx supports the "fee gas market": it has the `maxPriorityFeePerGas` and `maxFeePerGas` properties
+   */
+  FeeGasMarket = 'FeeGasMarket',
+
+  // Below here are tx-specfic Capabilities, used to distinguish transactions from other transactions
+  // These are used in methods such as `raw`
+
+  /**
+   * Tx is a "legacy tx"
+   */
+  LegacyTx = 'LegacyTx',
+  /**
    * Tx supports EIP-1559 gas fee market mechanism
    * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
    */
@@ -41,6 +58,12 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
+
+  /**
+   * Tx supports blobs generation as defined in EIP-4844
+   * See: [4844](https://eips.ethereum.org/EIPS/eip-4844) Access Lists EIP
+   */
+  EIP4844Blobs = 4844,
 
   /**
    * Tx supports setting EOA code
@@ -185,6 +208,40 @@ export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
 
+// Temp interface to replace TransactionInterface
+export interface TxInterface {
+  readonly cache: TransactionCache
+  readonly common: Common // TODO: remove Common from tx interfaces
+  readonly activeCapabilities: Capability[] // Necessary to determine the capabilities of the transaction in the respective methods
+}
+
+export interface LegacyTxInterface extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+}
+
+export function isLegacyTxInterface(tx: LegacyTxInterface): tx is LegacyTxInterface {
+  return tx.activeCapabilities.includes(Capability.LegacyTx)
+}
+
+export interface LegacyGasMarketInterface extends TxInterface {
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly value: bigint
+}
+
+export interface FeeGasMarketInterface extends TxInterface {
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
+}
+
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
   readonly common: Common
   readonly nonce: bigint
@@ -227,6 +284,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   ): Transaction[T]
 }
 
+/*
 export interface LegacyTxInterface<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {}
 
@@ -263,7 +321,7 @@ export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType
   extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
   readonly authorizationList: AuthorizationListBytes
-}
+} */
 
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData
