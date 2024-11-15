@@ -62,7 +62,10 @@ describe('lets make proofs', () => {
     }
   })
   it('should pass for empty trie', async () => {
-    const trie = await createVerkleTree({ verkleCrypto: verkle, db: new MapDB() })
+    const trie = await createVerkleTree({
+      verkleCrypto: verkle,
+      db: new MapDB(),
+    })
 
     const proof = verkle.createProof([
       {

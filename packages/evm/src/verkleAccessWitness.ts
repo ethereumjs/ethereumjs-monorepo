@@ -153,7 +153,9 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: true })
+    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+      isWrite: true,
+    })
   }
 
   touchAddressOnReadAndComputeGas(
@@ -161,7 +163,9 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: false })
+    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+      isWrite: false,
+    })
   }
 
   touchAddressAndChargeGas(
@@ -327,7 +331,10 @@ export function decodeAccessedState(
         return { type: VerkleAccessedStateType.Storage, slot }
       } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
         const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
-        return { type: VerkleAccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
+        return {
+          type: VerkleAccessedStateType.Code,
+          codeOffset: codeChunkIdx * 31,
+        }
       } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
         const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
         return { type: VerkleAccessedStateType.Storage, slot }

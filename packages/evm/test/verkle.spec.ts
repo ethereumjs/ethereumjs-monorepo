@@ -18,7 +18,7 @@ describe('verkle tests', () => {
     // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({
       chain: Mainnet,
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
       eips: [6800],
       hardfork: Hardfork.Cancun,
     })
