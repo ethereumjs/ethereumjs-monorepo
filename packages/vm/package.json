@@ -36,6 +36,7 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- vm",
     "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
+    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",

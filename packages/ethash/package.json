@@ -31,6 +31,7 @@
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- ethash",
     "examples:build": "npx embedme README.md",
+    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"

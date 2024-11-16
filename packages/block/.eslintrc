@@ -1,6 +1,0 @@
-{
-  "extends": ["../../config/eslint.cjs"],
-  "parserOptions": {
-    "project": "./tsconfig.lint.json"
-  }
-}
