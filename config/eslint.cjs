@@ -149,6 +149,16 @@ module.exports = {
       },
     },
     {
+      files: ['packages/devp2p/**'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 'off',
+        'no-redeclare': 'off',
+        'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
+        'no-console': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
+    },
+    {
       files: ['packages/wallet/**'],
       rules: {
         'github/array-foreach': 'warn',
