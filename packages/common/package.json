@@ -44,6 +44,7 @@
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- common",
     "examples:build": "npx embedme README.md",
+    "lint": "eslint --config .eslintrc.cjs . --ext .js,.ts",
     "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
