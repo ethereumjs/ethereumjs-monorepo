@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import * as verkleCrypto from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle'
 import * as path from 'path'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
@@ -331,7 +331,7 @@ function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
       defaultHardfork: 'verkle',
     },
     Mainnet,
-    { eips: [3607], customCrypto: { kzg, verkleCrypto } },
+    { eips: [3607], customCrypto: { kzg, verkle } },
   )
   console.log(common.eips())
   // Activate EIPs

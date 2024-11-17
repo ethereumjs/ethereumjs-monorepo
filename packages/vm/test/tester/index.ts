@@ -25,7 +25,6 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
 import type { VerkleCrypto } from '@ethereumjs/util'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 /**
  * Test runner
@@ -126,9 +125,9 @@ async function runTests() {
     bn254 = new NobleBN254()
   }
 
-  let verkleCrypto: VerkleCrypto
+  let verkleCrypto: VerkleCrypto | undefined
   if (FORK_CONFIG === 'verkle') {
-    verkleCrypto = await loadVerkleCrypto()
+    verkleCrypto = verkle
   }
 
   /**
@@ -165,7 +164,6 @@ async function runTests() {
     profile: RUN_PROFILER,
     bn254,
     stateManager: argv.stateManager,
-    verkleCrypto,
   }
 
   /**
