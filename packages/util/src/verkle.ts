@@ -238,39 +238,44 @@ export const getVerkleTreeKeyForCodeChunk = async (
   return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
 }
 
+// This code was written by robots based on the reference implementation in EIP-6800
 export const chunkifyCode = (code: Uint8Array) => {
-  if (code.length === 0) return []
-  // Pad code to multiple of VERKLE_CODE_CHUNK_SIZE bytes
-  if (code.length % VERKLE_CODE_CHUNK_SIZE !== 0) {
-    const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
-    code = setLengthRight(code, code.length + paddingLength)
-  }
-  // Put first chunk (leading byte is always 0 since we have no leading PUSHDATA bytes)
-  const chunks = [concatBytes(new Uint8Array(1), code.subarray(0, 31))]
-  for (let i = 1; i < Math.floor(code.length / 31); i++) {
-    const slice = code.slice((i - 1) * 31, i * 31)
-    let x = 31
-    while (x >= 0) {
-      // Look for last push instruction in code chunk
-      if (slice[x] > 0x5f && slice[x] < 0x80) break
-      x--
+  const PUSH1 = 0x60 // Assuming PUSH1 is defined as 0x60
+  const PUSH32 = 0x7f // Assuming PUSH32 is defined as 0x7f
+  const PUSH_OFFSET = 0x5f // Assuming PUSH_OFFSET is defined as 0x5f
+
+  // Calculate padding length
+  const paddingLength = (31 - (code.length % 31)) % 31
+  const paddedCode = new Uint8Array(code.length + paddingLength)
+  paddedCode.set(code)
+
+  // Pre-allocate the bytesToExecData array
+  const bytesToExecData = new Uint8Array(paddedCode.length + 32)
+
+  let pos = 0
+  while (pos < paddedCode.length) {
+    let pushdataBytes = 0
+    if (PUSH1 <= paddedCode[pos] && paddedCode[pos] <= PUSH32) {
+      pushdataBytes = paddedCode[pos] - PUSH_OFFSET
     }
-    if (x >= 0 && slice[x] - 0x5f > 31 - x) {
-      // x >= 0 indicates PUSHn in this chunk
-      // n > 31 - x indicates that PUSHDATA spills over to next chunk
-      // PUSHDATA overflow = n - (31 - x) + 1(i.e. number of elements PUSHed
-      // - size of code chunk (31) - position of PUSHn in the previous
-      // code chunk + 1 (since x is zero-indexed))
-      const pushDataOverflow = slice[x] - 0x5f - (31 - x) + 1
-      // Put next chunk prepended with number of overflow PUSHDATA bytes
-      chunks.push(
-        concatBytes(Uint8Array.from([pushDataOverflow]), code.slice(i * 31, (i + 1) * 31)),
-      )
-    } else {
-      // Put next chunk prepended with 0 (i.e. no overflow PUSHDATA bytes from previous chunk)
-      chunks.push(concatBytes(new Uint8Array(1), code.slice(i * 31, (i + 1) * 31)))
+    pos += 1
+    for (let x = 0; x < pushdataBytes; x++) {
+      bytesToExecData[pos + x] = pushdataBytes - x
     }
+    pos += pushdataBytes
   }
+
+  // Pre-allocate the chunks array
+  const numChunks = Math.ceil(paddedCode.length / 31)
+  const chunks = new Array<Uint8Array>(numChunks)
+
+  for (let i = 0, pos = 0; i < numChunks; i++, pos += 31) {
+    const chunk = new Uint8Array(32)
+    chunk[0] = Math.min(bytesToExecData[pos], 31)
+    chunk.set(paddedCode.subarray(pos, pos + 31), 1)
+    chunks[i] = chunk
+  }
+
   return chunks
 }
 
