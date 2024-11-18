@@ -658,7 +658,13 @@ async function startClient(
       validateConsensus = true
     }
 
-    const stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
+    let stateRoot
+    if (config.statefulVerkle) {
+      if (genesisMeta.genesisState === undefined) {
+        throw new Error('genesisState is required to compute stateRoot')
+      }
+      stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
+    }
 
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
