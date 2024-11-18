@@ -51,7 +51,7 @@ import * as readline from 'readline'
 import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-
+import * as verkle from 'micro-eth-signer/verkle'
 import { EthereumClient } from '../src/client.js'
 import { Config, DataDirectory, SyncMode } from '../src/config.js'
 import { LevelDB } from '../src/execution/level.js'
@@ -72,6 +72,7 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
+import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -657,6 +658,8 @@ async function startClient(
       validateConsensus = true
     }
 
+    const stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
+
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
@@ -666,7 +669,7 @@ async function startClient(
       validateConsensus,
       consensusDict,
       genesisState: genesisMeta.genesisState,
-      genesisStateRoot: genesisMeta.genesisStateRoot,
+      genesisStateRoot: stateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -996,6 +999,7 @@ async function run() {
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   cryptoFunctions.kzg = kzg
+  cryptoFunctions.verkle = verkle
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {

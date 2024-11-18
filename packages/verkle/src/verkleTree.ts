@@ -490,6 +490,7 @@ export class VerkleTree {
       // Get the next child node in the path
       const childIndex = key[matchingKeyLength]
       child = decodedNode.children[childIndex]
+      if (child === null) break
     }
     this.DEBUG &&
       this.debug(
