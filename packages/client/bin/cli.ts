@@ -454,6 +454,11 @@ const args: ClientOpts = yargs
     boolean: true,
     default: true,
   })
+  .option('statefulVerkle', {
+    describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
+    boolean: true,
+    default: false,
+  })
   .option('engineNewpayloadMaxExecute', {
     describe:
       'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
@@ -599,26 +604,36 @@ async function startExecutionFrom(client: EthereumClient) {
     timestamp: startExecutionBlock.header.timestamp,
   })
 
-  if (
-    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
-    client.config.statelessVerkle
-  ) {
-    // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
-    // to startExecutionParent's hash
-    try {
-      await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
-      await client.chain.update(false)
-      logger.info(
-        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
-      )
-    } catch (err: any) {
-      logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+  if (client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle)) {
+    if (client.config.statelessVerkle) {
+      // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
+      // to startExecutionParent's hash
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+        process.exit()
+      }
+    } else if (client.config.statefulVerkle) {
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateful execution: ${err}`)
+        process.exit()
+      }
+    } else {
+      // we need parent state availability to set the vmHead to the parent
+      logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
       process.exit()
     }
-  } else {
-    // we need parent state availability to set the vmHead to the parent
-    logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
-    process.exit()
   }
 }
 
@@ -1164,6 +1179,7 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
     statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
+    statefulVerkle: args.statefulVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute:
       args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
