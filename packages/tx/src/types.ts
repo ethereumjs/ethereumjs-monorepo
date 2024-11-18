@@ -1,4 +1,4 @@
-import { bytesToBigInt, toBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, bytesToBigInt, toBytes } from '@ethereumjs/util'
 
 import type { FeeMarket1559Tx } from './1559/tx.js'
 import type { AccessList2930Tx } from './2930/tx.js'
@@ -37,10 +37,6 @@ export enum Capability {
   // Below here are tx-specfic Capabilities, used to distinguish transactions from other transactions
   // These are used in methods such as `raw`
 
-  /**
-   * Tx is a "legacy tx"
-   */
-  LegacyTx = 'LegacyTx',
   /**
    * Tx supports EIP-1559 gas fee market mechanism
    * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
@@ -188,47 +184,40 @@ export interface Transaction {
 
 export type TypedTransaction = Transaction[TransactionType]
 
-export function isLegacyTx(tx: TypedTransaction): tx is LegacyTx {
+export function isLegacyTx(tx: TxInterface): tx is LegacyTxInterface {
   return tx.type === TransactionType.Legacy
 }
 
-export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Tx {
+export function isAccessList2930Tx(tx: TxInterface): tx is EIP2930CompatibleTx {
   return tx.type === TransactionType.AccessListEIP2930
 }
 
-export function isFeeMarket1559Tx(tx: TypedTransaction): tx is FeeMarket1559Tx {
+export function isFeeMarket1559Tx(tx: TxInterface): tx is EIP1559CompatibleTx {
   return tx.type === TransactionType.FeeMarketEIP1559
 }
 
-export function isBlob4844Tx(tx: TypedTransaction): tx is Blob4844Tx {
+export function isBlob4844Tx(tx: TxInterface): tx is EIP4844CompatibleTx {
   return tx.type === TransactionType.BlobEIP4844
 }
 
-export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
+export function isEOACode7702Tx(tx: TxInterface): tx is EIP7702CompatibleTx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
 
 // Temp interface to replace TransactionInterface
 export interface TxInterface {
+  readonly type: number
   readonly cache: TransactionCache
+  readonly txOptions?: any // Placeholder for the saved "txOptions" when constructing a tx
   readonly common: Common // TODO: remove Common from tx interfaces
+  // TODO: make this a Set. `supports()` method is removed in favour of just using a set.
   readonly activeCapabilities: Capability[] // Necessary to determine the capabilities of the transaction in the respective methods
 }
 
-export interface LegacyTxInterface extends TxInterface {
-  readonly nonce: bigint
-  readonly gasLimit: bigint
-  readonly gasPrice: bigint
-  readonly to?: Address
-  readonly value: bigint
-  readonly data: Uint8Array
+export interface ECDSASignableInterface extends TxInterface {
   readonly v?: bigint
   readonly r?: bigint
   readonly s?: bigint
-}
-
-export function isLegacyTxInterface(tx: LegacyTxInterface): tx is LegacyTxInterface {
-  return tx.activeCapabilities.includes(Capability.LegacyTx)
 }
 
 export interface LegacyGasMarketInterface extends TxInterface {
@@ -242,6 +231,7 @@ export interface FeeGasMarketInterface extends TxInterface {
   readonly maxFeePerGas: bigint
 }
 
+// TODO: this interface has to be removed or purged!
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
   readonly common: Common
   readonly nonce: bigint
@@ -284,44 +274,98 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   ): Transaction[T]
 }
 
-/*
-export interface LegacyTxInterface<T extends TransactionType = TransactionType>
-  extends TransactionInterface<T> {}
+export interface LegacyTxInterface extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+}
 
+/*
 export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {
   readonly chainId: bigint
   getMessageToSign(): Uint8Array
-}
+}*/
 
-export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP2718CompatibleTx<T> {
+export interface EIP2930CompatibleTx // TODO (among the other types like `EIP1559CompatibleTx` below: rename this?)
+  extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly chainId: bigint
   readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
 }
 
-export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP2930CompatibleTx<T> {
+export interface EIP1559CompatibleTx extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly chainId: bigint
+  readonly accessList: AccessListBytes
   readonly maxPriorityFeePerGas: bigint
   readonly maxFeePerGas: bigint
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
 }
 
-export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP1559CompatibleTx<T> {
+export interface EIP4844CompatibleTx extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly chainId: bigint
+  readonly accessList: AccessListBytes
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
   readonly maxFeePerBlobGas: bigint
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+
+  // Network wrapper format
   blobVersionedHashes: Uint8Array[]
   blobs?: Uint8Array[]
   kzgCommitments?: Uint8Array[]
   kzgProofs?: Uint8Array[]
-  serializeNetworkWrapper(): Uint8Array
-  numBlobs(): number
+  //serializeNetworkWrapper(): Uint8Array
+  //numBlobs(): number
 }
 
-export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
-  extends EIP1559CompatibleTx<T> {
+export interface EIP7702CompatibleTx extends TxInterface {
   // ChainID, Address, [nonce], y_parity, r, s
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly gasPrice: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly chainId: bigint
+  readonly accessList: AccessListBytes
   readonly authorizationList: AuthorizationListBytes
-} */
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+}
 
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData

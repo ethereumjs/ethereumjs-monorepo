@@ -110,7 +110,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarket1559Tx objects
    */
-  protected activeCapabilities: number[] = []
+  public activeCapabilities: number[] = [] // TEMP: public, interface needs access to `activeCapabilities`
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.

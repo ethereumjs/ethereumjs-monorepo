@@ -1,3 +1,5 @@
+// NOTE: this file is in cleanup mode and will likely be completely removed once the PR is moved into review state
+
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -24,19 +26,6 @@ import * as Generic from './generic.js'
 
 import type { LegacyTx } from '../legacy/tx.js'
 import type { JSONTx, LegacyTxInterface, Transaction, TxValuesArray } from '../types.js'
-
-export function errorMsg(tx: LegacyTxInterface, msg: string) {
-  return `${msg} (${tx.errorStr()})`
-}
-
-export function isSigned(tx: LegacyTxInterface): boolean {
-  const { v, r, s } = tx
-  if (v === undefined || r === undefined || s === undefined) {
-    return false
-  } else {
-    return true
-  }
-}
 
 /**
  * The amount of gas paid for the data in this tx
@@ -91,24 +80,6 @@ export function toCreationAddress(tx: LegacyTxInterface): boolean {
   return tx.to === undefined || tx.to.bytes.length === 0
 }
 
-export function hash(tx: LegacyTxInterface): Uint8Array {
-  if (!tx.isSigned()) {
-    const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
-    throw new Error(msg)
-  }
-
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
-
-  if (Object.isFrozen(tx)) {
-    if (!tx.cache.hash) {
-      tx.cache.hash = keccakFunction(tx.serialize())
-    }
-    return tx.cache.hash
-  }
-
-  return keccakFunction(tx.serialize())
-}
-
 /**
  * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
  * Reasoning: https://ethereum.stackexchange.com/a/55728
@@ -152,18 +123,6 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
     const msg = errorMsg(tx, 'Invalid Signature')
     throw new Error(msg)
   }
-}
-
-export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
-  if (baseFee !== undefined && baseFee > gasPrice) {
-    throw new Error('Tx cannot pay baseFee')
-  }
-
-  if (baseFee === undefined) {
-    return gasPrice
-  }
-
-  return gasPrice - baseFee
 }
 
 /**
@@ -215,84 +174,6 @@ export function getSenderAddress(tx: LegacyTxInterface): Address {
 }
 
 /**
- * Signs a transaction.
- *
- * Note that the signed tx is returned as a new object,
- * use as follows:
- * ```javascript
- * const signedTx = tx.sign(privateKey)
- * ```
- */
-export function sign(tx: LegacyTxInterface, privateKey: Uint8Array): Transaction[TransactionType] {
-  if (privateKey.length !== 32) {
-    // TODO figure out this errorMsg logic how this diverges on other txs
-    const msg = errorMsg(tx, 'Private key must be 32 bytes in length.')
-    throw new Error(msg)
-  }
-
-  // TODO (Jochem, 05 nov 2024): figure out what this hack does and clean it up
-
-  // Hack for the constellation that we have got a legacy tx after spuriousDragon with a non-EIP155 conforming signature
-  // and want to recreate a signature (where EIP155 should be applied)
-  // Leaving this hack lets the legacy.spec.ts -> sign(), verifySignature() test fail
-  // 2021-06-23
-  let hackApplied = false
-  if (
-    tx.type === TransactionType.Legacy &&
-    tx.common.gteHardfork('spuriousDragon') &&
-    !tx.supports(Capability.EIP155ReplayProtection)
-  ) {
-    // cast as any to edit the protected `activeCapabilities`
-    ;(tx as any).activeCapabilities.push(Capability.EIP155ReplayProtection)
-    hackApplied = true
-  }
-
-  const msgHash = tx.getHashedMessageToSign()
-  const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey)
-  const signedTx = tx.addSignature(v, r, s, true)
-
-  // Hack part 2
-  if (hackApplied) {
-    // cast as any to edit the protected `activeCapabilities`
-    const index = (<any>tx).activeCapabilities.indexOf(Capability.EIP155ReplayProtection)
-    if (index > -1) {
-      // cast as any to edit the protected `activeCapabilities`
-      ;(<any>tx).activeCapabilities.splice(index, 1)
-    }
-  }
-
-  return signedTx
-}
-
-// TODO maybe move this to shared methods (util.ts in features)
-export function getSharedErrorPostfix(tx: LegacyTxInterface) {
-  let hash = ''
-  try {
-    hash = tx.isSigned() ? bytesToHex(tx.hash()) : 'not available (unsigned)'
-  } catch (e: any) {
-    hash = 'error'
-  }
-  let isSigned = ''
-  try {
-    isSigned = tx.isSigned().toString()
-  } catch (e: any) {
-    hash = 'error'
-  }
-  let hf = ''
-  try {
-    hf = tx.common.hardfork()
-  } catch (e: any) {
-    hf = 'error'
-  }
-
-  let postfix = `tx type=${tx.type} hash=${hash} nonce=${tx.nonce} value=${tx.value} `
-  postfix += `signed=${isSigned} hf=${hf}`
-
-  return postfix
-}
-
-/**
  * Returns an object with the JSON representation of the transaction.
  */
 export function toJSON(tx: LegacyTxInterface): JSONTx {
@@ -305,139 +186,6 @@ export function toJSON(tx: LegacyTxInterface): JSONTx {
   return baseJSON
 }
 
-export function addSignature(
-  tx: LegacyTxInterface,
-  v: bigint,
-  r: Uint8Array | bigint,
-  s: Uint8Array | bigint,
-  convertV: boolean = false,
-): LegacyTx {
-  r = toBytes(r)
-  s = toBytes(s)
-  if (convertV && tx.supports(Capability.EIP155ReplayProtection)) {
-    v += tx.common.chainId() * BIGINT_2 + BIGINT_8
-  }
-
-  const opts = { ...tx.txOptions, common: tx.common }
-
-  return createLegacyTx(
-    {
-      nonce: tx.nonce,
-      gasPrice: tx.gasPrice,
-      gasLimit: tx.gasLimit,
-      to: tx.to,
-      value: tx.value,
-      data: tx.data,
-      v,
-      r: bytesToBigInt(r),
-      s: bytesToBigInt(s),
-    },
-    opts,
-  )
-}
-
-/**
- * Returns the hashed serialized unsigned tx, which can be used
- * to sign the transaction (e.g. for sending to a hardware wallet).
- */
-export function getHashedMessageToSign(tx: LegacyTxInterface) {
-  const message = tx.getMessageToSign()
-  const keccak = tx.common.customCrypto.keccak256 ?? keccak256
-  return keccak(RLP.encode(message))
-}
-
-/**
- * Computes a sha3-256 hash which can be used to verify the signature
- */
-export function getMessageToVerifySignature(tx: LegacyTxInterface) {
-  if (!isSigned(tx)) {
-    const msg = errorMsg(tx, 'This transaction is not signed')
-    throw new Error(msg)
-  }
-  return getHashedMessageToSign(tx)
-}
-
 export function getUpfrontCost(tx: LegacyTxInterface): bigint {
   return tx.gasLimit * tx.gasPrice + tx.value
-}
-
-/**
- * Return a compact error string representation of the object
- */
-export function errorStr(tx: LegacyTxInterface) {
-  let errorStr = getSharedErrorPostfix(tx)
-  errorStr += ` gasPrice=${tx.gasPrice}`
-  return errorStr
-}
-
-/**
- * Returns the raw unsigned tx, which can be used
- * to sign the transaction (e.g. for sending to a hardware wallet).
- *
- * Note: the raw message message format for the legacy tx is not RLP encoded
- * and you might need to do yourself with:
- *
- * ```javascript
- * import { RLP } from '@ethereumjs/rlp'
- * const message = tx.getMessageToSign()
- * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
- * ```
- */
-export function getMessageToSign(tx: LegacyTxInterface): Uint8Array[] {
-  const message = [
-    bigIntToUnpaddedBytes(tx.nonce),
-    bigIntToUnpaddedBytes(tx.gasPrice),
-    bigIntToUnpaddedBytes(tx.gasLimit),
-    tx.to !== undefined ? tx.to.bytes : new Uint8Array(0),
-    bigIntToUnpaddedBytes(tx.value),
-    tx.data,
-  ]
-
-  if (tx.supports(Capability.EIP155ReplayProtection)) {
-    message.push(bigIntToUnpaddedBytes(tx.common.chainId()))
-    message.push(unpadBytes(toBytes(0)))
-    message.push(unpadBytes(toBytes(0)))
-  }
-
-  return message
-}
-
-/**
- * Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
- *
- * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
- *
- * For legacy txs this is also the correct format to add transactions
- * to a block with {@link createBlockFromBytesArray} (use the `serialize()` method
- * for typed txs).
- *
- * For an unsigned tx this method returns the empty Bytes values
- * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
- * representation have a look at {@link Transaction.getMessageToSign}.
- */
-export function raw(tx: LegacyTxInterface): TxValuesArray[TransactionType.Legacy] {
-  return [
-    bigIntToUnpaddedBytes(tx.nonce),
-    bigIntToUnpaddedBytes(tx.gasPrice),
-    bigIntToUnpaddedBytes(tx.gasLimit),
-    tx.to !== undefined ? tx.to.bytes : new Uint8Array(0),
-    bigIntToUnpaddedBytes(tx.value),
-    tx.data,
-    tx.v !== undefined ? bigIntToUnpaddedBytes(tx.v) : new Uint8Array(0),
-    tx.r !== undefined ? bigIntToUnpaddedBytes(tx.r) : new Uint8Array(0),
-    tx.s !== undefined ? bigIntToUnpaddedBytes(tx.s) : new Uint8Array(0),
-  ]
-}
-
-/**
- * Returns the serialized encoding of the legacy transaction.
- *
- * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
- *
- * For an unsigned tx this method uses the empty Uint8Array values for the
- * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
- * representation for external signing use {@link Transaction.getMessageToSign}.
- */
-export function serialize(tx: LegacyTxInterface): Uint8Array {
-  return RLP.encode(raw(tx))
 }

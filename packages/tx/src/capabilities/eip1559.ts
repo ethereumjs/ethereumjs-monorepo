@@ -1,5 +1,7 @@
 import type { EIP1559CompatibleTx } from '../types.js'
 
+// NOTE: this file is currently essentially the "FeeMarket" capability
+
 export function getUpfrontCost(tx: EIP1559CompatibleTx, baseFee: bigint): bigint {
   const prio = tx.maxPriorityFeePerGas
   const maxBase = tx.maxFeePerGas - baseFee

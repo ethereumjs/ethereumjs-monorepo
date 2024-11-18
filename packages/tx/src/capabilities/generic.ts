@@ -12,7 +12,13 @@ import {
 import { paramsTx } from '../params.js'
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
-import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
+import type {
+  TransactionInterface,
+  TransactionType,
+  TxData,
+  TxInterface,
+  TxOptions,
+} from '../types.js'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
