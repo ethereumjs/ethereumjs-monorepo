@@ -540,7 +540,7 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? true
+    this.statelessVerkle = options.statelessVerkle ?? false
     this.statefulVerkle = options.statefulVerkle ?? false
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
