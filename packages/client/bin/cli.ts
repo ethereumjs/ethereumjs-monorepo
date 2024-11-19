@@ -44,6 +44,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { Level } from 'level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import * as verkle from 'micro-eth-signer/verkle'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as promClient from 'prom-client'
@@ -51,7 +52,7 @@ import * as readline from 'readline'
 import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import * as verkle from 'micro-eth-signer/verkle'
+
 import { EthereumClient } from '../src/client.js'
 import { Config, DataDirectory, SyncMode } from '../src/config.js'
 import { LevelDB } from '../src/execution/level.js'
@@ -59,6 +60,7 @@ import { getLogger } from '../src/logging.js'
 import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
+import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 import { helpRPC, startRPCServers } from './startRPC.js'
 
@@ -72,7 +74,6 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
-import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -473,7 +474,7 @@ const args: ClientOpts = yargs
   .option('ignoreStatelessInvalidExecs', {
     describe:
       'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
-    boolean: true,
+    boolean: false,
     hidden: true,
   })
   .option('useJsCrypto', {
@@ -1237,6 +1238,7 @@ async function run() {
       return { client, servers }
     })
     .catch((e) => {
+      console.log(e)
       config.logger.error('Error starting client', e)
       return null
     })

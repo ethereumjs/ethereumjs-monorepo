@@ -201,12 +201,13 @@ export class VMExecution extends Execution {
     if (this.verkleVM !== undefined) {
       return
     }
-    this.config.logger.info(`Setting up verkleVM`)
     if (this.config.statelessVerkle) {
+      this.config.logger.info(`Setting up verkleVM for stateless verkle execution`)
       stateManager = new StatelessVerkleStateManager({
         common: this.config.execCommon,
       })
     } else {
+      this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
     }
     await mcl.init(mcl.BLS12_381)
@@ -287,7 +288,6 @@ export class VMExecution extends Execution {
       this.hardfork = this.config.execCommon.hardfork()
 
       if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
-        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
         await this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
