@@ -39,6 +39,107 @@ import type {
 } from '@ethereumjs/tx'
 import type * as tape from 'tape'
 
+export function format(a: any, toZero: boolean = false, isHex: boolean = false): Uint8Array {
+  if (a === '') {
+    return new Uint8Array()
+  }
+
+  if (typeof a === 'string' && isHexString(a)) {
+    a = a.slice(2)
+    if (a.length % 2) a = '0' + a
+    a = hexToBytes(`0x${a}`)
+  } else if (!isHex) {
+    try {
+      a = bigIntToBytes(BigInt(a))
+    } catch {
+      // pass
+    }
+  } else {
+    if (a.length % 2) a = '0' + a
+    a = hexToBytes(`0x${a}`)
+  }
+
+  if (toZero && bytesToHex(a) === '0x') {
+    a = Uint8Array.from([0])
+  }
+
+  return a
+}
+
+/**
+ * verifyAccountPostConditions using JSON from tests repo
+ * @param state    DB/trie
+ * @param address   Account Address
+ * @param account  to verify
+ * @param acctData postconditions JSON from tests repo
+ */
+export function verifyAccountPostConditions(
+  state: any,
+  address: string,
+  account: Account,
+  acctData: any,
+  t: tape.Test,
+) {
+  return new Promise<void>((resolve) => {
+    t.comment('Account: ' + address)
+    if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
+      t.comment(
+        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
+          account.balance
+        }`,
+      )
+    }
+    if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
+      t.comment(
+        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
+      )
+    }
+
+    // validate storage
+    const origRoot = state.root()
+
+    const hashedStorage: any = {}
+    for (const key in acctData.storage) {
+      hashedStorage[
+        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
+      ] = acctData.storage[key]
+    }
+
+    state.root(account.storageRoot)
+    const rs = state.createReadStream()
+    rs.on('data', function (data: any) {
+      let key = bytesToHex(data.key)
+      const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
+
+      if (key === '0x') {
+        key = '0x00'
+        acctData.storage['0x00'] = acctData.storage['0x00'] ?? acctData.storage['0x']
+        delete acctData.storage['0x']
+      }
+
+      if (val !== hashedStorage[key]) {
+        t.comment(
+          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
+            hashedStorage[key] ?? '0x'
+          }, but got ${val}}`,
+        )
+      }
+      delete hashedStorage[key]
+    })
+
+    rs.on('end', function () {
+      for (const key in hashedStorage) {
+        if (hashedStorage[key] !== '0x00') {
+          t.comment(`key: ${key} not found in storage at address ${address}`)
+        }
+      }
+
+      state.root(origRoot)
+      resolve()
+    })
+  })
+}
+
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
     return new Promise((resolve) => {
@@ -90,33 +191,6 @@ export function dumpState(state: any, cb: Function) {
     }
     cb()
   })
-}
-
-export function format(a: any, toZero: boolean = false, isHex: boolean = false): Uint8Array {
-  if (a === '') {
-    return new Uint8Array()
-  }
-
-  if (typeof a === 'string' && isHexString(a)) {
-    a = a.slice(2)
-    if (a.length % 2) a = '0' + a
-    a = hexToBytes(`0x${a}`)
-  } else if (!isHex) {
-    try {
-      a = bigIntToBytes(BigInt(a))
-    } catch {
-      // pass
-    }
-  } else {
-    if (a.length % 2) a = '0' + a
-    a = hexToBytes(`0x${a}`)
-  }
-
-  if (toZero && bytesToHex(a) === '0x') {
-    a = Uint8Array.from([0])
-  }
-
-  return a
 }
 
 /**
@@ -204,80 +278,6 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       for (const [_key, address] of Object.entries(keyMap)) {
         t.comment(`Missing account!: ${address}`)
       }
-      resolve()
-    })
-  })
-}
-
-/**
- * verifyAccountPostConditions using JSON from tests repo
- * @param state    DB/trie
- * @param address   Account Address
- * @param account  to verify
- * @param acctData postconditions JSON from tests repo
- */
-export function verifyAccountPostConditions(
-  state: any,
-  address: string,
-  account: Account,
-  acctData: any,
-  t: tape.Test,
-) {
-  return new Promise<void>((resolve) => {
-    t.comment('Account: ' + address)
-    if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
-      t.comment(
-        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
-          account.balance
-        }`,
-      )
-    }
-    if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
-      t.comment(
-        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
-      )
-    }
-
-    // validate storage
-    const origRoot = state.root()
-
-    const hashedStorage: any = {}
-    for (const key in acctData.storage) {
-      hashedStorage[
-        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
-      ] = acctData.storage[key]
-    }
-
-    state.root(account.storageRoot)
-    const rs = state.createReadStream()
-    rs.on('data', function (data: any) {
-      let key = bytesToHex(data.key)
-      const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
-
-      if (key === '0x') {
-        key = '0x00'
-        acctData.storage['0x00'] = acctData.storage['0x00'] ?? acctData.storage['0x']
-        delete acctData.storage['0x']
-      }
-
-      if (val !== hashedStorage[key]) {
-        t.comment(
-          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
-            hashedStorage[key] ?? '0x'
-          }, but got ${val}}`,
-        )
-      }
-      delete hashedStorage[key]
-    })
-
-    rs.on('end', function () {
-      for (const key in hashedStorage) {
-        if (hashedStorage[key] !== '0x00') {
-          t.comment(`key: ${key} not found in storage at address ${address}`)
-        }
-      }
-
-      state.root(origRoot)
       resolve()
     })
   })

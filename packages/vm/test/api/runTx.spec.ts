@@ -878,6 +878,7 @@ describe('EIP 4844 transaction tests', () => {
             {
               excessBlobGas: 0n,
               number: 1,
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define
               parentHash: blockchain.genesisBlock.hash(),
             },
             {

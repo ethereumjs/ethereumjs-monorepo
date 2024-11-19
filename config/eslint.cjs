@@ -132,7 +132,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/examples/**/*.ts', '**/benchmarks/*.ts', ],
+      files: ['**/examples/**/*.ts', '**/examples/**/*.js','**/benchmarks/*.ts'],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',

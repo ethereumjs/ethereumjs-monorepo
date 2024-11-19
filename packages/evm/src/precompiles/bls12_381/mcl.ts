@@ -81,6 +81,31 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   return concatBytes(xBytes, yBytes)
 }
 
+// input: two 64-byte buffers
+// output: a mcl Fp2 point
+
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
+  // check if the coordinates are in the field
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
+  const fp_x = new mcl.Fp()
+  const fp_y = new mcl.Fp()
+
+  const fp2 = new mcl.Fp2()
+  fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
+  fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
+
+  fp2.set_a(fp_x)
+  fp2.set_b(fp_y)
+
+  return fp2
+}
+
 /**
  * Converts an Uint8Array to a MCL G2 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -173,31 +198,6 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   fp.setBigEndianMod(mcl.fromHexStr(bytesToUnprefixedHex(fpCoordinate)))
 
   return fp
-}
-
-// input: two 64-byte buffers
-// output: a mcl Fp2 point
-
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
-  // check if the coordinates are in the field
-  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-
-  const fp_x = new mcl.Fp()
-  const fp_y = new mcl.Fp()
-
-  const fp2 = new mcl.Fp2()
-  fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
-  fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
-
-  fp2.set_a(fp_x)
-  fp2.set_b(fp_y)
-
-  return fp2
 }
 
 /**

@@ -28,6 +28,78 @@ import type { TypedTxData } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 const kzg = new microEthKZG(trustedSetup)
 
+// Helper methods
+
+/**
+ * Returns a blockchain with an overridden "getBlock" method to return the correct block hash
+ * @param inputEnv the T8NEnv input, which contains a `blockHashes` list containing the respective block hashes
+ * @returns
+ */
+function getBlockchain(inputEnv: T8NEnv) {
+  const blockchain = new EVMMockBlockchain()
+
+  blockchain.getBlock = async function (number?: Number) {
+    for (const key in inputEnv.blockHashes) {
+      if (Number(key) === number) {
+        return {
+          hash() {
+            return hexToBytes(<PrefixedHexString>inputEnv.blockHashes[key])
+          },
+        }
+      }
+    }
+    return {
+      hash() {
+        return new Uint8Array(32)
+      },
+    }
+  }
+  return blockchain
+}
+
+/**
+ * Normalizes txData to use with EthereumJS keywords. For instance, 1559-txs have `v` fields on the inputs, where EthereumJS expects `yParity`
+ * @param txData Array of txData
+ * @returns Normalized array of txData
+ */
+function normalizeTxData(txData: TypedTxData[]) {
+  return txData.map((data: any) => {
+    if (data.v !== undefined) {
+      data.yParity = data.v
+    }
+    if (data.gas !== undefined) {
+      data.gasLimit = data.gas
+    }
+
+    if (data.authorizationList !== undefined) {
+      data.authorizationList.map((e: any) => {
+        if (e.yParity === undefined) {
+          e.yParity = e.v
+        }
+        if (e.yParity === '0x0') {
+          e.yParity = '0x'
+        }
+        if (e.nonce === '0x0') {
+          e.nonce = '0x'
+        }
+        if (e.chainId === '0x0') {
+          e.chainId = '0x'
+        }
+        if (e.r === '0x0') {
+          e.r = '0x'
+        }
+        if (e.s === '0x0') {
+          e.s = '0x'
+        }
+      })
+    }
+    if (data.input !== undefined) {
+      data.data = data.input
+    }
+    return data as TypedTxData
+  })
+}
+
 /**
  * This is the TransitionTool class to run transitions. The entire class is marked `private` since
  * it is only intended to be used **once**. To use it, use the single public entrypoint TransitionTool.run(args)
@@ -248,76 +320,4 @@ export class TransitionTool {
     writeFileSync(outputResultFilePath, JSON.stringify(output))
     writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
   }
-}
-
-// Helper methods
-
-/**
- * Returns a blockchain with an overridden "getBlock" method to return the correct block hash
- * @param inputEnv the T8NEnv input, which contains a `blockHashes` list containing the respective block hashes
- * @returns
- */
-function getBlockchain(inputEnv: T8NEnv) {
-  const blockchain = new EVMMockBlockchain()
-
-  blockchain.getBlock = async function (number?: Number) {
-    for (const key in inputEnv.blockHashes) {
-      if (Number(key) === number) {
-        return {
-          hash() {
-            return hexToBytes(<PrefixedHexString>inputEnv.blockHashes[key])
-          },
-        }
-      }
-    }
-    return {
-      hash() {
-        return new Uint8Array(32)
-      },
-    }
-  }
-  return blockchain
-}
-
-/**
- * Normalizes txData to use with EthereumJS keywords. For instance, 1559-txs have `v` fields on the inputs, where EthereumJS expects `yParity`
- * @param txData Array of txData
- * @returns Normalized array of txData
- */
-function normalizeTxData(txData: TypedTxData[]) {
-  return txData.map((data: any) => {
-    if (data.v !== undefined) {
-      data.yParity = data.v
-    }
-    if (data.gas !== undefined) {
-      data.gasLimit = data.gas
-    }
-
-    if (data.authorizationList !== undefined) {
-      data.authorizationList.map((e: any) => {
-        if (e.yParity === undefined) {
-          e.yParity = e.v
-        }
-        if (e.yParity === '0x0') {
-          e.yParity = '0x'
-        }
-        if (e.nonce === '0x0') {
-          e.nonce = '0x'
-        }
-        if (e.chainId === '0x0') {
-          e.chainId = '0x'
-        }
-        if (e.r === '0x0') {
-          e.r = '0x'
-        }
-        if (e.s === '0x0') {
-          e.s = '0x'
-        }
-      })
-    }
-    if (data.input !== undefined) {
-      data.data = data.input
-    }
-    return data as TypedTxData
-  })
 }

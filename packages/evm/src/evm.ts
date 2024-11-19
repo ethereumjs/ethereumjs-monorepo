@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
@@ -1191,3 +1192,4 @@ export function defaultBlock(): Block {
     },
   }
 }
+/* eslint-enable @typescript-eslint/no-use-before-define */
