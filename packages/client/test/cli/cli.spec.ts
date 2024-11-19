@@ -45,11 +45,12 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should successfully start client with non-lower case network name', async () => {
-    const cliArgs = ['--network=Kaustinen6']
+    const cliArgs = ['--network=Mainnet']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
+      console.log(message)
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
-          message.includes('network=kaustinen6'),
+          message.includes('network=mainnet'),
           'client is using custom inputs for network and network ID',
         )
         child.kill()
