@@ -454,7 +454,7 @@ const args: ClientOpts = yargs
   .option('statelessVerkle', {
     describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
     boolean: true,
-    default: true,
+    default: false,
   })
   .option('statefulVerkle', {
     describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
