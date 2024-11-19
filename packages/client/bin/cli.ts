@@ -474,7 +474,7 @@ const args: ClientOpts = yargs
   .option('ignoreStatelessInvalidExecs', {
     describe:
       'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
-    boolean: false,
+    boolean: true,
     hidden: true,
   })
   .option('useJsCrypto', {
