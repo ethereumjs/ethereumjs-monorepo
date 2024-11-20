@@ -1238,7 +1238,6 @@ async function run() {
       return { client, servers }
     })
     .catch((e) => {
-      console.log(e)
       config.logger.error('Error starting client', e)
       return null
     })
