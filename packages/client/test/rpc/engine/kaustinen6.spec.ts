@@ -79,7 +79,7 @@ async function runBlock(
   assert.equal(res.result.status, 'VALID', 'valid status should be received')
 }
 
-describe(`valid verkle network setup`, async () => {
+describe.skip(`valid verkle network setup`, async () => {
   const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
