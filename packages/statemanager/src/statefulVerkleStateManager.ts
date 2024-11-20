@@ -725,8 +725,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     clearCache === true && this.clearCaches()
     return Promise.resolve()
   }
-  hasStateRoot(_root: Uint8Array): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  hasStateRoot(root: Uint8Array): Promise<boolean> {
+    return this._trie.checkRoot(root)
   }
   dumpStorage?(_address: Address): Promise<StorageDump> {
     throw new Error('Method not implemented.')
