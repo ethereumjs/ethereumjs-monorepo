@@ -220,19 +220,25 @@ Then start the Lodestar client with:
 
 The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
 
-### Stateless Verkle
+### Verkle testnet
 
-We currently support the Verkle Kaustinen6 testnet, and will be proactively supporting upcoming testnets (e.g. Kaustinen7) as they launch. To start the EthereumJS client alongside the Lodestar consensus client, use the following commands:
+We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
 
 Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
 
-`npm run client:start:ts -- --dataDir /data/k6data --network kaustinen6 --rpcEngine --rpcEngineAuth false --logLevel warn`
+For stateless execution: 
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statelessVerkle=true`
+
+For stateful execution:
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statefulVerkle=true`
 
 Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repository)
 
-`setup.sh --dataDir k6data --network kaustinen6 --justCL`
+`./setup.sh --network kaustinen7 --dataDir kaust --justCL`
 
-Additional information on the Kaustinen6 testnet can be retrieve from this page: https://verkle-gen-devnet-6.ethpandaops.io/
+Additional information on the Kaustinen7 testnet can be retrieve from this page: https://verkle-gen-devnet-7.ethpandaops.io/
 
 The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
