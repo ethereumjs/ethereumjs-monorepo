@@ -1,4 +1,4 @@
-import { BIGINT_0, BIGINT_1, bytesToBigInt, toBytes } from '@ethereumjs/util'
+import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
 import type { FeeMarket1559Tx } from './1559/tx.js'
 import type { AccessList2930Tx } from './2930/tx.js'

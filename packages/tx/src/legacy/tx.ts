@@ -1,30 +1,16 @@
-import { RLP } from '@ethereumjs/rlp'
-import {
-  BIGINT_2,
-  BIGINT_8,
-  MAX_INTEGER,
-  bigIntToHex,
-  bigIntToUnpaddedBytes,
-  bytesToBigInt,
-  toBytes,
-  unpadBytes,
-} from '@ethereumjs/util'
+import { BIGINT_2, MAX_INTEGER, bytesToBigInt, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
+import { sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
-
-import { createLegacyTx } from './constructors.js'
 
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  JSONTx,
   LegacyTxInterface,
   TransactionCache,
-  TransactionInterface,
   TxOptions,
 } from '../types.js'
 import type { Common } from '@ethereumjs/common'
@@ -143,7 +129,7 @@ export class LegacyTx implements LegacyTxInterface {
     }
 
     if (this.common.gteHardfork('spuriousDragon')) {
-      if (!this.isSigned()) {
+      if (!Legacy.isSigned(this)) {
         this.activeCapabilities.push(Capability.EIP155ReplayProtection)
       } else {
         // EIP155 spec:
@@ -162,166 +148,5 @@ export class LegacyTx implements LegacyTxInterface {
     if (freeze) {
       Object.freeze(this)
     }
-  }
-
-  isSigned(): boolean {
-    return Legacy.isSigned(this)
-  }
-
-  getEffectivePriorityFee(baseFee?: bigint): bigint {
-    return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
-  }
-
-  /**
-   * Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
-   *
-   * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
-   *
-   * For legacy txs this is also the correct format to add transactions
-   * to a block with {@link createBlockFromBytesArray} (use the `serialize()` method
-   * for typed txs).
-   *
-   * For an unsigned tx this method returns the empty Bytes values
-   * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
-   * representation have a look at {@link Transaction.getMessageToSign}.
-   */
-  raw(): TxValuesArray {
-    return Legacy.raw(this)
-  }
-
-  /**
-   * Returns the serialized encoding of the legacy transaction.
-   *
-   * Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
-   *
-   * For an unsigned tx this method uses the empty Uint8Array values for the
-   * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link Transaction.getMessageToSign}.
-   */
-  serialize(): Uint8Array {
-    return Legacy.serialize(this)
-  }
-
-  /**
-   * Returns the raw unsigned tx, which can be used
-   * to sign the transaction (e.g. for sending to a hardware wallet).
-   *
-   * Note: the raw message message format for the legacy tx is not RLP encoded
-   * and you might need to do yourself with:
-   *
-   * ```javascript
-   * import { RLP } from '@ethereumjs/rlp'
-   * const message = tx.getMessageToSign()
-   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
-   * ```
-   */
-  getMessageToSign(): Uint8Array[] {
-    return Legacy.getMessageToSign(this)
-  }
-
-  /**
-   * Returns the hashed serialized unsigned tx, which can be used
-   * to sign the transaction (e.g. for sending to a hardware wallet).
-   */
-  getHashedMessageToSign() {
-    return Legacy.getHashedMessageToSign(this)
-  }
-
-  /**
-   * The amount of gas paid for the data in this tx
-   */
-  getDataGas(): bigint {
-    return Legacy.getDataGas(this)
-  }
-
-  // TODO figure out if this is necessary
-  /**
-   * If the tx's `to` is to the creation address
-   */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
-  }
-
-  /**
-   * The minimum gas limit which the tx to have to be valid.
-   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
-   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
-   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
-   */
-  getIntrinsicGas(): bigint {
-    return Legacy.getIntrinsicGas(this)
-  }
-  /**
-   * The up front amount that an account must have for this transaction to be valid
-   */
-  getUpfrontCost(): bigint {
-    return Legacy.getUpfrontCost(this)
-  }
-
-  /**
-   * Computes a sha3-256 hash of the serialized tx.
-   *
-   * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
-   */
-  hash(): Uint8Array {
-    return Legacy.hash(this)
-  }
-
-  /**
-   * Computes a sha3-256 hash which can be used to verify the signature
-   */
-  getMessageToVerifySignature() {
-    return Legacy.getMessageToVerifySignature(this)
-  }
-
-  /**
-   * Returns the public key of the sender
-   */
-  getSenderPublicKey(): Uint8Array {
-    return Legacy.getSenderPublicKey(this)
-  }
-
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ) {
-    return Legacy.addSignature(this, v, r, s, convertV)
-  }
-
-  /**
-   * Returns an object with the JSON representation of the transaction.
-   */
-  toJSON(): JSONTx {
-    return Legacy.toJSON(this)
-  }
-
-  getValidationErrors(): string[] {
-    return Legacy.getValidationErrors(this)
-  }
-
-  isValid(): boolean {
-    return Legacy.isValid(this)
-  }
-
-  verifySignature(): boolean {
-    return Legacy.verifySignature(this)
-  }
-
-  getSenderAddress(): Address {
-    return Legacy.getSenderAddress(this)
-  }
-
-  sign(privateKey: Uint8Array): LegacyTx {
-    return <LegacyTx>Legacy.sign(this, privateKey)
-  }
-
-  /**
-   * Return a compact error string representation of the object
-   */
-  public errorStr() {
-    return Legacy.errorStr(this)
   }
 }
