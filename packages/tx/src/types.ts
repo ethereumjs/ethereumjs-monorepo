@@ -214,6 +214,19 @@ export interface TxInterface {
   readonly activeCapabilities: Capability[] // Necessary to determine the capabilities of the transaction in the respective methods
 }
 
+// NOTE: this type should be removed and covers the "shared" properties of all L1 txs currently
+// TODO: figure out how to handle this in a much cleaner way
+export interface L1TxInterface extends TxInterface {
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+}
+
 export interface ECDSASignableInterface extends TxInterface {
   readonly v?: bigint
   readonly r?: bigint
@@ -233,11 +246,6 @@ export interface FeeGasMarketInterface extends TxInterface {
   readonly value: bigint
 }
 
-export interface FeeGasMarketInterface extends TxInterface {
-  readonly maxPriorityFeePerGas: bigint
-  readonly maxFeePerGas: bigint
-}
-
 // TODO: this interface has to be removed or purged!
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
   readonly common: Common
@@ -250,7 +258,6 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   readonly r?: bigint
   readonly s?: bigint
   readonly cache: TransactionCache
-  supports(capability: Capability): boolean
   type: TransactionType
   txOptions: TxOptions
   getIntrinsicGas(): bigint
