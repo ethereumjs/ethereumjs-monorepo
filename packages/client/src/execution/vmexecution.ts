@@ -206,10 +206,10 @@ export class VMExecution extends Execution {
       stateManager = new StatelessVerkleStateManager({
         common: this.config.execCommon,
       })
-    } else {
+    } else if (this.config.statefulVerkle) {
       this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
-    }
+    } else throw new Error('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
