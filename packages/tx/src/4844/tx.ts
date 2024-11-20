@@ -85,7 +85,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarket1559Tx objects
    */
-  protected activeCapabilities: number[] = []
+  public activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.

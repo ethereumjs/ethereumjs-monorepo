@@ -72,7 +72,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarket1559Tx objects
    */
-  protected activeCapabilities: number[] = []
+  public activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -121,26 +121,6 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     if (freeze) {
       Object.freeze(this)
     }
-  }
-
-  /**
-   * Checks if a tx type defining capability is active
-   * on a tx, for example the EIP-1559 fee market mechanism
-   * or the EIP-2930 access list feature.
-   *
-   * Note that this is different from the tx type itself,
-   * so EIP-2930 access lists can very well be active
-   * on an EIP-1559 tx for example.
-   *
-   * This method can be useful for feature checks if the
-   * tx type is unknown (e.g. when instantiated with
-   * the tx factory).
-   *
-   * See `Capabilities` in the `types` module for a reference
-   * on all supported capabilities.
-   */
-  supports(capability: Capability) {
-    return this.activeCapabilities.includes(capability)
   }
 
   getEffectivePriorityFee(baseFee?: bigint): bigint {

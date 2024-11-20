@@ -79,7 +79,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarket1559Tx objects
    */
-  protected activeCapabilities: number[] = []
+  public activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
