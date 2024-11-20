@@ -1,8 +1,8 @@
 import { BIGINT_2, MAX_INTEGER, bytesToBigInt, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { sharedConstructor, valueBoundaryCheck } from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
 

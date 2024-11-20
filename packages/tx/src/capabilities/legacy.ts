@@ -17,7 +17,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { getBaseJSON } from '../features/util.js'
+import { getBaseJSON } from '../capabilities/generic.js'
 import { createLegacyTx } from '../legacy/constructors.js'
 import { Capability, TransactionType } from '../types.js'
 

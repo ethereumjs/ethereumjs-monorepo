@@ -14,9 +14,9 @@ import {
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from '../constants.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
