@@ -91,7 +91,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     const verkleCrypto = await loadVerkleCrypto()
     stateTree = await createVerkleTree({ verkleCrypto, db: new MapDB() })
     stateManager = new StatefulVerkleStateManager({
-      verkleCrypto,
+      common,
       trie: stateTree,
     })
   } else {
