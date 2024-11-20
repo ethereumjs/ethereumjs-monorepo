@@ -242,7 +242,6 @@ Additional information on the Kaustinen7 testnet can be retrieve from this page:
 
 The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
-
 ## Custom Chains
 
 The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
