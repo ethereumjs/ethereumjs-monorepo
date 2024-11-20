@@ -168,6 +168,6 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   verkle: {
-    eips: [6800],
+    eips: [4762, 6800],
   },
 }
