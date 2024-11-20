@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   BIGINT_2,
   BIGINT_8,
   bigIntToUnpaddedBytes,
@@ -14,12 +15,67 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import { createLegacyTx } from '../legacy/constructors.js'
 import { Capability, TransactionType, isLegacyTx } from '../types.js'
 
-import { isSigned } from './ecdsaSignable.js'
+import {
+  getSenderPublicKey as _getSenderPublicKey,
+  isSigned,
+  verifySignature,
+} from './ecdsaSignable.js'
+import { toCreationAddress } from './generic.js'
 
-import type { LegacyTxInterface, TxValuesArray } from '../types.js'
+import type { LegacyTxInterface, TxInterface, TxValuesArray } from '../types.js'
 
+// TODO: how to handle these tx-specific error msgs?
 function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${errorStr(tx)})`
+}
+
+/**
+ * The amount of gas paid for the data in this tx
+ */
+export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
+  if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
+    return tx.cache.dataFee.value
+  }
+
+  const txDataZero = tx.common.param('txDataZeroGas')
+  const txDataNonZero = tx.common.param('txDataNonZeroGas')
+
+  let cost = extraCost ?? BIGINT_0
+  for (let i = 0; i < tx.data.length; i++) {
+    tx.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
+  }
+
+  if ((tx.to === undefined || tx.to === null) && tx.common.isActivatedEIP(3860)) {
+    const dataLength = BigInt(Math.ceil(tx.data.length / 32))
+    const initCodeCost = tx.common.param('initCodeWordGas') * dataLength
+    cost += initCodeCost
+  }
+
+  if (Object.isFrozen(tx)) {
+    tx.cache.dataFee = {
+      value: cost,
+      hardfork: tx.common.hardfork(),
+    }
+  }
+
+  return cost
+}
+
+/**
+ * The minimum gas limit which the tx to have to be valid.
+ * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+ * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+ * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+ */
+export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
+  const txFee = tx.common.param('txGas')
+  let fee = getDataGas(tx)
+  if (txFee) fee += txFee
+  if (tx.common.gteHardfork('homestead') && toCreationAddress(tx)) {
+    const txCreationFee = tx.common.param('txCreationGas')
+    if (txCreationFee) fee += txCreationFee
+  }
+  return fee
 }
 
 // TODO maybe move this to shared methods (util.ts in features)
@@ -268,4 +324,43 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
   }
 
   return keccakFunction(serialize(tx))
+}
+
+export function getSenderPublicKey(tx: LegacyTxInterface) {
+  return _getSenderPublicKey(tx, getHashedMessageToSign as (tx: TxInterface) => Uint8Array)
+}
+
+/**
+ * Validates the transaction signature and minimum gas requirements.
+ * @returns {string[]} an array of error strings
+ */
+export function getValidationErrors(tx: LegacyTxInterface): string[] {
+  const errors = []
+
+  if (
+    isSigned(tx) &&
+    !verifySignature(tx, getHashedMessageToSign as (tx: TxInterface) => Uint8Array)
+  ) {
+    errors.push('Invalid Signature')
+  }
+
+  if (getIntrinsicGas(tx) > tx.gasLimit) {
+    errors.push(`gasLimit is too low. given ${tx.gasLimit}, need at least ${getIntrinsicGas(tx)}`)
+  }
+
+  return errors
+}
+
+export function getUpfrontCost(tx: LegacyTxInterface): bigint {
+  return tx.gasLimit * tx.gasPrice + tx.value
+}
+
+export function toJSON(tx: LegacyTxInterface): JSONTx {
+  // TODO this is just copied. Make this execution-api compliant
+
+  const baseJSON = Generic.getBaseJSON(tx) as JSONTx
+  // TODO: fix type error below
+  baseJSON.gasPrice = bigIntToHex(tx.gasPrice)
+
+  return baseJSON
 }

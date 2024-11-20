@@ -281,6 +281,17 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   ): Transaction[T]
 }
 
+// Interface of a transaction which supports `to: undefined`, which is used to create a contract
+export interface ContractCreationInterface extends TxInterface {
+  readonly to?: Address
+}
+
+// Interface of a transaction which supports `to: Address`, which calls that address
+// It is not possible to create a contract with this tx.
+export interface ToInterface extends TxInterface {
+  readonly to: Address
+}
+
 export interface LegacyTxInterface extends TxInterface {
   readonly nonce: bigint
   readonly gasLimit: bigint

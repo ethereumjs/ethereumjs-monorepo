@@ -13,6 +13,9 @@ import { paramsTx } from '../params.js'
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
 import type {
+  ContractCreationInterface,
+  LegacyTxInterface,
+  ToInterface,
   TransactionInterface,
   TransactionType,
   TxData,
@@ -142,4 +145,8 @@ export function getBaseJSON(tx: TransactionInterface) {
     chainId: bigIntToHex(tx.common.chainId()),
     yParity: tx.v === 0n || tx.v === 1n ? bigIntToHex(tx.v) : undefined,
   }
+}
+
+export function toCreationAddress(tx: ContractCreationInterface | ToInterface): boolean {
+  return tx.to === undefined || tx.to.bytes.length === 0
 }
