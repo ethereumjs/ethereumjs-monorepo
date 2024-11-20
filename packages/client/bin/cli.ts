@@ -44,6 +44,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { Level } from 'level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import * as verkle from 'micro-eth-signer/verkle'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as promClient from 'prom-client'
@@ -59,6 +60,7 @@ import { getLogger } from '../src/logging.js'
 import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
+import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 import { helpRPC, startRPCServers } from './startRPC.js'
 
@@ -452,7 +454,12 @@ const args: ClientOpts = yargs
   .option('statelessVerkle', {
     describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
     boolean: true,
-    default: true,
+    default: false,
+  })
+  .option('statefulVerkle', {
+    describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
+    boolean: true,
+    default: false,
   })
   .option('engineNewpayloadMaxExecute', {
     describe:
@@ -599,26 +606,36 @@ async function startExecutionFrom(client: EthereumClient) {
     timestamp: startExecutionBlock.header.timestamp,
   })
 
-  if (
-    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
-    client.config.statelessVerkle
-  ) {
-    // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
-    // to startExecutionParent's hash
-    try {
-      await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
-      await client.chain.update(false)
-      logger.info(
-        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
-      )
-    } catch (err: any) {
-      logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+  if (client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle)) {
+    if (client.config.statelessVerkle) {
+      // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
+      // to startExecutionParent's hash
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+        process.exit()
+      }
+    } else if (client.config.statefulVerkle) {
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateful execution: ${err}`)
+        process.exit()
+      }
+    } else {
+      // we need parent state availability to set the vmHead to the parent
+      logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
       process.exit()
     }
-  } else {
-    // we need parent state availability to set the vmHead to the parent
-    logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
-    process.exit()
   }
 }
 
@@ -642,6 +659,14 @@ async function startClient(
       validateConsensus = true
     }
 
+    let stateRoot
+    if (config.statefulVerkle) {
+      if (genesisMeta.genesisState === undefined) {
+        throw new Error('genesisState is required to compute stateRoot')
+      }
+      stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
+    }
+
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
@@ -651,7 +676,7 @@ async function startClient(
       validateConsensus,
       consensusDict,
       genesisState: genesisMeta.genesisState,
-      genesisStateRoot: genesisMeta.genesisStateRoot,
+      genesisStateRoot: stateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -981,6 +1006,7 @@ async function run() {
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   cryptoFunctions.kzg = kzg
+  cryptoFunctions.verkle = verkle
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
@@ -1164,6 +1190,7 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
     statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
+    statefulVerkle: args.statefulVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute:
       args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
