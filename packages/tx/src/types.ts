@@ -229,6 +229,13 @@ export interface LegacyGasMarketInterface extends TxInterface {
 export interface FeeGasMarketInterface extends TxInterface {
   readonly maxPriorityFeePerGas: bigint
   readonly maxFeePerGas: bigint
+  readonly gasLimit: bigint
+  readonly value: bigint
+}
+
+export interface FeeGasMarketInterface extends TxInterface {
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
 }
 
 // TODO: this interface has to be removed or purged!
