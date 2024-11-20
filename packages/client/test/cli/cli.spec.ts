@@ -830,7 +830,7 @@ describe('[CLI]', () => {
 
 describe('verkle execution', () => {
   it('should start client with stateful verkle execution', async () => {
-    const gethGenesisJson = `{
+    const gethGenesis = `{
         "config": {
           "chainId": 69420,
           "homesteadBlock": 0,
@@ -864,7 +864,7 @@ describe('verkle execution', () => {
     const dir = fs.mkdtempSync('test')
     fs.open(`${dir}/gethGenesis.json`, 'w', (err, fd) => {
       if (err !== null) throw err
-      fs.write(fd, gethGenesisJson, (writeErr) => {
+      fs.write(fd, gethGenesis, (writeErr) => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
