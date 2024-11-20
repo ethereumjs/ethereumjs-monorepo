@@ -44,6 +44,41 @@ type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
 // Since stem is pedersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number | bigint }
 
+export function decodeAccessedState(
+  treeIndex: number | bigint,
+  chunkIndex: number,
+): VerkleAccessedState {
+  const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
+  switch (position) {
+    case BigInt(0):
+      return { type: VerkleAccessedStateType.BasicData }
+    case BigInt(1):
+      return { type: VerkleAccessedStateType.CodeHash }
+    default:
+      if (position < VERKLE_HEADER_STORAGE_OFFSET) {
+        throw Error(`No attribute yet stored >=2 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
+      }
+
+      if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
+        const slot = position - BigInt(VERKLE_HEADER_STORAGE_OFFSET)
+        return { type: VerkleAccessedStateType.Storage, slot }
+      } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
+        const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
+        return {
+          type: VerkleAccessedStateType.Code,
+          codeOffset: codeChunkIdx * 31,
+        }
+      } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
+        const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
+        return { type: VerkleAccessedStateType.Storage, slot }
+      } else {
+        throw Error(
+          `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`,
+        )
+      }
+  }
+}
+
 export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
@@ -308,40 +343,5 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
       const accessedState = decodeAccessedState(treeIndex, chunkIndex)
       yield { ...accessedState, address, chunkKey }
     }
-  }
-}
-
-export function decodeAccessedState(
-  treeIndex: number | bigint,
-  chunkIndex: number,
-): VerkleAccessedState {
-  const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
-  switch (position) {
-    case BigInt(0):
-      return { type: VerkleAccessedStateType.BasicData }
-    case BigInt(1):
-      return { type: VerkleAccessedStateType.CodeHash }
-    default:
-      if (position < VERKLE_HEADER_STORAGE_OFFSET) {
-        throw Error(`No attribute yet stored >=2 and <${VERKLE_HEADER_STORAGE_OFFSET}`)
-      }
-
-      if (position >= VERKLE_HEADER_STORAGE_OFFSET && position < VERKLE_CODE_OFFSET) {
-        const slot = position - BigInt(VERKLE_HEADER_STORAGE_OFFSET)
-        return { type: VerkleAccessedStateType.Storage, slot }
-      } else if (position >= VERKLE_CODE_OFFSET && position < VERKLE_MAIN_STORAGE_OFFSET) {
-        const codeChunkIdx = Number(position) - VERKLE_CODE_OFFSET
-        return {
-          type: VerkleAccessedStateType.Code,
-          codeOffset: codeChunkIdx * 31,
-        }
-      } else if (position >= VERKLE_MAIN_STORAGE_OFFSET) {
-        const slot = BigInt(position - VERKLE_MAIN_STORAGE_OFFSET)
-        return { type: VerkleAccessedStateType.Storage, slot }
-      } else {
-        throw Error(
-          `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`,
-        )
-      }
   }
 }
