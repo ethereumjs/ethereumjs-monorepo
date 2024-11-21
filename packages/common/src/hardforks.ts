@@ -170,8 +170,4 @@ export const hardforksDict: HardforksDict = {
   verkle: {
     eips: [4762, 6800],
   },
-  // TODO: WIP
-  verkle: {
-    eips: [2935, 6800],
-  },
 }
