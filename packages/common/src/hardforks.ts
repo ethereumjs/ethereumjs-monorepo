@@ -167,8 +167,8 @@ export const hardforksDict: HardforksDict = {
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
    * Status     : Final
    */
-  osaka: {
-    eips: [2935, 6800],
+  verkle: {
+    eips: [4762, 6800],
   },
   // TODO: WIP
   verkle: {

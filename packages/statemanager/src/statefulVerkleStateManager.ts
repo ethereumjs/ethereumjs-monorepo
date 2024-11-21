@@ -23,6 +23,7 @@ import {
   generateCodeStems,
   getVerkleStem,
   getVerkleTreeKeyForStorageSlot,
+  hexToBigInt,
   hexToBytes,
   padToEven,
   setLengthLeft,
@@ -48,7 +49,13 @@ import type {
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type { PrefixedHexString, VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
+import type {
+  GenesisState,
+  PrefixedHexString,
+  StoragePair,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -719,8 +726,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     clearCache === true && this.clearCaches()
     return Promise.resolve()
   }
-  hasStateRoot(_root: Uint8Array): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  hasStateRoot(root: Uint8Array): Promise<boolean> {
+    return this._trie.checkRoot(root)
   }
   dumpStorage?(_address: Address): Promise<StorageDump> {
     throw new Error('Method not implemented.')
@@ -736,5 +743,54 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
   async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
     throw new Error('Method not implemented.')
+  }
+  async generateCanonicalGenesis(genesisState: GenesisState) {
+    await this._trie.createRootNode()
+    await this.checkpoint()
+    for (const addressStr of Object.keys(genesisState)) {
+      const addrState = genesisState[addressStr]
+      let nonce, balance, code
+      let storage: StoragePair[] = []
+      if (Array.isArray(addrState)) {
+        ;[balance, code, storage, nonce] = addrState
+      } else {
+        balance = hexToBigInt(addrState)
+        nonce = '0x1'
+        code = '0x'
+      }
+      const address = createAddressFromString(addressStr)
+      await this.putAccount(address, new Account())
+      const codeBuf = hexToBytes((code as string) ?? '0x')
+      if (this.common.customCrypto?.keccak256 === undefined) {
+        throw Error('keccak256 required')
+      }
+      const codeHash = this.common.customCrypto.keccak256(codeBuf)
+
+      // Set contract storage
+      if (storage !== undefined) {
+        for (const [storageKey, valHex] of storage) {
+          const val = hexToBytes(valHex)
+          if (['0x', '0x00'].includes(bytesToHex(val))) {
+            continue
+          }
+          const key = setLengthLeft(hexToBytes(storageKey), 32)
+          await this.putStorage(address, key, val)
+        }
+      }
+      // Put contract code
+      await this.putCode(address, codeBuf)
+
+      // Put account data
+      const account = createPartialAccount({
+        nonce: nonce as PrefixedHexString,
+        balance: balance as PrefixedHexString,
+        codeHash,
+        codeSize: codeBuf.byteLength,
+      })
+
+      await this.putAccount(address, account)
+    }
+    await this.commit()
+    await this.flush()
   }
 }

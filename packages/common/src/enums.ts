@@ -71,7 +71,6 @@ export enum Hardfork {
   Shanghai = 'shanghai',
   Cancun = 'cancun',
   Prague = 'prague',
-  Osaka = 'osaka',
   Verkle = 'verkle',
 }
 

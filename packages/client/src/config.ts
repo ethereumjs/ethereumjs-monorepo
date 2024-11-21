@@ -329,6 +329,7 @@ export interface ConfigOptions {
    * Enables stateless verkle block execution (default: false)
    */
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean
 
@@ -447,6 +448,7 @@ export class Config {
   public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly statefulVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
 
@@ -538,7 +540,8 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? true
+    this.statelessVerkle = options.statelessVerkle ?? false
+    this.statefulVerkle = options.statefulVerkle ?? false
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
