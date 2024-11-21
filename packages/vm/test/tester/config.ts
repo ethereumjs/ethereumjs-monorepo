@@ -331,8 +331,9 @@ function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
       defaultHardfork: 'verkle',
     },
     Mainnet,
-    { eips: [3607], customCrypto: { kzg, verkle } },
+    { eips: [2935, 3607], customCrypto: { kzg, verkle } },
   )
+
   console.log(common.eips())
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
