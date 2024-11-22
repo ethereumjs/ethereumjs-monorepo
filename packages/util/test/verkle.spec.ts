@@ -136,4 +136,31 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
       }
     }
   })
+  it('should chunkify code correctly', () => {
+    const codes = [
+      hexToBytes(
+        '0x73d94f5374fce5edbc8e2a8697c15331677e6ebf0c3173d94f5374fce5edbc8e2a8697c15331677e6ebf0c315f55',
+      ),
+      hexToBytes(
+        '0x6002600101600260010160026001016002600101600260010160026001016002600101600260010160026001016002600101',
+      ),
+    ]
+    const codeChunks = [
+      [
+        '0x0073d94f5374fce5edbc8e2a8697c15331677e6ebf0c3173d94f5374fce5edbc',
+        '0x0c8e2a8697c15331677e6ebf0c315f5500000000000000000000000000000000',
+      ],
+      [
+        '0x0060026001016002600101600260010160026001016002600101600260010160',
+        '0x0102600101600260010160026001016002600101000000000000000000000000',
+      ],
+    ]
+    for (const [idx, code] of codes.entries()) {
+      const chunks = chunkifyCode(code)
+      assert.deepEqual(
+        chunks.map((chunk) => bytesToHex(chunk)),
+        codeChunks[idx],
+      )
+    }
+  })
 })

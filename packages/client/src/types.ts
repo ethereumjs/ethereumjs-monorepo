@@ -143,6 +143,7 @@ export interface ClientOpts {
   savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
   ignoreStatelessInvalidExecs?: boolean

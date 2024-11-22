@@ -38,7 +38,13 @@ import type {
 } from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  DB,
+  DBObject,
+  GenesisState,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -1325,8 +1331,13 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
+
     return createBlock(
-      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      {
+        header,
+        withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
+        executionWitness: common.isActivatedEIP(6800) ? ({} as VerkleExecutionWitness) : undefined,
+      },
       { common },
     )
   }

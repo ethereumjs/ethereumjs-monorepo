@@ -25,7 +25,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -44,7 +44,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
 
@@ -70,7 +70,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -104,7 +104,7 @@ describe('Verkle Tree API tests', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
     })
     const sm = new StatefulVerkleStateManager({ common, trie })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
@@ -121,9 +121,13 @@ describe('caching functionality works', () => {
     const common = new Common({
       chain: Mainnet,
       eips: [6800],
-      customCrypto: { verkleCrypto: verkle },
+      customCrypto: { verkle },
     })
-    const sm = new StatefulVerkleStateManager({ common, trie, caches: new Caches() })
+    const sm = new StatefulVerkleStateManager({
+      common,
+      trie,
+      caches: new Caches(),
+    })
     const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
     const account = createAccount({ nonce: 3n, balance: 0xfffn })
     await sm.putAccount(address, account)

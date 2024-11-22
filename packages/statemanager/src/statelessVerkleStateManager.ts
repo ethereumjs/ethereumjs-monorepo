@@ -119,13 +119,13 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       throw new Error('EIP-6800 required for stateless verkle state management')
     }
 
-    if (opts.common.customCrypto.verkleCrypto === undefined) {
+    if (opts.common.customCrypto.verkle === undefined) {
       throw new Error('verkle crypto required')
     }
 
     this.common = opts.common
     this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
-    this.verkleCrypto = opts.common.customCrypto.verkleCrypto
+    this.verkleCrypto = opts.common.customCrypto.verkle
 
     this._debug = debugDefault('statemanager:verkle:stateless')
 

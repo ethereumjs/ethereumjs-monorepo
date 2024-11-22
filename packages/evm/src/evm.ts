@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
@@ -85,7 +86,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
-    Hardfork.Osaka,
+    Hardfork.Verkle,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -1191,3 +1192,4 @@ export function defaultBlock(): Block {
     },
   }
 }
+/* eslint-enable @typescript-eslint/no-use-before-define */

@@ -43,6 +43,8 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
+    "lint": "eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",

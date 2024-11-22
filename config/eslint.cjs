@@ -108,7 +108,6 @@ module.exports = {
     'no-dupe-class-members': 'off',
     'no-extra-semi': 'off',
     'no-redeclare': 'off',
-    'no-undef': 'off',
     'no-unused-vars': 'off',
     'no-var': 'error',
     'object-shorthand': 'error',
@@ -130,11 +129,10 @@ module.exports = {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
         'no-console': 'off',
-        '@typescript-eslint/no-floating-promises': 'warn',
       },
     },
     {
-      files: ['**/examples/**/*', '**/benchmarks/*.ts', ],
+      files: ['**/examples/**/*.ts', '**/examples/**/*.js','**/benchmarks/*.ts'],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
@@ -148,6 +146,16 @@ module.exports = {
         '@typescript-eslint/no-use-before-define': 'off',
         'no-invalid-this': 'off',
         'no-restricted-syntax': 'off',
+      },
+    },
+    {
+      files: ['packages/devp2p/**'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 'off',
+        'no-redeclare': 'off',
+        'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
+        'no-console': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
       },
     },
     {

@@ -25,7 +25,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
-    customCrypto: { verkleCrypto: verkle },
+    customCrypto: { verkle },
   })
 
   const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
@@ -39,7 +39,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   )
 
   it('initPreState()', async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
@@ -48,7 +48,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO: Turn back on once we have kaustinen7 data
   it.skip('getAccount()', async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
@@ -67,7 +67,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('put/delete/modify account', async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({
       common,
       caches: new Caches(),
@@ -117,7 +117,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('getKey function', async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
@@ -141,7 +141,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it(`copy()`, async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({
       caches: new Caches({
         account: {
@@ -171,7 +171,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO contract storage functions not yet completely implemented
   test.skip('get/put/clear contract storage', async () => {
-    common.customCrypto.verkleCrypto = verkle
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
