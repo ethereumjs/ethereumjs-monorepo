@@ -11,8 +11,8 @@ import {
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
@@ -79,7 +79,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    * e.g. 1559 (fee market) and 2930 (access lists)
    * for FeeMarket1559Tx objects
    */
-  protected activeCapabilities: number[] = []
+  public activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.

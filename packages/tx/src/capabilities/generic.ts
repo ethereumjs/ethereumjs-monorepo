@@ -12,7 +12,7 @@ import {
 import { paramsTx } from '../params.js'
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
-import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
+import type { L1TxInterface, TransactionType, TxData, TxOptions } from '../types.js'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
@@ -70,7 +70,7 @@ type Mutable<T> = {
 // represents the constructor of baseTransaction
 // Note: have to use `Mutable` to write to readonly props. Only call this in constructor of txs.
 export function sharedConstructor(
-  tx: Mutable<TransactionInterface>,
+  tx: Mutable<L1TxInterface>,
   txData: TxData[TransactionType],
   opts: TxOptions = {},
 ) {
@@ -122,7 +122,7 @@ export function sharedConstructor(
   }
 }
 
-export function getBaseJSON(tx: TransactionInterface) {
+export function getBaseJSON(tx: L1TxInterface) {
   return {
     type: bigIntToHex(BigInt(tx.type)),
     nonce: bigIntToHex(tx.nonce),
