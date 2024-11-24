@@ -39,8 +39,9 @@ export const paramsVM: ParamsDict = {
    */
   2935: {
     // config
-    historyStorageAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
   /**
 .  * Reduction in refunds
@@ -67,10 +68,7 @@ export const paramsVM: ParamsDict = {
    * Ethereum state using a unified verkle tree (experimental)
    */
   6800: {
-    // kaustinen 6 current uses this address, however this will be updated to correct address
-    // in next iteration
-    // config
-    historyStorageAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
   },
   /**
    * Execution layer triggerable withdrawals (experimental)

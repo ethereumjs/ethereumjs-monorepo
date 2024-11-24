@@ -218,6 +218,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     }, {})
 
     this._postState = postState
+
+    this._debug(`initVerkleExecutionWitness preState=${JSON.stringify(this._preState)}`)
+    this._debug(`initVerkleExecutionWitness postState=${JSON.stringify(this._postState)}`)
   }
 
   /**
