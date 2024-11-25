@@ -25,6 +25,7 @@ import {
   concatBytes,
   equalsBytes,
   getVerkleTreeIndicesForStorageSlot,
+  hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -61,16 +62,40 @@ export interface AsyncOpHandler {
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
+// TODO: verify that this is the correct designator
+// The PR https://github.com/ethereum/EIPs/pull/8969 has two definitions of the
+// designator: the original (0xef0100) and the designator added in the changes (0xef01)
+const eip7702Designator = hexToBytes('0xef01')
+const eip7702HashBigInt = bytesToBigInt(keccak256(eip7702Designator))
+
 function getEIP7702DelegatedAddress(code: Uint8Array) {
   if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
     return new Address(code.slice(3, 24))
   }
 }
 
-async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
+/**
+ * This method performs checks to transfor the code which the EVM observes regarding EIP-7702.
+ * If the code is 7702-delegated code, it will retrieve the code of the designated address
+ * in case of an executable operation (`isReadOperation` == false), or the 7702 designator
+ * code in case of a read operation
+ * @param runState
+ * @param code
+ * @param isReadOperation Boolean to determine if the target code is meant to be read or executed (default: `false`)
+ * @returns
+ */
+async function eip7702CodeCheck(
+  runState: RunState,
+  code: Uint8Array,
+  isReadOperation: boolean = false,
+) {
   const address = getEIP7702DelegatedAddress(code)
   if (address !== undefined) {
-    return runState.stateManager.getCode(address)
+    if (isReadOperation) {
+      return eip7702Designator
+    } else {
+      return runState.stateManager.getCode(address)
+    }
   }
 
   return code
@@ -538,7 +563,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(BigInt(EOFBYTES.length))
         return
       } else if (common.isActivatedEIP(7702)) {
-        code = await eip7702CodeCheck(runState, code)
+        code = await eip7702CodeCheck(runState, code, true)
       }
 
       const size = BigInt(code.length)
@@ -560,7 +585,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
         } else if (common.isActivatedEIP(7702)) {
-          code = await eip7702CodeCheck(runState, code)
+          code = await eip7702CodeCheck(runState, code, true)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -587,13 +612,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       } else if (common.isActivatedEIP(7702)) {
         const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
         if (possibleDelegatedAddress !== undefined) {
-          const account = await runState.stateManager.getAccount(possibleDelegatedAddress)
-          if (!account || account.isEmpty()) {
-            runState.stack.push(BIGINT_0)
-            return
-          }
-
-          runState.stack.push(BigInt(bytesToHex(account.codeHash)))
+          // The account is delegated by an EIP-7702 tx. Push the EIP-7702 designator hash to the stack
+          runState.stack.push(eip7702HashBigInt)
           return
         } else {
           runState.stack.push(bytesToBigInt(keccak256(code)))
