@@ -75,7 +75,7 @@ function getEIP7702DelegatedAddress(code: Uint8Array) {
 }
 
 /**
- * This method performs checks to transfor the code which the EVM observes regarding EIP-7702.
+ * This method performs checks to transform the code which the EVM observes regarding EIP-7702.
  * If the code is 7702-delegated code, it will retrieve the code of the designated address
  * in case of an executable operation (`isReadOperation` == false), or the 7702 designator
  * code in case of a read operation
