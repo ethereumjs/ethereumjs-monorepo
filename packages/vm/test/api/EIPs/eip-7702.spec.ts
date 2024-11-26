@@ -25,6 +25,9 @@ import type { VM } from '../../../src/index.js'
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
+// EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
+const eip7702Designator = hexToBytes('0xef01')
+
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
 const defaultAuthPkey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -248,21 +251,21 @@ describe('test EIP-7702 opcodes', () => {
       {
         // PUSH20 <defaultAuthAddr> EXTCODESIZE PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3b5f5500`,
-        expectedStorage: bigIntToUnpaddedBytes(BigInt(randomCode.length)),
+        expectedStorage: bigIntToUnpaddedBytes(BigInt(eip7702Designator.length)),
         name: 'EXTCODESIZE',
       },
       // EXTCODEHASH
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
-        expectedStorage: keccak256(randomCode),
+        expectedStorage: keccak256(eip7702Designator),
         name: 'EXTCODEHASH',
       },
       // EXTCODECOPY
       {
         // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 MLOAD PUSH0 SSTORE STOP
         code: `0x60205f5f73${defaultAuthAddr.toString().slice(2)}3c5f515f5500`,
-        expectedStorage: setLengthRight(randomCode, 32),
+        expectedStorage: setLengthRight(eip7702Designator, 32),
         name: 'EXTCODECOPY',
       },
     ]
