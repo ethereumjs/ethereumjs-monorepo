@@ -650,7 +650,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       if (computedValue === undefined) {
         this.DEBUG &&
           this._debug(
-            `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
+            `Missing computed value for address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
         postFailures++
         continue
@@ -661,7 +661,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       if (canonicalValue === undefined) {
         this.DEBUG &&
           this._debug(
-            `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
+            `Block accesses missing from postState for address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`,
           )
         postFailures++
         continue
