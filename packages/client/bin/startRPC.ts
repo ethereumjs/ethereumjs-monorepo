@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 

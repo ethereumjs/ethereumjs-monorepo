@@ -42,7 +42,7 @@ module.exports = {
     'plugin:import/typescript',
   ],
   rules: {
-    'no-restricted-imports': ['error', 'ethereum-cryptography/utils.js'],
+    'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-use-before-define': 'error',
     '@typescript-eslint/naming-convention': [
@@ -128,7 +128,6 @@ module.exports = {
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
-        'no-console': 'off',
       },
     },
     {
