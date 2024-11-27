@@ -11,8 +11,8 @@ import {
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
+import * as Generic from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
@@ -89,7 +89,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
+    Generic.sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
     const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
@@ -123,7 +123,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    Generic.valueBoundaryCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
@@ -354,7 +354,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this)
+    const baseJSON = Generic.getBaseJSON(this)
 
     return {
       ...baseJSON,

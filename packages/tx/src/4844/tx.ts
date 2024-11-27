@@ -14,9 +14,9 @@ import {
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
+import * as Generic from '../capabilities/generic.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from '../constants.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
 
@@ -95,7 +95,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
    * varying data types.
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
-    sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
+    Generic.sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
@@ -124,7 +124,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    Generic.valueBoundaryCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
@@ -372,7 +372,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
 
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = getBaseJSON(this)
+    const baseJSON = Generic.getBaseJSON(this)
 
     return {
       ...baseJSON,
