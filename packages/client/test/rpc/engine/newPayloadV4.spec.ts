@@ -181,7 +181,6 @@ describe(`${method}: call with executionPayloadV4`, () => {
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, ['0x', '0x', '0x']])
-    console.log(res)
     assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
