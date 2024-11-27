@@ -154,7 +154,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               codeEnd = codeSize
             }
 
-            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndComputeGas(
               contract,
               Number(_codeOffset),
               Number(codeEnd),
@@ -242,7 +242,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               codeEnd = codeSize
             }
 
-            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndComputeGas(
               address,
               Number(_codeOffset),
               Number(codeEnd),

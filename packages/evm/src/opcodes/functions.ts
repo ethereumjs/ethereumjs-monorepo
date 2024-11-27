@@ -968,7 +968,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
-        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndComputeGas(
           contract,
           startOffset,
           endOffset,
