@@ -1,5 +1,5 @@
 import { DPT } from '@ethereumjs/devp2p'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../../src/index.js'

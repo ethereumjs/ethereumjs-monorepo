@@ -2,10 +2,10 @@ import {
   KeyEncoding,
   ValueEncoding,
   bytesToUnprefixedHex,
+  concatBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { concatBytes } from 'ethereum-cryptography/utils'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './index.js'
 

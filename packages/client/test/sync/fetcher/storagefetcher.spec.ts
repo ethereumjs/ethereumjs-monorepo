@@ -1,7 +1,6 @@
 import { createMPTFromProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { hexToBytes } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.js'

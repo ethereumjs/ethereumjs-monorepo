@@ -12,13 +12,15 @@ import {
   BIGINT_0,
   KECCAK256_NULL,
   KECCAK256_RLP,
+  bytesToHex,
   createAccountFromRLP,
+  equalsBytes,
+  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { Fetcher } from './fetcher.js'
 import { getInitFetcherDoneFlags } from './types.js'

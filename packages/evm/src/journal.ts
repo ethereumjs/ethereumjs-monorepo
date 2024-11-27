@@ -4,11 +4,11 @@ import {
   RIPEMD160_ADDRESS_STRING,
   bytesToHex,
   bytesToUnprefixedHex,
+  hexToBytes,
   stripHexPrefix,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Account, PrefixedHexString } from '@ethereumjs/util'

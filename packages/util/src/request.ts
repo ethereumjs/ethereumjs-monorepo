@@ -1,4 +1,4 @@
-import { concatBytes } from 'ethereum-cryptography/utils'
+import { concatBytes } from './bytes.js'
 
 import type { PrefixedHexString } from './types.js'
 
