@@ -4,9 +4,14 @@
 import { bytesToHex } from '@ethereumjs/util'
 import { readFileSync } from 'fs'
 import { platform } from 'os'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 export * from './parse.js'
 export * from './rpc.js'
+
+// See: https://stackoverflow.com/a/50053801
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function short(bytes: Uint8Array | string): string {
   if (bytes === null || bytes === undefined || bytes === '') return ''
@@ -18,13 +23,12 @@ export function short(bytes: Uint8Array | string): string {
   return str
 }
 
+export function getPackageJSON(): { version: string } {
+  return JSON.parse(readFileSync(__dirname + '/../../package.json', 'utf-8'))
+}
+
 export function getClientVersion() {
-  const packageJSON = JSON.parse(
-    readFileSync(
-      '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-      'utf-8',
-    ),
-  )
+  const packageJSON = getPackageJSON()
   const { version } = process
   return `EthereumJS/${packageJSON.version}/${platform()}/node${version.substring(1)}`
 }
