@@ -80,7 +80,7 @@ module.exports = {
     'import/namespace': 'off',
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
-    'import/no-cycle': 'off', // TODO: set to `warn` for fixing and then `error`
+    'import/no-cycle': 'warn', // TODO: set to `warn` for fixing and then `error`
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/no-duplicates': 'error',
