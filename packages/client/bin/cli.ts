@@ -1043,10 +1043,10 @@ async function run() {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      /* eslint-disable-next-line no-console */
+      /* eslint-disable no-console */
       console.error(err)
-      /* eslint-disable-next-line no-console */
       console.error(`invalid chain parameters: ${err.message}`)
+      /* eslint-enable no-console */
       process.exit()
     }
   } else if (typeof args.gethGenesis === 'string') {
