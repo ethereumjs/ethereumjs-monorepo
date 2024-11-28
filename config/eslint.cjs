@@ -124,7 +124,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['**/test/**/*.ts', '**/bin/**.ts', ],
+      files: ['**/test/**/*.ts', ],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
