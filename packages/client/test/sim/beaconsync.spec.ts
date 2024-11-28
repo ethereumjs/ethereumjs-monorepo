@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'

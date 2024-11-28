@@ -13,10 +13,10 @@ import {
   createAddressFromString,
   equalsBytes,
   generateAddress,
+  hexToBytes,
   privateToAddress,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import { bytesToBigInt } from '../../../../util/src/bytes.js'

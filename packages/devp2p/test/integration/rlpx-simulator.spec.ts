@@ -59,7 +59,7 @@ describe('RLPx simulator tests', () => {
     const basePort = 60661
     const rlpxs = util.getTestRLPXs(3, 1, basePort)
     const peer = { address: util.localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
-    rlpxs[0]['_dpt']!.addPeer(peer)
+    void rlpxs[0]['_dpt']!.addPeer(peer)
     await new Promise((resolve) => {
       rlpxs[0].events.on('peer:added', async (peer) => {
         //@ts-ignore
@@ -70,7 +70,7 @@ describe('RLPx simulator tests', () => {
             udpPort: basePort + 2,
             tcpPort: basePort + 2,
           }
-          rlpxs[0]['_dpt']!.addPeer(peer2)
+          void rlpxs[0]['_dpt']!.addPeer(peer2)
           await util.delay(500)
           assert.equal(rlpxs[0]['_peersQueue'].length, 1, 'peers queue should contain one peer')
         }

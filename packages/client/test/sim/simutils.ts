@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
