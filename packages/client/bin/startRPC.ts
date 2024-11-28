@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
@@ -230,6 +229,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
  * Output RPC help and exit
  */
 export function helpRPC() {
+  /* eslint-disable no-console */
   console.log('-'.repeat(27))
   console.log('JSON-RPC: Supported Methods')
   console.log('-'.repeat(27))
@@ -243,5 +243,6 @@ export function helpRPC() {
     console.log()
   }
   console.log()
+  /* eslint-enable no-console */
   process.exit()
 }
