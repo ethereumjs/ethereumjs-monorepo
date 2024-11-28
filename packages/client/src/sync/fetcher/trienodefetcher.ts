@@ -13,6 +13,7 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bytesToHex,
+  bytesToUnprefixedHex,
   createAccountFromRLP,
   equalsBytes,
   hexToBytes,
@@ -118,7 +119,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
-      nodeHash: bytesToHex(this.root),
+      nodeHash: bytesToUnprefixedHex(this.root),
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
 
@@ -176,7 +177,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const receivedNodes: Uint8Array[] = []
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
-        const receivedHash = bytesToHex(this.keccakFunction(receivedNode) as Uint8Array)
+        const receivedHash = bytesToUnprefixedHex(this.keccakFunction(receivedNode) as Uint8Array)
         if (this.requestedNodeToPath.has(receivedHash)) {
           receivedNodes.push(rangeResult.nodes[i])
         }
@@ -219,7 +220,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       // process received node data and request unknown child nodes
       for (const nodeData of result[0]) {
         const node = decodeMPTNode(nodeData as unknown as Uint8Array)
-        const nodeHash = bytesToHex(this.keccakFunction(nodeData as unknown as Uint8Array))
+        const nodeHash = bytesToUnprefixedHex(
+          this.keccakFunction(nodeData as unknown as Uint8Array),
+        )
         const pathString = this.requestedNodeToPath.get(nodeHash) ?? ''
         const [accountPath, storagePath] = pathString.split('/')
         const nodePath = storagePath ?? accountPath
@@ -232,7 +235,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const children = (node as BranchMPTNode).getChildren()
           for (const [i, embeddedNode] of children) {
             if (embeddedNode !== null) {
-              const newStoragePath = nodePath.concat(bytesToHex(Uint8Array.from([i])))
+              const newStoragePath = nodePath.concat(bytesToUnprefixedHex(Uint8Array.from([i])))
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
               this.DEBUG && this.debug('branch node found')
@@ -244,7 +247,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
         } else if (node instanceof ExtensionMPTNode) {
           this.DEBUG && this.debug('extension node found')
-          const stringPath = bytesToHex(pathToHexKey(nodePath, node.key(), 'hex'))
+          const stringPath = bytesToUnprefixedHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
             storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
           const val = {
@@ -261,11 +264,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
               this.DEBUG && this.debug('storage component found')
               const syncPath = [
-                bytesToHex(pathToHexKey(accountPath, node.key(), 'hex')),
+                bytesToUnprefixedHex(pathToHexKey(accountPath, node.key(), 'hex')),
                 storagePath,
               ].join('/')
               this.pathToNodeRequestData.setElement(syncPath, {
-                nodeHash: bytesToHex(storageRoot),
+                nodeHash: bytesToUnprefixedHex(storageRoot),
                 nodeParentHash: nodeHash,
                 parentAccountHash: nodeHash,
               })
@@ -301,7 +304,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               pathString,
             ) as NodeRequestData
             this.pathToNodeRequestData.setElement(childNode.path, {
-              nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
+              nodeHash: bytesToUnprefixedHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
               parentAccountHash,
             } as NodeRequestData)
@@ -344,7 +347,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           // add account node data to account trie
           const node = decodeMPTNode(nodeData)
           if (node instanceof LeafMPTNode) {
-            const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
+            const key = bytesToUnprefixedHex(pathToHexKey(path, node.key(), 'keybyte'))
             ops.push({
               type: 'put',
               key: hexToBytes(key),
@@ -362,7 +365,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               for (const [path, data] of pathToStorageNode) {
                 const storageNode = decodeMPTNode(data)
                 if (storageNode instanceof LeafMPTNode) {
-                  const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
+                  const storageKey = bytesToUnprefixedHex(
+                    pathToHexKey(path, storageNode.key(), 'keybyte'),
+                  )
                   storageTrieOps.push({
                     type: 'put',
                     key: hexToBytes(storageKey),
