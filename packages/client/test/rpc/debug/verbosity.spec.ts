@@ -28,7 +28,7 @@ describe(method, () => {
     // highest level; e.g. be very verbose and show even debug logs
     const levelDebug = 3
     res = await rpc.request(method, [levelDebug])
-    assert.equal(res.result, 'level: debug', 'verbosity level successfully highered')
+    assert.equal(res.result, 'level: debug', 'verbosity level successfully increased')
     assert.equal(client.config.logger.level, logLevels[levelDebug])
   })
 })
