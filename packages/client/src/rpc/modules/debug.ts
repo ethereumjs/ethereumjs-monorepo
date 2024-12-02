@@ -449,8 +449,8 @@ export class Debug {
     return bytesToHex(tx.serialize())
   }
   /**
-   * Returns an RLP-encoded block
-   * @param blockOpt Block number or tag
+   * Sets the verbosity level of the client logger
+   * @param level logger level to use with 0 as the lowest verbosity
    */
   async verbosity(params: [number]) {
     const [level] = params
