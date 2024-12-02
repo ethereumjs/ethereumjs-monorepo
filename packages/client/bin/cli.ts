@@ -863,6 +863,7 @@ async function inputAccounts() {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
+          /* eslint-disable no-console */
           console.error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
@@ -876,6 +877,7 @@ async function inputAccounts() {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
+    /* eslint-disable no-console */
     console.error(`Encountered error unlocking account:\n${e.message}`)
     process.exit()
   }
@@ -889,12 +891,14 @@ async function inputAccounts() {
 function generateAccount(): Account {
   const privKey = randomBytes(32)
   const address = createAddressFromPrivateKey(privKey)
+  /* eslint-disable no-console */
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
   console.log(`Private key: ${bytesToHex(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
+  /* eslint-enable no-console */
   return [address, privKey]
 }
 
@@ -1039,8 +1043,10 @@ async function run() {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
+      /* eslint-disable no-console */
       console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
+      /* eslint-enable no-console */
       process.exit()
     }
   } else if (typeof args.gethGenesis === 'string') {
@@ -1056,6 +1062,7 @@ async function run() {
   }
 
   if (args.mine === true && accounts.length === 0) {
+    /* eslint-disable-next-line no-console */
     console.error(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
@@ -1261,6 +1268,8 @@ async function run() {
 }
 
 run().catch((err) => {
+  /* eslint-disable no-console */
   console.log(err)
   logger?.error(err.message.toString()) ?? console.error(err)
+  /* eslint-enable no-console */
 })

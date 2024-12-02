@@ -42,7 +42,7 @@ module.exports = {
     'plugin:import/typescript',
   ],
   rules: {
-    'no-restricted-imports': ['error', 'ethereum-cryptography/utils.js'],
+    'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-use-before-define': 'error',
     '@typescript-eslint/naming-convention': [
@@ -80,7 +80,7 @@ module.exports = {
     'import/namespace': 'off',
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
-    'import/no-cycle': 'off', // TODO: set to `warn` for fixing and then `error`
+    'import/no-cycle': 'error', 
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/no-duplicates': 'error',
@@ -124,11 +124,10 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['**/test/**/*.ts', '**/bin/**.ts', ],
+      files: ['**/test/**/*.ts', ],
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
-        'no-console': 'off',
       },
     },
     {
@@ -151,7 +150,6 @@ module.exports = {
     {
       files: ['packages/devp2p/**'],
       rules: {
-        '@typescript-eslint/no-floating-promises': 'off',
         'no-redeclare': 'off',
         'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
         'no-console': 'off',
