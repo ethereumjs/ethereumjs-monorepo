@@ -1169,7 +1169,6 @@ async function run() {
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
-
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,

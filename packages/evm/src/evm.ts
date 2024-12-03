@@ -834,11 +834,11 @@ export class EVM implements EVMInterface {
     let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
+      const caller = opts.caller ?? createZeroAddress()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? createZeroAddress(),
+        origin: opts.origin ?? caller,
       }
-      const caller = opts.caller ?? createZeroAddress()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -916,7 +916,7 @@ export class EVM implements EVMInterface {
       result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG) {
-        debug(`Message CREATE execution (to undefined)`)
+        debug(`Message CREATE execution (to: undefined)`)
       }
       result = await this._executeCreate(message)
     }
