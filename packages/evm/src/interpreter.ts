@@ -327,6 +327,8 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
       } catch (e: any) {
+        // Revert access witness changes if we revert - per EIP-4762
+        this._runState.env.accessWitness?.clearCache()
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -412,6 +414,7 @@ export class Interpreter {
       } else {
         opFn.apply(null, [this._runState, this.common])
       }
+      this._runState.env.accessWitness?.flushCache()
     } finally {
       if (this.profilerOpts?.enabled === true) {
         this.performanceLogger.stopTimer(

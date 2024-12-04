@@ -133,6 +133,8 @@ export interface VerkleAccessWitnessInterface {
     { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
   merge(accessWitness: VerkleAccessWitnessInterface): void
+  flushCache(): void
+  clearCache(): void
 }
 
 /*
