@@ -301,11 +301,6 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
 
-  clear(): void {
-    this.stems.clear()
-    this.chunks.clear()
-  }
-
   merge(accessWitness: VerkleAccessWitness): void {
     for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
       const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
