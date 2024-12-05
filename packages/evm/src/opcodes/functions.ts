@@ -1518,6 +1518,26 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(ret)
     },
   ],
+  // 0xf7: RETURNDATALOAD
+  [
+    0xf7,
+    function (runState, _common) {
+      const pos = runState.stack.pop()
+      if (pos > runState.interpreter.getReturnDataSize()) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
+      const i = Number(pos)
+      let loaded = runState.interpreter.getReturnData().subarray(i, i + 32)
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
+      let r = bytesToBigInt(loaded)
+      if (loaded.length < 32) {
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
+      }
+      runState.stack.push(r)
+    },
+  ],
   // 0xf8: EXTCALL
   [
     0xf8,
