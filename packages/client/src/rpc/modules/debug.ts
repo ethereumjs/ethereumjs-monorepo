@@ -43,6 +43,14 @@ export interface structLog {
   }
   error: boolean | undefined | null
 }
+
+const logLevels: { [key: number]: string } = {
+  0: 'error',
+  1: 'warn',
+  2: 'info',
+  3: 'debug',
+}
+
 /**
  * Validate tracer opts to ensure only supports opts are provided
  * @param opts a dictionary of {@link tracerOpts}
@@ -85,6 +93,7 @@ const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
  * @memberof module:rpc/modules
  */
 export class Debug {
+  private client: EthereumClient
   private service: FullEthereumService
   private chain: Chain
   private vm: VM
@@ -94,6 +103,7 @@ export class Debug {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
+    this.client = client
     this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
@@ -138,6 +148,9 @@ export class Debug {
       1,
       [[validators.hex]],
     )
+    this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
+      [validators.unsignedInteger],
+    ])
   }
 
   /**
@@ -434,5 +447,14 @@ export class Debug {
     const block = await this.chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return bytesToHex(tx.serialize())
+  }
+  /**
+   * Sets the verbosity level of the client logger
+   * @param level logger level to use with 0 as the lowest verbosity
+   */
+  async verbosity(params: [number]) {
+    const [level] = params
+    this.client.config.logger.configure({ level: logLevels[level] })
+    return `level: ${this.client.config.logger.level}`
   }
 }
