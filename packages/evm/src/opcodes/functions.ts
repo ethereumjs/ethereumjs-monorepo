@@ -1287,6 +1287,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       } else {
+        if (runState.interpreter.isStatic()) {
+          trap(ERROR.STATIC_STATE_CHANGE)
+        }
         // Read container index
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
@@ -1600,6 +1603,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (!isEOF(code)) {
           // EXTDELEGATECALL cannot call legacy contracts
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
