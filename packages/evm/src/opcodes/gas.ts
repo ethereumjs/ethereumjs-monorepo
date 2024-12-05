@@ -940,10 +940,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* STATICCALL */
       0xfa,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
-        }
         const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(6)
 
@@ -993,6 +989,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     [
       0xfb,
       async function (runState, gas, common): Promise<bigint> {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
         // Peek stack values
