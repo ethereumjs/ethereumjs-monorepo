@@ -1170,7 +1170,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
@@ -1214,7 +1214,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
