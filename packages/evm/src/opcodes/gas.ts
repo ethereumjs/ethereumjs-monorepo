@@ -468,6 +468,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     [
       0xd3,
       async function (runState, gas, common) {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
@@ -481,6 +485,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     [
       0xec,
       async function (runState, gas, common): Promise<bigint> {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         // Note: TX_CREATE_COST is in the base fee (this is 32000 and same as CREATE / CREATE2)
 
         // Note: in `gas.ts` programCounter is not yet incremented (which it is in `functions.ts`)
@@ -802,6 +810,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     [
       0xf8,
       async function (runState, gas, common): Promise<bigint> {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
         // Peek stack values
@@ -875,6 +887,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
     [
       0xf9,
       async function (runState, gas, common): Promise<bigint> {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
         // Peek stack values
@@ -924,6 +940,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* STATICCALL */
       0xfa,
       async function (runState, gas, common): Promise<bigint> {
+        if (runState.env.eof === undefined) {
+          // Opcode not available in legacy contracts
+          trap(ERROR.INVALID_OPCODE)
+        }
         const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(6)
 
