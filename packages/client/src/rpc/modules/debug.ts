@@ -148,6 +148,9 @@ export class Debug {
       1,
       [[validators.hex]],
     )
+    this.setHead = middleware(callWithStackTrace(this.setHead.bind(this), this._rpcDebug), 1, [
+      [validators.blockOption],
+    ])
     this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
       [validators.unsignedInteger],
     ])
@@ -456,5 +459,26 @@ export class Debug {
     const [level] = params
     this.client.config.logger.configure({ level: logLevels[level] })
     return `level: ${this.client.config.logger.level}`
+  }
+
+  /**
+   * Returns an RLP-encoded block
+   * @param blockOpt Block number or tag
+   */
+  async setHead(params: [string]) {
+    const [blockOpt] = params
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not yet supported`,
+      }
+    }
+    const block = await getBlockByOption(blockOpt, this.chain)
+    let res
+    try {
+      res = await this.service.skeleton?.setHead(block)
+    } catch (e) {
+      console.log(e)
+    }
   }
 }
