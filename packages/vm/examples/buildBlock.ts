@@ -35,7 +35,7 @@ const main = async () => {
 
   // Add more transactions
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 

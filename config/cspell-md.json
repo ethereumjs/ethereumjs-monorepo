@@ -1,6 +1,8 @@
 {
   "language": "en-US",
-  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/"],
+  "ignoreRegExpList": [
+    "/0x[0-9A-Fa-f]+/"
+  ],
   "words": [
     "trienode",
     "t8ntool",
@@ -316,6 +318,9 @@
     "triggerable",
     "MCLBLS",
     "heartedly",
-    "beaconroot"
+    "beaconroot",
+    "Grandine",
+    "EVMBN",
+    "kaust"
   ]
 }

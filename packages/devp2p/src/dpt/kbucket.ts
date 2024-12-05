@@ -1,5 +1,5 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { KBucket as _KBucket } from '../ext/index.js'
 

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "4.4.0",
+  "version": "5.0.0-alpha.1",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -36,10 +36,7 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
@@ -47,9 +44,8 @@
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- common",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
@@ -57,7 +53,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.1.0"
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
     "@polkadot/util": "^12.6.2",

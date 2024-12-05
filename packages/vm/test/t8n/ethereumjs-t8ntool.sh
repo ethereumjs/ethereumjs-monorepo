@@ -5,4 +5,4 @@ if [[ "$1" == "--version" ]]; then
 fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export NODE_OPTIONS="--max-old-space-size=4096" 
-tsx "$SCRIPT_DIR/launchT8N.ts" "$@"
+npx tsx "$SCRIPT_DIR/launchT8N.ts" "$@"

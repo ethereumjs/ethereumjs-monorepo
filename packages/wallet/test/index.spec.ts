@@ -210,9 +210,9 @@ describe('Wallet tests', () => {
     const permus = []
     const keys = Array.from(
       objs.reduce((acc: any, curr: object) => {
-        Object.keys(curr).forEach((key) => {
+        for (const key of Object.keys(curr)) {
           acc.add(key)
-        })
+        }
         return acc
       }, new Set()),
     )
@@ -225,11 +225,11 @@ describe('Wallet tests', () => {
         .split('')
         .map((v) => parseInt(v, 10))
       const obj: any = {}
-      ;(zip(selectors, keys) as [number, string][]).forEach(([sel, k]: [number, string]) => {
-        if ((objs as any)[sel].hasOwnProperty(k) === true) {
-          obj[k] = (objs as any)[sel][k]
+      for (const [sel, k] of zip(selectors, keys)) {
+        if (Object.prototype.hasOwnProperty.call(objs[sel!], k as string)) {
+          obj[k as string] = (objs as any)[sel!][k as string]
         }
-      })
+      }
       permus.push(obj)
     }
     return permus

@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
@@ -17,6 +17,7 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
@@ -35,7 +36,7 @@ import {
   DELEGATION_7702_FLAG,
   type EVMBLSInterface,
   type EVMBN254Interface,
-  type EVMEvents,
+  type EVMEvent,
   type EVMInterface,
   type EVMMockBlockchainInterface,
   type EVMOpts,
@@ -51,6 +52,7 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
+import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
@@ -84,7 +86,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
-    Hardfork.Osaka,
+    Hardfork.Verkle,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -93,11 +95,12 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  public readonly events: EventEmitter<EVMEvent>
 
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
+  public verkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -172,7 +175,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter<EVMEvent>()
     this._optsCached = opts
 
     // Supported EIPs
@@ -218,10 +221,20 @@ export class EVM implements EVMInterface {
       this._bls = opts.bls ?? new NobleBLS()
       this._bls.init?.()
     }
+
     this._bn254 = opts.bn254!
 
     this._emit = async (topic: string, data: any): Promise<void> => {
-      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
+      const listeners = this.events.listeners(topic as keyof EVMEvent)
+      for (const listener of listeners) {
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
+      }
     }
 
     this.performanceLogger = new EVMPerformanceLogger()
@@ -250,20 +263,23 @@ export class EVM implements EVMInterface {
     const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
+      if (message.accessWitness === undefined) {
+        throw new Error('accessWitness is required for EIP-6800')
+      }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(fromAddress)
+        const originAccessGas = message.accessWitness.touchTxOriginAndComputeGas(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
 
-        const destAccessGas = message.accessWitness!.touchTxTargetAndComputeGas(message.to, {
+        const destAccessGas = message.accessWitness.touchTxTargetAndComputeGas(message.to, {
           sendsValue,
         })
         debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
       }
 
-      let callAccessGas = message.accessWitness!.touchAndChargeMessageCall(message.to)
+      let callAccessGas = message.accessWitness.touchAndChargeMessageCall(message.to)
       if (sendsValue) {
-        callAccessGas += message.accessWitness!.touchAndChargeValueTransfer(fromAddress, message.to)
+        callAccessGas += message.accessWitness.touchAndChargeValueTransfer(message.to)
       }
       gasLimit -= callAccessGas
       if (gasLimit < BIGINT_0) {
@@ -851,7 +867,7 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: opts.accessWitness,
+        accessWitness: this.verkleAccessWitness,
       })
     }
 
@@ -1176,3 +1192,4 @@ export function defaultBlock(): Block {
     },
   }
 }
+/* eslint-enable @typescript-eslint/no-use-before-define */

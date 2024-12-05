@@ -4,6 +4,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createAccessList2930Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
+  Units,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -524,8 +525,8 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
       }),
     )
 
@@ -540,8 +541,8 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
       }).sign(A.privateKey),
     )
@@ -561,8 +562,8 @@ describe('[TxPool]', async () => {
     txs.push(
       createFeeMarket1559Tx(
         {
-          maxFeePerGas: 1000000000,
-          maxPriorityFeePerGas: 1000000000,
+          maxFeePerGas: Units.gwei(1),
+          maxPriorityFeePerGas: Units.gwei(1),
           nonce: 0,
           data: `0x${'00'.repeat(128 * 1024 + 1)}`,
         },
@@ -583,8 +584,8 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
         gasLimit: 21000,
         nonce: 0,
       }).sign(A.privateKey),
@@ -603,14 +604,13 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
       }).sign(A.privateKey),
     )
 
     const { pool } = setup()
-
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       baseFeePerGas: BigInt(3000000000),
     })
@@ -626,15 +626,14 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
         gasLimit: 21000,
       }).sign(A.privateKey),
     )
 
     const { pool } = setup()
-
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       gasLimit: BigInt(5000),
     })
@@ -650,8 +649,8 @@ describe('[TxPool]', async () => {
 
     txs.push(
       createFeeMarket1559Tx({
-        maxFeePerGas: 1000000000,
-        maxPriorityFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: Units.gwei(1),
       }).sign(A.privateKey),
     )
 
@@ -703,7 +702,7 @@ describe('[TxPool]', async () => {
 
     const tx = createAccessList2930Tx(
       {
-        gasPrice: 1000000000 - 1,
+        gasPrice: Units.gwei(1) - 1n,
         nonce: 0,
       },
       {

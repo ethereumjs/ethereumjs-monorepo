@@ -18,7 +18,7 @@ describe('EIP 2929: gas cost tests', () => {
     let i = 0
     let currentGas = initialGas
     const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step: any) {
+    vm.evm.events!.on('step', function (step, resolve) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -45,6 +45,7 @@ describe('EIP 2929: gas cost tests', () => {
         }
       }
       i++
+      resolve?.()
     })
 
     await vm.stateManager.putCode(address, hexToBytes(test.code))

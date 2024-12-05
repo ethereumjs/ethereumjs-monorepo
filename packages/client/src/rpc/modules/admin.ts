@@ -1,13 +1,16 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { Config } from '../../index.js'
+import { RlpxPeer } from '../../net/peer/rlpxpeer.js'
 import { getClientVersion } from '../../util/index.js'
+import { INTERNAL_ERROR } from '../error-code.js'
 import { callWithStackTrace } from '../helpers.js'
-import { middleware } from '../validation.js'
+import { middleware, validators } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../client.js'
-import type { RlpxPeer } from '../../net/peer/rlpxpeer.js'
-import type { Service } from '../../service/index.js'
+import type { RlpxServer } from '../../net/server/rlpxserver.js'
+import type { FullEthereumService } from '../../service/index.js'
 
 /**
  * admin_* RPC module
@@ -23,13 +26,22 @@ export class Admin {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as Service
+    const service = client.service as FullEthereumService
     this._chain = service.chain
     this._client = client
     this._rpcDebug = rpcDebug
 
     this.nodeInfo = middleware(callWithStackTrace(this.nodeInfo.bind(this), this._rpcDebug), 0, [])
     this.peers = middleware(callWithStackTrace(this.peers.bind(this), this._rpcDebug), 0, [])
+    this.addPeer = middleware(callWithStackTrace(this.addPeer.bind(this), this._rpcDebug), 1, [
+      [
+        validators.object({
+          address: validators.ipv4Address,
+          udpPort: validators.unsignedInteger,
+          tcpPort: validators.unsignedInteger,
+        }),
+      ],
+    ])
   }
 
   /**
@@ -75,8 +87,7 @@ export class Admin {
    * @returns an array of objects containing information about peers (including id, eth protocol versions supported, client name, etc.)
    */
   async peers() {
-    const peers = this._client.services.filter((service) => service.name === 'eth')[0]?.pool
-      .peers as RlpxPeer[]
+    const peers = this._client.service!.pool.peers as RlpxPeer[]
 
     return peers?.map((peer) => {
       return {
@@ -97,5 +108,36 @@ export class Admin {
         },
       }
     })
+  }
+
+  /**
+   * Attempts to add a peer to client service peer pool using the RLPx server address and port
+   * e.g. `.admin_addPeer [{"address": "127.0.0.1", "tcpPort": 30303, "udpPort": 30303}]`
+   * @param params An object containing an address, tcpPort, and udpPort for target server to connect to
+   */
+  async addPeer(params: [Object]) {
+    const service = this._client.service as any as FullEthereumService
+    const server = service.pool.config.server as RlpxServer
+    const dpt = server.dpt
+
+    let peerInfo
+    try {
+      peerInfo = await dpt!.addPeer(params[0])
+      const rlpxPeer = new RlpxPeer({
+        config: new Config(),
+        id: bytesToHex(peerInfo.id!),
+        host: peerInfo.address!,
+        port: peerInfo.tcpPort as number,
+      })
+      service.pool.add(rlpxPeer)
+    } catch (err: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `failed to add peer: ${JSON.stringify(params)}`,
+        stack: err?.stack,
+      }
+    }
+
+    return peerInfo !== undefined
   }
 }

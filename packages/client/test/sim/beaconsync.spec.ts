@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
@@ -165,7 +166,7 @@ describe('simple mainnet test run', async () => {
 
         try {
           // call sync if not has been called yet
-          void ejsClient.services[0].synchronizer?.sync()
+          void ejsClient.service.synchronizer?.sync()
           const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
           assert.equal(
             ['SYNCED', 'VALID'].includes(syncResponse.syncState),
@@ -225,7 +226,7 @@ async function createBeaconSyncClient(
   return { ejsInlineClient, peerConnectedPromise, beaconSyncRelayer }
 }
 
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })

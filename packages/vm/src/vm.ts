@@ -1,10 +1,10 @@
 import { createEVM } from '@ethereumjs/evm'
-import { AsyncEventEmitter } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 
 import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
 
-import type { VMEvents, VMOpts } from './types.js'
+import type { VMEvent, VMOpts } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
@@ -12,8 +12,6 @@ import type { BigIntLike } from '@ethereumjs/util'
 /**
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
- *
- * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export class VM {
   /**
@@ -28,7 +26,7 @@ export class VM {
 
   readonly common: Common
 
-  readonly events: AsyncEventEmitter<VMEvents>
+  readonly events: EventEmitter<VMEvent>
   /**
    * The EVM used for bytecode execution
    */
@@ -44,9 +42,7 @@ export class VM {
    * set to public due to implementation internals
    * @hidden
    */
-  public _emit(topic: keyof VMEvents, data: any): Promise<void> {
-    return new Promise((resolve) => this.events.emit(topic, data, resolve))
-  }
+  public readonly _emit: (topic: string, data: any) => Promise<void>
 
   /**
    * VM is run in DEBUG mode (default: false)
@@ -73,8 +69,20 @@ export class VM {
     this.blockchain = opts.blockchain!
     this.evm = opts.evm!
 
-    this.events = new AsyncEventEmitter<VMEvents>()
+    this.events = new EventEmitter<VMEvent>()
 
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      const listeners = this.events.listeners(topic as keyof VMEvent)
+      for (const listener of listeners) {
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
+      }
+    }
     this._opts = opts
 
     this._setHardfork = opts.setHardfork ?? false

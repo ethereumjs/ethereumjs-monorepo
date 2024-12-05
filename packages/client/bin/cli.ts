@@ -44,6 +44,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { Level } from 'level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import * as verkle from 'micro-eth-signer/verkle'
 import { homedir } from 'os'
 import * as path from 'path'
 import * as promClient from 'prom-client'
@@ -59,6 +60,7 @@ import { getLogger } from '../src/logging.js'
 import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
+import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 import { helpRPC, startRPCServers } from './startRPC.js'
 
@@ -112,11 +114,6 @@ const args: ClientOpts = yargs
     describe: 'Blockchain sync mode (light sync experimental)',
     choices: Object.values(SyncMode),
     default: Config.SYNCMODE_DEFAULT,
-  })
-  .option('lightServe', {
-    describe: 'Serve light peer requests',
-    boolean: true,
-    default: Config.LIGHTSERV_DEFAULT,
   })
   .option('dataDir', {
     describe: 'Data directory for the blockchain',
@@ -457,7 +454,12 @@ const args: ClientOpts = yargs
   .option('statelessVerkle', {
     describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
     boolean: true,
-    default: true,
+    default: false,
+  })
+  .option('statefulVerkle', {
+    describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
+    boolean: true,
+    default: false,
   })
   .option('engineNewpayloadMaxExecute', {
     describe:
@@ -560,7 +562,7 @@ async function executeBlocks(client: EthereumClient) {
     )
     process.exit()
   }
-  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  const { execution } = client.service
   if (execution === undefined) throw new Error('executeBlocks requires execution')
   await execution.executeBlocks(first, last, txHashes)
 }
@@ -604,26 +606,36 @@ async function startExecutionFrom(client: EthereumClient) {
     timestamp: startExecutionBlock.header.timestamp,
   })
 
-  if (
-    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
-    client.config.statelessVerkle
-  ) {
-    // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
-    // to startExecutionParent's hash
-    try {
-      await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
-      await client.chain.update(false)
-      logger.info(
-        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
-      )
-    } catch (err: any) {
-      logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+  if (client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle)) {
+    if (client.config.statelessVerkle) {
+      // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
+      // to startExecutionParent's hash
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+        process.exit()
+      }
+    } else if (client.config.statefulVerkle) {
+      try {
+        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+        await client.chain.update(false)
+        logger.info(
+          `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
+        )
+      } catch (err: any) {
+        logger.error(`Error setting vmHead for starting stateful execution: ${err}`)
+        process.exit()
+      }
+    } else {
+      // we need parent state availability to set the vmHead to the parent
+      logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
       process.exit()
     }
-  } else {
-    // we need parent state availability to set the vmHead to the parent
-    logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
-    process.exit()
   }
 }
 
@@ -635,9 +647,6 @@ async function startClient(
   genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {},
 ) {
   config.logger.info(`Data directory: ${config.datadir}`)
-  if (config.lightserv) {
-    config.logger.info(`Serving light peer requests`)
-  }
 
   const dbs = initDBs(config)
 
@@ -650,6 +659,14 @@ async function startClient(
       validateConsensus = true
     }
 
+    let stateRoot
+    if (config.statefulVerkle) {
+      if (genesisMeta.genesisState === undefined) {
+        throw new Error('genesisState is required to compute stateRoot')
+      }
+      stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
+    }
+
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
@@ -659,7 +676,7 @@ async function startClient(
       validateConsensus,
       consensusDict,
       genesisState: genesisMeta.genesisState,
-      genesisStateRoot: genesisMeta.genesisStateRoot,
+      genesisStateRoot: stateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -719,7 +736,7 @@ async function startClient(
   // update client's sync status and start txpool if synchronized
   client.config.updateSynchronizedState(client.chain.headers.latest)
   if (client.config.synchronized === true) {
-    const fullService = client.services.find((s) => s.name === 'eth')
+    const fullService = client.service
     // The service might not be FullEthereumService even if we cast it as one,
     // so txPool might not exist on it
     ;(fullService as FullEthereumService).txPool?.checkRunState()
@@ -734,7 +751,7 @@ async function startClient(
   }
 
   if (args.loadBlocksFromRlp !== undefined && client.chain.opened) {
-    const service = client.service('eth') as FullEthereumService
+    const service = client.service
     await service.execution.open()
     await service.execution.run()
   }
@@ -807,6 +824,7 @@ async function inputAccounts() {
     // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
     // TODO: See whether package needs to be updated or not
     input: process.stdin,
+    // @ts-ignore
     output: process.stdout,
   })
 
@@ -845,6 +863,7 @@ async function inputAccounts() {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
+          /* eslint-disable no-console */
           console.error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
@@ -858,6 +877,7 @@ async function inputAccounts() {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
+    /* eslint-disable no-console */
     console.error(`Encountered error unlocking account:\n${e.message}`)
     process.exit()
   }
@@ -871,12 +891,14 @@ async function inputAccounts() {
 function generateAccount(): Account {
   const privKey = randomBytes(32)
   const address = createAddressFromPrivateKey(privKey)
+  /* eslint-disable no-console */
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
   console.log(`Private key: ${bytesToHex(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
+  /* eslint-enable no-console */
   return [address, privKey]
 }
 
@@ -988,6 +1010,7 @@ async function run() {
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   cryptoFunctions.kzg = kzg
+  cryptoFunctions.verkle = verkle
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
@@ -1020,8 +1043,10 @@ async function run() {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
+      /* eslint-disable no-console */
       console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
+      /* eslint-enable no-console */
       process.exit()
     }
   } else if (typeof args.gethGenesis === 'string') {
@@ -1037,6 +1062,7 @@ async function run() {
   }
 
   if (args.mine === true && accounts.length === 0) {
+    /* eslint-disable-next-line no-console */
     console.error(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
@@ -1150,7 +1176,7 @@ async function run() {
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
     key,
-    lightserv: args.lightServe,
+
     logger,
     maxPeers: args.maxPeers,
     maxPerRequest: args.maxPerRequest,
@@ -1171,6 +1197,7 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
     statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
+    statefulVerkle: args.statefulVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute:
       args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
@@ -1179,7 +1206,7 @@ async function run() {
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
     prometheusMetrics,
   })
-  config.events.setMaxListeners(50)
+
   config.events.on(Event.SERVER_LISTENING, (details) => {
     const networkDir = config.getNetworkDirectory()
     // Write the transport into a file
@@ -1241,6 +1268,8 @@ async function run() {
 }
 
 run().catch((err) => {
+  /* eslint-disable no-console */
   console.log(err)
   logger?.error(err.message.toString()) ?? console.error(err)
+  /* eslint-enable no-console */
 })

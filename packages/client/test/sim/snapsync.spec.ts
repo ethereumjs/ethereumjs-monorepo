@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   bytesToHex,
@@ -48,6 +49,49 @@ let stateManager: MerkleStateManager | undefined = undefined
 // This account doesn't exist in the genesis so starting balance is zero
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
 let EOATransferToBalance = BigInt(0)
+
+async function createSnapClient(
+  common: any,
+  customGenesisState: any,
+  bootnodes: any,
+  peerBeaconUrl: any,
+  datadir: any,
+) {
+  // Turn on `debug` logs, defaults to all client logging
+  debug.enable(process.env.DEBUG_SNAP ?? '')
+  const logger = getLogger({ logLevel: 'debug' })
+  const config = new Config({
+    common,
+    bootnodes,
+    multiaddrs: [],
+    logger,
+    accountCache: 10000,
+    storageCache: 1000,
+    discDns: false,
+    discV4: false,
+    port: 30304,
+    enableSnapSync: true,
+    // syncmode: 'none',
+    // Keep the single job sync range high as the state is not big
+    maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
+    maxFetcherJobs: 10,
+  })
+  const peerConnectedPromise = new Promise((resolve) => {
+    config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
+  })
+  const snapSyncCompletedPromise = new Promise((resolve) => {
+    config.events.once(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      (stateRoot: Uint8Array, stateManager: MerkleStateManager) =>
+        resolve([stateRoot, stateManager]),
+    )
+  })
+
+  const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)
+  const beaconSyncRelayer = await setupEngineUpdateRelay(ejsInlineClient, peerBeaconUrl)
+
+  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
+}
 
 export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
@@ -128,22 +172,21 @@ describe('simple mainnet test run', async () => {
         peerConnectedPromise,
         snapSyncCompletedPromise,
         beaconSyncRelayer: relayer,
-      } =
+      } = (await createSnapClient(
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(
-          common,
-          customGenesisState,
-          [nodeInfo.enode],
-          peerBeaconUrl,
-          '',
-        ).catch((e) => {
-          console.log(e)
-          return null
-        })) ?? {
-          ejsInlineClient: null,
-          peerConnectedPromise: Promise.reject('Client creation error'),
-          beaconSyncRelayer: null,
-        }
+        common,
+        customGenesisState,
+        [nodeInfo.enode],
+        peerBeaconUrl,
+        '',
+      ).catch((e) => {
+        console.log(e)
+        return null
+      })) ?? {
+        ejsInlineClient: null,
+        peerConnectedPromise: Promise.reject('Client creation error'),
+        beaconSyncRelayer: null,
+      }
 
       ejsClient = ejsInlineClient
       beaconSyncRelayer = relayer
@@ -178,7 +221,7 @@ describe('simple mainnet test run', async () => {
 
         try {
           // call sync if not has been called yet
-          void ejsClient.services[0].synchronizer?.sync()
+          void ejsClient.service.synchronizer?.sync()
           await Promise.race([
             (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
@@ -239,50 +282,7 @@ describe('simple mainnet test run', async () => {
   }, 60_000)
 })
 
-async function createSnapClient(
-  common: any,
-  customGenesisState: any,
-  bootnodes: any,
-  peerBeaconUrl: any,
-  datadir: any,
-) {
-  // Turn on `debug` logs, defaults to all client logging
-  debug.enable(process.env.DEBUG_SNAP ?? '')
-  const logger = getLogger({ logLevel: 'debug' })
-  const config = new Config({
-    common,
-    bootnodes,
-    multiaddrs: [],
-    logger,
-    accountCache: 10000,
-    storageCache: 1000,
-    discDns: false,
-    discV4: false,
-    port: 30304,
-    enableSnapSync: true,
-    // syncmode: 'none',
-    // Keep the single job sync range high as the state is not big
-    maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
-    maxFetcherJobs: 10,
-  })
-  const peerConnectedPromise = new Promise((resolve) => {
-    config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
-  })
-  const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events.once(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      (stateRoot: Uint8Array, stateManager: MerkleStateManager) =>
-        resolve([stateRoot, stateManager]),
-    )
-  })
-
-  const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)
-  const beaconSyncRelayer = await setupEngineUpdateRelay(ejsInlineClient, peerBeaconUrl)
-
-  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
-}
-
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })
