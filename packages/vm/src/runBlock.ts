@@ -438,7 +438,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await accumulateParentBlockHash(vm, block.header.number, block.header.parentHash)
   }
 
-  vm.evm.verkleAccessWitness?.flushCache()
+  vm.evm.systemVerkleAccessWitness?.flushCache()
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
