@@ -954,12 +954,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
-      if (
-        runState.programCounter + numToPush > runState.code.length &&
-        common.isActivatedEIP(3540)
-      ) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
 
       if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
         const contract = runState.interpreter.getAddress()
