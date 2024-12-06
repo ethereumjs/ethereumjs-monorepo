@@ -595,9 +595,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
           runState.stack.push(BigInt(bytesToHex(account.codeHash)))
           return
-        } else {
-          runState.stack.push(bytesToBigInt(keccak256(code)))
-          return
         }
       }
 
@@ -1525,6 +1522,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf7,
     function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
       const pos = runState.stack.pop()
       if (pos > runState.interpreter.getReturnDataSize()) {
         runState.stack.push(BIGINT_0)
