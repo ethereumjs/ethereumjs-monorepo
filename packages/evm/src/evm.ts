@@ -101,6 +101,7 @@ export class EVM implements EVMInterface {
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
   public verkleAccessWitness?: VerkleAccessWitness
+  public systemVerkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -685,7 +686,7 @@ export class EVM implements EVMInterface {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
         const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
+          message.accessWitness!.touchCodeChunksRangeOnWriteAndComputeGas(
             message.to,
             0,
             result.returnValue.length - 1,
@@ -833,11 +834,11 @@ export class EVM implements EVMInterface {
     let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
+      const caller = opts.caller ?? createZeroAddress()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? createZeroAddress(),
+        origin: opts.origin ?? caller,
       }
-      const caller = opts.caller ?? createZeroAddress()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -915,7 +916,7 @@ export class EVM implements EVMInterface {
       result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG) {
-        debug(`Message CREATE execution (to undefined)`)
+        debug(`Message CREATE execution (to: undefined)`)
       }
       result = await this._executeCreate(message)
     }

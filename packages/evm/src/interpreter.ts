@@ -378,7 +378,7 @@ export class Interpreter {
       if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas =
-          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndComputeGas(
             contract,
             this._runState.programCounter,
             this._runState.programCounter,

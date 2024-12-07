@@ -317,8 +317,8 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
-        const hfEIPs = hfChanges[1]['eips']
-        for (const eip of hfEIPs!) {
+        const hfEIPs = hfChanges[1].eips ?? []
+        for (const eip of hfEIPs) {
           this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
@@ -337,7 +337,7 @@ export class Common {
 
     for (const [name, hf] of this.HARDFORK_CHANGES) {
       if (this.gteHardfork(name) && 'eips' in hf) {
-        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf['eips'] as number[])
+        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf.eips as number[])
       }
     }
     this._activatedEIPsCache = this._activatedEIPsCache.concat(this._eips)

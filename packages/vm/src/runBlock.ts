@@ -18,6 +18,7 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
+  createPartialAccount,
   equalsBytes,
   getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
@@ -141,6 +142,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       throw Error('verkleCrypto required when EIP-6800 is active')
     }
     vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: vm.common.customCrypto.verkle,
+    })
+    vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
       verkleCrypto: vm.common.customCrypto.verkle,
     })
 
@@ -271,8 +275,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (!vm.common.isActivatedEIP(6800)) {
-      // Only validate the following headers if verkle blocks aren't activated
+    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+      // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
           debug(
@@ -320,6 +324,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
+
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
@@ -442,6 +447,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
+
   const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
@@ -486,6 +492,11 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
+  // Merge systemVerkleACcessWitness with verkleAccessWitness
+  if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
+    vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
+  }
+
   return blockResults
 }
 
@@ -506,17 +517,16 @@ export async function accumulateParentBlockHash(
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('systemAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
   // getAccount with historyAddress will throw error as witnesses are not bundled
   // but we need to put account so as to query later for slot
   const code = await vm.stateManager.getCode(historyAddress)
 
+  // Create an empty account if not there already
   if (code.length === 0) {
-    // Exit early, system contract has no code so no storage is written
-    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
-    return
+    await vm.stateManager.putAccount(historyAddress, createPartialAccount({}))
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
@@ -525,12 +535,12 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      if (vm.evm.verkleAccessWitness === undefined) {
+      if (vm.evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
       const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
-      // just create access witnesses without charging for the gas
-      vm.evm.verkleAccessWitness.touchAddressOnWriteAndComputeGas(
+      // Add to system verkle access witness so that it doesn't warm up tx accesses
+      vm.evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
         historyAddress,
         treeIndex,
         subIndex,
@@ -737,11 +747,11 @@ export async function rewardAccount(
   evm: EVMInterface,
   address: Address,
   reward: bigint,
-  common?: Common,
+  common: Common,
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
-    if (common?.isActivatedEIP(6800) === true) {
+    if (common.isActivatedEIP(6800) === true) {
       if (evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
@@ -752,7 +762,7 @@ export async function rewardAccount(
   account.balance += reward
   await evm.journal.putAccount(address, account)
 
-  if (common?.isActivatedEIP(6800) === true) {
+  if (common.isActivatedEIP(6800) === true) {
     if (evm.verkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }

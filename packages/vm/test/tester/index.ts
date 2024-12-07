@@ -3,6 +3,7 @@ import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import * as verkle from 'micro-eth-signer/verkle'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -24,6 +25,7 @@ import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 /**
  * Test runner
@@ -124,6 +126,11 @@ async function runTests() {
     bn254 = new NobleBN254()
   }
 
+  let verkleCrypto: VerkleCrypto | undefined
+  if (FORK_CONFIG === 'verkle') {
+    verkleCrypto = verkle
+  }
+
   /**
    * Run-time configuration
    */
@@ -142,6 +149,7 @@ async function runTests() {
     profile: boolean
     bls: EVMBLSInterface
     bn254: EVMBN254Interface
+    stateManager: string
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -156,6 +164,7 @@ async function runTests() {
     bls,
     profile: RUN_PROFILER,
     bn254,
+    stateManager: argv.stateManager,
   }
 
   /**

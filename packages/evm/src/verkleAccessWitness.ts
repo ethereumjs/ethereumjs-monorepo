@@ -161,16 +161,20 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return gas
   }
 
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint {
+  touchCodeChunksRangeOnReadAndComputeGas(
+    contract: Address,
+    startPc: number,
+    endPc: number,
+  ): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
-      gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
+      gas += this.touchAddressOnReadAndComputeGas(contract, treeIndex, subIndex)
     }
     return gas
   }
 
-  touchCodeChunksRangeOnWriteAndChargeGas(
+  touchCodeChunksRangeOnWriteAndComputeGas(
     contact: Address,
     startPc: number,
     endPc: number,
@@ -188,7 +192,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+    return this.touchAddressAndComputeGas(address, treeIndex, subIndex, {
       isWrite: true,
     })
   }
@@ -198,12 +202,12 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+    return this.touchAddressAndComputeGas(address, treeIndex, subIndex, {
       isWrite: false,
     })
   }
 
-  touchAddressAndChargeGas(
+  touchAddressAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
@@ -236,7 +240,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
 
     debug(
-      `touchAddressAndChargeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`,
+      `touchAddressAndComputeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`,
     )
 
     return gas
