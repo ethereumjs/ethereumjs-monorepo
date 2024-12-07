@@ -17,7 +17,8 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 type CLData = {
   parentBeaconBlockRoot?: PrefixedHexString
   blobVersionedHashes?: PrefixedHexString[]
-  executionRequests?: PrefixedHexString[]
+  executionRequests?: PrefixedHexString[],
+  targetBlobsPerBlock?: PrefixedHexString,
 }
 
 export const validate4844BlobVersionedHashes = (
@@ -106,7 +107,7 @@ export const assembleBlock = async (
 
   try {
     // Validate CL data to see if it matches with the assembled block
-    const { blobVersionedHashes, executionRequests, parentBeaconBlockRoot } = clValidationData
+    const { blobVersionedHashes, executionRequests, parentBeaconBlockRoot, targetBlobsPerBlock } = clValidationData
 
     let requestsHash
     if (executionRequests !== undefined) {
@@ -116,7 +117,7 @@ export const assembleBlock = async (
     }
 
     const block = await createBlockFromExecutionPayload(
-      { ...payload, parentBeaconBlockRoot, requestsHash },
+      { ...payload, parentBeaconBlockRoot, requestsHash, targetBlobsPerBlock },
       { common },
     )
     // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized

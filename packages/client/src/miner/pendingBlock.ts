@@ -19,7 +19,8 @@ import type { Config } from '../config.js'
 import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { CLRequest, CLRequestType, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
+import type { BigIntLike, CLRequest, CLRequestType, PrefixedHexString ,
+  WithdrawalData} from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
@@ -57,12 +58,15 @@ enum AddTxResult {
   RemovedByErrors,
 }
 
+type CLData = {withdrawals?: WithdrawalData[],maxBlobsPerBlock?:BigIntLike}
+
 export class PendingBlock {
   config: Config
   txPool: TxPool
 
   pendingPayloads: Map<string, BlockBuilder> = new Map()
   blobsBundles: Map<string, BlobsBundle> = new Map()
+  maxBlobsPerBlock?: number
 
   private skipHardForkValidation?: boolean
 
@@ -97,7 +101,7 @@ export class PendingBlock {
     vm: VM,
     parentBlock: Block,
     headerData: Partial<HeaderData> = {},
-    withdrawals?: WithdrawalData[],
+    {withdrawals,maxBlobsPerBlock}:CLData={},
   ) {
     const number = parentBlock.header.number + BIGINT_1
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
@@ -114,6 +118,19 @@ export class PendingBlock {
 
     if (number === vm.common.hardforkBlock(Hardfork.London)) {
       gasLimit = gasLimit * BIGINT_2
+    }
+
+    // Get if and how many blobs are allowed in the tx
+    if(vm.common.isActivatedEIP(7742)){
+      this.maxBlobsPerBlock = toType(maxBlobsPerBlock!, TypeOutput.Number)
+    }else{
+      if (vm.common.isActivatedEIP(4844)) {
+        const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+        const blobGasPerBlob = vm.common.param('blobGasPerBlob')
+        this.maxBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+      } else {
+        this.maxBlobsPerBlock = 0
+      }
     }
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
@@ -140,6 +157,15 @@ export class PendingBlock {
       }
       withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
     }
+    const targetBlobsPerBlock = toType(headerData.targetBlobsPerBlock??0, TypeOutput.BigInt)
+
+    // some validations for correct target and max
+    if(targetBlobsPerBlock > this.maxBlobsPerBlock){
+      throw Error(`Invalid targetBlobsPerBlock=${targetBlobsPerBlock} > maxBlobsPerBlock=${this.maxBlobsPerBlock}`)
+    }
+
+    const targetBlobsPerBlockBuf = bigIntToUnpaddedBytes(targetBlobsPerBlock)
+    const maxBlobsPerBlockBuf =bigIntToUnpaddedBytes(BigInt(this.maxBlobsPerBlock))
 
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
@@ -153,6 +179,8 @@ export class PendingBlock {
           parentBeaconBlockRootBuf,
           coinbaseBuf,
           withdrawalsBuf,
+          targetBlobsPerBlockBuf,
+          maxBlobsPerBlockBuf,
         ),
       ).subarray(0, 8),
     )
@@ -189,19 +217,11 @@ export class PendingBlock {
 
     this.pendingPayloads.set(payloadId, builder)
 
-    // Get if and how many blobs are allowed in the tx
-    let allowedBlobs
-    if (vm.common.isActivatedEIP(4844)) {
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
-      const blobGasPerBlob = vm.common.param('blobGasPerBlob')
-      allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
-    } else {
-      allowedBlobs = 0
-    }
+  
     // Add current txs in pool
     const txs = await this.txPool.txsByPriceAndNonce(vm, {
       baseFee: baseFeePerGas,
-      allowedBlobs,
+      allowedBlobs:this.maxBlobsPerBlock!,
     })
     this.config.logger.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
@@ -265,23 +285,14 @@ export class PendingBlock {
       ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
-
-    // get the number of blobs that can be further added
-    let allowedBlobs
-    if (vm.common.isActivatedEIP(4844)) {
-      const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
-      const blobGasPerBlob = vm.common.param('blobGasPerBlob')
-      allowedBlobs = Number(blobGasLimit / blobGasPerBlob) - bundle.blobs.length
-    } else {
-      allowedBlobs = 0
-    }
+    // get current bundle
+    const currentBundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
 
     // Add new txs that the pool received
     const txs = (
       await this.txPool.txsByPriceAndNonce(vm, {
         baseFee: headerData.baseFeePerGas! as bigint,
-        allowedBlobs,
+        allowedBlobs:this.maxBlobsPerBlock!-currentBundle.blobs.length,
       })
     ).filter(
       (tx) =>

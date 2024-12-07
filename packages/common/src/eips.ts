@@ -452,4 +452,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
   },
+  /**
+   * Description : Uncouple blob count between CL and EL
+   * URL         : https://eips.ethereum.org/EIPS/eip-7742
+   * Status      : Final
+   */
+  7742: {
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [4844],
+  },
 }

@@ -62,6 +62,7 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
+  public readonly targetBlobsPerBlock?: bigint
 
   public readonly common: Common
 
@@ -165,6 +166,7 @@ export class BlockHeader {
       // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
       // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
+      targetBlobsPerBlock: this.common.isActivatedEIP(7442)?this.common.param('targetBlobGasPerBlock'):undefined,
     }
 
     const baseFeePerGas =
@@ -180,6 +182,7 @@ export class BlockHeader {
       hardforkDefaults.parentBeaconBlockRoot
     const requestsHash =
       toType(headerData.requestsHash, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsHash
+    const targetBlobsPerBlock = toType(headerData.targetBlobsPerBlock, TypeOutput.BigInt) ?? hardforkDefaults.targetBlobsPerBlock
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -211,6 +214,10 @@ export class BlockHeader {
       throw new Error('requestsHash can only be provided with EIP 7685 activated')
     }
 
+    if(!this.common.isActivatedEIP(7442) && targetBlobsPerBlock!==undefined){
+      throw new Error('targetBlobsPerBlock can only be provided with EIP 7742 activated')
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -232,6 +239,7 @@ export class BlockHeader {
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this.requestsHash = requestsHash
+    this.targetBlobsPerBlock = targetBlobsPerBlock
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -567,7 +575,9 @@ export class BlockHeader {
   public calcNextExcessBlobGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
     const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
-    const targetBlobGasPerBlock = this.common.param('targetBlobGasPerBlock')
+
+    const blobGasPerBlob = this.common.param('blobGasPerBlob')
+    const targetBlobGasPerBlock = this.targetBlobsPerBlock!==undefined? this.targetBlobsPerBlock * blobGasPerBlob :  this.common.param('targetBlobGasPerBlock')
 
     if (targetGasConsumed <= targetBlobGasPerBlock) {
       return BIGINT_0

@@ -42,6 +42,7 @@ import {
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
   payloadAttributesFieldValidatorsV3,
+  payloadAttributesFieldValidatorsV4,
 } from './validators.js'
 
 import type { Chain } from '../../../blockchain/index.js'
@@ -63,6 +64,8 @@ import type {
   PayloadAttributesV1,
   PayloadAttributesV2,
   PayloadAttributesV3,
+  PayloadAttributesV4,
+  Uint64,
 } from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -210,8 +213,9 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
           [validators.array(validators.hex)],
+          [validators.uint64],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot', 'executionRequests'],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot', 'executionRequests', 'targetBlobsPerBlock'],
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
@@ -252,6 +256,13 @@ export class Engine {
       middleware(callWithStackTrace(this.forkchoiceUpdatedV3.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV3))],
+      ]),
+      forkchoiceUpdatedResponseCMHandler,
+    )
+    this.forkchoiceUpdatedV4 = cmMiddleware(
+      middleware(callWithStackTrace(this.forkchoiceUpdatedV4.bind(this), this._rpcDebug), 1, [
+        [validators.object(forkchoiceFieldValidators)],
+        [validators.optional(validators.object(payloadAttributesFieldValidatorsV4))],
       ]),
       forkchoiceUpdatedResponseCMHandler,
     )
@@ -346,10 +357,11 @@ export class Engine {
       ExecutionPayload,
       (Bytes32[] | null)?,
       (Bytes32 | null)?,
-      (PrefixedHexString[] | null)?,
+      (Bytes32[] | null)?,
+      (Uint64 | null)?,
     ],
   ): Promise<PayloadStatusV1> {
-    const [payload, blobVersionedHashes, parentBeaconBlockRoot, executionRequests] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot, executionRequests, targetBlobsPerBlock] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -372,6 +384,7 @@ export class Engine {
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
         blobVersionedHashes: blobVersionedHashes ?? undefined,
         executionRequests: executionRequests ?? undefined,
+        targetBlobsPerBlock: targetBlobsPerBlock ?? undefined,
       },
       this.chain,
       this.chainCache,
@@ -822,7 +835,7 @@ export class Engine {
   }
 
   async newPayloadV4(
-    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[], Uint64],
   ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
@@ -1107,7 +1120,7 @@ export class Engine {
     let validResponse
     // If payloadAttributes is present, start building block and return payloadId
     if (payloadAttributes) {
-      const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals, parentBeaconBlockRoot } =
+      const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals, parentBeaconBlockRoot, targetBlobsPerBlock, maxBlobsPerBlock } =
         payloadAttributes
       const timestampBigInt = BigInt(timestamp)
 
@@ -1129,8 +1142,9 @@ export class Engine {
           mixHash: prevRandao,
           coinbase: suggestedFeeRecipient,
           parentBeaconBlockRoot,
+          targetBlobsPerBlock,
         },
-        withdrawals,
+        {withdrawals, maxBlobsPerBlock},
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
@@ -1276,7 +1290,37 @@ export class Engine {
         this.chain.config.chainCommon,
         3,
         Hardfork.Cancun,
-        // this could be valid post cancun as well, if not then update the valid till hf here
+        Hardfork.Prague,
+        BigInt(payloadAttributes.timestamp),
+      )
+    }
+
+    return this.forkchoiceUpdated(params)
+  }
+
+  private async forkchoiceUpdatedV4(
+    params: [
+      forkchoiceState: ForkchoiceStateV1,
+      payloadAttributes: PayloadAttributesV4 | undefined,
+    ],
+  ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    const payloadAttributes = params[1]
+    if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 7
+      ) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV4 MUST be used for forkchoiceUpdatedV4',
+        }
+      }
+
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        4,
+        Hardfork.Prague,
+        // this could be valid post prague as well, if not then update the valid till hf here
         null,
         BigInt(payloadAttributes.timestamp),
       )
