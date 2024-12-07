@@ -802,6 +802,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
+  vm.evm.verkleAccessWitness?.flushCache()
   return results
 }
 

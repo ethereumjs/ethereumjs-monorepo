@@ -9,8 +9,6 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
-  dumpLeafValues,
-  dumpNodeHashes,
 } from '../src/index.js'
 
 import type { VerkleNode } from '../src/index.js'
