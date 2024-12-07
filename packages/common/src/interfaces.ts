@@ -108,8 +108,12 @@ export interface VerkleAccessWitnessInterface {
   touchAndChargeContractCreateCompleted(address: Address): bigint
   touchTxOriginAndComputeGas(origin: Address): bigint
   touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
-  touchCodeChunksRangeOnReadAndComputeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchCodeChunksRangeOnWriteAndComputeGas(contact: Address, startPc: number, endPc: number): bigint
+  touchCodeChunksRangeOnReadAndComputeGas(contract: Address, startPc: number, endPc: number): bigint
+  touchCodeChunksRangeOnWriteAndComputeGas(
+    contract: Address,
+    startPc: number,
+    endPc: number,
+  ): bigint
   touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
