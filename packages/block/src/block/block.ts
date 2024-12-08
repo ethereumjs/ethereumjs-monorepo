@@ -249,15 +249,18 @@ export class Block {
         }
       }
       if (this.common.isActivatedEIP(4844)) {
-        const blobGasLimit = this.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
         if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
-          if (blobGasUsed > blobGasLimit) {
+          // max blob gas check is deprecated with 7742
+          if(!this.common.isActivatedEIP(7742)){
+            const blobGasLimit = this.common.param('maxblobGasPerBlock')
+            if (blobGasUsed > blobGasLimit) {
             errs.push(
               `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
             )
           }
+        }
         }
       }
       if (errs.length > 0) {
@@ -354,7 +357,6 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const blobGasLimit = this.common.param('maxblobGasPerBlock')
       const blobGasPerBlob = this.common.param('blobGasPerBlob')
       let blobGasUsed = BIGINT_0
 
@@ -380,10 +382,14 @@ export class Block {
 
           blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
-          if (blobGasUsed > blobGasLimit) {
-            throw new Error(
-              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
-            )
+          // max blob gas check is deprecated with 7742
+          if(!this.common.isActivatedEIP(7742)){
+            const blobGasLimit = this.common.param('maxblobGasPerBlock')
+            if (blobGasUsed > blobGasLimit) {
+              throw new Error(
+                `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
+              )
+            }
           }
         }
       }

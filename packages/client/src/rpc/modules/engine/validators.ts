@@ -47,3 +47,8 @@ export const payloadAttributesFieldValidatorsV3 = {
   withdrawals: validators.array(validators.withdrawal()),
   parentBeaconBlockRoot: validators.bytes32,
 }
+export const payloadAttributesFieldValidatorsV4 = {
+  ...payloadAttributesFieldValidatorsV3,
+  targetBlobsPerBlock: validators.uint64,
+  maxBlobsPerBlock: validators.uint64,
+}

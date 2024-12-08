@@ -42,11 +42,14 @@ export type PayloadAttributes = {
   // add higher version fields as optionals to make it easy for typescript
   withdrawals?: WithdrawalV1[]
   parentBeaconBlockRoot?: Bytes32
+  targetBlobsPerBlock?: Uint64
+  maxBlobsPerBlock?: Uint64
 }
 
 export type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals' | 'parentBeaconBlockRoot'>
 export type PayloadAttributesV2 = PayloadAttributesV1 & { withdrawals: WithdrawalV1[] }
 export type PayloadAttributesV3 = PayloadAttributesV2 & { parentBeaconBlockRoot: Bytes32 }
+export type PayloadAttributesV4 = PayloadAttributesV2 & { targetBlobsPerBlock: Uint64,  maxBlobsPerBlock: Uint64}
 
 export type PayloadStatusV1 = {
   status: Status

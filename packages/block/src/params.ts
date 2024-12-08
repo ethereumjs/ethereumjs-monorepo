@@ -85,4 +85,11 @@ export const paramsBlock: ParamsDict = {
     // pow
     difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
   },
+  /**
+.  * Blob throughput increase
+.  */
+  7691: {
+    // max blobs and target blobs are relied from the CL after 7742
+    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
+  },
 }

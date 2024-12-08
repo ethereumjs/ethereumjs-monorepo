@@ -219,7 +219,8 @@ export class BlockBuilder {
     {
       skipHardForkValidation,
       allowNoBlobs,
-    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
+      maxBlobsPerBlock,
+    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean,maxBlobsPerBlock?: number },
   ) {
     this.checkStatus()
 
@@ -231,8 +232,6 @@ export class BlockBuilder {
     // According to the Yellow Paper, a transaction's gas limit
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
-
-    const blobGasLimit = this.vm.common.param('maxblobGasPerBlock')
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
@@ -255,6 +254,7 @@ export class BlockBuilder {
         }
       }
 
+      const blobGasLimit = maxBlobsPerBlock!==undefined ? BigInt(maxBlobsPerBlock)*blobGasPerBlob:this.vm.common.param('maxblobGasPerBlock')
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
         throw new Error('block blob gas limit reached')
       }

@@ -109,6 +109,7 @@ export interface HeaderData {
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
   requestsHash?: BytesLike
+  targetBlobsPerBlock?: BigIntLike
 }
 
 /**
@@ -192,6 +193,7 @@ export interface JSONHeader {
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
   requestsHash?: PrefixedHexString
+  targetBlobsPerBlock?: PrefixedHexString
 }
 
 /*
@@ -226,6 +228,7 @@ export interface JSONRPCBlock {
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
   requestsHash?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  targetBlobsPerBlock?: PrefixedHexString // if EIP-7742 is enabled for this block, returns the target blobs per block
 }
 
 export type WithdrawalV1 = {
@@ -256,6 +259,7 @@ export type ExecutionPayload = {
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   requestsHash?: PrefixedHexString
+  targetBlobsPerBlock?: PrefixedHexString // QUANTITY 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
 }
