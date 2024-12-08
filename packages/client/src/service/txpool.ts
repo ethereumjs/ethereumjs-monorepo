@@ -399,6 +399,8 @@ export class TxPool {
   }
 
   pruneBlobsAndProofsCache() {
+    // TODO figure out how to get this param for purning may be should be done by slot or just take
+    // a high target of 128 blobs that ethereum eventually intends to achieve
     const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
     const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
     const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)

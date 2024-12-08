@@ -1175,6 +1175,8 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
+        // max blob gas check is deprecated with 7742
+        if(!tx.common.isActivatedEIP(7742)){
         const blobGasLimit = tx.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
@@ -1185,6 +1187,7 @@ export class Eth {
             }`,
           )
         }
+      }
       } else {
         tx = createTxFromRLP(txBuf, { common })
       }
@@ -1416,7 +1419,10 @@ export class Eth {
 
         let baseFeePerBlobGas = BIGINT_0
         let blobGasUsedRatio = 0
-        if (b.header.excessBlobGas !== undefined) {
+          
+        // max blob gas checks is deprecated with 7742
+        // TODO: figure out what max to use for ratio
+        if (b.header.excessBlobGas !== undefined && !b.common.isActivatedEIP(7742)) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
           const max = b.common.param('maxblobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)

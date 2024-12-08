@@ -364,6 +364,7 @@ export class PendingBlock {
     try {
       await builder.addTransaction(tx, {
         skipHardForkValidation: this.skipHardForkValidation,
+        maxBlobsPerBlock: this.maxBlobsPerBlock,
       })
       addTxResult = AddTxResult.Success
     } catch (error: any) {
