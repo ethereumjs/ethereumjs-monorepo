@@ -124,7 +124,9 @@ export class PendingBlock {
     if(vm.common.isActivatedEIP(7742)){
       this.maxBlobsPerBlock = toType(maxBlobsPerBlock!, TypeOutput.Number)
     }else{
-      if (vm.common.isActivatedEIP(4844)) {
+      if(vm.common.isActivatedEIP(7691)){
+        this.maxBlobsPerBlock = vm.common.param('maxBlobsPerBlock')
+      }else if (vm.common.isActivatedEIP(4844)) {
         const blobGasLimit = vm.common.param('maxblobGasPerBlock')
         const blobGasPerBlob = vm.common.param('blobGasPerBlob')
         this.maxBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)

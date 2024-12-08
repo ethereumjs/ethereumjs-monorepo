@@ -551,6 +551,7 @@ export class BlockHeader {
     return fakeExponential(
       this.common.param('minBlobGas'),
       excessBlobGas,
+      // the correct blobGasPriceUpdateFraction should be loaded if 7691 is activated
       this.common.param('blobGasPriceUpdateFraction'),
     )
   }
