@@ -160,7 +160,15 @@ function validateOpcodes(
 
     reachableSections[codeSection] = new Set()
 
-    const returningFunction = container.body.typeSections[codeSection].outputs === 0x80
+    // Section is marked as "non-returning": it does never "return" to another code section
+    // it rather exits the current EVM call frame
+    const nonReturningFunction = container.body.typeSections[codeSection].outputs === 0x80
+
+    // Boolean flag to mark if this section has a returning opcode:
+    // RETF
+    // Or JUMPF into a returning section
+    // Each returning section should contain a returning opcode
+    let sectionHasReturningOpcode = false
 
     // Tracking set of reachable opcodes
     const reachableOpcodes = new Set<number>()
@@ -212,12 +220,12 @@ function validateOpcodes(
       let minStackNext = minStackCurrent + delta
       let maxStackNext = maxStackCurrent + delta
 
-      if (maxStackNext > 1023) {
+      if (maxStackNext > 1024) {
         // TODO verify if 1023 or 1024 is the right constant
         validationError(EOFError.StackOverflow)
       }
 
-      if (returningFunction && opcode === 0xe4) {
+      if (nonReturningFunction && opcode === 0xe4) {
         validationError(EOFError.InvalidReturningSection)
       }
 
@@ -328,7 +336,7 @@ function validateOpcodes(
             validationError(EOFError.InvalidJUMPF)
           }
 
-          if (returningFunction && targetOutputs <= 0x7f) {
+          if (nonReturningFunction && targetOutputs <= 0x7f) {
             // Current function is returning, but target is not, cannot jump into this
             validationError(EOFError.InvalidReturningSection)
           }
@@ -344,12 +352,12 @@ function validateOpcodes(
             if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === expectedStack)) {
               validationError(EOFError.InvalidStackHeight)
             }
+            sectionHasReturningOpcode = true
           }
           if (
             maxStackCurrent + container.body.typeSections[target].maxStackHeight - targetInputs >
             1024
           ) {
-            //console.log(maxStackCurrent, targetOutputs, targetInputs, targetNonReturning)
             validationError(EOFError.StackOverflow)
           }
         }
@@ -360,6 +368,7 @@ function validateOpcodes(
         if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === outputs)) {
           validationError(EOFError.InvalidStackHeight)
         }
+        sectionHasReturningOpcode = true
       } else if (opcode === 0xe6) {
         // DUPN
         const toDup = code[ptr + 1]
@@ -483,9 +492,14 @@ function validateOpcodes(
     if (container.body.typeSections[codeSection].maxStackHeight !== maxStackHeight) {
       validationError(EOFError.MaxStackHeightViolation)
     }
-    if (maxStackHeight > 1023) {
+    if (maxStackHeight > 1024) {
       // TODO verify if 1023 or 1024 is the right constant
       validationError(EOFError.MaxStackHeightLimit)
+    }
+
+    // Validate that if the section is returning, there is a returning opcode
+    if (!sectionHasReturningOpcode && !nonReturningFunction) {
+      validationError(EOFError.ReturningNoReturn)
     }
   }
 
