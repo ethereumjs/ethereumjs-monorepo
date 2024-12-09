@@ -462,8 +462,10 @@ export class Debug {
   }
 
   /**
-   * Returns an RLP-encoded block
-   * @param blockOpt Block number or tag
+   * Sets the current head of the local chain by block number. Note, this is a
+   * destructive action and may severely damage your chain. Use with extreme
+   * caution.
+   * @param blockOpt Block number or tag to set as head of chain
    */
   async setHead(params: [string]) {
     const [blockOpt] = params
@@ -473,12 +475,20 @@ export class Debug {
         message: `"pending" is not yet supported`,
       }
     }
+
+    let headHash = await this.service.skeleton?.headHash()
+    const oldHead = headHash ? bytesToHex(headHash!) : undefined
     const block = await getBlockByOption(blockOpt, this.chain)
-    let res
     try {
-      res = await this.service.skeleton?.setHead(block)
-    } catch (e) {
-      console.log(e)
+      await this.service.skeleton?.setHead(block, true)
+    } catch {
+      throw {
+        code: INTERNAL_ERROR,
+      }
     }
+    headHash = await this.service.skeleton?.headHash()
+    const newHead = headHash ? bytesToHex(headHash!) : undefined
+
+    return `oldHead: ${oldHead} - newHead: ${newHead}`
   }
 }
