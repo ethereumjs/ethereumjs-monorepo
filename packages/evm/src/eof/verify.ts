@@ -61,31 +61,9 @@ function validateOpcodes(
   evm: EVM,
   mode: ContainerSectionType = ContainerSectionType.RuntimeCode,
 ) {
-  // Track the intermediate bytes
-  const intermediateBytes = new Set<number>()
-  // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
-  const jumpLocations = new Set<number>()
-
   // Track the type of the container targets
   // Should at the end of the analysis have all the containers
   const containerTypeMap = new Map<number, ContainerSectionType>()
-
-  function addJump(location: number) {
-    if (intermediateBytes.has(location)) {
-      // When trying to JUMP into an intermediate byte: this is invalid
-      validationError(EOFError.InvalidRJUMP)
-    }
-    jumpLocations.add(location)
-  }
-
-  function addIntermediate(location: number) {
-    if (jumpLocations.has(location)) {
-      // When trying to add an intermediate to a location already JUMPed to: this is invalid
-      validationError(EOFError.InvalidRJUMP)
-    }
-    intermediateBytes.add(location)
-  }
-
   // TODO (?) -> stackDelta currently only has active EOF opcodes, can use it directly (?)
   // (so no need to generate the valid opcodeNumbers)
 
@@ -156,6 +134,29 @@ function validateOpcodes(
 
   let codeSection = -1
   for (const code of container.body.codeSections) {
+    // Track the intermediate bytes
+    const intermediateBytes = new Set<number>()
+    // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
+    const jumpLocations = new Set<number>()
+
+    // eslint-disable-next-line no-inner-declarations
+    function addJump(location: number) {
+      if (intermediateBytes.has(location)) {
+        // When trying to JUMP into an intermediate byte: this is invalid
+        validationError(EOFError.InvalidRJUMP)
+      }
+      jumpLocations.add(location)
+    }
+
+    // eslint-disable-next-line no-inner-declarations
+    function addIntermediate(location: number) {
+      if (jumpLocations.has(location)) {
+        // When trying to add an intermediate to a location already JUMPed to: this is invalid
+        validationError(EOFError.InvalidRJUMP)
+      }
+      intermediateBytes.add(location)
+    }
+
     codeSection++
 
     reachableSections[codeSection] = new Set()
