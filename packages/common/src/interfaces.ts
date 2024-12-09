@@ -137,6 +137,8 @@ export interface VerkleAccessWitnessInterface {
     { isWrite }: { isWrite?: boolean },
   ): AccessEventFlags
   merge(accessWitness: VerkleAccessWitnessInterface): void
+  commit(): void
+  revert(): void
 }
 
 /*

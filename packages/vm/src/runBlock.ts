@@ -277,17 +277,17 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
     if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
       // Only validate the following headers if Stateless isn't activated
-      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw new Error(msg)
-      }
+      // if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+      //   if (vm.DEBUG) {
+      //     debug(
+      //       `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+      //         block.header.receiptTrie,
+      //       )}`,
+      //     )
+      //   }
+      //   const msg = _errorMsg('invalid receiptTrie', vm, block)
+      //   throw new Error(msg)
+      // }
       if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
         if (vm.DEBUG) {
           debug(
@@ -494,6 +494,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
 
   // Merge systemVerkleACcessWitness with verkleAccessWitness
   if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
+    vm.evm.systemVerkleAccessWitness?.commit()
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 

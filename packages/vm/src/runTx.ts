@@ -802,6 +802,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
+  if (vm.common.isActivatedEIP(6800)) {
+    // commit all access witness changes
+    vm.evm.verkleAccessWitness?.commit()
+  }
   return results
 }
 
