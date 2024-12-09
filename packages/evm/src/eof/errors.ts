@@ -63,6 +63,7 @@ export enum EOFError {
   InvalidStackHeight = 'invalid stack height',
   InvalidJUMPF = 'invalid jumpf target (output count)',
   InvalidReturningSection = 'invalid returning code section: section is not returning',
+  ReturningNoReturn = 'invalid section: section should return but has no RETF/JUMP to return',
   RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
   UnreachableCodeSections = 'unreachable code sections',
   UnreachableCode = 'unreachable code (by forward jumps)',

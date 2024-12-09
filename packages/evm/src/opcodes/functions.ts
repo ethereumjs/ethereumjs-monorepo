@@ -595,9 +595,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
           runState.stack.push(BigInt(bytesToHex(account.codeHash)))
           return
-        } else {
-          runState.stack.push(bytesToBigInt(keccak256(code)))
-          return
         }
       }
 
@@ -957,12 +954,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
-      if (
-        runState.programCounter + numToPush > runState.code.length &&
-        common.isActivatedEIP(3540)
-      ) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
 
       if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
         const contract = runState.interpreter.getAddress()
@@ -1170,7 +1161,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
@@ -1214,7 +1205,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
@@ -1287,6 +1278,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       } else {
+        if (runState.interpreter.isStatic()) {
+          trap(ERROR.STATIC_STATE_CHANGE)
+        }
         // Read container index
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
@@ -1518,6 +1512,30 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(ret)
     },
   ],
+  // 0xf7: RETURNDATALOAD
+  [
+    0xf7,
+    function (runState, _common) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+      const pos = runState.stack.pop()
+      if (pos > runState.interpreter.getReturnDataSize()) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
+      const i = Number(pos)
+      let loaded = runState.interpreter.getReturnData().subarray(i, i + 32)
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
+      let r = bytesToBigInt(loaded)
+      if (loaded.length < 32) {
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
+      }
+      runState.stack.push(r)
+    },
+  ],
   // 0xf8: EXTCALL
   [
     0xf8,
@@ -1580,6 +1598,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (!isEOF(code)) {
           // EXTDELEGATECALL cannot call legacy contracts
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 

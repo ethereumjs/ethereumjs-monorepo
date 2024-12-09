@@ -368,6 +368,10 @@ class EOFBody {
       }
     } else {
       dataSection = stream.readRemainder()
+
+      if (dataSection.length > header.dataSize) {
+        validationError(EOFError.DanglingBytes)
+      }
     }
 
     // Write all data to the object
