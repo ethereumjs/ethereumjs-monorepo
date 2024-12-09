@@ -472,7 +472,7 @@ export class Debug {
     if (blockOpt === 'pending') {
       throw {
         code: INVALID_PARAMS,
-        message: `"pending" is not yet supported`,
+        message: `"pending" is not supported`,
       }
     }
 
