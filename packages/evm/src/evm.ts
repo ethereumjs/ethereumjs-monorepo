@@ -287,10 +287,10 @@ export class EVM implements EVMInterface {
         if (this.DEBUG) {
           debugGas(`callAccessGas charged(${callAccessGas}) caused OOG (-> ${gasLimit})`)
         }
-        message.accessWitness.clearCache()
+        message.accessWitness.revert()
         return { execResult: OOGResult(message.gasLimit) }
       } else {
-        message.accessWitness.flushCache()
+        message.accessWitness.commit()
         if (this.DEBUG) {
           debugGas(`callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`)
         }
@@ -320,7 +320,7 @@ export class EVM implements EVMInterface {
         )
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debugGas(
               `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -328,7 +328,7 @@ export class EVM implements EVMInterface {
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.flushCache()
+          message.accessWitness?.commit()
           if (this.DEBUG) {
             debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
@@ -469,7 +469,7 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
-        message.accessWitness?.clearCache()
+        message.accessWitness?.revert()
         if (this.DEBUG) {
           debugGas(
             `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -477,7 +477,7 @@ export class EVM implements EVMInterface {
         }
         return { execResult: OOGResult(message.gasLimit) }
       } else {
-        message.accessWitness?.flushCache()
+        message.accessWitness?.commit()
         if (this.DEBUG) {
           debugGas(`ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`)
         }
@@ -554,7 +554,7 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
         gasLimit -= createCompleteAccessGas
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -562,7 +562,7 @@ export class EVM implements EVMInterface {
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.flushCache()
+          message.accessWitness?.commit()
           if (this.DEBUG) {
             debug(
               `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
@@ -642,7 +642,7 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
         } else {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
@@ -651,7 +651,7 @@ export class EVM implements EVMInterface {
       } else {
         // we are in Frontier
         if (totalGas - returnFee <= message.gasLimit) {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           // we cannot pay the code deposit fee (but the deposit code actually did run)
           if (this.DEBUG) {
             debug(`Not enough gas to pay the code deposit fee (Frontier)`)
@@ -659,7 +659,7 @@ export class EVM implements EVMInterface {
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
@@ -676,7 +676,7 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
-        message.accessWitness?.clearCache()
+        message.accessWitness?.revert()
         if (this.DEBUG) {
           debug(
             `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -707,7 +707,7 @@ export class EVM implements EVMInterface {
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.clearCache()
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`,
@@ -715,7 +715,7 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.flushCache()
+          message.accessWitness?.commit()
           debug(`byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`)
           result.executionGasUsed += byteCodeWriteAccessfee
         }
@@ -818,7 +818,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    message.accessWitness?.flushCache()
+    message.accessWitness?.commit()
     return {
       ...result,
       runState: {
@@ -979,7 +979,7 @@ export class EVM implements EVMInterface {
       this.performanceLogger.stopTimer(timer!, 0)
     }
 
-    message.accessWitness?.flushCache()
+    message.accessWitness?.commit()
     return result
   }
 

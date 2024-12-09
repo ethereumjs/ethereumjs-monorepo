@@ -337,7 +337,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
   }
 
-  flushCache(): void {
+  commit(): void {
     const cachedStems = this.stemCache.commit()
     for (const [stemKey, stemValue] of cachedStems) {
       this.stems.set(stemKey, stemValue)
@@ -349,7 +349,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
   }
 
-  clearCache(): void {
+  revert(): void {
     this.stemCache.clear()
     this.chunkCache.clear()
   }
