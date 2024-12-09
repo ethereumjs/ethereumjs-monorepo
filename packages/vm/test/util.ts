@@ -423,6 +423,7 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
     const storageRoot = (await state.getAccount(address))!.storageRoot
 
     if (testData.exec?.address === addressStr) {
+      // TODO: Figure out what in the world this is doing
       testData.root(storageRoot)
     }
 

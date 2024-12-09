@@ -101,6 +101,7 @@ export class EVM implements EVMInterface {
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
   public verkleAccessWitness?: VerkleAccessWitness
+  public systemVerkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -286,8 +287,10 @@ export class EVM implements EVMInterface {
         if (this.DEBUG) {
           debugGas(`callAccessGas charged(${callAccessGas}) caused OOG (-> ${gasLimit})`)
         }
+        message.accessWitness.revert()
         return { execResult: OOGResult(message.gasLimit) }
       } else {
+        message.accessWitness.commit()
         if (this.DEBUG) {
           debugGas(`callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`)
         }
@@ -317,6 +320,7 @@ export class EVM implements EVMInterface {
         )
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debugGas(
               `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -324,6 +328,7 @@ export class EVM implements EVMInterface {
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
+          message.accessWitness?.commit()
           if (this.DEBUG) {
             debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
@@ -464,6 +469,7 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
+        message.accessWitness?.revert()
         if (this.DEBUG) {
           debugGas(
             `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -471,6 +477,7 @@ export class EVM implements EVMInterface {
         }
         return { execResult: OOGResult(message.gasLimit) }
       } else {
+        message.accessWitness?.commit()
         if (this.DEBUG) {
           debugGas(`ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`)
         }
@@ -547,6 +554,7 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
         gasLimit -= createCompleteAccessGas
         if (gasLimit < BIGINT_0) {
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -554,9 +562,12 @@ export class EVM implements EVMInterface {
           }
           return { execResult: OOGResult(message.gasLimit) }
         } else {
-          debug(
-            `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
-          )
+          message.accessWitness?.commit()
+          if (this.DEBUG) {
+            debug(
+              `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
+            )
+          }
         }
       }
 
@@ -631,6 +642,7 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
         } else {
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
@@ -639,6 +651,7 @@ export class EVM implements EVMInterface {
       } else {
         // we are in Frontier
         if (totalGas - returnFee <= message.gasLimit) {
+          message.accessWitness?.revert()
           // we cannot pay the code deposit fee (but the deposit code actually did run)
           if (this.DEBUG) {
             debug(`Not enough gas to pay the code deposit fee (Frontier)`)
@@ -646,6 +659,7 @@ export class EVM implements EVMInterface {
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
@@ -662,6 +676,7 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
+        message.accessWitness?.revert()
         if (this.DEBUG) {
           debug(
             `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
@@ -685,13 +700,14 @@ export class EVM implements EVMInterface {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
         const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
+          message.accessWitness!.touchCodeChunksRangeOnWriteAndComputeGas(
             message.to,
             0,
             result.returnValue.length - 1,
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
+          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`,
@@ -699,6 +715,7 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
+          message.accessWitness?.commit()
           debug(`byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`)
           result.executionGasUsed += byteCodeWriteAccessfee
         }
@@ -801,6 +818,7 @@ export class EVM implements EVMInterface {
       }
     }
 
+    message.accessWitness?.commit()
     return {
       ...result,
       runState: {
@@ -833,11 +851,11 @@ export class EVM implements EVMInterface {
     let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
+      const caller = opts.caller ?? createZeroAddress()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? createZeroAddress(),
+        origin: opts.origin ?? caller,
       }
-      const caller = opts.caller ?? createZeroAddress()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -915,7 +933,7 @@ export class EVM implements EVMInterface {
       result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG) {
-        debug(`Message CREATE execution (to undefined)`)
+        debug(`Message CREATE execution (to: undefined)`)
       }
       result = await this._executeCreate(message)
     }
@@ -961,6 +979,7 @@ export class EVM implements EVMInterface {
       this.performanceLogger.stopTimer(timer!, 0)
     }
 
+    message.accessWitness?.commit()
     return result
   }
 
