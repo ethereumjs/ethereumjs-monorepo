@@ -481,7 +481,6 @@ export class Debug {
     const block = await getBlockByOption(blockOpt, this.chain)
     try {
       await this.service.skeleton?.setHead(block, true)
-      await this.service.execution.runWithoutSetHead({ block })
       await this.service.execution.setHead([block])
     } catch (e) {
       throw {
