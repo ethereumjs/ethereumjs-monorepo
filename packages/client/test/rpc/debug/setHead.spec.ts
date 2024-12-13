@@ -1,20 +1,31 @@
-import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { testSetup } from '../helpers.js'
 
-import { generateBlockchain, generateConsecutiveBlock } from './util.js'
+import { Blockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
+import { mainnetData } from '../../testdata/blocks/mainnet.js'
 
 const method = 'debug_setHead'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const { blockchain, blocks, _ } = await generateBlockchain(3)
+    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const blocks = await blockchain.getBlocks(0, 6, 0, false)
+    const exec = await testSetup(blockchain)
+    await exec.run()
+    const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
+    assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
+
     const a = await createClient({ blockchain })
     await a.service.skeleton?.open()
+    ;(a.service.execution as any) = exec
+
     const manager = createManager(a)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
-
     assert.equal(
       await a.service.skeleton?.headHash(),
       undefined,
@@ -25,17 +36,13 @@ describe(method, async () => {
       assert.deepEqual(
         await a.service.skeleton?.headHash()!,
         await blocks[i].header.hash(),
-        `should return hash of block number ${i} set as head`,
+        `skeleton chain should return hash of block number ${i} set as head`,
+      )
+      assert.deepEqual(
+        await a.service.execution.chainStatus?.hash!,
+        await blocks[i].header.hash(),
+        `vm execution should set hash to new head`,
       )
     }
-
-    const newCanonicalHead = generateConsecutiveBlock(blocks[2], 1)
-    await blockchain.putBlocks([newCanonicalHead])
-    await rpc.request(method, [bigIntToHex(newCanonicalHead.header.number)])
-    assert.deepEqual(
-      await a.service.skeleton?.headHash()!,
-      newCanonicalHead.header.hash(),
-      `should set hash to new head when there is a fork`,
-    )
   }, 30000)
 })
