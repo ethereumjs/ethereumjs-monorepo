@@ -8,7 +8,7 @@
   "include": ["src/**/*.ts"],
   "references": [
     { "path": "../common/tsconfig.prod.esm.json" },
-    { "path": "../trie/tsconfig.prod.esm.json" },
+    { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../util/tsconfig.prod.esm.json" },
     { "path": "../verkle/tsconfig.prod.esm.json" }
   ]

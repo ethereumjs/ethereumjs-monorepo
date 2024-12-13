@@ -22,6 +22,42 @@ import type { Address } from '@ethereumjs/util'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
+export function mod(a: bigint, b: bigint) {
+  let r = a % b
+  if (r < BIGINT_0) {
+    r = b + r
+  }
+  return r
+}
+
+export function fromTwos(a: bigint) {
+  return BigInt.asIntN(256, a)
+}
+
+export function toTwos(a: bigint) {
+  return BigInt.asUintN(256, a)
+}
+
+export function abs(a: bigint) {
+  if (a > 0) {
+    return a
+  }
+  return a * BIGINT_NEG1
+}
+
+const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
+export function exponentiation(bas: bigint, exp: bigint) {
+  let t = BIGINT_1
+  while (exp > BIGINT_0) {
+    if (exp % BIGINT_2 !== BIGINT_0) {
+      t = (t * bas) % N
+    }
+    bas = (bas * bas) % N
+    exp = exp / BIGINT_2
+  }
+  return t
+}
+
 /**
  * Create an address from a stack item (256 bit integer).
  * This wrapper ensures that the value is masked to 160 bits.
@@ -232,40 +268,4 @@ export function updateSstoreGas(
     */
     return common.param('sstoreSetGas')
   }
-}
-
-export function mod(a: bigint, b: bigint) {
-  let r = a % b
-  if (r < BIGINT_0) {
-    r = b + r
-  }
-  return r
-}
-
-export function fromTwos(a: bigint) {
-  return BigInt.asIntN(256, a)
-}
-
-export function toTwos(a: bigint) {
-  return BigInt.asUintN(256, a)
-}
-
-export function abs(a: bigint) {
-  if (a > 0) {
-    return a
-  }
-  return a * BIGINT_NEG1
-}
-
-const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
-export function exponentiation(bas: bigint, exp: bigint) {
-  let t = BIGINT_1
-  while (exp > BIGINT_0) {
-    if (exp % BIGINT_2 !== BIGINT_0) {
-      t = (t * bas) % N
-    }
-    bas = (bas * bas) % N
-    exp = exp / BIGINT_2
-  }
-  return t
 }

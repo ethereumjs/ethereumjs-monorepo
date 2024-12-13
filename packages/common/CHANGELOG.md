@@ -6,6 +6,82 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PR [#3502](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3502)):
+
+- `Common.custom()` -> `createCustomCommon()`
+- `Common.fromGethGenesis()` -> `createCommonFromGethGenesis()`
+
+### Refactoring
+
+The inner workings and mechanisms of `Common` have been substantially refactored with the goal of simplifying both usage and underlying data structures as well as making Common more lightweight and performant to put less of a burden on other integrating libraries.
+
+#### Direct Chain Passing
+
+The `Common` constructor has been simplified and instead of passing in a chain enum value like `Chain.Mainnet` the respective chain configuration is passed in directly, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). With this the `Common` initialization changes as follows:
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+This allows to tree-shake out other chain configurations and simplifies custom chain usage.
+
+#### No more Topics
+
+Parameter topics like `gasConfig` or `gasPrices` have been removed leading to non-sub-structured parameter files, see PR [#3532](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3532). Parameter access changes as follows:
+
+```ts
+common.param('gasPrices', 'ecAddGas') // old
+common.param('ecAddGas') // new
+```
+
+#### No more default Parameter Sets
+
+Parameters have been removed from `Common` - see PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) - and moved over to `params.ts` files (exposed as e.g. `paramsBlock`) within the parameter-using libraries. The removes e.g. the tx library from the burden of carrying the somewhat large EVM parameter set around without the need for using it.
+
+The libraries internally call a new `Common` method `updateParams()` and parameter sets accumulate as needed for shared `Common` instances.
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This means that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For this library this means:
+
+- `ttd` in chain configurations (e.g. `Mainnet`) has been removed
+- Passing `td` in `getHardforkBy()`, `setHardforkBy()` and `paramByBlock()` has been removed
+- The `hardforkTTD()` method has been removed
+- The `mergeForkIdPostMerge` option in `createCommonFromGethGenesis()` has been removed
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- Move HF/EIP param description string from being an object field to a comment, same for `comment`, `url` and `status` from the EIP/hardfork configuration, PRs [#3500](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3500) and [#3512](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3512)
+- Remove HF names from Params dict, PR [#3517](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3517)
+- Remove `networkId` property from chain files (use `chainId` instead), PR [#3513](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3513)
+- No more `BigInt` for chainID in chain config (use string), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- The `customChains` constructor option has been removed, PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- More straightforward `createCustomCommon()` API (e.g. `createCustomCommon({chainId: 123}, Mainnet)`), PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+
 ## 4.4.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

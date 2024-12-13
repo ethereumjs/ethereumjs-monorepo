@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.3 - [ UNPUBLISHED ]
+
+### Engine API
+
+- Add `getBlobsV1` to the client to support CL blob import, PR [#3711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3711)
+- Minor engine-cancun hive test fixes, PR [#3308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3308)
+
+### RPC Methods
+
+- Added `eth_getBlockReceipts` method, PR [#3499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3499)
+- Added `admin_Peer` RPC endpoint, PR [#3570](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3570)
+- Added `debug` namespace methods `getRawBlock`, `getRawHeader`, `getRawReceipts` and `getRawTransaction`, PR [#3490](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3490)
+- Special-case fixes for `eth_call`, PR [#3503](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3503)
+- Add `data` field to `RPCError` / `eth_call`, PR [#3547](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3547)
+- Various RPC value format fixes, PR [#3495](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3495)
+
+### Other Changes
+
+- Removal for live-TTD (Merge) HF transition support, PR [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518)
+
+### Bugfixes
+
+- Fixes a JWT token exchange bug preventing communication with the Grandine CL client to work, PR [#3511](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3511)
+
 ## 0.10.2 - 2024-08-15
 
 This release comes with some RPC improvements as well as various updates to catch up for testnets preparing for the Prague hardfork as well as the Verkle tree integration. Note that for running/participating in the latest Prague and Verkle testnets it is still needed to join with a build from `master` since testnets are evolving so quickly that it is not practical to catch up with official client releases!

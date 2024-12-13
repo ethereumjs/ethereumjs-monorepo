@@ -36,6 +36,28 @@ type AffinePoint<T> = {
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
 
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  // check if the coordinates are in the field
+  // check if the coordinates are in the field
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BLS_12_381_FP_NOT_IN_FIELD,
+    })
+  }
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BLS_12_381_FP_NOT_IN_FIELD,
+    })
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
+
+  const FP = bls12_381.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
+
 /**
  * Converts an Uint8Array to a Noble G1 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -165,27 +187,6 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
     })
   }
   const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
-  return FP
-}
-
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
-  // check if the coordinates are in the field
-  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.BLS_12_381_FP_NOT_IN_FIELD,
-    })
-  }
-  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.BLS_12_381_FP_NOT_IN_FIELD,
-    })
-  }
-
-  const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
-
-  const FP = bls12_381.fields.Fp2.fromBytes(fpBytes)
   return FP
 }
 

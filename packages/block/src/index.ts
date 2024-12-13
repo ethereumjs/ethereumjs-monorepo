@@ -4,7 +4,7 @@ export * from './consensus/index.js'
 export { type BeaconPayloadJSON, executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
 export * from './header/index.js'
 export {
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   getDifficulty,

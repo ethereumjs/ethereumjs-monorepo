@@ -1,5 +1,5 @@
 /// <reference path="./testdouble.d.ts" />
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 

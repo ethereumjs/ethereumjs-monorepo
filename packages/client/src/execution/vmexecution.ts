@@ -7,13 +7,14 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
+import { createMPT } from '@ethereumjs/mpt'
 import {
   CacheType,
   Caches,
   MerkleStateManager,
+  StatefulVerkleStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -27,7 +28,6 @@ import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { Event } from '../types.js'
 import { debugCodeReplayBlock } from '../util/debug.js'
@@ -147,7 +147,7 @@ export class VMExecution extends Execution {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = await createTrie({
+    const trie = await createMPT({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
       common: this.config.chainCommon,
@@ -197,14 +197,19 @@ export class VMExecution extends Execution {
   }
 
   async setupVerkleVM() {
+    let stateManager: StatelessVerkleStateManager | StatefulVerkleStateManager
     if (this.verkleVM !== undefined) {
       return
     }
-    this.config.logger.info(`Setting up verkleVM`)
-    const verkleCrypto = await loadVerkleCrypto()
-    const stateManager = new StatelessVerkleStateManager({
-      verkleCrypto,
-    })
+    if (this.config.statelessVerkle) {
+      this.config.logger.info(`Setting up verkleVM for stateless verkle execution`)
+      stateManager = new StatelessVerkleStateManager({
+        common: this.config.execCommon,
+      })
+    } else if (this.config.statefulVerkle) {
+      this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
+      stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
+    } else throw new Error('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
@@ -282,11 +287,7 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
 
-      if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
-        if (!this.config.statelessVerkle) {
-          throw Error(`Currently stateful verkle execution not supported`)
-        }
-        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
+      if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
         await this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
@@ -342,7 +343,7 @@ export class VMExecution extends Execution {
       blockNumber: number,
       timestamp,
     })
-    if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
+    if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
       // verkleVM should already exist but we can still do an allocation just to be safe
       await this.setupVerkleVM()
       this.vm = this.verkleVM!
@@ -399,8 +400,8 @@ export class VMExecution extends Execution {
 
           let vm = this.vm
           if (
-            !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
+            !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
+            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
           ) {
             // see if this is a transition block
             const parentBlock =
@@ -410,7 +411,7 @@ export class VMExecution extends Execution {
               timestamp: parentBlock.header.timestamp,
             })
 
-            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Osaka)) {
+            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Verkle)) {
               await this.transitionToVerkle(parentBlock.header.stateRoot, false)
             }
             if (this.verkleVM === undefined) {
@@ -553,8 +554,8 @@ export class VMExecution extends Execution {
         timestamp: vmHeadBlock.header.timestamp,
       })
       if (
-        !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
+        !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
+        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
       ) {
         // verkle transition should have happened by now
         if (this.verkleVM === undefined) {
@@ -664,7 +665,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Osaka)
+                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
@@ -673,16 +674,16 @@ export class VMExecution extends Execution {
                       blockNumber: number,
                       timestamp,
                     })
-                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Osaka)
+                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     if (wasPrePrague && isPostOsaka) {
                       await this.transitionToVerkle(parentState!)
                       clearCache = false
                     }
                   }
                   if (
-                    (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+                    (!this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
                       typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
-                    (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+                    (this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
                       this.vm.stateManager instanceof MerkleStateManager)
                   ) {
                     throw Error(
@@ -962,7 +963,7 @@ export class VMExecution extends Execution {
 
     // Setup VM with verkle state manager if Osaka is active
     if (
-      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
+      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle) &&
       this.config.statelessVerkle
     ) {
       await this.transitionToVerkle(block.header.stateRoot, true)

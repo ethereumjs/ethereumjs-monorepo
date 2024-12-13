@@ -37,6 +37,14 @@ const common = new Common({
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const contractAddress = createAddressFromString('0x' + 'c0de'.repeat(10))
 
+/**
+ * Get call status saved in the contract
+ */
+async function getCallStatus(vm: VM) {
+  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
+  return bytesToBigInt(stat)
+}
+
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
@@ -116,14 +124,6 @@ async function runBlock(block: Block) {
     }),
     callStatus: await getCallStatus(vm),
   }
-}
-
-/**
- * Get call status saved in the contract
- */
-async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
-  return bytesToBigInt(stat)
 }
 
 /**

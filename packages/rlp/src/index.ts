@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
@@ -5,45 +6,6 @@ export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 export interface Decoded {
   data: Uint8Array | NestedUint8Array
   remainder: Uint8Array
-}
-
-/**
- * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
- * This function takes in data, converts it to Uint8Array if not,
- * and adds a length for recursion.
- * @param input Will be converted to Uint8Array
- * @returns Uint8Array of encoded data
- **/
-export function encode(input: Input): Uint8Array {
-  if (Array.isArray(input)) {
-    const output: Uint8Array[] = []
-    let outputLength = 0
-    for (let i = 0; i < input.length; i++) {
-      const encoded = encode(input[i])
-      output.push(encoded)
-      outputLength += encoded.length
-    }
-    return concatBytes(encodeLength(outputLength, 192), ...output)
-  }
-  const inputBuf = toBytes(input)
-  if (inputBuf.length === 1 && inputBuf[0] < 128) {
-    return inputBuf
-  }
-  return concatBytes(encodeLength(inputBuf.length, 128), inputBuf)
-}
-
-/**
- * Slices a Uint8Array, throws if the slice goes out-of-bounds of the Uint8Array.
- * E.g. `safeSlice(hexToBytes('aa'), 1, 2)` will throw.
- * @param input
- * @param start
- * @param end
- */
-function safeSlice(input: Uint8Array, start: number, end: number) {
-  if (end > input.length) {
-    throw new Error('invalid RLP (safeSlice): end slice of Uint8Array out-of-bounds')
-  }
-  return input.slice(start, end)
 }
 
 /**
@@ -68,32 +30,17 @@ function encodeLength(len: number, offset: number): Uint8Array {
 }
 
 /**
- * RLP Decoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
- * @param input Will be converted to Uint8Array
- * @param stream Is the input a stream (false by default)
- * @returns decoded Array of Uint8Arrays containing the original message
- **/
-export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Array
-export function decode(input: Input, stream?: true): Decoded
-export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
-  if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
-    return Uint8Array.from([])
+ * Slices a Uint8Array, throws if the slice goes out-of-bounds of the Uint8Array.
+ * E.g. `safeSlice(hexToBytes('aa'), 1, 2)` will throw.
+ * @param input
+ * @param start
+ * @param end
+ */
+function safeSlice(input: Uint8Array, start: number, end: number) {
+  if (end > input.length) {
+    throw new Error('invalid RLP (safeSlice): end slice of Uint8Array out-of-bounds')
   }
-
-  const inputBytes = toBytes(input)
-  const decoded = _decode(inputBytes)
-
-  if (stream) {
-    return {
-      data: decoded.data,
-      remainder: decoded.remainder.slice(),
-    }
-  }
-  if (decoded.remainder.length !== 0) {
-    throw new Error('invalid RLP: remainder must be zero')
-  }
-
-  return decoded.data
+  return input.slice(start, end)
 }
 
 /** Decode an input with RLP */
@@ -305,6 +252,60 @@ function toBytes(v: Input): Uint8Array {
   throw new Error('toBytes: received unsupported type ' + typeof v)
 }
 
+/**
+ * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
+ * This function takes in data, converts it to Uint8Array if not,
+ * and adds a length for recursion.
+ * @param input Will be converted to Uint8Array
+ * @returns Uint8Array of encoded data
+ **/
+export function encode(input: Input): Uint8Array {
+  if (Array.isArray(input)) {
+    const output: Uint8Array[] = []
+    let outputLength = 0
+    for (let i = 0; i < input.length; i++) {
+      const encoded = encode(input[i])
+      output.push(encoded)
+      outputLength += encoded.length
+    }
+    return concatBytes(encodeLength(outputLength, 192), ...output)
+  }
+  const inputBuf = toBytes(input)
+  if (inputBuf.length === 1 && inputBuf[0] < 128) {
+    return inputBuf
+  }
+  return concatBytes(encodeLength(inputBuf.length, 128), inputBuf)
+}
+
+/**
+ * RLP Decoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
+ * @param input Will be converted to Uint8Array
+ * @param stream Is the input a stream (false by default)
+ * @returns decoded Array of Uint8Arrays containing the original message
+ **/
+export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Array
+export function decode(input: Input, stream?: true): Decoded
+export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
+  if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
+    return Uint8Array.from([])
+  }
+
+  const inputBytes = toBytes(input)
+  const decoded = _decode(inputBytes)
+
+  if (stream) {
+    return {
+      data: decoded.data,
+      remainder: decoded.remainder.slice(),
+    }
+  }
+  if (decoded.remainder.length !== 0) {
+    throw new Error('invalid RLP: remainder must be zero')
+  }
+
+  return decoded.data
+}
+
 export const utils = {
   bytesToHex,
   concatBytes,
@@ -313,3 +314,5 @@ export const utils = {
 }
 
 export const RLP = { encode, decode }
+
+/* eslint-enable @typescript-eslint/no-use-before-define */

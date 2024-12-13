@@ -16,6 +16,7 @@
 - [General Usage](#general-usage)
 - [Supported Networks](#supported-networks)
 - [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
+- [Testnets](#testnets)
 - [Custom Chains](#custom-chains)
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
@@ -214,6 +215,32 @@ Then start the Lodestar client with:
 ```shell
 ./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
+
+## Experimental Testnets
+
+The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
+
+### Verkle testnet
+
+We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
+
+Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
+
+For stateless execution: 
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statelessVerkle=true`
+
+For stateful execution:
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statefulVerkle=true`
+
+Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repository)
+
+`./setup.sh --network kaustinen7 --dataDir kaust --justCL`
+
+Additional information on the Kaustinen7 testnet can be retrieve from this page: https://verkle-gen-devnet-7.ethpandaops.io/
+
+The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
 ## Custom Chains
 

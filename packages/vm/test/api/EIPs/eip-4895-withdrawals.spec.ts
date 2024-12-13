@@ -226,7 +226,7 @@ describe('EIP4895 tests', () => {
       },
     })
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
 
     assert.equal(
       bytesToHex(block.header.stateRoot),

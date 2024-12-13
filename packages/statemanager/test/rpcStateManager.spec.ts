@@ -1,7 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
-import { verifyTrieProof } from '@ethereumjs/trie'
+import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
   Address,
@@ -88,7 +88,7 @@ describe('RPC State Manager API tests', () => {
     const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
     const proof = await getRPCStateProof(state, address)
     const proofBuf = proof.accountProof.map((proofNode) => hexToBytes(proofNode))
-    const doesThisAccountExist = await verifyTrieProof(address.bytes, proofBuf, {
+    const doesThisAccountExist = await verifyMerkleProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
     assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')

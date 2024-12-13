@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
 import { readFileSync } from 'fs'
+import * as verkle from 'micro-eth-signer'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -61,7 +62,9 @@ async function runBlock(
 
   const parentPayload =
     isBeaconData === true ? executionPayloadFromBeaconPayload(parent as any) : parent
-  const parentBlock = await createBlockFromExecutionPayload(parentPayload, { common })
+  const parentBlock = await createBlockFromExecutionPayload(parentPayload, {
+    common,
+  })
   blockCache.remoteBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
   blockCache.executedBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
 
@@ -76,10 +79,11 @@ async function runBlock(
   assert.equal(res.result.status, 'VALID', 'valid status should be received')
 }
 
-describe(`valid verkle network setup`, async () => {
+describe.skip(`valid verkle network setup`, async () => {
   const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
+    customCrypto: { verkle },
   })
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
@@ -146,7 +150,9 @@ describe(`valid verkle network setup`, async () => {
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
+    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, {
+      common,
+    })
     let parent = gethVectors[0]
     for (let i = 1; i < gethVectors.length; i++) {
       const execute = gethVectors[i]

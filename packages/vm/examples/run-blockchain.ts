@@ -26,6 +26,37 @@ import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
+async function setupPreConditions(vm: VM, data: any) {
+  await vm.stateManager.checkpoint()
+
+  for (const [addr, acct] of Object.entries(data.pre)) {
+    const { nonce, balance, storage, code } = acct as any
+
+    const address = new Address(hexToBytes(addr))
+    const account = createAccount({ nonce, balance })
+    await vm.stateManager.putAccount(address, account)
+
+    for (const [key, val] of Object.entries(storage)) {
+      const storageKey = setLengthLeft(hexToBytes(key), 32)
+      const storageVal = hexToBytes(val as string)
+      await vm.stateManager.putStorage(address, storageKey, storageVal)
+    }
+
+    const codeBuf = hexToBytes('0x' + code)
+    await vm.stateManager.putCode(address, codeBuf)
+  }
+
+  await vm.stateManager.commit()
+}
+
+async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
+  for (const blockData of data.blocks) {
+    const blockRlp = toBytes(blockData.rlp)
+    const block = createBlockFromRLP(blockRlp, { common })
+    await blockchain.putBlock(block)
+  }
+}
+
 async function main() {
   const common = new Common({ chain: Mainnet, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
@@ -61,37 +92,6 @@ async function main() {
   console.log('--- Finished processing the Blockchain ---')
   console.log('New head:', bytesToHex(blockchainHead.hash()))
   console.log('Expected:', testData.lastblockhash)
-}
-
-async function setupPreConditions(vm: VM, data: any) {
-  await vm.stateManager.checkpoint()
-
-  for (const [addr, acct] of Object.entries(data.pre)) {
-    const { nonce, balance, storage, code } = acct as any
-
-    const address = new Address(hexToBytes(addr))
-    const account = createAccount({ nonce, balance })
-    await vm.stateManager.putAccount(address, account)
-
-    for (const [key, val] of Object.entries(storage)) {
-      const storageKey = setLengthLeft(hexToBytes(key), 32)
-      const storageVal = hexToBytes(val as string)
-      await vm.stateManager.putStorage(address, storageKey, storageVal)
-    }
-
-    const codeBuf = hexToBytes('0x' + code)
-    await vm.stateManager.putCode(address, codeBuf)
-  }
-
-  await vm.stateManager.commit()
-}
-
-async function putBlocks(blockchain: Blockchain, common: Common, data: typeof testData) {
-  for (const blockData of data.blocks) {
-    const blockRlp = toBytes(blockData.rlp)
-    const block = createBlockFromRLP(blockRlp, { common })
-    await blockchain.putBlock(block)
-  }
 }
 
 void main()

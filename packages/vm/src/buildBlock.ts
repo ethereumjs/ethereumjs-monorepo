@@ -1,13 +1,13 @@
 import {
   createBlock,
   createSealedCliqueBlock,
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
@@ -22,6 +22,7 @@ import {
   toBytes,
   toType,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -143,7 +144,10 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.vm.common }),
+    )
   }
 
   /**
@@ -165,7 +169,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie({ common: this.vm.common })
+    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -322,7 +326,10 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(
+          this.withdrawals,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
@@ -336,11 +343,11 @@ export class BlockBuilder {
     }
 
     let requests
-    let requestsRoot
+    let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
+      const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsTrieRoot(requests)
-      // Do other validations per request type
+      requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -356,7 +363,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
-      requestsRoot,
+      requestsHash,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -368,7 +375,6 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
-      requests,
     }
 
     let block
@@ -389,7 +395,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return block
+    return { block, requests }
   }
 
   async initState() {

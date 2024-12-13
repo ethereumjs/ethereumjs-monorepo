@@ -67,6 +67,26 @@ function toFrPoint(input: Uint8Array): bigint {
   return Fr
 }
 
+function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
+    })
+  }
+  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
+    })
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
+
+  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
+
 /**
  * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -105,26 +125,6 @@ function toG2Point(input: Uint8Array) {
   pG2.assertValidity()
 
   return pG2
-}
-
-function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
-  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
-    })
-  }
-  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
-    })
-  }
-
-  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
-
-  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
-  return FP
 }
 
 /**

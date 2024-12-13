@@ -1,4 +1,4 @@
-import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT, createMPTFromProof } from '@ethereumjs/mpt'
 import {
   Account,
   KECCAK256_RLP,
@@ -83,7 +83,7 @@ describe('StateManager -> General', () => {
   })
 
   it(`copy()`, async () => {
-    const trie = new Trie({ cacheSize: 1000 })
+    const trie = new MerklePatriciaTrie({ cacheSize: 1000 })
     let sm = new MerkleStateManager({
       trie,
       prefixCodeHashes: false,
@@ -312,7 +312,7 @@ describe('StateManager -> General', () => {
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
     async () => {
-      const trie = await createTrie({ useKeyHashing: false })
+      const trie = await createMPT({ useKeyHashing: false })
       const sm = new MerkleStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
@@ -331,7 +331,7 @@ describe('StateManager -> General', () => {
         keys.map((key) => hexToBytes(key)),
       )
       const proof2 = await getMerkleStateProof(sm, address2)
-      const newTrie = await createTrieFromProof(
+      const newTrie = await createMPTFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
         { useKeyHashing: false },
       )

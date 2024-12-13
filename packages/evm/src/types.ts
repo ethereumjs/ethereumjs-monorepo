@@ -7,12 +7,13 @@ import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type {
-  AccessWitnessInterface,
   Common,
   ParamsDict,
   StateManagerInterface,
+  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
 
 export type DeleteOpcode = {
   opcode: number
@@ -127,7 +128,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -136,7 +137,7 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
-export type EVMEvents = {
+export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
@@ -164,7 +165,8 @@ export interface EVMInterface {
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
-  events?: AsyncEventEmitter<EVMEvents>
+  events?: EventEmitter<EVMEvent>
+  verkleAccessWitness?: VerkleAccessWitnessInterface
 }
 
 export type EVMProfilerOpts = {
@@ -211,6 +213,7 @@ export interface EVMOpts {
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
    * - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
    * - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+   * - [EIP-6800](https://eips.ethereum.org/EIPS/eip-6800) - Verkle state tree (Experimental)
    * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
    * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
    * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)

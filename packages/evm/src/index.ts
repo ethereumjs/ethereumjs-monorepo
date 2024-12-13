@@ -68,3 +68,4 @@ export {
 
 export * from './constructors.js'
 export * from './params.js'
+export * from './verkleAccessWitness.js'
