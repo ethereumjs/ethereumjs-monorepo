@@ -1019,7 +1019,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd0: DATALOAD
   [
     0xd0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1044,7 +1044,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd1: DATALOADN
   [
     0xd1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1062,7 +1062,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd2: DATASIZE
   [
     0xd2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1073,7 +1073,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd3: DATACOPY
   [
     0xd3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1090,7 +1090,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe0: RJUMP
   [
     0xe0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1104,7 +1104,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe1: RJUMPI
   [
     0xe1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1124,7 +1124,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe2: RJUMPV
   [
     0xe2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1151,7 +1151,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe3: CALLF
   [
     0xe3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1176,7 +1176,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe4: RETF
   [
     0xe4,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1192,7 +1192,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe5: JUMPF
   [
     0xe5,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1220,7 +1220,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe6: DUPN
   [
     0xe6,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1238,7 +1238,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe7: SWAPN
   [
     0xe7,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1256,7 +1256,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe8: EXCHANGE
   [
     0xe8,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1273,7 +1273,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xec: EOFCREATE
   [
     0xec,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1312,7 +1312,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xee: RETURNCONTRACT
   [
     0xee,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1515,7 +1515,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf7: RETURNDATALOAD
   [
     0xf7,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1539,7 +1539,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf8: EXTCALL
   [
     0xf8,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1573,7 +1573,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf9: EXTDELEGATECALL
   [
     0xf9,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1638,7 +1638,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xfb: EXTSTATICCALL
   [
     0xfb,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
