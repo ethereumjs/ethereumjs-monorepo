@@ -628,6 +628,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${intrinsicGas} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
+  if (vm.common.isActivatedEIP(7623)) {
+    if (results.totalGasSpent < floorCost) {
+      results.totalGasSpent = floorCost
+      if (vm.DEBUG) {
+        debugGas(`tx apply floorCost ${floorCost} to totalGasSpent (-> ${results.totalGasSpent})`)
+      }
+    }
+  }
+
   // Add blob gas used to result
   if (isBlob4844Tx(tx)) {
     results.blobGasUsed = totalblobGas
@@ -650,11 +659,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  if (vm.common.isActivatedEIP(7623)) {
-    if (results.totalGasSpent < floorCost) {
-      results.totalGasSpent = floorCost
-    }
-  }
 
   results.amountSpent = results.totalGasSpent * gasPrice
 
