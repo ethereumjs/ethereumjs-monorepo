@@ -303,7 +303,12 @@ export class TransitionTool {
 
     if (requests !== undefined) {
       // NOTE: EEST currently wants the raw request bytes, **excluding** the type
-      output.requests = requests.map((request) => bytesToHex(request.bytes.slice(1)))
+      output.requests = []
+      for (const request of requests) {
+        if (request.bytes.length > 1) {
+          output.requests.push(bytesToHex(request.bytes.slice(1)))
+        }
+      }
     }
 
     if (this.rejected.length > 0) {
