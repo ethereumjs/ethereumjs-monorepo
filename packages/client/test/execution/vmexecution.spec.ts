@@ -8,7 +8,7 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../src/blockchain/index.js'
 import { Config } from '../../src/config.js'
 import { VMExecution } from '../../src/execution/index.js'
-import { closeRPC, setupChain } from '../rpc/helpers.js'
+import { closeRPC, setupChain, testSetup } from '../rpc/helpers.js'
 import { goerliData } from '../testdata/blocks/goerli.js'
 import { mainnetData } from '../testdata/blocks/mainnet.js'
 import { testnetData } from '../testdata/common/testnet.js'
@@ -93,15 +93,6 @@ describe('[VMExecution]', () => {
     const exec = new VMExecution({ config, chain })
     assert.equal(exec.vm, vm, 'should use vm provided')
   })
-
-  async function testSetup(blockchain: Blockchain, common?: Common) {
-    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
-    const chain = await Chain.create({ config, blockchain })
-    const exec = new VMExecution({ config, chain })
-    await chain.open()
-    await exec.open()
-    return exec
-  }
 
   it('Block execution / Hardforks PoW (mainnet)', async () => {
     let blockchain = await createBlockchain({
