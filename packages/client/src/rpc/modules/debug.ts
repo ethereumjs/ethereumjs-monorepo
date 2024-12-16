@@ -148,6 +148,9 @@ export class Debug {
       1,
       [[validators.hex]],
     )
+    this.setHead = middleware(callWithStackTrace(this.setHead.bind(this), this._rpcDebug), 1, [
+      [validators.blockOption],
+    ])
     this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
       [validators.unsignedInteger],
     ])
@@ -456,5 +459,31 @@ export class Debug {
     const [level] = params
     this.client.config.logger.configure({ level: logLevels[level] })
     return `level: ${this.client.config.logger.level}`
+  }
+
+  /**
+   * Sets the current head of the local chain by block number. Note, this is a
+   * destructive action and may severely damage your chain. Use with extreme
+   * caution.
+   * @param blockOpt Block number or tag to set as head of chain
+   */
+  async setHead(params: [string]) {
+    const [blockOpt] = params
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not supported`,
+      }
+    }
+
+    const block = await getBlockByOption(blockOpt, this.chain)
+    try {
+      await this.service.skeleton?.setHead(block, true)
+      await this.service.execution.setHead([block])
+    } catch (e) {
+      throw {
+        code: INTERNAL_ERROR,
+      }
+    }
   }
 }
