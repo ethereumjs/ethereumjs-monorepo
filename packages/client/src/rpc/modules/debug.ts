@@ -476,8 +476,6 @@ export class Debug {
       }
     }
 
-    let headHash = await this.service.skeleton?.headHash()
-    const oldHead = headHash ? bytesToHex(headHash!) : undefined
     const block = await getBlockByOption(blockOpt, this.chain)
     try {
       await this.service.skeleton?.setHead(block, true)
@@ -487,9 +485,5 @@ export class Debug {
         code: INTERNAL_ERROR,
       }
     }
-    headHash = await this.service.skeleton?.headHash()
-    const newHead = headHash ? bytesToHex(headHash!) : undefined
-
-    return `oldHead: ${oldHead} - newHead: ${newHead}`
   }
 }
