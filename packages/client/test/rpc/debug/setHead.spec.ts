@@ -1,10 +1,10 @@
+import { createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
-import { testSetup } from '../helpers.js'
-
-import { Blockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
 import { mainnetData } from '../../testdata/blocks/mainnet.js'
+import { createClient, createManager, getRPCClient, startRPC, testSetup } from '../helpers.js'
+
+import type { Blockchain } from '@ethereumjs/blockchain'
 
 const method = 'debug_setHead'
 
@@ -35,12 +35,12 @@ describe(method, async () => {
       await rpc.request(method, [`0x${i}`])
       assert.deepEqual(
         await a.service.skeleton?.headHash()!,
-        await blocks[i].header.hash(),
+        blocks[i].header.hash(),
         `skeleton chain should return hash of block number ${i} set as head`,
       )
       assert.deepEqual(
-        await a.service.execution.chainStatus?.hash!,
-        await blocks[i].header.hash(),
+        a.service.execution.chainStatus?.hash!,
+        blocks[i].header.hash(),
         `vm execution should set hash to new head`,
       )
     }
