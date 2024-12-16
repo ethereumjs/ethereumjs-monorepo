@@ -15,7 +15,6 @@ import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { LIMIT_BLOBS_PER_TX } from '../constants.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, validateNotArray } from '../util.js'
@@ -172,13 +171,16 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
         throw new Error(msg)
       }
     }
-    if (this.blobVersionedHashes.length > LIMIT_BLOBS_PER_TX) {
-      const msg = Legacy.errorMsg(this, `tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
+
+    const limitBlobsPerTx = this.common.param('maxblobGasPerBlock') / this.common.param('blobGasPerBlob')
+    if (this.blobVersionedHashes.length > limitBlobsPerTx) {
+      const msg = Legacy.errorMsg(this, `tx can contain at most ${limitBlobsPerTx} blobs`)
       throw new Error(msg)
     } else if (this.blobVersionedHashes.length === 0) {
       const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)
       throw new Error(msg)
     }
+
     if (this.to === undefined) {
       const msg = Legacy.errorMsg(
         this,

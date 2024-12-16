@@ -91,4 +91,10 @@ export const paramsVM: ParamsDict = {
     // See: https://github.com/ethereum/EIPs/pull/8934/files
     consolidationRequestPredeployAddress: '0x01aBEa29659e5e97C95107F20bb753cD3e09bBBb', // Address of the consolidations contract
   },
+  /**
+.  * Shard Blob Transactions
+.  */
+  7691: {
+    maxblobGasPerBlock: 1179648, // The max blob gas allowable per block
+  },
 }

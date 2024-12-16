@@ -85,4 +85,13 @@ export const paramsBlock: ParamsDict = {
     // pow
     difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
   },
+  /**
+.  * Blob throughput increase
+.  */
+  7691: {
+    // gasConfig
+    targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
+    maxblobGasPerBlock: 1179648, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
+  },
 }

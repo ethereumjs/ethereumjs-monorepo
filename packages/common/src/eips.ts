@@ -416,6 +416,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [3675],
   },
   /**
+   * Description : Blob throughput increase
+   * URL         : https://eips.ethereum.org/EIPS/eip-7691
+   * Status      : Review
+   */
+  7691: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EVM Object Format (EOFv1) Meta
    * URL         : https://github.com/ethereum/EIPs/blob/4153e95befd0264082de3c4c2fe3a85cc74d3152/EIPS/eip-7692.md
    * Status      : Draft
