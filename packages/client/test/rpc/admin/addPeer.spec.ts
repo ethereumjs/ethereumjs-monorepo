@@ -43,7 +43,6 @@ describe(method, () => {
     const addPeerResponse = await rpc.request('admin_addPeer', [
       { address: '0.0.0.0', tcpPort: peerPort, udpPort: peerPort },
     ])
-
     assert.equal(addPeerResponse.result, true, 'admin_addPeer successfully adds peer')
 
     const peersResponse = await rpc.request('admin_peers', [])
