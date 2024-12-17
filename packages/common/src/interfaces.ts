@@ -101,6 +101,7 @@ export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
 export interface VerkleAccessWitnessInterface {
   accesses(): Generator<VerkleAccessedStateWithAddress>
   rawAccesses(): Generator<RawVerkleAccessedState>
+  debugWitnessCost(): void
   touchAndChargeProofOfAbsence(address: Address): bigint
   touchAndChargeMessageCall(address: Address): bigint
   touchAndChargeValueTransfer(target: Address): bigint

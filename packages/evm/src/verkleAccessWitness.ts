@@ -349,6 +349,39 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     this.chunkCache.clear()
   }
 
+  debugWitnessCost(): void {
+    // Calculate the aggregate gas cost for verkle access witness per type
+    let stemReads = 0,
+      stemWrites = 0,
+      chunkReads = 0,
+      chunkWrites = 0
+
+    for (const [_, { write }] of this.stems.entries()) {
+      stemReads++
+      if (write === true) {
+        stemWrites++
+      }
+    }
+    for (const [_, { write }] of this.chunks.entries()) {
+      chunkReads++
+      if (write === true) {
+        chunkWrites++
+      }
+    }
+    debug(
+      `${stemReads} stem reads, totalling ${BigInt(stemReads) * WitnessBranchReadCost} gas units`,
+    )
+    debug(
+      `${stemWrites} stem writes, totalling ${BigInt(stemWrites) * WitnessBranchWriteCost} gas units`,
+    )
+    debug(
+      `${chunkReads} chunk reads, totalling ${BigInt(chunkReads) * WitnessChunkReadCost} gas units`,
+    )
+    debug(
+      `${chunkWrites} chunk writes, totalling ${BigInt(chunkWrites) * WitnessChunkWriteCost} gas units`,
+    )
+  }
+
   *rawAccesses(): Generator<RawVerkleAccessedState> {
     for (const chunkKey of this.chunks.keys()) {
       // drop the last byte

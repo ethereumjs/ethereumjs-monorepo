@@ -495,6 +495,12 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   // Merge systemVerkleACcessWitness with verkleAccessWitness
   if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
     vm.evm.systemVerkleAccessWitness?.commit()
+    if (vm.DEBUG) {
+      debug('Verkle access witness aggregate costs:')
+      vm.evm.verkleAccessWitness?.debugWitnessCost()
+      debug('System verkle access witness aggregate costs:')
+      vm.evm.systemVerkleAccessWitness?.debugWitnessCost()
+    }
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 
