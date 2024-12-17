@@ -1,18 +1,21 @@
 import { INVALID_PARAMS } from './error-code.js'
 
+type RPCMethod = (params: any[]) => Promise<any>
+
 /**
  * middleware for parameters validation
  * @memberof module:rpc
  * @param method function to add middleware
  * @param requiredParamsCount required parameters count
  * @param validators array of validators
+ * @param names Optional parameter names for error messages, length must be equal to requiredParamsCount
  */
 export function middleware(
   method: any,
   requiredParamsCount: number,
   validators: any[] = [],
   names: string[] = [],
-): any {
+): RPCMethod {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
       if (params.length < requiredParamsCount) {

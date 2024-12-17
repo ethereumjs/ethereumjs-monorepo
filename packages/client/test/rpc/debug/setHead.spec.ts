@@ -18,7 +18,7 @@ describe(method, async () => {
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
-    assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
+    assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
 
     const a = await createClient({ blockchain })
     await a.service.skeleton?.open()
@@ -45,4 +45,47 @@ describe(method, async () => {
       )
     }
   }, 30000)
+
+  it('should return error for pending block', async () => {
+    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+
+    const a = await createClient({ blockchain })
+
+    const manager = createManager(a)
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
+    const result = await rpc.request(method, ['pending'])
+    assert.equal(result.error.code, -32602)
+    assert.equal(result.error.message, '"pending" is not supported')
+  })
+
+  it('should handle internal errors', async () => {
+    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    const blocks = await blockchain.getBlocks(0, 6, 0, false)
+    const exec = await testSetup(blockchain)
+    await exec.run()
+    const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
+    assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
+
+    const a = await createClient({ blockchain })
+    ;(a.service.skeleton as any) = {
+      open: async () => {
+        throw new Error('open failed')
+      },
+    }
+
+    const manager = createManager(a)
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
+
+    for (let i = 0; i < blocks.length; i++) {
+      const result = await rpc.request(method, [`0x${i}`])
+      assert.equal(result.error.code, -32603)
+      assert.equal(result.error.message, 'Internal error')
+    }
+  })
 })
