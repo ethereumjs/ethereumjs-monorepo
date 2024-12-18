@@ -595,9 +595,6 @@ export const handlers: Map<number, OpHandler> = new Map([
 
           runState.stack.push(BigInt(bytesToHex(account.codeHash)))
           return
-        } else {
-          runState.stack.push(bytesToBigInt(keccak256(code)))
-          return
         }
       }
 
@@ -957,12 +954,6 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
-      if (
-        runState.programCounter + numToPush > runState.code.length &&
-        common.isActivatedEIP(3540)
-      ) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
 
       if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
         const contract = runState.interpreter.getAddress()
@@ -1070,7 +1061,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd0: DATALOAD
   [
     0xd0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1095,7 +1086,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd1: DATALOADN
   [
     0xd1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1113,7 +1104,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd2: DATASIZE
   [
     0xd2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1124,7 +1115,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd3: DATACOPY
   [
     0xd3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1141,7 +1132,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe0: RJUMP
   [
     0xe0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1155,7 +1146,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe1: RJUMPI
   [
     0xe1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1175,7 +1166,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe2: RJUMPV
   [
     0xe2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1202,7 +1193,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe3: CALLF
   [
     0xe3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1212,7 +1203,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
@@ -1227,7 +1218,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe4: RETF
   [
     0xe4,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1243,7 +1234,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe5: JUMPF
   [
     0xe5,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1256,7 +1247,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
         trap(EOFError.StackOverflow)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
@@ -1271,7 +1262,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe6: DUPN
   [
     0xe6,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1289,7 +1280,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe7: SWAPN
   [
     0xe7,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1307,7 +1298,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe8: EXCHANGE
   [
     0xe8,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1324,11 +1315,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xec: EOFCREATE
   [
     0xec,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
       } else {
+        if (runState.interpreter.isStatic()) {
+          trap(ERROR.STATIC_STATE_CHANGE)
+        }
         // Read container index
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
@@ -1360,7 +1354,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xee: RETURNCONTRACT
   [
     0xee,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1560,10 +1554,34 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(ret)
     },
   ],
+  // 0xf7: RETURNDATALOAD
+  [
+    0xf7,
+    function (runState) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(ERROR.INVALID_OPCODE)
+      }
+      const pos = runState.stack.pop()
+      if (pos > runState.interpreter.getReturnDataSize()) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
+      const i = Number(pos)
+      let loaded = runState.interpreter.getReturnData().subarray(i, i + 32)
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
+      let r = bytesToBigInt(loaded)
+      if (loaded.length < 32) {
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
+      }
+      runState.stack.push(r)
+    },
+  ],
   // 0xf8: EXTCALL
   [
     0xf8,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1597,7 +1615,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf9: EXTDELEGATECALL
   [
     0xf9,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)
@@ -1622,6 +1640,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (!isEOF(code)) {
           // EXTDELEGATECALL cannot call legacy contracts
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
@@ -1661,7 +1680,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xfb: EXTSTATICCALL
   [
     0xfb,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(ERROR.INVALID_OPCODE)

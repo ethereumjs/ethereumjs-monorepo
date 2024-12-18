@@ -348,3 +348,12 @@ export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
     assert.equal(res.result.status, 'VALID')
   }
 }
+
+export async function testSetup(blockchain: Blockchain, common?: Common) {
+  const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
+  const chain = await Chain.create({ config, blockchain })
+  const exec = new VMExecution({ config, chain })
+  await chain.open()
+  await exec.open()
+  return exec
+}
