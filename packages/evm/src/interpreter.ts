@@ -327,6 +327,8 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
       } catch (e: any) {
+        // Revert access witness changes if we revert - per EIP-4762
+        this._runState.env.accessWitness?.revert()
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -378,7 +380,7 @@ export class Interpreter {
       if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas =
-          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndComputeGas(
             contract,
             this._runState.programCounter,
             this._runState.programCounter,
@@ -412,6 +414,7 @@ export class Interpreter {
       } else {
         opFn.apply(null, [this._runState, this.common])
       }
+      this._runState.env.accessWitness?.commit()
     } finally {
       if (this.profilerOpts?.enabled === true) {
         this.performanceLogger.stopTimer(
