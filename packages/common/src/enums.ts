@@ -72,6 +72,7 @@ export enum Hardfork {
   Cancun = 'cancun',
   Prague = 'prague',
   Verkle = 'verkle',
+  EVMMax = 'evmmax',
 }
 
 export enum ConsensusType {
