@@ -686,7 +686,7 @@ export class EVM implements EVMInterface {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
         const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
+          message.accessWitness!.touchCodeChunksRangeOnWriteAndComputeGas(
             message.to,
             0,
             result.returnValue.length - 1,
