@@ -238,7 +238,7 @@ ___
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `param` | [`ConsensusOptions`](../interfaces/ConsensusOptions.md) | dictionary containin a [Blockchain](Blockchain.md) object  Note: this method must be called before consensus checks are used or type errors will occur |
+| `param` | [`ConsensusOptions`](../interfaces/ConsensusOptions.md) | dictionary containing a [Blockchain](Blockchain.md) object  Note: this method must be called before consensus checks are used or type errors will occur |
 
 #### Returns
 
