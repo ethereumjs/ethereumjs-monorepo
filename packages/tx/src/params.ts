@@ -44,6 +44,12 @@ export const paramsTx: ParamsDict = {
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
   },
   /**
+   * Increase calldata cost to reduce maximum block size
+   */
+  7623: {
+    totalCostFloorPerToken: 10,
+  },
+  /**
 .  * Set EOA account code for one transaction
 .  */
   7702: {
