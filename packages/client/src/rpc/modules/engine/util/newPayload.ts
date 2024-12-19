@@ -57,30 +57,35 @@ export const validateAndGen7685RequestsHash = (
   common: Common,
   executionRequests: PrefixedHexString[],
 ): PrefixedHexString => {
-  let validationError: string | null = null
-
   const requests: CLRequest<CLRequestType>[] = []
-  let requestIndex = 0
-  if (common.isActivatedEIP(6110)) {
-    requests.push(new CLRequest(CLRequestType.Deposit, hexToBytes(executionRequests[requestIndex])))
-    requestIndex++
-  }
-  if (common.isActivatedEIP(7002)) {
-    requests.push(
-      new CLRequest(CLRequestType.Withdrawal, hexToBytes(executionRequests[requestIndex])),
-    )
-    requestIndex++
-  }
-  if (common.isActivatedEIP(7251)) {
-    requests.push(
-      new CLRequest(CLRequestType.Consolidation, hexToBytes(executionRequests[requestIndex])),
-    )
-    requestIndex++
-  }
 
-  if (requestIndex !== executionRequests.length) {
-    validationError = `Invalid executionRequests=${executionRequests.length} expected=${requestIndex}`
-    throw validationError
+  for (const request of executionRequests) {
+    const bytes = hexToBytes(request)
+    if (bytes.length === 0) {
+      throw new Error('Got a request without a request-identifier')
+    }
+    switch (bytes[0]) {
+      case 0:
+        if (!common.isActivatedEIP(6110)) {
+          throw new Error(`Deposit requests are not active`)
+        }
+        requests.push(new CLRequest(CLRequestType.Deposit, bytes.slice(1)))
+        break
+      case 1:
+        if (!common.isActivatedEIP(7002)) {
+          throw new Error(`Withdrawal requests are not active`)
+        }
+        requests.push(new CLRequest(CLRequestType.Withdrawal, bytes.slice(1)))
+        break
+      case 2:
+        if (!common.isActivatedEIP(7251)) {
+          throw new Error(`Consolidation requests are not active`)
+        }
+        requests.push(new CLRequest(CLRequestType.Consolidation, bytes.slice(1)))
+        break
+      default:
+        throw new Error(`Unknown request identifier: got ${bytes[0]}`)
+    }
   }
 
   const sha256Function = common.customCrypto.sha256 ?? sha256
