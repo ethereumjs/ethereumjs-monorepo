@@ -86,7 +86,7 @@ describe('EIP 7623 calldata cost increase tests', () => {
       })
       assert.fail('runTx should throw')
     } catch (e) {
-      assert.ok('Succesfully failed')
+      assert.ok('Successfully failed')
     }
   })
   it('correctly charges execution gas instead of floor gas when execution gas exceeds the floor gas', async () => {
