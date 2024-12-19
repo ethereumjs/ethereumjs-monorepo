@@ -377,6 +377,13 @@ export class Interpreter {
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
         gas = await opEntry.gasHandler(this._runState, gas, this.common)
       }
+
+      if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
+        // Only run this stepHook function if there is an event listener (e.g. test runner)
+        // or if the vm is running in debug mode (to display opcode debug logs)
+        await this._runStepHook(gas, this.getGasLeft())
+      }
+
       if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas =
@@ -387,12 +394,6 @@ export class Interpreter {
           )
         gas += statelessGas
         debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
-      }
-
-      if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
-        // Only run this stepHook function if there is an event listener (e.g. test runner)
-        // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft())
       }
 
       // Check for invalid opcode
