@@ -171,6 +171,9 @@ export class TransitionTool {
     for (const txData of this.txsData) {
       try {
         const tx = createTx(txData, { common: this.common })
+        if (!tx.isValid()) {
+          throw new Error(tx.getValidationErrors().join(', '))
+        }
         // Set `allowNoBlobs` to `true`, since the test might not have the blob
         // The 4844-tx at this should still be valid, since it has the `blobHashes` field
         await builder.addTransaction(tx, { allowNoBlobs: true })
