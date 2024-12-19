@@ -274,6 +274,7 @@ export const paramsEVM: ParamsDict = {
     // evm
     historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
   /**
 .  * BASEFEE opcode
