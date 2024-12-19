@@ -20,26 +20,26 @@ describe(method, async () => {
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
 
-    const a = await createClient({ blockchain })
-    await a.service.skeleton?.open()
-    ;(a.service.execution as any) = exec
+    const client = await createClient({ blockchain })
+    await client.service.skeleton?.open()
+    ;(client.service.execution as any) = exec
 
-    const manager = createManager(a)
+    const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     assert.equal(
-      await a.service.skeleton?.headHash(),
+      await client.service.skeleton?.headHash(),
       undefined,
       'should return undefined when head is not set',
     )
     for (let i = 0; i < blocks.length; i++) {
       await rpc.request(method, [`0x${i}`])
       assert.deepEqual(
-        await a.service.skeleton?.headHash()!,
+        await client.service.skeleton?.headHash()!,
         blocks[i].header.hash(),
         `skeleton chain should return hash of block number ${i} set as head`,
       )
       assert.deepEqual(
-        a.service.execution.chainStatus?.hash!,
+        client.service.execution.chainStatus?.hash!,
         blocks[i].header.hash(),
         `vm execution should set hash to new head`,
       )
@@ -52,9 +52,9 @@ describe(method, async () => {
       validateConsensus: false,
     })
 
-    const a = await createClient({ blockchain })
+    const client = await createClient({ blockchain })
 
-    const manager = createManager(a)
+    const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const result = await rpc.request(method, ['pending'])
     assert.equal(result.error.code, -32602)
@@ -72,14 +72,14 @@ describe(method, async () => {
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
 
-    const a = await createClient({ blockchain })
-    ;(a.service.skeleton as any) = {
+    const client = await createClient({ blockchain })
+    ;(client.service.skeleton as any) = {
       open: async () => {
         throw new Error('open failed')
       },
     }
 
-    const manager = createManager(a)
+    const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     for (let i = 0; i < blocks.length; i++) {
