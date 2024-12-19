@@ -13,7 +13,7 @@ type RPCError = {
   data?: string
 }
 
-export function callWithStackTrace(handler: Function, debug: boolean) {
+export function callWithStackTrace(handler: Function, debug: boolean): (...args: any) => any {
   return async (...args: any) => {
     try {
       const res = await handler(...args)

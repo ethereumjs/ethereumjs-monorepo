@@ -1,5 +1,4 @@
 import { callWithStackTrace, toJSONRPCTx } from '../helpers.js'
-import { middleware } from '../validation.js'
 
 import type { EthereumClient } from '../../index.js'
 import type { FullEthereumService } from '../../service/index.js'
@@ -25,14 +24,13 @@ export class TxPool {
     this._vm = service.execution.vm
     this._rpcDebug = rpcDebug
 
-    this.content = middleware(callWithStackTrace(this.content.bind(this), this._rpcDebug), 0, [])
+    this.content = callWithStackTrace(this.content.bind(this), this._rpcDebug)
   }
 
   /**
    * Returns the contents of the transaction pool
-   * @param params An empty array
    */
-  content(_params = []) {
+  content() {
     const pending = new Map()
     for (const pool of this._txpool.pool) {
       const pendingForAcct = new Map<bigint, any>()
