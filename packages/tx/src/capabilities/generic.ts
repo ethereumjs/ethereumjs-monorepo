@@ -12,7 +12,16 @@ import {
 import { paramsTx } from '../params.js'
 import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
 
-import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
+import type {
+  ContractCreationInterface,
+  LegacyTxInterface,
+  ToInterface,
+  TransactionInterface,
+  TransactionType,
+  TxData,
+  TxInterface,
+  TxOptions,
+} from '../types.js'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
@@ -136,4 +145,8 @@ export function getBaseJSON(tx: TransactionInterface) {
     chainId: bigIntToHex(tx.common.chainId()),
     yParity: tx.v === 0n || tx.v === 1n ? bigIntToHex(tx.v) : undefined,
   }
+}
+
+export function toCreationAddress(tx: ContractCreationInterface | ToInterface): boolean {
+  return tx.to === undefined || tx.to.bytes.length === 0
 }
