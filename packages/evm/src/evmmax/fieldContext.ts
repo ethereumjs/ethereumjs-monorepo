@@ -1,5 +1,6 @@
 import { BIGINT_8, bytesToBigInt } from '@ethereumjs/util'
 import { modInv } from 'bigint-mod-arith'
+
 import { bytesToLimbs } from './util.js'
 
 const MAX_MODULUS_SIZE = 96 // 768 bit max modulus width
@@ -65,17 +66,17 @@ export class FieldContext {
 
     const mod = bytesToBigInt(modBytes)
     const paddedSize = BigInt(Math.ceil(modBytes.length / 8) * 8) // Compute paddedSize as the next multiple of 8 bytes
-    if (isModulusBinary(mod)) {
-      this.modulus = bytesToLimbs(modBytes),
-      this.mulMod = () => {}, // TODO filler function, replace with actual
-      this.addMod = () => {}, // TODO filler function, replace with actual
-      this.subMod = () => {}, // TODO filler function, replace with actual
-      this.scratchSpace = new Uint8Array(Number((paddedSize / BIGINT_8) * scratchSize)),
-      this.scratchSpaceElemCount = BigInt(scratchSize),
-      this.modulusInt = mod,
-      this.elemSize = paddedSize,
-      this.useMontgomeryRepr = false,
-      this.isModulusBinary = true, 
-	  }
+    // if (isModulusBinary(mod)) {
+    //   this.modulus = bytesToLimbs(modBytes),
+    //   this.mulMod = () => {}, // TODO filler function, replace with actual
+    //   this.addMod = () => {}, // TODO filler function, replace with actual
+    //   this.subMod = () => {}, // TODO filler function, replace with actual
+    //   this.scratchSpace = [new Uint8Array(Number((paddedSize / BIGINT_8) * scratchSize))],
+    //   this.scratchSpaceElemCount = BigInt(scratchSize),
+    //   this.modulusInt = mod,
+    //   this.elemSize = paddedSize,
+    //   this.useMontgomeryRepr = false,
+    //   this.isModulusBinary = true, 
+	  // }
   }
 }
