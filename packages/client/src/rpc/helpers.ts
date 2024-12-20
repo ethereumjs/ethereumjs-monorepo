@@ -3,6 +3,7 @@ import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
 
 import type { Chain } from '../blockchain/index.js'
+import type { RPCMethod } from './types.js'
 import type { Block } from '@ethereumjs/block'
 import type { JSONRPCTx, TypedTransaction } from '@ethereumjs/tx'
 
@@ -13,7 +14,7 @@ type RPCError = {
   data?: string
 }
 
-export function callWithStackTrace(handler: Function, debug: boolean) {
+export function callWithStackTrace(handler: Function, debug: boolean): RPCMethod {
   return async (...args: any) => {
     try {
       const res = await handler(...args)
