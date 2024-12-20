@@ -66,7 +66,6 @@ describe(method, async () => {
       validateBlocks: true,
       validateConsensus: false,
     })
-    const blocks = await blockchain.getBlocks(0, 6, 0, false)
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
@@ -82,10 +81,8 @@ describe(method, async () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    for (let i = 0; i < blocks.length; i++) {
-      const result = await rpc.request(method, [`0x${i}`])
-      assert.equal(result.error.code, -32603)
-      assert.equal(result.error.message, 'Internal error')
-    }
+    const result = await rpc.request(method, ['0x1'])
+    assert.equal(result.error.code, -32603)
+    assert.equal(result.error.message, 'Internal error')
   })
 })

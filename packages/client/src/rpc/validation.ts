@@ -1,6 +1,6 @@
 import { INVALID_PARAMS } from './error-code.js'
 
-type RPCMethod = (params: any[]) => any
+import type { RPCMethod } from './types.js'
 
 /**
  * middleware for parameters validation

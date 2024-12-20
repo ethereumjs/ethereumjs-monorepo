@@ -48,7 +48,7 @@ export class Admin {
    * Returns information about the currently running node.
    * see for reference: https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-admin#admin_peers
    */
-  nodeInfo() {
+  async nodeInfo() {
     const rlpxInfo = this._client.config.server!.getRlpxInfo()
     const { enode, id, ip, listenAddr, ports } = rlpxInfo
     const { discovery, listener } = ports

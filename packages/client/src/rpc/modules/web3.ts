@@ -5,7 +5,9 @@ import { getClientVersion } from '../../util/index.js'
 import { callWithStackTrace } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
+import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
@@ -13,13 +15,17 @@ import type { PrefixedHexString } from '@ethereumjs/util'
  * @memberof module:rpc/modules
  */
 export class Web3 {
+  private _chain?: Chain
   private _rpcDebug: boolean
   /**
    * Create web3_* RPC module
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
+    const service = client.service as FullEthereumService
+    this._chain = service.chain
     this._rpcDebug = rpcDebug
+    this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 
     this.sha3 = middleware(callWithStackTrace(this.sha3.bind(this), this._rpcDebug), 1, [
       [validators.hex],
@@ -30,7 +36,7 @@ export class Web3 {
    * Returns the current client version
    * @param params An empty array
    */
-  clientVersion() {
+  clientVersion(_params = []) {
     return getClientVersion()
   }
 
