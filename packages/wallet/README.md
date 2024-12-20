@@ -28,7 +28,7 @@ Features not supported:
 
 ## Wallet API
 
-For information about the Wallet's API, please go to [./docs/classes/wallet.md](./docs/classes/wallet.md).
+For information about the Wallet's API, please go to [./docs/classes/Wallet.md](./docs/classes/Wallet.md).
 
 You can import the `Wallet` class like this
 
