@@ -68,6 +68,7 @@ export const paramsVM: ParamsDict = {
    * Ethereum state using a unified verkle tree (experimental)
    */
   6800: {
+    // config
     historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
   },
   /**

@@ -42,6 +42,7 @@ describe('verkle tests', () => {
     const retrievedValue = await sm.getStorage(address, setLengthLeft(bigIntToBytes(2n), 32))
     assert.deepEqual(retrievedValue, setLengthLeft(bigIntToBytes(1n), 32))
   })
+
   it('should revert and access witness should not contain a write access due to OOG', async () => {
     // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({
@@ -74,6 +75,7 @@ describe('verkle tests', () => {
     assert.ok(writtenChunks.length === 0)
     assert.equal(res.execResult.exceptionError?.error, 'out of gas')
   })
+
   it('access witness should contain a write access', async () => {
     // This tests executes some very simple bytecode that stores the value 1 in slot 2
     const common = new Common({

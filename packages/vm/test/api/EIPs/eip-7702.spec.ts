@@ -10,13 +10,13 @@ import {
   createAddressFromString,
   createZeroAddress,
   ecsign,
+  equalsBytes,
   hexToBytes,
   privateToAddress,
   setLengthRight,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { equalsBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'

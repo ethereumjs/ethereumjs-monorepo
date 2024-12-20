@@ -1,8 +1,7 @@
-import { readFileSync } from 'fs'
-
 import { Chain } from './blockchain/index.js'
 import { FullEthereumService } from './service/index.js'
 import { Event } from './types.js'
+import { getPackageJSON } from './util/index.js'
 
 import type { Config } from './config.js'
 import type { MultiaddrLike } from './types.js'
@@ -110,12 +109,7 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
-    const packageJSON = JSON.parse(
-      readFileSync(
-        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-        'utf-8',
-      ),
-    )
+    const packageJSON = getPackageJSON()
     this.config.logger.info(
       `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
     )

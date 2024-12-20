@@ -118,6 +118,10 @@ export const Mainnet: ChainConfig = {
       block: null,
     },
     {
+      name: 'osaka',
+      block: null,
+    },
+    {
       name: 'verkle',
       block: null,
     },

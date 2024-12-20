@@ -806,6 +806,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // commit all access witness changes
     vm.evm.verkleAccessWitness?.commit()
   }
+
   return results
 }
 

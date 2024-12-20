@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'

@@ -86,6 +86,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Osaka,
     Hardfork.Verkle,
   ]
   protected _tx?: {
@@ -290,10 +291,10 @@ export class EVM implements EVMInterface {
         message.accessWitness.revert()
         return { execResult: OOGResult(message.gasLimit) }
       } else {
-        message.accessWitness.commit()
         if (this.DEBUG) {
           debugGas(`callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`)
         }
+        message.accessWitness.commit()
       }
     }
 
@@ -320,18 +321,18 @@ export class EVM implements EVMInterface {
         )
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.revert()
           if (this.DEBUG) {
             debugGas(
               `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.revert()
           return { execResult: OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.commit()
           if (this.DEBUG) {
             debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
+          message.accessWitness?.commit()
         }
       }
       toAccount = new Account()
@@ -469,18 +470,18 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
-        message.accessWitness?.revert()
         if (this.DEBUG) {
           debugGas(
             `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`,
           )
+          message.accessWitness?.revert()
         }
         return { execResult: OOGResult(message.gasLimit) }
       } else {
-        message.accessWitness?.commit()
         if (this.DEBUG) {
           debugGas(`ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`)
         }
+        message.accessWitness?.commit()
       }
     }
 
@@ -554,20 +555,20 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
         gasLimit -= createCompleteAccessGas
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.revert()
           return { execResult: OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.commit()
           if (this.DEBUG) {
             debug(
               `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.commit()
         }
       }
 
@@ -642,27 +643,27 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
         } else {
-          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       } else {
         // we are in Frontier
         if (totalGas - returnFee <= message.gasLimit) {
-          message.accessWitness?.revert()
           // we cannot pay the code deposit fee (but the deposit code actually did run)
           if (this.DEBUG) {
             debug(`Not enough gas to pay the code deposit fee (Frontier)`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
-          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       }
@@ -676,12 +677,12 @@ export class EVM implements EVMInterface {
       )
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
-        message.accessWitness?.revert()
         if (this.DEBUG) {
           debug(
             `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
           )
         }
+        message.accessWitness?.revert()
         result = { ...result, ...OOGResult(message.gasLimit) }
       } else {
         debug(
@@ -707,16 +708,16 @@ export class EVM implements EVMInterface {
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
-          message.accessWitness?.revert()
           if (this.DEBUG) {
             debug(
               `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
-          message.accessWitness?.commit()
           debug(`byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`)
+          message.accessWitness?.commit()
           result.executionGasUsed += byteCodeWriteAccessfee
         }
       }
