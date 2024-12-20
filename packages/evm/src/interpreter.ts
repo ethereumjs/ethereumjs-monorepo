@@ -40,6 +40,7 @@ import type {
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import { FieldContext } from './evmmax/fieldContext.js'
 
 const debugGas = debugDefault('evm:gas')
 
@@ -105,6 +106,7 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
+  evmmaxState: FieldContext
 }
 
 export interface InterpreterResult {
