@@ -167,6 +167,7 @@ export interface EVMInterface {
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
   verkleAccessWitness?: VerkleAccessWitnessInterface
+  systemVerkleAccessWitness?: VerkleAccessWitnessInterface
 }
 
 export type EVMProfilerOpts = {

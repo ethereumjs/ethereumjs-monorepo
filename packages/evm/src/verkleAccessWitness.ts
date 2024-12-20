@@ -15,6 +15,9 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
+import { ChunkCache } from './chunkCache.js'
+import { StemCache } from './stemCache.js'
+
 import type {
   AccessEventFlags,
   RawVerkleAccessedState,
@@ -36,13 +39,13 @@ const WitnessChunkWriteCost = BigInt(500)
 const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
-type StemAccessEvent = { write?: boolean }
+export type StemAccessEvent = { write?: boolean }
 // chunk fill access event is not being charged right now in kaustinen but will be rectified
 // in upcoming iterations
-type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
+export type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
 
 // Since stem is pedersen hashed, it is useful to maintain the reverse relationship
-type StemMeta = { address: Address; treeIndex: number | bigint }
+export type StemMeta = { address: Address; treeIndex: number | bigint }
 
 export function decodeAccessedState(
   treeIndex: number | bigint,
@@ -82,6 +85,8 @@ export function decodeAccessedState(
 export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
+  stemCache: StemCache = new StemCache()
+  chunkCache: ChunkCache = new ChunkCache()
   verkleCrypto: VerkleCrypto
   constructor(opts: {
     verkleCrypto: VerkleCrypto
@@ -161,16 +166,20 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return gas
   }
 
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint {
+  touchCodeChunksRangeOnReadAndComputeGas(
+    contract: Address,
+    startPc: number,
+    endPc: number,
+  ): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
-      gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
+      gas += this.touchAddressOnReadAndComputeGas(contract, treeIndex, subIndex)
     }
     return gas
   }
 
-  touchCodeChunksRangeOnWriteAndChargeGas(
+  touchCodeChunksRangeOnWriteAndComputeGas(
     contact: Address,
     startPc: number,
     endPc: number,
@@ -188,7 +197,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+    return this.touchAddressAndComputeGas(address, treeIndex, subIndex, {
       isWrite: true,
     })
   }
@@ -198,12 +207,12 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
   ): bigint {
-    return this.touchAddressAndChargeGas(address, treeIndex, subIndex, {
+    return this.touchAddressAndComputeGas(address, treeIndex, subIndex, {
       isWrite: false,
     })
   }
 
-  touchAddressAndChargeGas(
+  touchAddressAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
@@ -236,7 +245,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     }
 
     debug(
-      `touchAddressAndChargeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`,
+      `touchAddressAndComputeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`,
     )
 
     return gas
@@ -258,11 +267,11 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
 
     const accessedStemKey = getVerkleStem(this.verkleCrypto, address, treeIndex)
     const accessedStemHex = bytesToHex(accessedStemKey)
-    let accessedStem = this.stems.get(accessedStemHex)
+    let accessedStem = this.stemCache.get(accessedStemHex) ?? this.stems.get(accessedStemHex)
     if (accessedStem === undefined) {
       stemRead = true
       accessedStem = { address, treeIndex }
-      this.stems.set(accessedStemHex, accessedStem)
+      this.stemCache.set(accessedStemHex, accessedStem)
     }
 
     const accessedChunkKey = getVerkleKey(
@@ -270,11 +279,12 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
       typeof subIndex === 'number' ? intToBytes(subIndex) : subIndex,
     )
     const accessedChunkKeyHex = bytesToHex(accessedChunkKey)
-    let accessedChunk = this.chunks.get(accessedChunkKeyHex)
+    let accessedChunk =
+      this.chunkCache.get(accessedChunkKeyHex) ?? this.chunks.get(accessedChunkKeyHex)
     if (accessedChunk === undefined) {
       chunkRead = true
       accessedChunk = {}
-      this.chunks.set(accessedChunkKeyHex, accessedChunk)
+      this.chunkCache.set(accessedChunkKeyHex, accessedChunk)
     }
 
     if (isWrite === true) {
@@ -320,6 +330,56 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
         thisChunk.fill = thisChunk.fill !== true ? thisChunk.fill : true
       }
     }
+  }
+
+  commit(): void {
+    const cachedStems = this.stemCache.commit()
+    for (const [stemKey, stemValue] of cachedStems) {
+      this.stems.set(stemKey, stemValue)
+    }
+
+    const cachedChunks = this.chunkCache.commit()
+    for (const [chunkKey, chunkValue] of cachedChunks) {
+      this.chunks.set(chunkKey, chunkValue)
+    }
+  }
+
+  revert(): void {
+    this.stemCache.clear()
+    this.chunkCache.clear()
+  }
+
+  debugWitnessCost(): void {
+    // Calculate the aggregate gas cost for verkle access witness per type
+    let stemReads = 0,
+      stemWrites = 0,
+      chunkReads = 0,
+      chunkWrites = 0
+
+    for (const [_, { write }] of this.stems.entries()) {
+      stemReads++
+      if (write === true) {
+        stemWrites++
+      }
+    }
+    for (const [_, { write }] of this.chunks.entries()) {
+      chunkReads++
+      if (write === true) {
+        chunkWrites++
+      }
+    }
+    debug(
+      `${stemReads} stem reads, totalling ${BigInt(stemReads) * WitnessBranchReadCost} gas units`,
+    )
+    debug(
+      `${stemWrites} stem writes, totalling ${BigInt(stemWrites) * WitnessBranchWriteCost} gas units`,
+    )
+    debug(
+      `${chunkReads} chunk reads, totalling ${BigInt(chunkReads) * WitnessChunkReadCost} gas units`,
+    )
+    debug(
+      `${chunkWrites} chunk writes, totalling ${BigInt(chunkWrites) * WitnessChunkWriteCost} gas units`,
+    )
   }
 
   *rawAccesses(): Generator<RawVerkleAccessedState> {
