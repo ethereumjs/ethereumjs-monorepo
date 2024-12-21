@@ -759,10 +759,10 @@ export async function rewardAccount(
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common.isActivatedEIP(6800) === true) {
-      if (evm.verkleAccessWitness === undefined) {
+      if (evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.verkleAccessWitness.touchAndChargeProofOfAbsence(address)
+      evm.systemVerkleAccessWitness.touchAndChargeProofOfAbsence(address)
     }
     account = new Account()
   }
@@ -770,11 +770,11 @@ export async function rewardAccount(
   await evm.journal.putAccount(address, account)
 
   if (common.isActivatedEIP(6800) === true) {
-    if (evm.verkleAccessWitness === undefined) {
+    if (evm.systemVerkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.verkleAccessWitness.touchTxTargetAndComputeGas(address, {
+    evm.systemVerkleAccessWitness.touchTxTargetAndComputeGas(address, {
       sendsValue: true,
     })
   }
