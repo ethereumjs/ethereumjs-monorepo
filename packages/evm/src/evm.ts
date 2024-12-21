@@ -102,6 +102,7 @@ export class EVM implements EVMInterface {
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
   public verkleAccessWitness?: VerkleAccessWitness
+  public systemVerkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 

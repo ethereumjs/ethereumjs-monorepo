@@ -324,6 +324,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
+
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
@@ -446,6 +447,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
+
   const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
@@ -522,7 +524,7 @@ export async function accumulateParentBlockHash(
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('systemAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
   // getAccount with historyAddress will throw error as witnesses are not bundled
