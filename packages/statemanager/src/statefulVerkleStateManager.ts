@@ -318,7 +318,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       chunkStems[0],
       chunkSuffixes.slice(
         0,
-        codeChunks.length <= VERKLE_CODE_OFFSET ? codeChunks.length : VERKLE_CODE_OFFSET,
+        chunkSuffixes.length <= VERKLE_CODE_OFFSET ? chunkSuffixes.length : VERKLE_CODE_OFFSET,
       ),
       codeChunks.slice(
         0,
@@ -398,13 +398,16 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     for (let x = 0; x < chunks.length; x++) {
       if (chunks[x] === undefined) throw new Error(`expected code chunk at ID ${x}, got undefined`)
 
+      let lastChunkByteIndex = VERKLE_CODE_CHUNK_SIZE
       // Determine code ending byte (if we're on the last chunk)
-      let sliceEnd = 32
       if (x === chunks.length - 1) {
-        // On the last chunk, the end of the slice is either codeSize (if only one chunk) or codeSize % chunkSize
-        sliceEnd = (x === 0 ? codeSize : codeSize % VERKLE_CODE_CHUNK_SIZE) + 1
+        // On the last chunk, the slice either ends on a partial chunk (if codeSize doesn't exactly fit in full chunks), or a full chunk
+        lastChunkByteIndex = codeSize % VERKLE_CODE_CHUNK_SIZE || VERKLE_CODE_CHUNK_SIZE
       }
-      code.set(chunks[x]!.slice(1, sliceEnd), code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE)
+      code.set(
+        chunks[x]!.slice(1, lastChunkByteIndex + 1),
+        code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE,
+      )
     }
     this._caches?.code?.put(address, code)
 
@@ -598,10 +601,14 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
         // we can only compare the actual code because to compare the first byte would
         // be very tricky and impossible in certain scenarios like when the previous code chunk
         // was not accessed and hence not even provided in the witness
+        // We are left-padding with two zeroes to get a 32-byte length, but these bytes should not be considered reliable
         return bytesToHex(
-          setLengthRight(
-            code.slice(codeOffset, codeOffset + VERKLE_CODE_CHUNK_SIZE),
-            VERKLE_CODE_CHUNK_SIZE,
+          setLengthLeft(
+            setLengthRight(
+              code.slice(codeOffset, codeOffset + VERKLE_CODE_CHUNK_SIZE),
+              VERKLE_CODE_CHUNK_SIZE,
+            ),
+            VERKLE_CODE_CHUNK_SIZE + 1,
           ),
         )
       }
@@ -645,7 +652,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue: PrefixedHexString | null | undefined =
+      let computedValue: PrefixedHexString | null | undefined =
         await this.getComputedValue(accessedState)
       if (computedValue === undefined) {
         this.DEBUG &&
@@ -670,7 +677,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
       if (accessedState.type === VerkleAccessedStateType.Code) {
-        // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
+        computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
       } else if (
         accessedState.type === VerkleAccessedStateType.Storage &&
