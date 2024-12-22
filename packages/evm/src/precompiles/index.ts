@@ -12,14 +12,12 @@ import { precompile08 } from './08-bn254-pairing.js'
 import { precompile09 } from './09-blake2f.js'
 import { precompile0a } from './0a-kzg-point-evaluation.js'
 import { precompile0b } from './0b-bls12-g1add.js'
-import { precompile0c } from './0c-bls12-g1mul.js'
-import { precompile0d } from './0d-bls12-g1msm.js'
-import { precompile0e } from './0e-bls12-g2add.js'
-import { precompile0f } from './0f-bls12-g2mul.js'
-import { precompile10 } from './10-bls12-g2msm.js'
-import { precompile11 } from './11-bls12-pairing.js'
-import { precompile12 } from './12-bls12-map-fp-to-g1.js'
-import { precompile13 } from './13-bls12-map-fp2-to-g2.js'
+import { precompile0c } from './0c-bls12-g1msm.js'
+import { precompile0d } from './0d-bls12-g2add.js'
+import { precompile0e } from './0e-bls12-g2msm.js'
+import { precompile0f } from './0f-bls12-pairing.js'
+import { precompile10 } from './10-bls12-map-fp-to-g1.js'
+import { precompile11 } from './11-bls12-map-fp2-to-g2.js'
 import { MCLBLS, NobleBLS } from './bls12_381/index.js'
 import { NobleBN254, RustBN254 } from './bn254/index.js'
 
@@ -165,7 +163,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0c,
-    name: 'BLS12_G1MUL (0x0c)',
+    name: 'BLS12_G1MSM (0x0c)',
   },
   {
     address: BYTES_19 + '0d',
@@ -174,7 +172,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0d,
-    name: 'BLS12_G1MSM (0x0d)',
+    name: 'BLS12_G1ADD (0x0d)',
   },
   {
     address: BYTES_19 + '0e',
@@ -183,7 +181,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0e,
-    name: 'BLS12_G2ADD (0x0e)',
+    name: 'BLS12_G2MSM (0x0e)',
   },
   {
     address: BYTES_19 + '0f',
@@ -192,7 +190,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0f,
-    name: 'BLS12_G2MUL (0x0f)',
+    name: 'BLS12_PAIRING (0x0f)',
   },
   {
     address: BYTES_19 + '10',
@@ -201,7 +199,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile10,
-    name: 'BLS12_G2MSM (0x10)',
+    name: 'BLS12_MAP_FP_TO_G1 (0x10)',
   },
   {
     address: BYTES_19 + '11',
@@ -210,25 +208,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile11,
-    name: 'BLS12_PAIRING (0x11)',
-  },
-  {
-    address: BYTES_19 + '12',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile12,
-    name: 'BLS12_MAP_FP_TO_G1 (0x12)',
-  },
-  {
-    address: BYTES_19 + '13',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile13,
-    name: 'BLS12_MAP_FP2_TO_G2 (0x13)',
+    name: 'BLS12_MAP_FP_TO_G2 (0x11)',
   },
 ]
 
@@ -250,8 +230,6 @@ const precompiles: Precompiles = {
   [BYTES_19 + '0f']: precompile0f,
   [BYTES_19 + '10']: precompile10,
   [BYTES_19 + '11']: precompile11,
-  [BYTES_19 + '12']: precompile12,
-  [BYTES_19 + '13']: precompile13,
 }
 
 type DeletePrecompile = {

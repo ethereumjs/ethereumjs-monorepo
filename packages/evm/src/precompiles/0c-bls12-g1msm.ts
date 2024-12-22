@@ -4,7 +4,7 @@ import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
 import {
-  BLS_GAS_DISCOUNT_PAIRS_G2,
+  BLS_GAS_DISCOUNT_PAIRS_G1,
   leading16ZeroBytesCheck,
   msmGasUsed,
 } from './bls12_381/index.js'
@@ -15,26 +15,37 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
-  const pName = getPrecompileName('10')
+export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
+  const pName = getPrecompileName('0d')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
-  if (opts.data.length === 0) {
+  const inputData = opts.data
+
+  if (inputData.length === 0) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
   }
 
-  const numPairs = Math.floor(opts.data.length / 288)
-  const gasUsedPerPair = opts.common.paramByEIP('bls12381G2MulGas', 2537) ?? BigInt(0)
-  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G2)
+  // TODO: Double-check respectively confirm that this order is really correct that the gas check
+  // on this eventually to be "floored" pair number should happen before the input length modulo
+  // validation (same for g2msm)
+  const numPairs = Math.floor(inputData.length / 160)
+  const gasUsedPerPair = opts.common.paramByEIP('bls12381G1MulGas', 2537) ?? BigInt(0)
+  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G1)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (!moduloLengthCheck(opts, 288, pName)) {
+  if (inputData.length % 160 !== 0) {
+    if (opts._debug !== undefined) {
+      opts._debug(`${pName} failed: Invalid input length length=${inputData.length}`)
+    }
+    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+  }
+  if (!moduloLengthCheck(opts, 160, pName)) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -42,13 +53,11 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const zeroByteRanges = [
     [0, 16],
     [64, 80],
-    [128, 144],
-    [192, 208],
   ]
 
   for (let k = 0; k < numPairs; k++) {
     // zero bytes check
-    const pairStart = 288 * k
+    const pairStart = 160 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
       return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
@@ -56,7 +65,7 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
   try {
-    returnValue = bls.msmG2(opts.data)
+    returnValue = bls.msmG1(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
