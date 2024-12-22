@@ -2,6 +2,7 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
+  MAX_UINT63,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -32,6 +33,18 @@ export function valueBoundaryCheck(
 ) {
   for (const [key, value] of Object.entries(values)) {
     switch (bits) {
+      case 63:
+        if (cannotEqual) {
+          if (value !== undefined && value >= MAX_UINT63) {
+            // TODO: error msgs got raised to a error string handler first, now throws "generic" error
+            throw new Error(`${key} cannot equal or exceed MAX_UINT63 (2^63-1), given ${value}`)
+          }
+        } else {
+          if (value !== undefined && value > MAX_UINT63) {
+            throw new Error(`${key} cannot exceed MAX_UINT63 (2^63-1), given ${value}`)
+          }
+        }
+        break
       case 64:
         if (cannotEqual) {
           if (value !== undefined && value >= MAX_UINT64) {
