@@ -108,8 +108,8 @@ export function sharedConstructor(
   // Validate value/r/s
   valueBoundaryCheck({ value: tx.value, r: tx.r, s: tx.s })
 
-  // geth limits gasLimit to 2^64-1
-  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 64)
+  // https://eips.ethereum.org/EIPS/eip-4803
+  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 63, true)
 
   // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
   valueBoundaryCheck({ nonce: tx.nonce }, 64, true)
