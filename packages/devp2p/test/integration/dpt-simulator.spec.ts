@@ -114,7 +114,7 @@ describe('DPT simulator tests', () => {
 
     for (const dpt of dpts) {
       for (let i = 0; i < 10; i++) {
-        dpt.refresh()
+        void dpt.refresh()
       }
       await util.delay(400)
     }

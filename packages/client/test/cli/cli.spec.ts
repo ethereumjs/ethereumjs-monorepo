@@ -18,12 +18,10 @@ export function clientRunHelper(
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
-      console.error(message)
       if (!shouldError) onData(message, child, resolve)
     })
     child.stderr.on('data', (data) => {
       const message: string = data.toString()
-      console.log(message)
       if (shouldError) onData(message, child, resolve)
       else assert.fail(`stderr: ${message}`)
     })
@@ -49,7 +47,6 @@ describe('[CLI]', () => {
   it('should successfully start client with non-lower case network name', async () => {
     const cliArgs = ['--network=Mainnet']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
-      console.log(message)
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
           message.includes('network=mainnet'),

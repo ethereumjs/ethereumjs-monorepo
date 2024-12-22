@@ -1,8 +1,7 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
-import { concatBytes } from 'ethereum-cryptography/utils'
+import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'

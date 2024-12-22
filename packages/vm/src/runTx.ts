@@ -659,7 +659,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-
   results.amountSpent = results.totalGasSpent * gasPrice
 
   // Update sender's balance
@@ -825,6 +824,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
+  }
+
+  if (vm.common.isActivatedEIP(6800)) {
+    // commit all access witness changes
+    vm.evm.verkleAccessWitness?.commit()
   }
 
   return results

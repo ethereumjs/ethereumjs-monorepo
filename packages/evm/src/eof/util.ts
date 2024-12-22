@@ -1,5 +1,5 @@
+import { equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import { FORMAT, MAGIC } from './constants.js'
 

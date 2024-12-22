@@ -43,6 +43,14 @@ export interface structLog {
   }
   error: boolean | undefined | null
 }
+
+const logLevels: { [key: number]: string } = {
+  0: 'error',
+  1: 'warn',
+  2: 'info',
+  3: 'debug',
+}
+
 /**
  * Validate tracer opts to ensure only supports opts are provided
  * @param opts a dictionary of {@link tracerOpts}
@@ -85,6 +93,7 @@ const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
  * @memberof module:rpc/modules
  */
 export class Debug {
+  private client: EthereumClient
   private service: FullEthereumService
   private chain: Chain
   private vm: VM
@@ -94,6 +103,7 @@ export class Debug {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
+    this.client = client
     this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
@@ -138,6 +148,12 @@ export class Debug {
       1,
       [[validators.hex]],
     )
+    this.setHead = middleware(callWithStackTrace(this.setHead.bind(this), this._rpcDebug), 1, [
+      [validators.blockOption],
+    ])
+    this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
+      [validators.unsignedInteger],
+    ])
   }
 
   /**
@@ -434,5 +450,40 @@ export class Debug {
     const block = await this.chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return bytesToHex(tx.serialize())
+  }
+  /**
+   * Sets the verbosity level of the client logger
+   * @param level logger level to use with 0 as the lowest verbosity
+   */
+  async verbosity(params: [number]) {
+    const [level] = params
+    this.client.config.logger.configure({ level: logLevels[level] })
+    return `level: ${this.client.config.logger.level}`
+  }
+
+  /**
+   * Sets the current head of the local chain by block number. Note, this is a
+   * destructive action and may severely damage your chain. Use with extreme
+   * caution.
+   * @param blockOpt Block number or tag to set as head of chain
+   */
+  async setHead(params: [string]) {
+    const [blockOpt] = params
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not supported`,
+      }
+    }
+
+    const block = await getBlockByOption(blockOpt, this.chain)
+    try {
+      await this.service.skeleton?.setHead(block, true)
+      await this.service.execution.setHead([block])
+    } catch (e) {
+      throw {
+        code: INTERNAL_ERROR,
+      }
+    }
   }
 }
