@@ -11,17 +11,17 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
-  const pName = getPrecompileName('0c')
+export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
+  const pName = getPrecompileName('0e')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.paramByEIP('bls12381G1MulGas', 2537) ?? BigInt(0)
+  const gasUsed = opts.common.paramByEIP('bls12381G2AddGas', 2537) ?? BigInt(0)
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (!equalityLengthCheck(opts, 160, pName)) {
+  if (!equalityLengthCheck(opts, 512, pName)) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -29,18 +29,23 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   const zeroByteRanges = [
     [0, 16],
     [64, 80],
+    [128, 144],
+    [192, 208],
+    [256, 272],
+    [320, 336],
+    [384, 400],
+    [448, 464],
   ]
   if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName)) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
+  // TODO: verify that point is on G2
+
   let returnValue
   try {
-    returnValue = bls.mulG1(opts.data)
+    returnValue = bls.addG2(opts.data)
   } catch (e: any) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
-    }
     return EvmErrorResult(e, opts.gasLimit)
   }
 

@@ -172,7 +172,10 @@ export function genRequestsRoot(
 
   let flatRequests = new Uint8Array()
   for (const req of requests) {
-    flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
+    if (req.bytes.length > 1) {
+      // Only append requests if they have content
+      flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
+    }
   }
 
   return sha256Function(flatRequests)

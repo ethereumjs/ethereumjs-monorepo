@@ -2,6 +2,7 @@ import {
   Address,
   BIGINT_0,
   SECP256K1_ORDER_DIV_2,
+  bigIntMax,
   bigIntToUnpaddedBytes,
   bytesToHex,
   ecrecover,
@@ -167,8 +168,20 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  if (tx.getIntrinsicGas() > tx.gasLimit) {
-    errors.push(`gasLimit is too low. given ${tx.gasLimit}, need at least ${tx.getIntrinsicGas()}`)
+  let intrinsicGas = tx.getIntrinsicGas()
+  if (tx.common.isActivatedEIP(7623)) {
+    let tokens = 0
+    for (let i = 0; i < tx.data.length; i++) {
+      tokens += tx.data[i] === 0 ? 1 : 4
+    }
+    const floorCost =
+      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
+    intrinsicGas = bigIntMax(intrinsicGas, floorCost)
+  }
+  if (intrinsicGas > tx.gasLimit) {
+    errors.push(
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${tx.getIntrinsicGas()}, the gas limit is: ${tx.gasLimit}`,
+    )
   }
 
   return errors

@@ -11,7 +11,7 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('11')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 

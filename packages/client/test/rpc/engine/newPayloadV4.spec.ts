@@ -162,7 +162,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       excessBlobGas: '0x0',
       parentHash: '0x6abe4c2777a6a1e994d83920cfb95229b071174b95c89343f54b926f733789f2',
       stateRoot: '0x7aa6e46df1f78988a3141b5e7da8abee78d1daca175f43fe8866b2d1bf8d8ef8',
-      blockHash: '0x9a5903d803e6e7c3631cd76cb7279f93d7facc995c53eaffadf4e225504b18eb',
+      blockHash: '0xece8d273a76238c4c9e4e28cbd301d40b04cb21242e83960ca688324e0483fd8',
     }
 
     const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
@@ -180,7 +180,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       assert.ok(res.error.message.includes(expectedError))
     }
 
-    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, ['0x', '0x', '0x']])
+    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
     assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
@@ -201,9 +201,20 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload, executionRequests } = res.result
+
     assert.ok(
-      executionRequests?.length === 3,
-      'executionRequests should have 3 entries for each request type',
+      executionRequests?.length === 1,
+      'executionRequests should have the deposit request, and should exclude the other requests (these are empty)',
+    )
+
+    const depositRequestBytes = hexToBytes(executionRequests[0])
+    assert.ok(
+      depositRequestBytes[0] === 0x00,
+      'deposit request byte 0 is the deposit request identifier byte (0x00)',
+    )
+    assert.ok(
+      depositRequestBytes.length > 1,
+      'deposit request includes data (and is thus not empty)',
     )
 
     res = await rpc.request(method, [

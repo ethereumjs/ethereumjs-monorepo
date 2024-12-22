@@ -406,6 +406,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [3540, 3541, 3670],
   },
   /**
+   * Description : Increase calldata cost to reduce maximum block size
+   * URL         : https://github.com/ethereum/EIPs/blob/da2a86bf15044416e8eb0301c9bdb8d561feeb32/EIPS/eip-7623.md
+   * Status      : Review
+   */
+  7623: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
    * Description : General purpose execution layer requests
    * URL         : https://eips.ethereum.org/EIPS/eip-7685
    * Status      : Review
@@ -414,6 +423,15 @@ export const eipsDict: EIPsDict = {
     // TODO: Set correct minimum hardfork
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [3675],
+  },
+  /**
+   * Description : Blob throughput increase
+   * URL         : https://eips.ethereum.org/EIPS/eip-7691
+   * Status      : Review
+   */
+  7691: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
   },
   /**
    * Description : EVM Object Format (EOFv1) Meta
