@@ -3,7 +3,11 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { leading16ZeroBytesCheck, msmGasUsed } from './bls12_381/index.js'
+import {
+  BLS_GAS_DISCOUNT_PAIRS_G1,
+  leading16ZeroBytesCheck,
+  msmGasUsed,
+} from './bls12_381/index.js'
 import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
 import { getPrecompileName } from './index.js'
@@ -29,7 +33,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   // validation (same for g2msm)
   const numPairs = Math.floor(inputData.length / 160)
   const gasUsedPerPair = opts.common.paramByEIP('bls12381G1MulGas', 2537) ?? BigInt(0)
-  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
+  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G1)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
