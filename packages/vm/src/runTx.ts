@@ -12,6 +12,8 @@ import {
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
+  VERKLE_BASIC_DATA_LEAF_KEY,
+  VERKLE_CODE_HASH_LEAF_KEY,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -669,6 +671,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       vm.evm.verkleAccessWitness.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
+    // Add the miner account to the system verkle access witness
+    vm.evm.systemVerkleAccessWitness?.touchAddressOnWriteAndComputeGas(
+      miner,
+      0,
+      VERKLE_BASIC_DATA_LEAF_KEY,
+    )
+    vm.evm.systemVerkleAccessWitness?.touchAddressOnWriteAndComputeGas(
+      miner,
+      0,
+      VERKLE_CODE_HASH_LEAF_KEY,
+    )
   }
   // add the amount spent on gas to the miner's account
   results.minerValue = vm.common.isActivatedEIP(1559)
