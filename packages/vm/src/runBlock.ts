@@ -13,6 +13,8 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  VERKLE_BASIC_DATA_LEAF_KEY,
+  VERKLE_CODE_HASH_LEAF_KEY,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
@@ -762,7 +764,16 @@ export async function rewardAccount(
       if (evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.systemVerkleAccessWitness.touchAndChargeProofOfAbsence(address)
+      evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
+        address,
+        0,
+        VERKLE_BASIC_DATA_LEAF_KEY,
+      )
+      evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
+        address,
+        0,
+        VERKLE_CODE_HASH_LEAF_KEY,
+      )
     }
     account = new Account()
   }
