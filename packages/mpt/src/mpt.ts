@@ -209,7 +209,8 @@ export class MerklePatriciaTrie {
     key: Uint8Array,
     value: Uint8Array | null,
     skipKeyTransform: boolean = false,
-  ): Promise<void> {
+    trackPruningOps: boolean = false,
+  ): Promise<BatchDBOp[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['put'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['put'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
@@ -218,9 +219,10 @@ export class MerklePatriciaTrie {
 
     // If value is empty, delete
     if (value === null || value.length === 0) {
-      return this.del(key)
+      this.del(key)
     }
 
+    let ops: BatchDBOp[] = []
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
@@ -229,8 +231,8 @@ export class MerklePatriciaTrie {
     } else {
       // First try to find the given key or its nearest node
       const { remaining, stack } = await this.findPath(appliedKey)
-      let ops: BatchDBOp[] = []
-      if (this._opts.useNodePruning) {
+      let forceFindPruningOps = this._opts.useNodePruning || trackPruningOps
+      if (forceFindPruningOps) {
         const val = await this.get(key)
         // Only delete keys if it either does not exist, or if it gets updated
         // (The update will update the hash of the node, thus we can delete the original leaf node)
@@ -264,6 +266,7 @@ export class MerklePatriciaTrie {
     }
     await this.persistRoot()
     this._lock.release()
+    return ops
   }
 
   /**
@@ -272,7 +275,7 @@ export class MerklePatriciaTrie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+  async del(key: Uint8Array, skipKeyTransform: boolean = false, trackPruningOps: boolean = false): Promise<BatchDBOp[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
@@ -280,7 +283,8 @@ export class MerklePatriciaTrie {
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
-    if (this._opts.useNodePruning && node !== null) {
+    let forceFindPruningOps = this._opts.useNodePruning || trackPruningOps
+    if (forceFindPruningOps && node !== null) {
       const deleteHashes = stack.map((e) => this.hash(e.serialize()))
       // Just as with `put`, the stack items all will have their keyHashes updated
       // So after deleting the node, one can safely delete these from the DB
@@ -307,7 +311,22 @@ export class MerklePatriciaTrie {
     }
     await this.persistRoot()
     this._lock.release()
+    return ops
   }
+
+  /**
+   * Deletes a value given a `key` from the trie
+   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
+   * @param key
+   * @returns A Promise that resolves once value is deleted.
+   */
+  async delPrevStatesData(ops: BatchDBOp[]): Promise<void> {
+    await this._lock.acquire()
+    await this._db.batch(ops)
+    await this.persistRoot()
+    this._lock.release()
+  }
+
 
   /**
    * Tries to find a path to the node for the given key.
