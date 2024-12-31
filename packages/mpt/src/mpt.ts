@@ -315,10 +315,9 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Deletes a value given a `key` from the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @returns A Promise that resolves once value is deleted.
+   * Deletes data related to previous states from db value given a `key` from the trie
+   * @param ops
+   * @returns A Promise that resolves once values are deleted.
    */
   async delPrevStatesData(ops: BatchDBOp[]): Promise<void> {
     await this._lock.acquire()
