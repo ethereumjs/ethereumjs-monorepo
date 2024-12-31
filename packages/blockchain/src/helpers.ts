@@ -41,7 +41,7 @@ export async function getGenesisStateRoot(chainId: Chain, common: Common): Promi
   return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
 }
 
-/* 
+/*
 The code below calculates the empty requests hash as of devnet-4 for EIP 7685
 Note: it is not possible to calculate this directly in the blockchain package,
 this introduces the `ethereum-cryptography` dependency.

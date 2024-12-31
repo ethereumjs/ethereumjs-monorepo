@@ -31,6 +31,10 @@ export function accessAddressEIP2929(
     // if verkle not activated
     if (chargeGas && !common.isActivatedEIP(6800)) {
       return common.param('coldaccountaccessGas')
+    } else if (chargeGas && common.isActivatedEIP(6800)) {
+      // If Verkle is active, then the warmstoragereadGas should still be charged
+      // This is because otherwise opcodes will have cost 0 (this is thus the base fee)
+      return common.param('warmstoragereadGas')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestruct) {

@@ -212,6 +212,10 @@ export class VMExecution extends Execution {
     } else throw new Error('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
+    console.log(
+      'this.config.execCommon is activated 2935',
+      this.config.execCommon.isActivatedEIP(2935),
+    )
     this.verkleVM = await createVM({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
