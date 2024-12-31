@@ -219,7 +219,7 @@ export class MerklePatriciaTrie {
 
     // If value is empty, delete
     if (value === null || value.length === 0) {
-      this.del(key)
+      await this.del(key)
     }
 
     let ops: BatchDBOp[] = []
