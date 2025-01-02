@@ -19,25 +19,25 @@ export function isModulusBinary(modulus: bigint): boolean {
 
 export class FieldContext {
   public modulus: bigint[]
-  public r2: bigint[]
-  public modInvVal: bigint
+  public r2: bigint[] | undefined
+  public modInvVal: bigint | undefined
 
   public useMontgomeryRepr: boolean
   public isModulusBinary: boolean
 
   public scratchSpace: bigint[]
-  public addSubCost: bigint
-  public mulCost: bigint
+  public addSubCost: bigint | undefined
+  public mulCost: bigint | undefined
 
   public addMod: Function
   public subMod: Function
   public mulMod: Function
 
-  public one: bigint[]
+  public one: bigint[] | undefined
   public modulusInt: bigint
   public elemSize: bigint
   public scratchSpaceElemCount: bigint
-  public outputWriteBuf: bigint[]
+  public outputWriteBuf: bigint[] | undefined
 
   constructor(modBytes: Uint8Array, scratchSize: bigint) {
     if (modBytes.length > MAX_MODULUS_SIZE) {
@@ -58,18 +58,27 @@ export class FieldContext {
 
     const mod = bytesToBigInt(modBytes)
     const paddedSize = BigInt(Math.ceil(modBytes.length / 8) * 8) // Compute paddedSize as the next multiple of 8 bytes
+
+    // console.log('dbg110')
+    // console.log(scratchSize)
+    // console.log(paddedSize)
+    // console.log((paddedSize / BIGINT_8) * scratchSize)
+
     if (isModulusBinary(mod)) {
       this.modulus = bytesToLimbs(modBytes)
       this.mulMod = mulModBinary
       this.addMod = addModBinary
       this.subMod = subModBinary
-      this.scratchSpace = new Array<bigint>((paddedSize / BIGINT_8) * scratchSize).fill(0n)
+      this.scratchSpace = new Array<bigint>(Number((paddedSize / BIGINT_8) * scratchSize)).fill(0n)
       this.outputWriteBuf = new Array<bigint>(this.scratchSpace.length).fill(0n)
       this.scratchSpaceElemCount = BigInt(scratchSize)
       this.modulusInt = mod
-      this.elemSize = paddedSize
+      this.elemSize = paddedSize / 8n
       this.useMontgomeryRepr = false
       this.isModulusBinary = true
+
+      // console.log(this.scratchSpace)
+
       return
     }
 
@@ -108,7 +117,7 @@ export class FieldContext {
     this.isModulusBinary = false
   }
 
-  store(dst, count: number, from: Uint8Array) {
+  store(dst: number, count: number, from: Uint8Array) {
     const elemSize = this.modulus.length
 
     for (let i = 0; i < count; i++) {
@@ -185,12 +194,12 @@ export class FieldContext {
       const xSlice = this.scratchSpace.slice(xSrc, xSrc + elemSize)
       const ySlice = this.scratchSpace.slice(ySrc, ySrc + elemSize)
 
-      const outSlice = this.outputWriteBuf.slice(dst, dst + elemSize)
+      const outSlice = this.outputWriteBuf!.slice(dst, dst + elemSize)
 
       this.mulMod(outSlice, xSlice, ySlice, this.modulus, this.modInvVal)
 
       for (let j = 0; j < elemSize; j++) {
-        this.outputWriteBuf[dst + j] = outSlice[j]
+        this.outputWriteBuf![dst + j] = outSlice[j]
       }
     }
 
@@ -198,7 +207,7 @@ export class FieldContext {
     for (let i = 0; i < count; i++) {
       const offset = (outIndex + i * outStride) * elemSize
       for (let j = 0; j < elemSize; j++) {
-        this.scratchSpace[offset + j] = this.outputWriteBuf[offset + j]
+        this.scratchSpace[offset + j] = this.outputWriteBuf![offset + j]
       }
     }
   }
@@ -228,12 +237,12 @@ export class FieldContext {
 
       const xSlice = this.scratchSpace.slice(xSrc, xSrc + elemSize)
       const ySlice = this.scratchSpace.slice(ySrc, ySrc + elemSize)
-      const outSlice = this.outputWriteBuf.slice(dst, dst + elemSize)
+      const outSlice = this.outputWriteBuf!.slice(dst, dst + elemSize)
 
       this.subMod(outSlice, xSlice, ySlice, this.modulus)
 
       for (let j = 0; j < elemSize; j++) {
-        this.outputWriteBuf[dst + j] = outSlice[j]
+        this.outputWriteBuf![dst + j] = outSlice[j]
       }
     }
 
@@ -241,7 +250,7 @@ export class FieldContext {
     for (let i = 0; i < count; i++) {
       const offset = (outIndex + i * outStride) * elemSize
       for (let j = 0; j < elemSize; j++) {
-        this.scratchSpace[offset + j] = this.outputWriteBuf[offset + j]
+        this.scratchSpace[offset + j] = this.outputWriteBuf![offset + j]
       }
     }
   }
@@ -261,7 +270,7 @@ export class FieldContext {
     yStride: number,
     count: number,
   ): void {
-    const elemSize = this.modulus.length
+    const elemSize = Number(this.elemSize)
 
     // perform the additions, writing to outputWriteBuf
     for (let i = 0; i < count; i++) {
@@ -271,12 +280,21 @@ export class FieldContext {
 
       const xSlice = this.scratchSpace.slice(xSrc, xSrc + elemSize)
       const ySlice = this.scratchSpace.slice(ySrc, ySrc + elemSize)
-      const outSlice = this.outputWriteBuf.slice(dst, dst + elemSize)
+      const outSlice = this.outputWriteBuf!.slice(dst, dst + elemSize)
+
+      // console.log('dbg100')
+      // console.log(this.outputWriteBuf)
+      // console.log(elemSize)
+      // console.log(xSrc)
+      // console.log(ySrc)
+      // console.log(xSlice)
+      // console.log(ySlice)
+      // console.log(outSlice)
 
       this.addMod(outSlice, xSlice, ySlice, this.modulus)
 
       for (let j = 0; j < elemSize; j++) {
-        this.outputWriteBuf[dst + j] = outSlice[j]
+        this.outputWriteBuf![dst + j] = outSlice[j]
       }
     }
 
@@ -284,7 +302,7 @@ export class FieldContext {
     for (let i = 0; i < count; i++) {
       const offset = (outIndex + i * outStride) * elemSize
       for (let j = 0; j < elemSize; j++) {
-        this.scratchSpace[offset + j] = this.outputWriteBuf[offset + j]
+        this.scratchSpace[offset + j] = this.outputWriteBuf![offset + j]
       }
     }
   }
