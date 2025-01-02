@@ -1,9 +1,24 @@
+const MASK_64 = (1n << 64n) - 1n
+
 export function putUint64BE(dst: Uint8Array, offset: number, value: bigint): void {
   value = BigInt.asUintN(64, value)
   const hex = value.toString(16).padStart(16, '0')
   for (let i = 0; i < 8; i++) {
     dst[offset + i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
   }
+}
+
+export function negModInverse(mod: bigint): bigint {
+  let k0 = (2n - mod) & MASK_64
+  let t = (mod - 1n) & MASK_64
+
+  for (let i = 1; i < 64; i <<= 1) {
+    t = (t * t) & MASK_64
+    k0 = (k0 * ((t + 1n) & MASK_64)) & MASK_64
+  }
+  k0 = -k0 & MASK_64
+
+  return k0
 }
 
 export function bytesToLimbs(b: Uint8Array): bigint[] {
