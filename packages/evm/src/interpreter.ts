@@ -16,6 +16,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
 import { EOFContainerMode, validateEOF } from './eof/container.js'
 import { setupEOF } from './eof/setup.js'
 import { ContainerSectionType } from './eof/verify.js'
+import { FieldContext } from './evmmax/fieldContext.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -40,7 +41,6 @@ import type {
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import { FieldContext } from './evmmax/fieldContext.js'
 
 const debugGas = debugDefault('evm:gas')
 
@@ -192,6 +192,7 @@ export class Interpreter {
       stateManager: this._stateManager,
       blockchain,
       env,
+      evmmaxState: new FieldContext(new Uint8Array(), 0n),
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
