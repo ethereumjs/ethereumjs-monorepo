@@ -169,7 +169,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   verkle: {
-    eips: [4762, 6800],
+    eips: [2935, 4762, 6800],
   },
   evmmax: {
     eips: [6690],

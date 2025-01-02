@@ -1,7 +1,6 @@
 import { addHexPrefix } from '@ethereumjs/util'
 
 import { callWithStackTrace } from '../helpers.js'
-import { middleware } from '../validation.js'
 
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
@@ -29,40 +28,29 @@ export class Net {
     this._peerPool = service.pool
     this._rpcDebug = rpcDebug
 
-    this.version = middleware(callWithStackTrace(this.version.bind(this), this._rpcDebug), 0, [])
-    this.listening = middleware(
-      callWithStackTrace(this.listening.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
-    this.peerCount = middleware(
-      callWithStackTrace(this.peerCount.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
+    this.version = callWithStackTrace(this.version.bind(this), this._rpcDebug)
+    this.listening = callWithStackTrace(this.listening.bind(this), this._rpcDebug)
+    this.peerCount = callWithStackTrace(this.peerCount.bind(this), this._rpcDebug)
   }
 
   /**
    * Returns the current network id
-   * @param params An empty array
    */
-  version(_params = []) {
+  version() {
     return this._chain.config.chainCommon.chainId().toString()
   }
 
   /**
    * Returns true if client is actively listening for network connections
-   * @param params An empty array
    */
-  listening(_params = []) {
+  listening() {
     return this._client.opened
   }
 
   /**
    * Returns number of peers currently connected to the client
-   * @param params An empty array
    */
-  peerCount(_params = []) {
+  peerCount() {
     return addHexPrefix(this._peerPool.peers.length.toString(16))
   }
 }
