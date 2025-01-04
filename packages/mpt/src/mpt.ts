@@ -70,6 +70,7 @@ export class MerklePatriciaTrie {
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Uint8Array
+  protected _nodesOps: BatchDBOp[] = []
 
   /** Debug logging */
   protected DEBUG: boolean
@@ -119,6 +120,7 @@ export class MerklePatriciaTrie {
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
+    this._nodesOps = []
 
     if (opts?.root) {
       this.root(opts.root)
@@ -166,6 +168,44 @@ export class MerklePatriciaTrie {
   }
 
   /**
+   * Gets the array of ops with nodes in trie
+   */
+  nodesOps(): BatchDBOp[] {
+    return this._nodesOps
+  }
+
+   /**
+   * From array of ops with nodes (put,del) filter keys which has <=0 references so these keys can be pruned.
+   * @param ops - array of ops with nodes (put, del)
+   * @returns An array of keys that can be deleted from trie via delPrevStatesData() method
+   */
+  getKeysToPrune(ops: BatchDBOp[]): string[] {
+
+    let counters: Record<string, number> = {}; // object for counters
+
+    for (let operation of ops) {
+      
+      const { type, key } = operation;
+
+      if (!counters[key]) {
+        counters[key] = 0;
+      }
+
+      if (type === 'put') {
+        counters[key] += 1;
+      }  else if (type === 'del') {
+        counters[key] -= 1;
+      }
+    }
+
+    // Filter keys with counter <= 0
+    let opsWithKeysToDelete = Object.keys(counters).filter(key => counters[key] <= 0);
+    
+    return opsWithKeysToDelete
+
+  }
+
+  /**
    * Checks if a given root exists.
    */
   async checkRoot(root: Uint8Array): Promise<boolean> {
@@ -203,14 +243,14 @@ export class MerklePatriciaTrie {
    * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @param key
    * @param value
-   * @returns A Promise that resolves once value is stored.
+   * @returns A Promise with batch ops useful for future pruning.
    */
   async put(
     key: Uint8Array,
     value: Uint8Array | null,
     skipKeyTransform: boolean = false,
     trackPruningOps: boolean = false,
-  ): Promise<BatchDBOp[]> {
+  ): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['put'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['put'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
@@ -219,10 +259,11 @@ export class MerklePatriciaTrie {
 
     // If value is empty, delete
     if (value === null || value.length === 0) {
-      await this.del(key)
+      return this.del(key)
     }
 
     let ops: BatchDBOp[] = []
+
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
@@ -264,9 +305,10 @@ export class MerklePatriciaTrie {
         await this._db.batch(ops)
       }
     }
+    // Store the ops to general array for tracking
+    this._nodesOps.push(...ops)
     await this.persistRoot()
     this._lock.release()
-    return ops
   }
 
   /**
@@ -275,7 +317,7 @@ export class MerklePatriciaTrie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Uint8Array, skipKeyTransform: boolean = false, trackPruningOps: boolean = false): Promise<BatchDBOp[]> {
+  async del(key: Uint8Array, skipKeyTransform: boolean = false, trackPruningOps: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
@@ -309,9 +351,10 @@ export class MerklePatriciaTrie {
       // Only after deleting the node it is possible to delete the keyHashes
       await this._db.batch(ops)
     }
+    // Store the ops to general array for tracking
+    this._nodesOps.push(...ops)
     await this.persistRoot()
     this._lock.release()
-    return ops
   }
 
   /**
@@ -823,7 +866,8 @@ export class MerklePatriciaTrie {
     if (lastRoot !== undefined) {
       this.root(lastRoot)
     }
-
+    // Store the ops to general array for tracking
+    this._nodesOps.push(...opStack)
     await this._db.batch(opStack)
     await this.persistRoot()
   }
