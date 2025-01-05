@@ -58,4 +58,10 @@ export const paramsTx: ParamsDict = {
     perAuthBaseGas: 12500, // Gas cost of each authority item, provided the authority exists in the trie
     perEmptyAccountCost: 25000, // Gas cost of each authority item, in case the authority does not exist in the trie
   },
+  /**
+  .  * Shard Blob Transactions
+  .  */
+  7691: {
+    maxblobGasPerBlock: 1179648, // The max blob gas allowable per block
+  },
 }
