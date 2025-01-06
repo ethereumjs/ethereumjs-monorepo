@@ -191,10 +191,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
         }
 
-        if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
-        }
-
         return gas
       },
     ],
@@ -226,10 +222,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
-
-        if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         if (dataLength !== BIGINT_0) {
@@ -295,10 +287,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
-
-        if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, address, charge2929Gas)
         }
 
         return gas
