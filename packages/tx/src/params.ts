@@ -42,6 +42,8 @@ export const paramsTx: ParamsDict = {
 .  */
   4844: {
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+    blobGasPerBlob: 131072, // The base fee for blob gas per blob
+    maxblobGasPerBlock: 786432, // The max blob gas allowable per block
   },
   /**
    * Increase calldata cost to reduce maximum block size
