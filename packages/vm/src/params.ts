@@ -40,7 +40,7 @@ export const paramsVM: ParamsDict = {
   2935: {
     // config
     historyStorageAddress: '0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC', // The address where the historical blockhashes are stored
-    historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
+    historyServeWindow: 8191, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
   /**
