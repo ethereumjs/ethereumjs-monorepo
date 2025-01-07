@@ -20,7 +20,6 @@ import {
   createAddressFromString,
   createPartialAccount,
   equalsBytes,
-  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -543,13 +542,8 @@ export async function accumulateParentBlockHash(
       if (vm.evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // Add to system verkle access witness so that it doesn't warm up tx accesses
-      vm.evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
-        historyAddress,
-        treeIndex,
-        subIndex,
-      )
+      vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -760,7 +754,7 @@ export async function rewardAccount(
       if (evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.verkleAccessWitness.touchAndChargeProofOfAbsence(address)
+      evm.verkleAccessWitness.readAccountHeader(address)
     }
     account = new Account()
   }
@@ -772,9 +766,8 @@ export async function rewardAccount(
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.verkleAccessWitness.touchTxTargetAndComputeGas(address, {
-      sendsValue: true,
-    })
+    evm.verkleAccessWitness.writeAccountBasicData(address)
+    evm.verkleAccessWitness.readAccountCodeHash(address)
   }
   return account
 }
