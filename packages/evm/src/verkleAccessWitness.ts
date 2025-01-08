@@ -11,6 +11,7 @@ import {
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeIndicesForCodeChunk,
+  getVerkleTreeIndicesForStorageSlot,
   intToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -101,76 +102,41 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
   }
 
-  touchAndChargeProofOfAbsence(address: Address): bigint {
+  readAccountBasicData(address: Address): bigint {
+    return this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
+  }
+
+  writeAccountBasicData(address: Address): bigint {
+    return this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
+  }
+
+  readAccountCodeHash(address: Address): bigint {
+    return this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
+  }
+
+  writeAccountCodeHash(address: Address): bigint {
+    return this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
+  }
+
+  readAccountHeader(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
+    gas += this.readAccountBasicData(address)
+    gas += this.readAccountCodeHash(address)
 
     return gas
   }
 
-  touchAndChargeMessageCall(address: Address): bigint {
+  writeAccountHeader(address: Address): bigint {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
+    gas += this.writeAccountBasicData(address)
+    gas += this.writeAccountCodeHash(address)
 
     return gas
   }
 
-  touchAndChargeValueTransfer(target: Address): bigint {
-    let gas = BIGINT_0
-
-    gas += this.touchAddressOnWriteAndComputeGas(target, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-
-    return gas
-  }
-
-  touchAndChargeContractCreateInit(address: Address): bigint {
-    let gas = BIGINT_0
-
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-
-    return gas
-  }
-
-  touchAndChargeContractCreateCompleted(address: Address): bigint {
-    let gas = BIGINT_0
-
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERKLE_CODE_HASH_LEAF_KEY)
-
-    return gas
-  }
-
-  touchTxOriginAndComputeGas(origin: Address): bigint {
-    let gas = BIGINT_0
-
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERKLE_CODE_HASH_LEAF_KEY)
-
-    return gas
-  }
-
-  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
-    let gas = BIGINT_0
-
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_CODE_HASH_LEAF_KEY)
-
-    if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(target, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-    } else {
-      gas += this.touchAddressOnReadAndComputeGas(target, 0, VERKLE_BASIC_DATA_LEAF_KEY)
-    }
-
-    return gas
-  }
-
-  touchCodeChunksRangeOnReadAndComputeGas(
-    contract: Address,
-    startPc: number,
-    endPc: number,
-  ): bigint {
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
@@ -179,17 +145,23 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     return gas
   }
 
-  touchCodeChunksRangeOnWriteAndComputeGas(
-    contact: Address,
-    startPc: number,
-    endPc: number,
-  ): bigint {
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkNum)
-      gas += this.touchAddressOnWriteAndComputeGas(contact, treeIndex, subIndex)
+      gas += this.touchAddressOnWriteAndComputeGas(contract, treeIndex, subIndex)
     }
     return gas
+  }
+
+  readAccountStorage(address: Address, storageSlot: bigint): bigint {
+    const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageSlot)
+    return this.touchAddressOnReadAndComputeGas(address, treeIndex, subIndex)
+  }
+
+  writeAccountStorage(address: Address, storageSlot: bigint): bigint {
+    const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageSlot)
+    return this.touchAddressOnWriteAndComputeGas(address, treeIndex, subIndex)
   }
 
   touchAddressOnWriteAndComputeGas(

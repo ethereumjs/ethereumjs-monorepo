@@ -12,8 +12,6 @@ import {
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
-  VERKLE_BASIC_DATA_LEAF_KEY,
-  VERKLE_CODE_HASH_LEAF_KEY,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -668,20 +666,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      vm.evm.verkleAccessWitness.touchAndChargeProofOfAbsence(miner)
+      vm.evm.verkleAccessWitness.readAccountHeader(miner)
     }
     minerAccount = new Account()
     // Add the miner account to the system verkle access witness
-    vm.evm.systemVerkleAccessWitness?.touchAddressOnWriteAndComputeGas(
-      miner,
-      0,
-      VERKLE_BASIC_DATA_LEAF_KEY,
-    )
-    vm.evm.systemVerkleAccessWitness?.touchAddressOnWriteAndComputeGas(
-      miner,
-      0,
-      VERKLE_CODE_HASH_LEAF_KEY,
-    )
+    vm.evm.systemVerkleAccessWitness?.writeAccountHeader(miner)
   }
   // add the amount spent on gas to the miner's account
   results.minerValue = vm.common.isActivatedEIP(1559)
@@ -701,9 +690,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    vm.evm.verkleAccessWitness.touchTxTargetAndComputeGas(miner, {
-      sendsValue: true,
-    })
+    vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
+    vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that

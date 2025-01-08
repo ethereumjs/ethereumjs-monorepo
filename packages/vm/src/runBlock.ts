@@ -13,8 +13,6 @@ import {
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
-  VERKLE_BASIC_DATA_LEAF_KEY,
-  VERKLE_CODE_HASH_LEAF_KEY,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
@@ -22,7 +20,6 @@ import {
   createAddressFromString,
   createPartialAccount,
   equalsBytes,
-  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -547,13 +544,8 @@ export async function accumulateParentBlockHash(
       if (vm.evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // Add to system verkle access witness so that it doesn't warm up tx accesses
-      vm.evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
-        historyAddress,
-        treeIndex,
-        subIndex,
-      )
+      vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -764,16 +756,7 @@ export async function rewardAccount(
       if (evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
-        address,
-        0,
-        VERKLE_BASIC_DATA_LEAF_KEY,
-      )
-      evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
-        address,
-        0,
-        VERKLE_CODE_HASH_LEAF_KEY,
-      )
+      evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
     account = new Account()
   }
@@ -785,9 +768,8 @@ export async function rewardAccount(
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.systemVerkleAccessWitness.touchTxTargetAndComputeGas(address, {
-      sendsValue: true,
-    })
+    evm.systemVerkleAccessWitness.writeAccountBasicData(address)
+    evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
   return account
 }
