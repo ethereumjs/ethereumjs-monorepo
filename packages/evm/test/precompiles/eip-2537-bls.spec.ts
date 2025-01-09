@@ -20,11 +20,15 @@ const precompileMap: { [key: string]: string } = {
   'fail-add_G2_bls.json': '000000000000000000000000000000000000000d',
   'fail-map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000011',
   'fail-map_fp_to_G1_bls.json': '0000000000000000000000000000000000000010',
+  'fail-mul_G1_bls.json': '000000000000000000000000000000000000000c',
+  'fail-mul_G2_bls.json': '000000000000000000000000000000000000000e',
   'fail-multiexp_G1_bls.json': '000000000000000000000000000000000000000c',
   'fail-multiexp_G2_bls.json': '000000000000000000000000000000000000000e',
   'fail-pairing_check_bls.json': '000000000000000000000000000000000000000f',
   'map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000011',
   'map_fp_to_G1_bls.json': '0000000000000000000000000000000000000010',
+  'mul_G1_bls.json': '000000000000000000000000000000000000000c',
+  'mul_G2_bls.json': '000000000000000000000000000000000000000e',
   'multiexp_G1_bls.json': '000000000000000000000000000000000000000c',
   'multiexp_G2_bls.json': '000000000000000000000000000000000000000e',
   'pairing_check_bls.json': '000000000000000000000000000000000000000f',
@@ -78,8 +82,8 @@ for (const bls of [undefined, mclbls]) {
                 'return value should match testVectorResult',
               )
               assert.equal(result.executionGasUsed, BigInt(data.Gas))
-            } catch (e) {
-              assert.fail('The precompile should not throw')
+            } catch (e: any) {
+              assert.fail(e.message)
             }
           }
         })
