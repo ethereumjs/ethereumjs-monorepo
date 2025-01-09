@@ -628,15 +628,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${intrinsicGas} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
-  if (vm.common.isActivatedEIP(7623)) {
-    if (results.totalGasSpent < floorCost) {
-      results.totalGasSpent = floorCost
-      if (vm.DEBUG) {
-        debugGas(`tx apply floorCost ${floorCost} to totalGasSpent (-> ${results.totalGasSpent})`)
-      }
-    }
-  }
-
   // Add blob gas used to result
   if (isBlob4844Tx(tx)) {
     results.blobGasUsed = totalblobGas
@@ -644,7 +635,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Process any gas refund
   gasRefund += results.execResult.gasRefund ?? BIGINT_0
-  results.gasRefund = gasRefund
+  results.gasRefund = gasRefund // TODO: this field could now be incorrect with the introduction of 7623
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
@@ -656,6 +647,16 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     if (vm.DEBUG) {
       debug(`No tx gasRefund`)
+    }
+  }
+
+  if (vm.common.isActivatedEIP(7623)) {
+    if (results.totalGasSpent < floorCost) {
+      // TODO: likely set `results.gasRefund = BIGINT_0`
+      results.totalGasSpent = floorCost
+      if (vm.DEBUG) {
+        debugGas(`tx apply floorCost ${floorCost} to totalGasSpent (-> ${results.totalGasSpent})`)
+      }
     }
   }
 
