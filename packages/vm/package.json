@@ -63,6 +63,7 @@
     "@ethereumjs/statemanager": "^3.0.0-alpha.1",
     "@ethereumjs/tx": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^3.0.0",
     "eventemitter3": "^5.0.1"

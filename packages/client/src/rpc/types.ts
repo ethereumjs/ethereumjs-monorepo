@@ -45,3 +45,5 @@ export function toRPCTx(t: TxResult): RPCTx {
   t.to !== null && (rpcTx.to = t.to)
   return rpcTx
 }
+
+export type RPCMethod = (...params: any) => any

@@ -327,6 +327,8 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
       } catch (e: any) {
+        // Revert access witness changes if we revert - per EIP-4762
+        this._runState.env.accessWitness?.revert()
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -375,22 +377,22 @@ export class Interpreter {
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
         gas = await opEntry.gasHandler(this._runState, gas, this.common)
       }
-      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
-        const contract = this._runState.interpreter.getAddress()
-        const statelessGas =
-          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
-            contract,
-            this._runState.programCounter,
-            this._runState.programCounter,
-          )
-        gas += statelessGas
-        debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
-      }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
         await this._runStepHook(gas, this.getGasLeft())
+      }
+
+      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+        const contract = this._runState.interpreter.getAddress()
+        const statelessGas = this._runState.env.accessWitness!.readAccountCodeChunks(
+          contract,
+          this._runState.programCounter,
+          this._runState.programCounter,
+        )
+        gas += statelessGas
+        debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
       }
 
       // Check for invalid opcode
@@ -412,6 +414,7 @@ export class Interpreter {
       } else {
         opFn.apply(null, [this._runState, this.common])
       }
+      this._runState.env.accessWitness?.commit()
     } finally {
       if (this.profilerOpts?.enabled === true) {
         this.performanceLogger.stopTimer(
