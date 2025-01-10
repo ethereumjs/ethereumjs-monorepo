@@ -80,7 +80,7 @@ const setupRepl = async (args) => {
 
   await activateRPCMethods(replServer, allRPCMethods)
 
-  // TODO define more commands similar to geths admin package to allow basic tasks like knowing when the client is fully synced
+  // TODO define more commands similar to geth admin package to allow basic tasks like knowing when the client is fully synced
 }
 
 await setupRepl(getArgs())
