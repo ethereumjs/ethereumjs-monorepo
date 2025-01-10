@@ -1222,7 +1222,7 @@ export async function generateClientConfig(args: ClientOpts): Promise<any> {
   }
   const customGenesisStateRoot = args.verkleGenesisStateRoot
 
-  return { config, customGenesisState, customGenesisStateRoot, metricsServer }
+  return { config, customGenesisState, customGenesisStateRoot, metricsServer, common }
 }
 
 /**
@@ -1234,7 +1234,7 @@ async function run() {
     return helpRPC()
   }
 
-  const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
+  const { config, customGenesisState, customGenesisStateRoot, metricsServer, _ } =
     await generateClientConfig(args)
 
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
