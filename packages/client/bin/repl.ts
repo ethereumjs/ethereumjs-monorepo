@@ -1,21 +1,21 @@
 //@ts-nocheck
-import process from 'process'
-import repl from 'repl'
-import * as yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
-
+import { Chain, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import * as path from 'path'
+import process from 'process'
 import * as promClient from 'prom-client'
 import * as readline from 'readline'
+import repl from 'repl'
 import * as url from 'url'
-import { createCommonFromGethGenesis, Chain } from '@ethereumjs/common'
+import * as yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 //@ts-ignore
-import { createInlineClient } from '../test/sim/simutils.js'
 import { Config, SyncMode } from '../src/config.js'
 import { getLogger } from '../src/logging.js'
+import { createInlineClient } from '../test/sim/simutils.js'
+
 import { startRPCServers } from './startRPC.js'
 
 const networks = Object.keys(Chain).map((network) => network.toLowerCase())
