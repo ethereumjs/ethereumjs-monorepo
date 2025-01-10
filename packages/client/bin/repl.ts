@@ -15,7 +15,7 @@ import { hideBin } from 'yargs/helpers'
 import { getArgs, generateClientConfig } from './cli.js'
 import { Config, SyncMode } from '../src/config.js'
 import { getLogger } from '../src/logging.js'
-import { createInlineClient } from '../test/sim/simutils.js'
+import { createInlineClient } from '../util/simutils.js'
 
 import { startRPCServers } from './startRPC.js'
 
