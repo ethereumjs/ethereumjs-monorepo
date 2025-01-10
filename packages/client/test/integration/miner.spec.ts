@@ -12,7 +12,7 @@ import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { Event } from '../../src/types.js'
 import { parseMultiaddrs } from '../../src/util/parse.js'
-import { createInlineClient } from '../sim/simutils.js'
+import { createInlineClient } from '../../src/util/simutils.js'
 
 import type { EthereumClient } from '../../src/index.js'
 
