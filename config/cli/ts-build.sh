@@ -2,7 +2,6 @@
 set -e
 # Purposefully not using `set -o xtrace`, for friendlier output.
 
-
 # Presentational variables and functions declaration.
 
 BLUE="\033[0;34m"
@@ -12,22 +11,22 @@ RED="\033[0;31m"
 NOCOLOR="\033[0m"
 DIM="\033[2m"
 
+# Formatting functions with safer handling of string arguments
 blue() {
-    printf "${BLUE}$1${NOCOLOR}"
+    printf "${BLUE}%s${NOCOLOR}" "$1"
 }
 green() {
-    printf "${GREEN}$1${NOCOLOR}"
+    printf "${GREEN}%s${NOCOLOR}" "$1"
 }
 yellow() {
-    printf "${YELLOW}$1${NOCOLOR}"
+    printf "${YELLOW}%s${NOCOLOR}" "$1"
 }
 red() {
-    printf "${RED}$1${NOCOLOR}"
+    printf "${RED}%s${NOCOLOR}" "$1"
 }
 dim() {
-    printf "${DIM}$1${NOCOLOR}"
+    printf "${DIM}%s${NOCOLOR}" "$1"
 }
-
 
 # Build function declaration.
 
@@ -39,14 +38,13 @@ build_node() {
     printf "${BLUE}[Node build] Working... "
 
     tsc --build ./tsconfig.prod.cjs.json
-    green "DONE"
+    green "DONE\n"
 
-    echo "\n";
+    echo ""
 }
 
 build_esm() {
-    if [ -f ./tsconfig.prod.esm.json ];
-    then
+    if [ -f ./tsconfig.prod.esm.json ]; then
         blue "[ESM build] "
         echo "Using tsconfig.prod.esm.json"
 
@@ -54,27 +52,26 @@ build_esm() {
         printf "${BLUE}[ESM build] Working... "
 
         tsc --build ./tsconfig.prod.esm.json
-        green "DONE"
+        green "DONE\n"
     else
         echo "Skipping ESM build (no config available)."
     fi
-    echo "\n";
+    echo ""
 }
 
 post_build_fixes() {
-    blue "[Post Build Fixes]"
-    if [ -f ./dist/esm/index.js ];
-    then
+    blue "[Post Build Fixes] "
+    if [ -f ./dist/esm/index.js ]; then
         echo "Adding ./dist/cjs/package.json"
         rm -f ./dist/cjs/package.json
-        cat <<EOT >> ./dist/cjs/package.json
+        cat <<EOT > ./dist/cjs/package.json
 {
     "type": "commonjs"
 }
 EOT
         echo "Adding ./dist/esm/package.json"
         rm -f ./dist/esm/package.json
-        cat <<EOT >> ./dist/esm/package.json
+        cat <<EOT > ./dist/esm/package.json
 {
     "type": "module"
 }
@@ -82,12 +79,11 @@ EOT
     else
         echo "Skipping post build fixes (no ESM setup yet)."
     fi
-    echo "\n";
+    echo ""
 }
 
 build_browser() {
-    if [ -f ./tsconfig.browser.json ];
-    then
+    if [ -f ./tsconfig.browser.json ]; then
         blue "[Browser build] "
         echo "Using tsconfig.browser.json"
         echo "> tsc -p ./tsconfig.browser.json"
@@ -99,7 +95,7 @@ build_browser() {
         RETURN_CODE=$?
 
         if [ $RETURN_CODE -eq 0 ]; then
-            green "DONE"
+            green "DONE\n"
         else
             exit $RETURN_CODE
         fi
@@ -107,14 +103,12 @@ build_browser() {
         dim "Skipping browser build, because no tsconfig.browser.json file is present."
     fi
 
-    echo "\n";
+    echo ""
 }
-
 
 # Begin build process.
 
-if [ "$1" = "browser" ];
-then
+if [ "$1" = "browser" ]; then
     build_browser
 else
     build_node
