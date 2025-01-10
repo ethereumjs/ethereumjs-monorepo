@@ -81,426 +81,433 @@ const networks = Object.keys(Chain).map((network) => network.toLowerCase())
 
 let logger: Logger
 
-const args: ClientOpts = yargs
-  .default(hideBin(process.argv))
-  .parserConfiguration({
-    'dot-notation': false,
-  })
-  .option('network', {
-    describe: 'Network',
-    choices: networks,
-    coerce: (arg: string) => arg.toLowerCase(),
-    default: 'mainnet',
-  })
-  .option('chainId', {
-    describe: 'Chain ID',
-    choices: Object.entries(Chain)
-      .map((n) => parseInt(n[1] as string))
-      .filter((el) => !isNaN(el)),
-    default: undefined,
-    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
-  })
-  .option('networkId', {
-    describe: 'Network ID',
-    deprecated: true,
-    deprecate: 'use --chainId instead',
-    choices: Object.entries(Chain)
-      .map((n) => parseInt(n[1] as string))
-      .filter((el) => !isNaN(el)),
-    default: undefined,
-    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
-  })
-  .option('sync', {
-    describe: 'Blockchain sync mode (light sync experimental)',
-    choices: Object.values(SyncMode),
-    default: Config.SYNCMODE_DEFAULT,
-  })
-  .option('dataDir', {
-    describe: 'Data directory for the blockchain',
-    default: `${homedir()}/Library/Ethereum/ethereumjs`,
-  })
-  .option('customChain', {
-    describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-    implies: 'customGenesisState',
-  })
-  .option('customGenesisState', {
-    describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-    implies: 'customChain',
-  })
-  .option('verkleGenesisStateRoot', {
-    describe: 'State root of the verkle genesis genesis (experimental)',
-    string: true,
-    coerce: (customGenesisStateRoot: PrefixedHexString) => hexToBytes(customGenesisStateRoot),
-  })
-  .option('gethGenesis', {
-    describe: 'Import a geth genesis file for running a custom network',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-  })
-  .option('trustedSetup', {
-    describe: 'A custom trusted setup txt file for initializing the kzg library',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-  })
-  .option('mergeForkIdPostMerge', {
-    describe:
-      'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
-    boolean: true,
-    default: true,
-  })
-  .option('bootnodes', {
-    describe:
-      'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
-    array: true,
-    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
-  })
-  .option('port', {
-    describe: 'RLPx listening port',
-    default: Config.PORT_DEFAULT,
-  })
-  .option('extIP', {
-    describe: 'RLPx external IP',
-    string: true,
-  })
-  .option('multiaddrs', {
-    describe: 'Network multiaddrs',
-    array: true,
-    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
-  })
-  .option('rpc', {
-    describe: 'Enable the JSON-RPC server with HTTP endpoint',
-    boolean: true,
-  })
-  .option('rpcPort', {
-    describe: 'HTTP-RPC server listening port',
-    default: 8545,
-  })
-  .option('rpcAddr', {
-    describe: 'HTTP-RPC server listening interface address',
-    default: 'localhost',
-  })
-  .option('ws', {
-    describe: 'Enable the JSON-RPC server with WS endpoint',
-    boolean: true,
-  })
-  .option('wsPort', {
-    describe: 'WS-RPC server listening port',
-    default: 8546,
-  })
-  .option('wsAddr', {
-    describe: 'WS-RPC server listening address',
-    default: 'localhost',
-  })
-  .option('rpcEngine', {
-    describe: 'Enable the JSON-RPC server for Engine namespace',
-    boolean: true,
-  })
-  .option('rpcEnginePort', {
-    describe: 'HTTP-RPC server listening port for Engine namespace',
-    number: true,
-    default: 8551,
-  })
-  .option('rpcEngineAddr', {
-    describe: 'HTTP-RPC server listening interface address for Engine namespace',
-    string: true,
-    default: 'localhost',
-  })
-  .option('wsEnginePort', {
-    describe: 'WS-RPC server listening port for Engine namespace',
-    number: true,
-    default: 8552,
-  })
-  .option('wsEngineAddr', {
-    describe: 'WS-RPC server listening interface address for Engine namespace',
-    string: true,
-    default: 'localhost',
-  })
-  .option('rpcEngineAuth', {
-    describe: 'Enable jwt authentication for Engine RPC server',
-    boolean: true,
-    default: true,
-  })
-  .option('jwtSecret', {
-    describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
-    coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-  })
-  .option('helpRPC', {
-    describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
-    boolean: true,
-  })
-  .option('logLevel', {
-    describe: 'Logging verbosity',
-    choices: ['error', 'warn', 'info', 'debug'],
-    default: 'info',
-  })
-  .option('logFile', {
-    describe:
-      'File to save log file (default logs to `$dataDir/ethereumjs.log`, pass false to disable)',
-    default: true,
-  })
-  .option('logLevelFile', {
-    describe: 'Log level for logFile',
-    choices: ['error', 'warn', 'info', 'debug'],
-    default: 'debug',
-  })
-  .option('logRotate', {
-    describe: 'Rotate log file daily',
-    boolean: true,
-    default: true,
-  })
-  .option('logMaxFiles', {
-    describe: 'Maximum number of log files when rotating (older will be deleted)',
-    number: true,
-    default: 5,
-  })
-  .option('prometheus', {
-    describe: 'Enable the Prometheus metrics server with HTTP endpoint',
-    boolean: true,
-    default: false,
-  })
-  .option('prometheusPort', {
-    describe: 'Enable the Prometheus metrics server with HTTP endpoint',
-    number: true,
-    default: 8000,
-  })
-  .option('rpcDebug', {
-    describe:
-      'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
-    default: '',
-    string: true,
-  })
-  .option('rpcDebugVerbose', {
-    describe:
-      'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
-    default: '',
-    string: true,
-  })
-  .option('rpcCors', {
-    describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
-    string: true,
-    default: '*',
-  })
-  .option('maxPerRequest', {
-    describe: 'Max items per block or header request',
-    number: true,
-    default: Config.MAXPERREQUEST_DEFAULT,
-  })
-  .option('maxFetcherJobs', {
-    describe: 'Max tasks or jobs to be created for a fetcher at a time',
-    number: true,
-    default: Config.MAXFETCHERJOBS_DEFAULT,
-  })
-  .option('minPeers', {
-    describe: 'Peers needed before syncing',
-    number: true,
-    default: Config.MINPEERS_DEFAULT,
-  })
-  .option('maxPeers', {
-    describe: 'Maximum peers to sync with',
-    number: true,
-    default: Config.MAXPEERS_DEFAULT,
-  })
-  .option('dnsAddr', {
-    describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
-    string: true,
-    default: Config.DNSADDR_DEFAULT,
-  })
-  .option('dnsNetworks', {
-    describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
-    array: true,
-    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
-  })
-  .option('execution', {
-    describe: 'Start continuous VM execution (pre-Merge setting)',
-    boolean: true,
-    default: Config.EXECUTION,
-  })
-  .option('numBlocksPerIteration', {
-    describe: 'Number of blocks to execute in batch mode and logged to console',
-    number: true,
-    default: Config.NUM_BLOCKS_PER_ITERATION,
-  })
-  .option('executeBlocks', {
-    describe:
-      'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
-    string: true,
-  })
-  .option('accountCache', {
-    describe: 'Size for the account cache (max number of accounts)',
-    number: true,
-    default: Config.ACCOUNT_CACHE,
-  })
-  .option('storageCache', {
-    describe: 'Size for the storage cache (max number of contracts)',
-    number: true,
-    default: Config.STORAGE_CACHE,
-  })
-  .option('codeCache', {
-    describe: 'Size for the code cache (max number of contracts)',
-    number: true,
-    default: Config.CODE_CACHE,
-  })
-  .option('trieCache', {
-    describe: 'Size for the trie cache (max number of trie nodes)',
-    number: true,
-    default: Config.TRIE_CACHE,
-  })
-  .option('debugCode', {
-    describe: 'Generate code for local debugging (internal usage mostly)',
-    boolean: true,
-    default: Config.DEBUGCODE_DEFAULT,
-  })
-  .option('discDns', {
-    describe: 'Query EIP-1459 DNS TXT records for peer discovery',
-    boolean: true,
-  })
-  .option('discV4', {
-    describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
-    boolean: true,
-  })
-  .option('mine', {
-    describe: 'Enable private custom network mining (beta)',
-    boolean: true,
-  })
-  .option('unlock', {
-    describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
+export function getArgs(): ClientOpts {
+  return (
+    yargs
+      .default(hideBin(process.argv))
+      .parserConfiguration({
+        'dot-notation': false,
+      })
+      .option('network', {
+        describe: 'Network',
+        choices: networks,
+        coerce: (arg: string) => arg.toLowerCase(),
+        default: 'mainnet',
+      })
+      .option('chainId', {
+        describe: 'Chain ID',
+        choices: Object.entries(Chain)
+          .map((n) => parseInt(n[1] as string))
+          .filter((el) => !isNaN(el)),
+        default: undefined,
+        conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
+      })
+      .option('networkId', {
+        describe: 'Network ID',
+        deprecated: true,
+        deprecate: 'use --chainId instead',
+        choices: Object.entries(Chain)
+          .map((n) => parseInt(n[1] as string))
+          .filter((el) => !isNaN(el)),
+        default: undefined,
+        conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
+      })
+      .option('sync', {
+        describe: 'Blockchain sync mode (light sync experimental)',
+        choices: Object.values(SyncMode),
+        default: Config.SYNCMODE_DEFAULT,
+      })
+      .option('dataDir', {
+        describe: 'Data directory for the blockchain',
+        default: `${homedir()}/Library/Ethereum/ethereumjs`,
+      })
+      .option('customChain', {
+        describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
+        coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+        implies: 'customGenesisState',
+      })
+      .option('customGenesisState', {
+        describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
+        coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+        implies: 'customChain',
+      })
+      .option('verkleGenesisStateRoot', {
+        describe: 'State root of the verkle genesis genesis (experimental)',
+        string: true,
+        coerce: (customGenesisStateRoot: PrefixedHexString) => hexToBytes(customGenesisStateRoot),
+      })
+      .option('gethGenesis', {
+        describe: 'Import a geth genesis file for running a custom network',
+        coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+      })
+      .option('trustedSetup', {
+        describe: 'A custom trusted setup txt file for initializing the kzg library',
+        coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+      })
+      .option('mergeForkIdPostMerge', {
+        describe:
+          'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
+        boolean: true,
+        default: true,
+      })
+      .option('bootnodes', {
+        describe:
+          'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
+        array: true,
+        coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
+      })
+      .option('port', {
+        describe: 'RLPx listening port',
+        default: Config.PORT_DEFAULT,
+      })
+      .option('extIP', {
+        describe: 'RLPx external IP',
+        string: true,
+      })
+      .option('multiaddrs', {
+        describe: 'Network multiaddrs',
+        array: true,
+        coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
+      })
+      .option('rpc', {
+        describe: 'Enable the JSON-RPC server with HTTP endpoint',
+        boolean: true,
+      })
+      .option('rpcPort', {
+        describe: 'HTTP-RPC server listening port',
+        default: 8545,
+      })
+      .option('rpcAddr', {
+        describe: 'HTTP-RPC server listening interface address',
+        default: 'localhost',
+      })
+      .option('ws', {
+        describe: 'Enable the JSON-RPC server with WS endpoint',
+        boolean: true,
+      })
+      .option('wsPort', {
+        describe: 'WS-RPC server listening port',
+        default: 8546,
+      })
+      .option('wsAddr', {
+        describe: 'WS-RPC server listening address',
+        default: 'localhost',
+      })
+      .option('rpcEngine', {
+        describe: 'Enable the JSON-RPC server for Engine namespace',
+        boolean: true,
+      })
+      .option('rpcEnginePort', {
+        describe: 'HTTP-RPC server listening port for Engine namespace',
+        number: true,
+        default: 8551,
+      })
+      .option('rpcEngineAddr', {
+        describe: 'HTTP-RPC server listening interface address for Engine namespace',
+        string: true,
+        default: 'localhost',
+      })
+      .option('wsEnginePort', {
+        describe: 'WS-RPC server listening port for Engine namespace',
+        number: true,
+        default: 8552,
+      })
+      .option('wsEngineAddr', {
+        describe: 'WS-RPC server listening interface address for Engine namespace',
+        string: true,
+        default: 'localhost',
+      })
+      .option('rpcEngineAuth', {
+        describe: 'Enable jwt authentication for Engine RPC server',
+        boolean: true,
+        default: true,
+      })
+      .option('jwtSecret', {
+        describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
+        coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+      })
+      .option('helpRPC', {
+        describe: 'Display the JSON RPC help with a list of all RPC methods implemented (and exit)',
+        boolean: true,
+      })
+      .option('logLevel', {
+        describe: 'Logging verbosity',
+        choices: ['error', 'warn', 'info', 'debug'],
+        default: 'info',
+      })
+      .option('logFile', {
+        describe:
+          'File to save log file (default logs to `$dataDir/ethereumjs.log`, pass false to disable)',
+        default: true,
+      })
+      .option('logLevelFile', {
+        describe: 'Log level for logFile',
+        choices: ['error', 'warn', 'info', 'debug'],
+        default: 'debug',
+      })
+      .option('logRotate', {
+        describe: 'Rotate log file daily',
+        boolean: true,
+        default: true,
+      })
+      .option('logMaxFiles', {
+        describe: 'Maximum number of log files when rotating (older will be deleted)',
+        number: true,
+        default: 5,
+      })
+      .option('prometheus', {
+        describe: 'Enable the Prometheus metrics server with HTTP endpoint',
+        boolean: true,
+        default: false,
+      })
+      .option('prometheusPort', {
+        describe: 'Enable the Prometheus metrics server with HTTP endpoint',
+        number: true,
+        default: 8000,
+      })
+      .option('rpcDebug', {
+        describe:
+          'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
+        default: '',
+        string: true,
+      })
+      .option('rpcDebugVerbose', {
+        describe:
+          'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
+        default: '',
+        string: true,
+      })
+      .option('rpcCors', {
+        describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
+        string: true,
+        default: '*',
+      })
+      .option('maxPerRequest', {
+        describe: 'Max items per block or header request',
+        number: true,
+        default: Config.MAXPERREQUEST_DEFAULT,
+      })
+      .option('maxFetcherJobs', {
+        describe: 'Max tasks or jobs to be created for a fetcher at a time',
+        number: true,
+        default: Config.MAXFETCHERJOBS_DEFAULT,
+      })
+      .option('minPeers', {
+        describe: 'Peers needed before syncing',
+        number: true,
+        default: Config.MINPEERS_DEFAULT,
+      })
+      .option('maxPeers', {
+        describe: 'Maximum peers to sync with',
+        number: true,
+        default: Config.MAXPEERS_DEFAULT,
+      })
+      .option('dnsAddr', {
+        describe: 'IPv4 address of DNS server to use when acquiring peer discovery targets',
+        string: true,
+        default: Config.DNSADDR_DEFAULT,
+      })
+      .option('dnsNetworks', {
+        describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
+        array: true,
+        coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
+      })
+      .option('execution', {
+        describe: 'Start continuous VM execution (pre-Merge setting)',
+        boolean: true,
+        default: Config.EXECUTION,
+      })
+      .option('numBlocksPerIteration', {
+        describe: 'Number of blocks to execute in batch mode and logged to console',
+        number: true,
+        default: Config.NUM_BLOCKS_PER_ITERATION,
+      })
+      .option('executeBlocks', {
+        describe:
+          'Debug mode for reexecuting existing blocks (no services will be started), allowed input formats: 5,5-10',
+        string: true,
+      })
+      .option('accountCache', {
+        describe: 'Size for the account cache (max number of accounts)',
+        number: true,
+        default: Config.ACCOUNT_CACHE,
+      })
+      .option('storageCache', {
+        describe: 'Size for the storage cache (max number of contracts)',
+        number: true,
+        default: Config.STORAGE_CACHE,
+      })
+      .option('codeCache', {
+        describe: 'Size for the code cache (max number of contracts)',
+        number: true,
+        default: Config.CODE_CACHE,
+      })
+      .option('trieCache', {
+        describe: 'Size for the trie cache (max number of trie nodes)',
+        number: true,
+        default: Config.TRIE_CACHE,
+      })
+      .option('debugCode', {
+        describe: 'Generate code for local debugging (internal usage mostly)',
+        boolean: true,
+        default: Config.DEBUGCODE_DEFAULT,
+      })
+      .option('discDns', {
+        describe: 'Query EIP-1459 DNS TXT records for peer discovery',
+        boolean: true,
+      })
+      .option('discV4', {
+        describe: 'Use v4 ("findneighbour" node requests) for peer discovery',
+        boolean: true,
+      })
+      .option('mine', {
+        describe: 'Enable private custom network mining (beta)',
+        boolean: true,
+      })
+      .option('unlock', {
+        describe: `Path to file where private key (without 0x) is stored or comma separated list of accounts to unlock -
       currently only the first account is used (for sealing PoA blocks and as the default coinbase).
       You will be prompted for a 0x-prefixed private key if you pass a list of accounts
       FOR YOUR SAFETY PLEASE DO NOT USE ANY ACCOUNTS HOLDING SUBSTANTIAL AMOUNTS OF ETH`,
-    string: true,
-  })
-  .option('dev', {
-    describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-    choices: ['false', 'true', 'poa', 'pow'],
-  })
-  .option('minerCoinbase', {
-    describe:
-      'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
-    string: true,
-    coerce: (coinbase) => createAddressFromString(coinbase),
-  })
-  .option('saveReceipts', {
-    describe:
-      'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
-    boolean: true,
-    default: true,
-  })
-  .option('snap', {
-    describe: 'Enable snap state sync (for testing and development purposes)',
-    boolean: true,
-  })
-  .option('prefixStorageTrieKeys', {
-    describe:
-      'Enable/Disable storage trie prefixes (specify `false` for backward compatibility with previous states synced without prefixes)',
-    boolean: true,
-    default: true,
-    deprecated:
-      'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
-  })
-  .options('useStringValueTrieDB', {
-    describe:
-      'Use string values in the trie DB. This is old behavior, new behavior uses Uint8Arrays in the DB (more performant)',
-    boolean: true,
-    default: false,
-    deprecated:
-      'Usage of old DBs which uses string-values is temporary. Please sync new instances without this option.',
-  })
-  .option('txLookupLimit', {
-    describe:
-      'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
-    number: true,
-    default: 2350000,
-  })
-  .option('startBlock', {
-    describe:
-      'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
-    number: true,
-  })
-  .option('startExecutionFrom', {
-    describe:
-      'Block number to start/restart execution from. For merkle based state, parent state should be present in the the db while in verkle stateless mode the chain should be synced till the block and witnesses available this block onwards',
-    number: true,
-  })
-  .option('startExecution', {
-    describe:
-      'Start execution of unexecuted blocks without waiting for the CL fcU, set to `true` if `startExecutionFrom` provided',
-    boolean: true,
-  })
-  .option('isSingleNode', {
-    describe:
-      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
-    boolean: true,
-  })
-  .option('vmProfileBlocks', {
-    describe: 'Report the VM profile after running each block',
-    boolean: true,
-    default: false,
-  })
-  .option('vmProfileTxs', {
-    describe: 'Report the VM profile after running each tx',
-    boolean: true,
-    default: false,
-  })
-  .option('loadBlocksFromRlp', {
-    describe: 'path to a file of RLP encoded blocks',
-    string: true,
-    array: true,
-  })
-  .option('pruneEngineCache', {
-    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
-    boolean: true,
-    default: true,
-  })
-  .option('statelessVerkle', {
-    describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
-    boolean: true,
-    default: false,
-  })
-  .option('statefulVerkle', {
-    describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
-    boolean: true,
-    default: false,
-  })
-  .option('engineNewpayloadMaxExecute', {
-    describe:
-      'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
-    number: true,
-  })
-  .option('skipEngineExec', {
-    describe:
-      'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
-    boolean: true,
-  })
-  .option('ignoreStatelessInvalidExecs', {
-    describe:
-      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
-    boolean: true,
-    hidden: true,
-  })
-  .option('useJsCrypto', {
-    describe: 'Use pure Javascript cryptography functions',
-    boolean: true,
-    default: false,
-  })
-  .completion()
-  // strict() ensures that yargs throws when an invalid arg is provided
-  .strict()
-  .check((argv, _options) => {
-    const usedPorts = new Set()
-    let collision = false
-    if (argv.ws === true) {
-      usedPorts.add(argv.wsPort)
-      if (!usedPorts.has(argv.wsEnginePort)) {
-        usedPorts.add(argv.wsEnginePort)
-      }
-    }
-    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
-    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+        string: true,
+      })
+      .option('dev', {
+        describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
+        choices: ['false', 'true', 'poa', 'pow'],
+      })
+      .option('minerCoinbase', {
+        describe:
+          'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
+        string: true,
+        coerce: (coinbase) => createAddressFromString(coinbase),
+      })
+      .option('saveReceipts', {
+        describe:
+          'Save tx receipts and logs in the meta db (warning: may use a large amount of storage). With `--rpc` allows querying via eth_getLogs (max 10000 logs per request) and eth_getTransactionReceipt (within `--txLookupLimit`)',
+        boolean: true,
+        default: true,
+      })
+      .option('snap', {
+        describe: 'Enable snap state sync (for testing and development purposes)',
+        boolean: true,
+      })
+      .option('prefixStorageTrieKeys', {
+        describe:
+          'Enable/Disable storage trie prefixes (specify `false` for backward compatibility with previous states synced without prefixes)',
+        boolean: true,
+        default: true,
+        deprecated:
+          'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
+      })
+      .options('useStringValueTrieDB', {
+        describe:
+          'Use string values in the trie DB. This is old behavior, new behavior uses Uint8Arrays in the DB (more performant)',
+        boolean: true,
+        default: false,
+        deprecated:
+          'Usage of old DBs which uses string-values is temporary. Please sync new instances without this option.',
+      })
+      .option('txLookupLimit', {
+        describe:
+          'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
+        number: true,
+        default: 2350000,
+      })
+      .option('startBlock', {
+        describe:
+          'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
+        number: true,
+      })
+      .option('startExecutionFrom', {
+        describe:
+          'Block number to start/restart execution from. For merkle based state, parent state should be present in the the db while in verkle stateless mode the chain should be synced till the block and witnesses available this block onwards',
+        number: true,
+      })
+      .option('startExecution', {
+        describe:
+          'Start execution of unexecuted blocks without waiting for the CL fcU, set to `true` if `startExecutionFrom` provided',
+        boolean: true,
+      })
+      .option('isSingleNode', {
+        describe:
+          'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
+        boolean: true,
+      })
+      .option('vmProfileBlocks', {
+        describe: 'Report the VM profile after running each block',
+        boolean: true,
+        default: false,
+      })
+      .option('vmProfileTxs', {
+        describe: 'Report the VM profile after running each tx',
+        boolean: true,
+        default: false,
+      })
+      .option('loadBlocksFromRlp', {
+        describe: 'path to a file of RLP encoded blocks',
+        string: true,
+        array: true,
+      })
+      .option('pruneEngineCache', {
+        describe:
+          'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+        boolean: true,
+        default: true,
+      })
+      .option('statelessVerkle', {
+        describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
+        boolean: true,
+        default: false,
+      })
+      .option('statefulVerkle', {
+        describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
+        boolean: true,
+        default: false,
+      })
+      .option('engineNewpayloadMaxExecute', {
+        describe:
+          'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
+        number: true,
+      })
+      .option('skipEngineExec', {
+        describe:
+          'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
+        boolean: true,
+      })
+      .option('ignoreStatelessInvalidExecs', {
+        describe:
+          'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
+        boolean: true,
+        hidden: true,
+      })
+      .option('useJsCrypto', {
+        describe: 'Use pure Javascript cryptography functions',
+        boolean: true,
+        default: false,
+      })
+      .completion()
+      // strict() ensures that yargs throws when an invalid arg is provided
+      .strict()
+      .check((argv, _options) => {
+        const usedPorts = new Set()
+        let collision = false
+        if (argv.ws === true) {
+          usedPorts.add(argv.wsPort)
+          if (!usedPorts.has(argv.wsEnginePort)) {
+            usedPorts.add(argv.wsEnginePort)
+          }
+        }
+        if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+        if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
-    if (collision) throw new Error('cannot reuse ports between RPC instances')
-    return true
-  })
-  .parseSync()
+        if (collision) throw new Error('cannot reuse ports between RPC instances')
+        return true
+      })
+      .parseSync()
+  )
+}
+
+const args: ClientOpts = getArgs()
 
 /**
  * Initializes and returns the databases needed for the client
@@ -941,15 +948,7 @@ const stopClient = async (
   process.exit()
 }
 
-/**
- * Main entry point to start a client
- */
-async function run() {
-  if (args.helpRPC === true) {
-    // Output RPC help and exit
-    return helpRPC()
-  }
-
+export async function generateClientConfig(args: ClientOpts): Promise<any> {
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
@@ -1222,6 +1221,21 @@ async function run() {
     config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
   const customGenesisStateRoot = args.verkleGenesisStateRoot
+
+  return { config, customGenesisState, customGenesisStateRoot, metricsServer }
+}
+
+/**
+ * Main entry point to start a client
+ */
+async function run() {
+  if (args.helpRPC === true) {
+    // Output RPC help and exit
+    return helpRPC()
+  }
+
+  const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
+    await generateClientConfig(args)
 
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
   // else a SIGINT before may kill the process in unclean manner
