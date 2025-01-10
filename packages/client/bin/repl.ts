@@ -40,12 +40,12 @@ const setupClient = async (config, common) => {
     rpcEngineAuth: args.rpcEngineAuth,
     rpcCors: args.rpcCors,
   })
-  return { client, executionRpc: servers[0], engineRpc: servers[1] }
+  return { client, executionRPC: servers[0], engineRPC: servers[1] }
 }
 
-const activateRpcMethods = async (replServer, allRpcMethods) => {
-  function defineRpcAction(context, methodName: string, params: string) {
-    allRpcMethods[methodName]
+const activateRPCMethods = async (replServer, allRPCMethods) => {
+  function defineRPCAction(context, methodName: string, params: string) {
+    allRPCMethods[methodName]
       .handler(params === '' ? '[]' : JSON.parse(params)) // TODO why does parse crash repl when error is caught?
       .then((result) => console.log(result))
       .catch((err) => console.error(err))
@@ -53,11 +53,11 @@ const activateRpcMethods = async (replServer, allRpcMethods) => {
   }
 
   // activate all rpc methods (execution and engine) as repl commands
-  for (const methodName of Object.keys(allRpcMethods)) {
+  for (const methodName of Object.keys(allRPCMethods)) {
     replServer.defineCommand(methodName, {
       help: `Execute ${methodName}. Example usage: .${methodName} [params].`, // TODO see if there is a better way to format or self document, here
       action(params) {
-        defineRpcAction(this, methodName, params)
+        defineRPCAction(this, methodName, params)
       },
     })
   }
@@ -66,8 +66,8 @@ const activateRpcMethods = async (replServer, allRpcMethods) => {
 const setupRepl = async (args) => {
   const { config, customGenesisState, customGenesisStateRoot, metricsServer, common } =
     await generateClientConfig(args)
-  const { client, executionRpc, engineRpc } = await setupClient(config, common)
-  const allRpcMethods = { ...executionRpc._methods, ...engineRpc._methods }
+  const { client, executionRPC, engineRPC } = await setupClient(config, common)
+  const allRPCMethods = { ...executionRPC._methods, ...engineRPC._methods }
 
   const replServer = repl.start({
     prompt: 'EthJS > ',
@@ -78,10 +78,9 @@ const setupRepl = async (args) => {
     process.exit()
   })
 
-  await activateRpcMethods(replServer, allRpcMethods)
+  await activateRPCMethods(replServer, allRPCMethods)
 
   // TODO define more commands similar to geths admin package to allow basic tasks like knowing when the client is fully synced
 }
 
-const args = getArgs()
-await setupRepl(args)
+await setupRepl(getArgs())
