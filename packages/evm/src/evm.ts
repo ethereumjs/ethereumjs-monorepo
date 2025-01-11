@@ -467,7 +467,9 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const contractCreateAccessGas = message.accessWitness!.writeAccountBasicData(message.to)
+      const contractCreateAccessGas =
+        message.accessWitness!.writeAccountBasicData(message.to) +
+        message.accessWitness!.readAccountCodeHash(message.to)
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
