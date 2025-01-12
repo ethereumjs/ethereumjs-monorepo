@@ -669,6 +669,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       vm.evm.verkleAccessWitness.readAccountHeader(miner)
     }
     minerAccount = new Account()
+    // Add the miner account to the system verkle access witness
+    vm.evm.systemVerkleAccessWitness?.writeAccountHeader(miner)
   }
   // add the amount spent on gas to the miner's account
   results.minerValue = vm.common.isActivatedEIP(1559)
@@ -676,7 +678,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     : results.amountSpent
   minerAccount.balance += results.minerValue
 
-  if (vm.common.isActivatedEIP(6800)) {
+  // If the miner value is zero, revert the access witness as the proof of absence was not necessary.
+  if (results.minerValue === BIGINT_0) {
+    vm.evm.verkleAccessWitness?.revert()
+  } else {
+    vm.evm.verkleAccessWitness?.commit()
+  }
+
+  if (vm.common.isActivatedEIP(6800) && results.minerValue !== BIGINT_0) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
