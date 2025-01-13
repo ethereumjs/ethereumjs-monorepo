@@ -172,7 +172,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 2537,
     },
     precompile: precompile0d,
-    name: 'BLS12_G1ADD (0x0d)',
+    name: 'BLS12_G2ADD (0x0d)',
   },
   {
     address: BYTES_19 + '0e',

@@ -61,7 +61,6 @@ export interface AsyncOpHandler {
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
-// TODO: verify that this is the correct designator
 // The PR https://github.com/ethereum/EIPs/pull/8969 has two definitions of the
 // designator: the original (0xef0100) and the designator added in the changes (0xef01)
 const eip7702Designator = hexToBytes('0xef01')
