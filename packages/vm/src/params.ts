@@ -8,7 +8,7 @@ export const paramsVM: ParamsDict = {
     // gasConfig
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     blobGasPerBlob: 0,
-    maxblobGasPerBlock: 0,
+    maxBlobGasPerBlock: 0,
     // pow
     minerReward: '5000000000000000000', // the amount a miner get rewarded for mining a block
   },
@@ -55,7 +55,7 @@ export const paramsVM: ParamsDict = {
 .  */
   4844: {
     blobGasPerBlob: 131072, // The base fee for blob gas per blob
-    maxblobGasPerBlock: 786432, // The max blob gas allowable per block
+    maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
   },
   /**
 .  * Beacon block root in the EVM
@@ -94,6 +94,6 @@ export const paramsVM: ParamsDict = {
 .  * Shard Blob Transactions
 .  */
   7691: {
-    maxblobGasPerBlock: 1179648, // The max blob gas allowable per block
+    maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
   },
 }

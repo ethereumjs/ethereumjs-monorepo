@@ -172,7 +172,8 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
       }
     }
 
-    const limitBlobsPerTx = this.common.param('maxblobGasPerBlock') / this.common.param('blobGasPerBlob')
+    const limitBlobsPerTx =
+      this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
     if (this.blobVersionedHashes.length > limitBlobsPerTx) {
       const msg = Legacy.errorMsg(this, `tx can contain at most ${limitBlobsPerTx} blobs`)
       throw new Error(msg)
