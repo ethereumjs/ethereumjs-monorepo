@@ -1,4 +1,8 @@
 export type ForkName =
+  | 'Prague'
+  | 'Cancun'
+  | 'Shanghai'
+  | 'Paris'
   | 'London+3860'
   | 'London'
   | 'Berlin'
