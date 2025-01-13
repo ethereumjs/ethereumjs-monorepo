@@ -14,9 +14,9 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { Event } from '../../src/types.js'
+import { createInlineClient } from '../../src/util/simutils.js'
 
 import {
-  createInlineClient,
   filterKeywords,
   filterOutWords,
   runTxHelper,
