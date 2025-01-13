@@ -38,7 +38,7 @@
     "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "preinstall": "npm run binWorkaround",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "repl": "npx tsx ./bin/repl.ts --rpcEngineAuth false",
+    "repl": "npx tsx ./bin/repl.ts",
     "test": "npm run test:unit && npm run test:integration",
     "test:cli": "npx vitest run ./test/cli/*.spec.ts",
     "test:integration": "npx vitest run ./test/integration/*.spec.ts",
