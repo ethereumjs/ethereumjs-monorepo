@@ -166,7 +166,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (
           common.isActivatedEIP(6800) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined
+          runState.interpreter._evm.getPrecompile(address) === undefined &&
+          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
         ) {
           let coldAccessGas = BIGINT_0
           coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
@@ -199,7 +200,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         let charge2929Gas = true
         if (
           common.isActivatedEIP(6800) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined
+          runState.interpreter._evm.getPrecompile(address) === undefined &&
+          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
         ) {
           let coldAccessGas = BIGINT_0
           coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
@@ -266,7 +268,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const address = createAddressFromStackBigInt(runState.stack.peek()[0])
         let charge2929Gas = true
 
-        if (common.isActivatedEIP(6800)) {
+        if (
+          common.isActivatedEIP(6800) &&
+          runState.interpreter._evm.getPrecompile(address) === undefined &&
+          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
+        ) {
           let coldAccessGas = BIGINT_0
           coldAccessGas += runState.env.accessWitness!.readAccountCodeHash(address)
 
@@ -562,7 +568,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           common.isActivatedEIP(6800) &&
           runState.interpreter._evm.getPrecompile(toAddress) === undefined
         ) {
-          // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.readAccountBasicData(toAddress)
           if (value !== BIGINT_0) {
             const contractAddress = runState.interpreter.getAddress()
@@ -705,7 +710,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           common.isActivatedEIP(6800) &&
           runState.interpreter._evm.getPrecompile(toAddress) === undefined
         ) {
-          // TODO: add check if toAddress is not a precompile
           const coldAccessGas = runState.env.accessWitness!.readAccountBasicData(toAddress)
 
           gas += coldAccessGas
@@ -914,9 +918,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, outOffset, outLength, common)
 
         let charge2929Gas = true
-        if (common.isActivatedEIP(6800)) {
-          const toAddress = createAddressFromStackBigInt(toAddr)
-          // TODO: add check if toAddress is not a precompile
+        const toAddress = createAddressFromStackBigInt(toAddr)
+        if (
+          common.isActivatedEIP(6800) &&
+          runState.interpreter._evm.getPrecompile(toAddress) === undefined
+        ) {
           const coldAccessGas = runState.env.accessWitness!.readAccountBasicData(toAddress)
 
           gas += coldAccessGas
