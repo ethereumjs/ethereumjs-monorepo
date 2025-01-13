@@ -323,6 +323,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
+
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
@@ -445,6 +446,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
+
   const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
@@ -750,24 +752,24 @@ export async function rewardAccount(
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
-    if (common.isActivatedEIP(6800) === true) {
-      if (evm.verkleAccessWitness === undefined) {
+    if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+      if (evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.verkleAccessWitness.readAccountHeader(address)
+      evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
     account = new Account()
   }
   account.balance += reward
   await evm.journal.putAccount(address, account)
 
-  if (common.isActivatedEIP(6800) === true) {
-    if (evm.verkleAccessWitness === undefined) {
+  if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+    if (evm.systemVerkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.verkleAccessWitness.writeAccountBasicData(address)
-    evm.verkleAccessWitness.readAccountCodeHash(address)
+    evm.systemVerkleAccessWitness.writeAccountBasicData(address)
+    evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
   return account
 }
