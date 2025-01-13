@@ -1,54 +1,64 @@
-//@ts-nocheck
-import { Chain, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { homedir } from 'os'
-import * as path from 'path'
 import process from 'process'
-import * as promClient from 'prom-client'
-import * as readline from 'readline'
 import repl from 'repl'
-import * as url from 'url'
-import * as yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 
-//@ts-ignore
-import { getArgs, generateClientConfig } from './cli.js'
-import { Config, SyncMode } from '../src/config.js'
-import { getLogger } from '../src/logging.js'
-import { createInlineClient } from '../util/simutils.js'
+import { createInlineClient } from '../src/util/simutils.js'
 
+import { generateClientConfig, getArgs } from './cli.js'
 import { startRPCServers } from './startRPC.js'
 
-const setupClient = async (config, common) => {
-  const client = await createInlineClient(config, common, {}, '', true)
+import type { Config } from '../src/config.js'
+import type { ClientOpts } from '../src/types.js'
+import type { Common } from '@ethereumjs/common'
+import { GenesisState } from '@ethereumjs/util'
+
+const setupClient = async (
+  config: Config,
+  customGenesisState: GenesisState,
+  common: Common,
+  args: ClientOpts,
+) => {
+  const client = await createInlineClient(
+    config,
+    common,
+    customGenesisState,
+    args.dataDir ?? '',
+    true,
+  )
   const servers = startRPCServers(client, {
-    rpc: args.rpc,
-    rpcAddr: args.rpcAddr,
-    rpcPort: args.rpcPort,
-    ws: args.ws,
-    wsPort: args.wsPort,
-    wsAddr: args.wsAddr,
+    rpc: true,
+    rpcAddr: args.rpcAddr ?? '0.0.0.0',
+    rpcPort: args.rpcPort ?? 8545,
     rpcEngine: true,
-    rpcEngineAddr: args.rpcEngineAddr,
-    rpcEnginePort: args.rpcEnginePort,
-    wsEngineAddr: args.wsEngineAddr,
-    wsEnginePort: args.wsEnginePort,
-    rpcDebug: args.rpcDebug,
-    rpcDebugVerbose: args.rpcDebugVerbose,
-    helpRPC: args.helpRPC,
+    rpcEngineAddr: args.rpcEngineAddr ?? '0.0.0.0',
+    rpcEnginePort: args.rpcEnginePort ?? 8551,
+    ws: false,
+    wsPort: args.wsPort ?? 0,
+    wsAddr: args.wsAddr ?? '0.0.0.0',
+    wsEngineAddr: args.wsEngineAddr ?? '0.0.0.0',
+    wsEnginePort: args.wsEnginePort ?? 8552,
+    rpcDebug: args.rpcDebug ?? 'eth',
+    rpcDebugVerbose: args.rpcDebugVerbose ?? 'false',
+    helpRPC: args.helpRPC ?? false,
     jwtSecret: '',
-    rpcEngineAuth: args.rpcEngineAuth,
-    rpcCors: args.rpcCors,
+    rpcEngineAuth: false,
+    rpcCors: '',
   })
+
   return { client, executionRPC: servers[0], engineRPC: servers[1] }
 }
 
-const activateRPCMethods = async (replServer, allRPCMethods) => {
-  function defineRPCAction(context, methodName: string, params: string) {
+const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: any) => {
+  function defineRPCAction(context: repl.REPLServer, methodName: string, params: string) {
+    let parsedParams
+    try {
+      parsedParams = JSON.parse(params)
+    } catch (e) {
+      console.log(e)
+    }
     allRPCMethods[methodName]
-      .handler(params === '' ? '[]' : JSON.parse(params)) // TODO why does parse crash repl when error is caught?
-      .then((result) => console.log(result))
-      .catch((err) => console.error(err))
+      .handler(params === '' ? '[]' : parsedParams)
+      .then((result: any) => console.log(result))
+      .catch((err: any) => console.error(err))
     context.displayPrompt()
   }
 
@@ -63,16 +73,23 @@ const activateRPCMethods = async (replServer, allRPCMethods) => {
   }
 }
 
-const setupRepl = async (args) => {
-  const { config, customGenesisState, customGenesisStateRoot, metricsServer, common } =
-    await generateClientConfig(args)
-  const { client, executionRPC, engineRPC } = await setupClient(config, common)
+const setupRepl = async (args: ClientOpts) => {
+  const { config, customGenesisState, common } = await generateClientConfig(args)
+  const { client, executionRPC, engineRPC } = await setupClient(
+    config,
+    customGenesisState,
+    common,
+    args,
+  )
+  //@ts-ignore
   const allRPCMethods = { ...executionRPC._methods, ...engineRPC._methods }
 
   const replServer = repl.start({
     prompt: 'EthJS > ',
     ignoreUndefined: true,
   })
+
+  replServer.context.client = client
   replServer.on('exit', () => {
     console.log('Exiting REPL...')
     process.exit()
