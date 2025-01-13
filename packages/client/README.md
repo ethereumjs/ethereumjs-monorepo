@@ -510,6 +510,16 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 See [DEVELOPER.md](./DEVELOPER.md)
 
+### REPL ###
+
+An under-development REPL is now available to users. It can be run using the npm script available in the client package:
+
+`npm run repl`
+
+In order to pass parameters to the client while using the repl, you can append it to the npm script command:
+
+`npm run repl -- --gethGenesis /data/genesis.json`
+
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
