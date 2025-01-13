@@ -185,7 +185,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-      ;(<EVM>vm.evm).clearPerformanceLogs()
+        ; (<EVM>vm.evm).clearPerformanceLogs()
     }
   }
 }
@@ -224,8 +224,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const caller = tx.getSenderAddress()
   if (vm.DEBUG) {
     debug(
-      `New tx run hash=${
-        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `New tx run hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -274,8 +273,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's ${
-          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        `Transaction's ${'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
         } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         vm,
         block,
@@ -552,10 +550,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.DEBUG) {
     debug(
-      `Running tx=${
-        tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
-      } with caller=${caller} gasLimit=${gasLimit} to=${
-        to?.toString() ?? 'none'
+      `Running tx=${tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
+      } with caller=${caller} gasLimit=${gasLimit} to=${to?.toString() ?? 'none'
       } value=${value} data=${short(data)}`,
     )
   }
@@ -593,8 +589,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const { executionGasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
-        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
+      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
       } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`,
     )
   }
@@ -661,12 +656,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   let minerAccount = await state.getAccount(miner)
+  const minerAccountExists = minerAccount !== undefined
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      vm.evm.verkleAccessWitness.readAccountHeader(miner)
     }
     minerAccount = new Account()
     // Add the miner account to the system verkle access witness
@@ -678,20 +673,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     : results.amountSpent
   minerAccount.balance += results.minerValue
 
-  // If the miner value is zero, revert the access witness as the proof of absence was not necessary.
-  if (results.minerValue === BIGINT_0) {
-    vm.evm.verkleAccessWitness?.revert()
-  } else {
-    vm.evm.verkleAccessWitness?.commit()
-  }
-
   if (vm.common.isActivatedEIP(6800) && results.minerValue !== BIGINT_0) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
-    // use vm utility to build access but the computed gas is not charged and hence free
-    vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
-    vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
+    if (minerAccountExists) {
+      // use vm utility to build access but the computed gas is not charged and hence free
+      vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
+      vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
+    } else {
+      vm.evm.verkleAccessWitness.writeAccountHeader(miner)
+    }
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
@@ -804,8 +796,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await vm._emit('afterTx', event)
   if (vm.DEBUG) {
     debug(
-      `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `tx run finished hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -865,10 +856,8 @@ export async function generateTxReceipt(
   let receipt
   if (vm.DEBUG) {
     debug(
-      `Generate tx receipt transactionType=${
-        tx.type
-      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
-        baseReceipt.bitvector.length
+      `Generate tx receipt transactionType=${tx.type
+      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`,
     )
   }
