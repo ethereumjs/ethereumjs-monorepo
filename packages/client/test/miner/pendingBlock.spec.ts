@@ -366,7 +366,7 @@ describe('[PendingBlock]', async () => {
     const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
     const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
-    const blobGasLimit = txPool['config'].chainCommon.param('maxblobGasPerBlock')
+    const blobGasLimit = txPool['config'].chainCommon.param('maxBlobGasPerBlock')
     const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
     const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
     const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks

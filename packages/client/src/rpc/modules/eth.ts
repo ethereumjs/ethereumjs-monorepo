@@ -1160,7 +1160,7 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
@@ -1402,7 +1402,7 @@ export class Eth {
         let blobGasUsedRatio = 0
         if (b.header.excessBlobGas !== undefined) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
-          const max = b.common.param('maxblobGasPerBlock')
+          const max = b.common.param('maxBlobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)
         }
 
