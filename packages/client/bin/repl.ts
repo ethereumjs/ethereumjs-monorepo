@@ -3,8 +3,8 @@ import repl from 'repl'
 
 import { createInlineClient } from '../src/util/simutils.js'
 
-import { generateClientConfig, getArgs } from './cli.js'
 import { startRPCServers } from './startRPC.js'
+import { generateClientConfig, getArgs } from './utils.js'
 
 import type { Config } from '../src/config.js'
 import type { ClientOpts } from '../src/types.js'
@@ -77,7 +77,7 @@ const setupRepl = async (args: ClientOpts) => {
   const { config, customGenesisState, common } = await generateClientConfig(args)
   const { client, executionRPC, engineRPC } = await setupClient(
     config,
-    customGenesisState,
+    customGenesisState!, // TODO: figure out if this param is mandatory
     common,
     args,
   )
