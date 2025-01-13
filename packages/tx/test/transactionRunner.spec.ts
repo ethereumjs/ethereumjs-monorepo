@@ -15,6 +15,9 @@ const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
   'Prague',
+  'Cancun',
+  'Shanghai',
+  'Paris',
   'London+3860',
   'London',
   'Berlin',
@@ -31,6 +34,9 @@ const forkNames: ForkName[] = [
 const forkNameMap: ForkNamesMap = {
   Prague: 'prague',
   'London+3860': 'london',
+  Cancun: 'cancun',
+  Shanghai: 'shanghai',
+  Paris: 'paris',
   London: 'london',
   Berlin: 'berlin',
   Istanbul: 'istanbul',

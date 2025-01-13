@@ -652,11 +652,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.common.isActivatedEIP(7623)) {
     if (results.totalGasSpent < floorCost) {
-      // TODO: likely set `results.gasRefund = BIGINT_0`
-      results.totalGasSpent = floorCost
       if (vm.DEBUG) {
-        debugGas(`tx apply floorCost ${floorCost} to totalGasSpent (-> ${results.totalGasSpent})`)
+        debugGas(
+          `tx floorCost ${floorCost} is higher than to total execution gas spent (-> ${results.totalGasSpent}), setting floor as gas paid`,
+        )
       }
+      results.gasRefund = BIGINT_0
+      results.totalGasSpent = floorCost
     }
   }
 
