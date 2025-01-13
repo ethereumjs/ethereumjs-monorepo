@@ -661,12 +661,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   let minerAccount = await state.getAccount(miner)
+  const minerAccountExists = minerAccount !== undefined
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      vm.evm.verkleAccessWitness.readAccountHeader(miner)
     }
     minerAccount = new Account()
     // Add the miner account to the system verkle access witness
@@ -678,20 +678,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     : results.amountSpent
   minerAccount.balance += results.minerValue
 
-  // If the miner value is zero, revert the access witness as the proof of absence was not necessary.
-  if (results.minerValue === BIGINT_0) {
-    vm.evm.verkleAccessWitness?.revert()
-  } else {
-    vm.evm.verkleAccessWitness?.commit()
-  }
-
   if (vm.common.isActivatedEIP(6800) && results.minerValue !== BIGINT_0) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
-    // use vm utility to build access but the computed gas is not charged and hence free
-    vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
-    vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
+    if (minerAccountExists) {
+      // use vm utility to build access but the computed gas is not charged and hence free
+      vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
+      vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
+    } else {
+      vm.evm.verkleAccessWitness.writeAccountHeader(miner)
+    }
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
