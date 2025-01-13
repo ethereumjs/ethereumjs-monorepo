@@ -11,7 +11,7 @@ import {
   startNetwork,
   validateBlockHashesInclusionInBeacon,
   waitForELStart,
-} from '../../src/util/simutils.js'
+} from './simutils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

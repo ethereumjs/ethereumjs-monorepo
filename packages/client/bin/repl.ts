@@ -9,7 +9,7 @@ import { startRPCServers } from './startRPC.js'
 import type { Config } from '../src/config.js'
 import type { ClientOpts } from '../src/types.js'
 import type { Common } from '@ethereumjs/common'
-import { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/util'
 
 const setupClient = async (
   config: Config,

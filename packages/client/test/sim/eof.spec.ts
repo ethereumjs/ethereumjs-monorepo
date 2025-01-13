@@ -10,7 +10,7 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from '../../src/util/simutils.js'
+} from './simutils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
