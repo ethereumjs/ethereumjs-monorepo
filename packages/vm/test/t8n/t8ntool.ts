@@ -171,6 +171,9 @@ export class TransitionTool {
     for (const txData of this.txsData) {
       try {
         const tx = createTx(txData, { common: this.common })
+        if (!tx.isValid()) {
+          throw new Error(tx.getValidationErrors().join(', '))
+        }
         // Set `allowNoBlobs` to `true`, since the test might not have the blob
         // The 4844-tx at this should still be valid, since it has the `blobHashes` field
         await builder.addTransaction(tx, { allowNoBlobs: true })
@@ -303,7 +306,12 @@ export class TransitionTool {
 
     if (requests !== undefined) {
       // NOTE: EEST currently wants the raw request bytes, **excluding** the type
-      output.requests = requests.map((request) => bytesToHex(request.bytes.slice(1)))
+      output.requests = []
+      for (const request of requests) {
+        if (request.bytes.length > 1) {
+          output.requests.push(bytesToHex(request.bytes.slice(1)))
+        }
+      }
     }
 
     if (this.rejected.length > 0) {

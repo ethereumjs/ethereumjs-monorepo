@@ -18,7 +18,6 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
-  createPartialAccount,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -530,9 +529,9 @@ export async function accumulateParentBlockHash(
   // but we need to put account so as to query later for slot
   const code = await vm.stateManager.getCode(historyAddress)
 
-  // Create an empty account if not there already
   if (code.length === 0) {
-    await vm.stateManager.putAccount(historyAddress, createPartialAccount({}))
+    // Exit early, system contract has no code so no storage is written
+    return
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
