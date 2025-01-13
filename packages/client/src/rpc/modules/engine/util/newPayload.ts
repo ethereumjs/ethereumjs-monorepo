@@ -65,19 +65,19 @@ export const validateAndGen7685RequestsHash = (
       throw new Error('Got a request without a request-identifier')
     }
     switch (bytes[0]) {
-      case 0:
+      case CLRequestType.Deposit:
         if (!common.isActivatedEIP(6110)) {
           throw new Error(`Deposit requests are not active`)
         }
         requests.push(new CLRequest(CLRequestType.Deposit, bytes.slice(1)))
         break
-      case 1:
+      case CLRequestType.Withdrawal:
         if (!common.isActivatedEIP(7002)) {
           throw new Error(`Withdrawal requests are not active`)
         }
         requests.push(new CLRequest(CLRequestType.Withdrawal, bytes.slice(1)))
         break
-      case 2:
+      case CLRequestType.Consolidation:
         if (!common.isActivatedEIP(7251)) {
           throw new Error(`Consolidation requests are not active`)
         }
