@@ -4,7 +4,7 @@ import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.js'
-import { createInlineClient } from '../../src/util/simutils.js'
+import { createInlineClient } from '../../src/util/inlineClient.js'
 
 import type { Address } from '@ethereumjs/util'
 

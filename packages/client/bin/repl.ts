@@ -1,7 +1,7 @@
 import process from 'process'
 import repl from 'repl'
 
-import { createInlineClient } from '../src/util/simutils.js'
+import { createInlineClient } from '../src/util/index.js'
 
 import { startRPCServers } from './startRPC.js'
 import { generateClientConfig, getArgs } from './utils.js'

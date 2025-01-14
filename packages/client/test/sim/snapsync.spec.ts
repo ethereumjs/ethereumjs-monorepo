@@ -14,7 +14,7 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { Event } from '../../src/types.js'
-import { createInlineClient } from '../../src/util/simutils.js'
+import { createInlineClient } from '../../src/util/inlineClient.js'
 
 import {
   filterKeywords,
@@ -23,7 +23,7 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './inlineClient.js'
 
 import type { EthereumClient } from '../../src/client.js'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
