@@ -18,9 +18,7 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
-  createPartialAccount,
   equalsBytes,
-  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -324,6 +322,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw new Error(msg)
       }
     }
+
     if (vm.common.isActivatedEIP(6800)) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
@@ -446,6 +445,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
+
   const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
@@ -529,9 +529,9 @@ export async function accumulateParentBlockHash(
   // but we need to put account so as to query later for slot
   const code = await vm.stateManager.getCode(historyAddress)
 
-  // Create an empty account if not there already
   if (code.length === 0) {
-    await vm.stateManager.putAccount(historyAddress, createPartialAccount({}))
+    // Exit early, system contract has no code so no storage is written
+    return
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
@@ -543,13 +543,8 @@ export async function accumulateParentBlockHash(
       if (vm.evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
       // Add to system verkle access witness so that it doesn't warm up tx accesses
-      vm.evm.systemVerkleAccessWitness.touchAddressOnWriteAndComputeGas(
-        historyAddress,
-        treeIndex,
-        subIndex,
-      )
+      vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -756,25 +751,24 @@ export async function rewardAccount(
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
-    if (common.isActivatedEIP(6800) === true) {
-      if (evm.verkleAccessWitness === undefined) {
+    if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+      if (evm.systemVerkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      evm.verkleAccessWitness.touchAndChargeProofOfAbsence(address)
+      evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
     account = new Account()
   }
   account.balance += reward
   await evm.journal.putAccount(address, account)
 
-  if (common.isActivatedEIP(6800) === true) {
-    if (evm.verkleAccessWitness === undefined) {
+  if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+    if (evm.systemVerkleAccessWitness === undefined) {
       throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
     }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.verkleAccessWitness.touchTxTargetAndComputeGas(address, {
-      sendsValue: true,
-    })
+    evm.systemVerkleAccessWitness.writeAccountBasicData(address)
+    evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
   return account
 }

@@ -42,6 +42,14 @@ export const paramsTx: ParamsDict = {
 .  */
   4844: {
     blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+    blobGasPerBlob: 131072, // The base fee for blob gas per blob
+    maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
+  },
+  /**
+   * Increase calldata cost to reduce maximum block size
+   */
+  7623: {
+    totalCostFloorPerToken: 10,
   },
   /**
 .  * Set EOA account code for one transaction
@@ -51,5 +59,11 @@ export const paramsTx: ParamsDict = {
     // gasPrices
     perAuthBaseGas: 12500, // Gas cost of each authority item, provided the authority exists in the trie
     perEmptyAccountCost: 25000, // Gas cost of each authority item, in case the authority does not exist in the trie
+  },
+  /**
+  .  * Shard Blob Transactions
+  .  */
+  7691: {
+    maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
   },
 }
