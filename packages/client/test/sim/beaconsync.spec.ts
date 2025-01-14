@@ -17,7 +17,7 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './index.js'
+} from './simutils.js'
 
 import type { EthereumClient } from '../../src/client.js'
 import type { RlpxServer } from '../../src/net/server/index.js'

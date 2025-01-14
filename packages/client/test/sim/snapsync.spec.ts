@@ -23,7 +23,7 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './index.js'
+} from './simutils.js'
 
 import type { EthereumClient } from '../../src/client.js'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'

@@ -15,7 +15,7 @@ import {
   sleep,
   startNetwork,
   waitForELStart,
-} from './index.js'
+} from './simutils.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
