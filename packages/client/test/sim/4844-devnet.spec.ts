@@ -42,7 +42,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('EthereumJS')) {
+  if (result.includes('EthereumJS') === true) {
     assert.ok(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
