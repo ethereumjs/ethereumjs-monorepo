@@ -399,7 +399,7 @@ export class TxPool {
   }
 
   pruneBlobsAndProofsCache() {
-    const blobGasLimit = this.config.chainCommon.param('maxblobGasPerBlock')
+    const blobGasLimit = this.config.chainCommon.param('maxBlobGasPerBlock')
     const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
     const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
 

@@ -234,14 +234,14 @@ export const paramsEVM: ParamsDict = {
    */
   2537: {
     // gasPrices
-    bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1AddGas: 375, // Gas cost of a single BLS12-381 G1 addition precompile-call
     bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
-    bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
-    bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
-    bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
-    bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
+    bls12381G2AddGas: 600, // Gas cost of a single BLS12-381 G2 addition precompile-call
+    bls12381G2MulGas: 22500, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
+    bls12381PairingBaseGas: 37700, // Base gas cost of BLS12-381 pairing check
+    bls12381PairingPerPairGas: 32600, // Per-pair gas cost of BLS12-381 pairing check
     bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
-    bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
+    bls12381MapG2Gas: 23800, // Gas cost of BLS12-381 map field element to G2
   },
   /**
 .  * Gas cost increases for state access opcodes
@@ -274,6 +274,7 @@ export const paramsEVM: ParamsDict = {
     // evm
     historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
   /**
 .  * BASEFEE opcode

@@ -108,6 +108,7 @@ const normalHardforks = [
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
   'cancun',
   'prague',
+  'osaka',
 ]
 
 const transitionNetworks = {

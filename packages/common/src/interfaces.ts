@@ -101,38 +101,20 @@ export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
 export interface VerkleAccessWitnessInterface {
   accesses(): Generator<VerkleAccessedStateWithAddress>
   rawAccesses(): Generator<RawVerkleAccessedState>
-  touchAndChargeProofOfAbsence(address: Address): bigint
-  touchAndChargeMessageCall(address: Address): bigint
-  touchAndChargeValueTransfer(target: Address): bigint
-  touchAndChargeContractCreateInit(address: Address): bigint
-  touchAndChargeContractCreateCompleted(address: Address): bigint
-  touchTxOriginAndComputeGas(origin: Address): bigint
-  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchAddressOnWriteAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressOnReadAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressAndChargeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): bigint
-  touchAddress(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): AccessEventFlags
+  debugWitnessCost(): void
+  readAccountBasicData(address: Address): bigint
+  writeAccountBasicData(address: Address): bigint
+  readAccountCodeHash(address: Address): bigint
+  writeAccountCodeHash(address: Address): bigint
+  readAccountHeader(address: Address): bigint
+  writeAccountHeader(address: Address): bigint
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  readAccountStorage(contract: Address, storageSlot: bigint): bigint
+  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
   merge(accessWitness: VerkleAccessWitnessInterface): void
+  commit(): void
+  revert(): void
 }
 
 /*

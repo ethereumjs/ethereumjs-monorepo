@@ -31,8 +31,8 @@ export class Admin {
     this._client = client
     this._rpcDebug = rpcDebug
 
-    this.nodeInfo = middleware(callWithStackTrace(this.nodeInfo.bind(this), this._rpcDebug), 0, [])
-    this.peers = middleware(callWithStackTrace(this.peers.bind(this), this._rpcDebug), 0, [])
+    this.nodeInfo = callWithStackTrace(this.nodeInfo.bind(this), this._rpcDebug)
+    this.peers = callWithStackTrace(this.peers.bind(this), this._rpcDebug)
     this.addPeer = middleware(callWithStackTrace(this.addPeer.bind(this), this._rpcDebug), 1, [
       [
         validators.object({
