@@ -15,7 +15,7 @@ import {
   sleep,
   startNetwork,
   waitForELStart,
-} from './inlineClient.js'
+} from './index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
