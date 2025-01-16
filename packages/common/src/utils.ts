@@ -2,7 +2,9 @@ import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
 import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
+import { hardforksDict } from './hardforks.js'
 
+import type { HardforksDict } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 type ConfigHardfork =
@@ -83,6 +85,50 @@ function parseGethParams(json: any) {
     )
   }
 
+  // Terminal total difficulty logic is not supported any more as the merge has been completed
+  // so the Merge/Paris hardfork block must be 0
+  if (
+    config.terminalTotalDifficulty !== undefined &&
+    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
+      config.terminalTotalDifficultyPassed === false)
+  ) {
+    throw new Error('nonzero terminal total difficulty is not supported')
+  }
+
+  let customHardforks: HardforksDict | undefined = undefined
+  if (config.blobSchedule !== undefined) {
+    customHardforks = {}
+    const blobGasPerBlob = 131072
+    for (const [hfKey, hfSchedule] of Object.entries(config.blobSchedule)) {
+      const hfConfig = hardforksDict[hfKey]
+      if (hfConfig === undefined) {
+        throw new Error(`unknown hardfork=${hfKey} specified in blobSchedule`)
+      }
+      const {
+        target,
+        max,
+        baseFeeUpdateFraction: blobGasPriceUpdateFraction,
+      } = hfSchedule as { target?: number; max?: number; baseFeeUpdateFraction?: undefined }
+      if (target === undefined || max === undefined) {
+        throw new Error(`undefined target or max specified in blobSchedule for hardfork=${hfKey}`)
+      }
+
+      // copy current hardfork info to custom and add blob config
+      const customHfConfig = JSON.parse(JSON.stringify(hfConfig))
+      customHfConfig.params = {
+        ...customHardforks.params,
+        // removes blobGasPriceUpdateFraction key to prevent undefined overriding if undefined
+        ...{
+          targetBlobGasPerBlock: blobGasPerBlob * target,
+          maxBlobGasPerBlock: blobGasPerBlob * max,
+          blobGasPriceUpdateFraction,
+        },
+      }
+
+      customHardforks[hfKey] = customHfConfig
+    }
+  }
+
   const params = {
     name,
     chainId,
@@ -101,6 +147,7 @@ function parseGethParams(json: any) {
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],
+    customHardforks,
     bootstrapNodes: [],
     consensus:
       config.clique !== undefined

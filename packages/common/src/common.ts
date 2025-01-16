@@ -322,7 +322,7 @@ export class Common {
           this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
-      // Parameter-inlining HF config (e.g. for istanbul)
+      // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       this._mergeWithParamsCache(hfChanges[1].params ?? {})
       if (hfChanges[0] === hardfork) break
     }
