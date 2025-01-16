@@ -2,12 +2,15 @@ import { BIGINT_8, bigIntToBytes, bytesToBigInt, concatBytes } from '@ethereumjs
 
 import {
   addModBinary,
+  addModPreset,
   bytesToLimbs,
   lt,
   mulModBinary,
+  mulModPreset,
   negModInverse,
   putUint64BE,
   subModBinary,
+  subModPreset,
 } from './arith.js'
 
 const MAX_MODULUS_SIZE = 96 // 768 bit max modulus width
@@ -59,11 +62,6 @@ export class FieldContext {
     const mod = bytesToBigInt(modBytes)
     const paddedSize = BigInt(Math.ceil(modBytes.length / 8) * 8) // Compute paddedSize as the next multiple of 8 bytes
 
-    // console.log('dbg110')
-    // console.log(scratchSize)
-    // console.log(paddedSize)
-    // console.log((paddedSize / BIGINT_8) * scratchSize)
-
     if (isModulusBinary(mod)) {
       this.modulus = bytesToLimbs(modBytes)
       this.mulMod = mulModBinary
@@ -77,8 +75,6 @@ export class FieldContext {
       this.useMontgomeryRepr = false
       this.isModulusBinary = true
 
-      // console.log(this.scratchSpace)
-
       return
     }
 
@@ -87,7 +83,6 @@ export class FieldContext {
     }
 
     const negModInv = negModInverse(mod)
-
     const paddedSizeBig = BigInt(paddedSize)
     const shiftAmount = paddedSizeBig * 16n
     const r2 = (1n << shiftAmount) % mod
@@ -99,20 +94,21 @@ export class FieldContext {
     if (r2Bytes.length < paddedSize) {
       r2Bytes = concatBytes(new Uint8Array(Number(paddedSize) - r2Bytes.length), r2Bytes)
     }
+
     const one = new Array<bigint>(paddedSize / BIGINT_8).fill(0n)
     one[0] = 1n
-
     this.modulus = bytesToLimbs(modBytes)
     this.modInvVal = negModInv
     this.r2 = bytesToLimbs(r2Bytes)
-    this.mulMod = () => {} // TODO filler function, replace with actual
-    this.addMod = () => {} // TODO filler function, replace with actual
-    this.subMod = () => {} // TODO filler function, replace with actual
-    this.scratchSpace = new Array<bigint>((paddedSize / BIGINT_8) * scratchSize).fill(0n)
+    this.mulMod = mulModPreset[Number(paddedSize / 8n - 1n)]
+    this.addMod = addModPreset[Number(paddedSize / 8n - 1n)]
+    this.subMod = subModPreset[Number(paddedSize / 8n - 1n)]
+    this.scratchSpace = new Array<bigint>(Number((paddedSize / BIGINT_8) * scratchSize)).fill(0n)
+    this.outputWriteBuf = new Array<bigint>(this.scratchSpace.length).fill(0n) // TODO just globally define outputwritebuf like golang implementation
     this.scratchSpaceElemCount = BigInt(scratchSize)
     this.one = one
     this.modulusInt = mod
-    this.elemSize = paddedSize
+    this.elemSize = paddedSize / 8n
     this.useMontgomeryRepr = true
     this.isModulusBinary = false
   }
@@ -123,12 +119,15 @@ export class FieldContext {
     for (let i = 0; i < count; i++) {
       const srcIdx = i * elemSize * 8
       const dstIdx = dst * elemSize + i * elemSize
-
-      const val = bytesToLimbs(from.slice(srcIdx, srcIdx + elemSize * 8))
+      const srcBytes = from.slice(srcIdx, srcIdx + elemSize * 8)
+      const val = bytesToLimbs(srcBytes)
       if (!lt(val, this.modulus)) throw new Error(`value being stored must be less than modulus`)
-
       if (this.useMontgomeryRepr) {
-        // TODO
+        const tmp = this.scratchSpace.slice(dstIdx + elemSize)
+        this.mulMod(tmp, val, this.r2, this.modulus, this.modInvVal)
+        for (let i = 0; i < elemSize; i++) {
+          this.scratchSpace[dstIdx + i] = tmp[i]
+        }
       } else {
         for (let i = 0; i < elemSize; i++) {
           this.scratchSpace[dstIdx + i] = val[i]
@@ -150,7 +149,13 @@ export class FieldContext {
       const res = new Array<bigint>(elemSize)
 
       if (this.useMontgomeryRepr) {
-        // TODO
+        this.mulMod(
+          res,
+          this.scratchSpace.slice(srcIdx * elemSize, (srcIdx + 1) * elemSize),
+          this.one,
+          this.modulus,
+          this.modInvVal,
+        )
       } else {
         // Directly copy from scratchSpace
         const slice = this.scratchSpace.slice(srcIdx * elemSize, (srcIdx + 1) * elemSize)
@@ -281,15 +286,6 @@ export class FieldContext {
       const xSlice = this.scratchSpace.slice(xSrc, xSrc + elemSize)
       const ySlice = this.scratchSpace.slice(ySrc, ySrc + elemSize)
       const outSlice = this.outputWriteBuf!.slice(dst, dst + elemSize)
-
-      // console.log('dbg100')
-      // console.log(this.outputWriteBuf)
-      // console.log(elemSize)
-      // console.log(xSrc)
-      // console.log(ySrc)
-      // console.log(xSlice)
-      // console.log(ySlice)
-      // console.log(outSlice)
 
       this.addMod(outSlice, xSlice, ySlice, this.modulus)
 

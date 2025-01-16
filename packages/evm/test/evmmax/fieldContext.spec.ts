@@ -12,12 +12,12 @@ function randomBinaryModulus(size: number): bigint {
   return 1n << BigInt(size * 8)
 }
 
-export function randomOddBigInt(size: number, limit: bigint): bigint {
+export function randomOddModulus(size: number): bigint {
   let num
   let bytes
   while (true) {
-    num = randomBigInt(size, limit)
-    bytes = bigIntToBytes(num)
+    bytes = randomBytes(size)
+    num = bytesToBigInt(bytes)
     if (bytes[bytes.length - 1] % 2 !== 0) return num
   }
 }
@@ -30,44 +30,50 @@ function padBigIntBytes(val: bigint, byteLen: number): Uint8Array {
   return out
 }
 
+function testModulus(mod: bigint) {
+  const modBytes = bigIntToBytes(mod)
+  const fieldCtx = new FieldContext(modBytes, 256n)
+
+  const xInt = randomBigInt(modBytes.length, mod)
+  const yInt = randomBigInt(modBytes.length, mod)
+
+  // convert operands to padded bytes for storing
+  const elemByteLen = Number(fieldCtx.elemSize)
+  const xBytes = padBigIntBytes(xInt, elemByteLen * 8)
+  const yBytes = padBigIntBytes(yInt, elemByteLen * 8)
+  const outBytes = new Uint8Array(elemByteLen * 8)
+
+  fieldCtx.store(1, 1, xBytes)
+  fieldCtx.store(2, 1, yBytes)
+
+  fieldCtx.addM(0, 1, 1, 1, 2, 1, 1)
+  fieldCtx.Load(outBytes, 0, 1)
+  const expectedAdd = (xInt + yInt) % mod
+  const actualAdd = bytesToBigInt(outBytes)
+  assert.deepEqual(actualAdd, expectedAdd)
+
+  fieldCtx.subM(0, 1, 1, 1, 2, 1, 1)
+  fieldCtx.Load(outBytes, 0, 1)
+  let expectedSub = (xInt - yInt) % mod
+  if (expectedSub < 0n) expectedSub += mod
+  const actualSub = bytesToBigInt(outBytes)
+  assert.deepEqual(actualSub, expectedSub)
+
+  fieldCtx.mulM(0, 1, 1, 1, 2, 1, 1)
+  fieldCtx.Load(outBytes, 0, 1)
+  const expectedMul = (xInt * yInt) % mod
+  const actualMul = bytesToBigInt(outBytes)
+  assert.deepEqual(actualMul, expectedMul)
+}
+
 describe('FieldContext modular arithmetic', () => {
   for (let i = 1; i < 96; i++) {
     it(`should do add, sub, mul under a random modulus of size ${i} bytes`, () => {
-      const mod = randomBinaryModulus(i)
-      const modBytes = bigIntToBytes(mod)
-      const fieldCtx = new FieldContext(modBytes, 256n)
+      const binaryMod = randomBinaryModulus(i)
+      testModulus(binaryMod)
 
-      const xInt = randomBigInt(modBytes.length, mod)
-      const yInt = randomBigInt(modBytes.length, mod)
-
-      // convert operands to padded bytes for storing
-      const elemByteLen = Number(fieldCtx.elemSize)
-      const xBytes = padBigIntBytes(xInt, elemByteLen * 8)
-      const yBytes = padBigIntBytes(yInt, elemByteLen * 8)
-
-      fieldCtx.store(1, 1, xBytes)
-      fieldCtx.store(2, 1, yBytes)
-
-      const outBytes = new Uint8Array(elemByteLen * 8)
-
-      fieldCtx.addM(0, 1, 1, 1, 2, 1, 1)
-      fieldCtx.Load(outBytes, 0, 1)
-      const expectedAdd = (xInt + yInt) % mod
-      const actualAdd = bytesToBigInt(outBytes)
-      assert.deepEqual(actualAdd, expectedAdd)
-
-      fieldCtx.subM(0, 1, 1, 1, 2, 1, 1)
-      fieldCtx.Load(outBytes, 0, 1)
-      let expectedSub = (xInt - yInt) % mod
-      if (expectedSub < 0n) expectedSub += mod
-      const actualSub = bytesToBigInt(outBytes)
-      assert.deepEqual(actualSub, expectedSub)
-
-      fieldCtx.mulM(0, 1, 1, 1, 2, 1, 1)
-      fieldCtx.Load(outBytes, 0, 1)
-      const expectedMul = (xInt * yInt) % mod
-      const actualMul = bytesToBigInt(outBytes)
-      assert.deepEqual(actualMul, expectedMul)
+      const oddMod = randomOddModulus(i)
+      testModulus(oddMod)
     })
   }
 })
