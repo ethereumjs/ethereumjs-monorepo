@@ -56,13 +56,16 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
       try {
         parsedParams = JSON.parse(params)
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.log(e)
       }
     }
     allRPCMethods[methodName]
       .handler(params === '' ? '[]' : parsedParams)
+      /* eslint-disable no-console */
       .then((result: any) => console.log(result))
       .catch((err: any) => console.error(err))
+    /* eslint-enable no-console */
     context.displayPrompt()
   }
 
@@ -86,6 +89,7 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
           transport.level = level
         }
       } else {
+        // eslint-disable-next-line no-console
         console.log('Invalid log level. Valid levels are: debug, info, warn, error.')
       }
       this.displayPrompt()
@@ -111,6 +115,7 @@ const setupRepl = async (args: ClientOpts) => {
 
   replServer.context.client = client
   replServer.on('exit', async () => {
+    // eslint-disable-next-line no-console
     console.log('Exiting REPL...')
     await client.stop()
     replServer.close()
