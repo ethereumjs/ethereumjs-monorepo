@@ -8,9 +8,9 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { Event } from '../../src/types.js'
+import { createInlineClient } from '../../src/util/index.js'
 
 import {
-  createInlineClient,
   filterKeywords,
   filterOutWords,
   runTxHelper,
@@ -60,7 +60,7 @@ describe('simple mainnet test run', async () => {
     withPeer: process.env.WITH_PEER,
   })
   it.skip('should connect to Geth', () => {
-    if (result.includes('Geth')) {
+    if (result.includes('Geth') === true) {
       assert.ok(true, 'connected to Geth')
     } else {
       assert.fail('connected to wrong client: ' + result)

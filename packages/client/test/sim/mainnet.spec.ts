@@ -37,7 +37,7 @@ describe('simple mainnet test run', async () => {
     externalRun: process.env.EXTERNAL_RUN,
   })
 
-  if (result.includes('EthereumJS')) {
+  if (result.includes('EthereumJS') === true) {
     assert.ok(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
