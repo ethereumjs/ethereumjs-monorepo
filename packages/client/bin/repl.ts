@@ -1,3 +1,4 @@
+import { client } from 'jayson/promise/index.js'
 import process from 'process'
 import repl from 'repl'
 
@@ -7,6 +8,7 @@ import { startRPCServers } from './startRPC.js'
 import { generateClientConfig, getArgs } from './utils.js'
 
 import type { Config } from '../src/config.js'
+import type { EthereumClient } from '../src/index.js'
 import type { ClientOpts } from '../src/types.js'
 import type { Common } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
@@ -50,10 +52,13 @@ const setupClient = async (
 const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: any) => {
   function defineRPCAction(context: repl.REPLServer, methodName: string, params: string) {
     let parsedParams
-    try {
-      parsedParams = JSON.parse(params)
-    } catch (e) {
-      console.log(e)
+    if (params !== undefined && params.length > 0) {
+      // only parse params if actually provided
+      try {
+        parsedParams = JSON.parse(params)
+      } catch (e) {
+        console.log(e)
+      }
     }
     allRPCMethods[methodName]
       .handler(params === '' ? '[]' : parsedParams)
@@ -71,6 +76,22 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
       },
     })
   }
+
+  replServer.defineCommand('logLevel', {
+    help: `Sets the log level.  Example usage: .logLevel info`,
+    action(params) {
+      const level = params
+      if (['debug', 'info', 'warn', 'error'].includes(level)) {
+        for (const transport of (replServer.context.client as EthereumClient).config.logger
+          .transports) {
+          transport.level = level
+        }
+      } else {
+        console.log('Invalid log level. Valid levels are: debug, info, warn, error.')
+      }
+      this.displayPrompt()
+    },
+  })
 }
 
 const setupRepl = async (args: ClientOpts) => {
