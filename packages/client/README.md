@@ -520,6 +520,27 @@ In order to pass parameters to the client while using the repl, you can append i
 
 `npm run repl -- --gethGenesis /data/genesis.json`
 
+The repl allows access to the JSON-RPC and ENGINE API's from the terminal. For help and a list of supported functions, type `.help` upon repl startup:
+```
+[01-17|09:05:57] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:05:57] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .help
+```
+
+Example usage of repl commands:
+```
+[01-17|09:10:54] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:10:54] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .eth_getBlockByNumber ["latest", true]
+EthJS > {
+  number: '0x0',
+  hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+  parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  nonce: '0x0000000000000042',
+  ...
+```
+
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
