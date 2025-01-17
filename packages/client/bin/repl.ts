@@ -1,4 +1,3 @@
-import { client } from 'jayson/promise/index.js'
 import process from 'process'
 import repl from 'repl'
 
