@@ -90,8 +90,10 @@ const setupRepl = async (args: ClientOpts) => {
   })
 
   replServer.context.client = client
-  replServer.on('exit', () => {
+  replServer.on('exit', async () => {
     console.log('Exiting REPL...')
+    await client.stop()
+    replServer.close()
     process.exit()
   })
 
