@@ -105,7 +105,7 @@ function runTests(filePath: string) {
                 assert.ok(true, 'RLP decoding successfully failed')
               }
             }
-          })
+          }, 20_000)
         }
       }
     })

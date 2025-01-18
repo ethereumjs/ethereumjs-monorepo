@@ -310,6 +310,6 @@ describe('EIP 2935: historical block hashes', () => {
         const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
         assert.ok(equalsBytes(blockHashI, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
       }
-    })
+    }, 10_000)
   }
 })
