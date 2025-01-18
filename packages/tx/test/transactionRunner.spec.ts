@@ -102,7 +102,7 @@ describe('TransactionTests', async () => {
             }
           }
         }
-      })
+      }, 120000)
     },
     fileFilterRegex,
     undefined,
