@@ -25,9 +25,20 @@ export const blockToExecutionPayload = (
   // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks
   const shouldOverrideBuilder = false
+
+  let executionRequests = undefined
+  if (requests !== undefined) {
+    executionRequests = []
+    for (const request of requests) {
+      if (request.bytes.length > 1) {
+        executionRequests.push(bytesToHex(request.bytes))
+      }
+    }
+  }
+
   return {
     executionPayload,
-    executionRequests: requests?.map((req) => bytesToHex(req.data)),
+    executionRequests,
     blockValue: bigIntToHex(value),
     blobsBundle,
     shouldOverrideBuilder,

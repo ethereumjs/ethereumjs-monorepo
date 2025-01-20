@@ -7,6 +7,7 @@ import { platform } from 'os'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
+export * from './inclineClient.js'
 export * from './parse.js'
 export * from './rpc.js'
 

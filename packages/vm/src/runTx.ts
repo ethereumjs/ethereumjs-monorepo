@@ -12,6 +12,7 @@ import {
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
+  bigIntMax,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -249,11 +250,24 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
   const intrinsicGas = tx.getIntrinsicGas()
+  let floorCost = BIGINT_0
+
+  if (vm.common.isActivatedEIP(7623)) {
+    // Tx should at least cover the floor price for tx data
+    let tokens = 0
+    for (let i = 0; i < tx.data.length; i++) {
+      tokens += tx.data[i] === 0 ? 1 : 4
+    }
+    floorCost =
+      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
+  }
+
   let gasLimit = tx.gasLimit
-  if (gasLimit < intrinsicGas) {
+  const minGasLimit = bigIntMax(intrinsicGas, floorCost)
+  if (gasLimit < minGasLimit) {
     const msg = _errorMsg(
       `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
-        intrinsicGas,
+        minGasLimit,
       )}`,
       vm,
       block,
@@ -621,7 +635,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Process any gas refund
   gasRefund += results.execResult.gasRefund ?? BIGINT_0
-  results.gasRefund = gasRefund
+  results.gasRefund = gasRefund // TODO: this field could now be incorrect with the introduction of 7623
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
@@ -635,6 +649,19 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       debug(`No tx gasRefund`)
     }
   }
+
+  if (vm.common.isActivatedEIP(7623)) {
+    if (results.totalGasSpent < floorCost) {
+      if (vm.DEBUG) {
+        debugGas(
+          `tx floorCost ${floorCost} is higher than to total execution gas spent (-> ${results.totalGasSpent}), setting floor as gas paid`,
+        )
+      }
+      results.gasRefund = BIGINT_0
+      results.totalGasSpent = floorCost
+    }
+  }
+
   results.amountSpent = results.totalGasSpent * gasPrice
 
   // Update sender's balance

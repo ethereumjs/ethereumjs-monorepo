@@ -158,10 +158,10 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   prague: {
-    eips: [2537, 2935, 6110, 7002, 7251, 7685, 7702], // This is current prague without EOF
+    eips: [2537, 2935, 6110, 7002, 7251, 7623, 7685, 7691, 7702],
   },
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698], // These are the EOF EIPs
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
   },
   /**
    * Description: Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)
