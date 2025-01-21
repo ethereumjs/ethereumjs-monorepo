@@ -236,7 +236,7 @@ async function startClient(
           blocks.push(block)
           buf = RLP.decode(buf.remainder, true)
           config.logger.info(
-            `Preloading block hash=0x${short(bytesToHex(block.header.hash()))} number=${
+            `Preloading block hash=${short(bytesToHex(block.header.hash()))} number=${
               block.header.number
             }`,
           )
