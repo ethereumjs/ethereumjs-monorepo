@@ -710,7 +710,7 @@ This means in particular:
 1. For caches instantiated as an LRU cache type
 the copy() method will instantiate with an ORDERED_MAP cache
 instead, since copied instantances are mostly used in
-short-term usage contexts and LRU cache instantation would create
+short-term usage contexts and LRU cache instantiation would create
 a large overhead here.
 2. The underlying trie object is initialized with 0 cache size
 
