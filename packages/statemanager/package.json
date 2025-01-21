@@ -35,7 +35,7 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- statemanager",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",

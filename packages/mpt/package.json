@@ -36,7 +36,7 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- mpt",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "test": "npm run test:node && npm run test:browser",

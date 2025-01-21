@@ -37,7 +37,7 @@
     "docs:build": "typedoc --options typedoc.cjs --tsconfig tsconfig.prod.cjs.json",
     "examples": "tsx ../../scripts/examples-runner.ts -- client",
     "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "preinstall": "npm run binWorkaround",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "repl": "npx tsx ./bin/repl.ts --logLevel=error",

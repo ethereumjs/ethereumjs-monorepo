@@ -17,7 +17,7 @@
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
     "lint": "npm run biome && eslint --format codeframe --config ./config/eslint.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && && eslint --fix --config ./config/eslint.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.cjs . --ext .js,.ts",
     "lint:diff": "./config/cli/lint-diff.sh",
     "test": "npm run test --workspaces --if-present",
     "test:node": "npm run test:node --workspaces --if-present",
