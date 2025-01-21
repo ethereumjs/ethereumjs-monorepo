@@ -37,14 +37,33 @@ function testModulus(mod: bigint) {
   const xInt = randomBigInt(modBytes.length, mod)
   const yInt = randomBigInt(modBytes.length, mod)
 
+  // const xInt = 170553633158n
+  // const yInt = 832050944357n
+
   // convert operands to padded bytes for storing
   const elemByteLen = Number(fieldCtx.elemSize)
   const xBytes = padBigIntBytes(xInt, elemByteLen * 8)
   const yBytes = padBigIntBytes(yInt, elemByteLen * 8)
   const outBytes = new Uint8Array(elemByteLen * 8)
 
+  // console.log('dbg200')
+  // console.log(fieldCtx)
+  // console.log(elemByteLen)
+  // console.log(xInt)
+  // console.log(xBytes)
+  // console.log(yInt)
+  // console.log(yBytes)
+  // console.log(fieldCtx.scratchSpace.slice(0, 10))
+
   fieldCtx.store(1, 1, xBytes)
+
+  // console.log('dbg201')
+  // console.log(fieldCtx.scratchSpace.slice(0, 10))
+
   fieldCtx.store(2, 1, yBytes)
+
+  // console.log('dbg202')
+  // console.log(fieldCtx.scratchSpace.slice(0, 10))
 
   fieldCtx.addM(0, 1, 1, 1, 2, 1, 1)
   fieldCtx.Load(outBytes, 0, 1)
@@ -60,9 +79,19 @@ function testModulus(mod: bigint) {
   assert.deepEqual(actualSub, expectedSub)
 
   fieldCtx.mulM(0, 1, 1, 1, 2, 1, 1)
+
+  // console.log('dbg203')
+  // console.log(fieldCtx.scratchSpace.slice(0, 10))
+
   fieldCtx.Load(outBytes, 0, 1)
   const expectedMul = (xInt * yInt) % mod
   const actualMul = bytesToBigInt(outBytes)
+
+  // console.log('dbg204')
+  // console.log(actualMul)
+  // console.log(expectedMul)
+  // console.log(outBytes)
+
   assert.deepEqual(actualMul, expectedMul)
 }
 
@@ -73,6 +102,11 @@ describe('FieldContext modular arithmetic', () => {
       testModulus(binaryMod)
 
       const oddMod = randomOddModulus(i)
+      // const oddMod = 1050354439901n
+
+      // console.log('dbg199')
+      // console.log(oddMod)
+
       testModulus(oddMod)
     })
   }

@@ -95,7 +95,7 @@ export class FieldContext {
       r2Bytes = concatBytes(new Uint8Array(Number(paddedSize) - r2Bytes.length), r2Bytes)
     }
 
-    const one = new Array<bigint>(paddedSize / BIGINT_8).fill(0n)
+    const one = new Array<bigint>(Number(paddedSize / BIGINT_8)).fill(0n)
     one[0] = 1n
     this.modulus = bytesToLimbs(modBytes)
     this.modInvVal = negModInv
@@ -147,6 +147,14 @@ export class FieldContext {
     for (let srcIdx = from; srcIdx < from + count; srcIdx++) {
       // temp array to hold limbs
       const res = new Array<bigint>(elemSize)
+
+      // console.log('dbg205')
+      // console.log(res)
+      // console.log(this.scratchSpace)
+      // console.log(this.one)
+      // console.log(this.modulus)
+      // console.log(this.modInvVal)
+      // console.log()
 
       if (this.useMontgomeryRepr) {
         this.mulMod(

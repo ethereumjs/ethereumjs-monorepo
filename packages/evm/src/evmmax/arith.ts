@@ -70,7 +70,7 @@ function limbsToBytes(limbs: bigint[]): Uint8Array {
     result[offset + 7] = Number(limb & 0xffn)
   }
 
-  // Remove leading zeros:
+  // Remove leading zeros
   let firstNonZero = 0
   while (firstNonZero < result.length && result[firstNonZero] === 0) {
     firstNonZero++
@@ -170,18 +170,13 @@ export function lt(x: bigint[], y: bigint[]): boolean {
 ////  odd modulus arithmetic
 
 function mul64(a: bigint, b: bigint): [bigint, bigint] {
+  // console.log('dbg100')
+  // console.log(a)
+  // console.log(b)
   const product = a * b
   const lo = product & MASK_64
   const hi = product >> 64n
   return [hi, lo]
-}
-
-function madd0(a: bigint, b: bigint, c: bigint): bigint {
-  let [hi, lo] = mul64(a, b)
-  const sum = lo + c
-  const carry = sum >> 64n
-  const newHi = (hi + carry) & MASK_64
-  return newHi
 }
 
 function add64(x: bigint, y: bigint, carryIn: bigint): [bigint, bigint] {
@@ -201,6 +196,30 @@ function sub64(x: bigint, y: bigint, borrowIn: bigint): [bigint, bigint] {
   return [diff & MASK_64, borrowOut]
 }
 
+function madd0(a: bigint, b: bigint, c: bigint): bigint {
+  const [hi, lo] = mul64(a, b)
+  const sum = lo + c
+  const carry = sum >> 64n
+  const newHi = (hi + carry) & MASK_64
+  return newHi
+}
+
+function madd1(a: bigint, b: bigint, c: bigint): [bigint, bigint] {
+  const [hi, lo] = mul64(a, b)
+  const [lo2, carry] = add64(lo, c, 0n)
+  const [hi2, _carry2] = add64(hi, 0n, carry)
+  return [hi2 & MASK_64, lo2 & MASK_64]
+}
+
+function madd2(a: bigint, b: bigint, c: bigint, d: bigint): [bigint, bigint] {
+  const [hi, lo] = mul64(a, b)
+  const [c2, carry] = add64(c, d, 0n)
+  const [hi2, _carry2] = add64(hi, 0n, carry)
+  const [lo2, carry2] = add64(lo, c2, 0n)
+  const [hi3, _carry3] = add64(hi2, 0n, carry2)
+  return [hi3 & MASK_64, lo2 & MASK_64]
+}
+
 function montMulMod64(
   z: bigint[],
   x: bigint[],
@@ -208,6 +227,8 @@ function montMulMod64(
   modulus: bigint[],
   modInv: bigint,
 ): void {
+  // console.log('dbg102')
+
   const x0 = x[0] & MASK_64
   const y0 = y[0] & MASK_64
   const m0 = modulus[0] & MASK_64
@@ -222,6 +243,15 @@ function montMulMod64(
 
   let res = 0n
 
+  // console.log('dbg103')
+  // console.log(x0)
+  // console.log(y0)
+  // console.log(m0)
+  // console.log(t0)
+  // console.log(t1)
+  // console.log(C)
+  // console.log(D)
+
   {
     const [carryMul, lowMul] = mul64(x0, y0)
     C = carryMul
@@ -229,12 +259,21 @@ function montMulMod64(
   }
 
   {
-    const [carryOut, sumLow] = add64(t1, C, 0n)
+    const [sumLow, carryOut] = add64(t1, C, 0n)
     t1 = sumLow
     D = carryOut
   }
 
   m = (t0 * inv) & MASK_64
+
+  // console.log('dbg104')
+  // console.log(x0)
+  // console.log(y0)
+  // console.log(m)
+  // console.log(t0)
+  // console.log(t1)
+  // console.log(C)
+  // console.log(D)
 
   {
     const C = madd0(m, m0, t0)
@@ -266,6 +305,105 @@ function montMulMod64(
   z[0] = src & MASK_64
 }
 
+export function montMulMod128(
+  out: bigint[],
+  x: bigint[],
+  y: bigint[],
+  mod: bigint[],
+  modInv: bigint,
+): void {
+  const t = [0n, 0n, 0n]
+  let D = 0n
+  let m = 0n
+  let C = 0n
+
+  const res = [0n, 0n]
+
+  {
+    {
+      const [hi0, lo0] = mul64(x[0], y[0])
+      C = hi0
+      t[0] = lo0
+
+      const [hi1, lo1] = madd1(x[0], y[1], C)
+      C = hi1
+      t[1] = lo1
+
+      const [temp2, tempD] = add64(t[2], C, 0n)
+      t[2] = temp2
+      D = tempD
+    }
+
+    m = (t[0] * modInv) & MASK_64
+
+    {
+      C = madd0(m, mod[0], t[0])
+
+      const [c2, t0_] = madd2(m, mod[1], t[1], C)
+      C = c2
+      t[0] = t0_
+
+      const [t1_, c3] = add64(t[2], C, 0n)
+      t[1] = t1_
+      C = c3
+
+      const [t2_, _dummy] = add64(0n, D, C)
+      t[2] = t2_
+    }
+  }
+
+  {
+    {
+      const [c4, t0_] = madd1(x[1], y[0], t[0])
+      C = c4
+      t[0] = t0_
+
+      const [c5, t1_] = madd2(x[1], y[1], t[1], C)
+      C = c5
+      t[1] = t1_
+
+      const [t2_, d_] = add64(t[2], C, 0n)
+      t[2] = t2_
+      D = d_
+    }
+
+    m = (t[0] * modInv) & MASK_64
+
+    {
+      C = madd0(m, mod[0], t[0])
+
+      const [c6, t0_] = madd2(m, mod[1], t[1], C)
+      C = c6
+      t[0] = t0_
+
+      const [t1_, c7] = add64(t[2], C, 0n)
+      t[1] = t1_
+      C = c7
+
+      const [t2_, _dummy2] = add64(0n, D, C)
+      t[2] = t2_
+    }
+  }
+
+  {
+    const [r0, d0] = sub64(t[0], mod[0], 0n)
+    res[0] = r0
+    let D_ = d0
+
+    const [r1, d1] = sub64(t[1], mod[1], D_)
+    res[1] = r1
+    D_ = d1
+
+    if (D_ !== 0n && t[2] === 0n) {
+      out[0] = t[0] & MASK_64
+      out[1] = t[1] & MASK_64
+    } else {
+      out[0] = res[0] & MASK_64
+      out[1] = res[1] & MASK_64
+    }
+  }
+}
+
 export function addMod64(z: bigint[], x: bigint[], y: bigint[], modulus: bigint[]): void {
   const MASK_64 = (1n << 64n) - 1n
 
@@ -290,6 +428,46 @@ export function addMod64(z: bigint[], x: bigint[], y: bigint[], modulus: bigint[
     z[0] = diff
   }
   z[0] &= MASK_64
+}
+
+export function addMod128(z: bigint[], x: bigint[], y: bigint[], mod: bigint[]): void {
+  let c = 0n
+  let tmp0 = 0n
+  let tmp1 = 0n
+
+  {
+    const [sumLow, carryOut] = add64(x[0], y[0], c)
+    tmp0 = sumLow
+    c = carryOut
+  }
+  {
+    const [sumLow, carryOut] = add64(x[1], y[1], c)
+    tmp1 = sumLow
+    c = carryOut
+  }
+
+  let c1 = 0n
+  let out0 = 0n
+  let out1 = 0n
+
+  {
+    const [diffLow, borrowOut] = sub64(tmp0, mod[0], c1)
+    out0 = diffLow
+    c1 = borrowOut
+  }
+  {
+    const [diffLow, borrowOut] = sub64(tmp1, mod[1], c1)
+    out1 = diffLow
+    c1 = borrowOut
+  }
+
+  if (c === 0n && c1 !== 0n) {
+    z[0] = tmp0 & MASK_64
+    z[1] = tmp1 & MASK_64
+  } else {
+    z[0] = out0 & MASK_64
+    z[1] = out1 & MASK_64
+  }
 }
 
 export function subMod64(z: bigint[], x: bigint[], y: bigint[], mod: bigint[]): void {
@@ -320,8 +498,65 @@ export function subMod64(z: bigint[], x: bigint[], y: bigint[], mod: bigint[]): 
   z[0] = src & MASK_64
 }
 
-export const addModPreset: Function[] = [addMod64]
+export function subMod128(z: bigint[], x: bigint[], y: bigint[], mod: bigint[]): void {
+  function add64(a: bigint, b: bigint, carryIn: bigint): [bigint, bigint] {
+    const sum = a + b + carryIn
+    const low = sum & MASK_64
+    const carryOut = sum >> 64n
+    return [low, carryOut]
+  }
 
-export const subModPreset: Function[] = [subMod64]
+  function sub64(a: bigint, b: bigint, borrowIn: bigint): [bigint, bigint] {
+    let diff = a - b - borrowIn
+    let borrowOut = 0n
+    if (diff < 0n) {
+      diff &= MASK_64
+      borrowOut = 1n
+    }
+    return [diff & MASK_64, borrowOut]
+  }
 
-export const mulModPreset: Function[] = [montMulMod64]
+  let c = 0n
+  let tmp0 = 0n
+  let tmp1 = 0n
+
+  {
+    const [diffLow, borrowOut] = sub64(x[0], y[0], c)
+    tmp0 = diffLow
+    c = borrowOut
+  }
+  {
+    const [diffLow, borrowOut] = sub64(x[1], y[1], c)
+    tmp1 = diffLow
+    c = borrowOut
+  }
+
+  let c1 = 0n
+  let out0 = 0n
+  let out1 = 0n
+
+  {
+    const [sumLow, carryOut] = add64(tmp0, mod[0], c1)
+    out0 = sumLow
+    c1 = carryOut
+  }
+  {
+    const [sumLow, carryOut] = add64(tmp1, mod[1], c1)
+    out1 = sumLow
+    c1 = carryOut
+  }
+
+  if (c === 0n) {
+    z[0] = tmp0 & MASK_64
+    z[1] = tmp1 & MASK_64
+  } else {
+    z[0] = out0 & MASK_64
+    z[1] = out1 & MASK_64
+  }
+}
+
+export const addModPreset: Function[] = [addMod64, addMod128]
+
+export const subModPreset: Function[] = [subMod64, subMod128]
+
+export const mulModPreset: Function[] = [montMulMod64, montMulMod128]
