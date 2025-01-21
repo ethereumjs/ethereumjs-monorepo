@@ -522,7 +522,7 @@ export async function accumulateParentBlockHash(
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('systemAddress')))
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
   // getAccount with historyAddress will throw error as witnesses are not bundled
