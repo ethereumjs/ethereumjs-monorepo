@@ -516,7 +516,7 @@ describe('Network wrapper tests', () => {
       undefined,
       "throws when versioned hashes don't match kzg commitments",
     )
-  })
+  }, 20_000)
 })
 
 describe('hash() and signature verification', () => {

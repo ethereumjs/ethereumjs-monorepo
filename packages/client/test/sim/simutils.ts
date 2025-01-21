@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
-import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { type Common } from '@ethereumjs/common'
 import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   BIGINT_1,
@@ -16,22 +15,17 @@ import {
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
-import { Level } from 'level'
-import { MemoryLevel } from 'memory-level'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level.js'
 import { RPCManager } from '../../src/rpc/index.js'
 import { Event } from '../../src/types.js'
 
-import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { EthereumClient } from '../../src/client.js'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
-import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 const kzg = new microEthKZG(trustedSetup)
@@ -429,63 +423,6 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
     txnHashes.push(res.result)
   }
   return txnHashes
-}
-
-export async function createInlineClient(
-  config: Config,
-  common: Common,
-  customGenesisState: GenesisState,
-  datadir: string = Config.DATADIR_DEFAULT,
-  memoryDB: boolean = false,
-) {
-  let chainDB
-  let stateDB
-  let metaDB
-  if (memoryDB) {
-    chainDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    stateDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    metaDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-  } else {
-    chainDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/chainDB`,
-    )
-
-    stateDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/stateDB`,
-    )
-    metaDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/metaDB`,
-    )
-  }
-  let validateConsensus = false
-  const consensusDict: ConsensusDict = {}
-  if (customGenesisState !== undefined) {
-    if (config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
-      consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
-      validateConsensus = true
-    }
-  }
-  const blockchain = await createBlockchain({
-    db: new LevelDB(chainDB),
-    genesisState: customGenesisState,
-    common: config.chainCommon,
-    hardforkByHeadBlockNumber: true,
-    validateBlocks: true,
-    validateConsensus,
-    consensusDict,
-  })
-  config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
-  const inlineClient = await EthereumClient.create({
-    config,
-    blockchain,
-    chainDB,
-    stateDB,
-    metaDB,
-    genesisState: customGenesisState,
-  })
-  await inlineClient.open()
-  await inlineClient.start()
-  return inlineClient
 }
 
 export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconUrl: string) {
