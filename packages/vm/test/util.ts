@@ -373,7 +373,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
     if (currentExcessBlobGas === undefined) {
-      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas(opts.common)
+      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas(opts.common  )
     }
   }
   return createBlockHeader(headerData, opts)
