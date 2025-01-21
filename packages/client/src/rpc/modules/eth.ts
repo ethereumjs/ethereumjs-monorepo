@@ -1427,7 +1427,9 @@ export class Eth {
     if (this._chain.blockchain.common.isActivatedEIP(4844)) {
       baseFeePerBlobGas.push(
         // use the last blocks common for fee estimation
-        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(requestedBlocks[requestedBlocks.length - 1].header.common),
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(
+          requestedBlocks[requestedBlocks.length - 1].header.common,
+        ),
       )
     } else {
       // TODO (?): known bug

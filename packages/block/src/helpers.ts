@@ -120,10 +120,10 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
 }
 
 /**
-   * Returns the blob gas price depending upon the `excessBlobGas` value
-   * @param excessBlobGas
-   * @param common
-   */
+ * Returns the blob gas price depending upon the `excessBlobGas` value
+ * @param excessBlobGas
+ * @param common
+ */
 export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
   return fakeExponential(
     common.param('minBlobGas'),
