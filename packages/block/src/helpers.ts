@@ -4,9 +4,9 @@ import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
+import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
-import type { Common } from '@ethereumjs/common'
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
  * @param {string} input string to check, convert, and return
