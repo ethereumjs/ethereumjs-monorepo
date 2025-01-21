@@ -1426,7 +1426,8 @@ export class Eth {
 
     if (this._chain.blockchain.common.isActivatedEIP(4844)) {
       baseFeePerBlobGas.push(
-        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(),
+        // use the last blocks common for fee estimation
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(requestedBlocks[requestedBlocks.length - 1].header.common),
       )
     } else {
       // TODO (?): known bug
@@ -1461,6 +1462,7 @@ export class Eth {
    */
   async blobBaseFee() {
     const headBlock = await this._chain.getCanonicalHeadHeader()
-    return bigIntToHex(headBlock.calcNextBlobGasPrice())
+    // use headBlock's common to estimate the next blob fee
+    return bigIntToHex(headBlock.calcNextBlobGasPrice(headBlock.common))
   }
 }
