@@ -7,6 +7,7 @@ import {
   KECCAK256_RLP,
   Lock,
   MapDB,
+  SHA256_NULL,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -26,7 +27,6 @@ import {
 } from './db/helpers.js'
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
-import { SHA256_EMPTY_RH } from './helpers.js'
 
 import type {
   BlockchainEvent,
@@ -1320,7 +1320,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      requestsHash: common.isActivatedEIP(7685) ? SHA256_EMPTY_RH : undefined,
+      requestsHash: common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {

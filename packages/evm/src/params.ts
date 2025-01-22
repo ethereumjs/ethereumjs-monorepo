@@ -99,7 +99,6 @@ export const paramsEVM: ParamsDict = {
     prevrandaoGas: 0, // TODO: these below 0-gas additions might also point to non-clean implementations in the code base
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
-    callCreateDepth: 1024, // Maximum depth of call/create stack
   },
   /**
 .  * Homestead HF Meta EIP
