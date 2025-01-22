@@ -61,7 +61,6 @@ export const paramsVM: ParamsDict = {
     maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     // gasPrices
-    simplePerBlobGas: 12000, // The basic gas fee for each blob
     minBlobGas: 1, // The minimum fee per blob gas
   },
   /**
