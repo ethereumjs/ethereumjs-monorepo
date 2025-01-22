@@ -146,30 +146,11 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       raw[paramAll1] ??
       raw[paramAll2] ??
       raw.blockHeader === undefined) as PrefixedHexString | boolean
-
-    // Here we decode the rlp to extract the block number
-    // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
-    // try {
-    //   const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
-    //   const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
-    //   currentBlock = bytesToBigInt(decodedRLP[0][8])
-    // } catch (e: any) {
-    //   await handleError(e, expectException)
-    //   continue
-    // }
-
     try {
-      // const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
-      // // Update common HF
-      // const timestamp: bigint | undefined = undefined
-      // try {
-      //   const decoded: any = RLP.decode(blockRlp)
-      //   const timestamp = bytesToBigInt(decoded[0][11])
-      //   // eslint-disable-next-line no-empty
-      // } catch (e) {}
-
+      // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
+      currentBlock = BigInt(raw.blockHeader.number)
       common.setHardforkBy({
-        blockNumber: BigInt(raw.blockHeader.number),
+        blockNumber: currentBlock,
         timestamp: BigInt(raw.blockHeader.timestamp),
       })
 
@@ -205,7 +186,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      // TODO: Decide if we want to keep this variant of the block construction
       // Create the block from the JSON block data since the RLP doesn't include the execution witness
       const block = createBlock(
         {
