@@ -353,12 +353,14 @@ function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
  * @returns the Common which should be used
  */
 export function getCommon(network: string, kzg?: KZG): Common {
-  // Special handler for verkle tests
-  if (network.toLowerCase().includes('verkle')) return setupCommonForVerkle(network, undefined, kzg)
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
   let networkLowercase = network.toLowerCase()
+  // Special handler for verkle tests
+  if (networkLowercase.includes('verkle')) {
+    return setupCommonForVerkle(network, undefined, kzg)
+  }
   if (network.includes('+')) {
     const index = network.indexOf('+')
     networkLowercase = network.slice(0, index).toLowerCase()
