@@ -35,7 +35,7 @@ function formatBlockHeader(data: any) {
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
-  if (testData.network.toLowerCase() !== options.forkConfigTestSuite) {
+  if (testData.network !== options.forkConfigTestSuite) {
     t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
