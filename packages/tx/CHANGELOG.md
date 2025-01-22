@@ -1011,7 +1011,7 @@ Source files from the `src` folder are now included in the distribution build, s
 
 This release comes with significant library usability improvements by allowing a tx instantiation more independently from the `Common` library. This was reported and requested by Web3.js (thanks to @gregthegreek for giving some guidance on the discussion) and others, since they needed the possibility of a tx instantiation in unknown contexts where the chain or HF state is somewhat unclear.
 
-So we've decided to do the following tweaks to the libray:
+So we've decided to do the following tweaks to the library:
 
 ### New Rules for Internal Default HF Setting
 
