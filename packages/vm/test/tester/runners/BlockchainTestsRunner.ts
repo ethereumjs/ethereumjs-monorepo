@@ -245,7 +245,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         return
       }
     } catch (error: any) {
-      console.log(error)
       // caught an error, reduce block number
       currentBlock--
       await handleError(error, expectException)
