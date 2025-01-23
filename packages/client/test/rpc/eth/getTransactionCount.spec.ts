@@ -15,7 +15,6 @@ import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getTransactionCount'
@@ -34,7 +33,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -86,7 +85,7 @@ describe(method, () => {
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const service = client.service
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')

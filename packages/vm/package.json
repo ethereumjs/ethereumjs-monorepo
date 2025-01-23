@@ -1,11 +1,8 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "8.1.0",
+  "version": "9.0.0-alpha.1",
   "description": "An Ethereum VM implementation",
-  "keywords": [
-    "ethereum",
-    "VM"
-  ],
+  "keywords": ["ethereum", "VM"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+vm%22"
@@ -16,9 +13,7 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
-  "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>"
-  ],
+  "contributors": ["Alex Beregszaszi <alex@rtfs.hu>"],
   "type": "module",
   "sideEffects": false,
   "main": "dist/cjs/index.js",
@@ -29,12 +24,11 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
@@ -44,9 +38,8 @@
     "examples": "tsx ../../scripts/examples-runner.ts -- vm",
     "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
@@ -64,20 +57,22 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.3.0",
-    "@ethereumjs/common": "^4.4.0",
-    "@ethereumjs/evm": "^3.1.0",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/statemanager": "^2.4.0",
-    "@ethereumjs/mpt": "^6.2.2",
-    "@ethereumjs/tx": "^5.4.0",
-    "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/block": "^6.0.0-alpha.1",
+    "@ethereumjs/common": "^5.0.0-alpha.1",
+    "@ethereumjs/evm": "^4.0.0-alpha.1",
+    "@ethereumjs/mpt": "^7.0.0-alpha.1",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/statemanager": "^3.0.0-alpha.1",
+    "@ethereumjs/tx": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0"
+    "ethereum-cryptography": "^3.0.0",
+    "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
-    "@ethereumjs/blockchain": "^7.3.0",
-    "@ethereumjs/ethash": "^3.0.3",
+    "@ethereumjs/blockchain": "^8.0.0-alpha.1",
+    "@ethereumjs/ethash": "^4.0.0-alpha.1",
     "@paulmillr/trusted-setups": "^0.1.2",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",
@@ -86,7 +81,7 @@
     "benchmark": "^2.1.4",
     "ethers": "^6.13.2",
     "mcl-wasm": "^1.5.0",
-    "micro-eth-signer": "^0.11.0",
+    "micro-eth-signer": "^0.12.1",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",

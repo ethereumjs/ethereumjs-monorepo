@@ -1,11 +1,8 @@
 {
   "name": "@ethereumjs/rlp",
-  "version": "5.0.2",
+  "version": "6.0.0-alpha.1",
   "description": "Recursive Length Prefix Encoding Module",
-  "keywords": [
-    "rlp",
-    "ethereum"
-  ],
+  "keywords": ["rlp", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+rlp%22"
@@ -37,22 +34,19 @@
   "bin": {
     "rlp": "bin/rlp.cjs"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src"
-  ],
+  "files": ["dist", "bin", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "benchmarks": "node ./benchmarks/index.js",
     "build": "../../config/cli/ts-build.sh node",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
+    "coverage": "npx vitest --coverage --coverage.include=src run",
     "examples": "tsx ../../scripts/examples-runner.ts -- rlp",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",

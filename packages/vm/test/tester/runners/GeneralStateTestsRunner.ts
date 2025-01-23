@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
@@ -116,7 +117,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const account = await vm.stateManager.getAccount(coinbaseAddress)
   await vm.evm.journal.putAccount(coinbaseAddress, account ?? new Account())
 
-  const stepHandler = (e: InterpreterStep) => {
+  const stepHandler = (e: InterpreterStep, resolve: any) => {
     let hexStack = []
     hexStack = e.stack.map((item: bigint) => {
       return '0x' + item.toString(16)
@@ -133,13 +134,15 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
 
     t.comment(JSON.stringify(opTrace))
+    resolve?.()
   }
 
-  const afterTxHandler = async () => {
+  const afterTxHandler = async (_: any, resolve: any) => {
     const stateRoot = {
       stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
     }
     t.comment(JSON.stringify(stateRoot))
+    resolve?.()
   }
 
   if (tx) {

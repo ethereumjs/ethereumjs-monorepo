@@ -235,7 +235,6 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
         socket.destroy()
       }
     }
-
     ;(wss as any).handleUpgrade(req, socket, head, (ws: any) => {
       ;(wss as any).emit('connection', ws, req)
     })

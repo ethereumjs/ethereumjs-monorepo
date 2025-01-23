@@ -1,15 +1,16 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
 import { getLogger } from './logging.js'
 import { RlpxServer } from './net/server/index.js'
-import { Event, EventBus } from './types.js'
+import { Event } from './types.js'
 import { isBrowser, short } from './util/index.js'
 
 import type { Logger } from './logging.js'
-import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
+import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -22,7 +23,6 @@ export enum DataDirectory {
 
 export enum SyncMode {
   Full = 'full',
-  Light = 'light',
   None = 'none',
 }
 
@@ -36,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full', 'light', 'none')
+   * Synchronization mode ('full', 'none')
    *
    * Default: 'full'
    */
@@ -69,13 +69,6 @@ export interface ConfigOptions {
    * Default: VM instance created by client
    */
   vm?: VM
-
-  /**
-   * Serve light peer requests
-   *
-   * Default: `false`
-   */
-  lightserv?: boolean
 
   /**
    * Root data directory for the blockchain
@@ -336,6 +329,7 @@ export interface ConfigOptions {
    * Enables stateless verkle block execution (default: false)
    */
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean
 
@@ -355,11 +349,10 @@ export class Config {
    * Central event bus for events emitted by the different
    * components of the client
    */
-  public readonly events: EventBusType
+  public readonly events: EventEmitter<EventParams>
 
   public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
-  public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
@@ -404,7 +397,6 @@ export class Config {
   public readonly logger: Logger
   public readonly syncmode: SyncMode
   public readonly vm?: VM
-  public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
   public readonly bootnodes?: Multiaddr[]
@@ -456,6 +448,7 @@ export class Config {
   public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly statefulVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
 
@@ -478,11 +471,10 @@ export class Config {
   public readonly metrics: PrometheusMetrics | undefined
 
   constructor(options: ConfigOptions = {}) {
-    this.events = new EventBus() as EventBusType
+    this.events = new EventEmitter<EventParams>()
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
-    this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -548,7 +540,8 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? true
+    this.statelessVerkle = options.statelessVerkle ?? false
+    this.statefulVerkle = options.statefulVerkle ?? false
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
@@ -669,7 +662,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
+        const chainDataDirName = 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:

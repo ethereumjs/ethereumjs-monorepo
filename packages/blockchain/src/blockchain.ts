@@ -1,13 +1,13 @@
 import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
   KECCAK256_RLP,
   Lock,
   MapDB,
+  SHA256_NULL,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -15,6 +15,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { EventEmitter } from 'eventemitter3'
 
 import { CasperConsensus } from './consensus/casper.js'
 import {
@@ -28,7 +29,7 @@ import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
 import type {
-  BlockchainEvents,
+  BlockchainEvent,
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
@@ -37,7 +38,13 @@ import type {
 } from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  DB,
+  DBObject,
+  GenesisState,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -53,7 +60,7 @@ import type { Debugger } from 'debug'
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
-  events: AsyncEventEmitter<BlockchainEvents>
+  events: EventEmitter<BlockchainEvent>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -129,7 +136,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new AsyncEventEmitter()
+    this.events = new EventEmitter<BlockchainEvent>()
 
     this._consensusDict = {}
     this._consensusDict[ConsensusAlgorithm.Casper] = new CasperConsensus()
@@ -581,8 +588,8 @@ export class Blockchain implements BlockchainInterface {
     }
 
     if (header.common.isActivatedEIP(7685)) {
-      if (header.requestsRoot === undefined) {
-        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
+      if (header.requestsHash === undefined) {
+        throw new Error(`requestsHash must be provided when EIP-7685 is active`)
       }
     }
   }
@@ -600,12 +607,6 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
-    if (block.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid()
-      if (!valid) {
-        throw new Error('invalid requestsRoot')
-      }
-    }
   }
   /**
    * The following rules are checked in this method:
@@ -1319,6 +1320,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      requestsHash: common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1329,8 +1331,13 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
+
     return createBlock(
-      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      {
+        header,
+        withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
+        executionWitness: common.isActivatedEIP(6800) ? ({} as VerkleExecutionWitness) : undefined,
+      },
       { common },
     )
   }

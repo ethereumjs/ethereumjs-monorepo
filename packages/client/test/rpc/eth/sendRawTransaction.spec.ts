@@ -18,7 +18,6 @@ import { assert, describe, it } from 'vitest'
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
 import { baseSetup } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
@@ -55,7 +54,7 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
     account!.balance = BigInt('40100000')
@@ -194,7 +193,7 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
 
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
@@ -273,7 +272,7 @@ describe(method, () => {
       },
       { common },
     ).sign(pk)
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
     await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(tx.getSenderAddress())
     account!.balance = BigInt(0xfffffffffffff)

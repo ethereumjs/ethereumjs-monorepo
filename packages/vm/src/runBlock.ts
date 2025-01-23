@@ -1,5 +1,6 @@
-import { createBlock, genRequestsTrieRoot } from '@ethereumjs/block'
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
@@ -18,7 +19,6 @@ import {
   concatBytes,
   createAddressFromString,
   equalsBytes,
-  getVerkleTreeIndicesForStorageSlot,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -26,6 +26,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -46,7 +47,6 @@ import type {
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('vm:block')
@@ -134,32 +134,42 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   if (vm.common.isActivatedEIP(6800)) {
+    // Initialize the access witness
+
+    if (vm.common.customCrypto.verkle === undefined) {
+      throw Error('verkleCrypto required when EIP-6800 is active')
+    }
+    vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: vm.common.customCrypto.verkle,
+    })
+    vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: vm.common.customCrypto.verkle,
+    })
+
     if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
     }
 
     if (vm.DEBUG) {
-      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+      debug(`Initializing executionWitness`)
     }
     if (clearCache) {
       stateManager.clearCaches()
     }
 
-    // Update the stateRoot cache
-    await stateManager.setStateRoot(block.header.stateRoot)
-
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (
-      stateManager instanceof StatelessVerkleStateManager &&
-      verifyVerkleStateProof(stateManager) === false
-    ) {
-      throw Error(`Verkle proof verification failed`)
-    }
-
-    if (vm.DEBUG) {
-      debug(`Verkle proof verification succeeded`)
+    if (stateManager instanceof StatelessVerkleStateManager) {
+      // Update the stateRoot cache
+      await stateManager.setStateRoot(block.header.stateRoot)
+      if (verifyVerkleStateProof(stateManager) === true) {
+        if (vm.DEBUG) {
+          debug(`Verkle proof verification succeeded`)
+        }
+      } else {
+        throw Error(`Verkle proof verification failed`)
+      }
     }
   } else {
     if (typeof stateManager.initVerkleExecutionWitness === 'function') {
@@ -212,11 +222,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     throw err
   }
 
-  let requestsRoot: Uint8Array | undefined
+  let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
+    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results)
-    requestsRoot = await genRequestsTrieRoot(requests)
+    requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -231,41 +242,39 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   // values to the current block, or validate the resulting
   // header values against the current block.
   if (generateFields) {
-    const bloom = result.bloom.bitvector
+    const logsBloom = result.bloom.bitvector
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
     const generatedFields = {
       stateRoot,
-      bloom,
+      logsBloom,
       gasUsed,
       receiptTrie,
       transactionsTrie,
-      requestsRoot,
+      requestsHash,
     }
     const blockData = {
       ...block,
-      requests,
       header: { ...block.header, ...generatedFields },
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
     if (vm.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid(requests)
-      if (!valid) {
-        const validRoot = await genRequestsTrieRoot(requests!)
+      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
         if (vm.DEBUG)
           debug(
-            `Invalid requestsRoot received=${bytesToHex(
-              block.header.requestsRoot!,
-            )} expected=${bytesToHex(validRoot)}`,
+            `Invalid requestsHash received=${bytesToHex(
+              block.header.requestsHash!,
+            )} expected=${bytesToHex(requestsHash!)}`,
           )
-        const msg = _errorMsg('invalid requestsRoot', vm, block)
+        const msg = _errorMsg('invalid requestsHash', vm, block)
         throw new Error(msg)
       }
     }
-    if (!vm.common.isActivatedEIP(6800)) {
-      // Only validate the following headers if verkle blocks aren't activated
+
+    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+      // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
           debug(
@@ -312,9 +321,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         )
         throw new Error(msg)
       }
-    } else if (vm.common.isActivatedEIP(6800)) {
-      // If verkle is activated, only validate the post-state
-      if (vm['_opts'].stateManager!.verifyPostState!() === false) {
+    }
+
+    if (vm.common.isActivatedEIP(6800)) {
+      if (vm.evm.verkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
+      // If verkle is activated and executing statelessly, only validate the post-state
+      if (
+        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+      ) {
         throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
       }
       debug(`Verkle post state verification succeeded`)
@@ -334,7 +350,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
-    requestsRoot,
+    requestsHash,
     requests,
   }
 
@@ -429,6 +445,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (vm.DEBUG) {
     debug(`Apply transactions`)
   }
+
   const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
@@ -473,6 +490,18 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
+  // Merge systemVerkleAccessWitness with verkleAccessWitness
+  if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
+    vm.evm.systemVerkleAccessWitness?.commit()
+    if (vm.DEBUG) {
+      debug('Verkle access witness aggregate costs:')
+      vm.evm.verkleAccessWitness?.debugWitnessCost()
+      debug('System verkle access witness aggregate costs:')
+      vm.evm.systemVerkleAccessWitness?.debugWitnessCost()
+    }
+    vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
+  }
+
   return blockResults
 }
 
@@ -502,7 +531,6 @@ export async function accumulateParentBlockHash(
 
   if (code.length === 0) {
     // Exit early, system contract has no code so no storage is written
-    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
     return
   }
 
@@ -512,13 +540,11 @@ export async function accumulateParentBlockHash(
 
     // generate access witness
     if (vm.common.isActivatedEIP(6800)) {
-      const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(ringKey)
-      // just create access witnesses without charging for the gas
-      vm.stateManager.accessWitness!.touchAddressOnWriteAndComputeGas(
-        historyAddress,
-        treeIndex,
-        subIndex,
-      )
+      if (vm.evm.systemVerkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
+      // Add to system verkle access witness so that it doesn't warm up tx accesses
+      vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -721,21 +747,28 @@ export async function rewardAccount(
   evm: EVMInterface,
   address: Address,
   reward: bigint,
-  common?: Common,
+  common: Common,
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
-    if (common?.isActivatedEIP(6800) === true) {
-      evm.stateManager.accessWitness!.touchAndChargeProofOfAbsence(address)
+    if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+      if (evm.systemVerkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
+      evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
     account = new Account()
   }
   account.balance += reward
   await evm.journal.putAccount(address, account)
 
-  if (common?.isActivatedEIP(6800) === true) {
+  if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
+    if (evm.systemVerkleAccessWitness === undefined) {
+      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+    }
     // use vm utility to build access but the computed gas is not charged and hence free
-    evm.stateManager.accessWitness!.touchTxTargetAndComputeGas(address, { sendsValue: true })
+    evm.systemVerkleAccessWitness.writeAccountBasicData(address)
+    evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
   return account
 }

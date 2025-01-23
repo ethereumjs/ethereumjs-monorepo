@@ -8,5 +8,5 @@ export default mergeConfig(
       exclude: ['test/cli.spec.ts'],
       testTimeout: 180000,
     },
-  })
+  }),
 )

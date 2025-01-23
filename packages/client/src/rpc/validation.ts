@@ -1,18 +1,21 @@
 import { INVALID_PARAMS } from './error-code.js'
 
+import type { RPCMethod } from './types.js'
+
 /**
  * middleware for parameters validation
  * @memberof module:rpc
  * @param method function to add middleware
  * @param requiredParamsCount required parameters count
  * @param validators array of validators
+ * @param names Optional parameter names for error messages, length must be equal to requiredParamsCount
  */
 export function middleware(
   method: any,
   requiredParamsCount: number,
   validators: any[] = [],
   names: string[] = [],
-): any {
+): RPCMethod {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
       if (params.length < requiredParamsCount) {
@@ -307,11 +310,29 @@ export const validators = {
   },
 
   /**
+   * bool validator to check if type is valid ipv4 address
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  get ipv4Address() {
+    // regex from https://stackoverflow.com/questions/5284147/validating-ipv4-addresses-with-regexp
+    const ipv4Regex = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/
+
+    return (params: any[], index: number) => {
+      if (!ipv4Regex.test(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not ipv4 address`,
+        }
+      }
+    }
+  },
+
+  /**
    * number validator to check if type is integer
    * @param params parameters of method
    * @param index index of parameter
    */
-
   get integer() {
     return (params: any[], index: number) => {
       if (!Number.isInteger(params[index])) {

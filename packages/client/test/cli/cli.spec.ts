@@ -45,11 +45,11 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should successfully start client with non-lower case network name', async () => {
-    const cliArgs = ['--network=Kaustinen6']
+    const cliArgs = ['--network=Mainnet']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
-          message.includes('network=kaustinen6'),
+          message.includes('network=mainnet'),
           'client is using custom inputs for network and network ID',
         )
         child.kill()
@@ -624,7 +624,6 @@ describe('[CLI]', () => {
       '--dev=poa',
       '--isSingleNode=true',
       '--sync="none"',
-      '--lightServe=true',
       '--mergeForkIdPostMerge=false',
     ]
     const onData = async (
@@ -809,4 +808,90 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
+  it('should not start client with conflicting parameters', async () => {
+    const cliArgs = ['--chainId', '--gethGenesis']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
+        assert.ok(true, 'correctly errors on conflicting arguments')
+      }
+      child.kill()
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
 }, 180000)
+
+describe('verkle execution', () => {
+  it('should start client with stateful verkle execution', async () => {
+    const gethGenesis = `{
+        "config": {
+          "chainId": 69420,
+          "homesteadBlock": 0,
+          "eip150Block": 0,
+          "eip155Block": 0,
+          "eip158Block": 0,
+          "byzantiumBlock": 0,
+          "constantinopleBlock": 0,
+          "petersburgBlock": 0,
+          "istanbulBlock": 0,
+          "berlinBlock": 0,
+          "londonBlock": 0,
+          "mergeNetsplitBlock": 0,
+          "terminalTotalDifficulty": 0,
+          "terminalTotalDifficultyPassed": true,
+          "shanghaiTime": 0,
+          "verkleTime": 1730214060,
+          "proofInBlocks": true
+        },
+        "coinbase": "0x0000000000000000000000000000000000000000",
+        "difficulty": "0x01",
+        "extraData": "",
+        "gasLimit": "0x17D7840",
+        "nonce": "0x1234",
+        "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "timestamp": "1730214060",
+        "alloc": {}
+      }
+ `
+    const dir = fs.mkdtempSync('test')
+    fs.open(`${dir}/gethGenesis.json`, 'w', (err, fd) => {
+      if (err !== null) throw err
+      fs.write(fd, gethGenesis, (writeErr) => {
+        if (writeErr !== null) {
+          assert.fail(`Error writing the file: ${writeErr.message}`)
+        } else {
+          assert.ok(true, 'File created and data written successfully!')
+        }
+
+        fs.close(fd, (closeErr) => {
+          if (closeErr) {
+            assert.fail(`Error closing the file:, ${closeErr.message}`)
+          }
+        })
+      })
+    })
+    const cliArgs = [
+      `--dataDir="${dir}"`,
+      `--gethGenesis="${dir}/gethGenesis.json"`,
+      '--statefulVerkle',
+    ]
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('Setting up verkleVM for stateful verkle execution')) {
+        assert.ok(true, 'Client started with verkle execution')
+        child.kill()
+        fs.rmSync(dir, { recursive: true, force: true })
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 15000)
+})

@@ -25,7 +25,7 @@ describe('EIP 1153: transient storage', () => {
     let currentGas = initialGas
     const vm = await createVM({ common })
 
-    vm.evm.events!.on('step', function (step: any) {
+    vm.evm.events!.on('step', function (step, resolve) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -51,6 +51,7 @@ describe('EIP 1153: transient storage', () => {
         )
       }
       i++
+      resolve?.()
     })
 
     for (const { code, address } of test.contracts) {

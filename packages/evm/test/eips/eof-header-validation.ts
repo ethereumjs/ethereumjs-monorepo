@@ -52,8 +52,8 @@ await new Promise<void>((resolve, reject) => {
 
             const code = hexToBytes(test.code)
 
-            const expected = test.results.Prague.result
-            const _exception = test.results.Prague.exception
+            const expected = test.results.Osaka.result
+            const _exception = test.results.Osaka.exception
 
             let containerSectionType = ContainerSectionType.RuntimeCode
             let eofContainerMode = EOFContainerMode.Default

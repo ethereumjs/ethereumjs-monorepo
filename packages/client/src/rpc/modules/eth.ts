@@ -152,8 +152,7 @@ const toJSONRPCBlock = async (
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
     parentBeaconBlockRoot: header.parentBeaconBlockRoot,
-    requestsRoot: header.requestsRoot,
-    requests: block.requests?.map((req) => bytesToHex(req.serialize())),
+    requestsHash: header.requestsHash,
   }
 }
 
@@ -307,7 +306,7 @@ export class Eth {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as Service
+    this.service = client.service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
@@ -316,17 +315,14 @@ export class Eth {
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
-    this.blockNumber = middleware(
-      callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug),
-      0,
-    )
+    this.blockNumber = callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug)
 
     this.call = middleware(callWithStackTrace(this.call.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
       [validators.blockOption],
     ])
 
-    this.chainId = middleware(callWithStackTrace(this.chainId.bind(this), this._rpcDebug), 0, [])
+    this.chainId = callWithStackTrace(this.chainId.bind(this), this._rpcDebug)
 
     this.estimateGas = middleware(
       callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
@@ -340,7 +336,7 @@ export class Eth {
       [[validators.address], [validators.blockOption]],
     )
 
-    this.coinbase = middleware(callWithStackTrace(this.coinbase.bind(this), this._rpcDebug), 0, [])
+    this.coinbase = callWithStackTrace(this.coinbase.bind(this), this._rpcDebug)
 
     this.getBlockByNumber = middleware(
       callWithStackTrace(this.getBlockByNumber.bind(this), this._rpcDebug),
@@ -444,13 +440,9 @@ export class Eth {
       [[validators.hex]],
     )
 
-    this.protocolVersion = middleware(
-      callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
+    this.protocolVersion = callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug)
 
-    this.syncing = middleware(callWithStackTrace(this.syncing.bind(this), this._rpcDebug), 0, [])
+    this.syncing = callWithStackTrace(this.syncing.bind(this), this._rpcDebug)
 
     this.getProof = middleware(callWithStackTrace(this.getProof.bind(this), this._rpcDebug), 3, [
       [validators.address],
@@ -464,7 +456,7 @@ export class Eth {
       [[validators.blockOption]],
     )
 
-    this.gasPrice = middleware(callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug), 0, [])
+    this.gasPrice = callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug)
 
     this.feeHistory = middleware(
       callWithStackTrace(this.feeHistory.bind(this), this._rpcDebug),
@@ -476,18 +468,13 @@ export class Eth {
       ],
     )
 
-    this.blobBaseFee = middleware(
-      callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
+    this.blobBaseFee = callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug)
   }
 
   /**
    * Returns number of the most recent block.
-   * @param params An empty array
    */
-  async blockNumber(_params = []) {
+  async blockNumber() {
     return bigIntToHex(this._chain.headers.latest?.number ?? BIGINT_0)
   }
 
@@ -541,10 +528,9 @@ export class Eth {
 
   /**
    * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
-   * @param _params An empty array
    * @returns The chain ID.
    */
-  async chainId(_params = []) {
+  async chainId() {
     const chainId = this._chain.config.chainCommon.chainId()
     return bigIntToHex(chainId)
   }
@@ -661,10 +647,9 @@ export class Eth {
 
   /**
    * Returns the currently configured coinbase address.
-   * @param _params An empty array
    * @returns The chain ID.
    */
-  async coinbase(_params = []) {
+  async coinbase() {
     const cb = this.client.config.minerCoinbase
     if (cb === undefined) {
       throw {
@@ -906,9 +891,8 @@ export class Eth {
 
   /**
    * Returns the current ethereum protocol version as a hex-encoded string
-   * @param params An empty array
    */
-  protocolVersion(_params = []) {
+  protocolVersion() {
     return intToHex(this.ethVersion)
   }
 
@@ -1176,7 +1160,7 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
@@ -1273,13 +1257,12 @@ export class Eth {
 
   /**
    * Returns an object with data about the sync status or false.
-   * @param params An empty array
    * @returns An object with sync status data or false (when not syncing)
    *   * startingBlock - The block at which the import started (will only be reset after the sync reached his head)
    *   * currentBlock - The current block, same as eth_blockNumber
    *   * highestBlock - The estimated highest block
    */
-  async syncing(_params = []) {
+  async syncing() {
     if (this.client.config.synchronized) {
       return false
     }
@@ -1288,7 +1271,7 @@ export class Eth {
       this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bigIntToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.services[0].synchronizer
+    const synchronizer = this.client.service!.synchronizer
     if (!synchronizer) {
       return false
     }
@@ -1419,7 +1402,7 @@ export class Eth {
         let blobGasUsedRatio = 0
         if (b.header.excessBlobGas !== undefined) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
-          const max = b.common.param('maxblobGasPerBlock')
+          const max = b.common.param('maxBlobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)
         }
 

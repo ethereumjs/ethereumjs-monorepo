@@ -8,7 +8,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
@@ -19,7 +19,7 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 import { Peer } from './peer.js'
 
 import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 
@@ -29,7 +29,7 @@ const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
-  public events: EventEmitter
+  public events: EventEmitter<RLPxEvent>
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger
@@ -55,7 +55,7 @@ export class RLPx {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<RLPxEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 

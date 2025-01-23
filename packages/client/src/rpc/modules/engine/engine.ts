@@ -32,14 +32,12 @@ import {
   recursivelyFindParents,
   validExecutedChainBlock,
   validHash,
-  validate4844BlobVersionedHashes,
   validateHardforkRange,
 } from './util/index.js'
 import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
-  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
@@ -59,7 +57,6 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
-  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -108,7 +105,7 @@ export class Engine {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
     this._rpcDebug = rpcDebug
@@ -207,13 +204,14 @@ export class Engine {
     this.newPayloadV4 = cmMiddleware(
       middleware(
         callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
-        3,
+        4,
         [
-          [validators.object(executionPayloadV4FieldValidators)],
+          [validators.object(executionPayloadV3FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
+          [validators.array(validators.hex)],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot'],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot', 'executionRequests'],
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
@@ -344,9 +342,14 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   private async newPayload(
-    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?],
+    params: [
+      ExecutionPayload,
+      (Bytes32[] | null)?,
+      (Bytes32 | null)?,
+      (PrefixedHexString[] | null)?,
+    ],
   ): Promise<PayloadStatusV1> {
-    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot, executionRequests] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -364,10 +367,11 @@ export class Engine {
      */
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
+      payload,
       {
-        ...payload,
-        // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
+        blobVersionedHashes: blobVersionedHashes ?? undefined,
+        executionRequests: executionRequests ?? undefined,
       },
       this.chain,
       this.chainCache,
@@ -384,41 +388,6 @@ export class Engine {
         )
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
-      // skip marking the block invalid as this is more of a data issue from CL
-      return response
-    }
-
-    /**
-     * Validate blob versioned hashes in the context of EIP-4844 blob transactions
-     */
-    if (headBlock.common.isActivatedEIP(4844)) {
-      let validationError: string | null = null
-      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
-        validationError = `Error verifying blobVersionedHashes: received none`
-      } else {
-        validationError = validate4844BlobVersionedHashes(headBlock, blobVersionedHashes)
-      }
-
-      // if there was a validation error return invalid
-      if (validationError !== null) {
-        this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(
-          hexToBytes(parentHash as PrefixedHexString),
-          this.chain,
-          this.chainCache,
-        )
-        const response = { status: Status.INVALID, latestValidHash, validationError }
-        // skip marking the block invalid as this is more of a data issue from CL
-        return response
-      }
-    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
-      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(
-        hexToBytes(parentHash as PrefixedHexString),
-        this.chain,
-        this.chainCache,
-      )
-      const response = { status: Status.INVALID, latestValidHash, validationError }
       // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
@@ -852,7 +821,9 @@ export class Engine {
     return newPayloadRes
   }
 
-  async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
+  async newPayloadV4(
+    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+  ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
     if (pragueTimestamp === null || ts < pragueTimestamp) {
@@ -1334,7 +1305,7 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value, blobs] = built
+      const [block, receipts, value, blobs, requests] = built
 
       // do a blocking call even if execution might be busy for the moment and skip putting
       // it into chain till CL confirms with full data via new payload like versioned hashes
@@ -1348,7 +1319,7 @@ export class Engine {
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned
        */
-      const executionPayload = blockToExecutionPayload(block, value, blobs)
+      const executionPayload = blockToExecutionPayload(block, value, blobs, requests)
 
       let checkNotBeforeHf: Hardfork | null
       let checkNotAfterHf: Hardfork | null
