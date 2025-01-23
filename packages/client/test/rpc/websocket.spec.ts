@@ -54,7 +54,7 @@ describe('JSON-RPC call', () => {
         resolve(undefined)
       })
     })
-  }, 30000)
+  })
 
   it('server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true })
