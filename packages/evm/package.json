@@ -31,7 +31,6 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
-    "coverage:test": "npm run test:node && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- evm",
     "examples:build": "npx embedme README.md",

@@ -13,6 +13,7 @@ export default defineConfig({
       provider: 'v8',
       enabled: true,
       all: true,
+      reporter: ['lcov'],
     },
   },
 })
