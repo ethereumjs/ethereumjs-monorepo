@@ -49,7 +49,7 @@ describe('JSON-RPC call', () => {
         assert.ok(err.message.includes('401'), 'Unauthorized')
         resolve(undefined)
       }
-      const _rpc = Client.websocket({
+      Client.websocket({
         // @ts-ignore -- see above test
         ws: socket,
       })
