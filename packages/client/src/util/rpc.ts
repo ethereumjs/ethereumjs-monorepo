@@ -175,7 +175,7 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   const token = header.trim().split(' ')[1]
   if (!token) throw Error(`Missing jwt token`)
   const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
-  const drift = Math.abs(new Date().getTime() - claims.iat * 1000 ?? 0)
+  const drift = Math.abs(new Date().getTime() - claims.iat * 1000)
   if (drift > ALLOWED_DRIFT) {
     throw Error(`Stale jwt token drift=${drift}, allowed=${ALLOWED_DRIFT}`)
   }

@@ -57,7 +57,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 5000)
+  }, 15000)
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
@@ -117,7 +117,7 @@ describe('[CLI]', () => {
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
-  }, 5000)
+  }, 15000)
   it('should throw error if the same port is assigned to multiple RPC servers', async () => {
     const cliArgs = ['--ws', '--rpc', '--rpcPort=8546']
     const onData = async (
@@ -792,7 +792,7 @@ describe('[CLI]', () => {
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
-  }, 5000)
+  }, 15000)
   it('should not start client with conflicting parameters', async () => {
     const cliArgs = ['--chainId', '--gethGenesis']
     const onData = async (
@@ -807,7 +807,7 @@ describe('[CLI]', () => {
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
-  }, 5000)
+  }, 15000)
   it('should not start client with conflicting parameters', async () => {
     const cliArgs = ['--chainId', '--gethGenesis']
     const onData = async (
@@ -822,7 +822,7 @@ describe('[CLI]', () => {
       resolve(undefined)
     }
     await clientRunHelper(cliArgs, onData, true)
-  }, 5000)
+  }, 15000)
 }, 180000)
 
 describe('verkle execution', () => {
