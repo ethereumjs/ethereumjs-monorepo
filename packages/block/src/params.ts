@@ -17,8 +17,6 @@ export const paramsBlock: ParamsDict = {
     minimumDifficulty: 131072, // The minimum that the difficulty may ever be
     difficultyBoundDivisor: 2048, // The bound divisor of the difficulty, used in the update calculations
     durationLimit: 13, // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not
-    epochDuration: 30000, // Duration between proof-of-work epochs
-    timebombPeriod: 100000, // Exponential difficulty timebomb period
     difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
   },
   /**
@@ -75,7 +73,6 @@ export const paramsBlock: ParamsDict = {
     maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     // gasPrices
-    simplePerBlobGas: 12000, // The basic gas fee for each blob
     minBlobGas: 1, // The minimum fee per blob gas
   },
   /**

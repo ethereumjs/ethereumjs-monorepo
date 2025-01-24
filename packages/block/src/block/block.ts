@@ -358,7 +358,7 @@ export class Block {
       const blobGasPerBlob = this.common.param('blobGasPerBlob')
       let blobGasUsed = BIGINT_0
 
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(this.common)
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(
           `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,

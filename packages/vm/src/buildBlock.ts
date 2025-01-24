@@ -120,7 +120,7 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(4844) &&
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
-      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
+      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas(this.vm.common)
     }
   }
 
