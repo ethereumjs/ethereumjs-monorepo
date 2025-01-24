@@ -463,7 +463,7 @@ describe(method, () => {
         expBlobGas.push(bigIntToHex(block.header.getBlobGasPrice()))
       }
 
-      expBlobGas.push(bigIntToHex(head.header.calcNextBlobGasPrice()))
+      expBlobGas.push(bigIntToHex(head.header.calcNextBlobGasPrice(head.common)))
 
       assert.deepEqual(res.result.baseFeePerBlobGas, expBlobGas)
       assert.deepEqual(res.result.blobGasUsedRatio, expRatio)
