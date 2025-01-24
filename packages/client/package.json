@@ -33,7 +33,7 @@
     "client:start": "npm run client:start:js --",
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
-    "coverage": "npx vitest --coverage --coverage.include=src --coverage.reporter=lcov run test/* -c=./vitest.config.unit.ts",
+    "coverage": "DEBUG=ethjs npx vitest run -c ./vitest.config.coverage.ts",
     "docs:build": "typedoc --options typedoc.cjs --tsconfig tsconfig.prod.cjs.json",
     "examples": "tsx ../../scripts/examples-runner.ts -- client",
     "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
