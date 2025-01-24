@@ -42,7 +42,7 @@
     "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- common",
     "examples:build": "npx embedme README.md",

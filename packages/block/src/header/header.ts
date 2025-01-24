@@ -26,7 +26,7 @@ import {
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
 } from '../consensus/clique.js'
-import { fakeExponential } from '../helpers.js'
+import { computeBlobGasPrice } from '../helpers.js'
 import { paramsBlock } from '../params.js'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.js'
@@ -532,19 +532,7 @@ export class BlockHeader {
     if (this.excessBlobGas === undefined) {
       throw new Error('header must have excessBlobGas field populated')
     }
-    return this._getBlobGasPrice(this.excessBlobGas)
-  }
-
-  /**
-   * Returns the blob gas price depending upon the `excessBlobGas` value
-   * @param excessBlobGas
-   */
-  private _getBlobGasPrice(excessBlobGas: bigint) {
-    return fakeExponential(
-      this.common.param('minBlobGas'),
-      excessBlobGas,
-      this.common.param('blobGasPriceUpdateFraction'),
-    )
+    return computeBlobGasPrice(this.excessBlobGas, this.common)
   }
 
   /**
@@ -564,10 +552,10 @@ export class BlockHeader {
   /**
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
-  public calcNextExcessBlobGas(): bigint {
+  public calcNextExcessBlobGas(childCommon: Common): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
     const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
-    const targetBlobGasPerBlock = this.common.param('targetBlobGasPerBlock')
+    const targetBlobGasPerBlock = childCommon.param('targetBlobGasPerBlock')
 
     if (targetGasConsumed <= targetBlobGasPerBlock) {
       return BIGINT_0
@@ -580,8 +568,8 @@ export class BlockHeader {
    * Calculate the blob gas price of the block built on top of this one
    * @returns The blob gas price
    */
-  public calcNextBlobGasPrice(): bigint {
-    return this._getBlobGasPrice(this.calcNextExcessBlobGas())
+  public calcNextBlobGasPrice(childCommon: Common): bigint {
+    return computeBlobGasPrice(this.calcNextExcessBlobGas(childCommon), childCommon)
   }
 
   /**
