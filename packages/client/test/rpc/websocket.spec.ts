@@ -28,14 +28,12 @@ describe('JSON-RPC call', () => {
       //@ts-ignore -- `isomorphic-ws` types aren't perfectly mapped to jayson.WebSocketClient but works fine for this test
       ws: socket,
     })
+    while ((rpc as any).ws.readyState !== WebSocket.OPEN) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
     try {
-      await new Promise((resolve) => {
-        ;(rpc as any).ws.on('open', async () => {
-          const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-          assert.equal(res.error.code, METHOD_NOT_FOUND)
-          resolve(undefined)
-        })
-      })
+      const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
+      assert.equal(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }
@@ -62,14 +60,12 @@ describe('JSON-RPC call', () => {
     const rpc = Client.websocket({
       url: 'ws://localhost:12345/',
     })
+    while ((rpc as any).ws.readyState !== WebSocket.OPEN) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
     try {
-      await new Promise((resolve) => {
-        ;(rpc as any).ws.on('open', async () => {
-          const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-          assert.equal(res.error.code, METHOD_NOT_FOUND)
-          resolve(undefined)
-        })
-      })
+      const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
+      assert.equal(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }
