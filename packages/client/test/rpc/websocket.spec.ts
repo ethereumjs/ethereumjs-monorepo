@@ -39,7 +39,7 @@ describe('JSON-RPC call', () => {
     }
   })
 
-  it.only('auth protected server without any auth headers', async () => {
+  it('auth protected server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1236, 'localhost')
 
