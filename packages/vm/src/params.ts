@@ -9,6 +9,7 @@ export const paramsVM: ParamsDict = {
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     blobGasPerBlob: 0,
     maxBlobGasPerBlock: 0,
+    targetBlobGasPerBlock: 0,
     // pow
     minerReward: '5000000000000000000', // the amount a miner get rewarded for mining a block
   },
@@ -54,8 +55,13 @@ export const paramsVM: ParamsDict = {
 .  * Shard Blob Transactions
 .  */
   4844: {
+    // gasConfig
+    targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
     blobGasPerBlob: 131072, // The base fee for blob gas per blob
     maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
+    // gasPrices
+    minBlobGas: 1, // The minimum fee per blob gas
   },
   /**
 .  * Beacon block root in the EVM
@@ -94,6 +100,9 @@ export const paramsVM: ParamsDict = {
 .  * Shard Blob Transactions
 .  */
   7691: {
+    // gasConfig
+    targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
 }

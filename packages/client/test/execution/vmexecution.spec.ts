@@ -224,4 +224,4 @@ describe('[VMExecution]', () => {
 
     closeRPC(server)
   })
-}, 30000)
+})
