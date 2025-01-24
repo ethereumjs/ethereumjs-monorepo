@@ -1,4 +1,4 @@
-import { createBlock } from '@ethereumjs/block'
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
@@ -186,20 +186,26 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      // Create the block from the JSON block data since the RLP doesn't include the execution witness
-      const block = createBlock(
-        {
-          header: raw.blockHeader,
-          transactions: raw.transactions,
-          uncleHeaders: raw.uncleHeaders,
-          withdrawals: raw.withdrawals,
-          executionWitness: raw.witness,
-        },
-        {
-          common,
-          setHardfork: true,
-        },
-      )
+      let block: Block
+      if (options.stateManager === 'verkle') {
+        // Create the block from the JSON block data since the RLP doesn't include the execution witness
+        block = createBlock(
+          {
+            header: raw.blockHeader,
+            transactions: raw.transactions,
+            uncleHeaders: raw.uncleHeaders,
+            withdrawals: raw.withdrawals,
+            executionWitness: raw.witness,
+          },
+          {
+            common,
+            setHardfork: true,
+          },
+        )
+      } else {
+        const blockRLP = hexToBytes(raw.rlp as PrefixedHexString)
+        block = createBlockFromRLP(blockRLP, { common, setHardfork: true })
+      }
 
       await blockchain.putBlock(block)
 
