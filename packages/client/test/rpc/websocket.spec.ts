@@ -39,17 +39,19 @@ describe('JSON-RPC call', () => {
     }
   })
 
-  it('auth protected server without any auth headers', async () => {
+  it.only('auth protected server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1236, 'localhost')
-    const rpc = Client.websocket({
-      url: 'ws://localhost:1236/',
-    })
 
     await new Promise((resolve) => {
-      ;(rpc as any).ws.on('error', async (err: any) => {
+      const socket = new WebSocket('ws://localhost:1236', undefined, {})
+      socket.onerror = (err) => {
         assert.ok(err.message.includes('401'), 'Unauthorized')
         resolve(undefined)
+      }
+      const _rpc = Client.websocket({
+        // @ts-ignore -- see above test
+        ws: socket,
       })
     })
   })
