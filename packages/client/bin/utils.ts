@@ -745,7 +745,7 @@ export async function generateClientConfig(args: ClientOpts) {
       genesisFile.config.eip6493Time = genesisFile.config.pragueTime
       console.log('Scheduling eip6493AtPrague', genesisFile.config)
     }
-    
+
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,

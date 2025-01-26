@@ -2,13 +2,7 @@ import { ConsensusType } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
-import {
-  BIGINT_0,
-  KECCAK256_RLP,
-  KECCAK256_RLP_ARRAY,
-  bytesToHex,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { BIGINT_0, KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256'
 

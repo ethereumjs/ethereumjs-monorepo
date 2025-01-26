@@ -1,13 +1,21 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, ssz, toType } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  TypeOutput,
+  concatBytes,
+  isHexString,
+  ssz,
+  toType,
+} from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
-import type { ValueOf } from '@chainsafe/ssz'
 
 export type SSZTransactionType = ValueOf<typeof ssz.Transaction>
 /**

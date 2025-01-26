@@ -20,8 +20,8 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { EventEmitter } from 'eventemitter3'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
@@ -56,8 +56,8 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Log } from './types.js'
+import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')

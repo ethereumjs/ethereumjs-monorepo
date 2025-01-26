@@ -18,7 +18,7 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray, toPayloadJson } from '../util.js'
+import { AccessLists, toPayloadJson, validateNotArray } from '../util.js'
 
 import { createBlob4844Tx } from './constructors.js'
 
@@ -29,8 +29,8 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   Capability,
   JSONTx,
-  SSZTransactionV1,
   SSZTransactionType,
+  SSZTransactionV1,
   TransactionCache,
   TransactionInterface,
   TxOptions,

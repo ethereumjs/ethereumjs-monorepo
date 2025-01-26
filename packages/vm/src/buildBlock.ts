@@ -28,8 +28,8 @@ import {
   toType,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
@@ -429,7 +429,7 @@ export class BlockBuilder {
     let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
-      requestsHash = genRequestsRoot(requests, sha256Function)
+      requestsHash = genRequestsRoot(requests!, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done

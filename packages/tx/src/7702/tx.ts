@@ -14,7 +14,7 @@ import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, validateNotArray, toPayloadJson } from '../util.js'
+import { AccessLists, AuthorizationLists, toPayloadJson, validateNotArray } from '../util.js'
 
 import { createEOACode7702Tx } from './constructors.js'
 
@@ -27,8 +27,8 @@ import type {
   AuthorizationListBytes,
   Capability,
   JSONTx,
-  SSZTransactionV1,
   SSZTransactionType,
+  SSZTransactionV1,
   TransactionCache,
   TransactionInterface,
   TxOptions,

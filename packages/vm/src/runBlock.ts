@@ -1,6 +1,6 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface, VerkleAccessWitness, Log } from '@ethereumjs/evm'
+import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
@@ -51,7 +51,8 @@ import type { VM } from './vm.js'
 import type { ValueOf } from '@chainsafe/ssz'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { Log } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export type SSZReceiptType = ValueOf<typeof ssz.Receipt>
 

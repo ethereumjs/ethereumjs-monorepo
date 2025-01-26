@@ -5,6 +5,7 @@ import type { AccessList2930Tx } from './2930/tx.js'
 import type { Blob4844Tx } from './4844/tx.js'
 import type { EOACode7702Tx } from './7702/tx.js'
 import type { LegacyTx } from './legacy/tx.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
@@ -12,9 +13,8 @@ import type {
   BigIntLike,
   BytesLike,
   PrefixedHexString,
+  ssz,
 } from '@ethereumjs/util'
-import type { ValueOf } from '@chainsafe/ssz'
-import type { ssz } from '@ethereumjs/util'
 
 export type SSZTransactionType = ValueOf<typeof ssz.Transaction>
 
@@ -559,7 +559,7 @@ export interface JSONTx {
   yParity?: PrefixedHexString
 }
 
-export type SSZTransactionV1 = ssz.TransactionV1;
+export type SSZTransactionV1 = ssz.TransactionV1
 
 export type JSONBlobTxNetworkWrapper = JSONTx & {
   blobs: PrefixedHexString[]

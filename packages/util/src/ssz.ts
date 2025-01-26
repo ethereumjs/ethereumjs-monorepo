@@ -481,7 +481,7 @@ export const BlockHeader = new StableContainerType(
     withdrawalsRoot: new OptionalType(Bytes32),
     excessGas: new OptionalType(FeesPerGas),
     parentBeaconBlockRoot: new OptionalType(Bytes32),
-    requestsRoot: new OptionalType(Bytes32),
+    requestsHash: new OptionalType(Bytes32),
     systemLogsRoot: new OptionalType(Bytes32),
   },
   MAX_BLOCKHEADER_FIELDS,

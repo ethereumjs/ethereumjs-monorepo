@@ -186,7 +186,7 @@ export class BlockHeader {
       hardforkDefaults.parentBeaconBlockRoot
     const requestsHash =
       toType(headerData.requestsHash, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsHash
-      const systemLogsRoot =
+    const systemLogsRoot =
       toType(headerData.systemLogsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.systemLogsRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
@@ -669,7 +669,7 @@ export class BlockHeader {
       withdrawalsRoot: this.withdrawalsRoot ?? null,
       excessGas: { regular: null, blob: this.excessBlobGas ?? null },
       parentBeaconBlockRoot: this.parentBeaconBlockRoot ?? null,
-      requestsRoot: this.requestsRoot ?? null,
+      requestsHash: this.requestsHash ?? null,
       systemLogsRoot: this.systemLogsRoot ?? null,
     }
 
