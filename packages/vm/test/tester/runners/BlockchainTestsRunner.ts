@@ -99,7 +99,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
+    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
   }
 
   const begin = Date.now()
@@ -255,7 +255,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
 
   t.equal(
-    bytesToHex((blockchain as any)._headHeaderHash),
+    bytesToHex(blockchain['_headHeaderHash']),
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
