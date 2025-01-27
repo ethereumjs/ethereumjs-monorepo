@@ -1,6 +1,12 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { createBlockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
-import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import {
+  Common,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
@@ -11,8 +17,8 @@ import { VMExecution } from '../../src/execution/index.js'
 import { closeRPC, setupChain, testSetup } from '../rpc/helpers.js'
 import { goerliData } from '../testdata/blocks/goerli.js'
 import { mainnetData } from '../testdata/blocks/mainnet.js'
-import { Goerli } from '../testdata/common/goerliCommon.js'
 import { testnetData } from '../testdata/common/testnet.js'
+import { goerliGenesis } from '../testdata/geth-genesis/goerliGenesis.js'
 import { withdrawalsData } from '../testdata/geth-genesis/withdrawals.js'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
@@ -160,7 +166,7 @@ describe('[VMExecution]', () => {
   })
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = createCommonFromGethGenesis(goerliGenesis, {})
     let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
