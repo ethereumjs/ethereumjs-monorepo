@@ -1,5 +1,43 @@
 import { validators } from '../../validation.js'
 
+const transaction = validators.hexOrObject(
+  validators.object({
+    payload: validators.object({
+      type: validators.nullOptional(validators.uint8),
+      chainId: validators.nullOptional(validators.uint64),
+      nonce: validators.nullOptional(validators.uint64),
+      maxFeesPerGas: validators.nullOptional(
+        validators.object({
+          regular: validators.nullOptional(validators.uint256),
+          blob: validators.nullOptional(validators.uint256),
+        }),
+      ),
+      gas: validators.nullOptional(validators.uint64),
+      to: validators.nullOptional(validators.address),
+      value: validators.nullOptional(validators.uint256),
+      input: validators.nullOptional(validators.hex),
+      accessList: validators.nullOptional(
+        validators.array(
+          validators.object({
+            address: validators.address,
+            storageKeys: validators.array(validators.bytes32),
+          }),
+        ),
+      ),
+      maxPriorityFeesPerGas: validators.nullOptional(
+        validators.object({
+          regular: validators.nullOptional(validators.uint256),
+          blob: validators.nullOptional(validators.uint256),
+        }),
+      ),
+      blobVersionedHashes: validators.nullOptional(validators.array(validators.bytes32)),
+    }),
+    signature: validators.object({
+      secp256k1: validators.nullOptional(validators.hex),
+    }),
+  }),
+)
+
 export const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,
   feeRecipient: validators.address,
@@ -14,7 +52,7 @@ export const executionPayloadV1FieldValidators = {
   extraData: validators.variableBytes32,
   baseFeePerGas: validators.uint256,
   blockHash: validators.blockHash,
-  transactions: validators.array(validators.hex),
+  transactions: validators.array(transaction),
 }
 export const executionPayloadV2FieldValidators = {
   ...executionPayloadV1FieldValidators,
@@ -24,6 +62,11 @@ export const executionPayloadV3FieldValidators = {
   ...executionPayloadV2FieldValidators,
   blobGasUsed: validators.uint64,
   excessBlobGas: validators.uint64,
+}
+
+export const executionPayloadV4FieldValidators = {
+  ...executionPayloadV3FieldValidators,
+  systemLogsRoot: validators.bytes32,
 }
 
 export const forkchoiceFieldValidators = {

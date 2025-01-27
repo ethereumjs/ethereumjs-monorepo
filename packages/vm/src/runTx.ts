@@ -13,6 +13,7 @@ import {
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
   bigIntMax,
+  bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -21,7 +22,9 @@ import {
   equalsBytes,
   hexToBytes,
   publicToAddress,
+  setLengthLeft,
   short,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -679,6 +682,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
+  if (vm.common.isActivatedEIP(6493)) {
+    const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+    const logData = {
+      address: systemAddressBytes,
+      // operation, to
+      topics: [keccak256(utf8ToBytes('Fee(address,uint256)')), setLengthLeft(caller.toBytes(), 32)],
+      // amount be uint256
+      data: setLengthLeft(bigIntToBytes(actualTxCost), 32),
+    }
+
+    if (results.execResult.logs === undefined) {
+      results.execResult.logs = []
+    }
+    results.execResult.logs.push([logData.address, logData.topics, logData.data])
+  }
+
   // Update miner's balance
   let miner
   if (vm.common.consensusType() === ConsensusType.ProofOfAuthority) {
@@ -884,6 +903,8 @@ export async function generateTxReceipt(
     cumulativeBlockGasUsed: cumulativeGasUsed,
     bitvector: txResult.bloom.bitvector,
     logs: txResult.execResult.logs ?? [],
+    contractAddress: txResult.createdAddress,
+    authorities: txResult.authorities,
   }
 
   let receipt

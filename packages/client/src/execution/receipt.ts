@@ -43,8 +43,8 @@ type GetReceiptByTxHashReturn = [
 type GetLogsReturn = {
   log: Log
   block: Block
-  tx: TypedTransaction
-  txIndex: number
+  tx?: TypedTransaction
+  txIndex?: number
   logIndex: number
 }[]
 
@@ -112,6 +112,15 @@ export class ReceiptsManager extends MetaDBManager {
     void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
   }
 
+  async saveSystemLogs(block: Block, logs: Log[]) {
+    const encoded = this.rlp(RlpConvert.Encode, RlpType.Logs, logs)
+    await this.put(DBKey.SystemLogs, block.hash(), encoded)
+  }
+
+  async deleteSystemLogs(block: Block) {
+    await this.delete(DBKey.SystemLogs, block.hash())
+  }
+
   /**
    * Returns receipts for given blockHash
    * @param blockHash the block hash
@@ -152,6 +161,13 @@ export class ReceiptsManager extends MetaDBManager {
     return receipts
   }
 
+  async getSystemLogs(blockHash: Uint8Array): Promise<Log[]> {
+    const encoded = await this.get(DBKey.SystemLogs, blockHash)
+    if (!encoded) return []
+    const systemLogs = this.rlp(RlpConvert.Decode, RlpType.Logs, encoded as unknown as rlpLog[])
+    return systemLogs
+  }
+
   /**
    * Returns receipt by tx hash with additional metadata for the JSON RPC response, or null if not found
    * @param txHash the tx hash
@@ -183,7 +199,8 @@ export class ReceiptsManager extends MetaDBManager {
     for (let i = from.header.number; i <= to.header.number; i++) {
       const block = await this.chain.getBlock(i)
       const receipts = await this.getReceipts(block.hash())
-      if (receipts.length === 0) continue
+      const systemLogs = await this.getSystemLogs(block.hash())
+      if (receipts.length === 0 && systemLogs.length === 0) continue
       let logs: GetLogsReturn = []
       let logIndex = 0
       for (const [receiptIndex, receipt] of receipts.entries()) {
@@ -197,6 +214,16 @@ export class ReceiptsManager extends MetaDBManager {
           })),
         )
       }
+
+      // push system logs
+      logs.push(
+        ...systemLogs.map((log) => ({
+          log,
+          block,
+          logIndex: logIndex++,
+        })),
+      )
+
       if (addresses && addresses.length > 0) {
         logs = logs.filter((l) => addresses.some((a) => equalsBytes(a, l.log[0])))
       }

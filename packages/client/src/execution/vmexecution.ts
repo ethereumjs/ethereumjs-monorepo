@@ -40,6 +40,7 @@ import { ReceiptsManager } from './receipt.js'
 
 import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
 
@@ -68,7 +69,7 @@ export class VMExecution extends Execution {
 
   public receiptsManager?: ReceiptsManager
   public preimagesManager?: PreimagesManager
-  private pendingReceipts?: Map<string, TxReceipt[]>
+  private pendingReceipts?: Map<string, { receipts: TxReceipt[]; systemLogs?: Log[] }>
   private vmPromise?: Promise<number | null>
 
   /** Maximally tolerated block time before giving a warning on console */
@@ -126,6 +127,7 @@ export class VMExecution extends Execution {
             // Once a block gets deleted from the chain, delete the receipts also
             for (const block of blocks) {
               await this.receiptsManager?.deleteReceipts(block)
+              await this.receiptsManager?.deleteSystemLogs(block)
             }
             if (resolve !== undefined) {
               resolve()
@@ -369,7 +371,7 @@ export class VMExecution extends Execution {
    */
   async runWithoutSetHead(
     opts: RunBlockOpts & { parentBlock?: Block },
-    receipts?: TxReceipt[],
+    receiptsAndSystemLogs?: { receipts: TxReceipt[]; systemLogs?: Log[] },
     blocking: boolean = false,
     skipBlockchain: boolean = false,
   ): Promise<boolean> {
@@ -386,7 +388,7 @@ export class VMExecution extends Execution {
         this.running = true
         const { block, root } = opts
 
-        if (receipts === undefined) {
+        if (receiptsAndSystemLogs === undefined) {
           // Check if we need to pass flag to clear statemanager cache or not
           const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
           // If root is not provided its mean to be run on the same set state
@@ -452,11 +454,11 @@ export class VMExecution extends Execution {
           if (this.config.savePreimages && result.preimages !== undefined) {
             await this.savePreimages(result.preimages)
           }
-          receipts = result.receipts
+          receiptsAndSystemLogs = { receipts: result.receipts, systemLogs: result.systemLogs }
         }
-        if (receipts !== undefined) {
+        if (receiptsAndSystemLogs !== undefined) {
           // Save receipts
-          this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
+          this.pendingReceipts?.set(bytesToHex(block.hash()), receiptsAndSystemLogs)
         }
 
         if (!skipBlockchain) {
@@ -520,9 +522,13 @@ export class VMExecution extends Execution {
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
-        const receipts = this.pendingReceipts?.get(bytesToHex(block.hash()))
-        if (receipts) {
+        const receiptsAndSystemLogs = this.pendingReceipts?.get(bytesToHex(block.hash()))
+        if (receiptsAndSystemLogs) {
+          const { receipts, systemLogs } = receiptsAndSystemLogs
           await this.receiptsManager?.saveReceipts(block, receipts)
+          if (systemLogs !== undefined) {
+            await this.receiptsManager?.saveSystemLogs(block, systemLogs)
+          }
           this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
       }

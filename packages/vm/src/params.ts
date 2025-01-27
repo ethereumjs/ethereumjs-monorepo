@@ -105,4 +105,9 @@ export const paramsVM: ParamsDict = {
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
+  6493: {
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
+    // dummu address right now as actual will be determined with the deployment of ivc contract
+    ivcPredeployAddress: '0x' + '6493'.repeat(10),
+  },
 }

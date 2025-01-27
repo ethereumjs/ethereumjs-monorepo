@@ -14,9 +14,13 @@ import {
   equalsBytes,
   generateAddress,
   generateAddress2,
+  hexToBytes,
+  setLengthLeft,
   short,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.js'
@@ -52,6 +56,7 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
+import type { Log } from './types.js'
 import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
@@ -86,6 +91,7 @@ export class EVM implements EVMInterface {
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Eip6493,
     Hardfork.Osaka,
     Hardfork.Verkle,
   ]
@@ -183,8 +189,8 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6493, 6780,
+      6800, 7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
     ]
 
     for (const eip of this.common.eips()) {
@@ -263,6 +269,7 @@ export class EVM implements EVMInterface {
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
+    let logs: Log[] | undefined = undefined
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.accessWitness === undefined) {
@@ -343,6 +350,22 @@ export class EVM implements EVMInterface {
     if (!message.delegatecall) {
       try {
         await this._addToBalance(toAccount, message)
+        if (this.common.isActivatedEIP(6493) && message.value > 0) {
+          const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+          const logData = {
+            address: systemAddressBytes,
+            // operation, to
+            topics: [
+              keccak256(utf8ToBytes('Transfer(address,address,uint256)')),
+              setLengthLeft(fromAddress.toBytes(), 32),
+              setLengthLeft(message.to.toBytes(), 32),
+            ],
+            // amount be uint256
+            data: setLengthLeft(bigIntToBytes(message.value), 32),
+          }
+          logs = logs ?? []
+          logs.push([logData.address, logData.topics, logData.data])
+        }
       } catch (e: any) {
         errorMessage = e
       }
@@ -370,6 +393,7 @@ export class EVM implements EVMInterface {
           executionGasUsed: message.gasLimit - gasLimit,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs,
         },
       }
     }
@@ -409,6 +433,9 @@ export class EVM implements EVMInterface {
     }
 
     result.executionGasUsed += message.gasLimit - gasLimit
+    if (this.common.isActivatedEIP(6493) && logs !== undefined) {
+      result.logs = [...(logs ?? []), ...(result.logs ?? [])]
+    }
 
     return {
       execResult: result,
@@ -418,6 +445,7 @@ export class EVM implements EVMInterface {
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
+    let logs: Log[] | undefined = undefined
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.depth === 0) {
@@ -530,6 +558,22 @@ export class EVM implements EVMInterface {
     let errorMessage
     try {
       await this._addToBalance(toAccount, message as MessageWithTo)
+      if (this.common.isActivatedEIP(6493) && message.value > 0) {
+        const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+        const logData = {
+          address: systemAddressBytes,
+          // operation, to
+          topics: [
+            keccak256(utf8ToBytes('Transfer(address,address,uint256)')),
+            setLengthLeft(fromAddress.toBytes(), 32),
+            setLengthLeft(message.to.toBytes(), 32),
+          ],
+          // amount be uint256
+          data: setLengthLeft(bigIntToBytes(message.value), 32),
+        }
+        logs = logs ?? []
+        logs.push([logData.address, logData.topics, logData.data])
+      }
     } catch (e: any) {
       errorMessage = e
     }
@@ -580,6 +624,7 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs,
         },
       }
     }
@@ -738,6 +783,10 @@ export class EVM implements EVMInterface {
 
     if (message.depth === 0) {
       this.postMessageCleanup()
+    }
+
+    if (this.common.isActivatedEIP(6493) && logs !== undefined) {
+      result.logs = [...(logs ?? []), ...(result.logs ?? [])]
     }
 
     return {

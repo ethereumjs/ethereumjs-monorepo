@@ -10,6 +10,7 @@ import type {
 } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
+  Address,
   BigIntLike,
   CLRequest,
   CLRequestType,
@@ -34,6 +35,8 @@ export interface BaseTxReceipt {
    * Logs emitted
    */
   logs: Log[]
+  contractAddress?: Address
+  authorities?: Address[]
 }
 
 /**
@@ -349,6 +352,11 @@ export interface ApplyBlockResult {
    * Preimages mapping of the touched accounts from the block (see reportPreimages option)
    */
   preimages?: Map<PrefixedHexString, Uint8Array>
+  /**
+   * Any CL requests that were processed in the course of this block
+   */
+  requests?: CLRequest<CLRequestType>[]
+  systemLogs?: Log[]
 }
 
 /**
@@ -488,6 +496,8 @@ export interface RunTxResult extends EVMResult {
    * This is the blob gas units times the fee per blob gas for 4844 transactions
    */
   blobGasUsed?: bigint
+
+  authorities?: Address[]
 }
 
 export interface AfterTxEvent extends RunTxResult {

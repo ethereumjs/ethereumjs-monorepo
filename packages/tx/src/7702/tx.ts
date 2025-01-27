@@ -14,7 +14,7 @@ import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+import { AccessLists, AuthorizationLists, toPayloadJson, validateNotArray } from '../util.js'
 
 import { createEOACode7702Tx } from './constructors.js'
 
@@ -27,6 +27,8 @@ import type {
   AuthorizationListBytes,
   Capability,
   JSONTx,
+  SSZTransactionType,
+  SSZTransactionV1,
   TransactionCache,
   TransactionInterface,
   TxOptions,
@@ -255,6 +257,9 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     ]
   }
 
+  sszRaw(): SSZTransactionType {
+    throw Error('not implemented')
+  }
   /**
    * Returns the serialized encoding of the EIP-7702 transaction.
    *
@@ -364,6 +369,10 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
       accessList: accessListJSON,
       authorizationList: this.AuthorizationListJSON,
     }
+  }
+
+  toExecutionPayloadTx(): SSZTransactionV1 {
+    return toPayloadJson(this.sszRaw())
   }
 
   getValidationErrors(): string[] {

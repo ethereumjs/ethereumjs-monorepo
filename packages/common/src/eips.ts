@@ -328,6 +328,16 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4750, 5450],
   },
   /**
+   * Description : SSZ Transaction Signature Scheme
+   * URL         : https://eips.ethereum.org/EIPS/eip-6493
+   * Status      : Draft
+   */
+  6493: {
+    // TODO: Set correct minimum hardfork
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [],
+  },
+  /**
    * Description : SELFDESTRUCT only in same transaction
    * URL         : https://eips.ethereum.org/EIPS/eip-6780
    * Status      : Final

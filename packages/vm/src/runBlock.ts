@@ -23,10 +23,13 @@ import {
   intToBytes,
   setLengthLeft,
   short,
+  ssz,
   unprefixedHexToBytes,
+  utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { Bloom } from './bloom/index.js'
 import { emitEVMProfile } from './emitEVMProfile.js'
@@ -45,9 +48,13 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { ValueOf } from '@chainsafe/ssz'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { Log } from '@ethereumjs/evm'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+export type SSZReceiptType = ValueOf<typeof ssz.Receipt>
 
 const debug = debugDefault('vm:block')
 
@@ -223,11 +230,22 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   let requestsHash: Uint8Array | undefined
-  let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results)
-    requestsHash = genRequestsRoot(requests, sha256Function)
+    requestsHash = genRequestsRoot(result.requests!, sha256Function)
+  }
+
+  let systemLogsRoot: Uint8Array | undefined
+  if (block.common.isActivatedEIP(6493)) {
+    // dummy for time being
+    const systemLogs = result.systemLogs ?? []
+    systemLogsRoot = ssz.LogList.hashTreeRoot(
+      systemLogs!.map((log) => ({
+        address: log[0],
+        topics: log[1],
+        data: log[2],
+      })),
+    )
   }
 
   // Persist state
@@ -253,13 +271,28 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       receiptTrie,
       transactionsTrie,
       requestsHash,
+      systemLogsRoot,
     }
     const blockData = {
       ...block,
+      requests: result.requests,
       header: { ...block.header, ...generatedFields },
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
+    if (vm.common.isActivatedEIP(6493)) {
+      if (!equalsBytes(systemLogsRoot!, block.header.systemLogsRoot!)) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid systemLogsRoot received=${bytesToHex(systemLogsRoot!)} expected=${bytesToHex(
+              block.header.systemLogsRoot!,
+            )}`,
+          )
+        }
+        const msg = _errorMsg('invalid systemLogsRoot', vm, block)
+        throw new Error(msg)
+      }
+    }
     if (vm.common.isActivatedEIP(7685)) {
       if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
         if (vm.DEBUG)
@@ -351,7 +384,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     receiptsRoot: result.receiptsRoot,
     preimages: result.preimages,
     requestsHash,
-    requests,
+    requests: result.requests,
+    systemLogs: result.systemLogs,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -485,6 +519,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     }
     await vm.evm.journal.cleanup()
   }
+
   // Pay ommers and miners
   if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards(vm, block)
@@ -502,7 +537,42 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 
-  return blockResults
+  const result = { ...blockResults } as ApplyBlockResult
+
+  if (block.common.isActivatedEIP(7685)) {
+    result.requests = await accumulateRequests(vm, blockResults.results)
+  }
+
+  if (vm.common.isActivatedEIP(6493)) {
+    // decide to add individual or total reward logs
+    const totalPriorityReward = blockResults.results.reduce(
+      (acc, elem) => acc + elem.minerValue,
+      BIGINT_0,
+    )
+    const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+    const logData = {
+      address: systemAddressBytes,
+      // operation, from, to
+      topics: [
+        keccak256(utf8ToBytes('PriorityRewards(address,uint256)')),
+        setLengthLeft(block.header.coinbase.toBytes(), 32),
+      ],
+      // amount be uint256
+      data: setLengthLeft(bigIntToBytes(totalPriorityReward), 32),
+    }
+
+    result.systemLogs = [[logData.address, logData.topics, logData.data]]
+  }
+
+  if (vm.common.isActivatedEIP(6493)) {
+    for (const txReceipt of result.receipts) {
+      await accumulateIVCLogs(vm, txReceipt.logs)
+    }
+
+    await accumulateIVCLogs(vm, result.systemLogs!)
+  }
+
+  return result
 }
 
 /**
@@ -609,11 +679,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
-  let receiptTrie: MerklePatriciaTrie | undefined = undefined
-  if (block.transactions.length !== 0) {
-    receiptTrie = new MerklePatriciaTrie({ common: vm.common })
-  }
-
   const receipts: TxReceipt[] = []
   const txResults: RunTxResult[] = []
 
@@ -663,8 +728,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
-    const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
   }
 
   if (enableProfiler) {
@@ -672,7 +735,23 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     console.timeEnd(processTxsLabel)
   }
 
-  const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
+  let receiptsRoot
+  if (vm.common.isActivatedEIP(6493)) {
+    const sszReceipts: SSZReceiptType[] = []
+    for (const [i, txReceipt] of receipts.entries()) {
+      const tx = block.transactions[i]
+      sszReceipts.push(encodeSszReceipt(txReceipt, tx.type))
+    }
+    receiptsRoot = ssz.Receipts.hashTreeRoot(sszReceipts)
+  } else {
+    const receiptTrie = new MerklePatriciaTrie({ common: vm.common })
+    for (const [i, txReceipt] of receipts.entries()) {
+      const tx = block.transactions[i]
+      const encodedReceipt = encodeReceipt(txReceipt, tx.type)
+      await receiptTrie!.put(RLP.encode(i), encodedReceipt)
+    }
+    receiptsRoot = receiptTrie.root()
+  }
 
   return {
     bloom,
@@ -792,6 +871,83 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
   return concatBytes(intToBytes(txType), encoded)
+}
+
+export function encodeSszReceipt(receipt: TxReceipt, _txType: TransactionType) {
+  const sszRaw: SSZReceiptType = {
+    root: (receipt as PreByzantiumTxReceipt).stateRoot ?? null,
+    gasUsed: receipt.cumulativeBlockGasUsed,
+    contractAddress: receipt.contractAddress?.bytes ?? null,
+    logs: receipt.logs.map((log) => ({
+      address: log[0],
+      topics: log[1],
+      data: log[2],
+    })),
+    status:
+      (receipt as PostByzantiumTxReceipt).status !== undefined
+        ? (receipt as PostByzantiumTxReceipt).status === 0
+          ? false
+          : true
+        : null,
+    authorities: receipt.authorities?.map((auth) => auth.bytes) ?? null,
+  }
+
+  return sszRaw
+}
+
+export async function accumulateIVCLogs(vm: VM, logs: Log[]) {
+  // keep all declarations here for ease of movement and diff
+  const LOG_ADDRESS_STORAGE_SLOT = setLengthLeft(new Uint8Array([0]), 32)
+  const LOG_TOPICS_STORAGE_SLOT = setLengthLeft(new Uint8Array([1]), 32)
+  const LOG_ADDRESS_TOPICS_STORAGE_SLOT = setLengthLeft(new Uint8Array([2]), 32)
+
+  const commonSHA256 = vm.common.customCrypto.sha256 ?? sha256
+  const ivcContractAddress = new Address(
+    bigIntToAddressBytes(vm.common.param('ivcPredeployAddress')),
+  )
+
+  async function accumulateLog(key: Uint8Array, logRoot: Uint8Array) {
+    const prevRoot = setLengthLeft(await vm.stateManager.getStorage(ivcContractAddress, key), 32)
+    const newRoot = commonSHA256(concatBytes(logRoot, prevRoot))
+    await vm.stateManager.putStorage(ivcContractAddress, key, newRoot)
+  }
+
+  if ((await vm.stateManager.getAccount(ivcContractAddress)) === undefined) {
+    // store with nonce of 1 to prevent 158 cleanup
+    const ivcContract = new Account()
+    ivcContract.nonce = BIGINT_1
+    await vm.stateManager.putAccount(ivcContractAddress, ivcContract)
+  }
+
+  for (const log of logs) {
+    const sszLog = {
+      address: log[0],
+      topics: log[1],
+      data: log[2],
+    }
+    const logRoot = ssz.Log.hashTreeRoot(sszLog)
+
+    // Allow eth_getLogs proof via `address` filter
+    // abi.encode(log.address, LOG_ADDRESS_STORAGE_SLOT)
+    const paddedAddress = setLengthLeft(sszLog.address, 32)
+    const addressKey = keccak256(concatBytes(paddedAddress, LOG_ADDRESS_STORAGE_SLOT))
+    await accumulateLog(addressKey, logRoot)
+
+    for (const topic of sszLog.topics) {
+      // Allow eth_getLogs proof via `topics` filter
+      // abi.encode(topic, LOG_TOPICS_STORAGE_SLOT)
+      const topicKey = keccak256(concatBytes(topic, LOG_TOPICS_STORAGE_SLOT))
+      await accumulateLog(topicKey, logRoot)
+
+      // Allow eth_getLogs proof via combined `address` + `topics` filter
+      // abi.encode(log.address, topic)
+      const addressAndTopic = keccak256(concatBytes(paddedAddress, topic))
+      const addressAndTopicKey = keccak256(
+        concatBytes(addressAndTopic, LOG_ADDRESS_TOPICS_STORAGE_SLOT),
+      )
+      await accumulateLog(addressAndTopicKey, logRoot)
+    }
+  }
 }
 
 /**

@@ -38,6 +38,7 @@ import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
+  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
@@ -57,6 +58,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -206,7 +208,7 @@ export class Engine {
         callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
         4,
         [
-          [validators.object(executionPayloadV3FieldValidators)],
+          [validators.object(executionPayloadV4FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
           [validators.array(validators.hex)],
@@ -341,7 +343,22 @@ export class Engine {
    *      valid block in the branch defined by payload and its ancestors
    *   3. validationError: String|null - validation error message
    */
+
   private async newPayload(
+    params: [
+      ExecutionPayload,
+      (Bytes32[] | null)?,
+      (Bytes32 | null)?,
+      (PrefixedHexString[] | null)?,
+    ],
+  ): Promise<PayloadStatusV1> {
+    return this.newPayloadWrap(params).catch((e) => {
+      console.log('newPayload', e)
+      throw e
+    })
+  }
+
+  private async newPayloadWrap(
     params: [
       ExecutionPayload,
       (Bytes32[] | null)?,
@@ -822,7 +839,7 @@ export class Engine {
   }
 
   async newPayloadV4(
-    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+    params: [ExecutionPayloadV4, Bytes32[], Bytes32, Bytes32[]],
   ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
@@ -1305,17 +1322,22 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value, blobs, requests] = built
+      const [block, receiptsAndSystemLogs, value, blobs, requests] = built
 
       // do a blocking call even if execution might be busy for the moment and skip putting
       // it into chain till CL confirms with full data via new payload like versioned hashes
       // parent beacon block root
-      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true, true)
+      const executed = await this.execution.runWithoutSetHead(
+        { block },
+        receiptsAndSystemLogs,
+        true,
+        true,
+      )
       if (!executed) {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }
 
-      this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+      // this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned
        */
@@ -1359,6 +1381,7 @@ export class Engine {
       )
       return executionPayload
     } catch (error: any) {
+      console.log('getPayload', error)
       if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,

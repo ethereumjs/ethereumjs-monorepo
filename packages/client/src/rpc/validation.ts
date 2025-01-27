@@ -187,6 +187,9 @@ export const validators = {
   get bytes256() {
     return (params: any[], index: number) => bytes(256, params, index)
   },
+  get uint8() {
+    return (params: any[], index: number) => uint(8, params, index)
+  },
   get uint64() {
     return (params: any[], index: number) => uint(64, params, index)
   },
@@ -607,6 +610,24 @@ export const validators = {
     }
   },
 
+  get hexOrObject() {
+    return (validator: Function) => {
+      return (params: any[], index: number) => {
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        if (typeof params[index] !== 'object') {
+          return validate(params[index], this.hex)
+        }
+
+        return validator(params, index)
+      }
+    }
+  },
+
   /**
    * object validator to check if type is object with
    * required keys and expected validation of values
@@ -765,6 +786,24 @@ export const validators = {
       return (params: any, index: number) => {
         if (params[index] === undefined || params[index] === '' || params[index] === null) {
           return
+        }
+        return validator(params, index)
+      }
+    }
+  },
+
+  get nullOptional() {
+    return (validator: any) => {
+      return (params: any, index: number) => {
+        if (params[index] === null) {
+          return
+        }
+
+        if (params[index] === undefined) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid undefined argument for nullOptional at ${index}`,
+          }
         }
         return validator(params, index)
       }

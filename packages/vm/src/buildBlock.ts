@@ -2,7 +2,9 @@ import {
   createBlock,
   createSealedCliqueBlock,
   genRequestsRoot,
+  genTransactionsSszRoot,
   genTransactionsTrieRoot,
+  genWithdrawalsSszRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
@@ -15,30 +17,39 @@ import {
   BIGINT_1,
   BIGINT_2,
   GWEI_TO_WEI,
-  KECCAK256_RLP,
   TypeOutput,
+  bigIntToBytes,
   createWithdrawal,
   createZeroAddress,
+  hexToBytes,
+  setLengthLeft,
+  ssz,
   toBytes,
   toType,
+  utf8ToBytes,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { Bloom } from './bloom/index.js'
 import { accumulateRequests } from './requests.js'
 import {
+  accumulateIVCLogs,
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
+  encodeSszReceipt,
   rewardAccount,
 } from './runBlock.js'
 
 import { runTx } from './index.js'
 
+import type { SSZReceiptType } from './runBlock.js'
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
 
@@ -76,6 +87,7 @@ export class BlockBuilder {
   private checkpointed = false
   private blockStatus: BlockStatus = { status: BuildStatus.Pending }
 
+  systemLogs?: Log[]
   get transactionReceipts() {
     return this.transactionResults.map((result) => result.receipt)
   }
@@ -144,10 +156,22 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(
-      this.transactions,
-      new MerklePatriciaTrie({ common: this.vm.common }),
-    )
+    return this.vm.common.isActivatedEIP(6493)
+      ? genTransactionsSszRoot(this.transactions)
+      : genTransactionsTrieRoot(
+          this.transactions,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
+  }
+
+  public async withdrawalsTrie() {
+    if (this.withdrawals === undefined) {
+      return
+    }
+
+    return this.vm.common.isActivatedEIP(6493)
+      ? genWithdrawalsSszRoot(this.withdrawals)
+      : genWithdrawalsTrieRoot(this.withdrawals, new MerklePatriciaTrie({ common: this.vm.common }))
   }
 
   /**
@@ -166,16 +190,22 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   public async receiptTrie() {
-    if (this.transactionResults.length === 0) {
-      return KECCAK256_RLP
+    if (this.vm.common.isActivatedEIP(6493)) {
+      const sszReceipts: SSZReceiptType[] = []
+      for (const [i, txResult] of this.transactionResults.entries()) {
+        const tx = this.transactions[i]
+        sszReceipts.push(encodeSszReceipt(txResult.receipt, tx.type))
+      }
+      return ssz.Receipts.hashTreeRoot(sszReceipts)
+    } else {
+      const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
+      for (const [i, txResult] of this.transactionResults.entries()) {
+        const tx = this.transactions[i]
+        const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
+        await receiptTrie.put(RLP.encode(i), encodedReceipt)
+      }
+      return receiptTrie.root()
     }
-    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
-    for (const [i, txResult] of this.transactionResults.entries()) {
-      const tx = this.transactions[i]
-      const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(RLP.encode(i), encodedReceipt)
-    }
-    return receiptTrie.root()
   }
 
   /**
@@ -300,6 +330,56 @@ export class BlockBuilder {
     this.blockStatus = { status: BuildStatus.Reverted }
   }
 
+  async finishBlockBuild() {
+    const consensusType = this.vm.common.consensusType()
+
+    if (consensusType === ConsensusType.ProofOfWork) {
+      await this.rewardMiner()
+    }
+    await this.processWithdrawals()
+    let requests
+    if (this.vm.common.isActivatedEIP(7685)) {
+      requests = await accumulateRequests(this.vm, this.transactionResults)
+    }
+
+    let systemLogs: Log[] | undefined
+    if (this.vm.common.isActivatedEIP(6493)) {
+      // decide to add individual or total reward logs
+      const totalPriorityReward = this.transactionResults.reduce(
+        (acc, elem) => acc + elem.minerValue,
+        BIGINT_0,
+      )
+      const systemAddressBytes = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+      const coinbase =
+        this.headerData.coinbase !== undefined
+          ? new Address(toBytes(this.headerData.coinbase))
+          : createZeroAddress()
+
+      const logData = {
+        address: systemAddressBytes,
+        // operation, from, to
+        topics: [
+          keccak256(utf8ToBytes('PriorityRewards(address,uint256)')),
+          setLengthLeft(coinbase.toBytes(), 32),
+        ],
+        // amount be uint256
+        data: setLengthLeft(bigIntToBytes(totalPriorityReward), 32),
+      }
+
+      systemLogs = [[logData.address, logData.topics, logData.data]]
+    }
+
+    if (this.vm.common.isActivatedEIP(6493)) {
+      for (const txReceipt of this.transactionReceipts) {
+        await accumulateIVCLogs(this.vm, txReceipt.logs)
+      }
+
+      await accumulateIVCLogs(this.vm, systemLogs!)
+    }
+
+    return { requests, systemLogs }
+  }
+
   /**
    * This method constructs the finalized block, including withdrawals and any CLRequests.
    * It also:
@@ -319,18 +399,22 @@ export class BlockBuilder {
     const blockOpts = this.blockOpts
     const consensusType = this.vm.common.consensusType()
 
-    if (consensusType === ConsensusType.ProofOfWork) {
-      await this.rewardMiner()
+    const { requests, systemLogs } = await this.finishBlockBuild()
+    this.systemLogs = systemLogs
+
+    let systemLogsRoot
+    if (this.vm.common.isActivatedEIP(6493)) {
+      systemLogsRoot = ssz.LogList.hashTreeRoot(
+        systemLogs!.map((log) => ({
+          address: log[0],
+          topics: log[1],
+          data: log[2],
+        })),
+      )
     }
-    await this.processWithdrawals()
 
     const transactionsTrie = await this.transactionsTrie()
-    const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(
-          this.withdrawals,
-          new MerklePatriciaTrie({ common: this.vm.common }),
-        )
-      : undefined
+    const withdrawalsRoot = await this.withdrawalsTrie()
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
@@ -342,12 +426,10 @@ export class BlockBuilder {
       blobGasUsed = this.blobGasUsed
     }
 
-    let requests
     let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
-      requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsHash = genRequestsRoot(requests, sha256Function)
+      requestsHash = genRequestsRoot(requests!, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -364,6 +446,7 @@ export class BlockBuilder {
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
       requestsHash,
+      systemLogsRoot,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {

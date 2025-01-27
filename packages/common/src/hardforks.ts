@@ -164,6 +164,14 @@ export const hardforksDict: HardforksDict = {
     eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
   },
   /**
+   * Description: Experimental hardfork to test eip 6493 for 6493 devnets will be removed(incomplete/experimental)
+   * URL        :
+   * Status     : Final
+   */
+  eip6493: {
+    eips: [6493],
+  },
+  /**
    * Description: Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
    * Status     : Final

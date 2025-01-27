@@ -11,6 +11,7 @@ import type {
   VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
+  ssz,
 } from '@ethereumjs/util'
 
 /**
@@ -109,6 +110,7 @@ export interface HeaderData {
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
   requestsHash?: BytesLike
+  systemLogsRoot?: BytesLike
 }
 
 /**
@@ -192,6 +194,7 @@ export interface JSONHeader {
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
   requestsHash?: PrefixedHexString
+  systemLogsRoot?: PrefixedHexString
 }
 
 /*
@@ -226,6 +229,7 @@ export interface JSONRPCBlock {
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
   requestsHash?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  systemLogsRoot?: PrefixedHexString
 }
 
 export type WithdrawalV1 = {
@@ -250,7 +254,7 @@ export type ExecutionPayload = {
   extraData: PrefixedHexString // DATA, 0 to 32 Bytes
   baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
   blockHash: PrefixedHexString // DATA, 32 Bytes
-  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
+  transactions: PrefixedHexString[] | ssz.TransactionV1[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
@@ -258,4 +262,5 @@ export type ExecutionPayload = {
   requestsHash?: PrefixedHexString
   // VerkleExecutionWitness is already a hex serialized object
   executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  systemLogsRoot?: PrefixedHexString
 }
