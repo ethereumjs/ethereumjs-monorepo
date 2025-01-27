@@ -581,7 +581,7 @@ export class Blockchain implements BlockchainInterface {
     }
 
     if (header.common.isActivatedEIP(4844)) {
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(header.common)
       if (header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
       }

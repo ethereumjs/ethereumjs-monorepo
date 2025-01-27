@@ -78,7 +78,7 @@ describe(method, () => {
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
     assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  }, 40000)
+  })
 
   it('call with pending block argument', async () => {
     const blockchain = await createBlockchain()
@@ -109,5 +109,5 @@ describe(method, () => {
 
     const res = await rpc.request(method, [address.toString(), 'pending'])
     assert.equal(res.result, '0x1')
-  }, 40000)
+  })
 })
