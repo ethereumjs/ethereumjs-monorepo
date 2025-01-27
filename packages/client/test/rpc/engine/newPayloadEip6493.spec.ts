@@ -111,16 +111,18 @@ describe(`${method}: call with executionPayloadV4`, () => {
     })
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
-    const { executionPayload,executionRequests } = res.result
+    const { executionPayload, executionRequests } = res.result
     assert.ok(executionPayload.transactions.length === 2, 'two transactions should have been added')
-    assert.ok(
-      executionRequests.length === 1,
-      'executionRequests should have 1 deposit request',
-    )
+    assert.ok(executionRequests.length === 1, 'executionRequests should have 1 deposit request')
 
     console.log(executionPayload)
 
-    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot, executionRequests])
+    res = await rpc.request(method, [
+      executionPayload,
+      [],
+      parentBeaconBlockRoot,
+      executionRequests,
+    ])
     assert.equal(res.result.status, 'VALID')
 
     const newBlockHashHex = executionPayload.blockHash
