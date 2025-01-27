@@ -1,11 +1,12 @@
 import { cliqueSigner, createBlock } from '@ethereumjs/block'
-import { Common, ConsensusAlgorithm, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.js'
 import { createBlockchain } from '../src/index.js'
 
+import { Goerli } from './testdata/goerliCommon.js'
 import { generateConsecutiveBlock } from './util.js'
 
 import type { ConsensusDict } from '../src/index.js'

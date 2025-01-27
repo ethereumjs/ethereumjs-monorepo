@@ -7,7 +7,6 @@ import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
-  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
@@ -22,6 +21,8 @@ import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
 import { createBlockchain } from '../src/index.js'
+
+import { Goerli } from './testdata/goerliCommon.js'
 
 import type { Blockchain, ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'

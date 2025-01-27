@@ -1,6 +1,7 @@
-import { Common, Goerli, Holesky } from '@ethereumjs/common'
+import { Common, Holesky } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
+import { Goerli } from '../../testdata/common/goerliCommon.js'
 import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'net_version'

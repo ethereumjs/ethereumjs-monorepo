@@ -1,7 +1,6 @@
 import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import {
   Common,
-  Goerli,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
@@ -19,6 +18,7 @@ import { Miner } from '../../src/miner/index.js'
 import { FullEthereumService } from '../../src/service/index.js'
 // import { Event } from '../../src/types'
 import { wait } from '../integration/util.js'
+import { Goerli } from '../testdata/common/goerliCommon.js'
 
 import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
