@@ -57,21 +57,18 @@ describe(`${method}: call with executionPayloadV4`, () => {
       withdrawals: [],
       blobGasUsed: '0x0',
       excessBlobGas: '0x0',
-      depositRequests: [],
-      withdrawalRequests: [],
-      consolidationRequests: [],
       systemLogsRoot: '0x3850240388ff8bed46a8631179e63ad67e28c343be54906cfaec0c3a2d95e71e',
       receiptsRoot: '0x7ffe241ea60187fdb0187bfa22de35d1f9bed7ab061d9401fd47e34a54fbede1',
       parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-      stateRoot: '0x9d95c5098ef0f1b45fef49659318055ac4f06dc6601d7baf3656a391381981e3',
-      blockHash: '0x390042a0aefa4a11387652e215dd698a45dc5698d152ee0270a162e697420352',
+      stateRoot: '0xc3cc6a86d4db9edbc48b107ff140a9a184312c1daae0c079438e0d0aa88270ac',
+      blockHash: '0x49d123d84781969ee07cef6bfd08c4380e7eddf7cd304d1b5207194ef3d36301',
     }
     let res
 
     res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
     assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
 
-    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
     console.log(res)
     assert.equal(res.result.status, 'VALID')
 
@@ -114,20 +111,16 @@ describe(`${method}: call with executionPayloadV4`, () => {
     })
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
-    const { executionPayload } = res.result
+    const { executionPayload,executionRequests } = res.result
     assert.ok(executionPayload.transactions.length === 2, 'two transactions should have been added')
     assert.ok(
-      executionPayload.depositRequests?.length === 1,
-      'depositRequests should have 1 deposit request',
-    )
-    assert.ok(
-      executionPayload.withdrawalRequests !== undefined,
-      'depositRequests field should be received',
+      executionRequests.length === 1,
+      'executionRequests should have 1 deposit request',
     )
 
     console.log(executionPayload)
 
-    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])
+    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot, executionRequests])
     assert.equal(res.result.status, 'VALID')
 
     const newBlockHashHex = executionPayload.blockHash

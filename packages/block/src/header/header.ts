@@ -656,7 +656,7 @@ export class BlockHeader {
       number: this.number,
       gasLimits: {
         regular: this.gasLimit,
-        blob: this.common.isActivatedEIP(4844) ? this.common.param('maxblobGasPerBlock') : null,
+        blob: this.common.isActivatedEIP(4844) ? this.common.param('maxBlobGasPerBlock') : null,
       },
       gasUsed: { regular: this.gasUsed, blob: this.blobGasUsed ?? null },
       timestamp: this.timestamp,

@@ -58,6 +58,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV4,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -838,7 +839,7 @@ export class Engine {
   }
 
   async newPayloadV4(
-    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+    params: [ExecutionPayloadV4, Bytes32[], Bytes32, Bytes32[]],
   ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
