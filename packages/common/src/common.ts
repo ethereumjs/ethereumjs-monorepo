@@ -627,12 +627,7 @@ export class Common {
       // Skip for chainstart (0), not applied HFs (null) and
       // when already applied on same blockOrTime HFs
       // and on the merge since forkhash doesn't change on merge hf
-      if (
-        typeof blockOrTime === 'number' &&
-        blockOrTime !== 0 &&
-        blockOrTime !== prevBlockOrTime &&
-        name !== Hardfork.Paris
-      ) {
+      if (typeof blockOrTime === 'number' && blockOrTime !== 0 && blockOrTime !== prevBlockOrTime) {
         const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
         hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime

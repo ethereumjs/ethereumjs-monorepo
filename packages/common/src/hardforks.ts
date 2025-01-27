@@ -127,14 +127,6 @@ export const hardforksDict: HardforksDict = {
     eips: [3675, 4399],
   },
   /**
-   * Description: Pre-merge hardfork to fork off non-upgraded clients
-   * URL        : https://eips.ethereum.org/EIPS/eip-3675
-   * Status     : Final
-   */
-  mergeForkIdTransition: {
-    eips: [],
-  },
-  /**
    * Description: Next feature hardfork after the merge hardfork having withdrawals, warm coinbase, push0, limit/meter initcode
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md
    * Status     : Final

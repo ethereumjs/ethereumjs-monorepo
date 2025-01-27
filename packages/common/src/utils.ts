@@ -137,7 +137,6 @@ function parseGethParams(json: any) {
     [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
     [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
     [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -184,25 +183,6 @@ function parseGethParams(json: any) {
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
       hf.timestamp = 0
-    }
-  }
-
-  if (config.terminalTotalDifficulty !== undefined) {
-    // Merge fork must be placed at mergeFork block since ttd logic is no longer supported
-    const mergeConfig = {
-      name: Hardfork.Paris,
-      block: params.hardforks.filter((hf) => hf.name === Hardfork.MergeForkIdTransition)[0].block,
-      timestamp: undefined,
-    }
-
-    // Merge hardfork has to be placed before first hardfork that is dependent on merge
-    const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true,
-    )
-    if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
-    } else {
-      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
     }
   }
 
