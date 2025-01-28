@@ -1,6 +1,6 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Blockchain, createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   Blob4844Tx,
   EOACode7702Tx,
@@ -29,6 +29,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.js'
 
+import { Goerli } from './testdata/goerliCommon.js'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
 
 import type { VM } from '../../src/vm.js'
