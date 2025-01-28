@@ -203,7 +203,32 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLP(blockRlp, { common, setHardfork: true })
+      let block: Block
+      if (options.stateManager === 'verkle') {
+        currentBlock = BigInt(raw.blockHeader.number)
+        common.setHardforkBy({
+          blockNumber: currentBlock,
+          timestamp: BigInt(raw.blockHeader.timestamp),
+        })
+        // Create the block from the JSON block data since the RLP doesn't include the execution witness
+        block = createBlock(
+          {
+            header: raw.blockHeader,
+            transactions: raw.transactions,
+            uncleHeaders: raw.uncleHeaders,
+            withdrawals: raw.withdrawals,
+            executionWitness: raw.witness,
+          },
+          {
+            common,
+            setHardfork: true,
+          },
+        )
+      } else {
+        const blockRLP = hexToBytes(raw.rlp as PrefixedHexString)
+        block = createBlockFromRLP(blockRLP, { common, setHardfork: true })
+      }
+
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
