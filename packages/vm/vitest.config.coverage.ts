@@ -7,7 +7,6 @@ export default defineConfig({
     exclude: ['kzg-wasm'],
   },
   test: {
-    exclude: ['test/api/t8ntool'],
     coverage: {
       provider: 'v8',
       enabled: true,

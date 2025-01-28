@@ -1,7 +1,13 @@
 import { createBlockFromExecutionPayload } from '@ethereumjs/block'
 import { createBlockchain, createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { bytesToHex } from '@ethereumjs/util'
+import {
+  Common,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  createCustomCommon,
+} from '@ethereumjs/common'
+import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -12,6 +18,7 @@ import { closeRPC, setupChain, testSetup } from '../rpc/helpers.js'
 import { goerliData } from '../testdata/blocks/goerli.js'
 import { mainnetData } from '../testdata/blocks/mainnet.js'
 import { testnetData } from '../testdata/common/testnet.js'
+import { goerliGenesis } from '../testdata/geth-genesis/goerliGenesis.js'
 import { withdrawalsData } from '../testdata/geth-genesis/withdrawals.js'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
@@ -159,13 +166,24 @@ describe('[VMExecution]', () => {
   })
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const goerliState = parseGethGenesisState(goerliGenesis)
+    const common = createCommonFromGethGenesis(goerliGenesis, {})
     let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
       common,
+      genesisState: goerliState,
     })
-    let exec = await testSetup(blockchain, common)
+
+    let config = new Config({ common, accountCache: 10000, storageCache: 1000 })
+    let chain = await Chain.create({
+      config,
+      blockchain,
+      genesisState: goerliState,
+    })
+    let exec = new VMExecution({ config, chain })
+    await chain.open()
+    await exec.open()
     const oldHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     await exec.run()
     let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
@@ -175,8 +193,17 @@ describe('[VMExecution]', () => {
       validateBlocks: true,
       validateConsensus: false,
       common,
+      genesisState: goerliState,
     })
-    exec = await testSetup(blockchain, common)
+    config = new Config({ common, accountCache: 10000, storageCache: 1000 })
+    chain = await Chain.create({
+      config,
+      blockchain,
+      genesisState: goerliState,
+    })
+    exec = new VMExecution({ config, chain })
+    await chain.open()
+    await exec.open()
     await exec.run()
     newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(7), 'should run all blocks')
