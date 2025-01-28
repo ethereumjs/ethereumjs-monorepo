@@ -189,9 +189,13 @@ function parseGethParams(json: any) {
 
   if (config.terminalTotalDifficulty !== undefined) {
     // Merge fork must be placed at mergeFork block since ttd logic is no longer supported
+    const mergeForkIdConfig = params.hardforks.filter(
+      (hf) => hf.name === Hardfork.MergeForkIdTransition,
+    )
+    const forkBlock = mergeForkIdConfig.length > 0 ? (mergeForkIdConfig[0].block ?? 0) : 0
     const mergeConfig = {
       name: Hardfork.Paris,
-      block: params.hardforks.filter((hf) => hf.name === Hardfork.MergeForkIdTransition)[0].block,
+      block: forkBlock,
       timestamp: undefined,
     }
 
