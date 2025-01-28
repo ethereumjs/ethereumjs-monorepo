@@ -125,7 +125,7 @@ export function getArgs(): ClientOpts {
       })
       .option('mergeForkIdPostMerge', {
         describe:
-          'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
+          'Place mergeNetsplitBlock hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
         boolean: true,
         default: true,
       })

@@ -137,7 +137,7 @@ function parseGethParams(json: any) {
     [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
     [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
     [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
+    [Hardfork.mergeNetsplitBlock]: { name: 'mergeNetsplitBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -152,13 +152,10 @@ function parseGethParams(json: any) {
     },
     {} as { [key: string]: string },
   )
-  const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
-  )
 
-  params.hardforks = configHardforkNames
-    .map((nameBlock) => ({
-      name: forkMapRev[nameBlock],
+  params.hardforks = Object.entries(forkMapRev)
+    .map(([nameBlock, hardfork]) => ({
+      name: hardfork,
       block:
         forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
           ? null
@@ -170,6 +167,7 @@ function parseGethParams(json: any) {
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
+  // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
@@ -184,29 +182,6 @@ function parseGethParams(json: any) {
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
       hf.timestamp = 0
-    }
-  }
-
-  if (config.terminalTotalDifficulty !== undefined) {
-    // Merge fork must be placed at mergeFork block since ttd logic is no longer supported
-    const mergeForkIdConfig = params.hardforks.filter(
-      (hf) => hf.name === Hardfork.MergeForkIdTransition,
-    )
-    const forkBlock = mergeForkIdConfig.length > 0 ? (mergeForkIdConfig[0].block ?? 0) : 0
-    const mergeConfig = {
-      name: Hardfork.Paris,
-      block: forkBlock,
-      timestamp: undefined,
-    }
-
-    // Merge hardfork has to be placed before first hardfork that is dependent on merge
-    const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true,
-    )
-    if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
-    } else {
-      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
     }
   }
 
