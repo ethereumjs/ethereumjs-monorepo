@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   KECCAK256_RLP,
@@ -23,6 +23,7 @@ import {
 import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.js'
 import { blocksGoerliData } from './testdata/blocks_goerli.js'
 import { blocksMainnetData } from './testdata/blocks_mainnet.js'
+import { Goerli } from './testdata/goerliCommon.js'
 
 import type { BlockHeader } from '../src/index.js'
 import type { CliqueConfig } from '@ethereumjs/common'

@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -9,6 +9,7 @@ import {
 } from '../src/index.js'
 
 import { alchemy14151203Data } from './testdata/alchemy14151203.js'
+import { Goerli } from './testdata/goerliCommon.js'
 import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.js'
 import { infura15571241Data } from './testdata/infura15571241.js'
 import { infura15571241withTransactionsData } from './testdata/infura15571241withTransactions.js'
