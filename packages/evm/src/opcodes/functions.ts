@@ -987,12 +987,15 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
-        const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush),
-        )
-        runState.programCounter += numToPush
-        runState.stack.push(loaded)
-      }
+        const slice = new Uint8Array(numToPush); 
+        const availableBytes = Math.min(numToPush, runState.code.length - runState.programCounter);
+    
+        slice.set(runState.code.subarray(runState.programCounter, runState.programCounter + availableBytes));
+    
+        const loaded = bytesToBigInt(slice);
+        runState.programCounter += numToPush;
+        runState.stack.push(loaded);
+    }
     },
   ],
   // 0x80: DUP
