@@ -96,4 +96,14 @@ describe('[Utils/Parse]', () => {
       'should parse correct address',
     )
   })
+  it('should add mergeNetSplitBlock if not present when Shanghai is present', () => {
+    const genesisJson = postMergeData
+    // @ts-expect-error we don't care if shanghaiTime doesn't exist
+    genesisJson.config.shanghaiTime = Date.now()
+    const common = createCommonFromGethGenesis(genesisJson, {})
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.mergeNetsplitBlock),
+      11,
+    )
+  })
 })

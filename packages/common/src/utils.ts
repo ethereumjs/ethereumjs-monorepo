@@ -166,6 +166,26 @@ function parseGethParams(json: any) {
           : undefined,
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
+  const mergeIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Paris)
+  const mergeNetsplitBlockIndex = params.hardforks.findIndex(
+    (hf) => hf.name === Hardfork.mergeNetsplitBlock,
+  )
+  const shanghaiIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Shanghai)
+
+  // If we are missing a mergeNetsplitBlock, we assume it is at the same block as Paris (if present)
+  if (mergeIndex !== -1 && mergeNetsplitBlockIndex === -1) {
+    params.hardforks.splice(mergeIndex + 1, 0, {
+      name: Hardfork.mergeNetsplitBlock,
+      block: params.hardforks[mergeIndex].block!,
+    })
+  }
+  // or zero if not and Shanghai is set (since testnets using the geth genesis format are all currently start postmerge)
+  if (shanghaiIndex !== -1 && mergeNetsplitBlockIndex === -1) {
+    params.hardforks.splice(shanghaiIndex, 0, {
+      name: Hardfork.mergeNetsplitBlock,
+      block: 0,
+    })
+  }
 
   // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
