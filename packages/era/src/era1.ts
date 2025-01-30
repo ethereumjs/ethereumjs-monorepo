@@ -1,95 +1,15 @@
 import { ByteVectorType, ContainerType, ListCompositeType, UintBigintType } from '@chainsafe/ssz'
-import { bigInt64ToBytes, concatBytes, equalsBytes } from '@ethereumjs/util'
-import { SnappyStream } from 'snappystream'
-import { Writable } from 'stream'
+import { createBlockFromBytesArray } from '@ethereumjs/block'
+import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@ethereumjs/util'
 
-const Era1Types = {
-  Version: new Uint8Array([0x65, 0x32]),
-  CompressedHeader: new Uint8Array([0x03, 0x00]),
-  CompressedBody: new Uint8Array([0x04, 0x00]),
-  CompressedReceipts: new Uint8Array([0x05, 0x00]),
-  TotalDifficulty: new Uint8Array([0x06, 0x00]),
-  AccumulatorRoot: new Uint8Array([0x07, 0x00]),
-  BlockIndex: new Uint8Array([0x66, 0x32]),
-} as const
+import { parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
+import { formatEntry, readEntry } from './e2store.js'
+import { EpochAccumulator, Era1Types, VERSION } from './types.js'
 
-const VERSION = {
-  type: Era1Types.Version,
-  data: new Uint8Array([]),
-}
-
-const HeaderRecord = new ContainerType({
-  blockHash: new ByteVectorType(32),
-  totalDifficulty: new UintBigintType(32),
-})
-const EpochAccumulator = new ListCompositeType(HeaderRecord, 8192)
-
-// Helper functions for export history > era1
+import type { BlockBytes } from '@ethereumjs/block'
 
 /**
- * Compress data using snappy
- * @param uncompressedData
- * @returns compressed data
- */
-export async function compressData(uncompressedData: Uint8Array): Promise<Uint8Array> {
-  return new Promise((resolve, reject) => {
-    const compressedChunks: Uint8Array[] = []
-    const writableStream = new Writable({
-      write(chunk: Uint8Array, encoding: string, callback: () => void) {
-        compressedChunks.push(new Uint8Array(chunk))
-        callback()
-      },
-    })
-
-    const compress = new SnappyStream()
-
-    compress.on('error', reject)
-    writableStream.on('error', reject)
-    writableStream.on('finish', () => {
-      const totalLength = compressedChunks.reduce((sum, chunk) => sum + chunk.length, 0)
-      const result = new Uint8Array(totalLength)
-      let offset = 0
-      for (const chunk of compressedChunks) {
-        result.set(chunk, offset)
-        offset += chunk.length
-      }
-      resolve(result)
-    })
-
-    compress.pipe(writableStream)
-
-    compress.end(uncompressedData)
-  })
-}
-
-/**
- * Format e2store entry
- * @param entry { type: entry type, data: uncompressed data }
- * @returns serialized entry
- */
-export const formatEntry = async ({
-  type,
-  data,
-}: {
-  type: Uint8Array
-  data: Uint8Array
-}) => {
-  const compressed = equalsBytes(type, Era1Types.TotalDifficulty)
-    ? data
-    : equalsBytes(type, Era1Types.AccumulatorRoot)
-      ? data
-      : equalsBytes(type, Era1Types.Version)
-        ? data
-        : equalsBytes(type, Era1Types.BlockIndex)
-          ? data
-          : await compressData(data)
-  const length = compressed.length
-  const lengthBytes = bigInt64ToBytes(BigInt(length), true).slice(0, 6)
-  return concatBytes(type, lengthBytes, compressed)
-}
-
-/**
- * Format era1
+ * Format era1 from epoch of history data
  * @param blockTuples header, body, receipts, totalDifficulty
  * @param headerRecords array of Header Records { blockHash: Uint8Array, totalDifficulty: bigint }
  * @param epoch epoch index
@@ -174,4 +94,99 @@ export const formatEra1 = async (
   // version | block-tuple* | other-entries | Accumulator | BLockIndex
   const era1 = concatBytes(version, ...blocks, accumulatorEntry, blockIndex)
   return era1
+}
+
+export function getBlockIndex(bytes: Uint8Array) {
+  const count = Number(bytesToBigInt64(bytes.slice(-8), true))
+  const recordLength = 8 * count + 24
+  const recordEnd = bytes.length
+  const recordStart = recordEnd - recordLength
+  const { data, type } = readEntry(bytes.subarray(recordStart, recordEnd))
+  if (!equalsBytes(type, Era1Types.BlockIndex)) {
+    throw new Error('not a valid block index')
+  }
+  return { data, type, count, recordStart }
+}
+
+export function readBlockIndex(data: Uint8Array, count: number) {
+  const startingNumber = Number(bytesToBigInt64(data.slice(0, 8), true))
+  const offsets: number[] = []
+  for (let i = 0; i < count; i++) {
+    const slotEntry = data.subarray((i + 1) * 8, (i + 2) * 8)
+    const offset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
+    offsets.push(offset)
+  }
+  return {
+    startingNumber,
+    offsets,
+  }
+}
+
+export async function* readBlockTuplesFromERA1(
+  bytes: Uint8Array,
+  count: number,
+  offsets: number[],
+  recordStart: number,
+) {
+  for (let x = 0; x < count; x++) {
+    try {
+      const { headerEntry, bodyEntry, receiptsEntry, totalDifficultyEntry } =
+        readBlockTupleAtOffset(bytes, recordStart, offsets[x])
+      yield { headerEntry, bodyEntry, receiptsEntry, totalDifficultyEntry }
+    } catch {
+      // noop - we skip empty slots
+    }
+  }
+}
+
+export async function readOtherEntries(bytes: Uint8Array) {
+  const { data, count, recordStart } = getBlockIndex(bytes)
+  const { offsets } = readBlockIndex(data, count)
+  const lastTuple = readBlockTupleAtOffset(bytes, recordStart, offsets[count - 1])
+  const otherEntries = []
+  let next = recordStart + offsets[count - 1] + lastTuple.length
+  let nextEntry = readEntry(bytes.slice(next))
+  while (!equalsBytes(nextEntry.type, Era1Types.AccumulatorRoot)) {
+    otherEntries.push(nextEntry)
+    next = next + nextEntry.data.length + 8
+    nextEntry = readEntry(bytes.slice(next))
+  }
+  return { accumulatorRoot: nextEntry.data, otherEntries }
+}
+export async function readAccumulatorRoot(bytes: Uint8Array) {
+  const { accumulatorRoot } = await readOtherEntries(bytes)
+  return accumulatorRoot
+}
+
+export async function readERA1(bytes: Uint8Array) {
+  const { data, count, recordStart } = getBlockIndex(bytes)
+  const { offsets } = readBlockIndex(data, count)
+  return readBlockTuplesFromERA1(bytes, count, offsets, recordStart)
+}
+
+export async function validateERA1(bytes: Uint8Array) {
+  const accumulatorRoot = await readAccumulatorRoot(bytes)
+  const blockTuples = await readERA1(bytes)
+  const headerRecords = []
+  for (let i = 0; i < 8192; i++) {
+    const tuple = await blockTuples!.next()
+    if (tuple.value === undefined) {
+      throw new Error('not enough block tuples')
+    }
+    const { header, body, totalDifficulty } = await parseBlockTuple(tuple.value)
+    const valuesArray = [header.data, body.data.txs, body.data.uncles, body.data.withdrawals]
+    const block = createBlockFromBytesArray(valuesArray as BlockBytes, { setHardfork: true })
+    const headerRecord = {
+      blockHash: block.header.hash(),
+      totalDifficulty: totalDifficulty.data,
+    }
+    headerRecords.push(headerRecord)
+  }
+  const HeaderRecord = new ContainerType({
+    blockHash: new ByteVectorType(32),
+    totalDifficulty: new UintBigintType(32),
+  })
+  const EpochAccumulator = new ListCompositeType(HeaderRecord, 8192)
+  const epochAccumulatorRoot = EpochAccumulator.hashTreeRoot(headerRecords)
+  return equalsBytes(epochAccumulatorRoot, accumulatorRoot)
 }
