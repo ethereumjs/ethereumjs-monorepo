@@ -187,6 +187,13 @@ function parseGethParams(json: any) {
       block: 0,
     })
   }
+  // If Paris is not present, add at mergeNetsplitBlock
+  if (mergeIndex === -1) {
+    params.hardforks.push({
+      name: Hardfork.Paris,
+      block: mergeNetsplitBlockIndex,
+    })
+  }
 
   // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
