@@ -7,10 +7,10 @@ import { platform } from 'os'
 import { dirname, join as joinPath } from 'path'
 import { fileURLToPath } from 'url'
 
+export * from './exportHistory.js'
 export * from './inclineClient.js'
 export * from './parse.js'
 export * from './rpc.js'
-
 // See: https://stackoverflow.com/a/50053801
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
