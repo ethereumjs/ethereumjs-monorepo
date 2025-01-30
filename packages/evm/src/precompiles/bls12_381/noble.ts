@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from 'ethereum-cryptography/bls.js'
+import { bls12_381 } from '@noble/curves/bls12-381'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -21,17 +21,8 @@ import {
 } from './constants.js'
 
 import type { EVMBLSInterface } from '../../types.js'
-
-// Copied from @noble/curves/bls12-381 (only local declaration)
-type Fp2 = {
-  c0: bigint
-  c1: bigint
-}
-// Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
-type AffinePoint<T> = {
-  x: T
-  y: T
-} & { z?: never; t?: never }
+import type { Fp2 } from '@noble/curves/abstract/tower'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
@@ -58,7 +49,7 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
  * @returns Noble G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
-  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES) === true) {
     return G1_ZERO
   }
 
@@ -96,7 +87,7 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @returns Noble G2 point
  */
 function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
-  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES) === true) {
     return G2_ZERO
   }
 

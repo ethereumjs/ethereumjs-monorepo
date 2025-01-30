@@ -72,7 +72,7 @@
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0",
+    "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1",
     "jayson": "^4.0.0",
     "level": "^8.0.0",
