@@ -8,6 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
+import { exportHistoryAsEra1 } from '../../util/exportHistory.js'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
@@ -154,6 +155,11 @@ export class Debug {
     this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
       [validators.unsignedInteger],
     ])
+    this.exportHistoryAsEra1 = middleware(
+      callWithStackTrace(this.exportHistoryAsEra1.bind(this), this._rpcDebug),
+      0,
+      [],
+    )
   }
 
   /**
@@ -485,5 +491,9 @@ export class Debug {
         code: INTERNAL_ERROR,
       }
     }
+  }
+
+  async exportHistoryAsEra1() {
+    return exportHistoryAsEra1(this.client)
   }
 }
