@@ -7,7 +7,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bn254 } from 'ethereum-cryptography/bn.js'
+import { bn254 } from '@noble/curves/bn254'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
@@ -34,7 +34,7 @@ export type AffinePoint<T> = {
  * @returns Noble G1 point
  */
 function toG1Point(input: Uint8Array) {
-  if (equalsBytes(input, G1_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
     return bn254.G1.ProjectivePoint.ZERO
   }
 
@@ -88,7 +88,7 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
  * @returns Noble G2 point
  */
 function toG2Point(input: Uint8Array) {
-  if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {
     return bn254.G2.ProjectivePoint.ZERO
   }
 
