@@ -311,7 +311,6 @@ describe('[Common]: Hardfork logic', () => {
       chain: 'testnet',
       eips: [],
       hardfork: Hardfork.Cancun,
-      mergeForkIdPostMerge: true,
     }
     const genesisHash = new Uint8Array(32)
     const zeroCommon = createCommonFromGethGenesis(defaultConfig, gethConfig)
@@ -390,7 +389,7 @@ describe('[Common]: Hardfork logic', () => {
     )
     assert.equal(
       c['HARDFORK_CHANGES'][12][0],
-      Hardfork.mergeNetsplitBlock,
+      Hardfork.MergeNetsplitBlock,
       'should correctly apply hardfork changes',
     )
 
@@ -406,7 +405,7 @@ describe('[Common]: Hardfork logic', () => {
       ConsensusType.ProofOfStake,
       `should switch to ProofOfStake consensus on merge`,
     )
-    c.setHardfork(Hardfork.mergeNetsplitBlock)
+    c.setHardfork(Hardfork.MergeNetsplitBlock)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,

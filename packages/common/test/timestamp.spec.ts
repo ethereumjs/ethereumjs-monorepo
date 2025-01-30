@@ -18,7 +18,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     })
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.mergeNetsplitBlock,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     assert.equal(
@@ -43,7 +43,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     })
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.mergeNetsplitBlock,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     assert.equal(
@@ -64,7 +64,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
 
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.mergeNetsplitBlock,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     // Should give the shanghai as sharding is schedule a bit post shanghai
@@ -111,7 +111,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       }
     }
 
-    c.setHardfork(Hardfork.mergeNetsplitBlock)
+    c.setHardfork(Hardfork.MergeNetsplitBlock)
     assert.equal(c.nextHardforkBlockOrTimestamp(), BigInt(1668000000), 'Next hf shanghai')
 
     c.setHardfork(Hardfork.Shanghai)

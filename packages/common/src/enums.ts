@@ -60,7 +60,7 @@ export enum Hardfork {
   London = 'london',
   ArrowGlacier = 'arrowGlacier',
   GrayGlacier = 'grayGlacier',
-  mergeNetsplitBlock = 'mergeNetsplitBlock',
+  MergeNetsplitBlock = 'mergeNetsplitBlock',
   Paris = 'paris',
   Shanghai = 'shanghai',
   Cancun = 'cancun',

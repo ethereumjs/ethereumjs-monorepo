@@ -137,7 +137,7 @@ function parseGethParams(json: any) {
     [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
     [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
     [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
-    [Hardfork.mergeNetsplitBlock]: { name: 'mergeNetsplitBlock', postMerge: true },
+    [Hardfork.MergeNetsplitBlock]: { name: 'mergeNetsplitBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -168,14 +168,14 @@ function parseGethParams(json: any) {
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
   const mergeIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Paris)
   let mergeNetsplitBlockIndex = params.hardforks.findIndex(
-    (hf) => hf.name === Hardfork.mergeNetsplitBlock,
+    (hf) => hf.name === Hardfork.MergeNetsplitBlock,
   )
   const shanghaiIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Shanghai)
 
   // If we are missing a mergeNetsplitBlock, we assume it is at the same block as Paris (if present)
   if (mergeIndex !== -1 && mergeNetsplitBlockIndex === -1) {
     params.hardforks.splice(mergeIndex + 1, 0, {
-      name: Hardfork.mergeNetsplitBlock,
+      name: Hardfork.MergeNetsplitBlock,
       block: params.hardforks[mergeIndex].block!,
     })
     mergeNetsplitBlockIndex = mergeIndex + 1
@@ -183,7 +183,7 @@ function parseGethParams(json: any) {
   // or zero if not and Shanghai is set (since testnets using the geth genesis format are all currently start postmerge)
   if (shanghaiIndex !== -1 && mergeNetsplitBlockIndex === -1) {
     params.hardforks.splice(shanghaiIndex, 0, {
-      name: Hardfork.mergeNetsplitBlock,
+      name: Hardfork.MergeNetsplitBlock,
       block: 0,
     })
   }

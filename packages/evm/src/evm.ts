@@ -81,7 +81,7 @@ export class EVM implements EVMInterface {
     Hardfork.London,
     Hardfork.ArrowGlacier,
     Hardfork.GrayGlacier,
-    Hardfork.mergeNetsplitBlock,
+    Hardfork.MergeNetsplitBlock,
     Hardfork.Paris,
     Hardfork.Shanghai,
     Hardfork.Cancun,

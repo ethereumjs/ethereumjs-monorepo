@@ -123,12 +123,6 @@ export function getArgs(): ClientOpts {
         describe: 'A custom trusted setup txt file for initializing the kzg library',
         coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
       })
-      .option('mergeForkIdPostMerge', {
-        describe:
-          'Place mergeNetsplitBlock hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
-        boolean: true,
-        default: true,
-      })
       .option('bootnodes', {
         describe:
           'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
@@ -736,7 +730,6 @@ export async function generateClientConfig(args: ClientOpts) {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
-      mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
     ;(common.customCrypto as any) = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)

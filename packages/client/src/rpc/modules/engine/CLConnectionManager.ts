@@ -115,11 +115,11 @@ export class CLConnectionManager {
       maximumFractionDigits: 1,
     })
 
-    if (this.config.chainCommon.gteHardfork(Hardfork.mergeNetsplitBlock)) {
+    if (this.config.chainCommon.gteHardfork(Hardfork.MergeNetsplitBlock)) {
       this.start()
     } else {
       this.config.events.on(Event.CHAIN_UPDATED, () => {
-        if (this.config.chainCommon.gteHardfork(Hardfork.mergeNetsplitBlock)) {
+        if (this.config.chainCommon.gteHardfork(Hardfork.MergeNetsplitBlock)) {
           this.start()
         }
       })
