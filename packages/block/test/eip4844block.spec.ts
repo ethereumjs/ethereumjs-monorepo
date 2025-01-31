@@ -27,7 +27,6 @@ describe('EIP4844 header tests', () => {
     customCrypto: { kzg },
   })
 
-  console.log(common.hardforks())
   it('should work', () => {
     const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
