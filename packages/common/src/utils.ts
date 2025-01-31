@@ -198,7 +198,7 @@ function parseGethParams(json: any) {
         block: params.hardforks[mergeNetsplitBlockIndex].block!,
       })
     }
-    // Check for ttdpassed param in genesis config if no post merge hardforks are set
+    // Check for terminalTotalDifficultyPassed param in genesis config if no post merge hardforks are set
   } else if (config.terminalTotalDifficultyPassed === true) {
     if (mergeIndex === -1) {
       // If we don't have a Paris hardfork, add it at end of hardfork array
