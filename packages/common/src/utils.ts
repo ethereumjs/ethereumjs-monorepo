@@ -2,8 +2,11 @@ import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
 import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
+import { hardforksDict } from './hardforks.js'
 
+import type { HardforksDict } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -93,6 +96,33 @@ function parseGethParams(json: any) {
     throw new Error('nonzero terminal total difficulty is not supported')
   }
 
+  let customHardforks: HardforksDict | undefined = undefined;
+  if (config.blobSchedule !== undefined) {
+    customHardforks = {};
+    const blobGasPerBlob = 131072;
+    for (const [hfKey, hfSchedule] of Object.entries(config.blobSchedule)) {
+      const hfConfig = hardforksDict[hfKey];
+      if (hfConfig === undefined) {
+        throw new Error(`unknown hardfork=${hfKey} specified in blobSchedule`);
+      }
+      const { target, max, baseFeeUpdateFraction: blobGasPriceUpdateFraction } = hfSchedule as { target?: number, max?: number, baseFeeUpdateFraction?: undefined };
+      if (target === undefined || max === undefined) {
+        throw new Error(`undefined target or max specified in blobSchedule for hardfork=${hfKey}`);
+      }
+
+
+      // copy current hardfork info to custom and add blob config
+      const customHfConfig = JSON.parse(JSON.stringify(hfConfig));
+      customHfConfig.params = {
+        ...customHardforks.params,
+        // removes blobGasPriceUpdateFraction key to prevent undefined overriding if undefined
+        ...{ targetBlobGasPerBlock: blobGasPerBlob * target, maxBlobGasPerBlock: blobGasPerBlob * max, blobGasPriceUpdateFraction }
+      }
+
+      customHardforks[hfKey] = customHfConfig;
+    }
+  }
+
   const params = {
     name,
     chainId,
@@ -111,25 +141,26 @@ function parseGethParams(json: any) {
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],
+    customHardforks,
     bootstrapNodes: [],
     consensus:
       config.clique !== undefined
         ? {
-            type: 'poa',
-            algorithm: 'clique',
-            clique: {
-              // The recent geth genesis seems to be using blockperiodseconds // cspell:disable-line
-              // and epochlength for clique specification
-              // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
-              period: config.clique.period ?? config.clique.blockperiodseconds, // cspell:disable-line
-              epoch: config.clique.epoch ?? config.clique.epochlength,
-            },
-          }
-        : {
-            type: 'pow',
-            algorithm: 'ethash',
-            ethash: {},
+          type: 'poa',
+          algorithm: 'clique',
+          clique: {
+            // The recent geth genesis seems to be using blockperiodseconds // cspell:disable-line
+            // and epochlength for clique specification
+            // see: https://hackmd.io/PqZgMpnkSWCWv5joJoFymQ
+            period: config.clique.period ?? config.clique.blockperiodseconds, // cspell:disable-line
+            epoch: config.clique.epoch ?? config.clique.epochlength,
           },
+        }
+        : {
+          type: 'pow',
+          algorithm: 'ethash',
+          ethash: {},
+        },
   }
 
   const forkMap: { [key: string]: { name: string; postMerge?: boolean; isTimestamp?: boolean } } = {
