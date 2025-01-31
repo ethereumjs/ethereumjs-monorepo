@@ -36,7 +36,7 @@ const deploymentTxData = {
   ),
   v: BigInt('0x1b'),
   r: BigInt('0x539'),
-  s: BigInt('0xeb793ed1dcd82833'),
+  s: BigInt('0x5feeb084551e4e03a3581e269bc2ea2f8d0008'),
 }
 
 const deploymentTx = createLegacyTx(deploymentTxData)
