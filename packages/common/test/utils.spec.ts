@@ -98,12 +98,28 @@ describe('[Utils/Parse]', () => {
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
     const genesisJSON = postMergeData
-    // @ts-expect-error we don't care if shanghaiTime doesn't exist
+    // @ts-expect-error we want shanghaiTime to exist
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
-      11,
+      12,
+    )
+  })
+  it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
+    const genesisJSON = postMergeData
+    // @ts-expect-error we don't want shanghaiTime to exist
+    delete genesisJSON.config.shanghaiTime
+    // @ts-expect-error we don't want terminalTotalDifficultyPassed to exist
+    delete genesisJSON.config.terminalTotalDifficultyPassed
+    const common = createCommonFromGethGenesis(genesisJSON, {})
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
+      -1,
+    )
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.Paris),
+      -1,
     )
   })
 })

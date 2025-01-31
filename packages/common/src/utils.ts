@@ -170,7 +170,9 @@ function parseGethParams(json: any) {
   let mergeNetsplitBlockIndex = params.hardforks.findIndex(
     (hf) => hf.name === Hardfork.MergeNetsplitBlock,
   )
-  const shanghaiIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Shanghai)
+  const firstPostMergeHFIndex = params.hardforks.findIndex(
+    (hf) => hf.timestamp !== undefined && hf.timestamp !== null,
+  )
 
   // If we are missing a mergeNetsplitBlock, we assume it is at the same block as Paris (if present)
   if (mergeIndex !== -1 && mergeNetsplitBlockIndex === -1) {
@@ -180,19 +182,39 @@ function parseGethParams(json: any) {
     })
     mergeNetsplitBlockIndex = mergeIndex + 1
   }
-  // or zero if not and Shanghai is set (since testnets using the geth genesis format are all currently start postmerge)
-  if (shanghaiIndex !== -1 && mergeNetsplitBlockIndex === -1) {
-    params.hardforks.splice(shanghaiIndex, 0, {
-      name: Hardfork.MergeNetsplitBlock,
-      block: 0,
-    })
-  }
-  // If Paris is not present, add at mergeNetsplitBlock
-  if (mergeIndex === -1) {
-    params.hardforks.push({
-      name: Hardfork.Paris,
-      block: mergeNetsplitBlockIndex,
-    })
+  // or zero if not and a postmerge hardfork is set (since testnets using the geth genesis format are all currently start postmerge)
+  if (firstPostMergeHFIndex !== -1) {
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.splice(firstPostMergeHFIndex, 0, {
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at the mergeNetsplitBlock
+      params.hardforks.splice(mergeNetsplitBlockIndex, 0, {
+        name: Hardfork.Paris,
+        block: params.hardforks[mergeNetsplitBlockIndex].block!,
+      })
+    }
+    // Check for ttdpassed param in genesis config if no post merge hardforks are set
+  } else if (config.terminalTotalDifficultyPassed === true) {
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at end of hardfork array
+      params.hardforks.push({
+        name: Hardfork.Paris,
+        block: 0,
+      })
+    }
+    // If we don't have a MergeNetsplitBlock hardfork, add it at end of hardfork array
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.push({
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
   }
 
   // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
