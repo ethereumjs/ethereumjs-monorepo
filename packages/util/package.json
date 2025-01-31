@@ -87,7 +87,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "ethereum-cryptography": "^3.0.0"
+    "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.1.2",
