@@ -1,9 +1,10 @@
 import { equalsBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createMPTFromProof } from '../index.js'
 import { MerklePatriciaTrie } from '../mpt.js'
 import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
-import { nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
+import { bytesToNibbles, nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
 
 import type { HashKeysFunction, MPTNode, Nibbles } from '../types.js'
 
@@ -386,9 +387,11 @@ async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<
 }
 
 /**
- * verifyRangeProof checks whether the given leaf nodes and edge proof
- * can prove the given trie leaves range is matched with the specific root.
- * Used internally by the verifyMerkleRangeProof wrapper function.
+ * Checks whether the given leaf nodes and edge proof can prove the given trie leaves range is matched with the specific root.
+ *
+ * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
+ * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
+ * of state trie data is received and validated for constructing world state, locally.
  *
  * There are four situations:
  *
@@ -412,17 +415,23 @@ async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<
  * @param keys - key list of leaf data being proven.
  * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
  * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+ * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
-export async function verifyRangeProof(
+export async function verifyMerkleRangeProof(
   rootHash: Uint8Array,
-  firstKey: Nibbles | null,
-  lastKey: Nibbles | null,
-  keys: Nibbles[],
+  firstKeyRaw: Uint8Array | null,
+  lastKeyRaw: Uint8Array | null,
+  keysRaw: Uint8Array[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction,
+  useKeyHashingFunction: HashKeysFunction = keccak256,
 ): Promise<boolean> {
+  // Convert Uint8Array keys to nibbles
+  const firstKey = firstKeyRaw !== null ? bytesToNibbles(firstKeyRaw) : null
+  const lastKey = lastKeyRaw !== null ? bytesToNibbles(lastKeyRaw) : null
+  const keys = keysRaw.map(bytesToNibbles)
+
   if (keys.length !== values.length) {
     throw new Error('invalid keys length or values length')
   }
