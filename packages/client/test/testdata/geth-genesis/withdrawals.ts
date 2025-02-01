@@ -12,6 +12,7 @@ export const withdrawalsData = {
     muirGlacierBlock: 0,
     berlinBlock: 0,
     londonBlock: 0,
+    mergeForkBlock: 0,
     shanghaiTime: 0,
     clique: {
       blockperiodseconds: 5,

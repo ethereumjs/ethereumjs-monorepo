@@ -118,7 +118,7 @@ describe('VM -> supportedHardforks', () => {
       Hardfork.London,
       Hardfork.ArrowGlacier,
       Hardfork.GrayGlacier,
-      Hardfork.MergeForkIdTransition,
+      Hardfork.MergeNetsplitBlock,
       Hardfork.Paris,
     ]
     try {

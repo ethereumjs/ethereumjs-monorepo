@@ -18,7 +18,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     })
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.MergeForkIdTransition,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     assert.equal(
@@ -43,7 +43,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     })
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.MergeForkIdTransition,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     assert.equal(
@@ -61,9 +61,10 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
+
     assert.equal(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
-      Hardfork.MergeForkIdTransition,
+      Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     // Should give the shanghai as sharding is schedule a bit post shanghai
@@ -87,7 +88,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       // Add these hardforks as specified here:
       //   https://github.com/ethereum/EIPs/pull/6122/files
       {
-        name: 'mergeForkIdTransition',
+        name: 'mergeNetsplitBlock',
         block: 18000000,
         forkHash: '0x4fb8a872',
       },
@@ -110,7 +111,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       }
     }
 
-    c.setHardfork(Hardfork.MergeForkIdTransition)
+    c.setHardfork(Hardfork.MergeNetsplitBlock)
     assert.equal(c.nextHardforkBlockOrTimestamp(), BigInt(1668000000), 'Next hf shanghai')
 
     c.setHardfork(Hardfork.Shanghai)
@@ -130,7 +131,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       // Add these hardforks as specified here:
       //   https://github.com/ethereum/EIPs/pull/6122/files
       {
-        name: 'mergeForkIdTransition',
+        name: 'mergeNetsplitBlock',
         block: 18000000,
       },
       {

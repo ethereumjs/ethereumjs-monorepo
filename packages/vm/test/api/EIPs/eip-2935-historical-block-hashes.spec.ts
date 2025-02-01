@@ -45,7 +45,7 @@ function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
     Hardfork.GrayGlacier,
     Hardfork.Shanghai,
     Hardfork.Paris,
-    Hardfork.MergeForkIdTransition,
+    Hardfork.MergeNetsplitBlock,
     Hardfork.Shanghai,
     Hardfork.Cancun,
   ]

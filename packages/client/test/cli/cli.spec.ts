@@ -624,7 +624,6 @@ describe('[CLI]', () => {
       '--dev=poa',
       '--isSingleNode=true',
       '--sync="none"',
-      '--mergeForkIdPostMerge=false',
     ]
     const onData = async (
       message: string,

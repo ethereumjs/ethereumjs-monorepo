@@ -131,7 +131,7 @@ export const hardforksDict: HardforksDict = {
    * URL        : https://eips.ethereum.org/EIPS/eip-3675
    * Status     : Final
    */
-  mergeForkIdTransition: {
+  mergeNetsplitBlock: {
     eips: [],
   },
   /**

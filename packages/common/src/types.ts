@@ -159,7 +159,6 @@ export interface CommonOpts extends BaseOpts {
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
   genesisHash?: Uint8Array
-  mergeForkIdPostMerge?: boolean
 }
 
 export interface HardforkByOpts {

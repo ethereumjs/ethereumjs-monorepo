@@ -74,14 +74,14 @@ export const Goerli: ChainConfig = {
       forkHash: '0xb8c6299d',
     },
     {
-      // The forkHash will remain same as mergeForkIdTransition is post merge,
+      // The forkHash will remain same as mergeNetsplitBlock is post merge,
       // terminal block: https://goerli.etherscan.io/block/7382818
       name: 'paris',
       block: 7382819,
       forkHash: '0xb8c6299d',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: null,
       forkHash: null,
     },

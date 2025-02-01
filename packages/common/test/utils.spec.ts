@@ -63,18 +63,6 @@ describe('[Utils/Parse]', () => {
     assert.equal(common.hardforks().slice(-1)[0].block, 0)
   })
 
-  it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
-    const mergeAtGenesisData = {} as any
-    Object.assign(mergeAtGenesisData, postMergeData)
-    mergeAtGenesisData.config.terminalTotalDifficultyPassed = false
-    try {
-      createCommonFromGethGenesis(mergeAtGenesisData, {})
-      assert.fail('should have thrown')
-    } catch (err: any) {
-      assert.ok(err.message.includes('nonzero terminal total difficulty'))
-    }
-  })
-
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
     const common = createCommonFromGethGenesis(postMergeHardforkData, {
       chain: 'customChain',
@@ -106,6 +94,32 @@ describe('[Utils/Parse]', () => {
       depositContractAddress,
       '0x4242424242424242424242424242424242424242',
       'should parse correct address',
+    )
+  })
+  it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
+    const genesisJSON = postMergeData
+    // @ts-expect-error we want shanghaiTime to exist
+    genesisJSON.config.shanghaiTime = Date.now()
+    const common = createCommonFromGethGenesis(genesisJSON, {})
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
+      12,
+    )
+  })
+  it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
+    const genesisJSON = postMergeData
+    // @ts-expect-error we don't want shanghaiTime to exist
+    delete genesisJSON.config.shanghaiTime
+    // @ts-expect-error we don't want terminalTotalDifficultyPassed to exist
+    delete genesisJSON.config.terminalTotalDifficultyPassed
+    const common = createCommonFromGethGenesis(genesisJSON, {})
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
+      -1,
+    )
+    assert.equal(
+      common.hardforks().findIndex((hf) => hf.name === Hardfork.Paris),
+      -1,
     )
   })
 })
