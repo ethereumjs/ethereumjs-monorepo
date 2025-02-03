@@ -1,6 +1,6 @@
 import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
+import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -253,9 +253,6 @@ export function parseGethGenesis(json: any, name?: string) {
  */
 export const getPresetChainConfig = (chain: string | number) => {
   switch (chain) {
-    case 'goerli':
-    case 5:
-      return Goerli
     case 'holesky':
     case 17000:
       return Holesky

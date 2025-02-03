@@ -66,7 +66,7 @@
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0",
+    "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
@@ -85,7 +85,8 @@
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",
     "solc": "^0.8.1",
-    "tape": "^5.3.1"
+    "tape": "^5.3.1",
+    "yargs": "^17.7.1"
   },
   "engines": {
     "node": ">=18"

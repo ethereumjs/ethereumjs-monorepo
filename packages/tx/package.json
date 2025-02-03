@@ -52,7 +52,7 @@
     "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
-    "ethereum-cryptography": "^3.0.0"
+    "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",

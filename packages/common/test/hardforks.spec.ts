@@ -5,7 +5,6 @@ import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
-  Goerli,
   Hardfork,
   Holesky,
   Mainnet,
@@ -13,6 +12,8 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '../src/index.js'
+
+import { Goerli } from './data/goerliCommon.js'
 
 import type { ChainConfig } from '../src/index.js'
 
