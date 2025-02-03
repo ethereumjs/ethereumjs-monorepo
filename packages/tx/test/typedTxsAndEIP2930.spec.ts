@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -15,7 +15,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   FeeMarket1559Tx,
   TransactionType,
   createAccessList2930Tx,
@@ -25,6 +25,8 @@ import {
   createFeeMarket1559TxFromRLP,
   paramsTx,
 } from '../src/index.js'
+
+import { Goerli } from './testData/goerliCommon.js'
 
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.js'
 
@@ -39,8 +41,8 @@ const common = new Common({
 
 const txTypes = [
   {
-    class: AccessList2930Transaction,
-    name: 'AccessList2930Transaction',
+    class: AccessList2930Tx,
+    name: 'AccessList2930Tx',
     type: TransactionType.AccessListEIP2930,
     create: {
       txData: createAccessList2930Tx,
@@ -62,7 +64,7 @@ const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
 const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = 1
 
-describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibility', () => {
+describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () => {
   it('Initialization / Getter -> fromTxData()', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
@@ -426,7 +428,7 @@ describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibilit
   })
 })
 
-describe('[AccessList2930Transaction] -> Class Specific Tests', () => {
+describe('[AccessList2930Tx] -> Class Specific Tests', () => {
   it(`Initialization`, () => {
     const tx = createAccessList2930Tx({}, { common })
     assert.ok(

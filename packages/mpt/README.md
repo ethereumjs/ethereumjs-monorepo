@@ -100,9 +100,9 @@ The following is an example for using the `createMPTFromProof()` constructor. Th
 // ./examples/createFromProof.ts
 
 import {
-  Trie,
-  createMerkleProof,
+  MerklePatriciaTrie,
   createMPTFromProof,
+  createMerkleProof,
   updateMPTFromMerkleProof,
 } from '@ethereumjs/mpt'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
@@ -119,7 +119,7 @@ async function main() {
   const trie = await createMPTFromProof(proof, { useKeyHashing: true })
   const otherProof = await createMerkleProof(someOtherTrie, k2)
 
-  // To add more proofs to the mpt, use `updateMPTFromMerkleProof`
+  // To add more proofs to the trie, use `updateMPTFromMerkleProof`
   await updateMPTFromMerkleProof(trie, otherProof)
 
   const value = await trie.get(k1)
@@ -175,10 +175,11 @@ As an example, to leverage `LevelDB` for all operations then you should create a
 ```ts
 // ./examples/customLevelDB.ts#L127-L131
 
-const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
-console.log(trie.database().db) // LevelDB { ...
+}
 
-void main()
+async function main() {
+  const trie = new MerklePatriciaTrie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+  console.log(trie.database().db) // LevelDB { ...
 ```
 
 #### Node Deletion (Pruning)
@@ -222,7 +223,7 @@ The following code demonstrates how to construct and subsequently verify a proof
 // proof-of-inclusion
 await trie.put(k1, v1)
 let proof = await createMerkleProof(trie, k1)
-let value = await verifyMerkleProof(trie, trie.root(), k1, proof)
+let value = await verifyMPTWithMerkleProof(trie, trie.root(), k1, proof)
 console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 ```
 
@@ -237,7 +238,7 @@ The following code demonstrates how to construct and subsequently verify a proof
 await trie.put(k1, v1)
 await trie.put(k2, v2)
 proof = await createMerkleProof(trie, utf8ToBytes('key3'))
-value = await verifyMerkleProof(trie, trie.root(), utf8ToBytes('key3'), proof)
+value = await verifyMPTWithMerkleProof(trie, trie.root(), utf8ToBytes('key3'), proof)
 console.log(value ? bytesToUtf8(value) : 'null') // null
 ```
 
@@ -254,7 +255,7 @@ await trie.put(k2, v2)
 proof = await createMerkleProof(trie, k2)
 proof[0].reverse()
 try {
-  const _value = await verifyMerkleProof(trie, trie.root(), k2, proof) // results in error
+  const _value = await verifyMPTWithMerkleProof(trie, trie.root(), k2, proof) // results in error
 } catch (err) {
   console.log(err)
 }

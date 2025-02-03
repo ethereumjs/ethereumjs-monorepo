@@ -7,7 +7,7 @@ import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Debugger } from 'debug'
 
-type MinimalEthashInterface = {
+export type MinimalEthashInterface = {
   cacheDB?: any
   verifyPOW(block: Block): Promise<boolean>
 }

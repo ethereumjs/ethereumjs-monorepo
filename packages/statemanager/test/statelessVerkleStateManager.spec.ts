@@ -13,24 +13,19 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
-import { assert, beforeAll, describe, it, test } from 'vitest'
+import * as verkle from 'micro-eth-signer/verkle'
+import { assert, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
 
 import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
 import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.js'
 
-import type { VerkleCrypto } from '@ethereumjs/util'
-
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
-  let verkleCrypto: VerkleCrypto
-  beforeAll(async () => {
-    verkleCrypto = await loadVerkleCrypto()
-  })
   const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
+    customCrypto: { verkle },
   })
 
   const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
@@ -44,7 +39,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   )
 
   it('initPreState()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ verkleCrypto })
+    common.customCrypto.verkle = verkle
+    const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
@@ -52,7 +48,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO: Turn back on once we have kaustinen7 data
   it.skip('getAccount()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    common.customCrypto.verkle = verkle
+    const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
@@ -70,10 +67,10 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('put/delete/modify account', async () => {
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({
       common,
       caches: new Caches(),
-      verkleCrypto,
     })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
@@ -120,7 +117,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('getKey function', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    common.customCrypto.verkle = verkle
+    const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d')
@@ -143,6 +141,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it(`copy()`, async () => {
+    common.customCrypto.verkle = verkle
     const stateManager = new StatelessVerkleStateManager({
       caches: new Caches({
         account: {
@@ -153,7 +152,6 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
         },
       }),
       common,
-      verkleCrypto,
     })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
@@ -173,7 +171,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO contract storage functions not yet completely implemented
   test.skip('get/put/clear contract storage', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    common.customCrypto.verkle = verkle
+    const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const contractAddress = createAddressFromString('0x4242424242424242424242424242424242424242')

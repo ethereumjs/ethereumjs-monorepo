@@ -12,9 +12,9 @@ const [blockData] = beaconData
 
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 const validForkChoiceState = {
-  headBlockHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-  safeBlockHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-  finalizedBlockHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
+  headBlockHash: '0x5bc7efe14c04eed7572809bb9c11d48d872139384097b95e04f8ab1b01ae8ecc',
+  safeBlockHash: '0x5bc7efe14c04eed7572809bb9c11d48d872139384097b95e04f8ab1b01ae8ecc',
+  finalizedBlockHash: '0x5bc7efe14c04eed7572809bb9c11d48d872139384097b95e04f8ab1b01ae8ecc',
 }
 const validPayloadAttributes = {
   timestamp: '0x64ba84fd',
@@ -35,26 +35,24 @@ const electraGenesisContracts = {
   // sender corresponding to the priv key 0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355
   '0x610adc49ecd66cbf176a8247ebd59096c031bd9f': { balance: '0x6d6172697573766477000000' },
   // eip 2925 contract
-  '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e': {
+  '0x0f792be4b0c0cb4dae440ef133e90c0ecd48cccc': {
     balance: '0',
     nonce: '1',
-    code: '0x3373fffffffffffffffffffffffffffffffffffffffe1460575767ffffffffffffffff5f3511605357600143035f3511604b575f35612000014311604b57611fff5f3516545f5260205ff35b5f5f5260205ff35b5f5ffd5b5f35611fff60014303165500',
+    code: '0x3373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500',
   },
   // consolidation requests contract
-  '0x00b42dbF2194e931E80326D950320f7d9Dbeac02': {
-    balance: '0',
-    nonce: '1',
-    code: '0x3373fffffffffffffffffffffffffffffffffffffffe146098573615156028575f545f5260205ff35b36606014156101445760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061014457600154600101600155600354806004026004013381556001015f35815560010160203581556001016040359055600101600355005b6003546002548082038060011160ac575060015b5f5b81811460f15780607402838201600402600401805490600101805490600101805490600101549260601b84529083601401528260340152906054015260010160ae565b9101809214610103579060025561010e565b90505f6002555f6003555b5f548061049d141561011d57505f5b6001546001828201116101325750505f610138565b01600190035b5f555f6001556074025ff35b5f5ffd',
+  '0x00431f263ce400f4455c2dcf564e53007ca4bbbb': {
+    nonce: '0x01',
+    balance: '0x00',
+    code: '0x3373fffffffffffffffffffffffffffffffffffffffe1460d35760115f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1461019a57600182026001905f5b5f82111560685781019083028483029004916001019190604d565b9093900492505050366060146088573661019a573461019a575f5260205ff35b341061019a57600154600101600155600354806004026004013381556001015f358155600101602035815560010160403590553360601b5f5260605f60143760745fa0600101600355005b6003546002548082038060021160e7575060025b5f5b8181146101295782810160040260040181607402815460601b815260140181600101548152602001816002015481526020019060030154905260010160e9565b910180921461013b5790600255610146565b90505f6002555f6003555b5f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141561017357505f5b6001546001828201116101885750505f61018e565b01600190035b5f555f6001556074025ff35b5f5ffd',
+    storage: {},
   },
   // withdrawals request contract
-  '0x00A3ca265EBcb825B45F985A16CEFB49958cE017': {
-    balance: '0',
-    nonce: '1',
-    code: '0x3373fffffffffffffffffffffffffffffffffffffffe146090573615156028575f545f5260205ff35b366038141561012e5760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061012e57600154600101600155600354806003026004013381556001015f3581556001016020359055600101600355005b6003546002548082038060101160a4575060105b5f5b81811460dd5780604c02838201600302600401805490600101805490600101549160601b83528260140152906034015260010160a6565b910180921460ed579060025560f8565b90505f6002555f6003555b5f548061049d141561010757505f5b60015460028282011161011c5750505f610122565b01600290035b5f555f600155604c025ff35b5f5ffd',
-    storage: {
-      '0x0000000000000000000000000000000000000000000000000000000000000000':
-        '0x000000000000000000000000000000000000000000000000000000000000049d',
-    },
+  '0x0c15f14308530b7cdb8460094bbb9cc28b9aaaaa': {
+    nonce: '0x01',
+    balance: '0x00',
+    code: '0x3373fffffffffffffffffffffffffffffffffffffffe1460cb5760115f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff146101f457600182026001905f5b5f82111560685781019083028483029004916001019190604d565b909390049250505036603814608857366101f457346101f4575f5260205ff35b34106101f457600154600101600155600354806003026004013381556001015f35815560010160203590553360601b5f5260385f601437604c5fa0600101600355005b6003546002548082038060101160df575060105b5f5b8181146101835782810160030260040181604c02815460601b8152601401816001015481526020019060020154807fffffffffffffffffffffffffffffffff00000000000000000000000000000000168252906010019060401c908160381c81600701538160301c81600601538160281c81600501538160201c81600401538160181c81600301538160101c81600201538160081c81600101535360010160e1565b910180921461019557906002556101a0565b90505f6002555f6003555b5f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff14156101cd57505f5b6001546002828201116101e25750505f6101e8565b01600290035b5f555f600155604c025ff35b5f5ffd',
+    storage: {},
   },
   // beacon deposit contract for deposit receipts
   '0x00000000219ab540356cBB839Cbe05303d7705Fa': {
@@ -160,12 +158,9 @@ describe(`${method}: call with executionPayloadV4`, () => {
       withdrawals: [],
       blobGasUsed: '0x0',
       excessBlobGas: '0x0',
-      depositRequests: [],
-      withdrawalRequests: [],
-      consolidationRequests: [],
-      parentHash: '0x5040e6b0056398536751c187683a3ecde8aff8fd9ea1d3450d687d7032134caf',
-      stateRoot: '0xbde9840c609ffa39cae0a2c9e354ac673920fcc2a5e6faeef5b78817c7fba7dd',
-      blockHash: '0x6b3ee4bb75e316427142bb9b48629e3e87ed8eea9f6d42b6aae296a11ec920b3',
+      parentHash: '0x5bc7efe14c04eed7572809bb9c11d48d872139384097b95e04f8ab1b01ae8ecc',
+      stateRoot: '0xebe157ea5c3dc6fb5970f67b76266903282aee9772030f06c112348f32037fd9',
+      blockHash: '0x725c21032b68ae7d2f143581d0196cfbfd14dbc45c14eaeab15443831de489b7',
     }
 
     const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2', 'engine_newPayloadV3']
@@ -183,7 +178,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       assert.ok(res.error.message.includes(expectedError))
     }
 
-    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
     assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
@@ -203,21 +198,29 @@ describe(`${method}: call with executionPayloadV4`, () => {
     await service.txPool.add(depositTx, true)
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
-    const { executionPayload } = res.result
+    const { executionPayload, executionRequests } = res.result
+
     assert.ok(
-      executionPayload.depositRequests?.length === 1,
-      'depositRequests should have 1 deposit request',
-    )
-    assert.ok(
-      executionPayload.withdrawalRequests !== undefined,
-      'depositRequests field should be received',
-    )
-    assert.ok(
-      executionPayload.consolidationRequests !== undefined,
-      'consolidationRequests field should be received',
+      executionRequests?.length === 1,
+      'executionRequests should have the deposit request, and should exclude the other requests (these are empty)',
     )
 
-    res = await rpc.request(method, [executionPayload, [], parentBeaconBlockRoot])
+    const depositRequestBytes = hexToBytes(executionRequests[0])
+    assert.ok(
+      depositRequestBytes[0] === 0x00,
+      'deposit request byte 0 is the deposit request identifier byte (0x00)',
+    )
+    assert.ok(
+      depositRequestBytes.length > 1,
+      'deposit request includes data (and is thus not empty)',
+    )
+
+    res = await rpc.request(method, [
+      executionPayload,
+      [],
+      parentBeaconBlockRoot,
+      executionRequests,
+    ])
     assert.equal(res.result.status, 'VALID')
 
     const newBlockHashHex = executionPayload.blockHash

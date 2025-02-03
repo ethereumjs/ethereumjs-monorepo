@@ -1,9 +1,7 @@
-import { readFileSync } from 'fs'
-
 import { Chain } from './blockchain/index.js'
-import { SyncMode } from './config.js'
-import { FullEthereumService, LightEthereumService } from './service/index.js'
+import { FullEthereumService } from './service/index.js'
 import { Event } from './types.js'
+import { getPackageJSON } from './util/index.js'
 
 import type { Config } from './config.js'
 import type { MultiaddrLike } from './types.js'
@@ -69,7 +67,7 @@ export interface EthereumClientOptions {
 export class EthereumClient {
   public config: Config
   public chain: Chain
-  public services: (FullEthereumService | LightEthereumService)[] = []
+  public service: FullEthereumService
 
   public opened: boolean
   public started: boolean
@@ -91,28 +89,13 @@ export class EthereumClient {
   protected constructor(chain: Chain, options: EthereumClientOptions) {
     this.config = options.config
     this.chain = chain
-
-    if (this.config.syncmode === SyncMode.Full || this.config.syncmode === SyncMode.None) {
-      this.services = [
-        new FullEthereumService({
-          config: this.config,
-          chainDB: options.chainDB,
-          stateDB: options.stateDB,
-          metaDB: options.metaDB,
-          chain,
-        }),
-      ]
-    }
-    if (this.config.syncmode === SyncMode.Light) {
-      this.services = [
-        new LightEthereumService({
-          config: this.config,
-          chainDB: options.chainDB,
-          chain,
-        }),
-      ]
-    }
-
+    this.service = new FullEthereumService({
+      config: this.config,
+      chainDB: options.chainDB,
+      stateDB: options.stateDB,
+      metaDB: options.metaDB,
+      chain,
+    })
     this.opened = false
     this.started = false
   }
@@ -126,12 +109,7 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
-    const packageJSON = JSON.parse(
-      readFileSync(
-        '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-        'utf-8',
-      ),
-    )
+    const packageJSON = getPackageJSON()
     this.config.logger.info(
       `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
     )
@@ -145,7 +123,7 @@ export class EthereumClient {
       )
     })
 
-    await Promise.all(this.services.map((s) => s.open()))
+    await this.service.open()
 
     this.opened = true
   }
@@ -159,7 +137,7 @@ export class EthereumClient {
     }
     this.config.logger.info('Setup networking and services.')
 
-    await Promise.all(this.services.map((s) => s.start()))
+    await this.service.start()
     this.config.server && (await this.config.server.start())
     // Only call bootstrap if servers are actually started
     this.config.server && this.config.server.started && (await this.config.server.bootstrap())
@@ -175,7 +153,7 @@ export class EthereumClient {
       return false
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
-    await Promise.all(this.services.map((s) => s.stop()))
+    await this.service.stop()
     this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false
   }
@@ -186,12 +164,5 @@ export class EthereumClient {
    */
   server() {
     return this.config.server
-  }
-  /**
-   * Returns the service with the specified name.
-   * @param name name of service
-   */
-  service(name: string) {
-    return this.services.find((s) => s.name === name)
   }
 }

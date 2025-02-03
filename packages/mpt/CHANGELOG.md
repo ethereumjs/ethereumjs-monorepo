@@ -6,6 +6,62 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### New Package Name
+
+The trie package itself has been renamed, see PR [#3719](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3719):
+
+- `@ethereumjs/trie` -> `@ethereumjs/mpt`
+
+This is to avoid confusion with Verkle in the future! Please update your dependencies and imports accordingly! The versioning of the package will be continuous from the old package and not "restart" in whatever way.
+
+#### Main Class
+
+The main class has been renamed to avoid confusion with Verkle, see PR [#3717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3717):
+
+- `Trie` -> `MerklePatriciaTrie`
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PRs [#3515](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3515):
+
+- `Trie.create()` -> `createMPT()`
+
+#### Proof Functionality
+
+Proof functionality also has been extracted from the trie class to make the core code base smaller, see PR [#3551](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3551), also the names have been made more expressive to better distinguish between Merkle/Verkle, see PRs [#3557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3557), [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718) and [#3730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3730):
+
+- `Trie.createFromProof()` -> `createMPTFromProof()`
+- `Trie.verifyProof()` -> `verifyMerkleProof()`
+- `Trie.verifyRangeProof()` -> `verifyMerkleRangeProof()`
+- `Trie.createProof()` -> `createMerkleProof()`
+- `Trie.updateFromProof()` -> `updateMPTFromMerkleProof()`
+
+### Replaced Stream Functionality
+
+One of the largest burdens for the trie library - dependency wise - was the `readable-stream` dependency, used for implementing a read stream for full trie dumps in a platform independent way. This dependency has a lot of downstream dependencies and posed therefore a strong and unnecessary security risk for our upstream stack.
+
+We have now removed the stream functionality and the associated dependency and replaced with a simpler async value map retrieval by using `trie.getValueMap()`, see PR [#3519](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3519). For an example see the MPT [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples) folder.
+
+### Other Breaking Changes
+
+- Refactor trie util helpers, PR [#3534](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3534)
+- Improve node typings and class architecture, PR [#3708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3708)
+- Rename trie helpers to mpt, PR [#3718](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3718)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- Address type issues and type-related improvements, PR [#3624](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3624)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `mpt:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
+
 ## 6.2.1 - 2024-08-15
 
 ### Other Features

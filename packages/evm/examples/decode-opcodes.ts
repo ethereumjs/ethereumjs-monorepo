@@ -11,8 +11,19 @@ const opcodes = getOpcodesForHF(common).opcodes
 
 const data = '0x6107608061000e6000396000f30060003560e060020a90048063141961bc1461006e57806319ac74bd'
 
-nameOpCodes(hexToBytes(data))
+function pad(num: number, size: number) {
+  let s = num + ''
+  while (s.length < size) s = '0' + s
+  return s
+}
 
+function log(num: number, base: number) {
+  return Math.log(num) / Math.log(base)
+}
+
+function roundLog(num: number, base: number) {
+  return Math.ceil(log(num, base))
+}
 function nameOpCodes(raw: Uint8Array) {
   let pushData = new Uint8Array()
 
@@ -39,16 +50,4 @@ function nameOpCodes(raw: Uint8Array) {
   }
 }
 
-function pad(num: number, size: number) {
-  let s = num + ''
-  while (s.length < size) s = '0' + s
-  return s
-}
-
-function log(num: number, base: number) {
-  return Math.log(num) / Math.log(base)
-}
-
-function roundLog(num: number, base: number) {
-  return Math.ceil(log(num, base))
-}
+nameOpCodes(hexToBytes(data))

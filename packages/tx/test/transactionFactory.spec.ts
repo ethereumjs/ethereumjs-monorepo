@@ -3,7 +3,7 @@ import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   FeeMarket1559Tx,
   LegacyTx,
   TransactionType,
@@ -40,8 +40,8 @@ const txTypes = [
     type: TransactionType.Legacy,
   },
   {
-    class: AccessList2930Transaction,
-    name: 'AccessList2930Transaction',
+    class: AccessList2930Tx,
+    name: 'AccessList2930Tx',
     unsigned: unsignedEIP2930Tx,
     signed: signedEIP2930Tx,
     eip2718: true,

@@ -158,16 +158,17 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   prague: {
-    // TODO update this accordingly to the right devnet setup
-    //eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698], // This is EOF-only
-    eips: [2537, 2935, 6110, 7002, 7251, 7685, 7702], // This is current prague without EOF
+    eips: [2537, 2935, 6110, 7002, 7251, 7623, 7685, 7691, 7702],
+  },
+  osaka: {
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
   },
   /**
    * Description: Next feature hardfork after prague, internally used for verkle testing/implementation (incomplete/experimental)
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
    * Status     : Final
    */
-  osaka: {
-    eips: [2935, 6800],
+  verkle: {
+    eips: [2935, 4762, 6800],
   },
 }

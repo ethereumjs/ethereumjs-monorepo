@@ -33,9 +33,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 // (please nevertheless include the original license reference))
 
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import type { Contact, KBucketOptions, PeerInfo } from '../types.js'
+import type { Contact, KBucketEvent, KBucketOptions, PeerInfo } from '../types.js'
 
 function createNode() {
   return { contacts: [], noSplit: false, left: null, right: null }
@@ -55,7 +55,7 @@ type KBucketNode = {
  * @extends EventEmitter
  */
 export class KBucket {
-  public events: EventEmitter
+  public events: EventEmitter<KBucketEvent>
   protected _localNodeId: Uint8Array
   protected _numberOfNodesPerKBucket: number
   protected _numberOfNodesToPing: number
@@ -68,7 +68,7 @@ export class KBucket {
    * @param {KBucketOptions} options
    */
   constructor(options: KBucketOptions = {}) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<KBucketEvent>()
     this._localNodeId = options.localNodeId ?? randomBytes(20)
     this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
     this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3

@@ -1,7 +1,6 @@
 import { createMPTFromProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { hexToBytes } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.js'
@@ -20,7 +19,6 @@ import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefet
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
-
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
@@ -491,7 +489,6 @@ describe('[StorageFetcher]', async () => {
         `verifyRangeProof correctly failed on invalid proof, Error: ${(e as Error).message}`,
       )
     }
-
     // send end of range input to store
     ;(fetcher as any)['destroyWhenDone'] = false
     await fetcher.store([Object.create(null)] as any)

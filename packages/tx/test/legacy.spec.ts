@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet, Sepolia, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, Sepolia, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   bytesToBigInt,
@@ -17,6 +17,7 @@ import {
   createLegacyTxFromRLP,
 } from '../src/index.js'
 
+import { Goerli } from './testData/goerliCommon.js'
 import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.js'
 import { txsData } from './testData/txs.js'
 

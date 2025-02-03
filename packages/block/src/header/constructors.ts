@@ -25,7 +25,7 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
-  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsRoot } =
+  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
     headerData
   const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
@@ -48,8 +48,8 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
     throw new Error('invalid header. parentBeaconBlockRoot should be provided')
   }
 
-  if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
-    throw new Error('invalid header. requestsRoot should be provided')
+  if (header.common.isActivatedEIP(7685) && requestsHash === undefined) {
+    throw new Error('invalid header. requestsHash should be provided')
   }
   return header
 }
@@ -118,7 +118,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
-    requestsRoot,
+    requestsHash,
   } = blockParams
 
   const blockHeader = new BlockHeader(
@@ -143,7 +143,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
       blobGasUsed,
       excessBlobGas,
       parentBeaconBlockRoot,
-      requestsRoot,
+      requestsHash,
     },
     options,
   )
