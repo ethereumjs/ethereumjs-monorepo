@@ -51,9 +51,9 @@ describe('internal', () => {
           { a: '1', b: '2' },
           { a: '3', b: '4' },
         ],
-        'a'
+        'a',
       ),
-      ['1', '3']
+      ['1', '3'],
     )
     assert.deepEqual(
       getKeys(
@@ -62,9 +62,9 @@ describe('internal', () => {
           { a: '3', b: '4' },
         ],
         'a',
-        true
+        true,
       ),
-      ['', '3']
+      ['', '3'],
     )
   })
 

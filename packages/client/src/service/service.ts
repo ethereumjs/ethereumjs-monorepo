@@ -1,6 +1,5 @@
 import { Chain } from '../blockchain/index.js'
 import { PeerPool } from '../net/peerpool.js'
-import { FlowControl } from '../net/protocol/index.js'
 import { Event } from '../types.js'
 import { type V8Engine, getV8Engine } from '../util/index.js'
 
@@ -42,7 +41,6 @@ export class Service {
   public opened: boolean
   public running: boolean
   public pool: PeerPool
-  public flow: FlowControl
   public chain: Chain
   public interval: number
   public timeout: number
@@ -86,13 +84,12 @@ export class Service {
           await this.handle(message, protocol, peer)
         } catch (error: any) {
           this.config.logger.debug(
-            `Error handling message (${protocol}:${message.name}): ${error.message}`
+            `Error handling message (${protocol}:${message.name}): ${error.message}`,
           )
         }
       }
     })
 
-    this.flow = new FlowControl()
     // @ts-ignore TODO replace with async create constructor
     this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval ?? 8000
@@ -126,13 +123,13 @@ export class Service {
     this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      this.config.logger.debug(`Peer banned: ${peer}`)
+      this.config.logger.debug(`Peer banned: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
-      this.config.logger.debug(`Peer added: ${peer}`)
+      this.config.logger.debug(`Peer added: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      this.config.logger.debug(`Peer removed: ${peer}`)
+      this.config.logger.debug(`Peer removed: ${peer}`),
     )
 
     await this.pool.open()
@@ -168,7 +165,7 @@ export class Service {
     this._statsInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
-      this.STATS_INTERVAL
+      this.STATS_INTERVAL,
     )
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)

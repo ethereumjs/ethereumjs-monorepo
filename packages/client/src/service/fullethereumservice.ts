@@ -7,24 +7,19 @@ import { SyncMode } from '../config.js'
 import { VMExecution } from '../execution/index.js'
 import { Miner } from '../miner/index.js'
 import { EthProtocol } from '../net/protocol/ethprotocol.js'
-import { LesProtocol } from '../net/protocol/lesprotocol.js'
 import { SnapProtocol } from '../net/protocol/snapprotocol.js'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.js'
 import { Event } from '../types.js'
 
-import { Service, type ServiceOptions } from './service.js'
+import { Service } from './service.js'
 import { Skeleton } from './skeleton.js'
 import { TxPool } from './txpool.js'
 
 import type { Peer } from '../net/peer/peer.js'
 import type { Protocol } from '../net/protocol/index.js'
+import type { ServiceOptions } from './service.js'
 import type { Block } from '@ethereumjs/block'
-import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
-
-interface FullEthereumServiceOptions extends ServiceOptions {
-  /** Serve LES requests (default: false) */
-  lightserv?: boolean
-}
+import type { Blob4844Tx } from '@ethereumjs/tx'
 
 /**
  * Full Ethereum service
@@ -33,7 +28,6 @@ interface FullEthereumServiceOptions extends ServiceOptions {
 export class FullEthereumService extends Service {
   /* synchronizer for syncing the chain */
   public synchronizer?: BeaconSynchronizer | FullSynchronizer
-  public lightserv: boolean
   public miner: Miner | undefined
   public txPool: TxPool
   public skeleton?: Skeleton
@@ -48,10 +42,8 @@ export class FullEthereumService extends Service {
   /**
    * Create new ETH service
    */
-  constructor(options: FullEthereumServiceOptions) {
+  constructor(options: ServiceOptions) {
     super(options)
-
-    this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
 
@@ -159,7 +151,7 @@ export class FullEthereumService extends Service {
           this.synchronizer instanceof BeaconSynchronizer
             ? 'BeaconSynchronizer'
             : 'FullSynchronizer'
-        }.`
+        }.`,
       )
     } else {
       this.config.logger.info('Starting FullEthereumService with no syncing.')
@@ -175,7 +167,7 @@ export class FullEthereumService extends Service {
           if (rawTx.type !== TransactionType.BlobEIP4844) {
             txs[1].push(rawTx.serialize().byteLength)
           } else {
-            txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
+            txs[1].push((rawTx as Blob4844Tx).serializeNetworkWrapper().byteLength)
           }
           txs[2].push(hexToBytes(`0x${tx.hash}`))
         }
@@ -192,18 +184,12 @@ export class FullEthereumService extends Service {
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
       // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
-      if (this.execution.config.execCommon.gteHardfork(Hardfork.Osaka)) {
-        if (!this.execution.config.statelessVerkle) {
-          throw Error(`Currently stateful verkle execution not supported`)
-        }
-        this.execution.config.logger.info(
-          `Skipping VM verkle statemanager genesis hardfork=${this.execution.hardfork}`
-        )
+      if (this.execution.config.execCommon.gteHardfork(Hardfork.Verkle)) {
         await this.execution.setupVerkleVM()
         this.execution.vm = this.execution.verkleVM!
       } else {
         this.execution.config.logger.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`
+          `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
         )
         await this.execution.setupMerkleVM()
         this.execution.vm = this.execution.merkleVM!
@@ -262,12 +248,12 @@ export class FullEthereumService extends Service {
           }
         } else {
           this.config.logger.debug(
-            `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`
+            `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`,
           )
         }
       } else {
         this.config.logger.warn(
-          'skipping building head state as neither execution is started nor snapsync is available'
+          'skipping building head state as neither execution is started nor snapsync is available',
         )
       }
     } catch (error) {
@@ -322,16 +308,6 @@ export class FullEthereumService extends Service {
         convertSlimBody: true,
       }),
     ]
-    if (this.config.lightserv) {
-      protocols.push(
-        new LesProtocol({
-          config: this.config,
-          chain: this.chain,
-          flow: this.flow,
-          timeout: this.timeout,
-        })
-      )
-    }
     return protocols
   }
 
@@ -344,8 +320,6 @@ export class FullEthereumService extends Service {
   async handle(message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
-    } else {
-      return this.handleLes(message, peer)
     }
   }
 
@@ -379,7 +353,7 @@ export class FullEthereumService extends Service {
       case 'GetBlockBodies': {
         const { reqId, hashes } = message.data
         const blocks: Block[] = await Promise.all(
-          hashes.map((hash: Uint8Array) => this.chain.getBlock(hash))
+          hashes.map((hash: Uint8Array) => this.chain.getBlock(hash)),
         )
         const bodies = blocks.map((block) => block.raw().slice(1))
         peer.eth!.send('BlockBodies', { reqId, bodies })
@@ -388,7 +362,7 @@ export class FullEthereumService extends Service {
       case 'NewBlockHashes': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
-            `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`
+            `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
         } else if (this.synchronizer instanceof FullSynchronizer) {
@@ -403,7 +377,7 @@ export class FullEthereumService extends Service {
       case 'NewBlock': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
           this.config.logger.debug(
-            `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`
+            `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
         } else if (this.synchronizer instanceof FullSynchronizer) {
@@ -453,34 +427,6 @@ export class FullEthereumService extends Service {
         }
         peer.eth?.send('Receipts', { reqId, receipts })
         break
-      }
-    }
-  }
-
-  /**
-   * Handles incoming LES message from connected peer
-   * @param message message object
-   * @param peer peer
-   */
-  async handleLes(message: any, peer: Peer): Promise<void> {
-    if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
-      const { reqId, block, max, skip, reverse } = message.data
-      const bv = this.flow.handleRequest(peer, message.name, max)
-      if (bv < 0) {
-        this.pool.ban(peer, 300000)
-        this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
-      } else {
-        if (typeof block === 'bigint') {
-          if (
-            (reverse === true && block > this.chain.headers.height) ||
-            (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
-          ) {
-            // Don't respond to requests greater than the current height
-            return
-          }
-        }
-        const headers = await this.chain.getHeaders(block, max, skip, reverse)
-        peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
   }

@@ -8,7 +8,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
@@ -19,18 +19,17 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 import { Peer } from './peer.js'
 
 import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
 
 const DEBUG_BASE_NAME = 'rlpx'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
-  public events: EventEmitter
+  public events: EventEmitter<RLPxEvent>
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger
@@ -56,7 +55,7 @@ export class RLPx {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<RLPxEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
@@ -95,7 +94,7 @@ export class RLPx {
       this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
-          (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)
+          (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array),
         )
       })
     }
@@ -113,14 +112,14 @@ export class RLPx {
     this._peers = new Map()
     this._peersQueue = []
     this._peersLRU = new LRUCache({ max: 25000 })
-    const REFILL_INTERVALL = 10000 // 10 sec * 1000
-    const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
+    const REFILL_INTERVAL = 10000 // 10 sec * 1000
+    const refillIntervalSubdivided = Math.floor(REFILL_INTERVAL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
 
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   listen(...args: any[]) {
@@ -158,7 +157,7 @@ export class RLPx {
 
     if (this.DEBUG) {
       this._debug(
-        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`
+        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`,
       )
     }
     const deferred = createDeferred()
@@ -273,7 +272,7 @@ export class RLPx {
         if (this.DEBUG) {
           this._debug(
             `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
-            `disconnect`
+            `disconnect`,
           )
         }
       }
@@ -310,7 +309,7 @@ export class RLPx {
             this._refillIntervalSelectionCounter
           } peers: ${this._peers.size}, queue size: ${
             this._peersQueue.length
-          }, open slots: ${this._getOpenSlots()}`
+          }, open slots: ${this._getOpenSlots()}`,
         )
       }
     }

@@ -63,10 +63,10 @@ export class Heap {
           // @ts-ignore
           return opts!.compar!(a, b) < 0
         }
-      : opts.comparBefore ??
+      : (opts.comparBefore ??
         function (a: any, b: any): boolean {
           return a < b
-        }
+        })
 
     this._sortBefore =
       opts.compar ??
@@ -210,6 +210,7 @@ export class Heap {
         fail = i
       }
     }
+    // eslint-disable-next-line no-console
     if (fail) console.log('failed at', fail >>> 1, fail)
     return !fail
   }

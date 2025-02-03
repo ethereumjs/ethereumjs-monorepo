@@ -10,7 +10,7 @@ declare module 'qheap' {
     freeSpace?: number
     size?: number
   }
-  class QHeap<T> {
+  export class QHeap<T> {
     constructor(opts?: QHeapOptions)
     insert(item: T): void
     push(item: T): void
@@ -22,6 +22,4 @@ declare module 'qheap' {
     length: number
     gc(opts: { minLength: number; maxLength: number }): void
   }
-
-  export = QHeap
 }

@@ -1,7 +1,9 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import * as verkle from 'micro-eth-signer/verkle'
 import * as path from 'path'
 
-import type { Kzg } from '@ethereumjs/util'
+import type { HardforkTransitionConfig } from '@ethereumjs/common'
+import type { KZG } from '@ethereumjs/util'
 
 /**
  * Default tests path (git submodule: ethereum-tests)
@@ -107,6 +109,8 @@ const normalHardforks = [
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
   'cancun',
   'prague',
+  'osaka',
+  'verkle',
 ]
 
 const transitionNetworks = {
@@ -213,7 +217,7 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number, kzg?: Kzg) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number, kzg?: KZG) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -224,11 +228,11 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   // normal hard fork, return the common with this hard fork
   // find the right upper/lowercased version
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
-    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
+    currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue,
   )
-  const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
-  const testHardforks = []
+  const testHardforks: HardforkTransitionConfig[] = []
   for (const hf of hardforks) {
     // check if we enable this hf
     // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
@@ -242,18 +246,13 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       })
     } else {
       // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (ttd === undefined && timestamp === undefined) {
-        testHardforks.push({
-          name: hf.name,
-          //forkHash: hf.forkHash,
-          block: null,
-        })
-      } else if (hf.name === 'paris' && ttd !== undefined) {
-        // merge will currently always be after a hardfork, so add it here
+      if (
+        (ttd === undefined && timestamp === undefined) ||
+        (hf.name === 'paris' && ttd !== undefined)
+      ) {
         testHardforks.push({
           name: hf.name,
           block: null,
-          ttd: BigInt(ttd),
         })
       }
       if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
@@ -265,13 +264,77 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       }
     }
   }
-  const common = Common.custom(
+  const common = createCustomCommon(
     {
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
-    { eips: [3607], customCrypto: { kzg } }
+    Mainnet,
+    { eips: [3607], customCrypto: { kzg } },
   )
+  // Activate EIPs
+  const eips = network.match(/(?<=\+)(.\d+)/g)
+  if (eips) {
+    common.setEIPs(eips.map((e: string) => parseInt(e)))
+  }
+  return common
+}
+
+/**
+ * Returns a common instance configured for verkle
+ * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param ttd If set: total terminal difficulty to switch to merge
+ * @returns
+ */
+function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
+  let ttd
+  // hard fork that verkle tests are filled on
+  const hfName = 'shanghai'
+  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
+  const hardforks = mainnetCommon.hardforks().slice(0, 17) // skip hardforks after Shanghai
+  const testHardforks: HardforkTransitionConfig[] = []
+  for (const hf of hardforks) {
+    // check if we enable this hf
+    // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+    if (mainnetCommon.gteHardfork(hf.name) && hf.name !== Hardfork.Dao) {
+      // this hardfork should be activated at block 0
+      testHardforks.push({
+        name: hf.name,
+        // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
+        // forkHash: hf.forkHash,
+        block: 0,
+      })
+    } else {
+      // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+      if (
+        (ttd === undefined && timestamp === undefined) ||
+        (hf.name === 'paris' && ttd !== undefined)
+      ) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+        })
+      }
+      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          timestamp,
+        })
+      }
+    }
+  }
+
+  testHardforks.push({ name: 'verkle', block: 1 })
+  const common = createCustomCommon(
+    {
+      hardforks: testHardforks,
+      defaultHardfork: 'verkle',
+    },
+    Mainnet,
+    { eips: [2935, 3607], customCrypto: { kzg, verkle } },
+  )
+
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
   if (eips) {
@@ -289,11 +352,15 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
  * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns the Common which should be used
  */
-export function getCommon(network: string, kzg?: Kzg): Common {
+export function getCommon(network: string, kzg?: KZG): Common {
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
   let networkLowercase = network.toLowerCase()
+  // Special handler for verkle tests
+  if (networkLowercase.includes('verkle')) {
+    return setupCommonForVerkle(network, undefined, kzg)
+  }
   if (network.includes('+')) {
     const index = network.indexOf('+')
     networkLowercase = network.slice(0, index).toLowerCase()
@@ -325,7 +392,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
       throw new Error('network not supported: ' + network)
     }
     const mainnetCommon = new Common({
-      chain: Chain.Mainnet,
+      chain: Mainnet,
       hardfork: transitionForks.finalSupportedFork,
     })
     const hardforks = mainnetCommon.hardforks()
@@ -349,16 +416,16 @@ export function getCommon(network: string, kzg?: Kzg): Common {
         })
       }
     }
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         hardforks: testHardforks,
       },
+      Mainnet,
       {
-        baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
         customCrypto: { kzg },
-      }
+      },
     )
     return common
   }
@@ -422,7 +489,7 @@ const expectedTestsFull: {
  */
 export function getExpectedTests(
   fork: string,
-  name: 'BlockchainTests' | 'GeneralStateTests'
+  name: 'BlockchainTests' | 'GeneralStateTests',
 ): number | undefined {
   if (expectedTestsFull[name] === undefined) {
     return

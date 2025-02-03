@@ -1,4 +1,4 @@
-import { Block } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
@@ -30,7 +30,7 @@ describe('[BeaconSynchronizer]', async () => {
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
 
   vi.doMock('../../src/sync/fetcher/reverseblockfetcher.js', () =>
-    td.constructor(ReverseBlockFetcher)
+    td.constructor(ReverseBlockFetcher),
   )
   const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.js')
 
@@ -132,11 +132,11 @@ describe('[BeaconSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+    skeleton['getSyncStatus'] = td.func<(typeof skeleton)['getSyncStatus']>()
     await skeleton.open()
 
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {
         return {
@@ -186,10 +186,10 @@ describe('[BeaconSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
+    skeleton['getSyncStatus'] = td.func<(typeof skeleton)['getSyncStatus']>()
     await skeleton.open()
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<typeof sync['best']>()
+    sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {
         return {
@@ -218,7 +218,7 @@ describe('[BeaconSynchronizer]', async () => {
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    const head = Block.fromBlockData({ header: { number: BigInt(15) } })
+    const head = createBlock({ header: { number: BigInt(15) } })
     await skeleton['putBlock'](head)
     ;(skeleton as any).status.progress.subchains = [
       {
@@ -227,16 +227,18 @@ describe('[BeaconSynchronizer]', async () => {
       },
     ]
     await sync.open()
-    const block = Block.fromBlockData({ header: { number: BigInt(16), parentHash: head.hash() } })
+    const block = createBlock({
+      header: { number: BigInt(16), parentHash: head.hash() },
+    })
     assert.ok(await sync.extendChain(block), 'should extend chain successfully')
     assert.ok(await sync.setHead(block), 'should set head successfully')
     assert.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
 
-    const gapBlock = Block.fromBlockData({ header: { number: BigInt(18) } })
+    const gapBlock = createBlock({ header: { number: BigInt(18) } })
     assert.notOk(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
     assert.ok(
       await sync.setHead(gapBlock),
-      'should be able to set and update head with gapped block'
+      'should be able to set and update head with gapped block',
     )
     assert.equal(skeleton.bounds().head, BigInt(18), 'head should update with gapped block')
     await sync.stop()
@@ -254,7 +256,7 @@ describe('[BeaconSynchronizer]', async () => {
     assert.equal(
       await sync.syncWithPeer({} as any),
       false,
-      `syncWithPeer should return false as nothing to sync`
+      `syncWithPeer should return false as nothing to sync`,
     )
     await sync.stop()
     await sync.close()

@@ -5,10 +5,10 @@
     "test/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.ts",
-    "examples/simple.cts",
-    "examples/peer-communication.cts",
-    "examples/peer-communication-les.cts",
-    "scripts/singlePeerRun.cts"
+    "examples/simple.ts",
+    "examples/peer-communication.ts",
+    "examples/peer-communication-les.ts",
+    "scripts/singlePeerRun.ts"
   ],
   "compilerOptions": {
     "typeRoots": ["node_modules/@types", "src/@types"]

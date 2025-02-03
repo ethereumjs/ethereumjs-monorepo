@@ -9,7 +9,7 @@ export type AccountState = [
   balance: PrefixedHexString,
   code: PrefixedHexString,
   storage: Array<StoragePair>,
-  nonce: PrefixedHexString
+  nonce: PrefixedHexString,
 ]
 
 /**

@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { jwt } from '../../src/ext/jwt-simple.js'
 
-import { createClient, createManager, getRpcClient, startRPC } from './helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from './helpers.js'
 
 import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 import type { AddressInfo } from 'net'
@@ -14,7 +14,7 @@ const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
   it('without Content-Type header', async () => {
-    const rpc = getRpcClient(startRPC({}))
+    const rpc = getRPCClient(startRPC({}))
     const req = 'plaintext'
     const res = await rpc.request(req, [])
     assert.equal(res.error.code, -32601)
@@ -172,7 +172,7 @@ describe('JSON-RPC call', () => {
 })
 describe('callWithStackTrace', () => {
   it('call with stack trace and gets a stack trace in the error', async () => {
-    const method = 'eth_getBlockByNumber'
+    const method = 'eth_getBlockTransactionCountByNumber'
     const mockBlockNumber = BigInt(123)
     const mockChain = {
       headers: { latest: { number: mockBlockNumber } },
@@ -192,7 +192,7 @@ describe('callWithStackTrace', () => {
   })
 
   it('call with stack trace and gets an error without a stack trace', async () => {
-    const method = 'eth_getBlockByNumber'
+    const method = 'eth_getStorageAt'
     const mockBlockNumber = BigInt(123)
     const mockChain = {
       headers: { latest: { number: mockBlockNumber } },
@@ -207,7 +207,7 @@ describe('callWithStackTrace', () => {
       port: (server.address()! as AddressInfo).port,
     })
 
-    const res = await rpc.request(method, ['0x678', false])
+    const res = await rpc.request(method, ['0xavc', false])
 
     assert.ok(res.error.trace === undefined)
   })

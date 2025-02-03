@@ -44,6 +44,7 @@ describe('decode', function () {
   })
 
   it('throw an error when no token is provided', function () {
+    //@ts-expect-error
     const fn = jwt.decode.bind(null, null, key)
     expect(fn).toThrowError(/No token supplied/)
   })
@@ -94,7 +95,7 @@ describe('decode', function () {
     const obj2 = jwt.decode(token, key, false, 'HS512')
     expect(obj2).to.eql(obj)
     expect(jwt.decode.bind(null, token, key, false, 'HS256')).toThrowError(
-      /Signature verification failed/
+      /Signature verification failed/,
     )
   })
 

@@ -44,6 +44,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   count: bigint
 
   protected reverse: boolean
+  protected DEBUG: boolean
 
   /**
    * Create new block fetcher
@@ -51,13 +52,17 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   constructor(options: BlockFetcherOptions) {
     super(options)
 
+    this.DEBUG =
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+
     this.chain = options.chain
     this.first = options.first
     this.count = options.count
     this.reverse = options.reverse ?? false
-    this.debug(
-      `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`
-    )
+    this.DEBUG &&
+      this.debug(
+        `Block fetcher instantiated interval=${this.interval} first=${this.first} count=${this.count} reverse=${this.reverse} destroyWhenDone=${this.destroyWhenDone}`,
+      )
   }
 
   /**
@@ -92,7 +97,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     }
 
     debugStr += ` count=${pushedCount} reverse=${this.reverse}`
-    this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
+    this.DEBUG && this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
   }
 
@@ -104,18 +109,20 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       this.count > BIGINT_0 &&
       this.processed - this.finished < this.config.maxFetcherRequests
     ) {
-      this.debug(
-        `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`
-      )
+      this.DEBUG &&
+        this.debug(
+          `Fetcher pending with first=${this.first} count=${this.count} reverse=${this.reverse}`,
+        )
       const tasks = this.tasks(this.first, this.count)
       for (const task of tasks) {
         this.enqueueTask(task)
       }
-      this.debug(`Enqueued num=${tasks.length} tasks`)
+      this.DEBUG && this.debug(`Enqueued num=${tasks.length} tasks`)
     } else {
-      this.debug(
-        `No new tasks enqueued in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`
-      )
+      this.DEBUG &&
+        this.debug(
+          `No new tasks enqueued in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`,
+        )
     }
   }
 
@@ -185,7 +192,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
           first: min,
           count: numBlocks,
         },
-        true
+        true,
       )
     } else {
       for (const first of numberList) {
@@ -194,13 +201,14 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
             first,
             count: 1,
           },
-          true
+          true,
         )
       }
     }
-    this.debug(
-      `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`
-    )
+    this.DEBUG &&
+      this.debug(
+        `Enqueued tasks by number list num=${numberList.length} min=${min} bulkRequest=${bulkRequest} ${updateHeightStr}`,
+      )
     if (this.in.length === 0) {
       this.nextTasks()
     }
@@ -208,7 +216,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
 
   processStoreError(
     error: Error,
-    task: JobTask
+    task: JobTask,
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     let stepBack = BIGINT_0
     const destroyFetcher = !(error.message as string).includes('could not find parent header')

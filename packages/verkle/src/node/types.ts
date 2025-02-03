@@ -1,6 +1,7 @@
-import type { InternalNode } from './internalNode.js'
-import type { LeafNode } from './leafNode.js'
-import type { VerkleCrypto } from '@ethereumjs/util'
+import { type VerkleCrypto } from '@ethereumjs/util'
+
+import type { InternalVerkleNode } from './internalNode.js'
+import type { LeafVerkleNode } from './leafNode.js'
 
 export enum VerkleNodeType {
   Internal,
@@ -12,8 +13,8 @@ export interface ChildNode {
   path: Uint8Array // path/partial stem to child node (used as DB key)
 }
 export interface TypedVerkleNode {
-  [VerkleNodeType.Internal]: InternalNode
-  [VerkleNodeType.Leaf]: LeafNode
+  [VerkleNodeType.Internal]: InternalVerkleNode
+  [VerkleNodeType.Leaf]: LeafVerkleNode
 }
 
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
@@ -28,20 +29,25 @@ interface BaseVerkleNodeOptions {
   verkleCrypto: VerkleCrypto
 }
 
-interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
+interface InternalVerkleNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children?: ChildNode[]
+  children?: (ChildNode | null)[]
 }
-interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
+
+export enum LeafVerkleNodeValue {
+  Untouched = 0,
+  Deleted = 1,
+}
+interface LeafVerkleNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
-  values: Uint8Array[]
+  values?: (Uint8Array | LeafVerkleNodeValue)[]
   c1?: Uint8Array
   c2?: Uint8Array
 }
 
 export interface VerkleNodeOptions {
-  [VerkleNodeType.Internal]: VerkleInternalNodeOptions
-  [VerkleNodeType.Leaf]: VerkleLeafNodeOptions
+  [VerkleNodeType.Internal]: InternalVerkleNodeOptions
+  [VerkleNodeType.Leaf]: LeafVerkleNodeOptions
 }
 
 export const NODE_WIDTH = 256

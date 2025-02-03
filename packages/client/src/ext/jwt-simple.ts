@@ -7,7 +7,7 @@
  * module dependencies
  */
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import { base64url } from '@scure/base'
+import { base64url, base64urlnopad } from '@scure/base' // cspell:disable-line
 import crypto from 'crypto'
 
 /**
@@ -102,7 +102,7 @@ const decode = function jwt_decode(
   token: string,
   key: string,
   noVerify: boolean = false,
-  algorithm: string = ''
+  algorithm: string = '',
 ) {
   // check token
   if (!token) {
@@ -121,7 +121,7 @@ const decode = function jwt_decode(
 
   // base64 decode and parse JSON
   const header = JSON.parse(bytesToUtf8(base64url.decode(headerSeg)))
-  const payload = JSON.parse(bytesToUtf8(base64url.decode(payloadSeg)))
+  const payload = JSON.parse(bytesToUtf8(base64urlnopad.decode(payloadSeg)))
 
   if (!noVerify) {
     if (!algorithm && /BEGIN( RSA)? PUBLIC KEY/.test(key.toString())) {
@@ -168,7 +168,7 @@ const encode = function jwt_encode(
   payload: any,
   key: string,
   algorithm: string = '',
-  options: any = undefined
+  options: any = undefined,
 ) {
   // Check key
   if (!key) {
@@ -193,7 +193,7 @@ const encode = function jwt_encode(
   // create segments, all segments should be base64 string
   const segments = []
   segments.push(base64url.encode(utf8ToBytes(JSON.stringify(header))))
-  segments.push(base64url.encode(utf8ToBytes(JSON.stringify(payload))))
+  segments.push(base64urlnopad.encode(utf8ToBytes(JSON.stringify(payload))))
   segments.push(sign(segments.join('.'), key, signingMethod, signingType))
 
   return segments.join('.')

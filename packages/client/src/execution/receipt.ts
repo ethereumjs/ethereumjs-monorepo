@@ -38,7 +38,7 @@ type GetReceiptByTxHashReturn = [
   receipt: TxReceipt,
   blockHash: Uint8Array,
   txIndex: number,
-  logIndex: number
+  logIndex: number,
 ]
 type GetLogsReturn = {
   log: Log
@@ -121,17 +121,17 @@ export class ReceiptsManager extends MetaDBManager {
   async getReceipts(
     blockHash: Uint8Array,
     calcBloom?: boolean,
-    includeTxType?: true
+    includeTxType?: true,
   ): Promise<TxReceiptWithType[]>
   async getReceipts(
     blockHash: Uint8Array,
     calcBloom?: boolean,
-    includeTxType?: false
+    includeTxType?: false,
   ): Promise<TxReceipt[]>
   async getReceipts(
     blockHash: Uint8Array,
     calcBloom = false,
-    includeTxType = false
+    includeTxType = false,
   ): Promise<TxReceipt[] | TxReceiptWithType[]> {
     const encoded = await this.get(DBKey.Receipts, blockHash)
     if (!encoded) return []
@@ -176,7 +176,7 @@ export class ReceiptsManager extends MetaDBManager {
     from: Block,
     to: Block,
     addresses?: Uint8Array[],
-    topics: (Uint8Array | Uint8Array[] | null)[] = []
+    topics: (Uint8Array | Uint8Array[] | null)[] = [],
   ): Promise<GetLogsReturn> {
     const returnedLogs: GetLogsReturn = []
     let returnedLogsSize = 0
@@ -194,7 +194,7 @@ export class ReceiptsManager extends MetaDBManager {
             tx: block.transactions[receiptIndex],
             txIndex: receiptIndex,
             logIndex: logIndex++,
-          }))
+          })),
         )
       }
       if (addresses && addresses.length > 0) {
@@ -245,7 +245,7 @@ export class ReceiptsManager extends MetaDBManager {
   private async updateIndex(
     operation: IndexOperation,
     type: IndexType.TxHash,
-    value: Block
+    value: Block,
   ): Promise<void>
   private async updateIndex(operation: IndexOperation, type: IndexType, value: any): Promise<void> {
     switch (type) {
@@ -309,14 +309,14 @@ export class ReceiptsManager extends MetaDBManager {
   private rlp(
     conversion: RlpConvert.Decode,
     type: RlpType.Receipts,
-    values: Uint8Array
+    values: Uint8Array,
   ): TxReceipt[]
   private rlp(conversion: RlpConvert.Decode, type: RlpType.Logs, value: rlpLog[]): Log[]
   private rlp(conversion: RlpConvert.Decode, type: RlpType.TxHash, value: Uint8Array): TxHashIndex
   private rlp(
     conversion: RlpConvert,
     type: RlpType,
-    value: Uint8Array | rlpOut
+    value: Uint8Array | rlpOut,
   ): Uint8Array | rlpOut {
     switch (type) {
       case RlpType.Receipts:
@@ -328,7 +328,7 @@ export class ReceiptsManager extends MetaDBManager {
                 intToBytes((r as PostByzantiumTxReceipt).status),
               bigIntToBytes(r.cumulativeBlockGasUsed),
               this.rlp(RlpConvert.Encode, RlpType.Logs, r.logs),
-            ])
+            ]),
           )
         } else {
           const decoded = RLP.decode(value as Uint8Array) as unknown as rlpReceipt[]

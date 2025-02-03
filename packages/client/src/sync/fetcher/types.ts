@@ -43,7 +43,7 @@ export type SnapFetcherDoneFlags = {
   stateRoot?: Uint8Array
 }
 
-export function getInitFecherDoneFlags(): SnapFetcherDoneFlags {
+export function getInitFetcherDoneFlags(): SnapFetcherDoneFlags {
   return {
     done: false,
     syncing: false,

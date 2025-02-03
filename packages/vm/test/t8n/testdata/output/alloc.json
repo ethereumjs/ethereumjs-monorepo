@@ -1,0 +1,20 @@
+{
+  "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
+    "nonce": "0x1",
+    "balance": "0x3635c9adc5de996c36",
+    "code": "0x",
+    "storage": {}
+  },
+  "0x0000000000000000000000000000000000001000": {
+    "nonce": "0x1",
+    "balance": "0x0",
+    "code": "0x60015f55",
+    "storage": { "0x00": "0x01" }
+  },
+  "0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba": {
+    "balance": "0x1f923",
+    "nonce": "0x0",
+    "code": "0x",
+    "storage": {}
+  }
+}

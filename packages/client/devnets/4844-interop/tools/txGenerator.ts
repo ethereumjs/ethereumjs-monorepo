@@ -1,25 +1,27 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
-import { Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, TransactionType, TxData } from '@ethereumjs/tx'
+import { createCommonFromGethGenesis, Hardfork } from '@ethereumjs/common'
+import { createTx, TransactionType, TxData } from '@ethereumjs/tx'
 import {
-  Address,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
   bytesToHex,
   hexToBytes,
+  createAddressFromPrivateKey,
 } from '@ethereumjs/util'
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+const kzg = new microEthKZG(trustedSetup)
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
-const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = hexToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
-const sender = Address.fromPrivateKey(pkey)
+const genesisJSON = require(process.argv[4]) // Genesis parameters
+const pkey = hexToBytes(`0x${process.argv[5]}`) // private key of tx sender as unprefixed hex string (unprefixed in args)
+const sender = createAddressFromPrivateKey(pkey)
 
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
@@ -27,10 +29,8 @@ async function getNonce(client: Client, account: string) {
 }
 
 async function run(data: any) {
-  const kzg = await loadKZG()
-
-  const common = Common.fromGethGenesis(genesisJson, {
-    chain: genesisJson.ChainName ?? 'devnet',
+  const common = createCommonFromGethGenesis(genesisJSON, {
+    chain: genesisJSON.ChainName ?? 'devnet',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
@@ -41,7 +41,7 @@ async function run(data: any) {
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
-  const account = Address.fromPrivateKey(randomBytes(32))
+  const account = createAddressFromPrivateKey(randomBytes(32))
   const txData: TxData[TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
@@ -62,7 +62,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData, { common }).sign(pkey)
+  const blobTx = createTx<TransactionType.BlobEIP4844>(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

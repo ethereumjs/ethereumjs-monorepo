@@ -1,27 +1,26 @@
 import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { decode, encode } from './message.js'
 
-import type { DPTServerOptions, PeerInfo } from '../types.js'
+import type { DPTServerOptions, PeerInfo, ServerEvent } from '../types.js'
 import type { DPT } from './dpt.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'dpt:server'
-const verbose = createDebugLogger('verbose').enabled
+const verbose = debugDefault('verbose').enabled
 
 const VERSION = 0x04
 
 export class Server {
-  public events: EventEmitter
+  public events: EventEmitter<ServerEvent>
   protected _dpt: DPT
   protected _privateKey: Uint8Array
   protected _timeout: number
@@ -36,7 +35,7 @@ export class Server {
   private DEBUG: boolean
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<ServerEvent>()
     this._dpt = dpt
     this._privateKey = privateKey
 
@@ -64,7 +63,7 @@ export class Server {
     this._common = options.common
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   bind(...args: any[]) {
@@ -91,8 +90,8 @@ export class Server {
   async ping(peer: PeerInfo): Promise<any> {
     this._isAliveCheck()
 
-    const rckey = `${peer.address}:${peer.udpPort}`
-    const promise = this._requestsCache.get(rckey)
+    const rcKey = `${peer.address}:${peer.udpPort}`
+    const promise = this._requestsCache.get(rcKey)
     if (promise !== undefined) return promise
 
     const hash = this._send(peer, 'ping', {
@@ -102,27 +101,27 @@ export class Server {
     })
 
     const deferred = createDeferred()
-    const rkey = bytesToUnprefixedHex(hash)
-    this._requests.set(rkey, {
+    const rKey = bytesToUnprefixedHex(hash)
+    this._requests.set(rKey, {
       peer,
       deferred,
       timeoutId: setTimeout(() => {
-        if (this._requests.get(rkey) !== undefined) {
+        if (this._requests.get(rKey) !== undefined) {
           if (this.DEBUG) {
             this._debug(
               `ping timeout: ${peer.address}:${peer.udpPort} ${
                 peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-              }`
+              }`,
             )
           }
-          this._requests.delete(rkey)
+          this._requests.delete(rKey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
           return deferred.promise
         }
       }, this._timeout),
     })
-    this._requestsCache.set(rckey, deferred.promise)
+    this._requestsCache.set(rcKey, deferred.promise)
     return deferred.promise
   }
 
@@ -141,7 +140,7 @@ export class Server {
         typename,
         `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
           peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-        })`
+        })`,
       )
     }
 
@@ -160,8 +159,8 @@ export class Server {
         info.typename.toString(),
         `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
           bytesToHex(peerId),
-          verbose
-        )})`
+          verbose,
+        )})`,
       )
     }
 
@@ -190,10 +189,10 @@ export class Server {
       }
 
       case 'pong': {
-        const rkey = bytesToUnprefixedHex(info.data.hash)
-        const request = this._requests.get(rkey)
+        const rKey = bytesToUnprefixedHex(info.data.hash)
+        const request = this._requests.get(rKey)
         if (request !== undefined) {
-          this._requests.delete(rkey)
+          this._requests.delete(rKey)
           request.deferred.resolve({
             id: peerId,
             address: request.peer.address,
@@ -218,7 +217,7 @@ export class Server {
       case 'neighbours': {
         this.events.emit(
           'peers',
-          info.data.peers.map((peer: any) => peer.endpoint)
+          info.data.peers.map((peer: any) => peer.endpoint),
         )
         break
       }

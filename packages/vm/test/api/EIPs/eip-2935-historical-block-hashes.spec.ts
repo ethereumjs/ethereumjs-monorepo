@@ -1,27 +1,35 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_1,
   bigIntToBytes,
+  bigIntToHex,
   bytesToHex,
+  createAddressFromPublicKey,
+  createAddressFromString,
   equalsBytes,
   generateAddress,
+  hexToBytes,
   privateToAddress,
   setLengthLeft,
-  zeros,
+  toChecksumAddress,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes'
-import { BIGINT_0 } from '../../../../util/src/constants'
-import { VM } from '../../../src/vm'
+import { bytesToBigInt } from '../../../../util/src/bytes.js'
+import { BIGINT_0 } from '../../../../util/src/constants.js'
+import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
-function eip2935ActiveAtCommon(timestamp: number) {
+import type { VM } from '../../../src/index.js'
+import type { Block } from '@ethereumjs/block'
+import type { LegacyTxData } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
@@ -38,7 +46,7 @@ function eip2935ActiveAtCommon(timestamp: number) {
     Hardfork.GrayGlacier,
     Hardfork.Shanghai,
     Hardfork.Paris,
-    Hardfork.MergeForkIdTransition,
+    Hardfork.MergeNetsplitBlock,
     Hardfork.Shanghai,
     Hardfork.Cancun,
   ]
@@ -54,25 +62,27 @@ function eip2935ActiveAtCommon(timestamp: number) {
     block: null,
     timestamp,
   })
-  const c = Common.custom({
-    customHardforks: {
-      testEIP2935Hardfork: {
-        name: 'testEIP2935Hardfork',
-        comment: 'Start of the Ethereum main chain',
-        url: '',
-        status: 'final',
-        eips: [2935, 7709],
+  const c = createCustomCommon(
+    {
+      customHardforks: {
+        testEIP2935Hardfork: {
+          eips: [2935, 7709],
+          params: {
+            historyStorageAddress: bigIntToHex(address),
+          },
+        },
       },
-    },
-    hardforks,
-    /*genesis: {
+      hardforks,
+      /*genesis: {
       gasLimit: 30_000_000,
       timestamp: "0x0",
       extraData: "0x",
       difficulty: "0x0",
       nonce: "0x0000000000000000"
     }*/
-  })
+    },
+    Mainnet,
+  )
 
   return c
 }
@@ -83,34 +93,19 @@ const PREBALANCE = BigInt(10000000)
 
 // array of different deployment configurations
 const deploymentConfigs = [
-  // original configuration
-  [
-    // contract code
-    '0x60203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // deployment tx input
-    '0x60368060095f395ff360203611603157600143035f35116029575f356120000143116029576120005f3506545f5260205ff35b5f5f5260205ff35b5f5ffd00',
-    // v r s
-    ['0x1b', '0x539', '0x1b9b6eb1f0'],
-    // sender, hash, deployed address
-    [
-      '0xa4690f0ed0d089faa1e0ad94c8f1b4a2fd4b0734',
-      '0x7ba81426bfa88a2cf4ea5c9abbbe83619505acd1173bc8450f93cf17cde3784b',
-      '0x25a219378dad9b3503c8268c9ca836a52427a4fb',
-    ],
-  ],
   // may 25 configuration with set on the lines of 4788
   [
     // contract code
     '0x3373fffffffffffffffffffffffffffffffffffffffe1460575767ffffffffffffffff5f3511605357600143035f3511604b575f35612000014311604b57611fff5f3516545f5260205ff35b5f5f5260205ff35b5f5ffd5b5f35611fff60014303165500',
     // deployment tx input
-    '0x60648060095f395ff33373fffffffffffffffffffffffffffffffffffffffe1460575767ffffffffffffffff5f3511605357600143035f3511604b575f35612000014311604b57611fff5f3516545f5260205ff35b5f5f5260205ff35b5f5ffd5b5f35611fff60014303165500',
+    '0x60538060095f395ff33373fffffffffffffffffffffffffffffffffffffffe14604657602036036042575f35600143038111604257611fff81430311604257611fff9006545f5260205ff35b5f5ffd5b5f35611fff60014303065500',
     // v r s
-    ['0x1b', '0x539', '0x1b9b6eb1f0'],
+    ['0x1b', '0x539', '0xaa12693182426612186309f02cfe8a80a0000'],
     // sender, hash, deployed address
     [
-      '0xe473f7e92ba2490e9fcbbe8bb9c3be3adbb74efc',
-      '0x3c769a03d6e2212f1d26ab59ba797dce0900df29ffd23c1dd391fd6b217973ad',
-      '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e',
+      '0x3462413Af4609098e1E27A490f554f260213D685',
+      '0x67139a552b0d3fffc30c0fa7d0c20d42144138c8fe07fc5691f09c1cce632e15',
+      '0x0000F90827F1C53a10cb7A02335B175320002935',
     ],
   ],
 ]
@@ -124,12 +119,13 @@ describe('EIP 2935: historical block hashes', () => {
       [deploymentSender, deploymentTxHash, deployedToAddress],
     ] = deploymentConfig
 
-    const historyAddress = Address.fromString(deployedToAddress)
-    const contract2935Code = hexToBytes(contract2935CodeHex)
+    const historyAddress = createAddressFromString(deployedToAddress)
+    const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
+    const contract2935Code = hexToBytes(contract2935CodeHex as string)
 
     // eslint-disable-next-line no-inner-declarations
     async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
-      const tx = LegacyTransaction.fromTxData({
+      const tx = createLegacyTx({
         to: historyAddress,
         gasLimit: 1000000,
         gasPrice: 10,
@@ -140,60 +136,59 @@ describe('EIP 2935: historical block hashes', () => {
       const account = await vm.stateManager.getAccount(callerAddress)
       account!.balance = PREBALANCE
       await vm.stateManager.putAccount(callerAddress, account!)
-      await vm.stateManager.putContractCode(historyAddress, contract2935Code)
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
 
-      const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-      const blockHashi = result.execResult.returnValue
-      return blockHashi
+      const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
+      const blockHash = result.execResult.returnValue
+      return blockHash
     }
 
     it(`should validate the deployment tx`, async () => {
-      const deployContractTxData = {
+      const deployContractTxData: LegacyTxData = {
         type: '0x0',
         nonce: '0x0',
-        to: null,
         gasLimit: '0x3d090',
         gasPrice: '0xe8d4a51000',
-        maxPriorityFeePerGas: null,
-        maxFeePerGas: null,
         value: '0x0',
         // input from the EIP is data here
-        data: deploymentTxData,
-        v: deploymentV,
-        r: deploymentR,
-        s: deploymentS,
+        data: deploymentTxData as PrefixedHexString,
+        v: deploymentV as PrefixedHexString,
+        r: deploymentR as PrefixedHexString,
+        s: deploymentS as PrefixedHexString,
       }
 
-      const deployTx = LegacyTransaction.fromTxData(deployContractTxData)
-      const txSender = Address.fromPublicKey(deployTx.getSenderPublicKey()).toString()
-      assert.equal(txSender, deploymentSender, 'tx sender should match')
+      const deployTx = createLegacyTx(deployContractTxData)
+      const txSender = createAddressFromPublicKey(deployTx.getSenderPublicKey()).toString()
+      assert.equal(toChecksumAddress(txSender), deploymentSender, 'tx sender should match')
 
       const txHash = bytesToHex(deployTx.hash())
       assert.equal(txHash, deploymentTxHash, 'tx hash should match')
 
       // tx sender is a random address with likely no tx history
       const txToAddress = bytesToHex(generateAddress(hexToBytes(txSender), bigIntToBytes(BIGINT_0)))
-      assert.equal(txToAddress, deployedToAddress, 'deployment address should match')
+      assert.equal(
+        toChecksumAddress(txToAddress),
+        deployedToAddress,
+        'deployment address should match',
+      )
     })
 
     it('should save genesis block hash to the history block hash contract', async () => {
-      const commonGenesis = eip2935ActiveAtCommon(1)
-      const blockchain = await Blockchain.create({
+      const commonGenesis = eip2935ActiveAtCommon(1, historyAddressBigInt)
+      const blockchain = await createBlockchain({
         common: commonGenesis,
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common: commonGenesis, blockchain })
+      const vm = await createVM({ common: commonGenesis, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
       commonGenesis.setHardforkBy({
         timestamp: 1,
       })
-      commonGenesis['_paramsCache']['vm']['historyStorageAddress'].v = bytesToBigInt(
-        historyAddress.bytes
-      )
-
-      const genesis = await vm.blockchain.getBlock(0)
-      const block = await (
-        await vm.buildBlock({
+      const genesis = (await vm.blockchain.getBlock(0)) as Block
+      const { block } = await (
+        await buildBlock(vm, {
           parentBlock: genesis,
           blockOpts: {
             putBlockIntoBlockchain: false,
@@ -201,11 +196,11 @@ describe('EIP 2935: historical block hashes', () => {
         })
       ).build()
       await vm.blockchain.putBlock(block)
-      await vm.runBlock({ block, generate: true })
+      await runBlock(vm, { block, generate: true })
 
-      const storage = await vm.stateManager.getContractStorage(
+      const storage = await vm.stateManager.getStorage(
         historyAddress,
-        setLengthLeft(bigIntToBytes(BigInt(0)), 32)
+        setLengthLeft(bigIntToBytes(BigInt(0)), 32),
       )
       assert.ok(equalsBytes(storage, genesis.hash()))
     })
@@ -214,21 +209,24 @@ describe('EIP 2935: historical block hashes', () => {
       const blocksActivation = 256 // This ensures that only block 255 gets stored into the hash contract
       // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300
       const blocksToBuild = 500
-      const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0)
+      const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
-      const common = eip2935ActiveAtCommon(blocksActivation)
-      const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
+      commonGetHistoryServeWindow.updateParams(paramsVM)
+      const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
+      const historyServeWindow = commonGetHistoryServeWindow.param('historyServeWindow')
 
-      const blockchain = await Blockchain.create({
+      const blockchain = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
       })
-      const vm = await VM.create({ common, blockchain })
-      let lastBlock = await vm.blockchain.getBlock(0)
+      const vm = await createVM({ common, blockchain })
+      // Ensure 2935 system code exists
+      await vm.stateManager.putCode(historyAddress, contract2935Code)
+      let lastBlock = (await vm.blockchain.getBlock(0)) as Block
       for (let i = 1; i <= blocksToBuild; i++) {
-        lastBlock = await (
-          await vm.buildBlock({
+        const buildResult = await (
+          await buildBlock(vm, {
             parentBlock: lastBlock,
             blockOpts: {
               putBlockIntoBlockchain: false,
@@ -239,8 +237,9 @@ describe('EIP 2935: historical block hashes', () => {
             },
           })
         ).build()
+        lastBlock = buildResult.block
         await vm.blockchain.putBlock(lastBlock)
-        await vm.runBlock({
+        await runBlock(vm, {
           block: lastBlock,
           generate: true,
           skipHeaderValidation: true,
@@ -249,7 +248,7 @@ describe('EIP 2935: historical block hashes', () => {
       }
 
       // swap out the blockchain to test from storage
-      const blockchainEmpty = await Blockchain.create({
+      const blockchainEmpty = await createBlockchain({
         common,
         validateBlocks: false,
         validateConsensus: false,
@@ -259,9 +258,9 @@ describe('EIP 2935: historical block hashes', () => {
 
       for (let i = 1; i <= blocksToBuild; i++) {
         const block = await blockchain.getBlock(i)
-        const storage = await vm.stateManager.getContractStorage(
+        const storage = await vm.stateManager.getStorage(
           historyAddress,
-          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
+          setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32),
         )
 
         // we will evaluate on lastBlock where 7709 is active and BLOCKHASH
@@ -274,7 +273,7 @@ describe('EIP 2935: historical block hashes', () => {
           block: lastBlock,
         })
 
-        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 thresholded by
+        // contract will only have hashes between blocksActivation -1 and blocksToBuild -1 threshold by
         // historyServeWindow window
         if (
           i >= blocksActivation - 1 &&
@@ -285,37 +284,37 @@ describe('EIP 2935: historical block hashes', () => {
           if (i >= blocksToBuild - 256) {
             assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
           } else {
-            assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+            assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
           }
         } else {
-          assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+          assert.ok(equalsBytes(ret.execResult.returnValue, new Uint8Array(64)))
         }
       }
 
       // validate the contract code cases
-      // const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-      const block = Block.fromBlockData(
+      // const result = await runTx(vm, { tx, block, skipHardForkValidation: true })
+      const block = createBlock(
         {
           header: {
             baseFeePerGas: BigInt(7),
             number: blocksToBuild,
           },
         },
-        { common }
+        { common },
       )
 
       // should be able to resolve blockhash via contract code but from the blocksActivation -1 onwards
       for (const i of [blocksActivation - 1, blocksActivation, blocksToBuild - 1]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        const blocki = await blockchain.getBlock(i)
-        assert.ok(equalsBytes(blockHashi, blocki.hash()))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        const blockI = await blockchain.getBlock(i)
+        assert.ok(equalsBytes(blockHashI, blockI.hash()))
       }
 
       // should be able to return 0 if input >= current block
       for (const i of [blocksToBuild, blocksToBuild + 100]) {
-        const blockHashi = await testBlockhashContract(vm, block, BigInt(i))
-        assert.ok(equalsBytes(blockHashi, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
+        const blockHashI = await testBlockhashContract(vm, block, BigInt(i))
+        assert.ok(equalsBytes(blockHashI, setLengthLeft(bigIntToBytes(BigInt(0)), 32)))
       }
-    })
+    }, 30_000)
   }
 })

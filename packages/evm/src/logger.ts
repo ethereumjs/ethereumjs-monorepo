@@ -146,7 +146,7 @@ export class EVMPerformanceLogger {
     gasUsed: number,
     targetTimer: 'precompiles' | 'opcodes' = 'opcodes',
     staticGas?: number,
-    dynamicGas?: number
+    dynamicGas?: number,
   ) {
     if (this.currentTimer === undefined || this.currentTimer !== timer) {
       throw new Error('Cannot stop timer: another timer is already running')

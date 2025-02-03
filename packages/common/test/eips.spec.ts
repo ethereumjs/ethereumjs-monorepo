@@ -1,16 +1,16 @@
 import { assert, describe, it } from 'vitest'
 
-import { Chain, Common, Hardfork } from '../src/index.js'
+import { Common, Hardfork, Mainnet } from '../src/index.js'
 
 describe('[Common/EIPs]: Initialization / Chain params', () => {
   it('Correct initialization', () => {
     let eips = [2537, 2929]
-    const c = new Common({ chain: Chain.Mainnet, eips })
+    const c = new Common({ chain: Mainnet, eips })
     assert.equal(c.eips(), eips, 'should initialize with supported EIP')
 
     eips = [2718, 2929, 2930]
     let f = () => {
-      new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
+      new Common({ chain: Mainnet, eips, hardfork: Hardfork.Istanbul })
     }
     assert.doesNotThrow(f, 'Should not throw when initializing with a consistent EIP list')
 
@@ -18,7 +18,7 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     const msg =
       'should throw when initializing with an EIP with required EIPs not being activated along'
     f = () => {
-      new Common({ chain: Chain.Mainnet, eips, hardfork: Hardfork.Istanbul })
+      new Common({ chain: Mainnet, eips, hardfork: Hardfork.Istanbul })
     }
     assert.throws(f, undefined, undefined, msg)
   })
@@ -28,7 +28,7 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     const eips = [UNSUPPORTED_EIP]
     const msg = 'should throw on an unsupported EIP'
     const f = () => {
-      new Common({ chain: Chain.Mainnet, eips })
+      new Common({ chain: Mainnet, eips })
     }
     assert.throws(f, /not supported$/, undefined, msg)
 
@@ -39,14 +39,14 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     eips = [ 2537, ]
     msg = 'should throw on not meeting minimum hardfork requirements'
     f = () => {
-      new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips })
+      new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips })
     }
     assert.throws(f, /minimumHardfork/, undefined, msg)
     */
   })
 
   it('eipBlock', () => {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common({ chain: Mainnet })
 
     let msg = 'should return correct value'
     assert.ok(c.eipBlock(1559)! === 12965000n, msg)
@@ -56,7 +56,7 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
   })
 
   it('eipTimestamp', () => {
-    const c = new Common({ chain: Chain.Mainnet })
+    const c = new Common({ chain: Mainnet })
 
     let msg = 'should return null for unscheduled eip by timestamp'
     assert.ok(c.eipTimestamp(1559) === null, msg)

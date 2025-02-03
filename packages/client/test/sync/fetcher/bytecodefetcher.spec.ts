@@ -1,6 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { hexToBytes } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.js'
@@ -73,7 +72,7 @@ describe('[ByteCodeFetcher]', async () => {
     assert.deepEqual(
       (fetcher.process(job, ByteCodeResponse) as any)[0],
       fullResult[0],
-      'got results'
+      'got results',
     )
     assert.notOk(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
   })

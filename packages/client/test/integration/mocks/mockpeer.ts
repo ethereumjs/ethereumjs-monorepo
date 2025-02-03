@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { pipe } from 'it-pipe'
 import pushable from 'it-pushable'
 
@@ -79,7 +79,7 @@ export class MockPeer extends Peer {
         if (!(stream.protocols as string[]).includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
         await this.addProtocol(new MockSender(p.name, pushableFn, receiver), p)
-      })
+      }),
     )
     this.connected = true
   }

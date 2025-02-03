@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.js'
@@ -82,7 +82,7 @@ describe('should get idle peers', () => {
     assert.equal(
       pool.idle((p: any) => p.id > 1),
       peers[1],
-      'correct idle peer with filter'
+      'correct idle peer with filter',
     )
   })
 })

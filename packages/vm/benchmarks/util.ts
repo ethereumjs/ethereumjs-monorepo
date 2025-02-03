@@ -10,9 +10,9 @@ import {
 } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { RunBlockResult } from '../dist/cjs/types'
-import { Mockchain } from './mockchain'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { RunBlockResult } from '@ethereumjs/vm'
+import { Mockchain } from './mockchain.js'
 
 export interface BenchmarkType {
   [key: string]: Function
@@ -33,28 +33,28 @@ export async function getPreState(
   pre: {
     [k: string]: StateTestPreAccount
   },
-  common: Common
-): Promise<DefaultStateManager> {
-  const state = new DefaultStateManager()
+  common: Common,
+): Promise<MerkleStateManager> {
+  const state = new MerkleStateManager()
   await state.checkpoint()
   for (const k in pre) {
     const address = new Address(hexToBytes(isHexString(k) ? k : `0x${k}`))
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
-    await state.putContractCode(address, toBytes(code))
+    await state.putCode(address, toBytes(code))
     for (const storageKey in storage) {
       const storageValue = storage[storageKey]
       const storageValueBytes = hexToBytes(
-        isHexString(storageValue) ? storageValue : `0x${storageValue}`
+        isHexString(storageValue) ? storageValue : `0x${storageValue}`,
       )
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBytesEquivalent = new Uint8Array(storageValueBytes.length)
       if (!equalsBytes(zeroBytesEquivalent, storageValueBytes)) {
-        await state.putContractStorage(
+        await state.putStorage(
           address,
           hexToBytes(isHexString(storageKey) ? storageKey : `0x${storageKey}`),
-          storageValueBytes
+          storageValueBytes,
         )
       }
     }

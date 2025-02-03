@@ -6,7 +6,196 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.3.0 - 2024-03-05
+## 6.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Transaction Classes
+
+The names for the tx classes have been shortened and simplified (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533)):
+
+- `FeeMarketEIP1559Transaction` -> `FeeMarket1559Tx`
+- `AccessListEIP2930Transaction` -> `AccessList2930Tx`
+- `BlobEIP4844Transaction` -> `Blob4844Tx`
+- `EOACodeEIP7702Transaction` -> `EOACode7702Tx`
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PRs [#3533](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3533) and [#3597](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3597)).
+
+Here an example for the `FeeMarket1559Tx` class:
+
+- `FeeMarketEIP1559Transaction.fromTxData()` -> `createFeeMarket1559Tx()`
+- `FeeMarketEIP1559Transaction.fromSerializedTx()` -> `createFeeMarket1559TxFromRLP()`
+- `FeeMarketEIP1559Transaction.fromValuesArray()` -> `create1559FeeMarketTxFromBytesArray()`
+
+New names from other tx types, to grasp the scheme:
+
+- `createBlob4844Tx()`
+- `createAccessList2930Tx()`
+- `createEOACode7702Tx()`
+
+#### Transaction Factory
+
+Similar renamings have been done for the generic `TransactionFactory` (see PRs [#3514](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3514) and [#3667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3667)):
+
+- `TransactionFactory.fromTxData()` -> `createTx()`
+- `TransactionFactory.fromSerializedData()` -> `createTxFromRLP()`
+- `TransactionFactory.fromBlockBodyData()` -> `createTxFromBlockBodyData()`
+- `TransactionFactory.fromJsonRpcProvider()` -> `createTxFromJSONRPCProvider()`
+- New: `createTxFromRPC()` (just from the data, without the provider fetch)
+
+#### Library Methods
+
+See: PR [#3535](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3535)
+
+- `*Tx.getBaseFee()` -> `*Tx.getIntrinsicGas()` (avoid confusion with 1559 base fee)
+- `*Tx.getDataFee()` -> `*Tx.getDataGas()` (be more explicit about method's gas unit)
+
+### EIP-7702 EOA Account Abstraction Support (experimental)
+
+The tx library now support the creation of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs, which allow to transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470) and [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577).
+
+The following is an example on how to create an EIP-7702 tx (note that you need to replace the `authorizationList` parameters with real-world tx and signature values):
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = createEOACode7702Tx(
+  {
+    authorizationList: [
+      {
+        chainId: '0x2',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: '0x1',
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
+  },
+  { common },
+)
+```
+
+#### Own Tx Parameter Set
+
+HF-sensitive parameters like `txGas` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsTx`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### JavaScript KZG Support (no more WASM)
+
+The WASM based KZG integration for 4844 support has been replaced with a pure JS-based solution ([micro-eth-singer](https://github.com/paulmillr/micro-eth-signer), thanks to @paulmillr for the cooperation and Andrew for the integration! ❤️), see PR [#3674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3674). This makes this library fully independent from Web Assembly code for all supported functionality! 🎉 The JS version is indeed even faster then the WASM one (we benchmarked), so we recommend to just switch over!
+
+KZG is one-time initialized by providing to `Common`, in the updated version now like this:
+
+```ts
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const kzg = new microEthKZG(trustedSetup)
+// Pass the following Common to the EthereumJS library
+const common = new Common({
+  chain: Mainnet,
+  customCrypto: {
+    kzg,
+  },
+})
+```
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Add T9N (TransactionTool) test consumption, PR [#3742](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3742)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+
+## 5.4.0 - 2024-08-15
+
+#### EOA Code Transaction (EIP-7702) (outdated)
+
+This release introduces support for a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions, see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470). This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+
+The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+
+```ts
+// ./examples/EOACodeTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = EOACodeEIP7702Transaction.fromTxData(
+  {
+    authorizationList: [
+      {
+        chainId: '0x1',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: ['0x1'],
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+  },
+  { common },
+)
+
+console.log(
+  `EIP-7702 EOA code tx created with ${tx.authorizationList.length} authorization list item(s).`,
+)
+```
+
+Note: Things move fast with `EIP-7702` and the released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+
+### Verkle Updates
+
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+
+### Other Features
+
+- Extend `BlobEIP4844Transaction.networkWrapperToJson()` to also include the 4844 fields, PR [#3365](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3365)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Bugfixes
+
+- Fix bug in generic error message regarding chain ID reporting, PR [#3386](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3386)
+
+## 5.3.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
@@ -150,7 +339,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -241,7 +430,7 @@ const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
     gasLimit: 0xffffffn,
     to: 0x1122334455667788991011121314151617181920,
   },
-  { common }
+  { common },
 )
 ```
 
@@ -525,7 +714,7 @@ const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -535,7 +724,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -543,7 +732,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -597,7 +786,7 @@ const tx = LegacyTransaction.fromTxData(
   {
     // Provide your tx data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -724,7 +913,7 @@ Invalid Signature: s-values greater than secp256k1n/2 are considered invalid (tx
 
 The extended errors give substantial more object and chain context and should ease debugging.
 
-**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
 ## Other Changes
 
@@ -806,7 +995,7 @@ if (tx.supports(Capability.EIP2930AccessLists)) {
 The following capabilities are currently supported:
 
 ```ts
-enum Capabilitiy {
+enum Capability {
   EIP155ReplayProtection: 155, // Only for legacy txs
   EIP1559FeeMarket: 1559,
   EIP2718TypedTransaction: 2718, // Use for a typed-tx-or-not switch
@@ -1086,9 +1275,9 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
+The returned transaction is now frozen and immutable. To work with a mutable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
 
-If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
+If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modify its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### from
 
@@ -1100,19 +1289,19 @@ Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.
 
 #### Fake Transaction
 
-The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake transaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
 
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1199,7 +1388,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`.
+The returned transaction is now frozen and immutable. To work with a mutable transaction, copy it with `const fakeTx = Object.create(tx)`.
 
 #### from
 
@@ -1211,12 +1400,12 @@ Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.
 
 #### Fake Transaction
 
-The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake transaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
 
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
@@ -1228,7 +1417,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1324,7 +1513,7 @@ see PRs [#153](https://github.com/ethereumjs/ethereumjs-tx/pull/153),
 [#147](https://github.com/ethereumjs/ethereumjs-tx/pull/147) and
 [#143](https://github.com/ethereumjs/ethereumjs-tx/pull/143).
 
-This comes with some changes in how different `v` values passed on instantation
+This comes with some changes in how different `v` values passed on instantiation
 or changed on runtime are handled:
 
 - The constructor throws if the `v` value is present, indicates that `EIP-155`
@@ -1347,7 +1536,7 @@ pre-`Spurious Dragon` hardfork option.
 
 ## [1.3.6] - 2018-07-02
 
-- Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero adress any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
+- Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero address any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
 - Added additional tests to cover issue described above
 
 [1.3.6]: https://github.com/ethereumjs/ethereumjs-monorepo/compare/%40ethereumjs%2Ftx%401.3.5...%40ethereumjs%2Ftx%401.3.6

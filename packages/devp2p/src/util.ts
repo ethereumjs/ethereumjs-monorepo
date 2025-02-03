@@ -1,14 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
-import debugDefault from 'debug'
+import debug from 'debug'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { ETH } from './protocol/eth.js'
-import type { LES } from './protocol/les.js'
-const { debug: createDebugLogger } = debugDefault
 
-export const devp2pDebug = createDebugLogger('devp2p')
+export const devp2pDebug = debug('devp2p:#')
 
 export function genPrivateKey(): Uint8Array {
   const privateKey = secp256k1.utils.randomPrivateKey()
@@ -40,14 +38,14 @@ export function xor(a: Uint8Array, b: any): Uint8Array {
   return bytes
 }
 
-type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | LES.Status | number | null
+type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | number | null
 
 export function assertEq(
   expected: assertInput,
   actual: assertInput,
   msg: string,
   debug: Function,
-  messageName?: string
+  messageName?: string,
 ): void {
   let fullMsg
 

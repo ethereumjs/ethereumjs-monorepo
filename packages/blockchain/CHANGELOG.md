@@ -6,7 +6,71 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 7.2.0 - 2024-03-05
+## 8.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PR [#3491](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3491)):
+
+- `Blockchain.create()` -> `createBlockchain`
+- `Blockchain.fromBlocksData()` -> `createBlockchainFromBlocksData()`
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### No Consensus Validation by Default
+
+Along the transition to Proof-of-Stake, Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.
+
+It is still easy to set up a `Clique` or `Ethash` blockchain by using the new `consensusDict` option and pass in an instantiated consensus instance, see the respective option documentation or the related [example](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/examples/clique.ts) in the blockchain `examples` folder.
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This means that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For the `Blockchain` library this means that it is not supported to operate on a PoW/PoS hybrid blockchain where the transition from PoW -> PoS happens solely by TTD.
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `blockchain:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
+
+## 7.3.0 - 2024-08-15
+
+### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)
+
+This library now supports `EIP-6110` deposit requests, see PR [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390), `EIP-7002` withdrawal requests, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385) and `EIP-7251` consolidation requests, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477) as well as the underlying generic execution layer request logic introduced with `EIP-7685` (PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)).
+
+These new request types will be activated with the `Prague` hardfork, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) README for detailed documentation.
+
+### Verkle Updates
+
+- Fix the block body parsing as well as save/load from blockchain, PR [#3392](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3392)
+- Handle nil block bodies for backwards compatibility, PR [#3394](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3394)
+
+### Other Features
+
+- Support for EIP-7685 blocks containing withdrawal and/or deposit requests (see @ethereumjs/block for main documentation), PR [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+## 7.2.0 - 2024-03-18
 
 ### Full 4844 Browser Readiness
 
@@ -133,7 +197,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -258,7 +322,7 @@ Please therefore check you code base on updating and ensure that values you are 
 - Breaking: `Blockchain._common` property has been renamed to `Blockchain.common`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 - Fixed clique signer reorg scenario, PR [#2610](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2610)
 - Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
-- Save iterator head to last successfuly executed even on errors, PR [#2680](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2680)
+- Save iterator head to last successfully executed even on errors, PR [#2680](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2680)
 
 ## 6.2.2 - 2023-04-20
 
@@ -303,7 +367,7 @@ So the Blockchain interface was - falsely - claiming that there would be the pos
 
 We now fixed this by removing the `null` from the interface return values - see PR [#2524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2524), after exploring the other way around as well (and the reverting), see PR [#2516](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2516).
 
-While this might lead to breaking code constallations on the TypeScript level if this `null` value is picked up we felt this is the right thing to do since this divergence would otherwise continue to "trick" people into assuming and dealing with `null` values for non-existing-block assumptions in their code and continue to produce eventual bugs (we actually fell over this ourselves).
+While this might lead to breaking code constellations on the TypeScript level if this `null` value is picked up we felt this is the right thing to do since this divergence would otherwise continue to "trick" people into assuming and dealing with `null` values for non-existing-block assumptions in their code and continue to produce eventual bugs (we actually fell over this ourselves).
 
 A bit on the verge of breaking vs. bug fixing, sorry if you are eventually affected, but we just can't do a single breaking release update for a fix on that level.
 
@@ -416,7 +480,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely dissalows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -424,7 +488,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -458,7 +522,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 
 ## Blockchain Consensus Option
 
-The Blockchain library now has a new optional `consensus` constructor options parameter which can be used to pass in a customized or own consensus class respectively implementation, e.g. a modfifed Ethash version or a Clique implementation with adopted parameters or the like, see PR [#2002](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2002) to get a grasp on the integration.
+The Blockchain library now has a new optional `consensus` constructor options parameter which can be used to pass in a customized or own consensus class respectively implementation, e.g. a modified Ethash version or a Clique implementation with adopted parameters or the like, see PR [#2002](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2002) to get a grasp on the integration.
 
 ## Other Changes
 
@@ -544,7 +608,7 @@ The following methods have been taken out of the `Block` package and moved into 
 - `BlockHeader.validateDifficulty()`, `BlockHeader.validateCliqueDifficulty()` -> `Blockchain.consensus.validateDifficulty()`
 - `Block.validateUncles()` -> to `Blockchain`, kept private (let us know if you need to call into the functionality)
 
-### New File Structue
+### New File Structure
 
 The file structure of the package has been reworked and aligned with other libraries, see PR [#1986](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1986). There is now a dedicated `blockchain.ts` file for the main source code. The `index.ts` is now re-exporting the `Blockchain` class and `Consensus` implementations as well as the `BlockchainInterface` interface, the `BlockchainOptions` dictionary and types from a dedicated `types.ts` file.
 
@@ -741,13 +805,13 @@ Genesis handling has been reworked to now be safer and reduce the risk of wiping
 
 ### Removed deprecated `validate` option
 
-The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
+The deprecated `validate` option has been removed, please use `validateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -866,7 +930,7 @@ const blockchain = new Blockchain({ common })
 
 ### Removed deprecated `validate` option
 
-The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
+The deprecated `validate` option has been removed, please use `validateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
 
 ### Dual ES5 and ES2017 Builds
 
@@ -877,7 +941,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 

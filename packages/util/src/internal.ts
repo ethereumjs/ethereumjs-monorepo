@@ -93,16 +93,16 @@ export function getBinarySize(str: string) {
 export function arrayContainsArray(
   superset: unknown[],
   subset: unknown[],
-  some?: boolean
+  some?: boolean,
 ): boolean {
   if (Array.isArray(superset) !== true) {
     throw new Error(
-      `[arrayContainsArray] method requires input 'superset' to be an array, got type '${typeof superset}'`
+      `[arrayContainsArray] method requires input 'superset' to be an array, got type '${typeof superset}'`,
     )
   }
   if (Array.isArray(subset) !== true) {
     throw new Error(
-      `[arrayContainsArray] method requires input 'subset' to be an array, got type '${typeof subset}'`
+      `[arrayContainsArray] method requires input 'subset' to be an array, got type '${typeof subset}'`,
     )
   }
 
@@ -179,7 +179,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
   }
   if (typeof key !== 'string') {
     throw new Error(
-      `[getKeys] method expects input 'key' to be type 'string', got ${typeof params}`
+      `[getKeys] method expects input 'key' to be type 'string', got ${typeof params}`,
     )
   }
 

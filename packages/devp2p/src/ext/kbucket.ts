@@ -29,21 +29,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 // TODO: Also internalize types from Definitely Typed at some point
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/266eae5148c535e6b41fe5d0adb2ad23f302bc8a/types/k-bucket/index.d.ts#L4
-// (side note: this was once done by tomonari-t dedicatedly for this library
+// (side note: this was once done by tomonari-t dedicatedly for this library // cspell:disable-line
 // (please nevertheless include the original license reference))
 
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import type { Contact, KBucketOptions, PeerInfo } from '../types.js'
+import type { Contact, KBucketEvent, KBucketOptions, PeerInfo } from '../types.js'
 
 function createNode() {
-  return { contacts: [], dontSplit: false, left: null, right: null }
+  return { contacts: [], noSplit: false, left: null, right: null }
 }
 
 type KBucketNode = {
   contacts: Contact[] | null
-  dontSplit: boolean
+  noSplit: boolean
   left: KBucketNode | null
   right: KBucketNode | null
 }
@@ -55,7 +55,7 @@ type KBucketNode = {
  * @extends EventEmitter
  */
 export class KBucket {
-  public events: EventEmitter
+  public events: EventEmitter<KBucketEvent>
   protected _localNodeId: Uint8Array
   protected _numberOfNodesPerKBucket: number
   protected _numberOfNodesToPing: number
@@ -68,7 +68,7 @@ export class KBucket {
    * @param {KBucketOptions} options
    */
   constructor(options: KBucketOptions = {}) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<KBucketEvent>()
     this._localNodeId = options.localNodeId ?? randomBytes(20)
     this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
     this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
@@ -149,12 +149,12 @@ export class KBucket {
     }
 
     // the bucket is full
-    if (node.dontSplit) {
+    if (node.noSplit) {
       // we are not allowed to split the bucket
       // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
-      // be added (this prevents DoS flodding with new invalid contacts)
+      // be added (this prevents DoS flooding with new invalid contacts)
       this.events.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
       return this
     }
@@ -339,10 +339,10 @@ export class KBucket {
 
     // don't split the "far away" node
     // we check where the local node would end up and mark the other one as
-    // "dontSplit" (i.e. "far away")
+    // "noSplit" (i.e. "far away")
     const detNode = this._determineNode(node, this._localNodeId, bitIndex)
     const otherNode = node.left === detNode ? node.right : node.left
-    otherNode.dontSplit = true
+    otherNode.noSplit = true
   }
 
   /**

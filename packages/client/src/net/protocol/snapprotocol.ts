@@ -81,7 +81,7 @@ type GetTrieNodesOpts = {
  */
 export interface SnapProtocolMethods {
   getAccountRange: (
-    opts: GetAccountRangeOpts
+    opts: GetAccountRangeOpts,
   ) => Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }>
   getStorageRanges: (opts: GetStorageRangesOpts) => Promise<{
     reqId: bigint
@@ -158,7 +158,7 @@ export class SnapProtocol extends Protocol {
               ({
                 hash,
                 body: this.convertSlimBody === true ? accountBodyFromSlim(body) : body,
-              } as AccountData)
+              }) as AccountData,
           ),
           proof,
         }
@@ -206,7 +206,7 @@ export class SnapProtocol extends Protocol {
         return [
           bigIntToUnpaddedBytes(reqId ?? ++this.nextReqId),
           slots.map((accSlots) =>
-            accSlots.map((slotData) => [setLengthLeft(slotData.hash, 32), slotData.body])
+            accSlots.map((slotData) => [setLengthLeft(slotData.hash, 32), slotData.body]),
           ),
           proof,
         ]
@@ -215,7 +215,7 @@ export class SnapProtocol extends Protocol {
         return {
           reqId: bytesToBigInt(reqId),
           slots: slots.map((accSlots: any) =>
-            accSlots.map(([hash, body]: any) => ({ hash, body } as StorageData))
+            accSlots.map(([hash, body]: any) => ({ hash, body }) as StorageData),
           ),
           proof,
         }
