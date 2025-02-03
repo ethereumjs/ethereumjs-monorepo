@@ -79,7 +79,7 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customData = postMergeHardforkData
+    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
     Object.assign(customData.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
@@ -121,5 +121,72 @@ describe('[Utils/Parse]', () => {
       common.hardforks().findIndex((hf) => hf.name === Hardfork.Paris),
       -1,
     )
+  })
+
+  it('should assign correct blob schedule', async () => {
+    // clone json out to not have side effects
+    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    Object.assign(customData.config, {
+      chainId: 3151908,
+      homesteadBlock: 0,
+      eip150Block: 0,
+      eip155Block: 0,
+      eip158Block: 0,
+      byzantiumBlock: 0,
+      constantinopleBlock: 0,
+      petersburgBlock: 0,
+      istanbulBlock: 0,
+      berlinBlock: 0,
+      londonBlock: 0,
+      mergeNetsplitBlock: 0,
+      depositContractAddress: '0x4242424242424242424242424242424242424242',
+      terminalTotalDifficulty: 0,
+      terminalTotalDifficultyPassed: true,
+      shanghaiTime: 0,
+      cancunTime: 0,
+      blobSchedule: {
+        prague: {
+          target: 61,
+          max: 91,
+          baseFeeUpdateFraction: 13338477,
+        },
+      },
+      pragueTime: 1736942378,
+    })
+
+    const common = createCommonFromGethGenesis(customData, {
+      chain: 'customChain',
+    })
+    const paramsTx = {
+      4844: {
+        blobCommitmentVersionKzg: 1, // The number indicated a versioned hash is a KZG commitment
+        blobGasPerBlob: 131072, // The base fee for blob gas per blob
+        maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
+        blobGasPriceUpdateFraction: 3338477,
+        targetBlobGasPerBlock: 393216,
+      },
+      7691: {
+        maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
+      },
+    }
+    common.updateParams(paramsTx)
+
+    const testCases = [
+      // should be picked from eip params
+      [Hardfork.Cancun, 393216n, 786432n, 3338477n],
+      // from the genesis blobschedule
+      [Hardfork.Prague, 7995392, 11927552, 13338477],
+    ]
+    for (const [testHf, testTarget, testMax, testUpdateFraction] of testCases) {
+      common.setHardfork(testHf as Hardfork)
+
+      const targetBlobGasPerBlock = common.param('targetBlobGasPerBlock')
+      const maxBlobGasPerBlock = common.param('maxBlobGasPerBlock')
+      const blobGasPriceUpdateFraction = common.param('blobGasPriceUpdateFraction')
+
+      assert.equal(targetBlobGasPerBlock, testTarget, 'target blob gas should match')
+      assert.equal(maxBlobGasPerBlock, testMax, 'max blob gas should match')
+      assert.equal(blobGasPriceUpdateFraction, testUpdateFraction, 'update fraction should match')
+    }
   })
 })
