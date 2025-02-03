@@ -90,14 +90,14 @@ export const Mainnet: ChainConfig = {
       forkHash: '0xf0afd0e3',
     },
     {
-      // The forkHash will remain same as mergeForkIdTransition is post merge
+      // The forkHash will remain same as mergeNetsplitBlock is post merge
       // terminal block: https://etherscan.io/block/15537393
       name: 'paris',
       block: 15537394,
       forkHash: '0xf0afd0e3',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: null,
       forkHash: null,
     },
@@ -119,6 +119,10 @@ export const Mainnet: ChainConfig = {
     },
     {
       name: 'osaka',
+      block: null,
+    },
+    {
+      name: 'verkle',
       block: null,
     },
   ],
@@ -232,14 +236,14 @@ export const Sepolia: ChainConfig = {
       forkHash: '0xfe3366e7',
     },
     {
-      // The forkHash will remain same as mergeForkIdTransition is post merge,
+      // The forkHash will remain same as mergeNetsplitBlock is post merge,
       // terminal block: https://sepolia.etherscan.io/block/1450408
       name: 'paris',
       block: 1450409,
       forkHash: '0xfe3366e7',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 1735371,
       forkHash: '0xb96cbd13',
     },
@@ -371,7 +375,7 @@ export const Holesky: ChainConfig = {
       forkHash: '0xc61a6098',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 0,
       forkHash: '0xc61a6098',
     },
@@ -472,7 +476,7 @@ export const Kaustinen6: ChainConfig = {
       block: 0,
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 0,
     },
     {
