@@ -982,15 +982,15 @@ describe('createPartialAccountFromRLP', () => {
       [toBytes(0)], // Version: null
     ])
 
-    assert.throws(() => createPartialAccountFromRLP(serialized), 'All partial fields null')
+    assert.throws(() => createPartialAccountFromRLP(serialized), /All partial fields null/)
   })
 
   it('should handle all non-null fields correctly', () => {
     const serialized = RLP.encode([
       [toBytes(1), toBytes(2)], // Nonce: 2
       [toBytes(1), toBytes(1000)], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
-      [toBytes(1), KECCAK256_RLP], // CodeHash: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
       [toBytes(1), toBytes(50)], // CodeSize: 50
       [toBytes(1), toBytes(1)], // Version: 1
     ])
@@ -1006,8 +1006,8 @@ describe('createPartialAccountFromRLP', () => {
     const serialized = RLP.encode([
       [toBytes(1), toBytes(2)], // Nonce: 2
       [toBytes(1), toBytes(1000)], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
-      [toBytes(1), KECCAK256_RLP], // CodeHash: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
       [toBytes(1), toBytes(50)], // CodeSize: 50
       [toBytes(1), toBytes(1)], // Version: 1
     ])
@@ -1023,7 +1023,7 @@ describe('createPartialAccountFromRLP', () => {
     const serialized = RLP.encode([
       [toBytes(1), toBytes(2)], // Nonce: 2
       [toBytes(0)], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
       [toBytes(0)], // CodeHash: null
       [toBytes(1), toBytes(50)], // CodeSize: 50
       [toBytes(0)], // Version: null
@@ -1037,8 +1037,8 @@ describe('createPartialAccountFromRLP', () => {
     const serialized = RLP.encode([
       [toBytes(1), toBytes(2)], // Nonce: 2
       [toBytes(0)], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
-      [toBytes(1), KECCAK256_RLP], // CodeHash: '0x12345678'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+      [toBytes(1), KECCAK256_RLP], // CodeHash: 0x12345678
       [toBytes(0)], // CodeSize: null
       [toBytes(0)], // Version: null
     ])
@@ -1088,8 +1088,8 @@ describe('serializeWithPartialInfo', () => {
     assert.deepEqual(decoded, [
       [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
       [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
-      [toBytes(1), KECCAK256_RLP], // CodeHash: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
       [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
       [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
     ])
@@ -1104,14 +1104,14 @@ describe('serializeWithPartialInfo', () => {
     assert.deepEqual(decoded, [
       [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
       [new Uint8Array()], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
       [new Uint8Array()], // CodeHash: null
       [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
       [new Uint8Array()], // Version: null
     ])
   })
 
-  it('should correctly handle serialization of empty Uint8Array for storageRoot and codeHash', () => {
+  it('should correctly handle serialization of null hash for storageRoot and codeHash', () => {
     const account = new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1)
     const serialized = account.serializeWithPartialInfo()
 
@@ -1147,7 +1147,7 @@ describe('serializeWithPartialInfo', () => {
     assert.deepEqual(decoded, [
       [toBytes(1), bigIntToUnpaddedBytes(BigInt(123))], // Nonce: 123
       [new Uint8Array()], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: 'KECCAK256_RLP'
+      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
       [new Uint8Array()], // CodeHash: null
       [new Uint8Array()], // CodeSize: null
       [toBytes(1), intToUnpaddedBytes(42)], // Version: 42
