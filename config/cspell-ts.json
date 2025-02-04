@@ -627,6 +627,7 @@
     "snappystream",
     "ethjs",
     "Unsnappy",
-    "unsnappy"
+    "unsnappy",
+    "ethportal"
   ]
 }

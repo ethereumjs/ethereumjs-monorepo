@@ -13,7 +13,7 @@ import {
   validateERA1,
 } from '../src/index.js'
 
-// Reference file donwloaded from era1.ethportal.net
+// Reference file downloaded from era1.ethportal.net
 const filePath = './test/mainnet-00000-5ec1ffb8.era1'
 const expectedLength = 3891337
 
