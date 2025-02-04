@@ -1,6 +1,49 @@
+import { RLP } from '@ethereumjs/rlp'
+
 import { parseEntry, readEntry } from './e2store.js'
 
 import type { e2StoreEntry } from './types.js'
+import type { Block } from '@ethereumjs/block'
+
+export async function createBlockTuples(blocks: Block[], blockReceipts: Uint8Array[], td: bigint) {
+  const blockTuples: {
+    header: Uint8Array
+    body: Uint8Array
+    receipts: Uint8Array
+    totalDifficulty: bigint
+  }[] = []
+  const headerRecords: {
+    blockHash: Uint8Array
+    totalDifficulty: bigint
+  }[] = []
+  for (const [i, block] of blocks.entries()) {
+    td += block.header.difficulty
+    headerRecords.push({
+      blockHash: block.hash(),
+      totalDifficulty: td,
+    })
+    const receipts = blockReceipts[i]
+
+    const body = [
+      block.transactions.map((tx) => tx.serialize()),
+      block.uncleHeaders.map((uh) => uh.raw()),
+    ]
+    if (block.withdrawals) {
+      body.push(block.withdrawals.map((w) => w.raw()))
+    }
+    blockTuples.push({
+      header: block.header.serialize(),
+      body: RLP.encode(body),
+      receipts,
+      totalDifficulty: td,
+    })
+  }
+  return {
+    headerRecords,
+    blockTuples,
+    totalDifficulty: td,
+  }
+}
 
 export async function parseBlockTuple({
   headerEntry,
