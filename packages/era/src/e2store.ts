@@ -1,6 +1,6 @@
-import { UintBigintType } from '@chainsafe/ssz'
 import { RLP } from '@ethereumjs/rlp'
 import { bigInt64ToBytes, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { uint256 } from 'micro-eth-signer/ssz'
 
 import { compressData, decompressData } from './snappy.js'
 import { Era1Types } from './types.js'
@@ -9,7 +9,7 @@ import type { e2StoreEntry } from './types.js'
 
 export async function parseEntry(entry: e2StoreEntry) {
   if (equalsBytes(entry.type, Era1Types.TotalDifficulty)) {
-    return { type: entry.type, data: new UintBigintType(32).deserialize(entry.data) }
+    return { type: entry.type, data: uint256.decode(entry.data) }
   }
   const decompressed = await decompressData(entry.data)
   let data
