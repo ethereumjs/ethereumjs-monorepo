@@ -165,7 +165,7 @@ describe('Stack', () => {
     
     await evm.stateManager.putAccount(addr, account)
     await evm.stateManager.putCode(addr, hexToBytes(code))
-    await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
+    await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x0)))
  
     try {
       const res = await evm.runCall({
