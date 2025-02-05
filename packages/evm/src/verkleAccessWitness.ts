@@ -12,6 +12,7 @@ import {
   getVerkleStem,
   getVerkleTreeIndicesForCodeChunk,
   getVerkleTreeIndicesForStorageSlot,
+  hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -26,7 +27,17 @@ import type {
   VerkleAccessedState,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type {
+  StatefulVerkleStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
+import type {
+  Address,
+  PrefixedHexString,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
+import type { VerkleTree } from '@ethereumjs/verkle'
 
 const debug = debugDefault('evm:verkle:aw')
 
@@ -376,4 +387,47 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
       yield { ...accessedState, address, chunkKey }
     }
   }
+}
+
+export const generateExecutionWitness = async (
+  stateManager: StatefulVerkleStateManager | StatelessVerkleStateManager,
+  accessWitness: VerkleAccessWitness,
+  parentStateRoot: Uint8Array,
+) => {
+  const trie = (stateManager as StatefulVerkleStateManager)['_trie'] as VerkleTree
+  const postStateRoot = await stateManager.getStateRoot()
+  const ew: VerkleExecutionWitness = {
+    stateDiff: [],
+    parentStateRoot: bytesToHex(parentStateRoot),
+    verkleProof: undefined as any,
+  }
+  const accessedSuffixes = new Map<PrefixedHexString, number[]>()
+  for (const chunkKey of accessWitness['chunks'].keys()) {
+    const stem = chunkKey.slice(0, 34) as PrefixedHexString
+    if (accessedSuffixes.has(stem)) {
+      const suffixes = accessedSuffixes.get(stem)
+      suffixes!.push(parseInt(chunkKey.slice(34), 16))
+      accessedSuffixes.set(stem, suffixes!)
+    } else {
+      accessedSuffixes.set(stem, [parseInt(chunkKey.slice(34), 16)])
+    }
+  }
+  // Get values
+  for (const stem of accessedSuffixes.keys()) {
+    trie.root(parentStateRoot)
+    const currentValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
+    trie.root(postStateRoot)
+    const newValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
+    const stemStateDiff = []
+    for (const suffix of accessedSuffixes.get(stem)!) {
+      if (currentValues[suffix] === newValues[suffix]) continue
+      stemStateDiff.push({
+        suffix,
+        currentValue: currentValues[suffix] ? bytesToHex(currentValues[suffix]) : null,
+        newValue: newValues[suffix] ? bytesToHex(newValues[suffix]) : null,
+      })
+    }
+    ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
+  }
+  return ew
 }
