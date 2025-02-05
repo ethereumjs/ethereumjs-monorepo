@@ -155,12 +155,13 @@ describe('Stack', () => {
     const evm = await createEVM()
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '0x6801'
-    const expectedReturnValue = new Stack(1024)
-    expectedReturnValue.push(BigInt(18446744073709551616))
     /*
       code:             
           PUSH9 0x01
     */
+    const expectedReturnValue = new Stack(1024)
+    expectedReturnValue.push(BigInt(18446744073709551616))
+    
     await evm.stateManager.putAccount(addr, account)
     await evm.stateManager.putCode(addr, hexToBytes(code))
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
