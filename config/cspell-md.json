@@ -327,6 +327,7 @@
     "snappystream",
     "Unsnappy",
     "unsnappy",
-    "ethportal"
+    "ethportal",
+    "bytevector"
   ]
 }

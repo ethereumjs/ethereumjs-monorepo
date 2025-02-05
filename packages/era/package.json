@@ -49,7 +49,7 @@
   "dependencies": {
     "@ethereumjs/block": "^6.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@chainsafe/ssz": "^1.0.1",
+    "micro-eth-signer": "^0.13.3",
     "snappystream": "^2.1.1",
     "@ethereumjs/util": "^10.0.0-alpha.1"
   },

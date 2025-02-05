@@ -1,4 +1,4 @@
-import { ByteVectorType, ContainerType, ListCompositeType, UintBigintType } from '@chainsafe/ssz'
+import * as ssz from 'micro-eth-signer/ssz'
 
 export type e2StoreEntry = {
   type: Uint8Array
@@ -20,8 +20,9 @@ export const VERSION = {
   data: new Uint8Array([]),
 }
 
-export const HeaderRecord = new ContainerType({
-  blockHash: new ByteVectorType(32),
-  totalDifficulty: new UintBigintType(32),
+export const HeaderRecord = ssz.container({
+  blockHash: ssz.bytevector(32),
+  totalDifficulty: ssz.uint256,
 })
-export const EpochAccumulator = new ListCompositeType(HeaderRecord, 8192)
+
+export const EpochAccumulator = ssz.list(8192, HeaderRecord)

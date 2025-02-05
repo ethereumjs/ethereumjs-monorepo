@@ -1,6 +1,6 @@
-import { ByteVectorType, ContainerType, ListCompositeType, UintBigintType } from '@chainsafe/ssz'
 import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@ethereumjs/util'
+import * as ssz from 'micro-eth-signer/ssz'
 
 import { parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
 import { formatEntry, readEntry } from './e2store.js'
@@ -45,7 +45,7 @@ export const formatEra1 = async (
     })
     const compressedTotalDifficulty = await formatEntry({
       type: Era1Types.TotalDifficulty,
-      data: new UintBigintType(32).serialize(totalDifficulty),
+      data: ssz.uint256.encode(totalDifficulty),
     })
     const entry = concatBytes(
       compressedHeader,
@@ -57,7 +57,7 @@ export const formatEra1 = async (
   }
   const blocksLength = blocks.reduce((acc, b) => acc + b.length, 0)
 
-  const epochAccumulatorRoot = EpochAccumulator.hashTreeRoot(headerRecords)
+  const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
 
   const accumulatorEntry = await formatEntry({
     type: Era1Types.AccumulatorRoot,
@@ -182,11 +182,6 @@ export async function validateERA1(bytes: Uint8Array) {
     }
     headerRecords.push(headerRecord)
   }
-  const HeaderRecord = new ContainerType({
-    blockHash: new ByteVectorType(32),
-    totalDifficulty: new UintBigintType(32),
-  })
-  const EpochAccumulator = new ListCompositeType(HeaderRecord, 8192)
-  const epochAccumulatorRoot = EpochAccumulator.hashTreeRoot(headerRecords)
+  const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
   return equalsBytes(epochAccumulatorRoot, accumulatorRoot)
 }

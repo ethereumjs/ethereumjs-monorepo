@@ -628,6 +628,7 @@
     "ethjs",
     "Unsnappy",
     "unsnappy",
-    "ethportal"
+    "ethportal",
+    "bytevector"
   ]
 }
