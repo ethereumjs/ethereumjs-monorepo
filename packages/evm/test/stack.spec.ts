@@ -154,13 +154,14 @@ describe('Stack', () => {
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const evm = await createEVM()
     const account = createAccount(BigInt(0), BigInt(0))
-    const code = '0x6801'
     /*
       code:             
           PUSH9 0x01
     */
-    const expectedReturnValue = new Stack(1024)
-    expectedReturnValue.push(BigInt(18446744073709551616))
+    const code = '0x6801'
+    
+    const expectedStack = new Stack(1024)
+    expectedStack.push(BigInt(18446744073709551616))
     
     await evm.stateManager.putAccount(addr, account)
     await evm.stateManager.putCode(addr, hexToBytes(code))
@@ -172,7 +173,7 @@ describe('Stack', () => {
         data: hexToBytes(code),
       });    
       const executionStack = res.execResult.runState?.stack
-      assert.deepEqual(executionStack, expectedReturnValue)
+      assert.deepEqual(executionStack, expectedStack)
     } catch (e: any) {
       assert.fail(e.message)
     }
