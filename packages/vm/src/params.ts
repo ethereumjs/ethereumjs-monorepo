@@ -40,7 +40,7 @@ export const paramsVM: ParamsDict = {
    */
   2935: {
     // config
-    historyStorageAddress: '0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8191, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
@@ -84,7 +84,7 @@ export const paramsVM: ParamsDict = {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
-    withdrawalRequestPredeployAddress: '0x0c15F14308530b7CDB8460094BbB9cC28b9AaaAA', // Address of the validator excess address
+    withdrawalRequestPredeployAddress: '0x00000961EF480EB55E80D19AD83579A64C007002', // Address of the validator excess address
   },
 
   /**
@@ -94,7 +94,7 @@ export const paramsVM: ParamsDict = {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
-    consolidationRequestPredeployAddress: '0x00431F263cE400f4455c2dCf564e53007Ca4bbBb', // Address of the consolidations contract
+    consolidationRequestPredeployAddress: '0x0000BBDDC7CE488642FB579F8B00F3A590007251', // Address of the consolidations contract
   },
   /**
 .  * Shard Blob Transactions
