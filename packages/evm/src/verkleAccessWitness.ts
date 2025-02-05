@@ -417,22 +417,24 @@ export const generateExecutionWitness = async (
   // Get values
   for (const stem of accessedSuffixes.keys()) {
     trie.root(parentStateRoot)
+    const suffixes = accessedSuffixes.get(stem)
+    if (suffixes === undefined || suffixes.length === 0) continue
     const currentValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
     trie.root(postStateRoot)
     const newValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
     const stemStateDiff = []
-    for (const suffix of accessedSuffixes.get(stem)!) {
+    for (let x = 0; x < suffixes.length; x++) {
       // skip if both are the same
       if (
-        notNullish(currentValues[suffix]) &&
-        notNullish(newValues[suffix]) &&
-        equalsBytes(currentValues[suffix]!, newValues[suffix]!)
+        notNullish(currentValues[x]) &&
+        notNullish(newValues[x]) &&
+        equalsBytes(currentValues[x]!, newValues[x]!)
       )
         continue
       stemStateDiff.push({
-        suffix,
-        currentValue: currentValues[suffix] ? bytesToHex(currentValues[suffix]!) : null,
-        newValue: newValues[suffix] ? bytesToHex(newValues[suffix]!) : null,
+        suffix: suffixes[x],
+        currentValue: currentValues[x] ? bytesToHex(currentValues[x]!) : null,
+        newValue: newValues[x] ? bytesToHex(newValues[x]!) : null,
       })
     }
     ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
