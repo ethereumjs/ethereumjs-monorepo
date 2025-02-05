@@ -8,6 +8,7 @@ import {
   VERKLE_MAIN_STORAGE_OFFSET,
   VERKLE_NODE_WIDTH,
   bytesToHex,
+  equalsBytes,
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeIndicesForCodeChunk,
@@ -403,15 +404,16 @@ export const generateExecutionWitness = async (
   }
   const accessedSuffixes = new Map<PrefixedHexString, number[]>()
   for (const chunkKey of accessWitness['chunks'].keys()) {
-    const stem = chunkKey.slice(0, 34) as PrefixedHexString
+    const stem = chunkKey.slice(0, 64) as PrefixedHexString
     if (accessedSuffixes.has(stem)) {
       const suffixes = accessedSuffixes.get(stem)
-      suffixes!.push(parseInt(chunkKey.slice(34), 16))
+      suffixes!.push(parseInt(chunkKey.slice(64), 16))
       accessedSuffixes.set(stem, suffixes!)
     } else {
-      accessedSuffixes.set(stem, [parseInt(chunkKey.slice(34), 16)])
+      accessedSuffixes.set(stem, [parseInt(chunkKey.slice(64), 16)])
     }
   }
+
   // Get values
   for (const stem of accessedSuffixes.keys()) {
     trie.root(parentStateRoot)
@@ -420,14 +422,22 @@ export const generateExecutionWitness = async (
     const newValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
     const stemStateDiff = []
     for (const suffix of accessedSuffixes.get(stem)!) {
-      if (currentValues[suffix] === newValues[suffix]) continue
+      // skip if both are the same
+      if (
+        notNullish(currentValues[suffix]) &&
+        notNullish(newValues[suffix]) &&
+        equalsBytes(currentValues[suffix]!, newValues[suffix]!)
+      )
+        continue
       stemStateDiff.push({
         suffix,
-        currentValue: currentValues[suffix] ? bytesToHex(currentValues[suffix]) : null,
-        newValue: newValues[suffix] ? bytesToHex(newValues[suffix]) : null,
+        currentValue: currentValues[suffix] ? bytesToHex(currentValues[suffix]!) : null,
+        newValue: newValues[suffix] ? bytesToHex(newValues[suffix]!) : null,
       })
     }
     ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
   }
   return ew
 }
+
+const notNullish = (value: any) => value !== null && value !== undefined
