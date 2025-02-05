@@ -1,4 +1,4 @@
-import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft, bytesToBigInt } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -150,32 +150,22 @@ describe('Stack', () => {
   })
 
   it('stack should return the padded value', async () => {
-    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
-    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const evm = await createEVM()
-    const account = createAccount(BigInt(0), BigInt(0))
     /*
       code:             
           PUSH9 0x01
     */
     const code = '0x6801'
-    
+
     const expectedStack = new Stack(1024)
-    expectedStack.push(BigInt(18446744073709551616))
-    
-    await evm.stateManager.putAccount(addr, account)
-    await evm.stateManager.putCode(addr, hexToBytes(code))
-    await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x0)))
- 
-    try {
-      const res = await evm.runCall({
-        value: BigInt(0),
-        data: hexToBytes(code),
-      });    
-      const executionStack = res.execResult.runState?.stack
-      assert.deepEqual(executionStack, expectedStack)
-    } catch (e: any) {
-      assert.fail(e.message)
+    expectedStack.push(bytesToBigInt(hexToBytes("0x010000000000000000")))
+
+    const runCallArgs = {
+      data: hexToBytes(code),
     }
+
+    const res = await evm.runCall(runCallArgs);    
+    const executionStack = res.execResult.runState?.stack
+    assert.deepEqual(executionStack, expectedStack)
   })
 })
