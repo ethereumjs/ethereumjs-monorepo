@@ -171,7 +171,6 @@ describe('Stack', () => {
         data: hexToBytes(code),
       });    
       const executionStack = res.execResult.runState?.stack
-      console.log(executionStack)
       assert.deepEqual(executionStack, expectedReturnValue)
     } catch (e: any) {
       assert.fail(e.message)
