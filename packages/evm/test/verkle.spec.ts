@@ -180,9 +180,9 @@ describe('generate an execution witness', () => {
     )
     const stem = bytesToHex(getVerkleStem(verkle, createAddressFromString(tx.sender)))
     assert.ok(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
-    const diff =
+    const stemDiff =
       executionWitness.stateDiff[executionWitness.stateDiff.findIndex((diff) => diff.stem === stem)]
-    const suffixDiff = diff.suffixDiffs.find((suffDiff) => suffDiff.suffix === 0)
+    const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)
     assert.ok(suffixDiff?.newValue !== undefined)
     // Ensure sender account nonce is 1 in execution witness
     assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
