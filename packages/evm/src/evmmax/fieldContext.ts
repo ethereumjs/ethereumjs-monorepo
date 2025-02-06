@@ -11,12 +11,12 @@ import {
   putUint64BE,
   subModBinary,
   subModPreset,
-} from './arith.js'
+} from './index.js'
 
 const MAX_MODULUS_SIZE = 96 // 768 bit max modulus width
 const ZERO_BYTE = Uint8Array.from([0])
 
-export function isModulusBinary(modulus: bigint): boolean {
+function isModulusBinary(modulus: bigint): boolean {
   return modulus > 0n && (modulus & (modulus - 1n)) === 0n
 }
 
@@ -147,14 +147,6 @@ export class FieldContext {
     for (let srcIdx = from; srcIdx < from + count; srcIdx++) {
       // temp array to hold limbs
       const res = new Array<bigint>(elemSize)
-
-      // console.log('dbg205')
-      // console.log(res)
-      // console.log(this.scratchSpace)
-      // console.log(this.one)
-      // console.log(this.modulus)
-      // console.log(this.modInvVal)
-      // console.log()
 
       if (this.useMontgomeryRepr) {
         this.mulMod(
