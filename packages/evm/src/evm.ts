@@ -54,6 +54,7 @@ import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -150,6 +151,8 @@ export class EVM implements EVMInterface {
 
   private _bn254: EVMBN254Interface
 
+  private executionBlobs: Map<PrefixedHexString, Uint8Array> // Map of <sha256 hash of trace, trace bytes>
+
   /**
    *
    * Creates new EVM object
@@ -245,6 +248,8 @@ export class EVM implements EVMInterface {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+
+    this.executionBlobs = new Map()
   }
 
   /**
