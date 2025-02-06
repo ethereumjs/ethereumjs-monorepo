@@ -32,6 +32,7 @@ describe('Precompiles: EXECUTE', () => {
         verkle,
       },
     })
+    // Construct L2 state and transaction
     const account = createAccount({ balance: 0xffffffffffffffffffffffffffffffffffffffffn })
     const address = createAddressFromString('0x999aebeac9619be18e0369d9cb8d0393cfb99021')
     const receiver = createAddressFromPrivateKey(
@@ -70,6 +71,8 @@ describe('Precompiles: EXECUTE', () => {
       evm.verkleAccessWitness,
       preStateRoot,
     )
+
+    // End of L2 state construction
 
     // Create a trace
     const trace = {
