@@ -1170,9 +1170,6 @@ describe('serializeWithPartialInfo', () => {
     // Now deserialize the serialized data back into a partial account
     const deserializedAccount = createPartialAccountFromRLP(serialized)
 
-    assert.deepEqual(
-      deserializedAccount,
-      new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
-    )
+    assert.deepEqual(deserializedAccount, account)
   })
 })
