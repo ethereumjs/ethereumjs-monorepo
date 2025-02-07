@@ -47,7 +47,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "level": "^8.0.0",
     "@ethereumjs/block": "^6.0.0-alpha.1",
+    "@ethereumjs/blockchain": "^8.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "micro-eth-signer": "^0.13.3",
     "snappystream": "^2.1.1",
