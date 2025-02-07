@@ -187,8 +187,6 @@ describe('runCall', () => {
     const hash = bytesToHex(sha256(traceBytes))
     evm['executionBlobs'].set(hash, traceBytes)
 
-    const caller = createAddressFromString('0x0000000000000000000000000000000000001234')
-    await evm.stateManager.putAccount(caller, createAccount({ balance: 0xffffffffffffffffn }))
     const precompileAddrStr = '0x0000000000000000000000000000000000000012'
 
     const input = concatBytes(
@@ -200,14 +198,10 @@ describe('runCall', () => {
 
     const mainnetTx = {
       to: createAddressFromString(precompileAddrStr),
-      caller,
-      gasLimit: BigInt('0xffffffffff'),
-      gasPrice: BigInt('0x1'),
-      value: BigInt('0x1'),
       data: input,
     }
 
-    const res2 = await evm.runCall(mainnetTx)
+    const res2 = await evm.runCall({ ...mainnetTx, skipBalance: true })
     assert.equal(res2.execResult.returnValue[0], 1)
   })
 })
