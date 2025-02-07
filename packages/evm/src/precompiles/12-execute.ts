@@ -118,7 +118,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     const stem = stateDiff.stem
     await tree.put(stem, suffixes, values)
   }
-  const executionResult = true
+  let executionResult = true
 
   const stateManager = new StatefulVerkleStateManager({ common: opts.common, trie: tree })
   const l2EVM = await createEVM({ stateManager, common: opts.common })
@@ -146,12 +146,12 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
 
   if (computedGasUsed !== executeGasUsed) {
     opts._debug?.(`${pName} gas used mismatch: ${computedGasUsed} !== ${executeGasUsed}`)
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    executionResult = false
   }
 
   if (!equalsBytes(postStateRoot, tree.root())) {
     opts._debug?.(`${pName} post state root mismatch`)
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    executionResult = false
   }
 
   opts._debug?.(`${pName} trace executed successfully=${executionResult}`)

@@ -50,6 +50,7 @@ describe('Precompiles: EXECUTE', () => {
     const tree = await createVerkleTree({ verkleCrypto: verkle })
     const stateManager = new StatefulVerkleStateManager({ common, trie: tree })
     await stateManager.putAccount(address, account)
+
     const preStateRoot = tree.root()
     const evm = await createEVM({ stateManager, common })
 
@@ -83,8 +84,8 @@ describe('Precompiles: EXECUTE', () => {
     }
     const traceBytes = traceContainer.encode(trace)
 
-    // We use the hash as a reference to the trace.  This should be replaced with a proper blob commitment (or versionedHash)
-    // and the data should be stored as a proper Ethereum blob
+    // We use the sha256 hash of the serialized trace as a reference.  This is standing in for the versionedHash that we should use
+    // once we have the trace properly converted to an Ethereum blob.
     const hash = bytesToHex(sha256(traceBytes))
     evm['executionBlobs'].set(hash, traceBytes)
 
