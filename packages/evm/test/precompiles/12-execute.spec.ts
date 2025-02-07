@@ -1,6 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
+  Address,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -105,5 +106,108 @@ describe('Precompiles: EXECUTE', () => {
       _EVM: evm,
     })
     assert.equal(result.returnValue[0], 1)
+  })
+})
+
+describe('runCall', () => {
+  it.only('should execute runCall', async () => {
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Prague,
+      eips: [6800, 9999],
+      customCrypto: {
+        verkle,
+      },
+    })
+    // Construct L2 state and transaction
+    const account = createAccount({ balance: 0xffffffffffffffffffffffffffffffffffffffffn })
+    const address = createAddressFromString('0x999aebeac9619be18e0369d9cb8d0393cfb99021')
+    const receiver = createAddressFromPrivateKey(
+      hexToBytes('0xaeb51ceb07e4f6761ea6ad9a772d0e4a70367020fd6175b5e271d0d12e37d24d'),
+    )
+    const l2Tx = {
+      to: receiver.toBytes(),
+      from: address.toBytes(),
+      gasLimit: BigInt('0xffffffffff'),
+      gasPrice: BigInt('0x1'),
+      value: BigInt('0x1'),
+      data: new Uint8Array(),
+    }
+    const l2Tree = await createVerkleTree({ verkleCrypto: verkle })
+    const l2StateManager = new StatefulVerkleStateManager({ common, trie: l2Tree })
+    await l2StateManager.putAccount(address, account)
+
+    const preStateRoot = l2Tree.root()
+    const l2EVM = await createEVM({ stateManager: l2StateManager, common })
+
+    l2EVM.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: verkle,
+    })
+    l2EVM.systemVerkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: verkle,
+    })
+    const res = await l2EVM.runCall({
+      to: receiver,
+      caller: address,
+      gasLimit: l2Tx.gasLimit,
+      gasPrice: l2Tx.gasPrice,
+      value: l2Tx.value,
+    })
+    const executionGasUsed = res.execResult.executionGasUsed
+    const postStateRoot = l2Tree.root()
+    const execWitness = await generateExecutionWitness(
+      l2StateManager,
+      l2EVM.verkleAccessWitness,
+      preStateRoot,
+    )
+
+    // End of L2 state construction
+
+    // Create mainnet state and EVM
+    const tree = await createVerkleTree({ verkleCrypto: verkle })
+    const stateManager = new StatefulVerkleStateManager({ common, trie: tree })
+    const evm = await createEVM({ stateManager, common })
+
+    evm.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: verkle,
+    })
+    evm.systemVerkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: verkle,
+    })
+
+    // Create a trace
+    const trace = {
+      witness: executionWitnessJSONToSSZ(execWitness),
+      txs: [l2Tx],
+    }
+    const traceBytes = traceContainer.encode(trace)
+
+    // We use the sha256 hash of the serialized trace as a reference.  This is standing in for the versionedHash that we should use
+    // once we have the trace properly converted to an Ethereum blob.
+    const hash = bytesToHex(sha256(traceBytes))
+    evm['executionBlobs'].set(hash, traceBytes)
+
+    const caller = createAddressFromString('0x0000000000000000000000000000000000001234')
+    await evm.stateManager.putAccount(caller, createAccount({ balance: 0xffffffffffffffffn }))
+    const precompileAddrStr = '0x0000000000000000000000000000000000000012'
+
+    const input = concatBytes(
+      preStateRoot,
+      postStateRoot,
+      hexToBytes(hash),
+      setLengthLeft(bigIntToBytes(executionGasUsed), 32),
+    )
+
+    const mainnetTx = {
+      to: createAddressFromString(precompileAddrStr),
+      caller,
+      gasLimit: BigInt('0xffffffffff'),
+      gasPrice: BigInt('0x1'),
+      value: BigInt('0x1'),
+      data: input,
+    }
+
+    const res2 = await evm.runCall(mainnetTx)
+    assert.equal(res2.execResult.returnValue[0], 1)
   })
 })
