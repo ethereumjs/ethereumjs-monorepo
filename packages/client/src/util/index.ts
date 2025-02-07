@@ -7,7 +7,6 @@ import { platform } from 'os'
 import { dirname, join as joinPath } from 'path'
 import { fileURLToPath } from 'url'
 
-export * from './exportHistory.js'
 export * from './inclineClient.js'
 export * from './parse.js'
 export * from './rpc.js'
