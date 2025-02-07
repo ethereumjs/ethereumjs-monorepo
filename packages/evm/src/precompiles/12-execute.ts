@@ -7,6 +7,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
+import * as ssz from 'micro-eth-signer/ssz'
 
 import { createEVM } from '../constructors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
@@ -21,6 +22,56 @@ import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
+
+const MAX_CALL_DATA_SIZE = 7500000 // Assuming a transaction with all zero bytes fills up an entire block worth of gas
+export const traceContainer = ssz.container({
+  txs: ssz.list(
+    256,
+    ssz.container({
+      to: ssz.bytevector(20),
+      from: ssz.bytevector(20),
+      gasLimit: ssz.uint64,
+      gasPrice: ssz.uint64,
+      value: ssz.uint64,
+      data: ssz.bytelist(MAX_CALL_DATA_SIZE),
+    }),
+  ),
+  witness: ssz.container({
+    stateDiff: ssz.list(
+      256,
+      ssz.container({
+        stem: ssz.bytevector(31),
+        suffixDiffs: ssz.list(
+          256,
+          ssz.container({
+            suffix: ssz.uint64,
+            currentValue: ssz.bytevector(32),
+            newValue: ssz.bytevector(32),
+          }),
+        ),
+      }),
+    ),
+    parentStateRoot: ssz.bytevector(32),
+  }),
+})
+
+export const executionWitnessJSONToSSZ = (witness: VerkleExecutionWitness) => {
+  return {
+    stateDiff: witness.stateDiff.map((diff) => ({
+      stem: hexToBytes(diff.stem),
+      suffixDiffs: diff.suffixDiffs.map((suffixDiff) => ({
+        suffix: BigInt(suffixDiff.suffix),
+        currentValue:
+          suffixDiff.currentValue !== null
+            ? hexToBytes(suffixDiff.currentValue)
+            : new Uint8Array(32),
+        newValue:
+          suffixDiff.newValue !== null ? hexToBytes(suffixDiff.newValue) : new Uint8Array(32),
+      })),
+    })),
+    parentStateRoot: hexToBytes(witness.parentStateRoot),
+  }
+}
 
 export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('12')
@@ -43,7 +94,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
   }
 
-  const decodedTrace = JSON.parse(new TextDecoder().decode(traceBlob))
+  const decodedTrace = traceContainer.decode(traceBlob)
 
   if (decodedTrace.txs === undefined || decodedTrace.witness === undefined) {
     opts._debug?.(`${pName} error - trace is invalid`)
@@ -51,7 +102,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
   const executeGasUsed = bytesToBigInt(data.subarray(96))
 
-  const witness = decodedTrace.witness as VerkleExecutionWitness
+  const witness = decodedTrace.witness
   const tree = await createVerkleTree({ verkleCrypto: opts.common.customCrypto.verkle })
 
   // Populate the L2 state trie with the prestate
@@ -61,10 +112,10 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     for (const diff of stateDiff.suffixDiffs) {
       if (diff.currentValue !== null) {
         suffixes.push(Number(diff.suffix))
-        values.push(hexToBytes(diff.currentValue))
+        values.push(diff.currentValue)
       }
     }
-    const stem = hexToBytes(stateDiff.stem)
+    const stem = stateDiff.stem
     await tree.put(stem, suffixes, values)
   }
   const executionResult = true
@@ -83,12 +134,12 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   // Run each transaction in the trace
   for (const tx of decodedTrace.txs) {
     const res = await l2EVM.runCall({
-      to: createAddressFromString(tx.to),
-      caller: createAddressFromString(tx.from),
+      to: createAddressFromString(bytesToHex(tx.to)),
+      caller: createAddressFromString(bytesToHex(tx.from)),
       gasLimit: BigInt(tx.gasLimit),
       gasPrice: BigInt(tx.gasPrice),
       value: BigInt(tx.value),
-      data: tx.data !== undefined ? hexToBytes(tx.data) : undefined,
+      data: tx.data !== undefined ? tx.data : undefined,
     })
     computedGasUsed += res.execResult.executionGasUsed
   }

@@ -21,6 +21,7 @@ import {
   generateExecutionWitness,
   getActivePrecompiles,
 } from '../../src/index.js'
+import { executionWitnessJSONToSSZ, traceContainer } from '../../src/precompiles/12-execute.js'
 
 describe('Precompiles: EXECUTE', () => {
   it('should execute a trace', async () => {
@@ -39,11 +40,12 @@ describe('Precompiles: EXECUTE', () => {
       hexToBytes('0xaeb51ceb07e4f6761ea6ad9a772d0e4a70367020fd6175b5e271d0d12e37d24d'),
     )
     const tx = {
-      to: receiver.toString(),
-      from: address.toString(),
-      gasLimit: '0xffffffffff',
-      gasPrice: '0x1',
-      value: '0x1',
+      to: receiver.toBytes(),
+      from: address.toBytes(),
+      gasLimit: BigInt('0xffffffffff'),
+      gasPrice: BigInt('0x1'),
+      value: BigInt('0x1'),
+      data: new Uint8Array(),
     }
     const tree = await createVerkleTree({ verkleCrypto: verkle })
     const stateManager = new StatefulVerkleStateManager({ common, trie: tree })
@@ -60,9 +62,9 @@ describe('Precompiles: EXECUTE', () => {
     const res = await evm.runCall({
       to: receiver,
       caller: address,
-      gasLimit: BigInt(tx.gasLimit),
-      gasPrice: BigInt(tx.gasPrice),
-      value: BigInt(tx.value),
+      gasLimit: tx.gasLimit,
+      gasPrice: tx.gasPrice,
+      value: tx.value,
     })
     const executionGasUsed = res.execResult.executionGasUsed
     const postStateRoot = tree.root()
@@ -76,15 +78,15 @@ describe('Precompiles: EXECUTE', () => {
 
     // Create a trace
     const trace = {
-      witness: execWitness,
+      witness: executionWitnessJSONToSSZ(execWitness),
       txs: [tx],
     }
-    // TODO: Replace this with proper serialization
-    const bytes = new TextEncoder().encode(JSON.stringify(trace))
+    const traceBytes = traceContainer.encode(trace)
+
     // We use the hash as a reference to the trace.  This should be replaced with a proper blob commitment (or versionedHash)
     // and the data should be stored as a proper Ethereum blob
-    const hash = bytesToHex(sha256(bytes))
-    evm['executionBlobs'].set(hash, bytes)
+    const hash = bytesToHex(sha256(traceBytes))
+    evm['executionBlobs'].set(hash, traceBytes)
 
     const addressStr = '0000000000000000000000000000000000000012'
     const EXECUTE = getActivePrecompiles(common).get(addressStr)!
