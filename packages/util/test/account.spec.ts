@@ -833,31 +833,50 @@ describe('createPartialAccount', () => {
   })
 
   it('should return Account with correct values when fields are provided', () => {
-    const account = createPartialAccount({
+    const accountData = {
       nonce: 1n,
       balance: Units.ether(1),
       storageRoot: KECCAK256_RLP,
       codeHash: KECCAK256_RLP,
       codeSize: 10,
       version: 1,
-    })
+    }
+    const account = createPartialAccount(accountData)
 
-    assert.deepEqual(account, new Account(1n, Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 10, 1))
+    assert.deepEqual(
+      account,
+      new Account(
+        accountData.nonce,
+        accountData.balance,
+        accountData.storageRoot,
+        accountData.codeHash,
+        accountData.codeSize,
+        accountData.version,
+      ),
+    )
   })
 
   it('should return Account with null and undefined value fields as given', () => {
-    const account = createPartialAccount({
+    const accountData = {
       nonce: undefined,
       balance: Units.ether(1),
       storageRoot: undefined,
       codeHash: null,
       codeSize: 10,
       version: undefined,
-    })
+    }
+    const account = createPartialAccount(accountData)
 
     assert.deepEqual(
       account,
-      new Account(undefined, Units.ether(1), undefined, null, 10, undefined),
+      new Account(
+        accountData.nonce,
+        accountData.balance,
+        accountData.storageRoot,
+        accountData.codeHash,
+        accountData.codeSize,
+        accountData.version,
+      ),
     )
   })
 })
@@ -871,260 +890,278 @@ describe('createPartialAccountFromRLP', () => {
     )
   })
 
-  it('should throw an error for invalid nonce encoding (non-array)', () => {
-    const serialized = RLP.encode([KECCAK256_RLP, [], [], [], [], []])
-    assert.throws(() => createPartialAccountFromRLP(serialized), /Invalid partial nonce encoding/)
-  })
+  const testCases = [
+    {
+      description: 'should handle a mix of null and non-null values correctly',
+      data: [
+        [toBytes(1), toBytes(1)], // Nonce: 1
+        [toBytes(0)], // Balance: null
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(0)], // CodeHash: null
+        [toBytes(1), toBytes(10)], // CodeSize: 10
+        [toBytes(0)], // Version: null
+      ],
+      shouldThrow: false,
+      expected: new Account(BigInt(1), null, KECCAK256_RLP, null, 10, null),
+      errorRegex: null,
+    },
+    {
+      description: 'should throw when all fields are null',
+      data: [
+        [toBytes(0)], // Nonce: null
+        [toBytes(0)], // Balance: null
+        [toBytes(0)], // StorageRoot: null
+        [toBytes(0)], // CodeHash: null
+        [toBytes(0)], // CodeSize: null
+        [toBytes(0)], // Version: null
+      ],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /All partial fields null/,
+    },
+    {
+      description: 'should handle all non-null fields correctly',
+      data: [
+        [toBytes(1), toBytes(2)], // Nonce: 2
+        [toBytes(1), toBytes(1000)], // Balance: 1000
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [toBytes(1), toBytes(50)], // CodeSize: 50
+        [toBytes(1), toBytes(1)], // Version: 1
+      ],
+      shouldThrow: false,
+      expected: new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
+      errorRegex: null,
+    },
+    {
+      description:
+        'should return partial account with non-null fields when isNotNullIndicator is 1',
+      data: [
+        [toBytes(1), toBytes(2)], // Nonce: 2
+        [toBytes(1), toBytes(1000)], // Balance: 1000
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [toBytes(1), toBytes(50)], // CodeSize: 50
+        [toBytes(1), toBytes(1)], // Version: 1
+      ],
+      shouldThrow: false,
+      expected: new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
+      errorRegex: null,
+    },
+    {
+      description: 'should return a mix of null and non-null fields based on isNotNullIndicator',
+      data: [
+        [toBytes(1), toBytes(2)], // Nonce: 2
+        [toBytes(0)], // Balance: null
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(0)], // CodeHash: null
+        [toBytes(1), toBytes(50)], // CodeSize: 50
+        [toBytes(0)], // Version: null
+      ],
+      shouldThrow: false,
+      expected: new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null),
+      errorRegex: null,
+    },
+    {
+      description:
+        'should handle cases where some fields are non-null and others are null correctly',
+      data: [
+        [toBytes(1), toBytes(2)], // Nonce: 2
+        [toBytes(0)], // Balance: null
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [toBytes(0)], // CodeSize: null
+        [toBytes(0)], // Version: null
+      ],
+      shouldThrow: false,
+      expected: new Account(BigInt(2), null, KECCAK256_RLP, KECCAK256_RLP, null, null),
+      errorRegex: null,
+    },
+    {
+      description: 'should handle fields with empty arrays (isNullIndicator=0) correctly',
+      data: [
+        [], // nonce -> empty array => null
+        [toBytes(1), toBytes(1000)], // balance: 1000
+        [], // storageRoot -> null
+        [], // codeHash -> null
+        [], // codeSize -> null
+        [], // version -> null
+      ],
+      shouldThrow: false,
+      expected: new Account(null, BigInt(1000), null, null, null, null),
+      errorRegex: null,
+    },
+    {
+      description: 'should throw: invalid partial nonce encoding',
+      data: [KECCAK256_RLP, [], [], [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial nonce encoding/,
+    },
+    {
+      description: 'should throw: invalid partial balance encoding',
+      data: [[], KECCAK256_RLP, [], [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial balance encoding/,
+    },
+    {
+      description: 'should throw: invalid partial storageRoot encoding',
+      data: [[], [], KECCAK256_RLP, [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial storageRoot encoding/,
+    },
+    {
+      description: 'should throw: invalid partial codeHash encoding',
+      data: [[], [], [], KECCAK256_RLP, [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial codeHash encoding/,
+    },
+    {
+      description: 'should throw: invalid partial codeSize encoding',
+      data: [[], [], [], [], KECCAK256_RLP, []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial codeSize encoding/,
+    },
+    {
+      description: 'should throw: invalid partial version encoding',
+      data: [[], [], [], [], [], KECCAK256_RLP],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid partial version encoding/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for nonce',
+      data: [[toBytes(2)], [], [], [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for nonce/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for balance',
+      data: [[], [toBytes(2)], [], [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for balance/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for storageRoot',
+      data: [[], [], [toBytes(2)], [], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for storageRoot/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for codeHash',
+      data: [[], [], [], [toBytes(2)], [], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for codeHash/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for codeSize',
+      data: [[], [], [], [], [toBytes(2)], []],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for codeSize/,
+    },
+    {
+      description: 'should throw: invalid isNullIndicator=2 for version',
+      data: [[], [], [], [], [], [toBytes(2)]],
+      shouldThrow: true,
+      expected: null,
+      errorRegex: /Invalid isNullIndicator=2 for version/,
+    },
+  ]
 
-  it('should throw an error for invalid balance encoding (non-array)', () => {
-    const serialized = RLP.encode([[], KECCAK256_RLP, [], [], [], []])
-    assert.throws(() => createPartialAccountFromRLP(serialized), /Invalid partial balance encoding/)
-  })
-
-  it('should throw an error for invalid storageRoot encoding (non-array)', () => {
-    const serialized = RLP.encode([[], [], KECCAK256_RLP, [], [], []])
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid partial storageRoot encoding/,
-    )
-  })
-
-  it('should throw an error for invalid codeHash encoding (non-array)', () => {
-    const serialized = RLP.encode([[], [], [], KECCAK256_RLP, [], []])
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid partial codeHash encoding/,
-    )
-  })
-
-  it('should throw an error for invalid codeSize encoding (non-array)', () => {
-    const serialized = RLP.encode([[], [], [], [], KECCAK256_RLP, []])
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid partial codeSize encoding/,
-    )
-  })
-
-  it('should throw an error for invalid version encoding (non-array)', () => {
-    const serialized = RLP.encode([[], [], [], [], [], KECCAK256_RLP])
-    assert.throws(() => createPartialAccountFromRLP(serialized), /Invalid partial version encoding/)
-  })
-
-  it('should throw an error for invalid isNullIndicator in nonce', () => {
-    const serialized = RLP.encode([[toBytes(2)], [], [], [], [], []]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for nonce/,
-    )
-  })
-
-  it('should throw an error for invalid isNullIndicator in balance', () => {
-    const serialized = RLP.encode([[], [toBytes(2)], [], [], [], []]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for balance/,
-    )
-  })
-
-  it('should throw an error for invalid isNullIndicator in storageRoot', () => {
-    const serialized = RLP.encode([[], [], [toBytes(2)], [], [], []]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for storageRoot/,
-    )
-  })
-
-  it('should throw an error for invalid isNullIndicator in codeHash', () => {
-    const serialized = RLP.encode([[], [], [], [toBytes(2)], [], []]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for codeHash/,
-    )
-  })
-
-  it('should throw an error for invalid isNullIndicator in codeSize', () => {
-    const serialized = RLP.encode([[], [], [], [], [toBytes(2)], []]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for codeSize/,
-    )
-  })
-
-  it('should throw an error for invalid isNullIndicator in version', () => {
-    const serialized = RLP.encode([[], [], [], [], [], [toBytes(2)]]) // Invalid isNullIndicator (should be 0 or 1)
-    assert.throws(
-      () => createPartialAccountFromRLP(serialized),
-      /Invalid isNullIndicator=2 for version/,
-    )
-  })
-
-  it('should handle a mix of null and non-null values correctly', () => {
-    const serialized = RLP.encode([
-      [toBytes(1), toBytes(1)], // Nonce: 1
-      [toBytes(0)], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(0)], // CodeHash: null
-      [toBytes(1), toBytes(10)], // CodeSize: 10
-      [toBytes(0)], // Version: null
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(account, new Account(BigInt(1), null, KECCAK256_RLP, null, 10, null))
-  })
-
-  it('should throw when all fields are null', () => {
-    const serialized = RLP.encode([
-      [toBytes(0)], // Nonce: null
-      [toBytes(0)], // Balance: null
-      [toBytes(0)], // StorageRoot: null
-      [toBytes(0)], // CodeHash: null
-      [toBytes(0)], // CodeSize: null
-      [toBytes(0)], // Version: null
-    ])
-
-    assert.throws(() => createPartialAccountFromRLP(serialized), /All partial fields null/)
-  })
-
-  it('should handle all non-null fields correctly', () => {
-    const serialized = RLP.encode([
-      [toBytes(1), toBytes(2)], // Nonce: 2
-      [toBytes(1), toBytes(1000)], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-      [toBytes(1), toBytes(50)], // CodeSize: 50
-      [toBytes(1), toBytes(1)], // Version: 1
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(
-      account,
-      new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
-    )
-  })
-
-  it('should return partial account with non-null fields when isNotNullIndicator is 1', () => {
-    const serialized = RLP.encode([
-      [toBytes(1), toBytes(2)], // Nonce: 2
-      [toBytes(1), toBytes(1000)], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-      [toBytes(1), toBytes(50)], // CodeSize: 50
-      [toBytes(1), toBytes(1)], // Version: 1
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(
-      account,
-      new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
-    )
-  })
-
-  it('should return a mix of null and non-null fields based on isNotNullIndicator', () => {
-    const serialized = RLP.encode([
-      [toBytes(1), toBytes(2)], // Nonce: 2
-      [toBytes(0)], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(0)], // CodeHash: null
-      [toBytes(1), toBytes(50)], // CodeSize: 50
-      [toBytes(0)], // Version: null
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(account, new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null))
-  })
-
-  it('should handle cases where some fields are non-null and others are null correctly', () => {
-    const serialized = RLP.encode([
-      [toBytes(1), toBytes(2)], // Nonce: 2
-      [toBytes(0)], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(1), KECCAK256_RLP], // CodeHash: 0x12345678
-      [toBytes(0)], // CodeSize: null
-      [toBytes(0)], // Version: null
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(
-      account,
-      new Account(BigInt(2), null, KECCAK256_RLP, KECCAK256_RLP, null, null),
-    )
-  })
-
-  it('should handle fields with empty arrays (isNullIndicator=0) correctly', () => {
-    const serialized = RLP.encode([
-      [], // Empty array, nonce should be treated as null
-      [toBytes(1), toBytes(1000)], // Balance: 1000
-      [], // Empty array, storageRoot should be treated as null
-      [], // Empty array, codeHash should be treated as null
-      [], // Empty array, codeSize should be treated as null
-      [], // Empty array, version should be treated as null
-    ])
-
-    const account = createPartialAccountFromRLP(serialized)
-    assert.deepEqual(account, new Account(null, BigInt(1000), null, null, null, null))
-  })
+  for (const { description, data, shouldThrow, expected, errorRegex } of testCases) {
+    it(description, () => {
+      const serialized = RLP.encode(data)
+      if (shouldThrow) {
+        assert.throws(() => createPartialAccountFromRLP(serialized), errorRegex as RegExp)
+      } else {
+        const account = createPartialAccountFromRLP(serialized)
+        assert.deepEqual(account, expected)
+      }
+    })
+  }
 })
 
 describe('serializeWithPartialInfo', () => {
-  it('should serialize all fields as null (isNotNullIndicator=0)', () => {
-    const account = new Account(null, null, null, null, null, null)
-    const serialized = account.serializeWithPartialInfo()
-    const decoded = RLP.decode(serialized)
-    assert.deepEqual(decoded, [
-      [new Uint8Array()], // Nonce: null
-      [new Uint8Array()], // Balance: null
-      [new Uint8Array()], // StorageRoot: null
-      [new Uint8Array()], // CodeHash: null
-      [new Uint8Array()], // CodeSize: null
-      [new Uint8Array()], // Version: null
-    ])
-  })
+  const testCases = [
+    {
+      description: 'should serialize all fields as null (isNotNullIndicator=0)',
+      account: new Account(null, null, null, null, null, null),
+      expectedDecoded: [
+        [new Uint8Array()], // Nonce: null
+        [new Uint8Array()], // Balance: null
+        [new Uint8Array()], // StorageRoot: null
+        [new Uint8Array()], // CodeHash: null
+        [new Uint8Array()], // CodeSize: null
+        [new Uint8Array()], // Version: null
+      ],
+    },
+    {
+      description: 'should serialize all fields as non-null (isNotNullIndicator=1)',
+      account: new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
+      expectedDecoded: [
+        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
+      ],
+    },
+    {
+      description: 'should serialize mixed null and non-null fields',
+      account: new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null),
+      expectedDecoded: [
+        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [new Uint8Array()], // Balance: null
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [new Uint8Array()], // CodeHash: null
+        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [new Uint8Array()], // Version: null
+      ],
+    },
+    {
+      description:
+        'should correctly handle serialization of null hash for storageRoot and codeHash',
+      account: new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
+      expectedDecoded: [
+        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
+      ],
+    },
+    {
+      description: 'should correctly serialize when only some fields are provided',
+      account: new Account(BigInt(123), null, KECCAK256_RLP, null, null, 42),
+      expectedDecoded: [
+        [toBytes(1), bigIntToUnpaddedBytes(BigInt(123))], // Nonce: 123
+        [new Uint8Array()], // Balance: null
+        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [new Uint8Array()], // CodeHash: null
+        [new Uint8Array()], // CodeSize: null
+        [toBytes(1), intToUnpaddedBytes(42)], // Version: 42
+      ],
+    },
+  ]
 
-  it('should serialize all fields as non-null (isNotNullIndicator=1)', () => {
-    const account = new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1)
-    const serialized = account.serializeWithPartialInfo()
-
-    const decoded = RLP.decode(serialized)
-    assert.deepEqual(decoded, [
-      [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
-      [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-      [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
-      [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
-    ])
-  })
-
-  it('should serialize mixed null and non-null fields', () => {
-    const account = new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null)
-    const serialized = account.serializeWithPartialInfo()
-
-    const decoded = RLP.decode(serialized)
-
-    assert.deepEqual(decoded, [
-      [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
-      [new Uint8Array()], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [new Uint8Array()], // CodeHash: null
-      [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
-      [new Uint8Array()], // Version: null
-    ])
-  })
-
-  it('should correctly handle serialization of null hash for storageRoot and codeHash', () => {
-    const account = new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1)
-    const serialized = account.serializeWithPartialInfo()
-
-    const decoded = RLP.decode(serialized)
-    assert.deepEqual(decoded, [
-      [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
-      [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: empty Uint8Array
-      [toBytes(1), KECCAK256_RLP], // CodeHash: empty Uint8Array
-      [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
-      [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
-    ])
-  })
+  for (const { description, account, expectedDecoded } of testCases) {
+    it(description, () => {
+      const serialized = account.serializeWithPartialInfo()
+      const decoded = RLP.decode(serialized)
+      assert.deepEqual(decoded, expectedDecoded)
+    })
+  }
 
   it('should serialize and then deserialize back to the original account object', () => {
     const account = new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1)
@@ -1137,20 +1174,5 @@ describe('serializeWithPartialInfo', () => {
       deserializedAccount,
       new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
     )
-  })
-
-  it('should correctly serialize when only some fields are provided', () => {
-    const account = new Account(BigInt(123), null, KECCAK256_RLP, null, null, 42)
-    const serialized = account.serializeWithPartialInfo()
-
-    const decoded = RLP.decode(serialized)
-    assert.deepEqual(decoded, [
-      [toBytes(1), bigIntToUnpaddedBytes(BigInt(123))], // Nonce: 123
-      [new Uint8Array()], // Balance: null
-      [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-      [new Uint8Array()], // CodeHash: null
-      [new Uint8Array()], // CodeSize: null
-      [toBytes(1), intToUnpaddedBytes(42)], // Version: 42
-    ])
   })
 })
