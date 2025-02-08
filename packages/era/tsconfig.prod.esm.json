@@ -6,5 +6,9 @@
     "composite": true
   },
   "include": ["src/**/*.ts"],
-  "references": [{ "path": "../rlp/tsconfig.prod.esm.json" }]
+  "references": [
+    { "path": "../rlp/tsconfig.prod.esm.json" },
+    { "path": "../block/tsconfig.prod.esm.json" },
+    { "path": "../blockchain/tsconfig.prod.esm.json" }
+  ]
 }
