@@ -1,7 +1,7 @@
 import { DBOp } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, concatBytes, intToBytes } from '@ethereumjs/util'
-import { writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { Level } from 'level'
 
 import { formatEra1 } from './era1.js'
@@ -149,11 +149,10 @@ export async function exportEpochAsEra1(
   const { blockTuples, headerRecords } = await getEpoch(chainDB, metaDB, epoch)
   const era1 = await formatEra1(blockTuples, headerRecords, epoch)
   writeFileSync(`${outputDir}/era1/epoch-${epoch}.era1`, era1)
-  
+
   // Create era1 directory if it doesn't exist
   const era1Dir = `${outputDir}/era1`
   if (!existsSync(era1Dir)) {
     mkdirSync(era1Dir, { recursive: true })
   }
-  
 }
