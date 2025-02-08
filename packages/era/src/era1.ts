@@ -1,12 +1,9 @@
-import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import { parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
+import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
 import { formatEntry, readEntry } from './e2store.js'
 import { EpochAccumulator, Era1Types, VERSION } from './types.js'
-
-import type { BlockBytes } from '@ethereumjs/block'
 
 /**
  * Format era1 from epoch of history data
@@ -164,24 +161,24 @@ export async function readERA1(bytes: Uint8Array) {
   return readBlockTuplesFromERA1(bytes, count, offsets, recordStart)
 }
 
-export async function validateERA1(bytes: Uint8Array) {
-  const accumulatorRoot = await readAccumulatorRoot(bytes)
+export async function getHeaderRecords(bytes: Uint8Array) {
   const blockTuples = await readERA1(bytes)
   const headerRecords = []
-  for (let i = 0; i < 8192; i++) {
-    const tuple = await blockTuples!.next()
-    if (tuple.value === undefined) {
-      throw new Error('not enough block tuples')
-    }
-    const { header, body, totalDifficulty } = await parseBlockTuple(tuple.value)
-    const valuesArray = [header.data, body.data.txs, body.data.uncles, body.data.withdrawals]
-    const block = createBlockFromBytesArray(valuesArray as BlockBytes, { setHardfork: true })
+  for await (const tuple of blockTuples) {
+    const { header, body, totalDifficulty } = await parseBlockTuple(tuple)
+    const block = blockFromTuple({ header, body })
     const headerRecord = {
       blockHash: block.header.hash(),
       totalDifficulty: totalDifficulty.data,
     }
     headerRecords.push(headerRecord)
   }
+  return headerRecords
+}
+
+export async function validateERA1(bytes: Uint8Array) {
+  const accumulatorRoot = await readAccumulatorRoot(bytes)
+  const headerRecords = await getHeaderRecords(bytes)
   const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
   return equalsBytes(epochAccumulatorRoot, accumulatorRoot)
 }
