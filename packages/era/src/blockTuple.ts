@@ -1,9 +1,9 @@
+import { type Block, type BlockBytes, createBlockFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 
 import { parseEntry, readEntry } from './e2store.js'
 
 import type { e2StoreEntry } from './types.js'
-import type { Block } from '@ethereumjs/block'
 
 export async function createBlockTuples(blocks: Block[], blockReceipts: Uint8Array[], td: bigint) {
   const blockTuples: {
@@ -76,4 +76,10 @@ export function readBlockTupleAtOffset(bytes: Uint8Array, recordStart: number, o
   const totalDifficultyLength = totalDifficultyEntry.data.length + 8
   const totalLength = headerLength + bodyLength + receiptsLength + totalDifficultyLength
   return { headerEntry, bodyEntry, receiptsEntry, totalDifficultyEntry, length: totalLength }
+}
+
+export function blockFromTuple({ header, body }: { header: any; body: any }) {
+  const valuesArray = [header.data, body.data.txs, body.data.uncles, body.data.withdrawals]
+  const block = createBlockFromBytesArray(valuesArray as BlockBytes, { setHardfork: true })
+  return block
 }
