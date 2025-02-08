@@ -19,53 +19,59 @@ npm install @ethereumjs/era
 
 ## Usage
 
-
 All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
 
 ```ts
-import { formatEntry } from '@ethereumjs/era'
+import { formatEntry } from "@ethereumjs/era";
 ```
 
 #### Export History as Era1
+
 Export history in epochs of 8192 blocks as Era1 files
 
 ```ts
-import { exportEpochAsEra1 } from '@ethereumjs/era'
+import { exportEpochAsEra1 } from "@ethereumjs/era";
 
-const dataDir = PATH_TO_ETHEREUMJS_CLIENT_DB
-const epoch = 0
+const dataDir = PATH_TO_ETHEREUMJS_CLIENT_DB;
+const epoch = 0;
 
 // generates ${dataDir}/era1/epoch-0.era1
-await exportEpochAsEra1(epoch, dataDir)
+await exportEpochAsEra1(epoch, dataDir);
 ```
 
 #### Read Era1 file
 
 `readERA1` returns an async iterator of block tuples (header + body + receipts + totalDifficulty)
 
-
 ```ts
-import { readBinaryFile, validateERA1, readERA1, EpochAccumulator } from '@ethereumjs/era'
+import {
+  readBinaryFile,
+  validateERA1,
+  readERA1,
+  parseBlockTuple,
+  blockFromTuple,
+  getHeaderRecords,
+  EpochAccumulator,
+} from "@ethereumjs/era";
 
-const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
+const era1File = readBinaryFile(PATH_TO_ERA1_FILE);
 
 // validate era1 file
-const isValid = validateERA1(era1File)
+const isValid = validateERA1(era1File);
 
 // read blocks from era1 file
-const blocks = readERA1(era1File)
+const blocks = readERA1(era1File);
 
 for await (const blockTuple of blocks) {
-  const { header, body, receipts } = await parseBlockTuple(blockTuple)
-  const block = blockFromTuple({ header, body })
-  console.log(block.header.number)
+  const { header, body, receipts } = await parseBlockTuple(blockTuple);
+  const block = blockFromTuple({ header, body });
+  console.log(block.header.number);
 }
 
 // reconstruct epoch accumulator
-const headerRecords = await getHeaderRecords(era1File)
-const epochAccumulator = EpochAccumulator.encode(headerRecords)
-const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
-
+const headerRecords = await getHeaderRecords(era1File);
+const epochAccumulator = EpochAccumulator.encode(headerRecords);
+const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords);
 ```
 
 ## EthereumJS
