@@ -149,5 +149,11 @@ export async function exportEpochAsEra1(
   const { blockTuples, headerRecords } = await getEpoch(chainDB, metaDB, epoch)
   const era1 = await formatEra1(blockTuples, headerRecords, epoch)
   writeFileSync(`${outputDir}/era1/epoch-${epoch}.era1`, era1)
-  return { era1 }
+  
+  // Create era1 directory if it doesn't exist
+  const era1Dir = `${outputDir}/era1`
+  if (!existsSync(era1Dir)) {
+    mkdirSync(era1Dir, { recursive: true })
+  }
+  
 }
