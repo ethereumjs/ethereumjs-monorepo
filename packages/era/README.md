@@ -45,7 +45,7 @@ await exportEpochAsEra1(epoch, dataDir)
 
 
 ```ts
-import { readBinaryFile, validateERA1, readERA1 } from '@ethereumjs/era'
+import { readBinaryFile, validateERA1, readERA1, EpochAccumulator } from '@ethereumjs/era'
 
 const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
 
