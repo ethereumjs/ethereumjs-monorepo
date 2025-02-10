@@ -83,16 +83,6 @@ function parseGethParams(json: any) {
     )
   }
 
-  // Terminal total difficulty logic is not supported any more as the merge has been completed
-  // so the Merge/Paris hardfork block must be 0
-  if (
-    config.terminalTotalDifficulty !== undefined &&
-    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
-      config.terminalTotalDifficultyPassed === false)
-  ) {
-    throw new Error('nonzero terminal total difficulty is not supported')
-  }
-
   const params = {
     name,
     chainId,
@@ -144,7 +134,10 @@ function parseGethParams(json: any) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
+    [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
+    [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
+    [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
+    [Hardfork.MergeNetsplitBlock]: { name: 'mergeNetsplitBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
@@ -159,13 +152,10 @@ function parseGethParams(json: any) {
     },
     {} as { [key: string]: string },
   )
-  const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
-  )
 
-  params.hardforks = configHardforkNames
-    .map((nameBlock) => ({
-      name: forkMapRev[nameBlock],
+  params.hardforks = Object.entries(forkMapRev)
+    .map(([nameBlock, hardfork]) => ({
+      name: hardfork,
       block:
         forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
           ? null
@@ -176,7 +166,58 @@ function parseGethParams(json: any) {
           : undefined,
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
+  const mergeIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Paris)
+  let mergeNetsplitBlockIndex = params.hardforks.findIndex(
+    (hf) => hf.name === Hardfork.MergeNetsplitBlock,
+  )
+  const firstPostMergeHFIndex = params.hardforks.findIndex(
+    (hf) => hf.timestamp !== undefined && hf.timestamp !== null,
+  )
 
+  // If we are missing a mergeNetsplitBlock, we assume it is at the same block as Paris (if present)
+  if (mergeIndex !== -1 && mergeNetsplitBlockIndex === -1) {
+    params.hardforks.splice(mergeIndex + 1, 0, {
+      name: Hardfork.MergeNetsplitBlock,
+      block: params.hardforks[mergeIndex].block!,
+    })
+    mergeNetsplitBlockIndex = mergeIndex + 1
+  }
+  // or zero if not and a postmerge hardfork is set (since testnets using the geth genesis format are all currently start postmerge)
+  if (firstPostMergeHFIndex !== -1) {
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.splice(firstPostMergeHFIndex, 0, {
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at the mergeNetsplitBlock
+      params.hardforks.splice(mergeNetsplitBlockIndex, 0, {
+        name: Hardfork.Paris,
+        block: params.hardforks[mergeNetsplitBlockIndex].block!,
+      })
+    }
+    // Check for terminalTotalDifficultyPassed param in genesis config if no post merge hardforks are set
+  } else if (config.terminalTotalDifficultyPassed === true) {
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at end of hardfork array
+      params.hardforks.push({
+        name: Hardfork.Paris,
+        block: 0,
+      })
+    }
+    // If we don't have a MergeNetsplitBlock hardfork, add it at end of hardfork array
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.push({
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
+  }
+
+  // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
@@ -191,25 +232,6 @@ function parseGethParams(json: any) {
   for (const hf of params.hardforks) {
     if (hf.timestamp === genesisTimestamp) {
       hf.timestamp = 0
-    }
-  }
-
-  if (config.terminalTotalDifficulty !== undefined) {
-    // Merge fork must be placed at 0 since ttd logic is no longer supported
-    const mergeConfig = {
-      name: Hardfork.Paris,
-      block: 0,
-      timestamp: undefined,
-    }
-
-    // Merge hardfork has to be placed before first hardfork that is dependent on merge
-    const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true,
-    )
-    if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
-    } else {
-      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
     }
   }
 

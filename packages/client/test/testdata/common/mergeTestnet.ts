@@ -55,7 +55,7 @@ export const mergeTestnetData: ChainConfig = {
       block: 3,
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 3,
     },
   ],

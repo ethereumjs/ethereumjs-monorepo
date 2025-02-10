@@ -16,7 +16,7 @@ export const testnetVerkleKaustinenData = {
     berlinBlock: 0,
     londonBlock: 0,
     cancunBlock: 0,
-    mergeNetsplitBlock: 0,
+    mergeForkBlock: 0,
     terminalTotalDifficulty: 0,
     ethash: {},
   },
