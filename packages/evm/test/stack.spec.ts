@@ -1,4 +1,12 @@
-import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  hexToBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -147,5 +155,31 @@ describe('Stack', () => {
     s.pop()
     const reportedStack = s.getStack()
     assert.deepEqual(reportedStack, [BigInt(4), BigInt(6)])
+  })
+
+  it('stack should return the padded value', async () => {
+    const evm = await createEVM()
+
+    for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
+      // PUSHx 01
+      const code = `0x${pushN.toString(16)}01`
+      // PUSH 0x03 JUMP JUMPDEST < PUSHx 01 >
+      const codeWithJumps = `0x6003565B${pushN.toString(16)}01`
+
+      const expectedStack = new Stack(1024)
+      expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))
+
+      const resWithoutJumps = await evm.runCall({
+        data: hexToBytes(code),
+      })
+      const executionStack = resWithoutJumps.execResult.runState?.stack
+      assert.deepEqual(executionStack, expectedStack, 'code without jumps ok')
+
+      const resWithJumps = await evm.runCall({
+        data: hexToBytes(codeWithJumps),
+      })
+      const executionStackWithJumps = resWithJumps.execResult.runState?.stack
+      assert.deepEqual(executionStackWithJumps, expectedStack, 'code with jumps ok')
+    }
   })
 })
