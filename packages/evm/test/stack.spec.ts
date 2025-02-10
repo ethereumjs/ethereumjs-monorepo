@@ -1,4 +1,12 @@
-import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft, bytesToBigInt } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  hexToBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
@@ -153,19 +161,22 @@ describe('Stack', () => {
     const evm = await createEVM()
     /*
       code:             
-          PUSH9 0x01
+          PUSHx 0x01
     */
-    const code = '0x6801'
 
-    const expectedStack = new Stack(1024)
-    expectedStack.push(bytesToBigInt(hexToBytes("0x010000000000000000")))
+    for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
+      const code = `0x${pushN.toString(16)}01`
 
-    const runCallArgs = {
-      data: hexToBytes(code),
+      const expectedStack = new Stack(1024)
+      expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))
+
+      const runCallArgs = {
+        data: hexToBytes(code),
+      }
+
+      const res = await evm.runCall(runCallArgs)
+      const executionStack = res.execResult.runState?.stack
+      assert.deepEqual(executionStack, expectedStack)
     }
-
-    const res = await evm.runCall(runCallArgs);    
-    const executionStack = res.execResult.runState?.stack
-    assert.deepEqual(executionStack, expectedStack)
   })
 })
