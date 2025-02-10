@@ -621,6 +621,14 @@
     "Statetest",
     "testeth",
     "PUSHDATA",
-    "chunkified"
+    "chunkified",
+    "ScottyPoi",
+    "Scotty",
+    "snappystream",
+    "ethjs",
+    "Unsnappy",
+    "unsnappy",
+    "ethportal",
+    "bytevector"
   ]
 }
