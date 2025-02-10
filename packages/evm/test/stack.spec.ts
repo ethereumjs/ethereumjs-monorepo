@@ -159,24 +159,27 @@ describe('Stack', () => {
 
   it('stack should return the padded value', async () => {
     const evm = await createEVM()
-    /*
-      code:             
-          PUSHx 0x01
-    */
 
     for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
+      // PUSHx 01
       const code = `0x${pushN.toString(16)}01`
+      // PUSH 0x03 JUMP JUMPDEST < PUSHx 01 >
+      const codeWithJumps = `0x6003565B${pushN.toString(16)}01`
 
       const expectedStack = new Stack(1024)
       expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))
 
-      const runCallArgs = {
+      const resWithoutJumps = await evm.runCall({
         data: hexToBytes(code),
-      }
+      })
+      const executionStack = resWithoutJumps.execResult.runState?.stack
+      assert.deepEqual(executionStack, expectedStack, 'code without jumps ok')
 
-      const res = await evm.runCall(runCallArgs)
-      const executionStack = res.execResult.runState?.stack
-      assert.deepEqual(executionStack, expectedStack)
+      const resWithJumps = await evm.runCall({
+        data: hexToBytes(codeWithJumps),
+      })
+      const executionStackWithJumps = resWithJumps.execResult.runState?.stack
+      assert.deepEqual(executionStackWithJumps, expectedStack, 'code with jumps ok')
     }
   })
 })
