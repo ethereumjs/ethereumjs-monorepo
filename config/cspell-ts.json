@@ -629,6 +629,7 @@
     "Unsnappy",
     "unsnappy",
     "ethportal",
-    "bytevector"
+    "bytevector",
+    "blobschedule"
   ]
 }
