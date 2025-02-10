@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
@@ -17,6 +17,7 @@ import {
 } from '../src/index.js'
 
 import { genesisHashesTestData } from './testdata/genesisHashesTest.js'
+import { Goerli } from './testdata/goerliCommon.js'
 import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.js'
 import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.js'
 import { testdataPreLondonData } from './testdata/testdata_pre-london.js'
@@ -126,7 +127,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should initialize with null parameters without throwing', () => {
-    const common = new Common({ chain: Goerli })
+    const common = new Common({ chain: Mainnet })
     const opts = { common }
     assert.doesNotThrow(function () {
       createBlock({}, opts)

@@ -26,6 +26,7 @@ module.exports = {
     'vitest.config.ts',
     'vitest.config.browser.ts',
     'vitest.config.unit.ts',
+    'vitest.config.coverage.ts',
     'vite.*.ts',
     'ethereum-tests',
     'archive',

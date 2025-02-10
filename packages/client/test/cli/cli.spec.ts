@@ -57,7 +57,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 5000)
+  }, 10000)
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
@@ -624,7 +624,6 @@ describe('[CLI]', () => {
       '--dev=poa',
       '--isSingleNode=true',
       '--sync="none"',
-      '--mergeForkIdPostMerge=false',
     ]
     const onData = async (
       message: string,

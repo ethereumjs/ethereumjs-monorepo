@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import {
   Address,
   MAX_INTEGER,
@@ -25,6 +25,8 @@ import {
   createFeeMarket1559TxFromRLP,
   paramsTx,
 } from '../src/index.js'
+
+import { Goerli } from './testData/goerliCommon.js'
 
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.js'
 
