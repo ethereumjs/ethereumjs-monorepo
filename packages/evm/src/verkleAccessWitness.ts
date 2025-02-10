@@ -391,11 +391,11 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
 }
 
 export const generateExecutionWitness = async (
-  stateManager: StatefulVerkleStateManager | StatelessVerkleStateManager,
+  stateManager: StatefulVerkleStateManager,
   accessWitness: VerkleAccessWitness,
   parentStateRoot: Uint8Array,
 ) => {
-  const trie = (stateManager as StatefulVerkleStateManager)['_trie'] as VerkleTree
+  const trie = stateManager['_trie'] as VerkleTree
   const postStateRoot = await stateManager.getStateRoot()
   const ew: VerkleExecutionWitness = {
     stateDiff: [],
@@ -419,27 +419,27 @@ export const generateExecutionWitness = async (
     trie.root(parentStateRoot)
     const suffixes = accessedSuffixes.get(stem)
     if (suffixes === undefined || suffixes.length === 0) continue
-    const currentValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
+    const currentValues = await trie.get(hexToBytes(stem), suffixes)
     trie.root(postStateRoot)
-    const newValues = await trie.get(hexToBytes(stem), accessedSuffixes.get(stem)!)
+    const newValues = await trie.get(hexToBytes(stem), suffixes)
     const stemStateDiff = []
     for (let x = 0; x < suffixes.length; x++) {
       // skip if both are the same
+      const currentValue = currentValues[x]
+      const newValue = newValues[x]
       if (
-        notNullish(currentValues[x]) &&
-        notNullish(newValues[x]) &&
-        equalsBytes(currentValues[x]!, newValues[x]!)
+        currentValue instanceof Uint8Array &&
+        newValue instanceof Uint8Array &&
+        equalsBytes(currentValue, newValue)
       )
         continue
       stemStateDiff.push({
         suffix: suffixes[x],
-        currentValue: currentValues[x] ? bytesToHex(currentValues[x]!) : null,
-        newValue: newValues[x] ? bytesToHex(newValues[x]!) : null,
+        currentValue: currentValue ? bytesToHex(currentValue) : null,
+        newValue: newValue ? bytesToHex(newValue) : null,
       })
     }
     ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
   }
   return ew
 }
-
-const notNullish = (value: any) => value !== null && value !== undefined
