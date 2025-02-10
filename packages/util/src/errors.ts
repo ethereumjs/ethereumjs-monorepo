@@ -40,3 +40,14 @@ export class EthereumJSError<T extends { code: string }> extends Error {
     }
   }
 }
+
+export enum UsageErrorType {
+  UNSUPPORTED_FEATURE = 'unsupported feature',
+}
+
+/**
+ * Error along API Usage
+ *
+ * Use directly or in a subclassed context for error comparison (`e instanceof UsageError`)
+ */
+export class UsageError extends EthereumJSError<{ code: UsageErrorType }> {}

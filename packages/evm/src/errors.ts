@@ -3,7 +3,7 @@ import { EthereumJSError } from '@ethereumjs/util'
 import type { EOFError } from './eof/errors.js'
 
 // TODO: merge EOF errors in here
-export enum RuntimeErrorMessage {
+export enum EVMErrorCode {
   OUT_OF_GAS = 'out of gas',
   CODESTORE_OUT_OF_GAS = 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM = 'code size to deposit exceeds maximum code size',
@@ -41,38 +41,14 @@ export enum RuntimeErrorMessage {
   INVALID_PROOF = 'kzg proof invalid',
 }
 
-export enum EvmErrorCode {
-  UNSUPPORTED_FEATURE = 'EVM_ERROR_UNSUPPORTED_FEATURE',
-  RUNTIME_ERROR = 'EVM_ERROR_RUNTIME_ERROR',
-}
+type EVMErrorType =
+  | {
+      code: EVMErrorCode | EOFError
+    }
+  | { code: EVMErrorCode.REVERT; revertBytes: Uint8Array }
 
-type EvmRuntimeErrorType = {
-  code: EvmErrorCode.RUNTIME_ERROR
-  reason: RuntimeErrorMessage | EOFError
-} & (
-  | { reason: RuntimeErrorMessage.REVERT; revertBytes: Uint8Array }
-  | { reason: Exclude<RuntimeErrorMessage, RuntimeErrorMessage.REVERT> | EOFError }
-)
-
-export type EvmErrorType = { code: EvmErrorCode.UNSUPPORTED_FEATURE } | EvmRuntimeErrorType
-
-export class EvmError extends EthereumJSError<EvmErrorType> {
-  constructor(type: EvmErrorType, message?: string) {
+export class EVMError extends EthereumJSError<EVMErrorType> {
+  constructor(type: EVMErrorType, message?: string) {
     super(type, message)
   }
 }
-
-export function getRuntimeError(error: EvmError): RuntimeErrorMessage | EOFError | undefined {
-  if (error.type.code === EvmErrorCode.RUNTIME_ERROR) {
-    return error.type.reason
-  }
-}
-
-/*
-throw new EvmError({
-    code: EvmErrorCode.RUNTIME_ERROR,
-    reason: RuntimeErrorMessage.REVERT
-})
-
-
-*/

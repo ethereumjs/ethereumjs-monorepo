@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 
 import {
@@ -24,9 +24,8 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
       opts._debug(`${pName} failed: Empty input`)
     }
     return EvmErrorResult(
-      new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.BLS_12_381_INPUT_EMPTY,
+      new EVMError({
+        code: EVMErrorCode.BLS_12_381_INPUT_EMPTY,
       }),
       opts.gasLimit,
     ) // follow Geth's implementation
@@ -42,9 +41,8 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
 
   if (!moduloLengthCheck(opts, 288, pName)) {
     return EvmErrorResult(
-      new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.BLS_12_381_INVALID_INPUT_LENGTH,
+      new EVMError({
+        code: EVMErrorCode.BLS_12_381_INVALID_INPUT_LENGTH,
       }),
       opts.gasLimit,
     )
@@ -63,9 +61,8 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     const pairStart = 288 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
       return EvmErrorResult(
-        new EvmError({
-          code: EvmErrorCode.RUNTIME_ERROR,
-          reason: RuntimeErrorMessage.BLS_12_381_POINT_NOT_ON_CURVE,
+        new EVMError({
+          code: EVMErrorCode.BLS_12_381_POINT_NOT_ON_CURVE,
         }),
         opts.gasLimit,
       )

@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { OOGResult } from '../evm.js'
 
 import { gasLimitCheck } from './util.js'
@@ -182,9 +182,8 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.OUT_OF_RANGE,
+      exceptionError: new EVMError({
+        code: EVMErrorCode.OUT_OF_RANGE,
       }),
     }
   }
@@ -196,9 +195,8 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.OUT_OF_RANGE,
+      exceptionError: new EVMError({
+        code: EVMErrorCode.OUT_OF_RANGE,
       }),
     }
   }

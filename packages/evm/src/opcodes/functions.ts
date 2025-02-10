@@ -30,7 +30,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
-import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 
 import {
   createAddressFromStackBigInt,
@@ -64,7 +64,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x00,
     function () {
-      trap(new EvmError({ code: EvmErrorCode.RUNTIME_ERROR, reason: RuntimeErrorMessage.STOP }))
+      trap(new EVMError({ code: EVMErrorCode.STOP }))
     },
   ],
   // 0x01: ADD
@@ -810,9 +810,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       const dest = runState.stack.pop()
       if (dest > runState.interpreter.getCodeSize()) {
         trap(
-          new EvmError(
-            { code: EvmErrorCode.RUNTIME_ERROR, reason: RuntimeErrorMessage.INVALID_JUMP },
-            RuntimeErrorMessage.INVALID_JUMP + ' at ' + describeLocation(runState),
+          new EVMError(
+            { code: EVMErrorCode.INVALID_JUMP },
+            EVMErrorCode.INVALID_JUMP + ' at ' + describeLocation(runState),
           ),
         )
       }
@@ -821,9 +821,9 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (!jumpIsValid(runState, destNum)) {
         trap(
-          new EvmError(
-            { code: EvmErrorCode.RUNTIME_ERROR, reason: RuntimeErrorMessage.INVALID_JUMP },
-            RuntimeErrorMessage.INVALID_JUMP + ' at ' + describeLocation(runState),
+          new EVMError(
+            { code: EVMErrorCode.INVALID_JUMP },
+            EVMErrorCode.INVALID_JUMP + ' at ' + describeLocation(runState),
           ),
         )
       }
@@ -839,9 +839,9 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (cond !== BIGINT_0) {
         if (dest > runState.interpreter.getCodeSize()) {
           trap(
-            new EvmError(
-              { code: EvmErrorCode.RUNTIME_ERROR, reason: RuntimeErrorMessage.INVALID_JUMP },
-              RuntimeErrorMessage.INVALID_JUMP + ' at ' + describeLocation(runState),
+            new EVMError(
+              { code: EVMErrorCode.INVALID_JUMP },
+              EVMErrorCode.INVALID_JUMP + ' at ' + describeLocation(runState),
             ),
           )
         }
@@ -850,9 +850,9 @@ export const handlers: Map<number, OpHandler> = new Map([
 
         if (!jumpIsValid(runState, destNum)) {
           trap(
-            new EvmError(
-              { code: EvmErrorCode.RUNTIME_ERROR, reason: RuntimeErrorMessage.INVALID_JUMP },
-              RuntimeErrorMessage.INVALID_JUMP + ' at ' + describeLocation(runState),
+            new EVMError(
+              { code: EVMErrorCode.INVALID_JUMP },
+              EVMErrorCode.INVALID_JUMP + ' at ' + describeLocation(runState),
             ),
           )
         }
@@ -902,9 +902,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       // TSTORE
       if (runState.interpreter.isStatic()) {
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+          new EVMError({
+            code: EVMErrorCode.STATIC_STATE_CHANGE,
           }),
         )
       }
@@ -1012,9 +1011,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1042,9 +1040,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1065,9 +1062,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1081,9 +1077,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1103,9 +1098,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1122,9 +1116,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1147,9 +1140,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1179,9 +1171,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1191,12 +1182,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(new EvmError({ code: EvmErrorCode.RUNTIME_ERROR, reason: EOFError.StackOverflow }))
+        trap(new EVMError({ code: EOFError.StackOverflow }))
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(
-          new EvmError({ code: EvmErrorCode.RUNTIME_ERROR, reason: EOFError.ReturnStackOverflow }),
-        )
+        trap(new EVMError({ code: EOFError.ReturnStackOverflow }))
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
@@ -1211,16 +1200,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
       const newPc = runState.env.eof!.eofRunState.returnStack.pop()
       if (newPc === undefined) {
         // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        trap(new EvmError({ code: EvmErrorCode.RUNTIME_ERROR, reason: EOFError.RetfNoReturn }))
+        trap(new EVMError({ code: EOFError.RetfNoReturn }))
       }
       runState.programCounter = newPc!
     },
@@ -1232,9 +1220,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1247,7 +1234,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(new EvmError({ code: EvmErrorCode.RUNTIME_ERROR, reason: EOFError.StackOverflow }))
+        trap(new EVMError({ code: EOFError.StackOverflow }))
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
         trap(EOFError.ReturnStackOverflow)
@@ -1265,9 +1252,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1288,9 +1274,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1311,9 +1296,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1333,17 +1317,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -1382,9 +1364,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1409,9 +1390,8 @@ export const handlers: Map<number, OpHandler> = new Map([
 
         if (actualSectionSize < originalDataSize) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: EOFError.InvalidReturnContractDataSize,
+            new EVMError({
+              code: EOFError.InvalidReturnContractDataSize,
             }),
           )
         }
@@ -1420,9 +1400,8 @@ export const handlers: Map<number, OpHandler> = new Map([
           // Data section size is now larger than the max data section size
           // Temp: trap OOG?
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.INVALID_OPCODE,
+            new EVMError({
+              code: EVMErrorCode.INVALID_OPCODE,
             }),
           )
         }
@@ -1453,9 +1432,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INITCODE_SIZE_VIOLATION,
+          new EVMError({
+            code: EVMErrorCode.INITCODE_SIZE_VIOLATION,
           }),
         )
       }
@@ -1484,9 +1462,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState, common) {
       if (runState.interpreter.isStatic()) {
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+          new EVMError({
+            code: EVMErrorCode.STATIC_STATE_CHANGE,
           }),
         )
       }
@@ -1499,9 +1476,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INITCODE_SIZE_VIOLATION,
+          new EVMError({
+            code: EVMErrorCode.INITCODE_SIZE_VIOLATION,
           }),
         )
       }
@@ -1615,9 +1591,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       }
@@ -1644,9 +1619,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1683,9 +1657,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {
@@ -1753,9 +1726,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
         trap(
-          new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.INVALID_OPCODE,
+          new EVMError({
+            code: EVMErrorCode.INVALID_OPCODE,
           }),
         )
       } else {

@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 
 import { EOFError } from '../eof/errors.js'
-import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { DELEGATION_7702_FLAG } from '../types.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.js'
@@ -80,9 +80,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         if (byteLength < 1 || byteLength > 32) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_RANGE,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_RANGE,
             }),
           )
         }
@@ -247,9 +246,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // RETURNDATACOPY in that case does not throw OOG when reading out-of-bounds
           if (runState.env.eof === undefined) {
             trap(
-              new EvmError({
-                code: EvmErrorCode.RUNTIME_ERROR,
-                reason: RuntimeErrorMessage.OUT_OF_GAS,
+              new EVMError({
+                code: EVMErrorCode.OUT_OF_GAS,
               }),
             )
           }
@@ -345,9 +343,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -428,9 +425,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -441,9 +437,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (topicsCount < 0 || topicsCount > 4) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_RANGE,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_RANGE,
             }),
           )
         }
@@ -461,9 +456,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.INVALID_OPCODE,
+            new EVMError({
+              code: EVMErrorCode.INVALID_OPCODE,
             }),
           )
         }
@@ -483,9 +477,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -547,9 +540,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -587,9 +579,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -653,18 +644,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_GAS,
             }),
           )
         }
 
         if (gas > runState.interpreter.getGasLeft()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_GAS,
             }),
           )
         }
@@ -722,9 +711,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_GAS,
             }),
           )
         }
@@ -787,9 +775,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            new EVMError({
+              code: EVMErrorCode.OUT_OF_GAS,
             }),
           )
         }
@@ -804,9 +791,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -842,9 +828,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -856,9 +841,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // If value is nonzero and in static mode, throw:
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -871,9 +855,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: EOFError.InvalidExtcallTarget,
+            new EVMError({
+              code: EOFError.InvalidExtcallTarget,
             }),
           )
         }
@@ -934,9 +917,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -948,9 +930,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: EOFError.InvalidExtcallTarget,
+            new EVMError({
+              code: EOFError.InvalidExtcallTarget,
             }),
           )
         }
@@ -1048,9 +1029,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }
@@ -1062,9 +1042,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: EOFError.InvalidExtcallTarget,
+            new EVMError({
+              code: EOFError.InvalidExtcallTarget,
             }),
           )
         }
@@ -1119,9 +1098,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
           trap(
-            new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            new EVMError({
+              code: EVMErrorCode.STATIC_STATE_CHANGE,
             }),
           )
         }

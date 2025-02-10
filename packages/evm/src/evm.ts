@@ -8,6 +8,8 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   MAX_INTEGER,
+  UsageError,
+  UsageErrorType,
   bigIntToBytes,
   bytesToUnprefixedHex,
   createZeroAddress,
@@ -21,7 +23,7 @@ import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.js'
 import { isEOF } from './eof/util.js'
-import { EvmError, EvmErrorCode, RuntimeErrorMessage, getRuntimeError } from './errors.js'
+import { EVMError, EVMErrorCode } from './errors.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
@@ -189,17 +191,19 @@ export class EVM implements EVMInterface {
 
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
-        throw new EvmError(
-          { code: EvmErrorCode.UNSUPPORTED_FEATURE },
+        throw new UsageError(
+          {
+            code: UsageErrorType.UNSUPPORTED_FEATURE,
+          },
           `EIP-${eip} is not supported by the EVM`,
         )
       }
     }
 
     if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
-      throw new EvmError(
+      throw new UsageError(
         {
-          code: EvmErrorCode.UNSUPPORTED_FEATURE,
+          code: UsageErrorType.UNSUPPORTED_FEATURE,
         },
         `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
@@ -448,9 +452,8 @@ export class EVM implements EVMInterface {
           createdAddress: message.to,
           execResult: {
             returnValue: new Uint8Array(0),
-            exceptionError: new EvmError({
-              code: EvmErrorCode.RUNTIME_ERROR,
-              reason: RuntimeErrorMessage.INITCODE_SIZE_VIOLATION,
+            exceptionError: new EVMError({
+              code: EVMErrorCode.INITCODE_SIZE_VIOLATION,
             }),
             executionGasUsed: message.gasLimit,
           },
@@ -510,9 +513,8 @@ export class EVM implements EVMInterface {
         createdAddress: message.to,
         execResult: {
           returnValue: new Uint8Array(0),
-          exceptionError: new EvmError({
-            code: EvmErrorCode.RUNTIME_ERROR,
-            reason: RuntimeErrorMessage.CREATE_COLLISION,
+          exceptionError: new EVMError({
+            code: EVMErrorCode.CREATE_COLLISION,
           }),
           executionGasUsed: message.gasLimit,
         },
@@ -814,8 +816,8 @@ export class EVM implements EVMInterface {
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
     if (interpreterRes.exceptionError) {
       if (
-        getRuntimeError(interpreterRes.exceptionError) !== RuntimeErrorMessage.REVERT &&
-        getRuntimeError(interpreterRes.exceptionError) !== RuntimeErrorMessage.INVALID_EOF_FORMAT
+        interpreterRes.exceptionError.type.code !== EVMErrorCode.REVERT &&
+        interpreterRes.exceptionError.type.code !== EVMErrorCode.INVALID_EOF_FORMAT
       ) {
         gasUsed = message.gasLimit
       }
@@ -952,7 +954,7 @@ export class EVM implements EVMInterface {
       const { executionGasUsed, exceptionError, returnValue } = result.execResult
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
-          exceptionError ? `'${getRuntimeError(exceptionError)}'` : 'none'
+          exceptionError ? `'${exceptionError.type.code}'` : 'none'
         } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`,
       )
     }
@@ -962,7 +964,7 @@ export class EVM implements EVMInterface {
     // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
     // (this only happens the Frontier/Chainstart fork)
     // then the error is dismissed
-    if (err && getRuntimeError(err) !== RuntimeErrorMessage.CODESTORE_OUT_OF_GAS) {
+    if (err && err.type.code !== EVMErrorCode.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = new Set()
       result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BIGINT_0
@@ -971,7 +973,7 @@ export class EVM implements EVMInterface {
       err &&
       !(
         this.common.hardfork() === Hardfork.Chainstart &&
-        getRuntimeError(err) === RuntimeErrorMessage.CODESTORE_OUT_OF_GAS
+        err.type.code === EVMErrorCode.CODESTORE_OUT_OF_GAS
       )
     ) {
       result.execResult.logs = []
@@ -1042,9 +1044,8 @@ export class EVM implements EVMInterface {
     gasLimit: bigint,
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
-      throw new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.INVALID_PRECOMPILE,
+      throw new EVMError({
+        code: EVMErrorCode.INVALID_PRECOMPILE,
       })
     }
 
@@ -1105,9 +1106,8 @@ export class EVM implements EVMInterface {
   protected async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
     if (account.balance < BIGINT_0) {
-      throw new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.INSUFFICIENT_BALANCE,
+      throw new EVMError({
+        code: EVMErrorCode.INSUFFICIENT_BALANCE,
       })
     }
     const result = this.journal.putAccount(message.caller, account)
@@ -1120,9 +1120,8 @@ export class EVM implements EVMInterface {
   protected async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
-      throw new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.VALUE_OVERFLOW,
+      throw new EVMError({
+        code: EVMErrorCode.VALUE_OVERFLOW,
       })
     }
     toAccount.balance = newBalance
@@ -1176,9 +1175,8 @@ export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.OUT_OF_GAS,
+    exceptionError: new EVMError({
+      code: EVMErrorCode.OUT_OF_GAS,
     }),
   }
 }
@@ -1187,9 +1185,8 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsedCreateCode,
-    exceptionError: new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.OUT_OF_GAS,
+    exceptionError: new EVMError({
+      code: EVMErrorCode.OUT_OF_GAS,
     }),
   }
 }
@@ -1198,9 +1195,8 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.INVALID_BYTECODE_RESULT,
+    exceptionError: new EVMError({
+      code: EVMErrorCode.INVALID_BYTECODE_RESULT,
     }),
   }
 }
@@ -1209,9 +1205,8 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.INVALID_EOF_FORMAT,
+    exceptionError: new EVMError({
+      code: EVMErrorCode.INVALID_EOF_FORMAT,
     }),
   }
 }
@@ -1220,14 +1215,13 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
-    exceptionError: new EvmError({
-      code: EvmErrorCode.RUNTIME_ERROR,
-      reason: RuntimeErrorMessage.CODESIZE_EXCEEDS_MAXIMUM,
+    exceptionError: new EVMError({
+      code: EVMErrorCode.CODESIZE_EXCEEDS_MAXIMUM,
     }),
   }
 }
 
-export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
+export function EvmErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,

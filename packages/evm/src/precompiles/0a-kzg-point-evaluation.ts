@@ -6,7 +6,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 
 import { gasLimitCheck } from './util.js'
@@ -34,9 +34,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts.data.length !== 192) {
     return EvmErrorResult(
-      new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.INVALID_INPUT_LENGTH,
+      new EVMError({
+        code: EVMErrorCode.INVALID_INPUT_LENGTH,
       }),
       opts.gasLimit,
     )
@@ -55,9 +54,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
       opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
     return EvmErrorResult(
-      new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.INVALID_COMMITMENT,
+      new EVMError({
+        code: EVMErrorCode.INVALID_COMMITMENT,
       }),
       opts.gasLimit,
     )
@@ -74,9 +72,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     const res = opts.common.customCrypto?.kzg?.verifyProof(commitment, z, y, kzgProof)
     if (res === false) {
       return EvmErrorResult(
-        new EvmError({
-          code: EvmErrorCode.RUNTIME_ERROR,
-          reason: RuntimeErrorMessage.INVALID_PROOF,
+        new EVMError({
+          code: EVMErrorCode.INVALID_PROOF,
         }),
         opts.gasLimit,
       )
@@ -87,9 +84,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
       return EvmErrorResult(
-        new EvmError({
-          code: EvmErrorCode.RUNTIME_ERROR,
-          reason: RuntimeErrorMessage.INVALID_INPUTS,
+        new EVMError({
+          code: EVMErrorCode.INVALID_INPUTS,
         }),
         opts.gasLimit,
       )
@@ -98,9 +94,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
       opts._debug(`${pName} failed: Unknown error - ${err.message}`)
     }
     return EvmErrorResult(
-      new EvmError({
-        code: EvmErrorCode.RUNTIME_ERROR,
-        reason: RuntimeErrorMessage.INTERNAL_ERROR,
+      new EVMError({
+        code: EVMErrorCode.INTERNAL_ERROR,
       }),
       opts.gasLimit,
     )
