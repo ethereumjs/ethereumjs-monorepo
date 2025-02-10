@@ -51,4 +51,6 @@ export class EVMError extends EthereumJSError<EVMErrorType> {
   constructor(type: EVMErrorType, message?: string) {
     super(type, message)
   }
+
+  // TODO: add helper method to format the error in a human readable way
 }
