@@ -85,16 +85,6 @@ function parseGethParams(json: any) {
     )
   }
 
-  // Terminal total difficulty logic is not supported any more as the merge has been completed
-  // so the Merge/Paris hardfork block must be 0
-  if (
-    config.terminalTotalDifficulty !== undefined &&
-    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
-      config.terminalTotalDifficultyPassed === false)
-  ) {
-    throw new Error('nonzero terminal total difficulty is not supported')
-  }
-
   let customHardforks: HardforksDict | undefined = undefined
   if (config.blobSchedule !== undefined) {
     customHardforks = {}
