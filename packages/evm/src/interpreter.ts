@@ -523,7 +523,7 @@ export class Interpreter {
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
           const bytesToPush = opcode - 0x5f
-          let pushBytes = code.slice(i + 1, i + opcode - 0x5e)
+          let pushBytes = code.subarray(i + 1, i + opcode - 0x5e)
           if (pushBytes.length < bytesToPush) {
             pushBytes = setLengthRight(pushBytes, bytesToPush)
           }
