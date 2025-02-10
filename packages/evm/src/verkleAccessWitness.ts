@@ -28,10 +28,7 @@ import type {
   VerkleAccessedState,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type {
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
-} from '@ethereumjs/statemanager'
+import type { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import type {
   Address,
   PrefixedHexString,
