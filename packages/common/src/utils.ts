@@ -109,8 +109,10 @@ function parseGethParams(json: any) {
         max,
         baseFeeUpdateFraction: blobGasPriceUpdateFraction,
       } = hfSchedule as { target?: number; max?: number; baseFeeUpdateFraction?: undefined }
-      if (target === undefined || max === undefined) {
-        throw new Error(`undefined target or max specified in blobSchedule for hardfork=${hfKey}`)
+      if (target === undefined || max === undefined || blobGasPriceUpdateFraction === undefined) {
+        throw new Error(
+          `undefined target, max or baseFeeUpdateFraction specified in blobSchedule for hardfork=${hfKey}`,
+        )
       }
 
       // copy current hardfork info to custom and add blob config
