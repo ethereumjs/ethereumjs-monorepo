@@ -66,8 +66,9 @@ export class Common {
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name,
-      hardforksDict[hf.name] ??
-        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
+      // Allow to even override an existing hardfork specification
+      (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]) ??
+        hardforksDict[hf.name],
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
@@ -317,12 +318,12 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
-        const hfEIPs = hfChanges[1]['eips'] ?? []
+        const hfEIPs = hfChanges[1].eips ?? []
         for (const eip of hfEIPs) {
           this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
-      // Parameter-inlining HF config (e.g. for istanbul)
+      // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       this._mergeWithParamsCache(hfChanges[1].params ?? {})
       if (hfChanges[0] === hardfork) break
     }

@@ -3,7 +3,11 @@ import { bytesToHex } from '@ethereumjs/util'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import { leading16ZeroBytesCheck, msmGasUsed } from './bls12_381/index.js'
+import {
+  BLS_GAS_DISCOUNT_PAIRS_G1,
+  leading16ZeroBytesCheck,
+  msmGasUsed,
+} from './bls12_381/index.js'
 import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
 import { getPrecompileName } from './index.js'
@@ -11,7 +15,7 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0d')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
@@ -28,8 +32,8 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   // on this eventually to be "floored" pair number should happen before the input length modulo
   // validation (same for g2msm)
   const numPairs = Math.floor(inputData.length / 160)
-  const gasUsedPerPair = opts.common.paramByEIP('bls12381G1MulGas', 2537) ?? BigInt(0)
-  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair)
+  const gasUsedPerPair = opts.common.param('bls12381G1MulGas') ?? BigInt(0)
+  const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G1)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)

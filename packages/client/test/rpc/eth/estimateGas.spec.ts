@@ -210,4 +210,4 @@ describe(method, () => {
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
-}, 20000)
+})

@@ -81,7 +81,7 @@ export class EVM implements EVMInterface {
     Hardfork.London,
     Hardfork.ArrowGlacier,
     Hardfork.GrayGlacier,
-    Hardfork.MergeForkIdTransition,
+    Hardfork.MergeNetsplitBlock,
     Hardfork.Paris,
     Hardfork.Shanghai,
     Hardfork.Cancun,
@@ -102,6 +102,7 @@ export class EVM implements EVMInterface {
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
   public verkleAccessWitness?: VerkleAccessWitness
+  public systemVerkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -183,7 +184,7 @@ export class EVM implements EVMInterface {
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
       3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7692, 7698, 7702, 7709,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
     ]
 
     for (const eip of this.common.eips()) {
@@ -269,18 +270,22 @@ export class EVM implements EVMInterface {
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness.touchTxOriginAndComputeGas(fromAddress)
+        const originAccessGas = message.accessWitness.readAccountHeader(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
 
-        const destAccessGas = message.accessWitness.touchTxTargetAndComputeGas(message.to, {
-          sendsValue,
-        })
+        let destAccessGas = message.accessWitness.readAccountCodeHash(message.to)
+        if (sendsValue) {
+          destAccessGas += message.accessWitness.writeAccountBasicData(message.to)
+        } else {
+          destAccessGas += message.accessWitness.readAccountBasicData(message.to)
+        }
+
         debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
       }
 
-      let callAccessGas = message.accessWitness.touchAndChargeMessageCall(message.to)
+      let callAccessGas = message.accessWitness.readAccountBasicData(message.to)
       if (sendsValue) {
-        callAccessGas += message.accessWitness.touchAndChargeValueTransfer(message.to)
+        callAccessGas += message.accessWitness.writeAccountBasicData(message.to)
       }
       gasLimit -= callAccessGas
       if (gasLimit < BIGINT_0) {
@@ -315,9 +320,7 @@ export class EVM implements EVMInterface {
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       if (this.common.isActivatedEIP(6800)) {
-        const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
-          message.to,
-        )
+        const absenceProofAccessGas = message.accessWitness!.readAccountHeader(message.to)
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -418,7 +421,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(fromAddress)
+        const originAccessGas = message.accessWitness!.readAccountHeader(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
       }
     }
@@ -464,9 +467,9 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
-        message.to,
-      )
+      const contractCreateAccessGas =
+        message.accessWitness!.writeAccountBasicData(message.to) +
+        message.accessWitness!.readAccountCodeHash(message.to)
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
@@ -550,8 +553,7 @@ export class EVM implements EVMInterface {
 
     if (exit) {
       if (this.common.isActivatedEIP(6800)) {
-        const createCompleteAccessGas =
-          message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
+        const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
         gasLimit -= createCompleteAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -671,9 +673,7 @@ export class EVM implements EVMInterface {
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
     if (!result.exceptionError && this.common.isActivatedEIP(6800)) {
-      const createCompleteAccessGas = message.accessWitness!.touchAndChargeContractCreateCompleted(
-        message.to,
-      )
+      const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
@@ -699,12 +699,11 @@ export class EVM implements EVMInterface {
     ) {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
-        const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndComputeGas(
-            message.to,
-            0,
-            result.returnValue.length - 1,
-          )
+        const byteCodeWriteAccessfee = message.accessWitness!.writeAccountCodeChunks(
+          message.to,
+          0,
+          result.returnValue.length - 1,
+        )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -1104,11 +1103,10 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.journal.putAccount(message.to, toAccount)
+    await this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
-    return result
   }
 
   /**

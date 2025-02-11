@@ -11,12 +11,12 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('12')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.paramByEIP('bls12381MapG1Gas', 2537) ?? BigInt(0)
+  const gasUsed = opts.common.param('bls12381MapG1Gas') ?? BigInt(0)
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }

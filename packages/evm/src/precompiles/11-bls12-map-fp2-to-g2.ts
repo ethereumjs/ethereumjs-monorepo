@@ -11,17 +11,17 @@ import { getPrecompileName } from './index.js'
 import type { EVMBLSInterface, ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
-  const pName = getPrecompileName('0c')
+export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
+  const pName = getPrecompileName('13')
   const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.paramByEIP('bls12381G1MulGas', 2537) ?? BigInt(0)
+  const gasUsed = opts.common.param('bls12381MapG2Gas') ?? BigInt(0)
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (!equalityLengthCheck(opts, 160, pName)) {
+  if (!equalityLengthCheck(opts, 128, pName)) {
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -36,7 +36,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
 
   let returnValue
   try {
-    returnValue = bls.mulG1(opts.data)
+    returnValue = bls.mapFP2toG2(opts.data)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)

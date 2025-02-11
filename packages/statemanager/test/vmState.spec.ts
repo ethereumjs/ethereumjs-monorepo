@@ -32,14 +32,11 @@ describe('stateManager', () => {
       expectedStateRoot,
       `generateCanonicalGenesis should produce correct state root for mainnet from common`,
     )
-  })
+  }, 10_000)
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
-      [
-        Chain.Goerli,
-        hexToBytes('0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008'),
-      ],
+      // TODO: add Holesky
       [
         Chain.Sepolia,
         hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),

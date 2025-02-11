@@ -5,7 +5,7 @@ import {
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
@@ -41,6 +41,7 @@ import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
 
 import { blockchainData } from './testdata/blockchain.js'
+import { Goerli } from './testdata/goerliCommon.js'
 import { testnetData } from './testdata/testnet.js'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 

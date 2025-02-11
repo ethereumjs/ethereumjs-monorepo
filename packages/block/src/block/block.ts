@@ -249,7 +249,7 @@ export class Block {
         }
       }
       if (this.common.isActivatedEIP(4844)) {
-        const blobGasLimit = this.common.param('maxblobGasPerBlock')
+        const blobGasLimit = this.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
         if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
@@ -354,11 +354,11 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const blobGasLimit = this.common.param('maxblobGasPerBlock')
+      const blobGasLimit = this.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = this.common.param('blobGasPerBlob')
       let blobGasUsed = BIGINT_0
 
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(this.common)
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(
           `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,

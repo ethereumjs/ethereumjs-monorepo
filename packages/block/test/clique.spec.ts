@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -12,6 +12,8 @@ import {
   createBlockHeader,
   createSealedCliqueBlockHeader,
 } from '../src/index.js'
+
+import { Goerli } from './testdata/goerliCommon.js'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })

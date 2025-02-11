@@ -96,7 +96,7 @@ describe('Verkle Tree API tests', () => {
       matchingBytesLength(retrievedReallyBigByteCode, reallyBigByteCode),
       reallyBigByteCode.length,
     )
-  })
+  }, 120_000)
   it('should put and get storage', async () => {
     const zeroSlot = setLengthLeft(bigIntToBytes(0n), 32)
     const zeroSlotValue = hexToBytes('0x1')

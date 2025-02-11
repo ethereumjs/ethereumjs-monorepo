@@ -1160,7 +1160,7 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
@@ -1402,7 +1402,7 @@ export class Eth {
         let blobGasUsedRatio = 0
         if (b.header.excessBlobGas !== undefined) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
-          const max = b.common.param('maxblobGasPerBlock')
+          const max = b.common.param('maxBlobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)
         }
 
@@ -1426,7 +1426,10 @@ export class Eth {
 
     if (this._chain.blockchain.common.isActivatedEIP(4844)) {
       baseFeePerBlobGas.push(
-        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(),
+        // use the last blocks common for fee estimation
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(
+          requestedBlocks[requestedBlocks.length - 1].header.common,
+        ),
       )
     } else {
       // TODO (?): known bug
@@ -1461,6 +1464,7 @@ export class Eth {
    */
   async blobBaseFee() {
     const headBlock = await this._chain.getCanonicalHeadHeader()
-    return bigIntToHex(headBlock.calcNextBlobGasPrice())
+    // use headBlock's common to estimate the next blob fee
+    return bigIntToHex(headBlock.calcNextBlobGasPrice(headBlock.common))
   }
 }

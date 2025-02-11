@@ -4,9 +4,9 @@ import { Blob4844Tx } from '@ethereumjs/tx'
 import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
+import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
-
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
  * @param {string} input string to check, convert, and return
@@ -120,6 +120,19 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
 }
 
 /**
+ * Returns the blob gas price depending upon the `excessBlobGas` value
+ * @param excessBlobGas
+ * @param common
+ */
+export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
+  return fakeExponential(
+    common.param('minBlobGas'),
+    excessBlobGas,
+    common.param('blobGasPriceUpdateFraction'),
+  )
+}
+
+/**
  * Returns the withdrawals trie root for array of Withdrawal.
  * @param wts array of Withdrawal to compute the root of
  * @param optional emptyTrie to use to generate the root
@@ -172,7 +185,10 @@ export function genRequestsRoot(
 
   let flatRequests = new Uint8Array()
   for (const req of requests) {
-    flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
+    if (req.bytes.length > 1) {
+      // Only append requests if they have content
+      flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
+    }
   }
 
   return sha256Function(flatRequests)

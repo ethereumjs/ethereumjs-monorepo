@@ -120,7 +120,7 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(4844) &&
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
-      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
+      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas(this.vm.common)
     }
   }
 
@@ -232,7 +232,7 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const blobGasLimit = this.vm.common.param('maxblobGasPerBlock')
+    const blobGasLimit = this.vm.common.param('maxBlobGasPerBlock')
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
