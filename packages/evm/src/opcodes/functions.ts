@@ -24,6 +24,7 @@ import {
   bytesToInt,
   concatBytes,
   setLengthLeft,
+  setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -935,11 +936,16 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
-        const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush),
+        let loadedBytes = runState.code.subarray(
+          runState.programCounter,
+          runState.programCounter + numToPush,
         )
+        if (loadedBytes.length < numToPush) {
+          loadedBytes = setLengthRight(loadedBytes, numToPush)
+        }
+
         runState.programCounter += numToPush
-        runState.stack.push(loaded)
+        runState.stack.push(bytesToBigInt(loadedBytes))
       }
     },
   ],
