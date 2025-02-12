@@ -440,3 +440,46 @@ export const generateExecutionWitness = async (
   }
   return ew
 }
+
+export const generateStateWitness = async (
+  stateManager: StatefulVerkleStateManager,
+  accessWitness: VerkleAccessWitness,
+  parentStateRoot: Uint8Array,
+) => {
+  const trie = stateManager['_trie'] as VerkleTree
+  const postStateRoot = await stateManager.getStateRoot()
+  const stateWitness = {
+    reads: new Map<PrefixedHexString, PrefixedHexString>(),
+    writes: new Map<
+      PrefixedHexString,
+      { currentValue: PrefixedHexString; newValue: PrefixedHexString }
+    >(),
+    parentStateRoot: bytesToHex(parentStateRoot),
+  }
+  for (const chunk of accessWitness['chunks']) {
+    const write = chunk[1].write
+    const stem = chunk[0].slice(0, 64) as PrefixedHexString
+    const suffix = parseInt(chunk[0].slice(64))
+    trie.root(parentStateRoot)
+    if (write !== undefined && write === true) {
+      const curVal = await trie.get(hexToBytes(stem), [suffix])
+      trie.root(postStateRoot)
+      const newVal = await trie.get(hexToBytes(stem), [suffix])
+      stateWitness.writes.set(chunk[0], {
+        currentValue:
+          curVal instanceof Uint8Array ? bytesToHex(curVal) : bytesToHex(new Uint8Array(32)),
+        newValue:
+          newVal instanceof Uint8Array ? bytesToHex(newVal) : bytesToHex(new Uint8Array(32)),
+      })
+    } else {
+      trie.root(parentStateRoot)
+      const curVal = await trie.get(hexToBytes(stem), [suffix])
+      stateWitness.reads.set(
+        chunk[0],
+        curVal[0] instanceof Uint8Array ? bytesToHex(curVal[0]) : bytesToHex(new Uint8Array(32)),
+      )
+    }
+  }
+
+  return stateWitness
+}

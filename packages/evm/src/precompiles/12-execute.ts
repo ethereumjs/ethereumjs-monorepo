@@ -20,8 +20,8 @@ import { getPrecompileName } from './index.js'
 
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
+import type { generateStateWitness } from '../verkleAccessWitness.js'
 import type { PrecompileInput } from './types.js'
-import type { VerkleExecutionWitness } from '@ethereumjs/util'
 
 const MAX_CALL_DATA_SIZE = 7500000 // Assuming a transaction with all zero bytes fills up an entire block worth of gas
 export const traceContainer = ssz.container({
@@ -37,38 +37,42 @@ export const traceContainer = ssz.container({
     }),
   ),
   witness: ssz.container({
-    stateDiff: ssz.list(
-      256,
+    reads: ssz.list(
+      1024,
       ssz.container({
-        stem: ssz.bytevector(31),
-        suffixDiffs: ssz.list(
-          256,
-          ssz.container({
-            suffix: ssz.uint64,
-            currentValue: ssz.bytevector(32),
-            newValue: ssz.bytevector(32),
-          }),
-        ),
+        key: ssz.bytevector(32),
+        currentValue: ssz.bytevector(32),
+      }),
+    ),
+    writes: ssz.list(
+      1024,
+      ssz.container({
+        key: ssz.bytevector(32),
+        currentValue: ssz.bytevector(32),
+        newValue: ssz.bytevector(32),
       }),
     ),
     parentStateRoot: ssz.bytevector(32),
   }),
 })
 
-export const executionWitnessJSONToSSZ = (witness: VerkleExecutionWitness) => {
+export const stateWitnessJSONToSSZ = (
+  witness: Awaited<ReturnType<typeof generateStateWitness>>,
+) => {
+  const reads = Array.from(witness.reads.entries()).map(([key, value]) => ({
+    key: hexToBytes(key),
+    currentValue: hexToBytes(value),
+  }))
+
+  const writes = Array.from(witness.writes.entries()).map(([key, value]) => ({
+    key: hexToBytes(key),
+    currentValue: hexToBytes(value.currentValue),
+    newValue: hexToBytes(value.newValue),
+  }))
+
   return {
-    stateDiff: witness.stateDiff.map((diff) => ({
-      stem: hexToBytes(diff.stem),
-      suffixDiffs: diff.suffixDiffs.map((suffixDiff) => ({
-        suffix: BigInt(suffixDiff.suffix),
-        currentValue:
-          suffixDiff.currentValue !== null
-            ? hexToBytes(suffixDiff.currentValue)
-            : new Uint8Array(32),
-        newValue:
-          suffixDiff.newValue !== null ? hexToBytes(suffixDiff.newValue) : new Uint8Array(32),
-      })),
-    })),
+    reads,
+    writes,
     parentStateRoot: hexToBytes(witness.parentStateRoot),
   }
 }
@@ -106,17 +110,11 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const tree = await createVerkleTree({ verkleCrypto: opts.common.customCrypto.verkle })
 
   // Populate the L2 state trie with the prestate
-  for (const stateDiff of witness.stateDiff) {
-    const suffixes: number[] = []
-    const values: Uint8Array[] = []
-    for (const diff of stateDiff.suffixDiffs) {
-      if (diff.currentValue !== null) {
-        suffixes.push(Number(diff.suffix))
-        values.push(diff.currentValue)
-      }
-    }
-    const stem = stateDiff.stem
-    await tree.put(stem, suffixes, values)
+  for (const chunk of witness.reads) {
+    await tree.put(chunk.key.slice(0, 31), [Number(chunk.key.slice(31))], [chunk.currentValue])
+  }
+  for (const chunk of witness.writes) {
+    await tree.put(chunk.key.slice(0, 31), [Number(chunk.key.slice(31))], [chunk.currentValue])
   }
   let executionResult = true
 

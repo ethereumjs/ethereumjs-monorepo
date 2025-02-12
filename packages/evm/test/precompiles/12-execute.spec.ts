@@ -1,7 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
-  Address,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -19,10 +18,10 @@ import { assert, describe, it } from 'vitest'
 import {
   VerkleAccessWitness,
   createEVM,
-  generateExecutionWitness,
+  generateStateWitness,
   getActivePrecompiles,
 } from '../../src/index.js'
-import { executionWitnessJSONToSSZ, traceContainer } from '../../src/precompiles/12-execute.js'
+import { stateWitnessJSONToSSZ, traceContainer } from '../../src/precompiles/12-execute.js'
 
 describe('Precompiles: EXECUTE', () => {
   it('should execute a trace', async () => {
@@ -70,7 +69,7 @@ describe('Precompiles: EXECUTE', () => {
     })
     const executionGasUsed = res.execResult.executionGasUsed
     const postStateRoot = tree.root()
-    const execWitness = await generateExecutionWitness(
+    const stateWitness = await generateStateWitness(
       stateManager,
       evm.verkleAccessWitness,
       preStateRoot,
@@ -80,7 +79,7 @@ describe('Precompiles: EXECUTE', () => {
 
     // Create a trace
     const trace = {
-      witness: executionWitnessJSONToSSZ(execWitness),
+      witness: stateWitnessJSONToSSZ(stateWitness),
       txs: [tx],
     }
     const traceBytes = traceContainer.encode(trace)
@@ -110,7 +109,7 @@ describe('Precompiles: EXECUTE', () => {
 })
 
 describe('runCall', () => {
-  it.only('should execute runCall', async () => {
+  it('should execute runCall', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Prague,
@@ -155,12 +154,11 @@ describe('runCall', () => {
     })
     const executionGasUsed = res.execResult.executionGasUsed
     const postStateRoot = l2Tree.root()
-    const execWitness = await generateExecutionWitness(
+    const stateWitness = await generateStateWitness(
       l2StateManager,
       l2EVM.verkleAccessWitness,
       preStateRoot,
     )
-
     // End of L2 state construction
 
     // Create mainnet state and EVM
@@ -177,9 +175,10 @@ describe('runCall', () => {
 
     // Create a trace
     const trace = {
-      witness: executionWitnessJSONToSSZ(execWitness),
+      witness: stateWitnessJSONToSSZ(stateWitness),
       txs: [l2Tx],
     }
+
     const traceBytes = traceContainer.encode(trace)
 
     // We use the sha256 hash of the serialized trace as a reference.  This is standing in for the versionedHash that we should use
