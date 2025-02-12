@@ -26,6 +26,7 @@ import type { PrecompileInput } from './types.js'
 const MAX_CALL_DATA_SIZE = 7500000 // Assuming a transaction with all zero bytes fills up an entire block worth of gas
 export const traceContainer = ssz.container({
   txs: ssz.list(
+    // An ssz list of tx objects that match the `eth_call` tx object format
     256,
     ssz.container({
       to: ssz.bytevector(20),
@@ -37,15 +38,16 @@ export const traceContainer = ssz.container({
     }),
   ),
   witness: ssz.container({
+    // A state witness that contains all the reads and writes to the state that are part of the tx list
     reads: ssz.list(
-      1024,
+      1024, // arbitrary limit for now
       ssz.container({
         key: ssz.bytevector(32),
         currentValue: ssz.bytevector(32),
       }),
     ),
     writes: ssz.list(
-      1024,
+      1024, // arbitrary limit for now
       ssz.container({
         key: ssz.bytevector(32),
         currentValue: ssz.bytevector(32),
