@@ -9,6 +9,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
@@ -521,10 +522,14 @@ export class Interpreter {
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
-          const extraSteps = opcode - 0x5f
-          const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
+          const bytesToPush = opcode - 0x5f
+          let pushBytes = code.subarray(i + 1, i + opcode - 0x5e)
+          if (pushBytes.length < bytesToPush) {
+            pushBytes = setLengthRight(pushBytes, bytesToPush)
+          }
+          const push = bytesToBigInt(pushBytes)
           pushes[i + 1] = push
-          i += extraSteps
+          i += bytesToPush
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
