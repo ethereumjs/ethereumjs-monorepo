@@ -1,5 +1,6 @@
 import {
   Lock,
+  bitsToBytes,
   bytesToBits,
   bytesToHex,
   concatBytes,
@@ -227,7 +228,7 @@ export class BinaryTree {
     let lastUpdatedParentPath: number[] = []
 
     // Step 2: Walk up the found path updating parent internal nodes.
-    // (Do not include the root node, which is the last element in foundPath.stack.)
+    // (Do not include the root node, which is the last element in foundPath.stack)
     while (foundPath.stack.length > 1) {
       // Pop the next node on the path.
       const [parentNode, parentPath] = foundPath.stack.pop()!
@@ -246,8 +247,10 @@ export class BinaryTree {
     const childReference = putStack[putStack.length - 1][1]
 
     if (isStemBinaryNode(rootNode)) {
-      // If the root is a stem node but its stem differs from the one we're updating,
-      // we must split it by creating a new internal node.
+      // If the root is a stem node but its stem differs from the one we're updating, we need to split the root:
+      // 1. We create a new internal node that will act as the new root node
+      // 2. We assign the old root (stem node) as a child of this new root node
+      // 3. We assign the new value inserted into the tree as a child of this new root node
       if (!equalsBytes(rootNode.stem, stem)) {
         const rootBits = bytesToBits(rootNode.stem)
         const diffIndex = matchingBitsLength(rootBits, stemBits)
@@ -267,7 +270,7 @@ export class BinaryTree {
         putStack.push([this.merkelize(newRoot), newRoot])
         this.DEBUG &&
           this.debug(
-            `Splitting root stem node into internal node at path ${stemBits.slice(0, diffIndex)}`,
+            `Splitting root stem node into internal node at path ${bytesToHex(bitsToBytes(stemBits.slice(0, diffIndex)))}`,
             ['put'],
           )
         rootNode = newRoot
@@ -311,8 +314,8 @@ export class BinaryTree {
     const stemBits = bytesToBits(stemNode.stem)
     if (isStemBinaryNode(nearestNode)) {
       // For two different stems, find the first differing bit.
-      const nearestBits = bytesToBits(nearestNode.stem)
-      const diffIndex = matchingBitsLength(stemBits, nearestBits)
+      const nearestNodeStemBits = bytesToBits(nearestNode.stem)
+      const diffIndex = matchingBitsLength(stemBits, nearestNodeStemBits)
       const newInternal = InternalBinaryNode.create()
       // Set the child pointer for the new stem node using the bit at diffIndex.
       newInternal.setChild(stemBits[diffIndex], {
@@ -320,9 +323,9 @@ export class BinaryTree {
         path: stemBits.slice(0, diffIndex + 1),
       })
       // Set the child pointer for the existing stem node.
-      newInternal.setChild(nearestBits[diffIndex], {
+      newInternal.setChild(nearestNodeStemBits[diffIndex], {
         hash: this.merkelize(nearestNode),
-        path: nearestBits.slice(0, diffIndex + 1),
+        path: nearestNodeStemBits.slice(0, diffIndex + 1),
       })
       // Return the new internal node along with the common prefix (up to diffIndex)
       // that should be used by the parent.
@@ -380,9 +383,8 @@ export class BinaryTree {
       return result
     }
 
-    // The root is an internal node. Determine the branch to follow using parent's path length (which is 0).
-    const branch = keyInBits[0]
-    let childNode = rootNode.getChild(branch)
+    // The root is an internal node. Determine the branch to follow using the first bit of the key
+    let childNode = rootNode.getChild(keyInBits[0])
 
     // If no child exists on that branch, return what we have.
     if (childNode === null) {
@@ -401,6 +403,7 @@ export class BinaryTree {
 
       // Determine how many bits match between keyInBits and the stored path in childNode.
       const matchingKeyLength = matchingBitsLength(keyInBits, childNode.path)
+
       // If we have an exact match (i.e. the stored path equals a prefix of the key)
       // and either the key is fully consumed or we have reached a stem node, we stop.
       if (
