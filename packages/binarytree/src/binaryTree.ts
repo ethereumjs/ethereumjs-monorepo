@@ -38,17 +38,15 @@ export class BinaryTree {
   /** The root for an empty tree */
   EMPTY_TREE_ROOT: Uint8Array
 
-  /** The backend DB */
   protected _db!: CheckpointDB
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Uint8Array
 
-  /** Debug logging */
   protected DEBUG: boolean
   protected _debug: Debugger = debug('binarytree:#')
   protected debug: (...args: any) => void
-  /**p
+  /**
    * Creates a new binary tree.
    * @param opts Options for instantiating the binary tree
    *
@@ -129,7 +127,7 @@ export class BinaryTree {
    * Gets values at a given binary tree `stem` and set of suffixes
    * @param stem - the stem of the stem node where we're seeking values
    * @param suffixes - an array of suffixes corresponding to the values desired
-   * @returns A Promise that resolves to an array of `Uint8Array`sor `null` depending on if values were found.
+   * @returns A Promise that resolves to an array of `Uint8Array`s or `null` depending on if values were found.
    * If the stem is not found, will return an empty array.
    */
   async get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | null)[]> {
@@ -161,11 +159,7 @@ export class BinaryTree {
    * @param values - the value(s) to store (or null for deletion).
    * @returns A Promise that resolves once the value is stored.
    */
-  async put(
-    stem: Uint8Array,
-    suffixes: number[],
-    values: (Uint8Array | null)[] = [],
-  ): Promise<void> {
+  async put(stem: Uint8Array, suffixes: number[], values: (Uint8Array | null)[]): Promise<void> {
     if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
     if (values.length > 0 && values.length !== suffixes.length)
       throw new Error(
