@@ -554,17 +554,17 @@ export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): num
 
 /**
  * Compares two arrays of bits (0 or 1) and returns the count of consecutively matching bits from the start.
- * @param {Uint8rray | number[]} arr1 - The first array of bits, in bytes or bits.
- * @param {Uint8Array | number[]} arr2 - The second array of bits, in bytes or bits.
+ * @param {Uint8Array | number[]} array1 - The first array of bits, in bytes or bits.
+ * @param {Uint8Array | number[]} array2 - The second array of bits, in bytes or bits.
  * @returns {number} The count of consecutively matching bits from the start.
  */
 export function matchingBitsLength(
-  arr1: Uint8Array | number[],
-  arr2: Uint8Array | number[],
+  array1: Uint8Array | number[],
+  array2: Uint8Array | number[],
 ): number {
   // Replace bytes with bits
-  const bits1 = arr1 instanceof Uint8Array ? bytesToBits(arr1) : arr1
-  const bits2 = arr2 instanceof Uint8Array ? bytesToBits(arr2) : arr2
+  const bits1 = array1 instanceof Uint8Array ? bytesToBits(array1) : array1
+  const bits2 = array2 instanceof Uint8Array ? bytesToBits(array2) : array2
 
   let count = 0
   const minLength = Math.min(bits1.length, bits2.length)
