@@ -1,6 +1,5 @@
 import {
   Lock,
-  bitsToBytes,
   bytesToBits,
   bytesToHex,
   concatBytes,
@@ -247,32 +246,43 @@ export class BinaryTree {
     const childReference = putStack[putStack.length - 1][1]
 
     if (isStemBinaryNode(rootNode)) {
-      // If the root is a stem node but its stem differs from the one we're updating, we need to split the root:
-      // 1. We create a new internal node that will act as the new root node
-      // 2. We assign the old root (stem node) as a child of this new root node
-      // 3. We assign the new value inserted into the tree as a child of this new root node
+      // If the root is a stem node but its stem differs from the one we're updating,
+      // then we need to split the root. Per the spec, the path to a StemNode is defined
+      // by the key’s first 248 bits. When two stems share a common prefix,
+      // we create one internal node per bit in that common prefix, and then at the first
+      // divergence, an internal node that points to both stem nodes.
       if (!equalsBytes(rootNode.stem, stem)) {
         const rootBits = bytesToBits(rootNode.stem)
-        const diffIndex = matchingBitsLength(rootBits, stemBits)
-        const newRoot = InternalBinaryNode.create()
-        // Determine branch indices for both children.
-        const branchIndexForStem = stemBits[diffIndex]
-        const branchIndexForRoot = rootBits[diffIndex]
-        newRoot.setChild(branchIndexForStem, {
+        const commonPrefixLength = matchingBitsLength(rootBits, stemBits)
+        // Create the split node at the divergence bit.
+        const splitNode = InternalBinaryNode.create()
+        const branchForNew = stemBits[commonPrefixLength]
+        const branchForExisting = rootBits[commonPrefixLength]
+        splitNode.setChild(branchForNew, {
           hash: this.merkelize(stemNode),
-          path: stemBits.slice(0, diffIndex + 1),
+          // Store only the divergence bit here.
+          path: [stemBits[commonPrefixLength]],
         })
-        newRoot.setChild(branchIndexForRoot, {
+        splitNode.setChild(branchForExisting, {
           hash: this.merkelize(rootNode),
-          path: rootBits.slice(0, diffIndex + 1),
+          path: [rootBits[commonPrefixLength]],
         })
 
-        putStack.push([this.merkelize(newRoot), newRoot])
-        this.DEBUG &&
-          this.debug(
-            `Splitting root stem node into internal node at path ${bytesToHex(bitsToBytes(stemBits.slice(0, diffIndex)))}`,
-            ['put'],
-          )
+        // If there is a common prefix (i.e. commonPrefixLength > 0), we build a chain
+        // of internal nodes representing that prefix.
+        let newRoot = splitNode
+        for (let i = commonPrefixLength - 1; i >= 0; i--) {
+          putStack.push([this.merkelize(newRoot), newRoot])
+          const parent = InternalBinaryNode.create()
+          // At each level, the branch is determined by the bit of the new stem at position i.
+          parent.setChild(stemBits[i], {
+            hash: this.merkelize(newRoot),
+            path: [stemBits[i]],
+          })
+          newRoot = parent
+        }
+        // Now newRoot is an internal node chain that represents the entire common prefix,
+        // ending in a split node that distinguishes the two different stems.
         rootNode = newRoot
       }
     } else {
