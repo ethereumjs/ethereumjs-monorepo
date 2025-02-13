@@ -403,7 +403,7 @@ ___
 
 ▸ **getHardforkBy**(`opts`): `string`
 
-Returns the hardfork either based on block numer (older HFs) or
+Returns the hardfork either based on block number (older HFs) or
 timestamp (Shanghai upwards).
 
 An optional TD takes precedence in case the corresponding HF block
@@ -901,7 +901,7 @@ ___
 
 ▸ **setHardforkBy**(`opts`): `string`
 
-Sets a new hardfork either based on block numer (older HFs) or
+Sets a new hardfork either based on block number (older HFs) or
 timestamp (Shanghai upwards).
 
 An optional TD takes precedence in case the corresponding HF block
