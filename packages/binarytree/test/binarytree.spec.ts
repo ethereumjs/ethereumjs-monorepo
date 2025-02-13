@@ -35,7 +35,7 @@ describe('insert', () => {
 
     await tree.put(stem, [index], [value])
     const [retrievedValue] = await tree.get(stem, [index])
-    assert.exists(retrievedValue, 'Retrieved should exist')
+    assert.exists(retrievedValue, 'Retrieved value should exist')
     assert.isTrue(
       equalsBytes(retrievedValue!, value),
       'Retrieved value should match inserted value',
@@ -48,7 +48,7 @@ describe('insert', () => {
     )
   })
 
-  it('should correctly compute state root for two entries differing in the first bit', async () => {
+  it('should correctly compute state root and retrieve values for two entries differing in the first bit', async () => {
     const tree = await createBinaryTree()
 
     // First entry: key is 32 bytes of 0, value is 32 bytes of 1.
@@ -68,12 +68,20 @@ describe('insert', () => {
     await tree.put(stem1, [index1], [value1])
     await tree.put(stem2, [index2], [value2])
 
+    const [retrievedValue1] = await tree.get(stem1, [index1])
+    const [retrievedValue2] = await tree.get(stem2, [index2])
+
+    // Retrieved values should exist
+    assert.exists(retrievedValue1, 'Value for key1 should exist')
+    assert.exists(retrievedValue2, 'Value for key2 should exist')
+
     // Check that the computed state root matches the expected hash.
     assert.equal(
       bytesToHex(tree.root()),
       '0x85fc622076752a6fcda2c886c18058d639066a83473d9684704b5a29455ed2ed',
     )
   })
+
   it('should handle one stem with colocated values', async () => {
     const tree = await createBinaryTree()
 
@@ -182,6 +190,46 @@ describe('insert', () => {
     assert.isTrue(
       equalsBytes(retrievedValue!, value2),
       'Retrieved value should match the updated value',
+    )
+  })
+
+  it('should recover previous root when adding and then deleting a value', async () => {
+    const tree = await createBinaryTree()
+
+    const key1 = hexToBytes(`0x${'01'.repeat(32)}`)
+    const key2 = hexToBytes(`0x${'02'.repeat(32)}`)
+    const value1 = hexToBytes(`0x${'01'.repeat(32)}`)
+    const value2 = hexToBytes(`0x${'02'.repeat(32)}`)
+
+    const stem1 = key1.slice(0, 31)
+    const index1 = key1[31]
+    const stem2 = key2.slice(0, 31)
+    const index2 = key2[31]
+
+    await tree.put(stem1, [index1], [value1])
+
+    const initialRoot = tree.root()
+
+    await tree.put(stem2, [index2], [value2])
+
+    const updatedRoot = tree.root()
+    assert.isFalse(
+      equalsBytes(initialRoot, updatedRoot),
+      'Updated root should not match initial root',
+    )
+
+    await tree.del(stem2, [index2])
+
+    const recoveredRoot = tree.root()
+
+    const [retrievedValue1] = await tree.get(stem1, [index1])
+    const [retrievedValue2] = await tree.get(stem2, [index2])
+
+    assert.exists(retrievedValue1, 'Retrieved value should exist')
+    assert.notExists(retrievedValue2, 'Deleted value should not exist')
+    assert.isTrue(
+      equalsBytes(initialRoot, recoveredRoot),
+      'Recovered root should match initial root',
     )
   })
 })
