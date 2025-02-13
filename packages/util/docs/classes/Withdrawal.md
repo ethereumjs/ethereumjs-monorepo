@@ -43,7 +43,7 @@ Its amount is in Gwei to match CL representation and for eventual ssz withdrawal
 | `index` | `bigint` | - |
 | `validatorIndex` | `bigint` | - |
 | `address` | [`Address`](Address.md) | - |
-| `amount` | `bigint` | withdrawal amount in Gwei to match the CL repesentation and eventually ssz withdrawalsRoot |
+| `amount` | `bigint` | withdrawal amount in Gwei to match the CL representation and eventually ssz withdrawalsRoot |
 
 #### Defined in
 
@@ -65,7 +65,7 @@ ___
 
 • `Readonly` **amount**: `bigint`
 
-withdrawal amount in Gwei to match the CL repesentation and eventually ssz withdrawalsRoot
+withdrawal amount in Gwei to match the CL representation and eventually ssz withdrawalsRoot
 
 #### Defined in
 
