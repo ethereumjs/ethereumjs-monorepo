@@ -1,5 +1,6 @@
 import {
   Lock,
+  bitsToBytes,
   bytesToBits,
   bytesToHex,
   concatBytes,
@@ -9,7 +10,6 @@ import {
   matchingBitsLength,
   setLengthRight,
 } from '@ethereumjs/util'
-import { blake3 } from '@noble/hashes/blake3'
 import debug from 'debug'
 
 import { CheckpointDB } from './db/index.js'
@@ -230,11 +230,11 @@ export class BinaryTree {
     // (Do not include the root node, which is the last element in foundPath.stack)
     while (foundPath.stack.length > 1) {
       // Pop the next node on the path.
-      const [parentNode, parentPath] = foundPath.stack.pop()!
+      const [nearestNode, nearestNodePathPath] = foundPath.stack.pop()!
       // Update the parent if necessary.
       // If an update was necessary, updateParent returns an updated node
       // along with the parent's path that led to that update.
-      const updated = this.updateParent(stemNode, parentNode, parentPath)
+      const updated = this.updateParent(stemNode, nearestNode, nearestNodePathPath)
       if (updated !== undefined) {
         putStack.push([this.merkelize(updated.node), updated.node])
         lastUpdatedParentPath = updated.parentPath
@@ -247,11 +247,11 @@ export class BinaryTree {
 
     if (isStemBinaryNode(rootNode)) {
       // If the root is a stem node but its stem differs from the one we're updating,
-      // then we need to split the root. Per the spec, the path to a StemNode is defined
-      // by the key’s first 248 bits. When two stems share a common prefix,
+      // then we need to split the root. Per the spec, when two stems share a common prefix,
       // we create one internal node per bit in that common prefix, and then at the first
       // divergence, an internal node that points to both stem nodes.
       if (!equalsBytes(rootNode.stem, stem)) {
+        this.DEBUG && this.debug(`Root stem differs from new stem. Splitting root.`, ['put'])
         const rootBits = bytesToBits(rootNode.stem)
         const commonPrefixLength = matchingBitsLength(rootBits, stemBits)
         // Create the split node at the divergence bit.
@@ -260,24 +260,25 @@ export class BinaryTree {
         const branchForExisting = rootBits[commonPrefixLength]
         splitNode.setChild(branchForNew, {
           hash: this.merkelize(stemNode),
-          // Store only the divergence bit here.
-          path: [stemBits[commonPrefixLength]],
+          path: stemBits.slice(commonPrefixLength),
         })
         splitNode.setChild(branchForExisting, {
           hash: this.merkelize(rootNode),
-          path: [rootBits[commonPrefixLength]],
+          path: rootBits.slice(commonPrefixLength),
         })
+
+        let newRoot = splitNode
 
         // If there is a common prefix (i.e. commonPrefixLength > 0), we build a chain
         // of internal nodes representing that prefix.
-        let newRoot = splitNode
-        for (let i = commonPrefixLength - 1; i >= 0; i--) {
+        for (let depth = commonPrefixLength - 1; depth >= 0; depth--) {
+          this.DEBUG && this.debug(`Creating internal node for common prefix bit ${depth}`, ['put'])
           putStack.push([this.merkelize(newRoot), newRoot])
           const parent = InternalBinaryNode.create()
           // At each level, the branch is determined by the bit of the new stem at position i.
-          parent.setChild(stemBits[i], {
+          parent.setChild(stemBits[depth], {
             hash: this.merkelize(newRoot),
-            path: [stemBits[i]],
+            path: stemBits.slice(0, depth),
           })
           newRoot = parent
         }
@@ -286,7 +287,7 @@ export class BinaryTree {
         rootNode = newRoot
       }
     } else {
-      // For an internal root node, we update the  compute the branch index using the parent's path length.
+      // For an internal root node, we compute the branch index using the parent's path length.
       // If no parent update occurred (i.e. lastUpdatedParentPath is empty), then use index 0.
       if (childReference !== null) {
         rootNode.setChild(stemBits[0], {
@@ -314,7 +315,7 @@ export class BinaryTree {
    * @param nearestNode - The nearest node to the new stem node.
    * @param pathToNode - The path (in bits) to `nearestNode` as known from the trie.
    * @returns An object containing the updated parent node and the parent's path that should be used
-   *          when updating the next ancestor, or `undefined` if no changes were made.
+   *          or `undefined` if no changes were made.
    */
   updateParent(
     stemNode: StemBinaryNode,
@@ -464,7 +465,7 @@ export class BinaryTree {
     }
     this.DEBUG &&
       this.debug(
-        `Found partial path ${keyInBits.slice(256 - result.remaining.length)} but sought node is not present in trie.`,
+        `Found partial path ${bytesToHex(bitsToBytes(keyInBits.slice(256 - result.remaining.length)))} but sought node is not present in trie.`,
         ['find_path'],
       )
     return result
@@ -665,8 +666,7 @@ export class BinaryTree {
       throw new Error('Data must be 32 or 64 bytes')
     }
 
-    return blake3(msg)
-    // return Uint8Array.from(this._opts.hashFunction.call(undefined, msg))
+    return Uint8Array.from(this._opts.hashFunction.call(undefined, msg))
   }
 
   protected merkelize(node: BinaryNode | null): Uint8Array {
@@ -675,8 +675,7 @@ export class BinaryTree {
     }
 
     if (isInternalBinaryNode(node)) {
-      const leftChild = node.getChild(0)
-      const rightChild = node.getChild(1)
+      const [leftChild, rightChild] = node.children
 
       return this.hash(
         concatBytes(
