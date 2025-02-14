@@ -328,6 +328,7 @@
     "Unsnappy",
     "unsnappy",
     "ethportal",
-    "bytevector"
+    "bytevector",
+    "eraSync"
   ]
 }
