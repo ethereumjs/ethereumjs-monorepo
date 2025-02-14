@@ -21,17 +21,24 @@ export class InternalBinaryNode {
     }
 
     // The length of the rawNode should be the # of children * 2 (for hash and path) + 1 for the node type
+
     if (rawNode.length !== 2 * 2 + 1) {
       throw new Error('Invalid node length')
     }
+    const [, leftChildHash, rightChildHash, leftChildRawPath, rightChildRawPath] = rawNode
 
-    const [, leftChildHash, leftChildPath, rightChildHash, rightChildPath] = rawNode
+    const decodeChild = (hash: Uint8Array, rawPath: Uint8Array): ChildBinaryNode | null => {
+      if (hash.length === 0) return null
+      const [encodedLength, encodedPath] = RLP.decode(rawPath) as Uint8Array[]
+      const pathLength = encodedLength[0] // assuming length fits in one byte
+      const fullPath = bytesToBits(encodedPath)
+      const trimmedPath = fullPath.slice(0, pathLength)
+      return { hash, path: trimmedPath }
+    }
 
     const children = [
-      leftChildHash.length > 0 ? { hash: leftChildHash, path: bytesToBits(leftChildPath) } : null,
-      rightChildHash.length > 0
-        ? { hash: rightChildHash, path: bytesToBits(rightChildPath) }
-        : null,
+      decodeChild(leftChildHash, leftChildRawPath),
+      decodeChild(rightChildHash, rightChildRawPath),
     ]
 
     return new InternalBinaryNode({ children })
@@ -65,16 +72,29 @@ export class InternalBinaryNode {
   }
 
   /**
-   * Returns the raw serialized representation of the node as an array of Uint8Arrays.
+   * Returns the raw serialized representation of this internal node as an array of Uint8Arrays.
+   *
+   * The returned array contains:
+   * 1. A single-byte Uint8Array indicating the node type (BinaryNodeType.Internal).
+   * 2. For each child (left then right):
+   *    - The child’s hash, or an empty Uint8Array if the child is null.
+   * 3. For each child (left then right):
+   *    - An RLP-encoded tuple [pathLength, packedPathBytes] where:
+   *         - `pathLength` is a one-byte Uint8Array representing the number of meaningful bits in the child’s path.
+   *         - `packedPathBytes` is the packed byte representation of the child's bit path (as produced by `bitsToBytes`).
+   *
    * @returns {Uint8Array[]} An array of Uint8Arrays representing the node's serialized internal data.
-   * @dev We are storing the children node paths as Uint8Arrays for storage, but they should be re-converted to bits when decoding
+   * @dev When decoding, the stored child path (an RLP-encoded tuple) must be converted back into the original bit array.
    */
+
   raw(): Uint8Array[] {
     return [
       new Uint8Array([BinaryNodeType.Internal]),
       ...this.children.map((child) => (child !== null ? child.hash : new Uint8Array())),
       ...this.children.map((child) =>
-        child !== null ? bitsToBytes(child.path) : new Uint8Array(),
+        child !== null
+          ? RLP.encode([new Uint8Array([child.path.length]), bitsToBytes(child.path)])
+          : new Uint8Array(),
       ),
     ]
   }
