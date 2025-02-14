@@ -387,18 +387,30 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
   }
 }
 
+/**
+ * Generate a {@link VerkleExecutionWitness} from a state manager and an access witness.
+ * @param stateManager - The state manager containing the state to generate the witness for.
+ * @param accessWitness - The access witness containing the accessed states.
+ * @param parentStateRoot - The parent state root (i.e. prestate root) to generate the witness for.
+ * @returns The generated verkle execution witness
+ *
+ * Note: This does not provide the verkle proof, which is not implemented
+ */
 export const generateExecutionWitness = async (
   stateManager: StatefulVerkleStateManager,
   accessWitness: VerkleAccessWitness,
   parentStateRoot: Uint8Array,
-) => {
+): Promise<VerkleExecutionWitness> => {
   const trie = stateManager['_trie'] as VerkleTree
+  await trie['_lock'].acquire()
   const postStateRoot = await stateManager.getStateRoot()
   const ew: VerkleExecutionWitness = {
     stateDiff: [],
     parentStateRoot: bytesToHex(parentStateRoot),
-    verkleProof: undefined as any,
+    verkleProof: undefined as any, // Verkle proofs are not implemented (and never will be)
   }
+
+  // Generate a map of all stems with their accessed suffixes
   const accessedSuffixes = new Map<PrefixedHexString, number[]>()
   for (const chunkKey of accessWitness['chunks'].keys()) {
     const stem = chunkKey.slice(0, 64) as PrefixedHexString
@@ -411,7 +423,7 @@ export const generateExecutionWitness = async (
     }
   }
 
-  // Get values
+  // Get values from the trie for each stem and suffix
   for (const stem of accessedSuffixes.keys()) {
     trie.root(parentStateRoot)
     const suffixes = accessedSuffixes.get(stem)
@@ -438,5 +450,6 @@ export const generateExecutionWitness = async (
     }
     ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
   }
+  trie['_lock'].release()
   return ew
 }
