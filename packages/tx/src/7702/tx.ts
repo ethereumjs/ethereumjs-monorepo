@@ -382,8 +382,8 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array): EOACode7702Tx {
-    return <EOACode7702Tx>Legacy.sign(this, privateKey)
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): EOACode7702Tx {
+    return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 
   public isSigned(): boolean {
