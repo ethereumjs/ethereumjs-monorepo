@@ -4,6 +4,7 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
+  compareBytes,
   createAddressFromPrivateKey,
   createZeroAddress,
   hexToBytes,
@@ -64,6 +65,12 @@ describe('[EOACode7702Transaction]', () => {
     assert.ok(signed.getSenderAddress().equals(addr))
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
+
+    const signed2 = txn.sign(pkey)
+    assert.ok(
+      !compareBytes(signed2.hash(), signed.hash()),
+      'should use hedged signatures by default',
+    )
   })
 
   it('valid and invalid authorizationList values', () => {

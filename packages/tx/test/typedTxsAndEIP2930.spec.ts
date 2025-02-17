@@ -6,6 +6,7 @@ import {
   SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
   bytesToHex,
+  compareBytes,
   concatBytes,
   ecsign,
   equalsBytes,
@@ -331,6 +332,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         { common },
       )
       let signed = tx.sign(pKey)
+      const hash = signed.hash()
       const signedAddress = signed.getSenderAddress()
       assert.ok(
         equalsBytes(signedAddress.bytes, address),
@@ -340,6 +342,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
 
       tx = txType.create.txData({}, { common })
       signed = tx.sign(pKey)
+
+      assert.ok(compareBytes(signed.hash(), hash), 'should use hedged signatures by default')
 
       assert.deepEqual(
         tx.accessList,
@@ -380,7 +384,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pKey
     const tx = createAccessList2930Tx({})
-    const signedTx = tx.sign(privateKey)
+    const signedTx = tx.sign(privateKey, false)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -391,9 +395,9 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { v, r, s } = ecsign(msgHash, privKey, undefined, false)
 
-    const signedTx = tx.sign(privKey)
+    const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -648,7 +652,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       'serialized unsigned message correct',
     )
 
-    const signed = unsignedTx.sign(pkey)
+    const signed = unsignedTx.sign(pkey, false)
 
     assert.ok(v === signed.v!, 'v correct')
     assert.ok(r === signed.r!, 'r correct')

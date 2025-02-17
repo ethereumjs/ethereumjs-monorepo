@@ -4,6 +4,7 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  compareBytes,
   concatBytes,
   createZeroAddress,
   ecsign,
@@ -67,9 +68,9 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { v, r, s } = ecsign(msgHash, privKey, undefined, false)
 
-    const signedTx = tx.sign(privKey)
+    const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -127,6 +128,9 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       sender,
       'signature and sender were deserialized correctly',
     )
+
+    const signedTx2 = tx.sign(pk)
+    assert.ok(compareBytes(signedTx.hash(), signedTx2.hash()), 'uses hedged signatures by default')
   })
 })
 
