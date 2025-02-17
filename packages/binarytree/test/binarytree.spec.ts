@@ -137,8 +137,7 @@ describe('insert', () => {
       )
     }
   })
-
-  it.only('should handle two keys that match in the first 42 bits', async () => {
+  it('should handle two keys that match in the first 42 bits', async () => {
     const tree = await createBinaryTree()
 
     // Two keys with the same prefix of 42 bits
@@ -171,12 +170,12 @@ describe('insert', () => {
     )
   })
 
-  it.only('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
+  it('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
     const tree1 = await createBinaryTree()
 
-    const key1 = hexToBytes(`0x${'00'.repeat(5)}${'C0'.repeat(27)}`)
-    const key2 = hexToBytes(`0x${'00'.repeat(5)}E0${'00'.repeat(26)}`)
-    const key3 = hexToBytes(`0x${'01'.repeat(5)}FF${'00'.repeat(26)}`)
+    const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
+    const key2 = hexToBytes(`0xE0${'00'.repeat(31)}`)
+    const key3 = hexToBytes(`0x00${'01'.repeat(31)}`)
 
     const value1 = hexToBytes(`0x${'01'.repeat(32)}`)
     const value2 = hexToBytes(`0x${'02'.repeat(32)}`)
@@ -195,7 +194,7 @@ describe('insert', () => {
 
     const [retrievedValue1] = await tree1.get(stem1, [index1])
     const [retrievedValue2] = await tree1.get(stem2, [index2])
-    const [retrievedValue3] = await tree1.get(stem2, [index2])
+    const [retrievedValue3] = await tree1.get(stem3, [index3])
 
     assert.exists(retrievedValue1, 'Value for key1 should exist')
     assert.exists(retrievedValue2, 'Value for key2 should exist')
