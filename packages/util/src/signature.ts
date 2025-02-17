@@ -33,13 +33,22 @@ export interface ECDSASignature {
  *
  * If `chainId` is provided assume an EIP-155-style signature and calculate the `v` value
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
+ *
+ * `extraEntropy` defaults to `true`. This will create a "hedged signature" by default.
+ * This adds additional protections against private key leaks. It will yield a
+ * different signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
+ * In particular: each time a transaction is signed, this will thus yield a different
+ * transaction hash. If this is not desired, set `extraEntropy` to `false`.
+ * Additionally, a `Uint8Array` can be passed to `extraEntropy` to provide custom entropy.
+ * For more information, see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801
  */
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
   chainId?: bigint,
+  extraEntropy?: Uint8Array | boolean, // TODO: merge chainId and extraEntropy in an options object?
 ): ECDSASignature {
-  const sig = secp256k1.sign(msgHash, privateKey)
+  const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? true })
   const buf = sig.toCompactRawBytes()
   const r = buf.slice(0, 32)
   const s = buf.slice(32, 64)
