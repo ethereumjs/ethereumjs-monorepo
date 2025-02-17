@@ -1,4 +1,4 @@
-import { bytesToBits, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BinaryNodeType, InternalBinaryNode, decodeBinaryNode } from '../../src/index.js'
@@ -9,12 +9,11 @@ describe('InternalBinaryNode', () => {
     // Create dummy child pointers:
     const leftCanonicalChild = {
       hash: hexToBytes('0x' + '11'.repeat(32)),
-      // For testing, we use a one-byte path (i.e. [0]) – in practice this is produced by bytesToBits.
-      path: bytesToBits(hexToBytes('0x00')),
+      path: [0, 1, 1, 0, 1, 0],
     }
     const rightCanonicalChild = {
       hash: hexToBytes('0x' + '22'.repeat(32)),
-      path: bytesToBits(hexToBytes('0x01')),
+      path: [1, 1, 0, 0],
     }
     const node = InternalBinaryNode.create([leftCanonicalChild, rightCanonicalChild])
     const serialized = node.serialize()

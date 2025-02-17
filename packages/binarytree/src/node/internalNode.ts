@@ -29,11 +29,22 @@ export class InternalBinaryNode {
 
     const decodeChild = (hash: Uint8Array, rawPath: Uint8Array): ChildBinaryNode | null => {
       if (hash.length === 0) return null
-      const [encodedLength, encodedPath] = RLP.decode(rawPath) as Uint8Array[]
-      const pathLength = encodedLength[0] // assuming length fits in one byte
-      const fullPath = bytesToBits(encodedPath)
-      const trimmedPath = fullPath.slice(0, pathLength)
-      return { hash, path: trimmedPath }
+      const decoded = RLP.decode(rawPath)
+
+      if (!Array.isArray(decoded) || decoded.length !== 2) {
+        throw new Error('Invalid RLP encoding for child path')
+      }
+
+      const [encodedLength, encodedPath] = decoded as Uint8Array[]
+
+      if (encodedLength.length !== 1) {
+        throw new Error('Invalid path length encoding')
+      }
+
+      const pathLength = encodedLength[0]
+      const path = bytesToBits(encodedPath, pathLength)
+
+      return { hash, path }
     }
 
     const children = [
