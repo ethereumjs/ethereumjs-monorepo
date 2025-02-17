@@ -4,9 +4,9 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
-  compareBytes,
   createAddressFromPrivateKey,
   createZeroAddress,
+  equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -68,7 +68,7 @@ describe('[EOACode7702Transaction]', () => {
 
     const signed2 = txn.sign(pkey)
     assert.ok(
-      !compareBytes(signed2.hash(), signed.hash()),
+      !equalsBytes(signed2.hash(), signed.hash()),
       'should use hedged signatures by default',
     )
   })

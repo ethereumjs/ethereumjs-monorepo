@@ -6,7 +6,6 @@ import {
   SECP256K1_ORDER_DIV_2,
   bytesToBigInt,
   bytesToHex,
-  compareBytes,
   concatBytes,
   ecsign,
   equalsBytes,
@@ -343,7 +342,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       tx = txType.create.txData({}, { common })
       signed = tx.sign(pKey)
 
-      assert.ok(compareBytes(signed.hash(), hash), 'should use hedged signatures by default')
+      assert.ok(!equalsBytes(signed.hash(), hash), 'should use hedged signatures by default')
 
       assert.deepEqual(
         tx.accessList,

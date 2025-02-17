@@ -1,13 +1,6 @@
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
-  TWO_POW256,
-  bytesToHex,
-  compareBytes,
-  ecsign,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createFeeMarket1559Tx } from '../src/index.js'
@@ -131,7 +124,7 @@ describe('[FeeMarket1559Tx]', () => {
     const signed = txn.sign(privKey)
     const signed2 = txn.sign(privKey)
     assert.ok(
-      !compareBytes(signed.hash(), signed2.hash()),
+      !equalsBytes(signed.hash(), signed2.hash()),
       'should use hedged signatures by default',
     )
   })

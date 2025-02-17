@@ -4,7 +4,6 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  compareBytes,
   concatBytes,
   createZeroAddress,
   ecsign,
@@ -130,7 +129,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     )
 
     const signedTx2 = tx.sign(pk)
-    assert.ok(compareBytes(signedTx.hash(), signedTx2.hash()), 'uses hedged signatures by default')
+    assert.ok(!equalsBytes(signedTx.hash(), signedTx2.hash()), 'uses hedged signatures by default')
   })
 })
 
