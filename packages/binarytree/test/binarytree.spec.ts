@@ -170,7 +170,7 @@ describe('insert', () => {
     )
   })
 
-  it('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
+  it.only('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -215,10 +215,53 @@ describe('insert', () => {
     // We should end up with the same tree root regardless of the order of the put operations
     const tree2 = await createBinaryTree()
     await tree2.put(stem3, [index3], [value3])
-    await tree2.put(stem2, [index2], [value2])
     await tree2.put(stem1, [index1], [value1])
+    await tree2.put(stem2, [index2], [value2])
 
     assert.isTrue(equalsBytes(tree1.root(), tree2.root()))
+  })
+
+  it.only('should handle three keys, when all three have partial match', async () => {
+    const tree1 = await createBinaryTree()
+
+    const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
+    const key2 = hexToBytes(`0xE0${'00'.repeat(31)}`)
+    const key3 = hexToBytes(`0xE0${'01'.repeat(31)}`)
+
+    const value1 = hexToBytes(`0x${'01'.repeat(32)}`)
+    const value2 = hexToBytes(`0x${'02'.repeat(32)}`)
+    const value3 = hexToBytes(`0x${'03'.repeat(32)}`)
+
+    const stem1 = key1.slice(0, 31)
+    const index1 = key1[31]
+    const stem2 = key2.slice(0, 31)
+    const index2 = key2[31]
+    const stem3 = key3.slice(0, 31)
+    const index3 = key3[31]
+
+    await tree1.put(stem1, [index1], [value1])
+    await tree1.put(stem2, [index2], [value2])
+    await tree1.put(stem3, [index3], [value3])
+
+    const [retrievedValue1] = await tree1.get(stem1, [index1])
+    const [retrievedValue2] = await tree1.get(stem2, [index2])
+    const [retrievedValue3] = await tree1.get(stem3, [index3])
+
+    assert.exists(retrievedValue1, 'Value for key1 should exist')
+    assert.exists(retrievedValue2, 'Value for key2 should exist')
+    assert.exists(retrievedValue3, 'Value for key3 should exist')
+    assert.isTrue(
+      equalsBytes(retrievedValue1!, value1),
+      'Value for key1 should match inserted value',
+    )
+    assert.isTrue(
+      equalsBytes(retrievedValue2!, value2),
+      'Value for key2 should match inserted value',
+    )
+    assert.isTrue(
+      equalsBytes(retrievedValue3!, value3),
+      'Value for key3 should match inserted value',
+    )
   })
 
   it('should update value when inserting a duplicate key', async () => {

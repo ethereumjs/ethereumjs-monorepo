@@ -294,7 +294,7 @@ export class BinaryTree {
           childReference !== null
             ? {
                 hash: this.merkelize(childReference),
-                path: lastUpdatedParentPath,
+                path: isStemBinaryNode(childReference) ? stemBits : lastUpdatedParentPath,
               }
             : null,
         )
