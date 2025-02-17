@@ -497,17 +497,18 @@ export function hexToBigInt(input: PrefixedHexString): bigint {
 /**
  * Converts a Uint8Array of bytes into an array of bits.
  * @param {Uint8Array} bytes - The input byte array.
+ * @param {number} bitLength - The number of bits to extract from the input bytes.
  * @returns {number[]} An array of bits (each 0 or 1) corresponding to the input bytes.
  */
-export function bytesToBits(bytes: Uint8Array): number[] {
-  const bits = []
-  for (let i = 0; i < bytes.length; i++) {
-    const byte = bytes[i]
-    for (let j = 0; j < 8; j++) {
-      // Shift right (7 - j) positions to get the j-th bit (MSB first) and mask it with 1.
-      bits.push((byte >> (7 - j)) & 1)
-    }
+export function bytesToBits(bytes: Uint8Array, bitLength?: number): number[] {
+  const bits: number[] = []
+
+  for (let i = 0; i < (bitLength ?? bytes.length * 8); i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    bits.push((bytes[byteIndex] >> bitIndex) & 1)
   }
+
   return bits
 }
 
@@ -518,16 +519,15 @@ export function bytesToBits(bytes: Uint8Array): number[] {
  * @returns {Uint8Array} A Uint8Array constructed from the input bits.
  */
 export function bitsToBytes(bits: number[]): Uint8Array {
-  const numBytes = Math.floor(bits.length / 8)
+  const numBytes = Math.ceil(bits.length / 8) // Ensure partial byte storage
   const byteData = new Uint8Array(numBytes)
-  for (let i = 0; i < numBytes; i++) {
-    let byte = 0
-    // Process 8 bits at a time, constructing one byte per iteration.
-    for (let j = 0; j < 8; j++) {
-      byte |= bits[i * 8 + j] << (7 - j)
-    }
-    byteData[i] = byte
+
+  for (let i = 0; i < bits.length; i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    byteData[byteIndex] |= bits[i] << bitIndex
   }
+
   return byteData
 }
 
@@ -554,18 +554,11 @@ export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): num
 
 /**
  * Compares two arrays of bits (0 or 1) and returns the count of consecutively matching bits from the start.
- * @param {Uint8Array | number[]} array1 - The first array of bits, in bytes or bits.
- * @param {Uint8Array | number[]} array2 - The second array of bits, in bytes or bits.
+ * @param {number[]} bits1 - The first array of bits, in bytes or bits.
+ * @param {number[]} bits2 - The second array of bits, in bytes or bits.
  * @returns {number} The count of consecutively matching bits from the start.
  */
-export function matchingBitsLength(
-  array1: Uint8Array | number[],
-  array2: Uint8Array | number[],
-): number {
-  // Replace bytes with bits
-  const bits1 = array1 instanceof Uint8Array ? bytesToBits(array1) : array1
-  const bits2 = array2 instanceof Uint8Array ? bytesToBits(array2) : array2
-
+export function matchingBitsLength(bits1: number[], bits2: number[]): number {
   let count = 0
   const minLength = Math.min(bits1.length, bits2.length)
   for (let i = 0; i < minLength; i++) {
