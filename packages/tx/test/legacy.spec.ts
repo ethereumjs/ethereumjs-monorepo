@@ -338,6 +338,22 @@ describe('[Transaction]', () => {
     }
   })
 
+  it('sign() -> use hedged signatures by default', () => {
+    const privateKey = hexToBytes(
+      '0x4646464646464646464646464646464646464646464646464646464646464646',
+    )
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const tx = createLegacyTx({})
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(tx.sign(privateKey).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
+  })
+
   it('getHashedMessageToSign(), sign(), getSenderPublicKey() (implicit call) -> verify EIP155 signature before and after signing', () => {
     // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
     const txRaw = [

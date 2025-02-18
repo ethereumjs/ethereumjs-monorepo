@@ -4,9 +4,9 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
+  bytesToHex,
   createAddressFromPrivateKey,
   createZeroAddress,
-  equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -66,11 +66,15 @@ describe('[EOACode7702Transaction]', () => {
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
 
-    const signed2 = txn.sign(pkey)
-    assert.ok(
-      !equalsBytes(signed2.hash(), signed.hash()),
-      'should use hedged signatures by default',
-    )
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(txn.sign(pkey).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
   })
 
   it('valid and invalid authorizationList values', () => {

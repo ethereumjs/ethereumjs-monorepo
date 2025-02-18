@@ -331,7 +331,6 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         { common },
       )
       let signed = tx.sign(pKey)
-      const hash = signed.hash()
       const signedAddress = signed.getSenderAddress()
       assert.ok(
         equalsBytes(signedAddress.bytes, address),
@@ -341,8 +340,6 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
 
       tx = txType.create.txData({}, { common })
       signed = tx.sign(pKey)
-
-      assert.ok(!equalsBytes(signed.hash(), hash), 'should use hedged signatures by default')
 
       assert.deepEqual(
         tx.accessList,
@@ -377,6 +374,16 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         undefined,
         `should throw with invalid s value (${txType.name})`,
       )
+
+      // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+      const hashSet = new Set<string>()
+      for (let i = 0; i < 1000; i++) {
+        const hash = bytesToHex(tx.sign(pKey).hash())
+        if (hashSet.has(hash)) {
+          assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        }
+        hashSet.add(hash)
+      }
     }
   })
 

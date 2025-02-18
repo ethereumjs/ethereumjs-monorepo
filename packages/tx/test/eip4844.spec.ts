@@ -128,8 +128,15 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       'signature and sender were deserialized correctly',
     )
 
-    const signedTx2 = tx.sign(pk)
-    assert.ok(!equalsBytes(signedTx.hash(), signedTx2.hash()), 'uses hedged signatures by default')
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(tx.sign(pk).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
   })
 })
 

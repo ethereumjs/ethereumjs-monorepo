@@ -1,6 +1,6 @@
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { TWO_POW256, bytesToHex, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createFeeMarket1559Tx } from '../src/index.js'
@@ -121,12 +121,15 @@ describe('[FeeMarket1559Tx]', () => {
   it('sign() - should default to hedged signatures', () => {
     const privKey = hexToBytes(eip1559Data[0].privateKey)
     const txn = createFeeMarket1559Tx({}, { common })
-    const signed = txn.sign(privKey)
-    const signed2 = txn.sign(privKey)
-    assert.ok(
-      !equalsBytes(signed.hash(), signed2.hash()),
-      'should use hedged signatures by default',
-    )
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(txn.sign(privKey).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
   })
 
   it('addSignature() -> correctly adds correct signature values', () => {
