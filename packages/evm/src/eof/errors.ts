@@ -32,7 +32,7 @@ export enum EOFError {
   Code0Inputs = 'first code section should have 0 inputs',
   Code0Outputs = 'first code section should have 0x80 (terminating section) outputs',
   MaxStackHeight = `expected maxStackHeight`,
-  MaxStackHeightLimit = `EOF_MaxStackHeightExceeded`,
+  MaxStackHeightLimit = `stack height limit of 1024 exceeded: `,
 
   // Code/Data Section
   MinCodeSections = `should have at least 1 code section`,
@@ -54,7 +54,7 @@ export enum EOFError {
 
   // Code verification
   InvalidOpcode = 'invalid opcode',
-  InvalidTerminator = 'EOF_InvalidCodeTermination',
+  InvalidTerminator = 'invalid terminating opcode',
   OpcodeIntermediatesOOB = 'invalid opcode: intermediates out-of-bounds',
 
   InvalidRJUMP = 'invalid rjump* target',
@@ -66,12 +66,12 @@ export enum EOFError {
   ReturningNoReturn = 'invalid section: section should return but has no RETF/JUMP to return',
   RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
   UnreachableCodeSections = 'unreachable code sections',
-  UnreachableCode = 'EOF_UnreachableCode',
+  UnreachableCode = 'unreachable code (by forward jumps)',
   DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
   MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
-  StackUnderflow = 'EOF_StackUnderflow',
+  StackUnderflow = 'Stack underflow',
   StackOverflow = 'Stack overflow',
-  UnstableStack = 'EOF_ConflictingStackHeight',
+  UnstableStack = 'Unstable stack (can reach stack under/overflow by jumps)',
   RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
   ReturnStackOverflow = 'Return stack overflow',
   InvalidExtcallTarget = 'invalid extcall target: address > 20 bytes',
