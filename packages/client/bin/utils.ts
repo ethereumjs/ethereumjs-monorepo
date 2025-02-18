@@ -656,7 +656,7 @@ export async function generateClientConfig(args: ClientOpts) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw new Error('message length must be 32 bytes or greater')
       }
-      const buf = secp256k1Sign(msg, pk) // TODO: client defaults this to WASM: how do we handle this?
+      const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
       const v =
