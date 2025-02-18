@@ -34,7 +34,7 @@ describe('EIP 5450 tests', async () => {
         assert.throws(() => {
           // TODO verify that the correct error is thrown
           validateEOF(code, evm)
-        }, _exception)
+        })
       }
     })
   }
