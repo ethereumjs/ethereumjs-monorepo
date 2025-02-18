@@ -34,10 +34,11 @@ export interface ECDSASignature {
  * If `chainId` is provided assume an EIP-155-style signature and calculate the `v` value
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  *
- * `extraEntropy` defaults to `true`. This will create a "hedged signature" by default.
- * This adds additional protections against private key leaks. It will yield a
- * different signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
- * In particular: each time a transaction is signed, this will thus yield a different
+ * `extraEntropy` defaults to `true`. This will create a "hedged signature" which is
+ * non-deterministic and provides additional protections against private key extraction attack vectors,
+ * as described in https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801. It will yield a
+ * different, random signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
+ * In particular: each time a transaction is signed, this will thus yield a different, random
  * transaction hash. If this is not desired, set `extraEntropy` to `false`.
  * Additionally, a `Uint8Array` can be passed to `extraEntropy` to provide custom entropy.
  * For more information, see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801
