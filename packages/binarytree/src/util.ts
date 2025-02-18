@@ -54,8 +54,8 @@ export const dumpLeafValues = async (
 export const dumpNodeHashes = async (
   tree: BinaryTree,
   startingNode: Uint8Array,
-): Promise<[PrefixedHexString, PrefixedHexString][] | undefined> => {
-  let entries: [PrefixedHexString, PrefixedHexString][] = []
+): Promise<[string, PrefixedHexString][] | undefined> => {
+  let entries: [string, PrefixedHexString][] = []
   // Retrieve starting node from DB
   const rawNode = await tree['_db'].get(startingNode)
   if (rawNode === undefined) return
@@ -68,7 +68,7 @@ export const dumpNodeHashes = async (
 
     // Push non-null children paths and hashes
     for (const child of children) {
-      entries.push([bytesToHex(bitsToBytes(child.path)), bytesToHex(child.hash)])
+      entries.push([child.path.join(''), bytesToHex(child.hash)])
     }
 
     // Recursively call dumpNodeHashes on each child node
@@ -79,7 +79,7 @@ export const dumpNodeHashes = async (
       .flat(1)
 
     // Add all child paths and hashes to entries
-    entries = [...entries, ...childPaths] as [PrefixedHexString, PrefixedHexString][]
+    entries = [...entries, ...childPaths] as [string, PrefixedHexString][]
   }
 
   return entries
