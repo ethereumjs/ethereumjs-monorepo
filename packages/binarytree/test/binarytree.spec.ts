@@ -264,7 +264,7 @@ describe('insert', () => {
     )
   })
 
-  it('should handle 100 similar key/value pairs hashed with black3', async () => {
+  it('should handle 100 similar key/value pairs hashed with blake3', async () => {
     const tree1 = await createBinaryTree()
 
     // Create an array of 100 random key/value pairs by hashing keys.
@@ -304,6 +304,23 @@ describe('insert', () => {
         `Value for key ${bytesToHex(hashedKey)} | unhashed: ${bytesToHex(originalKey)} should match the inserted value`,
       )
     }
+    // Create a second tree and insert the same key/value pairs in reverse order
+    const tree2 = await createBinaryTree()
+
+    // Insert in reverse order
+    for (let i = keyValuePairs.length - 1; i >= 0; i--) {
+      const { hashedKey, value } = keyValuePairs[i]
+      const stem = hashedKey.slice(0, 31)
+      const index = hashedKey[31]
+      await tree2.put(stem, [index], [value])
+    }
+
+    // Verify the roots match despite different insertion orders
+    assert.deepEqual(
+      tree1.root(),
+      tree2.root(),
+      'Tree roots should match regardless of insertion order',
+    )
   })
 
   it('should update value when inserting a duplicate key', async () => {
