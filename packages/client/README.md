@@ -510,7 +510,7 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 See [DEVELOPER.md](./DEVELOPER.md)
 
-### REPL ###
+### REPL
 
 An under-development REPL is now available to users. It can be run using the npm script available in the client package:
 
