@@ -1,4 +1,5 @@
 import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, it } from 'vitest'
 
 import { createBinaryTree } from '../src/index.js'
@@ -261,6 +262,48 @@ describe('insert', () => {
       equalsBytes(retrievedValue3!, value3),
       'Value for key3 should match inserted value',
     )
+  })
+
+  it('should handle 100 similar key/value pairs hashed with black3', async () => {
+    const tree1 = await createBinaryTree()
+
+    // Create an array of 100 random key/value pairs by hashing keys.
+    const keyValuePairs = []
+    for (let i = 0; i < 100; i++) {
+      const key = new Uint8Array(32).fill(0)
+      key[31] = i // vary the last byte to differentiate keys
+
+      const hashedKey = blake3(key)
+
+      // Create a value also based on i (filled with 0xBB and ending with i)
+      const value = new Uint8Array(32).fill(1)
+      value[31] = i
+
+      keyValuePairs.push({ originalKey: key, hashedKey, value })
+    }
+
+    // Insert each key/value pair into the tree.
+    // The hashedKey is split into a 31-byte stem and a 1-byte index.
+    for (const { hashedKey, value } of keyValuePairs) {
+      const stem = hashedKey.slice(0, 31)
+      const index = hashedKey[31]
+      await tree1.put(stem, [index], [value])
+    }
+
+    // Retrieve and verify each key/value pair from the tree.
+    for (const { originalKey, hashedKey, value } of keyValuePairs) {
+      const stem = hashedKey.slice(0, 31)
+      const index = hashedKey[31]
+      const [retrievedValue] = await tree1.get(stem, [index])
+      assert.exists(
+        retrievedValue,
+        `Value for key  ${bytesToHex(hashedKey)} | unhashed: ${bytesToHex(originalKey)} should exist`,
+      )
+      assert.isTrue(
+        equalsBytes(retrievedValue!, value),
+        `Value for key ${bytesToHex(hashedKey)} | unhashed: ${bytesToHex(originalKey)} should match the inserted value`,
+      )
+    }
   })
 
   it('should update value when inserting a duplicate key', async () => {
