@@ -182,6 +182,7 @@ export class BinaryTree {
 
     // Step 1) Create or update the stem node
     let stemNode: StemBinaryNode
+    let newStem = false
     // If we found a stem node with the same stem, we'll update it.
     if (
       foundPath.node &&
@@ -191,6 +192,7 @@ export class BinaryTree {
       stemNode = foundPath.node
     } else {
       // Otherwise, we'll create a new stem node.
+      newStem = true
       stemNode = StemBinaryNode.create(stem)
       this.DEBUG && this.debug(`Creating new stem node for stem: ${bytesToHex(stem)}`, ['put'])
     }
@@ -225,17 +227,16 @@ export class BinaryTree {
     // We'll keep track of the parent's path as we update up the tree.
     let lastUpdatedParentPath: number[] = []
 
-    // Step 2: Walk up the found path updating parent internal nodes.
-    // (Do not include the root node, which is the last element in foundPath.stack)
-    while (foundPath.stack.length > 1) {
-      // Pop the next node on the path.
+    // Step 2: Add any needed new internal nodes if inserting a new stem.
+    if (foundPath.stack.length > 1 && newStem) {
+      // Pop the nearest node on the path.
       const [nearestNode, nearestNodePath] = foundPath.stack.pop()!
-      const parentPath = foundPath.stack[foundPath.stack.length - 1][1]
-      this.DEBUG && this.debug(`Walking up the path to update internal nodes.`, ['put'])
+      const parentPath = foundPath.stack[foundPath.stack.length - 1]?.[1] ?? []
+      this.DEBUG && this.debug(`Adding necessary internal nodes.`, ['put'])
       // Update the parent branch if necessary.
-      // If an update was necessary, updateParent returns a stack of internal nodes
+      // If an update was necessary, updateBranch returns a stack of internal nodes
       // that connect the new stem node to the previous parent inner node
-      const updated = this.updateParent(stemNode, nearestNode, nearestNodePath, parentPath)
+      const updated = this.updateBranch(stemNode, nearestNode, nearestNodePath, parentPath)
       if (updated !== undefined) {
         for (const update of updated) {
           putStack.push([this.merkelize(update.node), update.node])
@@ -244,7 +245,25 @@ export class BinaryTree {
       }
     }
 
-    // Step 3: Update the root node.
+    // Step 3: Update remaining parent node hashes
+    while (foundPath.stack.length > 1) {
+      const [node, path] = foundPath.stack.pop()!
+      if (isInternalBinaryNode(node)) {
+        // Set child pointer to the last internal node  in the putStack (last updated internal node)
+        node.setChild(lastUpdatedParentPath[lastUpdatedParentPath.length - 1], {
+          hash: putStack[putStack.length - 1][0], // Reuse hash already computed above
+          path: lastUpdatedParentPath,
+        })
+        putStack.push([this.merkelize(node), node]) // Update node hash and add to putStack
+        lastUpdatedParentPath = path
+        this.DEBUG &&
+          this.debug(`Updated parent internal node hash for path ${path.join(',')}`, ['put'])
+      } else {
+        throw new Error(`Expected internal node at path ${path.join(',')}, got ${node}`)
+      }
+    }
+
+    // Step 4: Update the root node.
     let rootNode = foundPath.stack.pop()![0] // The root node.
     const childReference = putStack[putStack.length - 1][1]
 
@@ -319,10 +338,10 @@ export class BinaryTree {
    * @param stemNode - The child stem node that will be referenced by the new/updated internal node.
    * @param nearestNode - The nearest node to the new stem node.
    * @param pathToNode - The path (in bits) to `nearestNode` as known from the trie.
-   * @returns An object containing the updated parent node and the parent's path that should be used
+   * @returns An array of nodes and their partial paths from the new stem node to the branch parent node
    *          or `undefined` if no changes were made.
    */
-  updateParent(
+  updateBranch(
     stemNode: StemBinaryNode,
     nearestNode: BinaryNode,
     pathToNode: number[],
@@ -444,7 +463,10 @@ export class BinaryTree {
         (matchingKeyLength === keyInBits.length || isStemBinaryNode(decodedNode))
       ) {
         finished = true
-        if (matchingKeyLength === keyInBits.length && equalsBits(keyInBits, childNode.path)) {
+        if (
+          matchingKeyLength === keyInBits.length &&
+          equalsBits(keyInBits, childNode.path) === true
+        ) {
           this.DEBUG &&
             this.debug(
               `Path ${bytesToHex(keyInBytes)} - found full path to node ${bytesToHex(

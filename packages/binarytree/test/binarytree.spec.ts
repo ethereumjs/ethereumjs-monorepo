@@ -170,7 +170,7 @@ describe('insert', () => {
     )
   })
 
-  it.only('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
+  it('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -221,7 +221,7 @@ describe('insert', () => {
     assert.isTrue(equalsBytes(tree1.root(), tree2.root()))
   })
 
-  it.only('should handle three keys, when all three have partial match', async () => {
+  it('should handle three keys, when all three have partial match', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -242,7 +242,6 @@ describe('insert', () => {
     await tree1.put(stem1, [index1], [value1])
     await tree1.put(stem2, [index2], [value2])
     await tree1.put(stem3, [index3], [value3])
-
     const [retrievedValue1] = await tree1.get(stem1, [index1])
     const [retrievedValue2] = await tree1.get(stem2, [index2])
     const [retrievedValue3] = await tree1.get(stem3, [index3])
