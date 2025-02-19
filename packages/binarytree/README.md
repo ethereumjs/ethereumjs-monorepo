@@ -15,7 +15,7 @@ This package is currently in early alpha and is a work in progress. It is not in
 
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply install the project using `npm`:
 
 ```shell
 npm install @ethereumjs/binarytree
