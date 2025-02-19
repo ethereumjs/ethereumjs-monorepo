@@ -321,6 +321,19 @@ describe('insert', () => {
       tree2.root(),
       'Tree roots should match regardless of insertion order',
     )
+
+    // Insert a new value on an existing stem and verify the roots match
+    await tree1.put(
+      keyValuePairs[0].originalKey.slice(0, 31),
+      [6],
+      [hexToBytes(`0x${'06'.repeat(32)}`)],
+    )
+    await tree2.put(
+      keyValuePairs[0].originalKey.slice(0, 31),
+      [6],
+      [hexToBytes(`0x${'06'.repeat(32)}`)],
+    )
+    assert.deepEqual(tree1.root(), tree2.root())
   })
 
   it('should update value when inserting a duplicate key', async () => {

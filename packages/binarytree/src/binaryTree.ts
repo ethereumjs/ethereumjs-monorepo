@@ -166,7 +166,7 @@ export class BinaryTree {
       )
 
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}`, ['put'])
-    const putStack: [Uint8Array, BinaryNode | null][] = []
+    const putStack: [Uint8Array, BinaryNode | null][] = [] // A stack of updated nodes starting with the stem node being updated/created to be saved to the DB
 
     // If the tree is empty, initialize it.
     if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) {
@@ -218,13 +218,13 @@ export class BinaryTree {
         return // nothing to delete
       }
     } else {
-      // Otherwise, we add the new or updated stemNode to the stack
+      // Otherwise, we add the new or updated stemNode to the putStack
       putStack.push([this.merkelize(stemNode), stemNode])
     }
 
     // Get the bit representation of the stem.
     const stemBits = bytesToBits(stemNode.stem)
-    // We'll keep track of the parent's path as we update up the tree.
+    // We keep a reference to the current "parent" node path as we update up the tree.
     let lastUpdatedParentPath: number[] = []
 
     // Step 2: Add any needed new internal nodes if inserting a new stem.
