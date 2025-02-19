@@ -230,14 +230,17 @@ export class BinaryTree {
     while (foundPath.stack.length > 1) {
       // Pop the next node on the path.
       const [nearestNode, nearestNodePath] = foundPath.stack.pop()!
+      const parentPath = foundPath.stack[foundPath.stack.length - 1][1]
       this.DEBUG && this.debug(`Walking up the path to update internal nodes.`, ['put'])
-      // Update the parent if necessary.
-      // If an update was necessary, updateParent returns an updated node
-      // along with the parent's path that led to that update.
-      const updated = this.updateParent(stemNode, nearestNode, nearestNodePath)
+      // Update the parent branch if necessary.
+      // If an update was necessary, updateParent returns a stack of internal nodes
+      // that connect the new stem node to the previous parent inner node
+      const updated = this.updateParent(stemNode, nearestNode, nearestNodePath, parentPath)
       if (updated !== undefined) {
-        putStack.push([this.merkelize(updated.node), updated.node])
-        lastUpdatedParentPath = updated.parentPath
+        for (const update of updated) {
+          putStack.push([this.merkelize(update.node), update.node])
+          lastUpdatedParentPath = update.parentPath
+        }
       }
     }
 
@@ -323,26 +326,44 @@ export class BinaryTree {
     stemNode: StemBinaryNode,
     nearestNode: BinaryNode,
     pathToNode: number[],
-  ): { node: BinaryNode; parentPath: number[] } | undefined {
+    pathToParent: number[],
+  ): { node: BinaryNode; parentPath: number[] }[] | undefined {
     const stemBits = bytesToBits(stemNode.stem)
     if (isStemBinaryNode(nearestNode)) {
       // For two different stems, find the first differing bit.
       const nearestNodeStemBits = bytesToBits(nearestNode.stem)
       const diffIndex = matchingBitsLength(stemBits, nearestNodeStemBits)
+      const parentDiffIndex = matchingBitsLength(pathToNode, pathToParent)
+
       const newInternal = InternalBinaryNode.create()
       // Set the child pointer for the new stem node using the bit at diffIndex.
       newInternal.setChild(stemBits[diffIndex], {
         hash: this.merkelize(stemNode),
         path: stemBits,
       })
+
       // Set the child pointer for the existing stem node.
       newInternal.setChild(nearestNodeStemBits[diffIndex], {
         hash: this.merkelize(nearestNode),
         path: nearestNodeStemBits,
       })
-      // Return the new internal node along with the common prefix (up to diffIndex)
-      // that should be used by the parent.
-      return { node: newInternal, parentPath: stemBits.slice(0, diffIndex) }
+      const putStack = [{ node: newInternal, parentPath: stemBits.slice(0, diffIndex) }]
+
+      let parent = newInternal
+      for (let depth = diffIndex - 1; depth > parentDiffIndex; depth--) {
+        this.DEBUG && this.debug(`Creating internal node at depth ${depth}`, ['put'])
+        const newParent = InternalBinaryNode.create()
+        // At each level, the branch is determined by the bit of the new stem at position i.
+        newParent.setChild(stemBits[depth], {
+          hash: this.merkelize(parent),
+          path: stemBits.slice(0, depth + 1),
+        })
+        putStack.push({ node: newParent, parentPath: stemBits.slice(0, depth) })
+        parent = newParent
+      }
+
+      // Return the stack of new internal nodes that connect the new stem node to the previous parent inner node
+      return putStack
     } else if (isInternalBinaryNode(nearestNode)) {
       // For an internal node, determine the branch index using the parent's known path length.
       const branchIndex = stemBits[pathToNode.length]
@@ -350,7 +371,7 @@ export class BinaryTree {
         hash: this.merkelize(stemNode),
         path: stemBits,
       })
-      return { node: nearestNode, parentPath: pathToNode }
+      return [{ node: nearestNode, parentPath: pathToNode }]
     }
     return undefined
   }
