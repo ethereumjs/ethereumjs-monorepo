@@ -1,35 +1,38 @@
-export interface RpcTx {
-  from?: string
-  to?: string
-  gas?: string
-  gasPrice?: string
-  value?: string
-  data?: string
-  maxPriorityFeePerGas?: string
-  maxFeePerGas?: string
-  type?: string
+import type { PrefixedHexString } from '@ethereumjs/util'
+
+export interface RPCTx {
+  from?: PrefixedHexString
+  to?: PrefixedHexString
+  gas?: PrefixedHexString
+  gasPrice?: PrefixedHexString
+  value?: PrefixedHexString
+  data?: PrefixedHexString
+  input?: PrefixedHexString // This is the "official" name of the property the client uses for "data" in the RPC spec
+  maxPriorityFeePerGas?: PrefixedHexString
+  maxFeePerGas?: PrefixedHexString
+  type?: PrefixedHexString
 }
 
-export interface RpcTxRes {
-  from: string
-  to?: string
-  gas: string
-  gasPrice: string
-  value: string
-  input?: string
-  data?: string
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
-  type: string
+export interface RPCTxRes {
+  from: PrefixedHexString
+  to?: PrefixedHexString
+  gas: PrefixedHexString
+  gasPrice: PrefixedHexString
+  value: PrefixedHexString
+  input?: PrefixedHexString
+  data?: PrefixedHexString
+  maxPriorityFeePerGas: PrefixedHexString
+  maxFeePerGas: PrefixedHexString
+  type: PrefixedHexString
 }
 
 /**
- * Convert the return value from eth_getTransactionByHash to a {@link RpcTx} interface
+ * Convert the return value from eth_getTransactionByHash to a {@link RPCTx} interface
  */
-export type TxResult = Record<string, string> & RpcTxRes
+export type TxResult = Record<string, string> & RPCTxRes
 
-export function toRpcTx(t: TxResult): RpcTx {
-  const rpcTx: RpcTx = {
+export function toRPCTx(t: TxResult): RPCTx {
+  const rpcTx: RPCTx = {
     from: t.from,
     gas: t.gas,
     gasPrice: t.gasPrice,
@@ -42,3 +45,5 @@ export function toRpcTx(t: TxResult): RpcTx {
   t.to !== null && (rpcTx.to = t.to)
   return rpcTx
 }
+
+export type RPCMethod = (...params: any) => any

@@ -31,7 +31,7 @@
 
 #### Defined in
 
-[rpcStateManager.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L435)
+[rpcStateManager.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L445)
 
 ## Properties
 
@@ -41,7 +41,7 @@
 
 #### Defined in
 
-[rpcStateManager.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L434)
+[rpcStateManager.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L444)
 
 ## Methods
 
@@ -61,7 +61,7 @@
 
 #### Defined in
 
-[rpcStateManager.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L439)
+[rpcStateManager.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L449)
 
 ___
 
@@ -75,4 +75,4 @@ ___
 
 #### Defined in
 
-[rpcStateManager.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L449)
+[rpcStateManager.ts:459](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L459)

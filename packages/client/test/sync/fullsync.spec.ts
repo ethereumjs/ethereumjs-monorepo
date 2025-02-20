@@ -1,10 +1,11 @@
-import { Block } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
+import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
-import { Event } from '../../src/types'
-import { wait } from '../integration/util'
+import { Chain } from '../../src/blockchain/index.js'
+import { Config } from '../../src/config.js'
+import { Event } from '../../src/types.js'
+import { wait } from '../integration/util.js'
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -26,13 +27,13 @@ describe('[FullSynchronizer]', async () => {
   BlockFetcher.prototype.fetch = vi.fn()
   BlockFetcher.prototype.clear = vi.fn()
   BlockFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher', () => {
+  vi.doMock('../../src/sync/fetcher/index.js', () => {
     return {
       default: () => ({ BlockFetcher }),
     }
   })
 
-  const { FullSynchronizer } = await import('../../src/sync/fullsync')
+  const { FullSynchronizer } = await import('../../src/sync/fullsync.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -74,8 +75,14 @@ describe('[FullSynchronizer]', async () => {
         }),
         status: { bestHash: 'hash' },
       },
+      latest: async () => {
+        return {
+          number: BigInt(5),
+          hash: () => new Uint8Array(0),
+        }
+      },
     }
-    const latest = await sync.latest(peer as any)
+    const latest = await peer.latest()
     assert.equal(latest!.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
@@ -128,14 +135,16 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    sync.best = vi.fn().mockResolvedValue('peer')
-    sync.latest = vi.fn((input) => {
-      if (input === ('peer' as any))
+    sync.best = td.func<(typeof sync)['best']>()
+    td.when(sync.best()).thenResolve({
+      les: { status: { headNum: BigInt(2) } },
+      latest: () => {
         return {
           number: BigInt(2),
           hash: () => new Uint8Array(0),
         }
-    }) as any
+      },
+    } as any)
     let count = 0
     BlockFetcher.prototype.fetch = vi.fn(async () => {
       if (count < 2) {
@@ -226,10 +235,10 @@ describe('[FullSynchronizer]', async () => {
     ]
     ;(sync as any).pool = { peers }
 
-    const chainTip = Block.fromBlockData({
+    const chainTip = createBlock({
       header: {},
     })
-    const newBlock = Block.fromBlockData({
+    const newBlock = createBlock({
       header: {
         parentHash: chainTip.hash(),
       },
@@ -238,7 +247,7 @@ describe('[FullSynchronizer]', async () => {
     chain.putBlocks = vi.fn((input) => {
       assert.ok(
         JSON.stringify(input) === JSON.stringify([newBlock]),
-        'putBlocks is called as expected'
+        'putBlocks is called as expected',
       )
     }) as any
     // NewBlock message from Peer 3
@@ -268,10 +277,10 @@ describe('[FullSynchronizer]', async () => {
       execution,
     })
 
-    const chainTip = Block.fromBlockData({
+    const chainTip = createBlock({
       header: {},
     })
-    const newBlock = Block.fromBlockData({
+    const newBlock = createBlock({
       header: {
         parentHash: chainTip.hash(),
       },

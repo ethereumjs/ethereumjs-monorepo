@@ -1,7 +1,7 @@
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.js'
 
 import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.js'
 
@@ -57,13 +57,13 @@ describe('blockchain test', () => {
         }
       },
       undefined,
-      true
+      true,
     )
     assert.equal(reorged, 1, 'should have reorged once')
     assert.equal(
       servedReorged,
       reorgedBlocks.length,
-      'should have served all 21 reorged blocks with head resetting'
+      'should have served all 21 reorged blocks with head resetting',
     )
     assert.equal(iterated, 31, 'should have iterated 10 + 21 blocks in total')
   })
@@ -79,7 +79,7 @@ describe('blockchain test', () => {
           i++
         }
       },
-      5
+      5,
     )
     assert.equal(iterated, 5)
     assert.equal(i, 5)
@@ -97,7 +97,7 @@ describe('blockchain test', () => {
             i++
           }
         },
-        0
+        0,
       )
       .catch(() => {
         assert.fail('Promise cannot throw when running 0 blocks')
@@ -118,7 +118,7 @@ describe('blockchain test', () => {
             i++
           }
         },
-        -1
+        -1,
       )
       .catch(() => {})
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
@@ -145,7 +145,7 @@ describe('blockchain test', () => {
           i++
         }
       },
-      5
+      5,
     )
 
     assert.equal(i, 1)
@@ -165,7 +165,7 @@ describe('blockchain test', () => {
   })
 
   it('should not call iterator function in an empty blockchain', async () => {
-    const blockchain = await Blockchain.create({
+    const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -178,7 +178,7 @@ describe('blockchain test', () => {
 
   it('should get heads', async () => {
     const [db, genesis] = await createTestDB()
-    const blockchain = await Blockchain.create({ db, genesisBlock: genesis })
+    const blockchain = await createBlockchain({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()
 
     if (typeof genesis !== 'undefined') {
@@ -186,7 +186,7 @@ describe('blockchain test', () => {
       assert.equal(
         bytesToHex((blockchain as any)._heads['head0']),
         '0xabcd',
-        'should get state root heads'
+        'should get state root heads',
       )
     } else {
       assert.fail()

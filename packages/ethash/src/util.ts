@@ -66,7 +66,7 @@ export function fnvBytes(a: Uint8Array, b: Uint8Array) {
     rView.setUint32(
       i,
       fnv(new DataView(a.buffer).getUint32(i, true), new DataView(b.buffer).getUint32(i, true)),
-      true
+      true,
     )
   }
   return r

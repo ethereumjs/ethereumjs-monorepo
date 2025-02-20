@@ -1,14 +1,14 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { createBlockchain } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config'
-import { PeerPool } from '../../src/net/peerpool'
-import { EthProtocol } from '../../src/net/protocol'
-import { Event } from '../../src/types'
+import { Config } from '../../src/config.js'
+import { PeerPool } from '../../src/net/peerpool.js'
+import { EthProtocol } from '../../src/net/protocol/index.js'
+import { Event } from '../../src/types.js'
 
-import { MockChain } from './mocks/mockchain'
-import { MockServer } from './mocks/mockserver'
-import { wait } from './util'
+import { MockChain } from './mocks/mockchain.js'
+import { MockServer } from './mocks/mockserver.js'
+import { wait } from './util.js'
 
 async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
   const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -65,7 +65,7 @@ describe('should ban peer', async () => {
 
 describe('should handle peer messages', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const blockchain = await Blockchain.create({
+  const blockchain = await createBlockchain({
     validateBlocks: false,
     validateConsensus: false,
   })
@@ -81,7 +81,7 @@ describe('should handle peer messages', async () => {
   config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
     it('should add peer', () => {
       assert.equal(peer.id, 'peer0', 'added peer')
-    })
+    }),
   )
   config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {
     it('should get message', () => {

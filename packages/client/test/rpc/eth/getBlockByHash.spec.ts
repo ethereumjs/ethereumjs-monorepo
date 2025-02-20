@@ -33,7 +33,7 @@ describe(method, () => {
     assert.equal(
       typeof res.result.transactions[0],
       'string',
-      'should return only the hashes of the transactions'
+      'should return only the hashes of the transactions',
     )
   })
 

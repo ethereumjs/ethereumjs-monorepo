@@ -1,5 +1,5 @@
-import { Common } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
 import {
   BIGINT_2,
   bytesToHex,
@@ -29,29 +29,29 @@ describe('WASM crypto tests', () => {
       v: bigint,
       r: Uint8Array,
       s: Uint8Array,
-      chainID?: bigint
+      chainID?: bigint,
     ) =>
       secp256k1Expand(
         secp256k1Recover(
           msgHash,
           concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32)),
-          Number(calculateSigRecovery(v, chainID))
-        )
+          Number(calculateSigRecovery(v, chainID)),
+        ),
       ).slice(1)
 
     await waitReady()
     const commonWithCustomCrypto = new Common({
-      chain: 'mainnet',
+      chain: Mainnet,
       customCrypto: {
         ecrecover: wasmecrecover,
         keccak256,
       },
     })
-    const common = new Common({ chain: 'mainnet' })
+    const common = new Common({ chain: Mainnet })
 
     const pk = randomBytes(32)
-    const tx = LegacyTransaction.fromTxData({}, { common }).sign(pk)
-    const tx2 = LegacyTransaction.fromTxData({}, { common: commonWithCustomCrypto }).sign(pk)
+    const tx = createLegacyTx({}, { common }).sign(pk)
+    const tx2 = createLegacyTx({}, { common: commonWithCustomCrypto }).sign(pk)
 
     assert.deepEqual(tx.getSenderPublicKey(), tx2.getSenderPublicKey())
     assert.deepEqual(tx.hash(), tx2.hash())
@@ -90,7 +90,7 @@ describe('WASM crypto tests', () => {
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
     assert.throws(
       () => wasmSign(randomBytes(31), randomBytes(32)),
-      'message length must be 32 bytes or greater'
+      'message length must be 32 bytes or greater',
     )
   })
   it('should have the same signature and verification', async () => {

@@ -30,7 +30,7 @@
 - [touchAndChargeValueTransfer](AccessWitness.md#touchandchargevaluetransfer)
 - [touchCodeChunksRangeOnReadAndChargeGas](AccessWitness.md#touchcodechunksrangeonreadandchargegas)
 - [touchCodeChunksRangeOnWriteAndChargeGas](AccessWitness.md#touchcodechunksrangeonwriteandchargegas)
-- [touchTxExistingAndComputeGas](AccessWitness.md#touchtxexistingandcomputegas)
+- [touchTxTargetAndComputeGas](AccessWitness.md#touchtxtargetandcomputegas)
 - [touchTxOriginAndComputeGas](AccessWitness.md#touchtxoriginandcomputegas)
 
 ## Constructors
@@ -376,9 +376,9 @@ ___
 
 ___
 
-### touchTxExistingAndComputeGas
+### touchTxTargetAndComputeGas
 
-▸ **touchTxExistingAndComputeGas**(`target`, `__namedParameters?`): `bigint`
+▸ **touchTxTargetAndComputeGas**(`target`, `__namedParameters?`): `bigint`
 
 #### Parameters
 

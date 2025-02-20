@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
+import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
-import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.js'
@@ -8,7 +8,6 @@ import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
 
 /**
  * account: undefined
@@ -45,7 +44,7 @@ export class AccountCache extends Cache {
     }
 
     this._diffCache.push(new Map<string, AccountCacheElement | undefined>())
-    this._debug = createDebugLogger('statemanager:cache:account')
+    this._debug = debugDefault('statemanager:cache:account')
   }
 
   _saveCachePreState(cacheKeyHex: string) {
@@ -66,11 +65,20 @@ export class AccountCache extends Cache {
    * @param address - Address of account
    * @param account - Account or undefined if account doesn't exist in the trie
    */
-  put(address: Address, account: Account | undefined): void {
+  put(
+    address: Address,
+    account: Account | undefined,
+    couldBePartialAccount: boolean = false,
+  ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
-      accountRLP: account !== undefined ? account.serialize() : undefined,
+      accountRLP:
+        account !== undefined
+          ? couldBePartialAccount
+            ? account.serializeWithPartialInfo()
+            : account.serialize()
+          : undefined,
     }
 
     if (this.DEBUG) {
@@ -127,7 +135,7 @@ export class AccountCache extends Cache {
       })
     }
 
-    this._stats.dels += 1
+    this._stats.deletions += 1
   }
 
   /**
@@ -244,7 +252,7 @@ export class AccountCache extends Cache {
         reads: 0,
         hits: 0,
         writes: 0,
-        dels: 0,
+        deletions: 0,
       }
     }
     return stats

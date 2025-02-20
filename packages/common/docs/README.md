@@ -47,6 +47,7 @@
 - [EIPOrHFConfig](README.md#eiporhfconfig)
 - [EthashConfig](README.md#ethashconfig)
 - [HardforkConfig](README.md#hardforkconfig)
+- [HardforksDict](README.md#hardforksdict)
 - [Proof](README.md#proof)
 - [StorageProof](README.md#storageproof)
 
@@ -150,7 +151,7 @@ ___
 
 #### Defined in
 
-[types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L186)
+[types.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L188)
 
 ___
 
@@ -173,7 +174,7 @@ ___
 
 #### Defined in
 
-[types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L165)
+[types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L167)
 
 ___
 
@@ -193,7 +194,21 @@ ___
 
 #### Defined in
 
-[types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L191)
+[types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L193)
+
+___
+
+### HardforksDict
+
+Ƭ **HardforksDict**: `Object`
+
+#### Index signature
+
+▪ [key: `string`]: [`HardforkConfig`](README.md#hardforkconfig)
+
+#### Defined in
+
+[types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L199)
 
 ___
 

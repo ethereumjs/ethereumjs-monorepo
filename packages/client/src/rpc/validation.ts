@@ -1,4 +1,6 @@
-import { INVALID_PARAMS } from './error-code'
+import { INVALID_PARAMS } from './error-code.js'
+
+import type { RPCMethod } from './types.js'
 
 /**
  * middleware for parameters validation
@@ -6,13 +8,14 @@ import { INVALID_PARAMS } from './error-code'
  * @param method function to add middleware
  * @param requiredParamsCount required parameters count
  * @param validators array of validators
+ * @param names Optional parameter names for error messages, length must be equal to requiredParamsCount
  */
 export function middleware(
   method: any,
   requiredParamsCount: number,
   validators: any[] = [],
-  names: string[] = []
-): any {
+  names: string[] = [],
+): RPCMethod {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
       if (params.length < requiredParamsCount) {
@@ -178,6 +181,9 @@ export const validators = {
   get bytes48() {
     return (params: any[], index: number) => bytes(48, params, index)
   },
+  get bytes96() {
+    return (params: any[], index: number) => bytes(96, params, index)
+  },
   get bytes256() {
     return (params: any[], index: number) => bytes(256, params, index)
   },
@@ -304,11 +310,29 @@ export const validators = {
   },
 
   /**
+   * bool validator to check if type is valid ipv4 address
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+  get ipv4Address() {
+    // regex from https://stackoverflow.com/questions/5284147/validating-ipv4-addresses-with-regexp
+    const ipv4Regex = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/
+
+    return (params: any[], index: number) => {
+      if (!ipv4Regex.test(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not ipv4 address`,
+        }
+      }
+    }
+  },
+
+  /**
    * number validator to check if type is integer
    * @param params parameters of method
    * @param index index of parameter
    */
-
   get integer() {
     return (params: any[], index: number) => {
       if (!Number.isInteger(params[index])) {
@@ -376,7 +400,7 @@ export const validators = {
   },
 
   /**
-   * validator to ensure required withdawal fields are present, and checks for valid address and hex values
+   * validator to ensure required withdrawal fields are present, and checks for valid address and hex values
    * for the other quantity based fields
    * @param requiredFields array of required fields
    * @returns validator function with params:
@@ -419,6 +443,164 @@ export const validators = {
         // validate hex
         for (const field of [wt.index, wt.validatorIndex, wt.amount]) {
           const v = validate(field, this.hex)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get depositRequest() {
+    return (
+      requiredFields: string[] = [
+        'pubkey',
+        'withdrawalCredentials',
+        'amount',
+        'signature',
+        'index',
+      ],
+    ) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const clReq = params[index]
+
+        for (const field of requiredFields) {
+          if (clReq[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate pubkey
+        for (const field of [clReq.pubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate withdrawalCredentials
+        for (const field of [clReq.withdrawalCredentials]) {
+          const v = validate(field, this.bytes32)
+          if (v !== undefined) return v
+        }
+
+        // validate amount, index
+        for (const field of [clReq.amount, clReq.index]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+
+        // validate signature
+        for (const field of [clReq.signature]) {
+          const v = validate(field, this.bytes96)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get withdrawalRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'validatorPubkey', 'amount']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const clReq = params[index]
+
+        for (const field of requiredFields) {
+          if (clReq[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [clReq.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPubkey
+        for (const field of [clReq.validatorPubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [clReq.amount]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
+  get consolidationRequest() {
+    return (requiredFields: string[] = ['sourceAddress', 'sourcePubkey', 'targetPubkey']) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const clReq = params[index]
+
+        for (const field of requiredFields) {
+          if (clReq[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate sourceAddress
+        for (const field of [clReq.sourceAddress]) {
+          const v = validate(field, this.address)
+          if (v !== undefined) return v
+        }
+
+        // validate validatorPubkey
+        for (const field of [clReq.sourcePubkey]) {
+          const v = validate(field, this.bytes48)
+          if (v !== undefined) return v
+        }
+
+        // validate amount
+        for (const field of [clReq.targetPubkey]) {
+          const v = validate(field, this.bytes48)
           if (v !== undefined) return v
         }
       }
@@ -516,7 +698,7 @@ export const validators = {
   /**
    * Verification of rewardPercentiles array
    *
-   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the corresponding effective tip for the percentile will be determined, accounting for gas consumed.
    *  type: array
    *    items: rewardPercentile value
    *

@@ -1,15 +1,16 @@
-import { Blockchain } from '@ethereumjs/blockchain'
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 
-import { Config } from '../../src/config'
-import { FullEthereumService, LightEthereumService } from '../../src/service'
-import { Event } from '../../src/types'
+import { Config } from '../../src/config.js'
+import { FullEthereumService } from '../../src/service/index.js'
+import { Event } from '../../src/types.js'
 
-import { MockChain } from './mocks/mockchain'
-import { MockServer } from './mocks/mockserver'
+import { MockChain } from './mocks/mockchain.js'
+import { MockServer } from './mocks/mockserver.js'
 
-import type { SyncMode } from '../../src/config'
-import type { Common } from '@ethereumjs/common'
+import type { SyncMode } from '../../src/config.js'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 interface SetupOptions {
   location?: string
@@ -21,16 +22,15 @@ interface SetupOptions {
 }
 
 export async function setup(
-  options: SetupOptions = {}
-): Promise<[MockServer, FullEthereumService | LightEthereumService]> {
+  options: SetupOptions = {},
+): Promise<[MockServer, FullEthereumService]> {
   const { location, height, interval, syncmode } = options
   const minPeers = options.minPeers ?? 1
 
-  const lightserv = syncmode === 'full'
   const common = options.common?.copy()
   const config = new Config({
     syncmode,
-    lightserv,
+
     minPeers,
     common,
     safeReorgDistance: 0,
@@ -39,9 +39,12 @@ export async function setup(
   })
 
   const server = new MockServer({ config, location }) as any
-  const blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  const blockchain = await createBlockchain({
     validateBlocks: false,
     validateConsensus: false,
+    consensusDict,
     common,
   })
 
@@ -50,29 +53,24 @@ export async function setup(
   const serviceConfig = new Config({
     syncmode,
     server,
-    lightserv,
+
     minPeers,
     common,
     safeReorgDistance: 0,
   })
   // attach server to centralized event bus
-  ;(server.config as any).events = serviceConfig.events
+  server.config.events = serviceConfig.events
   const serviceOpts = {
     config: serviceConfig,
     chain,
     interval: interval ?? 500, // do not make this too low, this will otherwise cause side effects
   }
 
-  let service
-  if (syncmode === 'light') {
-    service = new LightEthereumService(serviceOpts)
-  } else {
-    service = new FullEthereumService({
-      ...serviceOpts,
-      metaDB: new MemoryLevel(),
-      lightserv: true,
-    })
-  }
+  const service = new FullEthereumService({
+    ...serviceOpts,
+    metaDB: new MemoryLevel(),
+  })
+
   await service.open()
   await service.start()
   await server.start()
@@ -80,10 +78,7 @@ export async function setup(
   return [server, service]
 }
 
-export async function destroy(
-  server: MockServer,
-  service: FullEthereumService | LightEthereumService
-): Promise<void> {
+export async function destroy(server: MockServer, service: FullEthereumService): Promise<void> {
   service.config.events.emit(Event.CLIENT_SHUTDOWN)
   await server.stop()
   await service.stop()

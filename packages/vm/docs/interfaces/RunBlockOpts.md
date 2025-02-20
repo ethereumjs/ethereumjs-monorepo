@@ -11,6 +11,7 @@ Options for running a block.
 - [block](RunBlockOpts.md#block)
 - [clearCache](RunBlockOpts.md#clearcache)
 - [generate](RunBlockOpts.md#generate)
+- [reportPreimages](RunBlockOpts.md#reportpreimages)
 - [root](RunBlockOpts.md#root)
 - [setHardfork](RunBlockOpts.md#sethardfork)
 - [skipBalance](RunBlockOpts.md#skipbalance)
@@ -61,6 +62,19 @@ Defaults to `false`.
 #### Defined in
 
 [vm/src/types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L239)
+
+___
+
+### reportPreimages
+
+• `Optional` **reportPreimages**: `boolean`
+
+If true, adds a hashedKey -> preimages mapping of all touched accounts
+to the `RunTxResult` returned.
+
+#### Defined in
+
+[vm/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L282)
 
 ___
 

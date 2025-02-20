@@ -1,11 +1,8 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "5.2.1",
+  "version": "6.0.0-alpha.1",
   "description": "Implementation of the various Ethereum Transaction Types",
-  "keywords": [
-    "ethereum",
-    "transactions"
-  ],
+  "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+tx%22"
@@ -20,14 +17,11 @@
     {
       "name": "Alex Beregszaszi",
       "email": "alex@rtfs.hu",
-      "url": "https://github.com/axic",
-      "additions": 27562,
-      "contributions": 22,
-      "deletions": 42613,
-      "hireable": true
+      "url": "https://github.com/axic"
     }
   ],
-  "type": "commonjs",
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -36,38 +30,38 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.2.0",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.0.2",
-    "ethereum-cryptography": "^2.1.3"
+    "@ethereumjs/common": "^5.0.0-alpha.1",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
-    "kzg-wasm": "^0.2.0",
+    "@paulmillr/trusted-setups": "^0.1.2",
+    "micro-eth-signer": "^0.12.1",
     "minimist": "^1.2.0",
-    "node-dir": "^0.1.16"
+    "node-dir": "^0.1.16",
+    "yargs": "^17.7.1"
   },
   "engines": {
     "node": ">=18"

@@ -6,11 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-alpha.1 - [ UNPUBLISHED ]
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- Use `noble` bytes conversion utilities internally, PR [#3698](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3698)
+
 ## 5.0.2 - 2024-02-08
 
 ### 10-30x Decode Speedup
 
-The `RLP.decode()` method has been optimized (thanks @wemeetagain for the contribution! ❤️) which results in a reproduceable 10-30x speedup for JS native decoding 🎉, see PR [#3243](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3243).
+The `RLP.decode()` method has been optimized (thanks @wemeetagain for the contribution! ❤️) which results in a reproducible 10-30x speedup for JS native decoding 🎉, see PR [#3243](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3243).
 
 ### Self-Contained (and Working 🙂) README Examples
 
@@ -110,7 +117,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 

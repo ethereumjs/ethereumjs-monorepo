@@ -1,12 +1,10 @@
-import { version as packageVersion } from '../package.json'
+import { Chain } from './blockchain/index.js'
+import { FullEthereumService } from './service/index.js'
+import { Event } from './types.js'
+import { getPackageJSON } from './util/index.js'
 
-import { Chain } from './blockchain'
-import { SyncMode } from './config'
-import { FullEthereumService, LightEthereumService } from './service'
-import { Event } from './types'
-
-import type { Config } from './config'
-import type { MultiaddrLike } from './types'
+import type { Config } from './config.js'
+import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -30,7 +28,7 @@ export interface EthereumClientOptions {
    * Database to store the state.
    * Should be an abstract-leveldown compliant store.
    *
-   * Default: Database created by the Trie class
+   * Default: Database created by the MerklePatriciaTrie class
    */
   stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
@@ -69,7 +67,7 @@ export interface EthereumClientOptions {
 export class EthereumClient {
   public config: Config
   public chain: Chain
-  public services: (FullEthereumService | LightEthereumService)[] = []
+  public service: FullEthereumService
 
   public opened: boolean
   public started: boolean
@@ -91,28 +89,13 @@ export class EthereumClient {
   protected constructor(chain: Chain, options: EthereumClientOptions) {
     this.config = options.config
     this.chain = chain
-
-    if (this.config.syncmode === SyncMode.Full || this.config.syncmode === SyncMode.None) {
-      this.services = [
-        new FullEthereumService({
-          config: this.config,
-          chainDB: options.chainDB,
-          stateDB: options.stateDB,
-          metaDB: options.metaDB,
-          chain,
-        }),
-      ]
-    }
-    if (this.config.syncmode === SyncMode.Light) {
-      this.services = [
-        new LightEthereumService({
-          config: this.config,
-          chainDB: options.chainDB,
-          chain,
-        }),
-      ]
-    }
-
+    this.service = new FullEthereumService({
+      config: this.config,
+      chainDB: options.chainDB,
+      stateDB: options.stateDB,
+      metaDB: options.metaDB,
+      chain,
+    })
     this.opened = false
     this.started = false
   }
@@ -126,8 +109,9 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
+    const packageJSON = getPackageJSON()
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
@@ -135,11 +119,11 @@ export class EthereumClient {
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
       this.config.logger.info(
-        `Server listener up transport=${details.transport} url=${details.url}`
+        `Server listener up transport=${details.transport} url=${details.url}`,
       )
     })
 
-    await Promise.all(this.services.map((s) => s.open()))
+    await this.service.open()
 
     this.opened = true
   }
@@ -153,7 +137,7 @@ export class EthereumClient {
     }
     this.config.logger.info('Setup networking and services.')
 
-    await Promise.all(this.services.map((s) => s.start()))
+    await this.service.start()
     this.config.server && (await this.config.server.start())
     // Only call bootstrap if servers are actually started
     this.config.server && this.config.server.started && (await this.config.server.bootstrap())
@@ -169,7 +153,7 @@ export class EthereumClient {
       return false
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
-    await Promise.all(this.services.map((s) => s.stop()))
+    await this.service.stop()
     this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false
   }
@@ -180,12 +164,5 @@ export class EthereumClient {
    */
   server() {
     return this.config.server
-  }
-  /**
-   * Returns the service with the specified name.
-   * @param name name of service
-   */
-  service(name: string) {
-    return this.services.find((s) => s.name === name)
   }
 }

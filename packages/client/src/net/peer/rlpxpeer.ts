@@ -1,28 +1,20 @@
-import {
-  ETH as Devp2pETH,
-  LES as Devp2pLES,
-  RLPx as Devp2pRLPx,
-  SNAP as Devp2pSNAP,
-} from '@ethereumjs/devp2p'
+import { ETH as Devp2pETH, RLPx as Devp2pRLPx, SNAP as Devp2pSNAP } from '@ethereumjs/devp2p'
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types'
-import { RlpxSender } from '../protocol'
+import { Event } from '../../types.js'
+import { RlpxSender } from '../protocol/index.js'
 
-import { Peer } from './peer'
+import { Peer } from './peer.js'
 
-import type { Protocol } from '../protocol'
-import type { RlpxServer } from '../server'
-import type { PeerOptions } from './peer'
+import type { Protocol } from '../protocol/index.js'
+import type { RlpxServer } from '../server/index.js'
+import type { PeerOptions } from './peer.js'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
   eth67: Devp2pETH.eth67,
   eth68: Devp2pETH.eth68,
-  les2: Devp2pLES.les2,
-  les3: Devp2pLES.les3,
-  les4: Devp2pLES.les4,
 }
 
 export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
@@ -167,7 +159,7 @@ export class RlpxPeer extends Peer {
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
+          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pSNAP)
           return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
@@ -176,19 +168,17 @@ export class RlpxPeer extends Peer {
               const snapProtocol =
                 snapRlpxProtocol !== undefined
                   ? this.protocols.find(
-                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
+                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase(),
                     )
                   : undefined
               if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(
-                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
-                )
+                const snapSender = new RlpxSender(snapRlpxProtocol as Devp2pETH | Devp2pSNAP)
                 return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })
         }
-      })
+      }),
     )
     this.connected = true
   }

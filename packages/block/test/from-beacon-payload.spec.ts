@@ -1,38 +1,38 @@
-import { Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
-import { assert, beforeAll, describe, it } from 'vitest'
+import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { assert, describe, it } from 'vitest'
 
-import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
-import { Block, BlockHeader } from '../src/index.js'
+import { devnet4844Config } from '../../client/test/sim/configs/4844-devnet.js'
+import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.js'
 
-import * as payloadKaustinen from './testdata/payload-kaustinen.json'
-import * as payload87335 from './testdata/payload-slot-87335.json'
-import * as payload87475 from './testdata/payload-slot-87475.json'
-import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
+import { payloadKaustinenData } from './testdata/payload-kaustinen.js'
+import { payloadSlot87335Data } from './testdata/payload-slot-87335.js'
+import { payloadSlot87475Data } from './testdata/payload-slot-87475.js'
+import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
 
-describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
-  let kzg
-  let common: Common
-  beforeAll(async () => {
-    kzg = await createKZG()
-    initKZG(kzg)
-    const commonJson = { ...shardingJson }
-    commonJson.config = { ...commonJson.config, chainId: 4844001005 }
-    const network = 'sharding'
-    common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
-    // safely change chainId without modifying undelying json
-
-    common.setHardfork(Hardfork.Cancun)
+const kzg = new microEthKZG(trustedSetup)
+describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
+  const commonConfig = { ...devnet4844Config }
+  commonConfig.config = { ...commonConfig.config, chainId: 4844001005 }
+  const network = 'sharding'
+  const common = createCommonFromGethGenesis(commonConfig, {
+    chain: network,
+    customCrypto: { kzg },
   })
+  // safely change chainId without modifying underlying json
+
+  common.setHardfork(Hardfork.Cancun)
 
   it('reconstruct cancun block with blob txs', async () => {
-    for (const payload of [payload87335, payload87475]) {
+    for (const payload of [payloadSlot87335Data, payloadSlot87475Data]) {
       try {
-        const block = await Block.fromBeaconPayloadJson(payload, { common })
-        const parentHeader = BlockHeader.fromHeaderData(
+        const block = await createBlockFromBeaconPayloadJSON(payload, {
+          common,
+        })
+        const parentHeader = createBlockHeader(
           { excessBlobGas: BigInt(0), blobGasUsed: block.header.excessBlobGas! + BigInt(393216) },
-          { common }
+          { common },
         )
         block.validateBlobTransactions(parentHeader)
         assert.ok(true, `successfully constructed block=${block.header.number}`)
@@ -45,9 +45,12 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   it('should validate block hash', async () => {
     try {
       // construct a payload with differing block hash
-      await Block.fromBeaconPayloadJson(
-        { ...payload87335, block_hash: payload87475.block_hash },
-        { common }
+      await createBlockFromBeaconPayloadJSON(
+        {
+          ...payloadSlot87335Data,
+          block_hash: payloadSlot87475Data.block_hash,
+        },
+        { common },
       )
       assert.fail(`should have failed constructing the block`)
     } catch (e) {
@@ -59,14 +62,14 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   it('should validate excess blob gas', async () => {
     try {
       // construct a payload with a different excess blob gas but matching hash
-      const block = await Block.fromBeaconPayloadJson(
+      const block = await createBlockFromBeaconPayloadJSON(
         {
-          ...payload87475,
+          ...payloadSlot87475Data,
           block_hash: '0x573714bdd0ca5e47bc32008751c4fc74237f8cb354fbc1475c1d0ece38236ea4',
         },
-        { common }
+        { common },
       )
-      const parentHeader = BlockHeader.fromHeaderData({ excessBlobGas: BigInt(0) }, { common })
+      const parentHeader = createBlockHeader({ excessBlobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
       assert.fail(`should have failed constructing the block`)
     } catch (e) {
@@ -76,28 +79,25 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   })
 })
 
-describe('[fromExecutionPayloadJson]: kaustinen', () => {
-  let kzg
-  beforeAll(async () => {
-    kzg = await createKZG()
-    initKZG(kzg)
-  })
+describe('[fromExecutionPayloadJSON]: kaustinen', () => {
   const network = 'kaustinen'
 
-  // safely change chainId without modifying undelying json
-  const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
+  // safely change chainId without modifying underlying json
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {
     chain: network,
     eips: [6800],
   })
   it('reconstruct kaustinen block', async () => {
     assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
-    const block = await Block.fromBeaconPayloadJson(payloadKaustinen, { common })
+    const block = await createBlockFromBeaconPayloadJSON(payloadKaustinenData, {
+      common,
+    })
     // the witness object in payload has camel casing for now
     // the current block hash doesn't include witness data so deep match is required
     assert.deepEqual(
       block.executionWitness,
-      payloadKaustinen.execution_witness,
-      'execution witness should match'
+      payloadKaustinenData.execution_witness,
+      'execution witness should match',
     )
   })
 })

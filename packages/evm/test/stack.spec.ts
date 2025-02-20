@@ -1,7 +1,15 @@
-import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  hexToBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { createEVM } from '../src/index.js'
 import { Stack } from '../src/stack.js'
 
 import { createAccount } from './utils.js'
@@ -99,7 +107,7 @@ describe('Stack', () => {
   it('stack items should not change if they are DUPed', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
-    const evm = await EVM.create({})
+    const evm = await createEVM()
     const account = createAccount(BigInt(0), BigInt(0))
     const code = '0x60008080808060013382F15060005260206000F3'
     const expectedReturnValue = setLengthLeft(bigIntToBytes(BigInt(0)), 32)
@@ -122,7 +130,7 @@ describe('Stack', () => {
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
     await evm.stateManager.putAccount(addr, account)
-    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+    await evm.stateManager.putCode(addr, hexToBytes(code))
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11)))
     const runCallArgs = {
       caller,
@@ -147,5 +155,31 @@ describe('Stack', () => {
     s.pop()
     const reportedStack = s.getStack()
     assert.deepEqual(reportedStack, [BigInt(4), BigInt(6)])
+  })
+
+  it('stack should return the padded value', async () => {
+    const evm = await createEVM()
+
+    for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
+      // PUSHx 01
+      const code = `0x${pushN.toString(16)}01`
+      // PUSH 0x03 JUMP JUMPDEST < PUSHx 01 >
+      const codeWithJumps = `0x6003565B${pushN.toString(16)}01`
+
+      const expectedStack = new Stack(1024)
+      expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))
+
+      const resWithoutJumps = await evm.runCall({
+        data: hexToBytes(code),
+      })
+      const executionStack = resWithoutJumps.execResult.runState?.stack
+      assert.deepEqual(executionStack, expectedStack, 'code without jumps ok')
+
+      const resWithJumps = await evm.runCall({
+        data: hexToBytes(codeWithJumps),
+      })
+      const executionStackWithJumps = resWithJumps.execResult.runState?.stack
+      assert.deepEqual(executionStackWithJumps, expectedStack, 'code with jumps ok')
+    }
   })
 })

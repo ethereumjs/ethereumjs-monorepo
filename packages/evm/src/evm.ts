@@ -1,34 +1,50 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   KECCAK256_NULL,
+  KECCAK256_RLP,
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createZeroAddress,
   equalsBytes,
   generateAddress,
   generateAddress2,
   short,
-  zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { initRustBN } from 'rustbn-wasm'
+import { EventEmitter } from 'eventemitter3'
 
-import { EOF, getEOFCode } from './eof.js'
+import { FORMAT } from './eof/constants.js'
+import { isEOF } from './eof/util.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
+import { paramsEVM } from './params.js'
+import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
-import { DefaultBlockchain } from './types.js'
+import {
+  type Block,
+  type CustomOpcode,
+  DELEGATION_7702_FLAG,
+  type EVMBLSInterface,
+  type EVMBN254Interface,
+  type EVMEvent,
+  type EVMInterface,
+  type EVMMockBlockchainInterface,
+  type EVMOpts,
+  type EVMResult,
+  type EVMRunCallOpts,
+  type EVMRunCodeOpts,
+  type ExecResult,
+} from './types.js'
 
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
@@ -36,24 +52,12 @@ import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type {
-  Block,
-  Blockchain,
-  CustomOpcode,
-  EVMEvents,
-  EVMInterface,
-  EVMOpts,
-  EVMResult,
-  EVMRunCallOpts,
-  EVMRunCodeOpts,
-  ExecResult,
-} from './types.js'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
-const { debug: createDebugLogger } = debugDefault
+import type { VerkleAccessWitness } from './verkleAccessWitness.js'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
-const debug = createDebugLogger('evm:evm')
-const debugGas = createDebugLogger('evm:gas')
-const debugPrecompiles = createDebugLogger('evm:precompiles')
+const debug = debugDefault('evm:evm')
+const debugGas = debugDefault('evm:gas')
+const debugPrecompiles = debugDefault('evm:precompiles')
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -77,11 +81,13 @@ export class EVM implements EVMInterface {
     Hardfork.London,
     Hardfork.ArrowGlacier,
     Hardfork.GrayGlacier,
-    Hardfork.MergeForkIdTransition,
+    Hardfork.MergeNetsplitBlock,
     Hardfork.Paris,
     Hardfork.Shanghai,
     Hardfork.Cancun,
     Hardfork.Prague,
+    Hardfork.Osaka,
+    Hardfork.Verkle,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -90,11 +96,13 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
-  public readonly events: AsyncEventEmitter<EVMEvents>
+  public readonly events: EventEmitter<EVMEvent>
 
-  public stateManager: EVMStateManagerInterface
-  public blockchain: Blockchain
+  public stateManager: StateManagerInterface
+  public blockchain: EVMMockBlockchainInterface
   public journal: Journal
+  public verkleAccessWitness?: VerkleAccessWitness
+  public systemVerkleAccessWitness?: VerkleAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -126,6 +134,8 @@ export class EVM implements EVMInterface {
     return this._opcodes
   }
 
+  protected readonly _bls?: EVMBLSInterface
+
   /**
    * EVM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -138,52 +148,43 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private bn128: {
-    ec_pairing: (input_str: string) => string
-    ec_add: (input_str: string) => string
-    ec_mul: (input_hex: string) => string
-  }
+  private _bn254: EVMBN254Interface
 
-  static async create(createOpts?: EVMOpts) {
-    const opts = createOpts ?? ({} as EVMOpts)
-    if (opts?.bn128 === undefined) {
-      opts.bn128 = await initRustBN()
-    }
-    return new EVM(opts)
-  }
+  /**
+   *
+   * Creates new EVM object
+   *
+   * @deprecated The direct usage of this constructor is replaced since
+   * non-finalized async initialization lead to side effects. Please
+   * use the async {@link createEVM} constructor instead (same API).
+   *
+   * @param opts The EVM options
+   * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
+   */
   constructor(opts: EVMOpts) {
-    if (opts.bn128 === undefined) {
-      throw new Error('rustbn not provided')
-    }
-    this.bn128 = opts.bn128 // Required to instantiate the EVM
-    this.events = new AsyncEventEmitter()
+    this.common = opts.common!
+    this.blockchain = opts.blockchain!
+    this.stateManager = opts.stateManager!
 
+    if (this.common.isActivatedEIP(6800)) {
+      const mandatory = ['checkChunkWitnessPresent']
+      for (const m of mandatory) {
+        if (!(m in this.stateManager)) {
+          throw new Error(
+            `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
+          )
+        }
+      }
+    }
+
+    this.events = new EventEmitter<EVMEvent>()
     this._optsCached = opts
-
-    this.transientStorage = new TransientStorage()
-
-    if (opts.common) {
-      this.common = opts.common
-    } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
-      this.common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
-    let blockchain: Blockchain
-
-    if (opts.blockchain === undefined) {
-      blockchain = new DefaultBlockchain()
-    } else {
-      blockchain = opts.blockchain
-    }
-
-    this.blockchain = blockchain
-    this.stateManager = opts.stateManager ?? new DefaultStateManager()
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2315, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
     ]
 
     for (const eip of this.common.eips()) {
@@ -194,9 +195,11 @@ export class EVM implements EVMInterface {
 
     if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
       throw new Error(
-        `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`
+        `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
+
+    this.common.updateParams(opts.params ?? paramsEVM)
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
@@ -204,6 +207,7 @@ export class EVM implements EVMInterface {
     this._customPrecompiles = opts.customPrecompiles
 
     this.journal = new Journal(this.stateManager, this.common)
+    this.transientStorage = new TransientStorage()
 
     this.common.events.on('hardforkChanged', () => {
       this.getActiveOpcodes()
@@ -214,8 +218,25 @@ export class EVM implements EVMInterface {
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
 
+    // Precompile crypto libraries
+    if (this.common.isActivatedEIP(2537)) {
+      this._bls = opts.bls ?? new NobleBLS()
+      this._bls.init?.()
+    }
+
+    this._bn254 = opts.bn254!
+
     this._emit = async (topic: string, data: any): Promise<void> => {
-      return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
+      const listeners = this.events.listeners(topic as keyof EVMEvent)
+      for (const listener of listeners) {
+        if (listener.length === 2) {
+          await new Promise<void>((resolve) => {
+            listener(data, resolve)
+          })
+        } else {
+          listener(data)
+        }
+      }
     }
 
     this.performanceLogger = new EVMPerformanceLogger()
@@ -223,7 +244,7 @@ export class EVM implements EVMInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   /**
@@ -241,27 +262,47 @@ export class EVM implements EVMInterface {
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let gasLimit = message.gasLimit
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
+      if (message.accessWitness === undefined) {
+        throw new Error('accessWitness is required for EIP-6800')
+      }
+      const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
-          message.authcallOrigin ?? message.caller
-        )
-        gasLimit -= originAccessGas
-        if (gasLimit < BIGINT_0) {
-          if (this.DEBUG) {
-            debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
-          }
-          return { execResult: OOGResult(message.gasLimit) }
+        const originAccessGas = message.accessWitness.readAccountHeader(fromAddress)
+        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
+
+        let destAccessGas = message.accessWitness.readAccountCodeHash(message.to)
+        if (sendsValue) {
+          destAccessGas += message.accessWitness.writeAccountBasicData(message.to)
         } else {
-          if (this.DEBUG) {
-            debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
-          }
+          destAccessGas += message.accessWitness.readAccountBasicData(message.to)
         }
+
+        debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
+      }
+
+      let callAccessGas = message.accessWitness.readAccountBasicData(message.to)
+      if (sendsValue) {
+        callAccessGas += message.accessWitness.writeAccountBasicData(message.to)
+      }
+      gasLimit -= callAccessGas
+      if (gasLimit < BIGINT_0) {
+        if (this.DEBUG) {
+          debugGas(`callAccessGas charged(${callAccessGas}) caused OOG (-> ${gasLimit})`)
+        }
+        message.accessWitness.revert()
+        return { execResult: OOGResult(message.gasLimit) }
+      } else {
+        if (this.DEBUG) {
+          debugGas(`callAccessGas used (${callAccessGas} gas (-> ${gasLimit}))`)
+        }
+        message.accessWitness.commit()
       }
     }
 
-    let account = await this.stateManager.getAccount(message.authcallOrigin ?? message.caller)
+    let account = await this.stateManager.getAccount(fromAddress)
     if (!account) {
       account = new Account()
     }
@@ -275,45 +316,25 @@ export class EVM implements EVMInterface {
       }
     }
 
-    if (this.common.isActivatedEIP(6800)) {
-      if (message.depth === 0) {
-        const sendsValue = message.value !== BIGINT_0
-        const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
-          sendsValue,
-        })
-        gasLimit -= destAccessGas
-        if (gasLimit < BIGINT_0) {
-          if (this.DEBUG) {
-            debugGas(`Destination access charged(${destAccessGas}) caused OOG (-> ${gasLimit})`)
-          }
-          return { execResult: OOGResult(message.gasLimit) }
-        } else {
-          if (this.DEBUG) {
-            debugGas(`Destination access used (${destAccessGas} gas (-> ${gasLimit}))`)
-          }
-        }
-      }
-    }
-
     // Load `to` account
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       if (this.common.isActivatedEIP(6800)) {
-        const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
-          message.to
-        )
+        const absenceProofAccessGas = message.accessWitness!.readAccountHeader(message.to)
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debugGas(
-              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`
+              `Proof of absence access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.revert()
           return { execResult: OOGResult(message.gasLimit) }
         } else {
           if (this.DEBUG) {
-            debugGas(`Proof of absense access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
+            debugGas(`Proof of absence access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
           }
+          message.accessWitness?.commit()
         }
       }
       toAccount = new Account()
@@ -396,19 +417,12 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let gasLimit = message.gasLimit
+    const fromAddress = message.caller
 
     if (this.common.isActivatedEIP(6800)) {
-      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(message.caller)
-      gasLimit -= originAccessGas
-      if (gasLimit < BIGINT_0) {
-        if (this.DEBUG) {
-          debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
-        }
-        return { execResult: OOGResult(message.gasLimit) }
-      } else {
-        if (this.DEBUG) {
-          debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
-        }
+      if (message.depth === 0) {
+        const originAccessGas = message.accessWitness!.readAccountHeader(fromAddress)
+        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
       }
     }
 
@@ -421,7 +435,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(3860)) {
       if (
-        message.data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
+        message.data.length > Number(this.common.param('maxInitCodeSize')) &&
         !this.allowUnlimitedInitCodeSize
       ) {
         return {
@@ -435,8 +449,9 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // TODO at some point, figure out why we swapped out data to code in the first place
     message.code = message.data
-    message.data = new Uint8Array(0)
+    message.data = message.eofCallData ?? new Uint8Array()
     message.to = await this._generateAddress(message)
 
     if (this.common.isActivatedEIP(6780)) {
@@ -452,32 +467,32 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const sendsValue = message.value !== BIGINT_0
-      const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
-        message.to,
-        { sendsValue }
-      )
+      const contractCreateAccessGas =
+        message.accessWitness!.writeAccountBasicData(message.to) +
+        message.accessWitness!.readAccountCodeHash(message.to)
       gasLimit -= contractCreateAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
           debugGas(
-            `Contract create (sendsValue=${sendsValue}) charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`
+            `ContractCreateInit charge(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`,
           )
+          message.accessWitness?.revert()
         }
         return { execResult: OOGResult(message.gasLimit) }
       } else {
         if (this.DEBUG) {
-          debugGas(
-            `Contract create (sendsValue=${sendsValue}) charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`
-          )
+          debugGas(`ContractCreateInit charged (${contractCreateAccessGas} gas (-> ${gasLimit}))`)
         }
+        message.accessWitness?.commit()
       }
     }
 
     // Check for collision
     if (
       (toAccount.nonce && toAccount.nonce > BIGINT_0) ||
-      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
+      !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true) ||
+      // See EIP 7610 and the discussion `https://ethereum-magicians.org/t/eip-7610-revert-creation-in-case-of-non-empty-storage`
+      !(equalsBytes(toAccount.storageRoot, KECCAK256_RLP) === true)
     ) {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
@@ -493,7 +508,7 @@ export class EVM implements EVMInterface {
     }
 
     await this.journal.putAccount(message.to, toAccount)
-    await this.stateManager.clearContractStorage(message.to)
+    await this.stateManager.clearStorage(message.to)
 
     const newContractEvent = {
       address: message.to,
@@ -535,7 +550,29 @@ export class EVM implements EVMInterface {
         debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
+
     if (exit) {
+      if (this.common.isActivatedEIP(6800)) {
+        const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
+        gasLimit -= createCompleteAccessGas
+        if (gasLimit < BIGINT_0) {
+          if (this.DEBUG) {
+            debug(
+              `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
+            )
+          }
+          message.accessWitness?.revert()
+          return { execResult: OOGResult(message.gasLimit) }
+        } else {
+          if (this.DEBUG) {
+            debug(
+              `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
+            )
+          }
+          message.accessWitness?.commit()
+        }
+      }
+
       return {
         createdAddress: message.to,
         execResult: {
@@ -552,15 +589,14 @@ export class EVM implements EVMInterface {
     }
 
     // run the message with the updated gas limit and add accessed gas used to the result
-    let result = await this.runInterpreter({ ...message, gasLimit } as Message)
+    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message)
     result.executionGasUsed += message.gasLimit - gasLimit
 
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
-    if (!result.exceptionError) {
-      returnFee =
-        BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
+    if (!result.exceptionError && !this.common.isActivatedEIP(6800)) {
+      returnFee = BigInt(result.returnValue.length) * BigInt(this.common.param('createDataGas'))
       totalGas = totalGas + returnFee
       if (this.DEBUG) {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
@@ -572,7 +608,7 @@ export class EVM implements EVMInterface {
     if (
       !result.exceptionError &&
       this.common.gteHardfork(Hardfork.SpuriousDragon) &&
-      result.returnValue.length > Number(this.common.param('vm', 'maxCodeSize'))
+      result.returnValue.length > Number(this.common.param('maxCodeSize'))
     ) {
       allowedCodeSize = false
     }
@@ -580,36 +616,22 @@ export class EVM implements EVMInterface {
     // If enough gas and allowed code size
     let CodestoreOOG = false
     if (totalGas <= message.gasLimit && (this.allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === EOF.FORMAT) {
+      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
         if (!this.common.isActivatedEIP(3540)) {
           result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        }
-        // Begin EOF1 contract code checks
-        // EIP-3540 EOF1 header check
-        const eof1CodeAnalysisResults = EOF.codeAnalysis(result.returnValue)
-        if (typeof eof1CodeAnalysisResults?.code === 'undefined') {
-          result = {
-            ...result,
-            ...INVALID_EOF_RESULT(message.gasLimit),
-          }
-        } else if (this.common.isActivatedEIP(3670)) {
-          // EIP-3670 EOF1 opcode check
-          const codeStart = eof1CodeAnalysisResults.data > 0 ? 10 : 7
-          // The start of the code section of an EOF1 compliant contract will either be
-          // index 7 (if no data section is present) or index 10 (if a data section is present)
-          // in the bytecode of the contract
-          if (
-            !EOF.validOpcodes(
-              result.returnValue.subarray(codeStart, codeStart + eof1CodeAnalysisResults.code)
-            )
-          ) {
-            result = {
-              ...result,
-              ...INVALID_EOF_RESULT(message.gasLimit),
-            }
-          } else {
-            result.executionGasUsed = totalGas
-          }
+        } else if (
+          // TODO check if this is correct
+          // Also likely cleanup this eofCallData stuff
+          /*(message.depth > 0 && message.eofCallData === undefined) ||
+          (message.depth === 0 && !isEOF(message.code))*/
+          !isEOF(message.code)
+        ) {
+          // TODO the message.eof was flagged for this to work for this first
+          // Running into Legacy mode: unable to deploy EOF contract
+          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
+        } else {
+          // 3541 is active and current runtime mode is EOF
+          result.executionGasUsed = totalGas
         }
       } else {
         result.executionGasUsed = totalGas
@@ -625,6 +647,7 @@ export class EVM implements EVMInterface {
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       } else {
@@ -634,12 +657,14 @@ export class EVM implements EVMInterface {
           if (this.DEBUG) {
             debug(`Not enough gas to pay the code deposit fee (Frontier)`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...COOGResult(totalGas - returnFee) }
           CodestoreOOG = true
         } else {
           if (this.DEBUG) {
             debug(`Contract creation: out of gas`)
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         }
       }
@@ -648,20 +673,19 @@ export class EVM implements EVMInterface {
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
     if (!result.exceptionError && this.common.isActivatedEIP(6800)) {
-      const createCompleteAccessGas = message.accessWitness!.touchAndChargeContractCreateCompleted(
-        message.to
-      )
+      const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
           debug(
-            `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`
+            `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`,
           )
         }
+        message.accessWitness?.revert()
         result = { ...result, ...OOGResult(message.gasLimit) }
       } else {
         debug(
-          `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`
+          `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`,
         )
         result.executionGasUsed += createCompleteAccessGas
       }
@@ -675,29 +699,28 @@ export class EVM implements EVMInterface {
     ) {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
-        const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
-            message.to,
-            0,
-            message.code!.length - 1
-          )
+        const byteCodeWriteAccessfee = message.accessWitness!.writeAccountCodeChunks(
+          message.to,
+          0,
+          result.returnValue.length - 1,
+        )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
             debug(
-              `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`
+              `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`,
             )
           }
+          message.accessWitness?.revert()
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
-          debug(
-            `ContractCreateComplete access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`
-          )
+          debug(`byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`)
+          message.accessWitness?.commit()
           result.executionGasUsed += byteCodeWriteAccessfee
         }
       }
 
-      await this.stateManager.putContractCode(message.to, result.returnValue)
+      await this.stateManager.putCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -713,6 +736,10 @@ export class EVM implements EVMInterface {
       }
     }
 
+    if (message.depth === 0) {
+      this.postMessageCleanup()
+    }
+
     return {
       createdAddress: message.to,
       execResult: result,
@@ -724,28 +751,28 @@ export class EVM implements EVMInterface {
    */
   protected async runInterpreter(
     message: Message,
-    opts: InterpreterOpts = {}
+    opts: InterpreterOpts = {},
   ): Promise<ExecResult> {
-    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
+    let contract = await this.stateManager.getAccount(message.to ?? createZeroAddress())
     if (!contract) {
       contract = new Account()
     }
 
     const env = {
-      address: message.to ?? Address.zero(),
-      caller: message.caller ?? Address.zero(),
+      address: message.to ?? createZeroAddress(),
+      caller: message.caller ?? createZeroAddress(),
       callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BIGINT_0,
       code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
+      isCreate: message.isCreate ?? false,
       depth: message.depth ?? 0,
       gasPrice: this._tx!.gasPrice,
-      origin: this._tx!.origin ?? message.caller ?? Address.zero(),
+      origin: this._tx!.origin ?? message.caller ?? createZeroAddress(),
       block: this._block ?? defaultBlock(),
       contract,
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
-      containerCode: message.containerCode,
       chargeCodeAccesses: message.chargeCodeAccesses,
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
@@ -760,7 +787,7 @@ export class EVM implements EVMInterface {
       message.gasLimit,
       this.journal,
       this.performanceLogger,
-      this._optsCached.profiler
+      this._optsCached.profiler,
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct
@@ -790,6 +817,7 @@ export class EVM implements EVMInterface {
       }
     }
 
+    message.accessWitness?.commit()
     return {
       ...result,
       runState: {
@@ -822,11 +850,11 @@ export class EVM implements EVMInterface {
     let callerAccount
     if (!message) {
       this._block = opts.block ?? defaultBlock()
+      const caller = opts.caller ?? createZeroAddress()
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
-        origin: opts.origin ?? opts.caller ?? Address.zero(),
+        origin: opts.origin ?? caller,
       }
-      const caller = opts.caller ?? Address.zero()
 
       const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
@@ -856,7 +884,7 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: opts.accessWitness,
+        accessWitness: this.verkleAccessWitness,
       })
     }
 
@@ -876,7 +904,7 @@ export class EVM implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
-    if (!message.to && this.common.isActivatedEIP(2929) === true) {
+    if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
@@ -894,7 +922,7 @@ export class EVM implements EVMInterface {
       debug(
         `New message caller=${caller} gasLimit=${gasLimit} to=${
           to?.toString() ?? 'none'
-        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`
+        } value=${value} delegatecall=${delegatecall ? 'yes' : 'no'}`,
       )
     }
     if (message.to) {
@@ -904,7 +932,7 @@ export class EVM implements EVMInterface {
       result = await this._executeCall(message as MessageWithTo)
     } else {
       if (this.DEBUG) {
-        debug(`Message CREATE execution (to undefined)`)
+        debug(`Message CREATE execution (to: undefined)`)
       }
       result = await this._executeCreate(message)
     }
@@ -913,7 +941,7 @@ export class EVM implements EVMInterface {
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
+        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`,
       )
     }
     const err = result.execResult.exceptionError
@@ -950,6 +978,7 @@ export class EVM implements EVMInterface {
       this.performanceLogger.stopTimer(timer!, 0)
     }
 
+    message.accessWitness?.commit()
     return result
   }
 
@@ -962,14 +991,14 @@ export class EVM implements EVMInterface {
 
     this._tx = {
       gasPrice: opts.gasPrice ?? BIGINT_0,
-      origin: opts.origin ?? opts.caller ?? Address.zero(),
+      origin: opts.origin ?? opts.caller ?? createZeroAddress(),
     }
 
     const message = new Message({
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit ?? BigInt(0xffffff),
-      to: opts.to ?? Address.zero(),
+      to: opts.to ?? createZeroAddress(),
       caller: opts.caller,
       value: opts.value,
       depth: opts.depth,
@@ -995,7 +1024,7 @@ export class EVM implements EVMInterface {
   protected runPrecompile(
     code: PrecompileFunc,
     data: Uint8Array,
-    gasLimit: bigint
+    gasLimit: bigint,
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
@@ -1020,14 +1049,22 @@ export class EVM implements EVMInterface {
         message.code = precompile
         message.isCompiled = true
       } else {
-        message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
+        message.code = await this.stateManager.getCode(message.codeAddress)
+
+        // EIP-7702 delegation check
+        if (
+          this.common.isActivatedEIP(7702) &&
+          equalsBytes(message.code.slice(0, 3), DELEGATION_7702_FLAG)
+        ) {
+          const address = new Address(message.code.slice(3, 24))
+          message.code = await this.stateManager.getCode(address)
+          if (message.depth === 0) {
+            this.journal.addAlwaysWarmAddress(address.toString())
+          }
+        }
+
         message.isCompiled = false
         message.chargeCodeAccesses = true
-        if (this.common.isActivatedEIP(3540)) {
-          message.code = getEOFCode(message.containerCode)
-        } else {
-          message.code = message.containerCode
-        }
       }
     }
   }
@@ -1052,7 +1089,7 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
-    const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
+    const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
     }
@@ -1066,11 +1103,10 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation
-    const result = this.journal.putAccount(message.to, toAccount)
+    await this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
       debug(`Added toAccount (${message.to}) balance (-> ${toAccount.balance})`)
     }
-    return result
   }
 
   /**
@@ -1097,7 +1133,6 @@ export class EVM implements EVMInterface {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
-      bn128: this.bn128,
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)
@@ -1164,14 +1199,14 @@ export function defaultBlock(): Block {
   return {
     header: {
       number: BIGINT_0,
-      cliqueSigner: () => Address.zero(),
-      coinbase: Address.zero(),
+      coinbase: createZeroAddress(),
       timestamp: BIGINT_0,
       difficulty: BIGINT_0,
-      prevRandao: zeros(32),
+      prevRandao: new Uint8Array(32),
       gasLimit: BIGINT_0,
       baseFeePerGas: undefined,
       getBlobGasPrice: () => undefined,
     },
   }
 }
+/* eslint-enable @typescript-eslint/no-use-before-define */

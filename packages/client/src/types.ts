@@ -1,12 +1,11 @@
-import { EventEmitter } from 'events'
-
-import type { SyncMode } from '.'
-import type { Peer } from './net/peer'
-import type { Server } from './net/server'
+import type { SyncMode } from './index.js'
+import type { Peer } from './net/peer/index.js'
+import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type * as promClient from 'prom-client'
 
 /**
  * Types for the central event bus, emitted
@@ -40,7 +39,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: DefaultStateManager]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: MerkleStateManager]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -54,33 +53,6 @@ export interface EventParams {
   [Event.PROTOCOL_ERROR]: [boundProtocolError: Error, peerCausingError: Peer]
   [Event.PROTOCOL_MESSAGE]: [messageDetails: any, protocolName: string, sendingPeer: Peer]
 }
-
-export declare interface EventBus<T extends Event> {
-  emit(event: T, ...args: EventParams[T]): boolean
-  on(event: T, listener: (...args: EventParams[T]) => void): this
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class EventBus<T extends Event> extends EventEmitter {}
-export type EventBusType = EventBus<Event.CHAIN_UPDATED> &
-  EventBus<Event.CLIENT_SHUTDOWN> &
-  EventBus<Event.SYNC_EXECUTION_VM_ERROR> &
-  EventBus<Event.SYNC_FETCHED_BLOCKS> &
-  EventBus<Event.SYNC_FETCHED_HEADERS> &
-  EventBus<Event.SYNC_SYNCHRONIZED> &
-  EventBus<Event.SYNC_SNAPSYNC_COMPLETE> &
-  EventBus<Event.SYNC_FETCHER_ERROR> &
-  EventBus<Event.PEER_CONNECTED> &
-  EventBus<Event.PEER_DISCONNECTED> &
-  EventBus<Event.PEER_ERROR> &
-  EventBus<Event.SERVER_LISTENING> &
-  EventBus<Event.SERVER_ERROR> &
-  EventBus<Event.SYNC_ERROR> &
-  EventBus<Event.POOL_PEER_ADDED> &
-  EventBus<Event.POOL_PEER_REMOVED> &
-  EventBus<Event.POOL_PEER_BANNED> &
-  EventBus<Event.PROTOCOL_ERROR> &
-  EventBus<Event.PROTOCOL_MESSAGE>
 
 /**
  * Like types
@@ -97,15 +69,15 @@ export type DnsNetwork = string
 
 export interface ClientOpts {
   network?: string
+  chainId?: number
+  // Deprecated, use chainId instead
   networkId?: number
   sync?: SyncMode
-  lightServe?: boolean
   dataDir?: string
   customChain?: string
   customGenesisState?: string
   gethGenesis?: string
   trustedSetup?: string
-  mergeForkIdPostMerge?: boolean
   bootnodes?: string | string[]
   port?: number
   extIP?: string
@@ -123,12 +95,14 @@ export interface ClientOpts {
   wsEngineAddr?: string
   rpcEngineAuth?: boolean
   jwtSecret?: string
-  helpRpc?: boolean
+  helpRPC?: boolean
   logLevel?: string
   logFile?: boolean | string
   logLevelFile?: string
   logRotate?: boolean
   logMaxFiles?: number
+  prometheus?: boolean
+  prometheusPort?: number
   rpcDebug?: string
   rpcDebugVerbose?: string
   rpcCors?: string
@@ -158,15 +132,26 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
+  startExecutionFrom?: number
+  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
-  loadBlocksFromRlp?: string
+  loadBlocksFromRlp?: string[]
   pruneEngineCache?: boolean
   savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
+  ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
+}
+
+export type PrometheusMetrics = {
+  legacyTxGauge: promClient.Gauge<string>
+  accessListEIP2930TxGauge: promClient.Gauge<string>
+  feeMarketEIP1559TxGauge: promClient.Gauge<string>
+  blobEIP4844TxGauge: promClient.Gauge<string>
 }

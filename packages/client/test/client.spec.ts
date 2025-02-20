@@ -1,10 +1,10 @@
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { EthereumClient } from '../src/client'
-import { Config } from '../src/config'
-import { PeerPool } from '../src/net/peerpool'
-import { RlpxServer } from '../src/net/server'
+import { EthereumClient } from '../src/client.js'
+import { Config } from '../src/config.js'
+import { PeerPool } from '../src/net/peerpool.js'
+import { RlpxServer } from '../src/net/server/index.js'
 
 describe('[EthereumClient]', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -18,9 +18,9 @@ describe('[EthereumClient]', async () => {
   FullEthereumService.prototype.open = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
   FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/service', () => {
-    {
-      FullEthereumService
+  vi.doMock('../src/service/index.js', () => {
+    return {
+      FullEthereumService,
     }
   })
 
@@ -34,18 +34,17 @@ describe('[EthereumClient]', async () => {
   Server.prototype.start = vi.fn().mockResolvedValue(null)
   Server.prototype.stop = vi.fn().mockResolvedValue(null)
   Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
-  vi.doMock('../src/net/server/server', () => {
-    {
-      Server
+  vi.doMock('../src/net/server/server.js', () => {
+    return {
+      Server,
     }
   })
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
-    assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
-    assert.ok('execution' in client.services[0], 'added FullEthereumService')
-    assert.ok('txPool' in client.services[0], 'added FullEthereumService')
+    assert.ok('execution' in client.service!, 'added FullEthereumService')
+    assert.ok('txPool' in client.service!, 'added FullEthereumService')
   })
 
   it('should open', async () => {
@@ -62,7 +61,7 @@ describe('[EthereumClient]', async () => {
     const server = new Server() as any
     const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
-    await (client.services[0] as any)['execution'].setupMerkleVM()
+    await (client.service as any)['execution'].setupMerkleVM()
     await client.start()
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')

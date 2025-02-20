@@ -39,6 +39,7 @@ The default state manager implementation uses a
 - [flush](DefaultStateManager.md#flush)
 - [generateCanonicalGenesis](DefaultStateManager.md#generatecanonicalgenesis)
 - [getAccount](DefaultStateManager.md#getaccount)
+- [getAppliedKey](DefaultStateManager.md#getappliedkey)
 - [getContractCode](DefaultStateManager.md#getcontractcode)
 - [getContractStorage](DefaultStateManager.md#getcontractstorage)
 - [getProof](DefaultStateManager.md#getproof)
@@ -70,7 +71,7 @@ Instantiate the StateManager interface.
 
 #### Defined in
 
-[stateManager.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L194)
+[stateManager.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L192)
 
 ## Properties
 
@@ -117,7 +118,7 @@ Add proof(s) into an already existing trie
 
 #### Defined in
 
-[stateManager.ts:824](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L824)
+[stateManager.ts:819](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L819)
 
 ___
 
@@ -139,7 +140,7 @@ EVMStateManagerInterface.checkpoint
 
 #### Defined in
 
-[stateManager.ts:597](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L597)
+[stateManager.ts:593](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L593)
 
 ___
 
@@ -155,7 +156,7 @@ Clears all underlying caches
 
 #### Defined in
 
-[stateManager.ts:1133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1133)
+[stateManager.ts:1148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1148)
 
 ___
 
@@ -181,7 +182,7 @@ EVMStateManagerInterface.clearContractStorage
 
 #### Defined in
 
-[stateManager.ts:580](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L580)
+[stateManager.ts:576](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L576)
 
 ___
 
@@ -202,7 +203,7 @@ EVMStateManagerInterface.commit
 
 #### Defined in
 
-[stateManager.ts:609](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L609)
+[stateManager.ts:605](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L605)
 
 ___
 
@@ -228,7 +229,7 @@ EVMStateManagerInterface.deleteAccount
 
 #### Defined in
 
-[stateManager.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L337)
+[stateManager.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L333)
 
 ___
 
@@ -258,7 +259,7 @@ EVMStateManagerInterface.dumpStorage
 
 #### Defined in
 
-[stateManager.ts:963](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L963)
+[stateManager.ts:962](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L962)
 
 ___
 
@@ -290,7 +291,7 @@ EVMStateManagerInterface.dumpStorageRange
 
 #### Defined in
 
-[stateManager.ts:989](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L989)
+[stateManager.ts:995](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L995)
 
 ___
 
@@ -306,7 +307,7 @@ Writes all cache items to the trie
 
 #### Defined in
 
-[stateManager.ts:651](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L651)
+[stateManager.ts:647](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L647)
 
 ___
 
@@ -333,7 +334,7 @@ EVMStateManagerInterface.generateCanonicalGenesis
 
 #### Defined in
 
-[stateManager.ts:1036](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1036)
+[stateManager.ts:1051](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1051)
 
 ___
 
@@ -359,7 +360,36 @@ EVMStateManagerInterface.getAccount
 
 #### Defined in
 
-[stateManager.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L264)
+[stateManager.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L260)
+
+___
+
+### getAppliedKey
+
+▸ **getAppliedKey**(`address`): `Uint8Array`
+
+Returns the applied key for a given address
+Used for saving preimages
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | `Uint8Array` | The address to return the applied key |
+
+#### Returns
+
+`Uint8Array`
+
+- The applied key (e.g. hashed address)
+
+#### Implementation of
+
+EVMStateManagerInterface.getAppliedKey
+
+#### Defined in
+
+[stateManager.ts:1160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1160)
 
 ___
 
@@ -388,7 +418,7 @@ EVMStateManagerInterface.getContractCode
 
 #### Defined in
 
-[stateManager.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L383)
+[stateManager.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L379)
 
 ___
 
@@ -420,7 +450,7 @@ EVMStateManagerInterface.getContractStorage
 
 #### Defined in
 
-[stateManager.ts:466](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L466)
+[stateManager.ts:462](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L462)
 
 ___
 
@@ -447,7 +477,7 @@ EVMStateManagerInterface.getProof
 
 #### Defined in
 
-[stateManager.ts:711](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L711)
+[stateManager.ts:707](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L707)
 
 ___
 
@@ -471,7 +501,7 @@ EVMStateManagerInterface.getStateRoot
 
 #### Defined in
 
-[stateManager.ts:921](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L921)
+[stateManager.ts:920](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L920)
 
 ___
 
@@ -497,7 +527,7 @@ EVMStateManagerInterface.hasStateRoot
 
 #### Defined in
 
-[stateManager.ts:1072](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1072)
+[stateManager.ts:1087](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1087)
 
 ___
 
@@ -526,7 +556,7 @@ EVMStateManagerInterface.modifyAccountFields
 
 #### Defined in
 
-[stateManager.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L321)
+[stateManager.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L317)
 
 ___
 
@@ -553,7 +583,7 @@ EVMStateManagerInterface.putAccount
 
 #### Defined in
 
-[stateManager.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L288)
+[stateManager.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L284)
 
 ___
 
@@ -581,7 +611,7 @@ EVMStateManagerInterface.putContractCode
 
 #### Defined in
 
-[stateManager.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L360)
+[stateManager.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L356)
 
 ___
 
@@ -610,7 +640,7 @@ EVMStateManagerInterface.putContractStorage
 
 #### Defined in
 
-[stateManager.ts:553](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L553)
+[stateManager.ts:549](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L549)
 
 ___
 
@@ -631,7 +661,7 @@ EVMStateManagerInterface.revert
 
 #### Defined in
 
-[stateManager.ts:631](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L631)
+[stateManager.ts:627](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L627)
 
 ___
 
@@ -661,7 +691,7 @@ EVMStateManagerInterface.setStateRoot
 
 #### Defined in
 
-[stateManager.ts:933](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L933)
+[stateManager.ts:932](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L932)
 
 ___
 
@@ -706,7 +736,7 @@ EVMStateManagerInterface.shallowCopy
 
 #### Defined in
 
-[stateManager.ts:1098](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1098)
+[stateManager.ts:1113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1113)
 
 ___
 
@@ -728,7 +758,7 @@ Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
 
 #### Defined in
 
-[stateManager.ts:847](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L847)
+[stateManager.ts:842](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L842)
 
 ___
 
@@ -744,8 +774,8 @@ This generates a (partial) StateManager where one can retrieve all items from th
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
 | `proof` | [`Proof`](../README.md#proof) \| [`Proof`](../README.md#proof)[] | `undefined` | Either a proof retrieved from `getProof`, or an array of those proofs |
-| `safe` | `boolean` | `false` | Wether or not to verify that the roots of the proof items match the reported roots |
-| `opts` | [`DefaultStateManagerOpts`](../interfaces/DefaultStateManagerOpts.md) | `{}` | - |
+| `safe` | `boolean` | `false` | Whether or not to verify that the roots of the proof items match the reported roots |
+| `opts` | [`DefaultStateManagerOpts`](../interfaces/DefaultStateManagerOpts.md) | `{}` | a dictionary of StateManager opts |
 
 #### Returns
 
@@ -755,4 +785,4 @@ A new DefaultStateManager with elements from the given proof included in its bac
 
 #### Defined in
 
-[stateManager.ts:765](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L765)
+[stateManager.ts:760](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L760)

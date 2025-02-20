@@ -46,7 +46,6 @@ export * from './types.js'
 /**
  * Export ethjs-util methods
  */
-export * from './asyncEventEmitter.js'
 export * from './blobs.js'
 export * from './genesis.js'
 export {
@@ -55,7 +54,6 @@ export {
   fromUtf8,
   getBinarySize,
   getKeys,
-  isHexPrefixed,
   isHexString,
   padToEven,
   stripHexPrefix,
@@ -65,3 +63,6 @@ export * from './kzg.js'
 export * from './lock.js'
 export * from './mapDB.js'
 export * from './provider.js'
+export * from './request.js'
+export * from './tasks.js'
+export * from './verkle.js'

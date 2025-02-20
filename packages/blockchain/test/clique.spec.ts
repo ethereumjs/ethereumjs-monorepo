@@ -1,15 +1,34 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@ethereumjs/common'
-import { Address, concatBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  cliqueEpochTransitionSigners,
+  createBlock,
+  createSealedCliqueBlock,
+} from '@ethereumjs/block'
+import {
+  Common,
+  ConsensusAlgorithm,
+  ConsensusType,
+  Hardfork,
+  createCustomCommon,
+} from '@ethereumjs/common'
+import {
+  Address,
+  concatBytes,
+  createAddressFromString,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/consensus/clique.js'
-import { Blockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
+import { createBlockchain } from '../src/index.js'
 
-import type { CliqueConsensus } from '../src/consensus/clique.js'
+import { Goerli } from './testdata/goerliCommon.js'
+
+import type { Blockchain, ConsensusDict } from '../src/index.js'
+import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 
-const COMMON = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -23,7 +42,7 @@ const A: Signer = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
   privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
   publicKey: hexToBytes(
-    '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
+    '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
   ),
 }
 
@@ -31,7 +50,7 @@ const B: Signer = {
   address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
   privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
   publicKey: hexToBytes(
-    '0xca0a55f6e81cb897aee6a1c390aa83435c41048faa0564b226cfc9f3df48b73e846377fb0fd606df073addc7bd851f22547afbbdd5c3b028c91399df802083a2'
+    '0xca0a55f6e81cb897aee6a1c390aa83435c41048faa0564b226cfc9f3df48b73e846377fb0fd606df073addc7bd851f22547afbbdd5c3b028c91399df802083a2',
   ),
 }
 
@@ -39,7 +58,7 @@ const C: Signer = {
   address: new Address(hexToBytes('0x83c30730d1972baa09765a1ac72a43db27fedce5')),
   privateKey: hexToBytes('0xf216ddcf276079043c52b5dd144aa073e6b272ad4bfeaf4fbbc044aa478d1927'),
   publicKey: hexToBytes(
-    '0x555b19a5cbe6dd082a4a1e1e0520dd52a82ba24fd5598ea31f0f31666c40905ed319314c5fb06d887b760229e1c0e616294e7b1cb5dfefb71507c9112132ce56'
+    '0x555b19a5cbe6dd082a4a1e1e0520dd52a82ba24fd5598ea31f0f31666c40905ed319314c5fb06d887b760229e1c0e616294e7b1cb5dfefb71507c9112132ce56',
   ),
 }
 
@@ -47,7 +66,7 @@ const D: Signer = {
   address: new Address(hexToBytes('0x8458f408106c4875c96679f3f556a511beabe138')),
   privateKey: hexToBytes('0x159e95d07a6c64ddbafa6036cdb7b8114e6e8cdc449ca4b0468a6d0c955f991b'),
   publicKey: hexToBytes(
-    '0xf02724341e2df54cf53515f079b1354fa8d437e79c5b091b8d8cc7cbcca00fd8ad854cb3b3a85b06c44ecb7269404a67be88b561f2224c94d133e5fc21be915c'
+    '0xf02724341e2df54cf53515f079b1354fa8d437e79c5b091b8d8cc7cbcca00fd8ad854cb3b3a85b06c44ecb7269404a67be88b561f2224c94d133e5fc21be915c',
   ),
 }
 
@@ -55,7 +74,7 @@ const E: Signer = {
   address: new Address(hexToBytes('0xab80a948c661aa32d09952d2a6c4ad77a4c947be')),
   privateKey: hexToBytes('0x48ec5a6c4a7fc67b10a9d4c8a8f594a81ae42e41ed061fa5218d96abb6012344'),
   publicKey: hexToBytes(
-    '0xadefb82b9f54e80aa3532263e4478739de16fcca6828f4ae842f8a07941c347fa59d2da1300569237009f0f122dc1fd6abb0db8fcb534280aa94948a5cc95f94'
+    '0xadefb82b9f54e80aa3532263e4478739de16fcca6828f4ae842f8a07941c347fa59d2da1300569237009f0f122dc1fd6abb0db8fcb534280aa94948a5cc95f94',
   ),
 }
 
@@ -63,7 +82,7 @@ const F: Signer = {
   address: new Address(hexToBytes('0xdc7bc81ddf67d037d7439f8e6ff12f3d2a100f71')),
   privateKey: hexToBytes('0x86b0ff7b6cf70786f29f297c57562905ab0b6c32d69e177a46491e56da9e486e'),
   publicKey: hexToBytes(
-    '0xd3e3d2b722e325bfc085ff5638a112b4e7e88ff13f92fc7f6cfc14b5a25e8d1545a2f27d8537b96e8919949d5f8c139ae7fc81aea7cf7fe5d43d7faaa038e35b'
+    '0xd3e3d2b722e325bfc085ff5638a112b4e7e88ff13f92fc7f6cfc14b5a25e8d1545a2f27d8537b96e8919949d5f8c139ae7fc81aea7cf7fe5d43d7faaa038e35b',
   ),
 }
 
@@ -74,17 +93,18 @@ const initWithSigners = async (signers: Signer[], common?: Common) => {
   const extraData = concatBytes(
     new Uint8Array(32),
     ...signers.map((s) => s.address.toBytes()),
-    new Uint8Array(65)
+    new Uint8Array(65),
   )
-  const genesisBlock = Block.fromBlockData(
-    { header: { gasLimit: GAS_LIMIT, extraData } },
-    { common }
-  )
+  const genesisBlock = createBlock({ header: { gasLimit: GAS_LIMIT, extraData } }, { common })
   blocks.push(genesisBlock)
 
-  const blockchain = await Blockchain.create({
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+
+  const blockchain = await createBlockchain({
     validateBlocks: true,
     validateConsensus: true,
+    consensusDict,
     genesisBlock,
     common,
   })
@@ -97,12 +117,12 @@ function getBlock(
   signer: Signer,
   beneficiary?: [Signer, boolean],
   checkpointSigners?: Signer[],
-  common?: Common
+  common?: Common,
 ) {
   common = common ?? COMMON
   const number = lastBlock.header.number + BigInt(1)
 
-  let coinbase = Address.zero()
+  let coinbase = createZeroAddress()
   let nonce = CLIQUE_NONCE_DROP
   let extraData = EXTRA_DATA
   if (beneficiary) {
@@ -114,7 +134,7 @@ function getBlock(
     extraData = concatBytes(
       new Uint8Array(32),
       ...checkpointSigners.map((s) => s.address.toBytes()),
-      new Uint8Array(65)
+      new Uint8Array(65),
     )
   }
 
@@ -140,7 +160,7 @@ function getBlock(
   // set signer
   const cliqueSigner = signer.privateKey
 
-  return Block.fromBlockData(blockData, { common, freeze: false, cliqueSigner })
+  return createSealedCliqueBlock(blockData, cliqueSigner, { common })
 }
 
 const addNextBlockReorg = async (
@@ -150,7 +170,7 @@ const addNextBlockReorg = async (
   signer: Signer,
   beneficiary?: [Signer, boolean],
   checkpointSigners?: Signer[],
-  common?: Common
+  common?: Common,
 ) => {
   const block = getBlock(blockchain, forkBlock, signer, beneficiary, checkpointSigners, common)
   await blockchain.putBlock(block)
@@ -164,7 +184,7 @@ const addNextBlock = async (
   signer: Signer,
   beneficiary?: [Signer, boolean],
   checkpointSigners?: Signer[],
-  common?: Common
+  common?: Common,
 ) => {
   const block = getBlock(
     blockchain,
@@ -172,7 +192,7 @@ const addNextBlock = async (
     signer,
     beneficiary,
     checkpointSigners,
-    common
+    common,
   )
   await blockchain.putBlock(block)
   blocks.push(block)
@@ -181,16 +201,18 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.create({ common })
+    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const consensusDict: ConsensusDict = {}
+    consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+    const blockchain = await createBlockchain({ common, consensusDict })
 
     const head = await blockchain.getIteratorHead()
     assert.deepEqual(head.hash(), blockchain.genesisBlock.hash(), 'correct genesis hash')
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(head.header.number + BigInt(1)),
-      head.header.cliqueEpochTransitionSigners(),
-      'correct genesis signers'
+      cliqueEpochTransitionSigners(head.header),
+      'correct genesis signers',
     )
   })
 
@@ -200,24 +222,24 @@ describe('Clique: Initialization', () => {
     // _validateConsensus needs to be true to trigger this test condition
     ;(blockchain as any)._validateConsensus = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
-    const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
+    const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(
       new Uint8Array(32),
       A.address.toBytes(),
       unauthorizedSigner.toBytes(),
-      new Uint8Array(65)
+      new Uint8Array(65),
     )
-    const block = Block.fromBlockData(
-      { header: { number, extraData } },
-      { common: COMMON, cliqueSigner: A.privateKey }
-    )
+    const block = createSealedCliqueBlock({ header: { number, extraData } }, A.privateKey, {
+      common: COMMON,
+      freeze: false,
+    })
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
       assert.ok(
         error.message.includes('checkpoint signer not found in active signers list'),
-        'correct error'
+        'correct error',
       )
     }
   })
@@ -229,7 +251,7 @@ describe('Clique: Initialization', () => {
     const number = BigInt(2)
     const extraData = new Uint8Array(97)
     let difficulty = BigInt(5)
-    let block = Block.fromBlockData(
+    let block = createBlock(
       {
         header: {
           number,
@@ -239,7 +261,7 @@ describe('Clique: Initialization', () => {
           timestamp: parentHeader.timestamp + BigInt(10000),
         },
       },
-      { common: COMMON }
+      { common: COMMON },
     )
 
     try {
@@ -248,13 +270,13 @@ describe('Clique: Initialization', () => {
     } catch (error: any) {
       assert.ok(
         error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)'),
-        'correct error'
+        'correct error',
       )
     }
 
     difficulty = BigInt(1)
     const cliqueSigner = A.privateKey
-    block = Block.fromBlockData(
+    block = createSealedCliqueBlock(
       {
         header: {
           number,
@@ -264,7 +286,8 @@ describe('Clique: Initialization', () => {
           timestamp: parentHeader.timestamp + BigInt(10000),
         },
       },
-      { common: COMMON, cliqueSigner }
+      cliqueSigner,
+      { common: COMMON },
     )
 
     try {
@@ -293,9 +316,9 @@ describe('Clique: Initialization', () => {
     assert.equal(block.header.number, BigInt(1))
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        block.header.number + BigInt(1)
+        block.header.number + BigInt(1),
       ),
-      [A.address]
+      [A.address],
     )
   })
 
@@ -306,10 +329,10 @@ describe('Clique: Initialization', () => {
     await addNextBlock(blockchain, blocks, A, [C, true])
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'only accept first, second needs 2 votes'
+      'only accept first, second needs 2 votes',
     )
   })
 
@@ -325,10 +348,10 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address, C.address, D.address],
-      'only accept first two, third needs 3 votes already'
+      'only accept first two, third needs 3 votes already',
     )
   })
 
@@ -354,10 +377,10 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [],
-      'weird, but one less cornercase by explicitly allowing this'
+      'weird, but one less cornercase by explicitly allowing this',
     )
   })
 
@@ -367,10 +390,10 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'not fulfilled'
+      'not fulfilled',
     )
   })
 
@@ -381,10 +404,10 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address],
-      'fulfilled'
+      'fulfilled',
     )
   })
 
@@ -395,9 +418,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
@@ -408,9 +431,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address, C.address, D.address]
+      [A.address, B.address, C.address, D.address],
     )
   })
 
@@ -422,9 +445,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address, C.address]
+      [A.address, B.address, C.address],
     )
   })
 
@@ -438,9 +461,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
@@ -457,9 +480,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address, C.address, D.address]
+      [A.address, B.address, C.address, D.address],
     )
   })
 
@@ -473,9 +496,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
@@ -495,9 +518,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
@@ -510,10 +533,10 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'deauth votes'
+      'deauthorized votes',
     )
   })
 
@@ -526,14 +549,14 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'auth votes'
+      'auth votes',
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) execute on touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -549,13 +572,13 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
-  it('Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch', async () => {
+  it('Clique Voting: Changes reaching consensus out of bounds (via a deauthorization) may go out of consensus on first touch', async () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
@@ -571,9 +594,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address, C.address]
+      [A.address, B.address, C.address],
     )
   })
 
@@ -599,14 +622,14 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [B.address, C.address, D.address, E.address, F.address]
+      [B.address, C.address, D.address, E.address, F.address],
     )
   })
 
   it('Clique Voting: Epoch transitions reset all votes to allow chain checkpointing', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -617,10 +640,10 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
-      }
+      },
     )
     const { blocks, blockchain } = await initWithSigners([A, B], common)
     await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
@@ -630,9 +653,9 @@ describe('Clique: Initialization', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
-      [A.address, B.address]
+      [A.address, B.address],
     )
   })
 
@@ -645,7 +668,7 @@ describe('Clique: Initialization', () => {
     } catch (error: any) {
       assert.ok(
         error.message.includes('invalid PoA block signature (clique)'),
-        'correct error thrown'
+        'correct error thrown',
       )
     }
   })
@@ -662,7 +685,7 @@ describe('Clique: Initialization', () => {
   })
 
   it('Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch', async () => {
-    const common = Common.custom(
+    const common = createCustomCommon(
       {
         consensus: {
           type: ConsensusType.ProofOfAuthority,
@@ -673,10 +696,10 @@ describe('Clique: Initialization', () => {
           },
         },
       },
+      Goerli,
       {
-        baseChain: Chain.Goerli,
         hardfork: Hardfork.Chainstart,
-      }
+      },
     )
     const { blocks, blockchain } = await initWithSigners([A, B, C], common)
     await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
@@ -697,80 +720,80 @@ describe('Clique: Initialization', () => {
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     // block 2: C, next signer: A
     await addNextBlock(blockchain, blocks, C)
     assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     // block 3: A, next signer: B
     await addNextBlock(blockchain, blocks, A)
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     // block 4: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.notOk(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
     assert.ok(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
-        blocks[blocks.length - 1].header.number
-      )
+        blocks[blocks.length - 1].header.number,
+      ),
     )
   })
 })
@@ -780,15 +803,15 @@ describe('clique: reorgs', () => {
     const { blocks, blockchain } = await initWithSigners([A, B])
     const genesis = blocks[0]
     await addNextBlock(blockchain, blocks, A, [C, true])
-    const headBlockUnforked = await addNextBlock(blockchain, blocks, B, [C, true])
+    const headBlockNotForked = await addNextBlock(blockchain, blocks, B, [C, true])
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address, C.address],
-      'address C added to signers'
+      'address C added to signers',
     )
-    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+    assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
     await addNextBlockReorg(blockchain, blocks, genesis, B)
     const headBlock = await addNextBlock(blockchain, blocks, A)
     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlock.hash())
@@ -797,10 +820,10 @@ describe('clique: reorgs', () => {
 
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
-        blocks[blocks.length - 1].header.number + BigInt(1)
+        blocks[blocks.length - 1].header.number + BigInt(1),
       ),
       [A.address, B.address],
-      'address C not added to signers'
+      'address C not added to signers',
     )
   })
 
@@ -809,7 +832,7 @@ describe('clique: reorgs', () => {
   it(
     'Two signers, voting to add one other signer, epoch transition, then reorg and revoke this addition',
     async (st) => {
-      const common = Common.custom(
+      const common = createCustomCommon(
         {
           consensus: {
             type: ConsensusType.ProofOfAuthority,
@@ -830,7 +853,7 @@ describe('clique: reorgs', () => {
       await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
-      const headBlockUnforked = await addNextBlock(
+      const headBlockNotForked = await addNextBlock(
         blockchain,
         blocks,
         B,
@@ -845,7 +868,7 @@ describe('clique: reorgs', () => {
         [A.address, B.address, C.address],
         'address C added to signers'
       )
-     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockUnforked.hash())
+     assert.deepEqual((await blockchain.getCanonicalHeadBlock()).hash(), headBlockNotForked.hash())
       await addNextBlockReorg(blockchain, blocks, genesis, B, undefined, undefined, common)
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
 

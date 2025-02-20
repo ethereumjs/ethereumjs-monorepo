@@ -1,12 +1,14 @@
-import type { BlockHeader } from './header.js'
-import type { Common } from '@ethereumjs/common'
-import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
+import type { BlockHeader } from './index.js'
+import type { Common, ParamsDict } from '@ethereumjs/common'
+import type { JSONRPCTx, JSONTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
   BigIntLike,
   BytesLike,
-  JsonRpcWithdrawal,
+  JSONRPCWithdrawal,
+  NumericString,
   PrefixedHexString,
+  VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -33,12 +35,26 @@ export interface BlockOptions {
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
-   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
-   * transitions. Note that this should only be needed in very rare and specific scenarios.
-   *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  setHardfork?: boolean | BigIntLike
+  setHardfork?: boolean
+  /**
+   * Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
+   * which is internally passed to the associated `@ethereumjs/common` instance which
+   * manages parameter selection based on the hardfork and EIP settings.
+   *
+   * This option allows providing a custom set of parameters. Note that parameters
+   * get fully overwritten, so you need to extend the default parameter dict
+   * to provide the full parameter set.
+   *
+   * It is recommended to deep-clone the params object for this to avoid side effects:
+   *
+   * ```ts
+   * const params = JSON.parse(JSON.stringify(paramsBlock))
+   * params['1']['minGasLimit'] = 3000 // 5000
+   * ```
+   */
+  params?: ParamsDict
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
@@ -61,53 +77,11 @@ export interface BlockOptions {
    */
   freeze?: boolean
   /**
-   * Provide a clique signer's privateKey to seal this block.
-   * Will throw if provided on a non-PoA chain.
-   */
-  cliqueSigner?: Uint8Array
-  /**
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
   skipConsensusFormatValidation?: boolean
-}
 
-export interface VerkleProof {
-  commitmentsByPath: PrefixedHexString[]
-  d: PrefixedHexString
-  depthExtensionPresent: PrefixedHexString
-  ipaProof: {
-    cl: PrefixedHexString[]
-    cr: PrefixedHexString[]
-    finalEvaluation: PrefixedHexString
-  }
-  otherStems: PrefixedHexString[]
-}
-
-export interface VerkleStateDiff {
-  stem: PrefixedHexString
-  suffixDiffs: {
-    currentValue: PrefixedHexString | null
-    newValue: PrefixedHexString | null
-    suffix: number | string
-  }[]
-}
-
-/**
- * Experimental, object format could eventual change.
- * An object that provides the state and proof necessary for verkle stateless execution
- * */
-export interface VerkleExecutionWitness {
-  /**
-   * An array of state diffs.
-   * Each item corresponding to state accesses or state modifications of the block.
-   * In the current design, it also contains the resulting state of the block execution (post-state).
-   */
-  stateDiff: VerkleStateDiff[]
-  /**
-   * The verkle proof for the block.
-   * Proves that the provided stateDiff belongs to the canonical verkle tree.
-   */
-  verkleProof: VerkleProof
+  executionWitness?: VerkleExecutionWitness
 }
 
 /**
@@ -134,6 +108,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
+  requestsHash?: BytesLike
 }
 
 /**
@@ -164,7 +139,7 @@ export type BlockBytes =
       TransactionsBytes,
       UncleHeadersBytes,
       WithdrawalsBytes,
-      ExecutionWitnessBytes
+      ExecutionWitnessBytes,
     ]
 
 /**
@@ -181,77 +156,78 @@ export type UncleHeadersBytes = Uint8Array[][]
 /**
  * An object with the block's data represented as strings.
  */
-export interface JsonBlock {
+export interface JSONBlock {
   /**
    * Header data for the block
    */
-  header?: JsonHeader
-  transactions?: JsonTx[]
-  uncleHeaders?: JsonHeader[]
-  withdrawals?: JsonRpcWithdrawal[]
+  header?: JSONHeader
+  transactions?: JSONTx[]
+  uncleHeaders?: JSONHeader[]
+  withdrawals?: JSONRPCWithdrawal[]
   executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
- * An object with the block header's data represented as strings.
+ * An object with the block header's data represented as 0x-prefixed hex strings.
  */
-export interface JsonHeader {
-  parentHash?: string
-  uncleHash?: string
-  coinbase?: string
-  stateRoot?: string
-  transactionsTrie?: string
-  receiptTrie?: string
-  logsBloom?: string
-  difficulty?: string
-  number?: string
-  gasLimit?: string
-  gasUsed?: string
-  timestamp?: string
-  extraData?: string
-  mixHash?: string
-  nonce?: string
-  baseFeePerGas?: string
-  withdrawalsRoot?: string
-  blobGasUsed?: string
-  excessBlobGas?: string
-  parentBeaconBlockRoot?: string
+export interface JSONHeader {
+  parentHash?: PrefixedHexString
+  uncleHash?: PrefixedHexString
+  coinbase?: PrefixedHexString
+  stateRoot?: PrefixedHexString
+  transactionsTrie?: PrefixedHexString
+  receiptTrie?: PrefixedHexString
+  logsBloom?: PrefixedHexString
+  difficulty?: PrefixedHexString
+  number?: PrefixedHexString
+  gasLimit?: PrefixedHexString
+  gasUsed?: PrefixedHexString
+  timestamp?: PrefixedHexString
+  extraData?: PrefixedHexString
+  mixHash?: PrefixedHexString
+  nonce?: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString
+  withdrawalsRoot?: PrefixedHexString
+  blobGasUsed?: PrefixedHexString
+  excessBlobGas?: PrefixedHexString
+  parentBeaconBlockRoot?: PrefixedHexString
+  requestsHash?: PrefixedHexString
 }
 
 /*
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
-export interface JsonRpcBlock {
-  number: string // the block number. null when pending block.
-  hash: string // hash of the block. null when pending block.
-  parentHash: string // hash of the parent block.
-  mixHash?: string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
-  nonce: string // hash of the generated proof-of-work. null when pending block.
-  sha3Uncles: string // SHA3 of the uncles data in the block.
-  logsBloom: string // the bloom filter for the logs of the block. null when pending block.
-  transactionsRoot: string // the root of the transaction trie of the block.
-  stateRoot: string // the root of the final state trie of the block.
-  receiptsRoot: string // the root of the receipts trie of the block.
-  miner: string // the address of the beneficiary to whom the mining rewards were given.
-  difficulty: string // integer of the difficulty for this block.
-  totalDifficulty: string // integer of the total difficulty of the chain until this block.
-  extraData: string // the “extra data” field of this block.
-  size: string // integer the size of this block in bytes.
-  gasLimit: string // the maximum gas allowed in this block.
-  gasUsed: string // the total used gas by all transactions in this block.
-  timestamp: string // the unix timestamp for when the block was collated.
-  transactions: Array<JsonRpcTx | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
-  uncles: string[] // Array of uncle hashes
-  baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
-  withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
-  withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
-  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
-  excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
-  parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+export interface JSONRPCBlock {
+  number: PrefixedHexString // the block number.
+  hash: PrefixedHexString // hash of the block.
+  parentHash: PrefixedHexString // hash of the parent block.
+  mixHash?: PrefixedHexString // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
+  nonce: PrefixedHexString // hash of the generated proof-of-work.
+  sha3Uncles: PrefixedHexString // SHA3 of the uncles data in the block.
+  logsBloom: PrefixedHexString // the bloom filter for the logs of the block.
+  transactionsRoot: PrefixedHexString // the root of the transaction trie of the block.
+  stateRoot: PrefixedHexString // the root of the final state trie of the block.
+  receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
+  miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: PrefixedHexString | NumericString // integer of the difficulty for this block. Can be a 0x-prefixed hex string or a string integer
+  totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
+  extraData: PrefixedHexString // the “extra data” field of this block.
+  size: PrefixedHexString // integer the size of this block in bytes.
+  gasLimit: PrefixedHexString // the maximum gas allowed in this block.
+  gasUsed: PrefixedHexString // the total used gas by all transactions in this block.
+  timestamp: PrefixedHexString // the unix timestamp for when the block was collated.
+  transactions: Array<JSONRPCTx | PrefixedHexString> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: PrefixedHexString[] // Array of uncle hashes
+  baseFeePerGas?: PrefixedHexString // If EIP-1559 is enabled for this block, returns the base fee per gas
+  withdrawals?: Array<JSONRPCWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
+  withdrawalsRoot?: PrefixedHexString // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
+  blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
+  parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsHash?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
 }
 
-// Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
   index: PrefixedHexString // Quantity, 8 Bytes
   validatorIndex: PrefixedHexString // Quantity, 8 bytes
@@ -279,6 +255,7 @@ export type ExecutionPayload = {
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
+  requestsHash?: PrefixedHexString
   // VerkleExecutionWitness is already a hex serialized object
-  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null imples not available
+  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
 }

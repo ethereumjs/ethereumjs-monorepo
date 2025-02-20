@@ -7,7 +7,6 @@ import {
   fromUtf8,
   getBinarySize,
   getKeys,
-  isHexPrefixed,
   isHexString,
   padToEven,
   stripHexPrefix,
@@ -18,9 +17,12 @@ import {
 const buf = utf8ToBytes('hello')
 
 describe('internal', () => {
-  it('isHexPrefixed', () => {
-    assert.equal(isHexPrefixed('0xabc'), true)
-    assert.equal(isHexPrefixed('abc'), false)
+  it('isHexString', () => {
+    assert.isTrue(isHexString('0x123'))
+    assert.isTrue(isHexString('0xabc'))
+    assert.isFalse(isHexString('abc'))
+    assert.isFalse(isHexString('123'))
+    assert.isTrue(isHexString('0x0000000000000000000000000000000000000000'))
   })
   it('stripHexPrefix', () => {
     assert.equal(stripHexPrefix('0xabc'), 'abc')
@@ -49,9 +51,9 @@ describe('internal', () => {
           { a: '1', b: '2' },
           { a: '3', b: '4' },
         ],
-        'a'
+        'a',
       ),
-      ['1', '3']
+      ['1', '3'],
     )
     assert.deepEqual(
       getKeys(
@@ -60,24 +62,10 @@ describe('internal', () => {
           { a: '3', b: '4' },
         ],
         'a',
-        true
+        true,
       ),
-      ['', '3']
+      ['', '3'],
     )
-  })
-  it('isHexString', () => {
-    assert.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
-    assert.equal(isHexString('123'), false)
-  })
-
-  describe('isHexPrefixed', () => {
-    it('should return true for hex-prefixed string', () => {
-      assert.isTrue(isHexPrefixed('0x123'))
-    })
-
-    it('should return false for non-hex-prefixed string', () => {
-      assert.isFalse(isHexPrefixed('123'))
-    })
   })
 
   describe('padToEven', () => {

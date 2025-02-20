@@ -1,5 +1,5 @@
-import type { Config } from '../../config'
-import type { Sender } from './sender'
+import type { Config } from '../../config.js'
+import type { Sender } from './sender.js'
 
 export interface ProtocolOptions {
   config: Config

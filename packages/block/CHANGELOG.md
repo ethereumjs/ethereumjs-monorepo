@@ -6,6 +6,342 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-alpha.1 - [ UNPUBLISHED ]
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PRs [#3489](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3489), [#3549](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3549), [#3550](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3550), [#3558](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3558) and [#3586](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3586)).
+
+`Block` class:
+
+- `Block.fromBlockData()` -> `createBlock()`
+- `Block.fromRLPSerializedBlock()` -> `createBlockFromRLP()`
+- `Block.fromValuesArray()` -> `createBlockFromValuesArray()`
+- `Block.fromRPC()` -> `createBlockFromRPC()`
+- `Block.fromJSONRPCProvider()` -> `createBlockFromJSONRPCProvider()`
+- `Block.fromExecutionPayload()` -> `createBlockFromExecutionPayload()`
+- `Block.fromBeaconPayloadJSON()` -> `createBlockFromBeaconPayloadJSON()`
+
+`Header` class:
+
+- `Header.fromHeaderData()` -> `createBlockHeader()`
+- `Header.fromRLPSerializedHeader()` -> `createBlockHeaderFromRLP()`
+- `Header.fromValuesArray()` -> `createBlockHeaderFromValuesArray()`
+- `Header.fromRPC()` -> `createBlockHeaderFromRPC()`
+
+Also renamed in similar way: Block trie root methods (e.g. `Block.genWithdrawalsTrieRoot()` -> `genWithdrawalsTrieRoot()`)
+
+### Own Block Parameter Set
+
+HF-sensitive parameters like `targetBlobGasPerBlock` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsBlock`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### Clique/Ethash Logic Extraction
+
+Since downgraded in importance and otherwise bloating the core `Block` class too much, most clique and ethash consensus related functionality has been taken out of the core class implementation and moved to standalone methods, see PR [#3571](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3571/).
+
+Both clique and ethash blocks can still be created though and used within the wider EthereumJS stack. For clique, the `cliqueSigner` option has been removed. Instead there is a dedicated static constructor/standalone method to create a clique block:
+
+```ts
+let block = createSealedCliqueBlock({
+  /* ... */
+})
+```
+
+Most clique methods are now invoked in a standalone-way, e.g.:
+
+```ts
+header.cliqueEpochTransitionSigners(), // old
+  cliqueEpochTransitionSigners(header) // new
+```
+
+### JavaScript KZG Support (no more WASM)
+
+The WASM based KZG integration for 4844 support has been replaced with a pure JS-based solution ([micro-eth-singer](https://github.com/paulmillr/micro-eth-signer), thanks to @paulmillr for the cooperation and Andrew for the integration! ❤️), see PR [#3674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3674). This makes this library fully independent from Web Assembly code for all supported functionality! 🎉 The JS version is indeed even faster then the WASM one (we benchmarked), so we recommend to just switch over!
+
+KZG is one-time initialized by providing to `Common`, in the updated version now like this:
+
+```ts
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const kzg = new microEthKZG(trustedSetup)
+// Pass the following Common to the EthereumJS library
+const common = new Common({
+  chain: Mainnet,
+  customCrypto: {
+    kzg,
+  },
+})
+```
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This means that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For this library this means:
+
+- The `setHardfork` constructor option is simplified to only accept a `boolean` and no `BigIntLike` for an eventual TD value anymore
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- The `normalizeTxParams()` helper method moved over to the tx library, PR [#3588](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3588)
+- Renaming all camel-case `Rpc`-> `RPC` and `Json` -> `JSON` names, PR [#3638](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3638)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- New `createEmptyBlock()` constructor (tree shaking advantages), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+- kaustinen7 verkle testnet preparation (removes the stateRoot handling and caching for the previous block), PR [#3433](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3433)
+
+## 5.3.0 - 2024-08-15
+
+### Blocks with EIP-7685 Consensus Layer Requests
+
+Starting with this release this library supports requests to the consensus layer (see PRs [#3372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3372) and [#3393](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3393)) which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+
+#### EIP-6110 Deposit Requests
+
+[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer, see PRs [#3390](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3390) and [#3397](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3397). Starting with this release this library supports deposit requests and a containing block can be instantiated as follows:
+
+```ts
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  DepositRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const depositRequestData = {
+    pubkey: randomBytes(48),
+    withdrawalCredentials: randomBytes(32),
+    amount: bytesToBigInt(randomBytes(8)),
+    signature: randomBytes(96),
+    index: bytesToBigInt(randomBytes(8)),
+  }
+  const request = DepositRequest.fromRequestData(depositRequestData) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
+#### EIP-7002 Withdrawal Requests
+
+[EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer, see PR [#3385](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3385). Starting with this release this library supports withdrawal requests and a containing block can be instantiated as follows:
+
+```ts
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  randomBytes,
+  WithdrawalRequest,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const withdrawalRequestData = {
+    sourceAddress: randomBytes(20),
+    validatorPubkey: randomBytes(48),
+    amount: bytesToBigInt(randomBytes(8)),
+  }
+  const request = WithdrawalRequest.fromRequestData(
+    withdrawalRequestData,
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
+
+#### EIP-7251 Consolidation Requests
+
+[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477). Starting with this release this library supports consolidation requests and a containing block can be instantiated as follows:
+
+```ts
+// ./examples/7251Requests.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import {
+  bytesToBigInt,
+  ConsolidationRequest,
+  randomBytes,
+  type CLRequest,
+  type CLRequestType,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+const main = async () => {
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Prague,
+  })
+
+  const consolidationRequestData = {
+    sourceAddress: randomBytes(20),
+    sourcePubkey: randomBytes(48),
+    targetPubkey: randomBytes(48),
+  }
+  const request = ConsolidationRequest.fromRequestData(
+    consolidationRequestData,
+  ) as CLRequest<CLRequestType>
+  const requests = [request]
+  const requestsRoot = await Block.genRequestsRoot(requests, keccak256)
+
+  const block = Block.fromBlockData(
+    {
+      requests,
+      header: { requestsRoot },
+    },
+    { common },
+  )
+  console.log(
+    `Instantiated block with ${
+      block.requests?.length
+    } consolidation request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+  )
+}
+
+main()
+```
+
+Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
+
+### Verkle Updates
+
+- Fixes for Kaustinen4 support, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Update `kzg-wasm` to `0.4.0`, PR [#3358](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3358)
+- Shift Verkle to `osaka` hardfork, PR [#3371](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3371)
+- Fix the block body parsing as well as save/load from blockchain, PR [#3392](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3392)
+- Verkle type/interface refactoring (moved to Common package), PR [#3462](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3462)
+
+### Other Features
+
+- New `Block.toExecutionPayload()` method to map to the execution payload structure from the beacon chain, PR [#3269](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3269)
+- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348), [#3427](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3427) and [#3357](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3357) (some changes removed in PR [#3382](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3382) for backwards compatibility reasons, will be reintroduced along upcoming breaking releases)
+
+### Other Changes
+
+- Make EIP-4895 withdrawals trie check consistent with tx trie, PR [#3338](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3338)
+- Rename deposit receipt to deposit request, PR [#3408](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3408)
+- Enhances typing of CL requests, PR [#3398](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3398)
+- Rename withdrawal request's `validatorPublicKey` to `validatorPubkey`, PR [#3474](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3474)
+
+## 5.2.0 - 2024-03-18
+
+### Full 4844 Browser Readiness
+
+#### WASM KZG
+
+Shortly following the "Dencun Hardfork Support" release round from last month, this is now the first round of releases where the EthereumJS libraries are now fully browser compatible regarding the new 4844 functionality, see PRs [#3294](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3294) and [#3296](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3296)! 🎉
+
+Our WASM wizard @acolytec3 has spent the last two weeks and created a WASM build of the [c-kzg](https://github.com/benjaminion/c-kzg) library which we have released under the `kzg-wasm` name on npm (and you can also use independently for other projects). See the newly created [GitHub repository](https://github.com/ethereumjs/kzg-wasm) for some library-specific documentation.
+
+This WASM KZG library can now be used for KZG initialization (replacing the old recommended `c-kzg` initialization), see the respective [README section](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/README.md#kzg-initialization) from the tx library for usage instructions (which is also accurate for the other using upstream libraries like block or EVM).
+
+Note that `kzg-wasm` needs to be added manually to your own dependencies and the KZG initialization code needs to be adopted like the following (which you will likely want to do in most cases, so if you deal with post Dencun EVM bytecode and/or 4844 blob txs in any way):
+
+```typescript
+import { loadKZG } from 'kzg-wasm'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+
+const kzg = await loadKZG()
+
+// Instantiate `common`
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
+})
+```
+
+Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
+
+Note that passing in the KZG setup file is not necessary anymore, since this is now defaulting to the setup file from the official [KZG ceremony](https://ceremony.ethereum.org/) (which is now bundled with the KZG library).
+
+#### Trie Node.js Import Bug
+
+Since this fits well also to be placed here relatively prominently for awareness: we had a relatively nasty bug in the `@ethereumjs/trie` library with a `Node.js` web stream import also affecting browser compatibility, see PR [#3280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3280). This bug has been fixed along with these releases and this library now references the updated trie library version.
+
+### Other Changes
+
+- Fixed a bug in the `Block.fromRPC()` and `BlockHeader.fromRPC()` constructors to not parse the `parentBeaconBlockRoot` correctly, PR [#3283](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3283)
+
 ## 5.1.1 - 2024-02-08
 
 - Hotfix release adding a missing `debug` dependency to the `@ethereumjs/trie` package (dependency), PR [#3271](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3271)
@@ -91,7 +427,7 @@ While you could use our libraries in the browser libraries before, there had bee
 
 WE HAVE ELIMINATED ALL OF THEM.
 
-The largest two undertakings: First: we have rewritten all (half) of our API and elimited the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went throuh our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
+The largest two undertakings: First: we have rewritten all (half) of our API and eliminated the usage of Node.js specific `Buffer` all over the place and have rewritten with using `Uint8Array` byte objects. Second: we went through our whole stack, rewrote imports and exports, replaced and updated dependencies all over and are now able to provide a hybrid CommonJS/ESM build, for all libraries. Both of these things are huge.
 
 Together with some few other modifications this now allows to run each (maybe adding an asterisk for client and devp2p) of our libraries directly in the browser - more or less without any modifications - see the `examples/browser.html` file in each package folder for an easy to set up example.
 
@@ -377,14 +713,14 @@ const block = Block.fromBlockData(
     header: {
       withdrawalsRoot: Buffer.from(
         '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
-        'hex'
+        'hex',
       ),
     },
     withdrawals: [withdrawal],
   },
   {
     common,
-  }
+  },
 )
 ```
 
@@ -415,11 +751,11 @@ common.setForkHashes(genesisHash)
 
 ### New RPC and Ethers Static Constructors
 
-Two new static constructos have been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315) `Block.fromEthersProvider()` allows for an easy instantiation of a `Block` object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura. The `Block.fromRPC()` static constructor can be used for a straight-forward block instantiation if the block data is coming from an RPC request. This static constructor replaces the old standalong `blockFromRPC()` method which is now marked as `deprecated`.
+Two new static constructors have been added to the library, see PR [#2315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2315) `Block.fromEthersProvider()` allows for an easy instantiation of a `Block` object using an [Ethers](https://ethers.io) provider connecting e.g. to a local node or a service provider like Infura. The `Block.fromRPC()` static constructor can be used for a straight-forward block instantiation if the block data is coming from an RPC request. This static constructor replaces the old standalone `blockFromRPC()` method which is now marked as `deprecated`.
 
 ### Other Changes and Fixes
 
-- Adressed several typing issues in the `blockFromRPC()` method, PR [#2302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2302)
+- Addressed several typing issues in the `blockFromRPC()` method, PR [#2302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2302)
 
 ## 4.0.0 - 2022-09-06
 
@@ -471,7 +807,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -486,7 +822,7 @@ Beta 2 release for the upcoming breaking release round on the [EthereumJS monore
 
 ### Removed Default Exports
 
-The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all accross the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely dissalows using.
+The change with the biggest effect on UX since the last Beta 1 releases is for sure that we have removed default exports all across the monorepo, see PR [#2018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2018), we even now added a new linting rule that completely disallows using.
 
 Default exports were a common source of error and confusion when using our libraries in a CommonJS context, leading to issues like Issue [#978](https://github.com/ethereumjs/ethereumjs-monorepo/issues/978).
 
@@ -494,7 +830,7 @@ Now every import is a named import and we think the long term benefits will very
 
 #### Common Library Import Updates
 
-Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all accross our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
+Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) library is used all across our libraries for chain and HF instantiation this will likely be the one being the most prevalent regarding the need for some import updates.
 
 So Common import and usage is changing from:
 
@@ -550,7 +886,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -680,7 +1016,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -702,7 +1038,7 @@ invalid transaction trie (block number=1 hash=0xe074b7b8d725c4000f278ae55cedbc76
 
 The extended errors give substantial more object and chain context and should ease debugging.
 
-**Potentially breaking**: Attention! If you do react on errors in your code and do exact errror matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisions and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
+**Potentially breaking**: Attention! If you do react on errors in your code and do exact error matching (`error.message === 'invalid transaction trie'`) things will break. Please make sure to do error comparisons with something like `error.message.includes('invalid transaction trie')` instead. This should generally be the pattern used for all error message comparisons and is assured to be future proof on all error messages (we won't change the core text in non-breaking releases).
 
 ### Other Changes
 
@@ -723,7 +1059,7 @@ This release comes with experimental support for the Merge HF as defined in [EIP
 
 #### PoS Block Instantiation
 
-Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficuly is set to `0` since not relevant any more, just to name an example. For a full list of changes see `EIP-3675`.
+Proof-of-Stake compatible execution blocks come with its own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant any more, just to name an example. For a full list of changes see `EIP-3675`.
 
 You can instantiate a Merge/PoS block like this:
 
@@ -735,7 +1071,7 @@ const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
   },
-  { common }
+  { common },
 )
 ```
 
@@ -786,7 +1122,7 @@ const block = Block.fromBlockData(
       gasUsed: new BN(60),
     },
   },
-  { common }
+  { common },
 )
 
 // Base fee will increase for next block since the
@@ -943,7 +1279,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 ```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
-  'hex'
+  'hex',
 )
 const header = BlockHeader.fromRLPSerializedHeader(serialized)
 ```
@@ -955,7 +1291,7 @@ const valuesArray = header.raw()
 BlockHeader.fromValuesArray(valuesArray)
 ```
 
-Generally internal types representing block header values are now closer to their domain representation (number, difficulty, gasLimit) instead of having everthing represented as a `Buffer`.
+Generally internal types representing block header values are now closer to their domain representation (number, difficulty, gasLimit) instead of having everything represented as a `Buffer`.
 
 **Block Class**
 
@@ -969,9 +1305,9 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
+The returned block is now frozen and immutable. To work with a mutable block, copy it with `const fakeBlock = Object.create(block)`.
 
-If you need `Block` mutability - e.g. because you want to subclass `Block` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
+If you need `Block` mutability - e.g. because you want to subclass `Block` and modify its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/941).
 
 #### Promise-based API
 
@@ -1018,13 +1354,13 @@ On the `Block` library new corresponding methods have been added which both oper
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
 
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 
@@ -1151,7 +1487,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 ```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
-  'hex'
+  'hex',
 )
 const header = BlockHeader.fromRLPSerializedHeader(serialized)
 ```
@@ -1164,7 +1500,7 @@ BlockHeader.fromValuesArray(valuesArray)
 ```
 
 Generally internal types representing block header values are now closer to their domain representation
-(number, difficulty, gasLimit) instead of having everthing represented as a `Buffer`.
+(number, difficulty, gasLimit) instead of having everything represented as a `Buffer`.
 
 **Block Class**
 
@@ -1178,7 +1514,7 @@ Learn more about the full API in the [docs](./docs/README.md).
 
 #### Immutability
 
-The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
+The returned block is now frozen and immutable. To work with a mutable block, copy it with `const fakeBlock = Object.create(block)`.
 
 #### Promise-based API
 
@@ -1224,7 +1560,7 @@ as an input parameter.
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-monorepo/pull/906).
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+The HF setting is now automatically taken from the HF set for `Common.DEFAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/863).
 
 ### Dual ES5 and ES2017 Builds
@@ -1236,7 +1572,7 @@ for code linting and formatting and the introduction of a new build setup.
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
 a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
 PR [#921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a related discussion.
 
 ### Other Changes
 

@@ -46,6 +46,7 @@ Typed transaction with optional access lists
 - [errorStr](AccessListEIP2930Transaction.md#errorstr)
 - [getBaseFee](AccessListEIP2930Transaction.md#getbasefee)
 - [getDataFee](AccessListEIP2930Transaction.md#getdatafee)
+- [getEffectivePriorityFee](AccessListEIP2930Transaction.md#geteffectivepriorityfee)
 - [getHashedMessageToSign](AccessListEIP2930Transaction.md#gethashedmessagetosign)
 - [getMessageToSign](AccessListEIP2930Transaction.md#getmessagetosign)
 - [getMessageToVerifySignature](AccessListEIP2930Transaction.md#getmessagetoverifysignature)
@@ -321,7 +322,7 @@ BaseTransaction.addSignature
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L283)
+[tx/src/eip2930Transaction.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L287)
 
 ___
 
@@ -341,7 +342,7 @@ BaseTransaction.errorStr
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L329)
+[tx/src/eip2930Transaction.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L333)
 
 ___
 
@@ -381,7 +382,31 @@ BaseTransaction.getDataFee
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L179)
+[tx/src/eip2930Transaction.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L183)
+
+___
+
+### getEffectivePriorityFee
+
+▸ **getEffectivePriorityFee**(`baseFee?`): `bigint`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `baseFee?` | `bigint` |
+
+#### Returns
+
+`bigint`
+
+#### Overrides
+
+BaseTransaction.getEffectivePriorityFee
+
+#### Defined in
+
+[tx/src/eip2930Transaction.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L176)
 
 ___
 
@@ -405,7 +430,7 @@ BaseTransaction.getHashedMessageToSign
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L255)
+[tx/src/eip2930Transaction.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L259)
 
 ___
 
@@ -433,7 +458,7 @@ BaseTransaction.getMessageToSign
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L244)
+[tx/src/eip2930Transaction.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L248)
 
 ___
 
@@ -453,7 +478,7 @@ BaseTransaction.getMessageToVerifySignature
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L272)
+[tx/src/eip2930Transaction.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L276)
 
 ___
 
@@ -473,7 +498,7 @@ BaseTransaction.getSenderAddress
 
 #### Defined in
 
-[tx/src/baseTransaction.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L272)
+[tx/src/baseTransaction.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L279)
 
 ___
 
@@ -493,7 +518,7 @@ BaseTransaction.getSenderPublicKey
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L279)
+[tx/src/eip2930Transaction.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L283)
 
 ___
 
@@ -513,7 +538,7 @@ BaseTransaction.getUpfrontCost
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L186)
+[tx/src/eip2930Transaction.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L190)
 
 ___
 
@@ -558,7 +583,7 @@ BaseTransaction.hash
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L265)
+[tx/src/eip2930Transaction.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L269)
 
 ___
 
@@ -576,7 +601,7 @@ BaseTransaction.isSigned
 
 #### Defined in
 
-[tx/src/baseTransaction.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L247)
+[tx/src/baseTransaction.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L254)
 
 ___
 
@@ -628,7 +653,7 @@ BaseTransaction.raw
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L203)
+[tx/src/eip2930Transaction.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L207)
 
 ___
 
@@ -655,7 +680,7 @@ BaseTransaction.serialize
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L229)
+[tx/src/eip2930Transaction.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L233)
 
 ___
 
@@ -687,7 +712,7 @@ BaseTransaction.sign
 
 #### Defined in
 
-[tx/src/baseTransaction.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L290)
+[tx/src/baseTransaction.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L297)
 
 ___
 
@@ -746,7 +771,7 @@ BaseTransaction.toCreationAddress
 
 #### Defined in
 
-[tx/src/baseTransaction.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L216)
+[tx/src/baseTransaction.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L223)
 
 ___
 
@@ -766,7 +791,7 @@ BaseTransaction.toJSON
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L314)
+[tx/src/eip2930Transaction.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L318)
 
 ___
 
@@ -786,7 +811,7 @@ BaseTransaction.verifySignature
 
 #### Defined in
 
-[tx/src/baseTransaction.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L259)
+[tx/src/baseTransaction.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/baseTransaction.ts#L266)
 
 ___
 

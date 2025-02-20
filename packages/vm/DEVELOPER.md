@@ -217,3 +217,7 @@ npm run profiling -- mainnetBlocks:10
 and open the link it generates.
 
 For a high-level introduction on flame graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
+
+## T8NTool: fill `execution-spec-tests` tests and write those
+
+The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.

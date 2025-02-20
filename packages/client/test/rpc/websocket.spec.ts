@@ -1,16 +1,17 @@
 import { randomBytes } from '@ethereumjs/util'
 import WebSocket from 'isomorphic-ws'
 import { Client } from 'jayson/promise'
-import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
+import { jwt } from '../../src/ext/jwt-simple.js'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
 
-import { startRPC } from './helpers'
+import { startRPC } from './helpers.js'
 
-import type { TAlgorithm } from 'jwt-simple'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 
 const jwtSecret = randomBytes(32)
+const { encode } = jwt
 
 describe('JSON-RPC call', () => {
   it('auth protected server with valid token', async () => {
@@ -27,14 +28,12 @@ describe('JSON-RPC call', () => {
       //@ts-ignore -- `isomorphic-ws` types aren't perfectly mapped to jayson.WebSocketClient but works fine for this test
       ws: socket,
     })
+    while ((rpc as any).ws.readyState !== WebSocket.OPEN) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
     try {
-      await new Promise((resolve) => {
-        ;(rpc as any).ws.on('open', async () => {
-          const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-          assert.equal(res.error.code, METHOD_NOT_FOUND)
-          resolve(undefined)
-        })
-      })
+      const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
+      assert.equal(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }
@@ -43,17 +42,19 @@ describe('JSON-RPC call', () => {
   it('auth protected server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1236, 'localhost')
-    const rpc = Client.websocket({
-      url: 'ws://localhost:1236/',
-    })
 
     await new Promise((resolve) => {
-      ;(rpc as any).ws.on('error', async (err: any) => {
+      const socket = new WebSocket('ws://localhost:1236', undefined, {})
+      socket.onerror = (err) => {
         assert.ok(err.message.includes('401'), 'Unauthorized')
         resolve(undefined)
+      }
+      Client.websocket({
+        // @ts-ignore -- see above test
+        ws: socket,
       })
     })
-  }, 3000)
+  })
 
   it('server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true })
@@ -61,14 +62,12 @@ describe('JSON-RPC call', () => {
     const rpc = Client.websocket({
       url: 'ws://localhost:12345/',
     })
+    while ((rpc as any).ws.readyState !== WebSocket.OPEN) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
     try {
-      await new Promise((resolve) => {
-        ;(rpc as any).ws.on('open', async () => {
-          const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-          assert.equal(res.error.code, METHOD_NOT_FOUND)
-          resolve(undefined)
-        })
-      })
+      const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
+      assert.equal(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }

@@ -1,7 +1,8 @@
-import { UNKNOWN_PAYLOAD } from '../../error-code'
+import { UNKNOWN_PAYLOAD } from '../../error-code.js'
 
-import type { Skeleton } from '../../../service'
+import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -11,14 +12,13 @@ export enum Status {
   VALID = 'VALID',
 }
 
-export type Bytes8 = string
-export type Bytes20 = string
-export type Bytes32 = string
-// type Root = Bytes32
-export type Blob = Bytes32
-export type Bytes48 = string
-export type Uint64 = string
-export type Uint256 = string
+export type Bytes8 = PrefixedHexString
+export type Bytes20 = PrefixedHexString
+export type Bytes32 = PrefixedHexString
+export type Blob = PrefixedHexString
+export type Bytes48 = PrefixedHexString
+export type Uint64 = PrefixedHexString
+export type Uint256 = PrefixedHexString
 
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 
@@ -59,12 +59,6 @@ export type ForkchoiceResponseV1 = {
   payloadId: Bytes8 | null
 }
 
-export type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: Uint256
-  terminalBlockHash: Bytes32
-  terminalBlockNumber: Uint64
-}
-
 export type BlobsBundleV1 = {
   commitments: Bytes48[]
   blobs: Blob[]
@@ -74,6 +68,11 @@ export type BlobsBundleV1 = {
 export type ExecutionPayloadBodyV1 = {
   transactions: string[]
   withdrawals: WithdrawalV1[] | null
+}
+
+export type BlobAndProofV1 = {
+  blob: PrefixedHexString
+  proof: PrefixedHexString
 }
 
 export type ChainCache = {
