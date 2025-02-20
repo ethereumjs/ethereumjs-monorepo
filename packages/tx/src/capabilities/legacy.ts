@@ -226,7 +226,11 @@ export function getSenderAddress(tx: LegacyTxInterface): Address {
  * const signedTx = tx.sign(privateKey)
  * ```
  */
-export function sign(tx: LegacyTxInterface, privateKey: Uint8Array): Transaction[TransactionType] {
+export function sign(
+  tx: LegacyTxInterface,
+  privateKey: Uint8Array,
+  extraEntropy: Uint8Array | boolean = true,
+): Transaction[TransactionType] {
   if (privateKey.length !== 32) {
     // TODO figure out this errorMsg logic how this diverges on other txs
     const msg = errorMsg(tx, 'Private key must be 32 bytes in length.')
@@ -252,7 +256,7 @@ export function sign(tx: LegacyTxInterface, privateKey: Uint8Array): Transaction
 
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey)
+  const { v, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
   const signedTx = tx.addSignature(v, r, s, true)
 
   // Hack part 2
