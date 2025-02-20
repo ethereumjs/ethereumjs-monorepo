@@ -1,10 +1,4 @@
-import {
-  type PrefixedHexString,
-  bitsToBytes,
-  bytesToHex,
-  concatBytes,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
 import { InternalBinaryNode } from './node/internalNode.js'
 import { StemBinaryNode } from './node/stemNode.js'
