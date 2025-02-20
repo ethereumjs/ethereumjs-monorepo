@@ -20,6 +20,9 @@ describe('insert', () => {
       root,
     })
     assert.deepEqual(tree2.root(), root)
+
+    const tree3 = tree.shallowCopy()
+    assert.deepEqual(tree3.root(), root)
   })
   it('should set and check root', async () => {
     const tree = await createBinaryTree()
