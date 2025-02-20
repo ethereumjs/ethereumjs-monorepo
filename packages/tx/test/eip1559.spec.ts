@@ -146,7 +146,7 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, undefined, false)
+    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)

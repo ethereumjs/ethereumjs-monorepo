@@ -35,7 +35,7 @@ function sigCmp(sig1: ECDSASignature, sig2: ECDSASignature) {
 
 describe('ecsign', () => {
   it('should produce a deterministic signature', () => {
-    const sig = ecsign(ecHash, ecPrivKey, undefined, false)
+    const sig = ecsign(ecHash, ecPrivKey, { extraEntropy: false })
     assert.deepEqual(
       sig.r,
       hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'),
@@ -48,7 +48,7 @@ describe('ecsign', () => {
   })
 
   it('should produce a deterministic signature for Ropsten testnet', () => {
-    const sig = ecsign(ecHash, ecPrivKey, chainId, false)
+    const sig = ecsign(ecHash, ecPrivKey, { chainId, extraEntropy: false })
     assert.deepEqual(
       sig.r,
       hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'),
@@ -68,7 +68,7 @@ describe('ecsign', () => {
       '0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66',
     )
 
-    const sig = ecsign(ecHash, ecPrivKey, BigInt(150), false)
+    const sig = ecsign(ecHash, ecPrivKey, { chainId: BigInt(150), extraEntropy: false })
     assert.deepEqual(sig.r, expectedSigR)
     assert.deepEqual(sig.s, expectedSigS)
     assert.equal(sig.v, BigInt(150 * 2 + 35))
@@ -86,7 +86,7 @@ describe('ecsign', () => {
     )
     const expectedSigV = BigInt('68361967398315795')
 
-    const sigBuffer = ecsign(ecHash, ecPrivKey, chainIDBigInt, false)
+    const sigBuffer = ecsign(ecHash, ecPrivKey, { chainId: chainIDBigInt, extraEntropy: false })
     assert.deepEqual(sigBuffer.r, expectedSigR)
     assert.deepEqual(sigBuffer.s, expectedSigS)
     assert.equal(sigBuffer.v, expectedSigV)
@@ -99,23 +99,23 @@ describe('ecsign', () => {
   })
 
   it('should produce hedged signatures by default (with provided chainID)', () => {
-    const chainID = BigInt(1337)
-    const sig = ecsign(ecHash, ecPrivKey, chainID)
-    const sig2 = ecsign(ecHash, ecPrivKey, chainID)
+    const chainId = BigInt(1337)
+    const sig = ecsign(ecHash, ecPrivKey, { chainId })
+    const sig2 = ecsign(ecHash, ecPrivKey, { chainId })
     assert.notOk(sigCmp(sig, sig2), 'chain id: signatures should be hedged and thus different')
   })
 
   it('should produce deterministic signatures with set extraEntropy', () => {
-    const sig = ecsign(ecHash, ecPrivKey, undefined, false)
-    const sig2 = ecsign(ecHash, ecPrivKey, undefined, false)
+    const sig = ecsign(ecHash, ecPrivKey, { extraEntropy: false })
+    const sig2 = ecsign(ecHash, ecPrivKey, { extraEntropy: false })
     assert.ok(sigCmp(sig, sig2), 'no chain id: signatures should be deterministic')
   })
 
   it('should produce deterministic signatures with set extraEntropy (with provided chainID)', () => {
     const extraEntropy = bigIntToBytes(BigInt(13371337))
-    const chainID = BigInt(1337)
-    const sig = ecsign(ecHash, ecPrivKey, chainID, extraEntropy)
-    const sig2 = ecsign(ecHash, ecPrivKey, chainID, extraEntropy)
+    const chainId = BigInt(1337)
+    const sig = ecsign(ecHash, ecPrivKey, { chainId, extraEntropy })
+    const sig2 = ecsign(ecHash, ecPrivKey, { chainId, extraEntropy })
     assert.ok(sigCmp(sig, sig2), 'chain id: signatures should be deterministic')
   })
 })

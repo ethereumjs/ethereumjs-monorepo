@@ -256,7 +256,7 @@ export function sign(
 
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey, undefined, extraEntropy)
+  const { v, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
   const signedTx = tx.addSignature(v, r, s, true)
 
   // Hack part 2

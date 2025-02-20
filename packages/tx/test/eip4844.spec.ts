@@ -67,7 +67,7 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, undefined, false)
+    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)

@@ -401,7 +401,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, undefined, false)
+    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)
