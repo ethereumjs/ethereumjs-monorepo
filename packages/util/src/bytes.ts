@@ -495,9 +495,44 @@ export function hexToBigInt(input: PrefixedHexString): bigint {
 }
 
 /**
+ * Converts a Uint8Array of bytes into an array of bits.
+ * @param {Uint8Array} bytes - The input byte array.
+ * @param {number} bitLength - The number of bits to extract from the input bytes.
+ * @returns {number[]} An array of bits (each 0 or 1) corresponding to the input bytes.
+ */
+export function bytesToBits(bytes: Uint8Array, bitLength?: number): number[] {
+  const bits: number[] = []
+
+  for (let i = 0; i < (bitLength ?? bytes.length * 8); i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    bits.push((bytes[byteIndex] >> bitIndex) & 1)
+  }
+
+  return bits
+}
+
+/**
+ * Converts an array of bits into a Uint8Array.
+ * The input bits are grouped into sets of 8, with the first bit in each group being the most significant.
+ * @param {number[]} bits - The input array of bits (each should be 0 or 1). Its length should be a multiple of 8.
+ * @returns {Uint8Array} A Uint8Array constructed from the input bits.
+ */
+export function bitsToBytes(bits: number[]): Uint8Array {
+  const numBytes = Math.ceil(bits.length / 8) // Ensure partial byte storage
+  const byteData = new Uint8Array(numBytes)
+
+  for (let i = 0; i < bits.length; i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    byteData[byteIndex] |= bits[i] << bitIndex
+  }
+
+  return byteData
+}
+
+/**
  * Compares two byte arrays and returns the count of consecutively matching items from the start.
- *
- * @function
  * @param {Uint8Array} bytes1 - The first Uint8Array to compare.
  * @param {Uint8Array} bytes2 - The second Uint8Array to compare.
  * @returns {number} The count of consecutively matching items from the start.
@@ -515,4 +550,44 @@ export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): num
     }
   }
   return count
+}
+
+/**
+ * Compares two arrays of bits (0 or 1) and returns the count of consecutively matching bits from the start.
+ * @param {number[]} bits1 - The first array of bits, in bytes or bits.
+ * @param {number[]} bits2 - The second array of bits, in bytes or bits.
+ * @returns {number} The count of consecutively matching bits from the start.
+ */
+export function matchingBitsLength(bits1: number[], bits2: number[]): number {
+  let count = 0
+  const minLength = Math.min(bits1.length, bits2.length)
+  for (let i = 0; i < minLength; i++) {
+    if (bits1[i] === bits2[i]) {
+      count++
+    } else {
+      return count
+    }
+  }
+  return count
+}
+
+/**
+ * Checks whether two arrays of bits are equal.
+ *
+ * Two arrays are considered equal if they have the same length and each corresponding element is identical.
+ *
+ * @param {number[]} bits1 - The first bits array.
+ * @param {number[]} bits2 - The second bits array.
+ * @returns {boolean} True if the arrays are equal; otherwise, false.
+ */
+export function equalsBits(bits1: number[], bits2: number[]): boolean {
+  if (bits1.length !== bits2.length) {
+    return false
+  }
+  for (let i = 0; i < bits1.length; i++) {
+    if (bits1[i] !== bits2[i]) {
+      return false
+    }
+  }
+  return true
 }
