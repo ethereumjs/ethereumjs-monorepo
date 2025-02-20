@@ -293,6 +293,76 @@ describe('insert', () => {
     )
   })
 
+  it('should handle checkpointing and reverting', async () => {
+    const tree1 = await createBinaryTree()
+
+    const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
+    const key2 = hexToBytes(`0xE0${'00'.repeat(31)}`)
+    const key3 = hexToBytes(`0xE0${'01'.repeat(31)}`)
+
+    const value1 = hexToBytes(`0x${'01'.repeat(32)}`)
+    const value2 = hexToBytes(`0x${'02'.repeat(32)}`)
+    const value3 = hexToBytes(`0x${'03'.repeat(32)}`)
+
+    const stem1 = key1.slice(0, 31)
+    const index1 = key1[31]
+    const stem2 = key2.slice(0, 31)
+    const index2 = key2[31]
+    const stem3 = key3.slice(0, 31)
+    const index3 = key3[31]
+
+    await tree1.put(stem1, [index1], [value1])
+    tree1.checkpoint()
+    assert.isTrue(tree1.hasCheckpoints())
+    const root = tree1.root()
+
+    await tree1.put(stem2, [index2], [value2])
+    await tree1.put(stem3, [index3], [value3])
+
+    const root2 = tree1.root()
+    assert.notDeepEqual(root, root2)
+
+    await tree1.revert()
+    assert.isFalse(tree1.hasCheckpoints())
+    assert.deepEqual(tree1.root(), root)
+
+    await tree1.put(stem2, [index2], [value2])
+    tree1.checkpoint()
+
+    const root3 = tree1.root()
+    assert.deepEqual(root3, tree1.root())
+
+    assert.isTrue(tree1.hasCheckpoints())
+
+    await tree1.commit()
+    assert.isFalse(tree1.hasCheckpoints())
+    const root4 = tree1.root()
+
+    assert.notDeepEqual(root4, root)
+
+    try {
+      await tree1.revert()
+      assert.fail('Should have thrown an error')
+    } catch (e: any) {
+      assert.equal(e.message, 'trying to revert when not checkpointed')
+    }
+
+    await tree1.put(stem3, [index3], [value3])
+
+    tree1.checkpoint()
+    assert.isTrue(tree1.hasCheckpoints())
+
+    tree1.flushCheckpoints()
+    assert.isFalse(tree1.hasCheckpoints())
+
+    try {
+      await tree1.commit()
+      assert.fail('Should have thrown an error')
+    } catch (e: any) {
+      assert.equal(e.message, 'trying to commit when not checkpointed')
+    }
+  })
+
   it('should handle 100 similar key/value pairs hashed with blake3', async () => {
     const tree1 = await createBinaryTree()
 
