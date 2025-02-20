@@ -28,13 +28,18 @@ export interface ECDSASignature {
   s: Uint8Array
 }
 
+export interface ECSignOpts {
+  chainId?: bigint
+  extraEntropy?: Uint8Array | boolean
+}
+
 /**
  * Returns the ECDSA signature of a message hash.
  *
- * If `ecSignOpts.chainId` is provided assume an EIP-155-style signature and calculate the `v` value
+ * If {@link ECSignOpts.chainId} is provided assume an EIP-155-style signature and calculate the `v` value
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  *
- * `ecSignOpts.extraEntropy` defaults to `true`. This will create a "hedged signature" which is
+ * {@link ECSignOpts.extraEntropy} defaults to `true`. This will create a "hedged signature" which is
  * non-deterministic and provides additional protections against private key extraction attack vectors,
  * as described in https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801. It will yield a
  * different, random signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
@@ -46,7 +51,7 @@ export interface ECDSASignature {
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
-  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = {},
+  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = { extraEntropy: true },
 ): ECDSASignature {
   const { chainId, extraEntropy } = ecSignOpts
   const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? true })
