@@ -46,6 +46,13 @@ describe('insert', () => {
     tree2.root(null)
     assert.deepEqual(tree2.root(), tree2.EMPTY_TREE_ROOT)
 
+    try {
+      tree2.root(Uint8Array.from([1, 2, 3]))
+      assert.fail('Should have thrown an error')
+    } catch (e: any) {
+      assert.equal(e.message, `Invalid root length. Roots are ${tree['_hashLen']} bytes`)
+    }
+
     // TODO: Determine if this is the correct behavior
     // const nullRootExists = await tree2.checkRoot(tree2.EMPTY_TREE_ROOT)
     // assert.isTrue(nullRootExists)
