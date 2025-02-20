@@ -109,7 +109,7 @@ describe('Precompiles: EXECUTE', () => {
 })
 
 describe('runCall', () => {
-  it('should execute runCall', async () => {
+  it('should execute runCall successfully', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Prague,
