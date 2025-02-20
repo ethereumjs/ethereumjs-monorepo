@@ -21,6 +21,35 @@ describe('insert', () => {
     })
     assert.deepEqual(tree2.root(), root)
   })
+  it('should set and check root', async () => {
+    const tree = await createBinaryTree()
+    await tree.put(
+      hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d'),
+      [0],
+      [hexToBytes('0x0100000000000000000000000000000000000000000000000000000000000000')],
+    )
+    const root = tree.root()
+
+    const tree2 = await createBinaryTree({
+      db: tree['_db'].db,
+    })
+
+    tree2.root(root)
+    assert.deepEqual(tree2.root(), root)
+
+    const rootExists = await tree2.checkRoot(root)
+    assert.isTrue(rootExists)
+
+    const invalidRootExists = await tree2.checkRoot(Uint8Array.from([1, 2, 3, 4]))
+    assert.isFalse(invalidRootExists)
+
+    tree2.root(null)
+    assert.deepEqual(tree2.root(), tree2.EMPTY_TREE_ROOT)
+
+    // TODO: Determine if this is the correct behavior
+    // const nullRootExists = await tree2.checkRoot(tree2.EMPTY_TREE_ROOT)
+    // assert.isTrue(nullRootExists)
+  })
 
   it('should put, retrieve and compute the correct state root', async () => {
     const tree = await createBinaryTree()
