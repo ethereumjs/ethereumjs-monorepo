@@ -112,7 +112,7 @@ export class BinaryTree {
   async checkRoot(root: Uint8Array): Promise<boolean> {
     try {
       const value = await this._db.get(root)
-      return value !== null
+      return value !== undefined
     } catch (error: any) {
       if (error.message === 'Missing node in DB') {
         return equalsBytes(root, this.EMPTY_TREE_ROOT)
