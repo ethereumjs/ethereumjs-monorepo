@@ -2,10 +2,9 @@ import { BIGINT_0, hexToBytes } from '@ethereumjs/util'
 
 export enum Chain {
   Mainnet = 1,
-  Goerli = 5,
   Sepolia = 11155111,
   Holesky = 17000,
-  Kaustinen = 69420,
+  Kaustinen6 = 69420,
 }
 
 /**
@@ -29,11 +28,6 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'),
   },
-  [Chain.Goerli]: {
-    name: 'goerli',
-    blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008'),
-  },
   [Chain.Sepolia]: {
     name: 'sepolia',
     blockNumber: BIGINT_0,
@@ -44,10 +38,10 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
-  [Chain.Kaustinen]: {
-    name: 'kaustinen',
+  [Chain.Kaustinen6]: {
+    name: 'kaustinen6',
     blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x5e8519756841faf0b2c28951c451b61a4b407b70a5ce5b57992f4bec973173ff'),
+    stateRoot: hexToBytes('0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'),
   },
 }
 
@@ -66,11 +60,13 @@ export enum Hardfork {
   London = 'london',
   ArrowGlacier = 'arrowGlacier',
   GrayGlacier = 'grayGlacier',
-  MergeForkIdTransition = 'mergeForkIdTransition',
+  MergeNetsplitBlock = 'mergeNetsplitBlock',
   Paris = 'paris',
   Shanghai = 'shanghai',
   Cancun = 'cancun',
   Prague = 'prague',
+  Osaka = 'osaka',
+  Verkle = 'verkle',
 }
 
 export enum ConsensusType {
@@ -83,48 +79,4 @@ export enum ConsensusAlgorithm {
   Ethash = 'ethash',
   Clique = 'clique',
   Casper = 'casper',
-}
-
-export enum CustomChain {
-  /**
-   * Polygon (Matic) Mainnet
-   *
-   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
-   */
-  PolygonMainnet = 'polygon-mainnet',
-
-  /**
-   * Polygon (Matic) Mumbai Testnet
-   *
-   * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
-   */
-  PolygonMumbai = 'polygon-mumbai',
-
-  /**
-   * Arbitrum One - mainnet for Arbitrum roll-up
-   *
-   * - [Documentation](https://developer.offchainlabs.com/public-chains)
-   */
-  ArbitrumOne = 'arbitrum-one',
-
-  /**
-   * xDai EVM sidechain with a native stable token
-   *
-   * - [Documentation](https://www.xdaichain.com/)
-   */
-  xDaiChain = 'x-dai-chain',
-
-  /**
-   * Optimistic Kovan - testnet for Optimism roll-up
-   *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
-   */
-  OptimisticKovan = 'optimistic-kovan',
-
-  /**
-   * Optimistic Ethereum - mainnet for Optimism roll-up
-   *
-   * - [Documentation](https://community.optimism.io/docs/developers/tutorials.html)
-   */
-  OptimisticEthereum = 'optimistic-ethereum',
 }

@@ -1,8 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -20,5 +20,5 @@ const txData = {
   type: '0x02',
 }
 
-const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+const tx = createFeeMarket1559Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a

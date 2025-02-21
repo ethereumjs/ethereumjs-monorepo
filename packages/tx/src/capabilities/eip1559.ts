@@ -10,7 +10,7 @@ export function getUpfrontCost(tx: EIP1559CompatibleTx, baseFee: bigint): bigint
 
 export function getEffectivePriorityFee(
   tx: EIP1559CompatibleTx,
-  baseFee: bigint | undefined
+  baseFee: bigint | undefined,
 ): bigint {
   if (baseFee === undefined || baseFee > tx.maxFeePerGas) {
     throw new Error('Tx cannot pay baseFee')

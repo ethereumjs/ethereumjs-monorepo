@@ -1,4 +1,4 @@
-import { validators } from '../../validation'
+import { validators } from '../../validation.js'
 
 export const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,

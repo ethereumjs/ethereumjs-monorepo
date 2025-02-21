@@ -1,11 +1,11 @@
-import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import pow from '../../testdata/geth-genesis/pow.json'
+import { powData } from '../../testdata/geth-genesis/pow.js'
 import {
   dummy,
-  getRpcClient,
+  getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
@@ -15,12 +15,14 @@ const method = 'eth_getTransactionByHash'
 
 describe(method, () => {
   it('call with legacy tx', async () => {
-    const { chain, common, execution, server } = await setupChain(pow, 'pow', { txLookupLimit: 1 })
-    const rpc = getRpcClient(server)
+    const { chain, common, execution, server } = await setupChain(powData, 'pow', {
+      txLookupLimit: 1,
+    })
+    const rpc = getRPCClient(server)
     // construct tx
-    const tx = LegacyTransaction.fromTxData(
+    const tx = createLegacyTx(
       { gasLimit: 2000000, gasPrice: 100, to: '0x0000000000000000000000000000000000000000' },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -37,20 +39,20 @@ describe(method, () => {
 
   it('call with 1559 tx', async () => {
     const { chain, common, execution, server } = await setupChain(
-      gethGenesisStartLondon(pow),
+      gethGenesisStartLondon(powData),
       'powLondon',
-      { txLookupLimit: 0 }
+      { txLookupLimit: 0 },
     )
-    const rpc = getRpcClient(server)
+    const rpc = getRPCClient(server)
     // construct tx
-    const tx = FeeMarketEIP1559Transaction.fromTxData(
+    const tx = createFeeMarket1559Tx(
       {
         gasLimit: 2000000,
         maxFeePerGas: 975000000,
         maxPriorityFeePerGas: 10,
         to: '0x0000000000000000000000000000000000000000',
       },
-      { common }
+      { common },
     ).sign(dummy.privKey)
 
     await runBlockWithTxs(chain, execution, [tx])
@@ -67,13 +69,13 @@ describe(method, () => {
     assert.equal(
       res.result.hash,
       bytesToHex(tx.hash()),
-      'should return the correct tx when txLookupLimit=0'
+      'should return the correct tx when txLookupLimit=0',
     )
   })
 
   it('call with unknown tx hash', async () => {
-    const { server } = await setupChain(pow, 'pow')
-    const rpc = getRpcClient(server)
+    const { server } = await setupChain(powData, 'pow')
+    const rpc = getRPCClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',

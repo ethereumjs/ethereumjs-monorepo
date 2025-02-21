@@ -1,15 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import { FlowControl } from '../net/protocol'
-import { Event } from '../types'
-import { wait } from '../util/wait'
+import { Event } from '../types.js'
+import { wait } from '../util/wait.js'
 
-import type { Chain } from '../blockchain'
-import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
-import type { PeerPool } from '../net/peerpool'
-import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+import type { Chain } from '../blockchain/index.js'
+import type { Config } from '../config.js'
+import type { Peer } from '../net/peer/peer.js'
+import type { PeerPool } from '../net/peerpool.js'
+import type { AccountFetcher, BlockFetcher, ReverseBlockFetcher } from './fetcher/index.js'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -20,9 +19,6 @@ export interface SynchronizerOptions {
 
   /* Blockchain */
   chain: Chain
-
-  /* Flow control manager */
-  flow?: FlowControl
 
   /* Refresh interval in ms (default: 1000) */
   interval?: number
@@ -37,11 +33,11 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected flow: FlowControl
+
   protected interval: number
   protected forceSync: boolean
 
-  public _fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: AccountFetcher | BlockFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -59,7 +55,7 @@ export abstract class Synchronizer {
     this.pool = options.pool
     this.chain = options.chain
     this._fetcher = null
-    this.flow = options.flow ?? new FlowControl()
+
     this.interval = options.interval ?? 1000
     this.opened = false
     this.running = false
@@ -84,11 +80,11 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+  get fetcher(): AccountFetcher | BlockFetcher | ReverseBlockFetcher | null {
     return this._fetcher
   }
 
-  set fetcher(fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+  set fetcher(fetcher: AccountFetcher | BlockFetcher | ReverseBlockFetcher | null) {
     this._fetcher = fetcher
   }
 
@@ -111,20 +107,20 @@ export abstract class Synchronizer {
    * Start synchronization
    */
   async start(): Promise<void | boolean> {
-    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
+    if (this.running || this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       return false
     }
     this.running = true
 
     this._syncedStatusCheckInterval = setInterval(
       this._syncedStatusCheck.bind(this),
-      this.SYNCED_STATE_REMOVAL_PERIOD
+      this.SYNCED_STATE_REMOVAL_PERIOD,
     )
 
     const timeout = setTimeout(() => {
       this.forceSync = true
     }, this.interval * 30)
-    while (this.running && this.config.chainCommon.gteHardfork(Hardfork.Paris) === false) {
+    while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       try {
         await this.sync()
       } catch (error: any) {
@@ -140,9 +136,9 @@ export abstract class Synchronizer {
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
-  resolveSync(height?: number) {
+  resolveSync(height?: bigint) {
     this.clearFetcher()
-    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+    const heightStr = typeof height === 'bigint' && height !== BIGINT_0 ? ` height=${height}` : ''
     this.config.logger.debug(`Finishing up sync with the current fetcher ${heightStr}`)
     return true
   }
@@ -156,7 +152,7 @@ export abstract class Synchronizer {
       return this.resolveSync()
     } catch (error: any) {
       this.config.logger.error(
-        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )
       this.clearFetcher()
       throw error

@@ -1,6 +1,6 @@
 type rpcParams = {
   method: string
-  params: (string | boolean | number)[]
+  params: (string | string[] | boolean | number)[]
 }
 
 /**
@@ -18,7 +18,8 @@ type rpcParams = {
  *   method: 'eth_getBlockByNumber',
  *   params: ['latest', false],
  * }
- *  const block = await fetchFromProvider(provider, params)
+ * const block = await fetchFromProvider(provider, params)
+ * ```
  */
 export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const data = JSON.stringify({
@@ -37,7 +38,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
   })
   if (!res.ok) {
     throw new Error(
-      `JSONRpcError: ${JSON.stringify(
+      `JSONRPCError: ${JSON.stringify(
         {
           method: params.method,
           status: res.status,
@@ -46,8 +47,8 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
           }),
         },
         null,
-        2
-      )}`
+        2,
+      )}`,
     )
   }
   const json = await res.json()
@@ -71,7 +72,7 @@ export const getProvider = (provider: string | EthersProvider) => {
 }
 
 /**
- * A partial interface for an `ethers` `JsonRpcProvider`
+ * A partial interface for an `ethers` `JSONRPCProvider`
  * We only use the url string since we do raw `fetch` calls to
  * retrieve the necessary data
  */

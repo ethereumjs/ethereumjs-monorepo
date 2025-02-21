@@ -10,6 +10,7 @@
 - [chainId](ChainConfig.md#chainid)
 - [comment](ChainConfig.md#comment)
 - [consensus](ChainConfig.md#consensus)
+- [customHardforks](ChainConfig.md#customhardforks)
 - [defaultHardfork](ChainConfig.md#defaulthardfork)
 - [dnsNetworks](ChainConfig.md#dnsnetworks)
 - [genesis](ChainConfig.md#genesis)
@@ -26,7 +27,7 @@
 
 #### Defined in
 
-[types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L37)
+[types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L38)
 
 ___
 
@@ -56,7 +57,17 @@ ___
 
 #### Defined in
 
-[types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L39)
+[types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L40)
+
+___
+
+### customHardforks
+
+• `Optional` **customHardforks**: [`HardforksDict`](../README.md#hardforksdict)
+
+#### Defined in
+
+[types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L37)
 
 ___
 
@@ -76,7 +87,7 @@ ___
 
 #### Defined in
 
-[types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L38)
+[types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L39)
 
 ___
 

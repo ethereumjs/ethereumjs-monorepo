@@ -114,7 +114,7 @@ export class DBOp {
   public static set(
     operationTarget: DBTarget,
     value: Uint8Array | object,
-    key?: DatabaseKey
+    key?: DatabaseKey,
   ): DBOp {
     const dbOperation = new DBOp(operationTarget, key)
     dbOperation.baseDBOp.value = value

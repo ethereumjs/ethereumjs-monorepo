@@ -1,8 +1,8 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -27,5 +27,5 @@ const txData = {
   type: '0x01',
 }
 
-const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+const tx = createAccessList2930Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d

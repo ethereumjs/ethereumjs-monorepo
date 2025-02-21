@@ -1,13 +1,15 @@
-import { Block } from '@ethereumjs/block'
-import { Common, parseGethGenesis } from '@ethereumjs/common'
+import { createBlock } from '@ethereumjs/block'
+import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src'
-import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine'
-import { Event } from '../../../src/types'
-import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import { Config } from '../../../src/index.js'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.js'
+import { Event } from '../../../src/types.js'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
 
-const payload = {
+import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.js'
+
+const payload: NewPayload = {
   payload: {
     parentHash: '0xff10941138a407482a2651e3eaf0132f66c82ea1386a1f43287aa0fd6298698a',
     feeRecipient: '0xf97e180c050e5ab072211ad2c213eb5aee4df134',
@@ -26,7 +28,7 @@ const payload = {
     transactions: [],
   },
 }
-const update = {
+const update: ForkchoiceUpdate = {
   state: {
     headBlockHash: '0x67b92008edff169c08bc186918a843f7363a747b50ed24d59fbfdee2ffd15882',
     safeBlockHash: '0x67b92008edff169c08bc186918a843f7363a747b50ed24d59fbfdee2ffd15882',
@@ -47,12 +49,9 @@ describe('starts and stops connection manager', () => {
 })
 
 describe('hardfork MergeForkBlock', () => {
-  ;(genesisJSON.config as any).mergeForkBlock = 0
-  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
-  const common = new Common({
-    chain: params.name,
-    customChains: [params],
-  })
+  postMergeData.config.mergeForkBlock = 0
+  const params = parseGethGenesis(postMergeData, 'post-merge')
+  const common = createCommonFromGethGenesis(postMergeData, { chain: params.name })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({ common })
   it('instantiates with config', () => {
@@ -62,27 +61,27 @@ describe('hardfork MergeForkBlock', () => {
   })
 })
 describe('postmerge hardfork', () => {
-  ;(genesisJSON.config as any).mergeForkBlock = 10
-  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+  it('starts on mergeBlock', async () => {
+    postMergeData.config.mergeForkBlock = 10
+    const params = parseGethGenesis(postMergeData, 'post-merge')
 
-  const common = new Common({
-    chain: params.name,
-    customChains: [params],
-  })
-  common.setHardforkBy({ blockNumber: 11 })
-  const config = new Config({ common })
-  const manager = new CLConnectionManager({ config })
+    const common = createCommonFromGethGenesis(postMergeData, {
+      chain: params.name,
+    })
+    common.setHardforkBy({ blockNumber: 11 })
+    const config = new Config({ common })
+    const manager = new CLConnectionManager({ config })
 
-  config.events.on(Event.CHAIN_UPDATED, () => {
-    it('starts on mergeBlock', () => {
+    config.events.on(Event.CHAIN_UPDATED, () => {
       assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
       config.events.emit(Event.CLIENT_SHUTDOWN)
     })
-  })
-  config.events.emit(Event.CHAIN_UPDATED)
-  config.events.on(Event.CLIENT_SHUTDOWN, () => {
-    it('stops on client shutdown', () => {
-      assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+
+    config.events.emit(Event.CHAIN_UPDATED)
+    config.events.on(Event.CLIENT_SHUTDOWN, () => {
+      it('stops on client shutdown', () => {
+        assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+      })
     })
   })
 })
@@ -105,26 +104,29 @@ describe('Status updates', async () => {
   manager.lastForkchoiceUpdate(update)
   manager.lastNewPayload(payload)
 })
-describe('updates stats when a new block is processed', async () => {
-  const config = new Config()
-  const manager = new CLConnectionManager({ config })
-  manager.lastForkchoiceUpdate(update)
-  manager.lastNewPayload(payload)
-  const block = Block.fromBlockData({
-    header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
-  })
-  config.logger.on('data', (chunk) => {
-    it('received message', () => {
+describe('updates stats when a new block is processed', () => {
+  it('received message', async () => {
+    const config = new Config()
+    const manager = new CLConnectionManager({ config })
+    manager.lastForkchoiceUpdate(update)
+    manager.lastNewPayload(payload)
+    const block = createBlock({
+      header: {
+        parentHash: payload.payload.blockHash,
+        number: payload.payload.blockNumber,
+      },
+    })
+    config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
         assert.ok(true, 'received last payload stats message')
         manager.stop()
         config.logger.removeAllListeners()
       }
     })
-  })
 
-  manager.updatePayloadStats(block)
-  manager['lastPayloadLog']()
+    manager.updatePayloadStats(block)
+    manager['lastPayloadLog']()
+  })
 })
 describe('updates status correctly', async () => {
   const config = new Config()
@@ -135,7 +137,7 @@ describe('updates status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Connected,
-      'connection status updated correctly'
+      'connection status updated correctly',
     )
   })
 })
@@ -151,7 +153,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Disconnected,
-      'should disconnect from CL'
+      'should disconnect from CL',
     )
   })
   it('should change status to uncertain', () => {
@@ -161,7 +163,7 @@ describe('updates connection status correctly', async () => {
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Uncertain,
-      'should update status to uncertain'
+      'should update status to uncertain',
     )
   })
 

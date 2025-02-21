@@ -1,18 +1,19 @@
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging'
-import { RlpxServer } from './net/server'
-import { Event, EventBus } from './types'
-import { isBrowser, short } from './util'
+import { getLogger } from './logging.js'
+import { RlpxServer } from './net/server/index.js'
+import { Event } from './types.js'
+import { isBrowser, short } from './util/index.js'
 
-import type { Logger } from './logging'
-import type { EventBusType, MultiaddrLike } from './types'
+import type { Logger } from './logging.js'
+import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export enum DataDirectory {
   Chain = 'chain',
@@ -22,7 +23,6 @@ export enum DataDirectory {
 
 export enum SyncMode {
   Full = 'full',
-  Light = 'light',
   None = 'none',
 }
 
@@ -36,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full', 'light', 'none')
+   * Synchronization mode ('full', 'none')
    *
    * Default: 'full'
    */
@@ -69,13 +69,6 @@ export interface ConfigOptions {
    * Default: VM instance created by client
    */
   vm?: VM
-
-  /**
-   * Serve light peer requests
-   *
-   * Default: `false`
-   */
-  lightserv?: boolean
 
   /**
    * Root data directory for the blockchain
@@ -276,7 +269,7 @@ export interface ConfigOptions {
 
   /**
    * If there is a reorg, this is a safe distance from which
-   * to try to refetch and refeed the blocks.
+   * to try to refetch and re-feed the blocks.
    */
   safeReorgDistance?: number
 
@@ -336,6 +329,19 @@ export interface ConfigOptions {
    * Enables stateless verkle block execution (default: false)
    */
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
+  startExecution?: boolean
+  ignoreStatelessInvalidExecs?: boolean
+
+  /**
+   * The cache for blobs and proofs to support CL import blocks
+   */
+  blobsAndProofsCacheBlocks?: number
+
+  /**
+   * Enables Prometheus Metrics that can be collected for monitoring client health
+   */
+  prometheusMetrics?: PrometheusMetrics
 }
 
 export class Config {
@@ -343,11 +349,10 @@ export class Config {
    * Central event bus for events emitted by the different
    * components of the client
    */
-  public readonly events: EventBusType
+  public readonly events: EventEmitter<EventParams>
 
-  public static readonly CHAIN_DEFAULT = 'mainnet'
+  public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
-  public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
@@ -378,19 +383,20 @@ export class Config {
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
-  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_PARENT_LOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
-  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
-  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 200
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
   // distance from head at which we can safely transition from a synced snapstate to vmexecution
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
 
+  // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
+  public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
+
   public readonly logger: Logger
   public readonly syncmode: SyncMode
   public readonly vm?: VM
-  public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
   public readonly bootnodes?: Multiaddr[]
@@ -442,9 +448,14 @@ export class Config {
   public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly statefulVerkle: boolean
+  public readonly startExecution: boolean
+  public readonly ignoreStatelessInvalidExecs: boolean
+
+  public readonly blobsAndProofsCacheBlocks: number
 
   public synchronized: boolean
-  public lastsyncronized?: boolean
+  public lastSynchronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -457,12 +468,13 @@ export class Config {
 
   public readonly server: RlpxServer | undefined = undefined
 
+  public readonly metrics: PrometheusMetrics | undefined
+
   constructor(options: ConfigOptions = {}) {
-    this.events = new EventBus() as EventBusType
+    this.events = new EventEmitter<EventParams>()
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
-    this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -515,7 +527,7 @@ export class Config {
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
-      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENT_LOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
@@ -528,7 +540,12 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? true
+    this.statelessVerkle = options.statelessVerkle ?? false
+    this.statefulVerkle = options.statefulVerkle ?? false
+    this.startExecution = options.startExecution ?? false
+    this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
+
+    this.metrics = options.prometheusMetrics
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -539,10 +556,13 @@ export class Config {
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
 
+    this.blobsAndProofsCacheBlocks =
+      options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
+
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
+    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
 
     this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
@@ -590,7 +610,7 @@ export class Config {
             this.synchronized = true
             // Log to console the sync status
             this.superMsg(
-              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
+              `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`,
             )
           }
 
@@ -605,21 +625,21 @@ export class Config {
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
           this.logger.info(
-            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`
+            `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
       }
     }
 
-    if (this.synchronized !== this.lastsyncronized) {
+    if (this.synchronized !== this.lastSynchronized) {
       this.logger.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
           (Date.now() - this.lastSyncDate) / 1000
-        } secs ago`
+        } secs ago`,
       )
-      this.lastsyncronized = this.synchronized
+      this.lastSynchronized = this.synchronized
     }
   }
 
@@ -631,6 +651,10 @@ export class Config {
     return `${this.datadir}/${networkDirName}`
   }
 
+  getInvalidPayloadsDir(): string {
+    return `${this.getNetworkDirectory()}/invalidPayloads`
+  }
+
   /**
    * Returns the location for each {@link DataDirectory}
    */
@@ -638,7 +662,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
+        const chainDataDirName = 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:
@@ -693,11 +717,11 @@ export class Config {
 
   /**
    * Returns specified option or the default setting for whether DNS-based peer discovery
-   * is enabled based on chainName. `true` for goerli
+   * is enabled based on chainName.
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['goerli', 'sepolia', 'holesky']
+    const dnsNets = ['sepolia', 'holesky']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 }

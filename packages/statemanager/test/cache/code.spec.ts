@@ -17,7 +17,7 @@ describe('Code Cache: put and get code', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 
-    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const code = hexToBytes('0xdeadbeef') // Example code
 
     it('should return undefined for code if not present in the cache', async () => {
@@ -49,7 +49,7 @@ describe('Code Cache: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 
-    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
+    const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const code1 = hexToBytes('0xdeadbeef') // Example code
     const code2 = hexToBytes('0x00ff00ff') // Example code
 

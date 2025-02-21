@@ -60,7 +60,7 @@ to help contributors better understand how the project is organized.
   and `removed` events when new peers are added and removed and also emit the `message` event whenever
   any of the peers in the pool emit a message. Each `Service` has an associated `PeerPool` and they are used primarily by `Synchronizer`s to help with blockchain synchronization.
 - `Synchronizer` Subclasses of this class implements a specific blockchain synchronization strategy. They
-  also make use of subclasses of the `Fetcher` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and backpressure.
+  also make use of subclasses of the `Fetcher` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and back pressure.
   - `FullSynchronizer` [**In Progress**] Implements full syncing of the blockchain
   - `LightSynchronizer` [**In Progress**] Implements light syncing of the blockchain
 - `Handler` Subclasses of this class implements a protocol message handler. Handlers respond to incoming requests from peers.

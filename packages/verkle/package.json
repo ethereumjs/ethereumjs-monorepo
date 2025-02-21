@@ -1,13 +1,8 @@
 {
   "name": "@ethereumjs/verkle",
-  "version": "0.0.1",
+  "version": "0.2.0-alpha.1",
   "description": "Implementation of verkle trees as used in Ethereum.",
-  "keywords": [
-    "verkle",
-    "tree",
-    "trie",
-    "ethereum"
-  ],
+  "keywords": ["verkle", "tree", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+verkle%22"
@@ -24,8 +19,9 @@
       "url": "https://github.com/gabrocheleau"
     }
   ],
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
-  "type": "commonjs",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
@@ -33,28 +29,30 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "docs:build": "typedoc --options typedoc.cjs",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "examples": "tsx ../../scripts/examples-runner.ts -- verkle",
+    "examples:build": "npx embedme README.md",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:node": "npx vitest run",
+    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "5.0.2",
-    "@ethereumjs/util": "9.0.2",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "rust-verkle-wasm": "^0.0.1"
+    "micro-eth-signer": "0.12.1"
   },
   "engines": {
     "node": ">=18"

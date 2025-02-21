@@ -1,18 +1,17 @@
 import debugDefault from 'debug'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
+import type { ProtocolEvent, SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
-const { debug: createDebugLogger } = debugDefault
 
 type MessageCodes = { [key: number | string]: number | string }
 
 export abstract class Protocol {
-  public events: EventEmitter
+  public events: EventEmitter<ProtocolEvent>
   protected _version: number
   protected _peer: Peer
   protected _send: SendMethod
@@ -35,9 +34,9 @@ export abstract class Protocol {
     send: SendMethod,
     protocol: ProtocolType,
     version: number,
-    messageCodes: MessageCodes
+    messageCodes: MessageCodes,
   ) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<ProtocolEvent>()
     this._peer = peer
     this._send = send
     this._version = version
@@ -50,21 +49,21 @@ export abstract class Protocol {
         : undefined
 
     this._debug = devp2pDebug.extend(protocol)
-    this._verbose = createDebugLogger('verbose').enabled
+    this._verbose = debugDefault('verbose').enabled
     this.initMsgDebuggers(protocol)
   }
 
   private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
-      (value) => typeof value === 'string'
+      (value) => typeof value === 'string',
     ) as string[]
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)
     }
 
     // Remote Peer IP logger
-    // @ts-ignore
-    const ip = this._peer._socket.remoteAddress
+
+    const ip = this._peer['_socket'].remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
     }
@@ -77,8 +76,7 @@ export abstract class Protocol {
    * Can be used together with the `devp2p:FIRST_PEER` debugger.
    */
   _addFirstPeerDebugger() {
-    // @ts-ignore
-    const ip = this._peer._socket.remoteAddress
+    const ip = this._peer['_socket'].remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
       this._peer._addFirstPeerDebugger()
@@ -98,8 +96,7 @@ export abstract class Protocol {
       this.msgDebuggers[messageName](msg)
     }
 
-    // @ts-ignore
-    const ip = this._peer._socket.remoteAddress
+    const ip = this._peer['_socket'].remoteAddress
     if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
       this.msgDebuggers[ip](msg)
     }

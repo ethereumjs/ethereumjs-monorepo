@@ -14,7 +14,7 @@ Second, get geth configured to use the genesis parameters file just updated.
 
 Now, let's run geth and ensure that its sealing blocks. Note, geth will prompt you for a password to unlock your signer account.
 
-`geth --datadir data --nat extip:[your local ip address here] --networkid 15470 --unlock [the signer account you created] --mine --nodiscover`
+`geth --datadir data --nat extip:[your local ip address here] --chainId 15470 --unlock [the signer account you created] --mine --nodiscover`
 
 You should start seeing logs like below:
 

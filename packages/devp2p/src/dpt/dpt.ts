@@ -1,7 +1,7 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DNS } from '../dns/index.js'
 import { devp2pDebug, pk2id } from '../util.js'
@@ -10,13 +10,13 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
-import type { DPTOptions, PeerInfo } from '../types.js'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
 export class DPT {
-  public events: EventEmitter
+  public events: EventEmitter<DPTEvent>
   protected _privateKey: Uint8Array
   protected _banlist: BanList
   protected _dns: DNS
@@ -41,7 +41,7 @@ export class DPT {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<DPTEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
@@ -86,7 +86,7 @@ export class DPT {
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
 
     this.DEBUG =
-      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   bind(...args: any[]): void {
@@ -106,15 +106,16 @@ export class DPT {
     for (const peer of oldPeers) {
       this._server
         .ping(peer)
+        .then(() => {
+          if (++count < oldPeers.length) return
+          if (err === null)
+            this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
+          else this._kbucket.add(newPeer)
+        })
         .catch((_err: Error) => {
           this._banlist.add(peer, 300000) // 5 min * 60 * 1000
           this._kbucket.remove(peer)
           err = err ?? _err
-        })
-        .then(() => {
-          if (++count < oldPeers.length) return
-          if (err === null) this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
-          else this._kbucket.add(newPeer)
         })
     }
   }
@@ -200,7 +201,7 @@ export class DPT {
     let peers = this._kbucket.closest(id)
     if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
       peers = peers.filter((peer) =>
-        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
+        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false,
       )
     }
     return peers
@@ -231,7 +232,7 @@ export class DPT {
       const peers = this.getPeers()
       if (this.DEBUG) {
         this._debug(
-          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`,
         )
       }
 
@@ -259,7 +260,7 @@ export class DPT {
         this._debug(
           `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
             this.getPeers().length
-          } current peers in table)`
+          } current peers in table)`,
         )
       }
 

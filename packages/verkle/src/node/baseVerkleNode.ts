@@ -2,26 +2,22 @@ import { RLP } from '@ethereumjs/rlp'
 
 import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.js'
 
-import type { Point } from '../types.js'
+import type { VerkleCrypto } from '@ethereumjs/util'
 
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
-  public commitment: Point
-  public depth: number
-
+  public commitment: Uint8Array
+  protected verkleCrypto: VerkleCrypto
   constructor(options: VerkleNodeOptions[T]) {
     this.commitment = options.commitment
-    this.depth = options.depth
+    this.verkleCrypto = options.verkleCrypto
   }
-
-  abstract commit(): Point
 
   // Hash returns the field representation of the commitment.
   hash(): Uint8Array {
-    throw new Error('Not implemented')
+    return this.verkleCrypto.hashCommitment(this.commitment)
   }
 
-  abstract insert(key: Uint8Array, value: Uint8Array, nodeResolverFn: () => void): void
-
+  // Returns an array of Uint8Arrays containing the values necessary to reconstruct a node from the DB (where we store them in a RLP serialized format)
   abstract raw(): Uint8Array[]
 
   /**

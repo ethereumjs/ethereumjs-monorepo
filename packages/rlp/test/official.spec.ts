@@ -2,13 +2,13 @@ import { assert, describe, it } from 'vitest'
 
 import { RLP, utils } from '../src/index.js'
 
-import * as official from './fixture/rlptest.json'
+import { rlpTestData } from './fixture/rlptest.js'
 import { numberToBytes } from './utils.js'
 
 const { bytesToHex, hexToBytes } = utils
 
 describe('official tests', () => {
-  for (const [testName, test] of Object.entries(official.tests)) {
+  for (const [testName, test] of Object.entries(rlpTestData.tests)) {
     it(`should pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number
@@ -171,13 +171,13 @@ describe('geth tests', () => {
           assert.deepEqual(
             JSON.stringify(arrayOutput),
             JSON.stringify(gethCase.value!),
-            `invalid output: ${gethCase.input}`
+            `invalid output: ${gethCase.input}`,
           )
         } else {
           assert.deepEqual(
             bytesToHex(Uint8Array.from(output as any)),
             gethCase.value,
-            `invalid output: ${gethCase.input}`
+            `invalid output: ${gethCase.input}`,
           )
         }
       }, `should not throw: ${gethCase.input}`)

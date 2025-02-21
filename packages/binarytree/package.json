@@ -1,0 +1,59 @@
+{
+  "name": "@ethereumjs/binarytree",
+  "version": "0.0.1",
+  "description": "Implementation of binary trees as used in Ethereum.",
+  "keywords": ["binary", "tree", "trie", "ethereum"],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+binarytree%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MIT",
+  "author": "EthereumJS Team",
+  "contributors": [
+    {
+      "name": "Gabriel Rocheleau",
+      "url": "https://github.com/gabrocheleau"
+    }
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npm run test:node",
+    "test:node": "npx vitest run",
+    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@noble/hashes": "^1.7.1",
+    "debug": "^4.3.4",
+    "ethereum-cryptography": "^3.1.0",
+    "lru-cache": "10.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

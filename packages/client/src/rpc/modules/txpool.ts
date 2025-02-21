@@ -1,9 +1,8 @@
-import { callWithStackTrace, jsonRpcTx } from '../helpers'
-import { middleware } from '../validation'
+import { callWithStackTrace, toJSONRPCTx } from '../helpers.js'
 
-import type { EthereumClient } from '../..'
-import type { FullEthereumService } from '../../service'
-import type { TxPool as Pool } from '../../service/txpool'
+import type { EthereumClient } from '../../index.js'
+import type { FullEthereumService } from '../../service/index.js'
+import type { TxPool as Pool } from '../../service/txpool.js'
 import type { VM } from '@ethereumjs/vm'
 
 /**
@@ -20,24 +19,23 @@ export class TxPool {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const service = client.service as FullEthereumService
     this._txpool = service.txPool
     this._vm = service.execution.vm
     this._rpcDebug = rpcDebug
 
-    this.content = middleware(callWithStackTrace(this.content.bind(this), this._rpcDebug), 0, [])
+    this.content = callWithStackTrace(this.content.bind(this), this._rpcDebug)
   }
 
   /**
    * Returns the contents of the transaction pool
-   * @param params An empty array
    */
-  content(_params = []) {
+  content() {
     const pending = new Map()
     for (const pool of this._txpool.pool) {
       const pendingForAcct = new Map<bigint, any>()
       for (const tx of pool[1]) {
-        pendingForAcct.set(tx.tx.nonce, jsonRpcTx(tx.tx))
+        pendingForAcct.set(tx.tx.nonce, toJSONRPCTx(tx.tx))
       }
       if (pendingForAcct.size > 0) pending.set('0x' + pool[0], Object.fromEntries(pendingForAcct))
     }

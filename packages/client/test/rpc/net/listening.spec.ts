@@ -1,13 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
 
 const method = 'net_listening'
 
 describe(method, () => {
   it('call while listening', async () => {
     const manager = createManager(await createClient({ opened: true }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
     const { result } = res
@@ -18,7 +18,7 @@ describe(method, () => {
 
   it('call while not listening', async () => {
     const manager = createManager(await createClient({ opened: false }))
-    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
     const { result } = res

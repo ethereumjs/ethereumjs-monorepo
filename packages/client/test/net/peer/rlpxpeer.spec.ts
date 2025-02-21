@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 describe('[RlpxPeer]', async () => {
   vi.mock('@ethereumjs/devp2p', async () => {
@@ -20,7 +20,7 @@ describe('[RlpxPeer]', async () => {
     }
   })
 
-  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -37,7 +37,6 @@ describe('[RlpxPeer]', async () => {
   it('should compute capabilities', async () => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
-      { name: 'les', versions: [4] },
       { name: 'snap', versions: [1] },
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
@@ -49,10 +48,9 @@ describe('[RlpxPeer]', async () => {
       caps,
       [
         { name: 'eth', version: 66, length: 17 },
-        { name: 'les', version: 4, length: 23 },
         { name: 'snap', version: 1, length: 8 },
       ],
-      'correct capabilities'
+      'correct capabilities',
     )
   })
 
@@ -95,14 +93,14 @@ describe('[RlpxPeer]', async () => {
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
-      assert.equal(peer.id, 'abcdef0123', 'got connected')
+      assert.equal(peer.id, 'abcdef0123', 'got connected'),
     )
     peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
-      assert.equal(rlpxPeer.pooled, false, 'got disconnected')
+      assert.equal(rlpxPeer.pooled, false, 'got disconnected'),
     )
     peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
     ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
@@ -116,7 +114,7 @@ describe('[RlpxPeer]', async () => {
       if (err.message === 'err2') assert.ok(true, 'got err2')
     })
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
-    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
   })
 
   it('should accept peer connection', async () => {

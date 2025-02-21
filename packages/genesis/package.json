@@ -1,11 +1,8 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.2.1",
+  "version": "0.3.0-alpha.1",
   "description": "A module to provide genesis states of well known networks",
-  "keywords": [
-    "ethereum",
-    "genesis"
-  ],
+  "keywords": ["ethereum", "genesis"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+genesis%22"
@@ -16,9 +13,10 @@
   },
   "license": "MIT",
   "author": "g11tech <gajinder@g11.in>",
+  "type": "module",
+  "sideEffects": false,
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "type": "commonjs",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -37,34 +35,29 @@
       "require": "./dist/cjs/genesisStates/sepolia.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
-    "test:browser": "vitest run test/* --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
     "test:node": "vitest run test/*",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.2.0",
-    "@ethereumjs/util": "^9.0.2"
+    "@ethereumjs/common": "^5.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-alpha.1"
   },
   "engines": {
     "node": ">=18"
-  },
-  "devDependencies": {
-    "@ethereumjs/trie": "^6.1.1"
   }
 }

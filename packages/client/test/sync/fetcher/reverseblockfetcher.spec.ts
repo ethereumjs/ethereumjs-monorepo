@@ -1,13 +1,13 @@
-import { Block } from '@ethereumjs/block'
+import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { getLogger } from '../../../src/logging'
-import { Skeleton } from '../../../src/service/skeleton'
-import { Event } from '../../../src/types'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { getLogger } from '../../../src/logging.js'
+import { Skeleton } from '../../../src/service/skeleton.js'
+import { Event } from '../../../src/types.js'
+import { wait } from '../../integration/util.js'
 
 class PeerPool {
   idle() {}
@@ -16,7 +16,7 @@ class PeerPool {
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
 
-const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
+const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher.js')
 describe('[ReverseBlockFetcher]', async () => {
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -89,7 +89,7 @@ describe('[ReverseBlockFetcher]', async () => {
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
     assert.notOk(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
-      'bad results'
+      'bad results',
     )
   })
 
@@ -169,6 +169,7 @@ describe('[ReverseBlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -194,33 +195,33 @@ describe('[ReverseBlockFetcher]', async () => {
       count: BigInt(5),
       timeout: 5,
     })
-    const block47 = Block.fromBlockData(
+    const block47 = createBlock(
       { header: { number: BigInt(47), difficulty: BigInt(1) } },
-      { setHardfork: true }
+      { setHardfork: true },
     )
-    const block48 = Block.fromBlockData(
+    const block48 = createBlock(
       {
         header: { number: BigInt(48), parentHash: block47.hash(), difficulty: BigInt(1) },
       },
-      { setHardfork: true }
+      { setHardfork: true },
     )
-    const block49 = Block.fromBlockData(
+    const block49 = createBlock(
       {
         header: { number: BigInt(49), parentHash: block48.hash(), difficulty: BigInt(1) },
       },
-      { setHardfork: true }
+      { setHardfork: true },
     )
-    const block4 = Block.fromBlockData(
+    const block4 = createBlock(
       {
         header: { number: BigInt(4), difficulty: BigInt(1) },
       },
-      { setHardfork: true }
+      { setHardfork: true },
     )
-    const block5 = Block.fromBlockData(
+    const block5 = createBlock(
       {
         header: { number: BigInt(5), difficulty: BigInt(1), parentHash: block4.hash() },
       },
-      { setHardfork: true }
+      { setHardfork: true },
     )
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
@@ -231,12 +232,12 @@ describe('[ReverseBlockFetcher]', async () => {
     await fetcher.store([block49, block48])
     assert.ok(
       (skeleton as any).status.progress.subchains.length === 1,
-      'subchains should be merged'
+      'subchains should be merged',
     )
     assert.equal(
       (skeleton as any).status.progress.subchains[0].tail,
       BigInt(5),
-      'subchain tail should be next segment'
+      'subchain tail should be next segment',
     )
     assert.notOk((fetcher as any).running, 'fetcher should stop')
     assert.equal((fetcher as any).in.length, 0, 'fetcher in should be cleared')
@@ -268,7 +269,7 @@ describe('store()', async () => {
       assert.equal(
         err.message,
         `Blocks don't extend canonical subchain`,
-        'store() threw on invalid block'
+        'store() threw on invalid block',
       )
       const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
         first: BigInt(10),
@@ -282,7 +283,7 @@ describe('store()', async () => {
   config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
     it('should emit event on put blocks', async () => {
       assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    })
+    }),
   )
   await fetcher.store([])
 })

@@ -1,4 +1,5 @@
 //@ts-nocheck
+// cspell:ignore MPLEX Muxer
 /**
  * Libp2p Bundle
  * @memberof module:net/peer
@@ -7,7 +8,7 @@ import { NOISE } from '@chainsafe/libp2p-noise'
 import LibP2P from 'libp2p'
 import Bootstrap from 'libp2p-bootstrap'
 
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 const KadDht = require('libp2p-kad-dht')
