@@ -11,7 +11,7 @@ import { getCommon } from './eof-utils.js'
 
 // Rename this test dir to the location of EOF header tests
 // To test, use `npx vitest run ./scripts/eof-header-validation.spec.ts
-const testDir = path.resolve('../ethereum-tests/EOFStuff/fixtures/eof_tests')
+const testDir = path.resolve('../ethereum-tests/EOFTests')
 
 async function getEVM() {
   const common = getCommon()

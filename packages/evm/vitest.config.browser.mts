@@ -9,6 +9,7 @@ export default mergeConfig(
         ...configDefaults.exclude,
         // readDirSync method not provided fs mock for vite
         'test/precompiles/eip-2537-bls.spec.ts',
+        'test/eips/eof-header-validation.spec.ts',
       ],
     },
   }),
