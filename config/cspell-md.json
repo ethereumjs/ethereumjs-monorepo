@@ -4,6 +4,7 @@
     "/0x[0-9A-Fa-f]+/"
   ],
   "words": [
+    "binarytree",
     "trienode",
     "t8ntool",
     "calldatasize",
