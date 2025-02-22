@@ -9,6 +9,9 @@ import { getTests } from './testLoader.js'
 
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import path from 'path'
+
+const testFiles = import.meta.glob('../../ethereum-tests/TransactionTests/**/*.json')
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
@@ -54,15 +57,16 @@ const EIPs: Record<string, number[] | undefined> = {
 }
 
 describe('TransactionTests', async () => {
-  const fileFilterRegex = file !== undefined ? new RegExp(file + '[^\\w]') : undefined
-  await getTests(
-    (
-      _filename: string,
-      subDir: string,
-      testName: string,
-      testData: OfficialTransactionTestData,
-    ) => {
-      it(testName, () => {
+  for (const [filePath, testDataLoader] of Object.entries(testFiles) as [
+    string,
+    () => Promise<{ default: { [key: string]: OfficialTransactionTestData } }>,
+  ][]) {
+    const fName = path.basename(filePath, path.extname(filePath))
+    it(fName, async () => {
+      const fileTestData = (await testDataLoader()).default
+      console.log(fileTestData)
+      for (const innerTestName of Object.keys(fileTestData)) {
+        const testData = fileTestData[innerTestName]
         for (const forkName of forkNames) {
           if (testData.result[forkName] === undefined) {
             continue
@@ -102,10 +106,7 @@ describe('TransactionTests', async () => {
             }
           }
         }
-      }, 120000)
-    },
-    fileFilterRegex,
-    undefined,
-    'TransactionTests',
-  )
+      }
+    })
+  }
 })
