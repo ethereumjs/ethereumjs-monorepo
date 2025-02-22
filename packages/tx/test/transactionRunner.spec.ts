@@ -1,20 +1,13 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
 import { createTxFromRLP } from '../src/transactionFactory.js'
 
-import { getTests } from './testLoader.js'
-
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import path from 'path'
 
 const testFiles = import.meta.glob('../../ethereum-tests/TransactionTests/**/*.json')
-
-const argv = minimist(process.argv.slice(2))
-const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
   'Prague',
@@ -56,21 +49,21 @@ const EIPs: Record<string, number[] | undefined> = {
   'London+3860': [3860],
 }
 
-describe('TransactionTests', async () => {
-  for (const [filePath, testDataLoader] of Object.entries(testFiles) as [
-    string,
-    () => Promise<{ default: { [key: string]: OfficialTransactionTestData } }>,
-  ][]) {
-    const fName = path.basename(filePath, path.extname(filePath))
-    it(fName, async () => {
-      const fileTestData = (await testDataLoader()).default
-      console.log(fileTestData)
-      for (const innerTestName of Object.keys(fileTestData)) {
-        const testData = fileTestData[innerTestName]
-        for (const forkName of forkNames) {
-          if (testData.result[forkName] === undefined) {
-            continue
-          }
+for (const [filePath, testDataLoader] of Object.entries(testFiles) as [
+  string,
+  () => Promise<{ default: { [key: string]: OfficialTransactionTestData } }>,
+][]) {
+  const match = filePath.match(/TransactionTests\/(.+)/)
+  const relativePath = match ? match[1] : filePath
+  describe.concurrent(`TransactionTests - ${relativePath}`, async () => {
+    const fileTestData = (await testDataLoader()).default
+    for (const innerTestName of Object.keys(fileTestData)) {
+      const testData = fileTestData[innerTestName]
+      for (const forkName of forkNames) {
+        if (testData.result[forkName] === undefined) {
+          continue
+        }
+        it.concurrent(`${innerTestName} - ${forkName}`, () => {
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = forkTestData.exception !== undefined
 
@@ -105,8 +98,8 @@ describe('TransactionTests', async () => {
               assert.fail(`Transaction should be valid on ${forkName}`)
             }
           }
-        }
+        })
       }
-    })
-  }
-})
+    }
+  })
+}
