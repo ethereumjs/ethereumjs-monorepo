@@ -49,57 +49,67 @@ const EIPs: Record<string, number[] | undefined> = {
   'London+3860': [3860],
 }
 
+const ps = []
+
 for (const [filePath, testDataLoader] of Object.entries(testFiles) as [
   string,
   () => Promise<{ default: { [key: string]: OfficialTransactionTestData } }>,
 ][]) {
   const match = filePath.match(/TransactionTests\/(.+)/)
   const relativePath = match ? match[1] : filePath
-  describe.concurrent(`TransactionTests - ${relativePath}`, async () => {
-    const fileTestData = (await testDataLoader()).default
-    for (const innerTestName of Object.keys(fileTestData)) {
-      const testData = fileTestData[innerTestName]
-      for (const forkName of forkNames) {
-        if (testData.result[forkName] === undefined) {
-          continue
-        }
-        it.concurrent(`${innerTestName} - ${forkName}`, () => {
-          const forkTestData = testData.result[forkName]
-          const shouldBeInvalid = forkTestData.exception !== undefined
-
-          try {
-            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
-            const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: Mainnet, hardfork })
-            const activateEIPs = EIPs[forkName]
-            if (activateEIPs !== undefined) {
-              common.setEIPs(activateEIPs)
-            }
-            const tx = createTxFromRLP(rawTx, { common })
-            const sender = tx.getSenderAddress().toString()
-            const hash = bytesToHex(tx.hash())
-            const txIsValid = tx.isValid()
-            const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash === hash
-
-            const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
-            if (shouldBeInvalid) {
-              assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.ok(
-                hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`,
-              )
-            }
-          } catch (e: any) {
-            if (shouldBeInvalid) {
-              assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.fail(`Transaction should be valid on ${forkName}`)
-            }
+  const p = testDataLoader().then((data) => {
+    const fileTestData = data.default
+    describe.concurrent(`TransactionTests - ${relativePath}`, async () => {
+      for (const innerTestName of Object.keys(fileTestData)) {
+        const testData = fileTestData[innerTestName]
+        for (const forkName of forkNames) {
+          if (testData.result[forkName] === undefined) {
+            continue
           }
-        })
+          it.concurrent(`${innerTestName} - ${forkName}`, async () => {
+            await new Promise((resolve) => {
+              const forkTestData = testData.result[forkName]
+              const shouldBeInvalid = forkTestData.exception !== undefined
+
+              try {
+                const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
+                const hardfork = forkNameMap[forkName]
+                const common = new Common({ chain: Mainnet, hardfork })
+                const activateEIPs = EIPs[forkName]
+                if (activateEIPs !== undefined) {
+                  common.setEIPs(activateEIPs)
+                }
+                const tx = createTxFromRLP(rawTx, { common })
+                const sender = tx.getSenderAddress().toString()
+                const hash = bytesToHex(tx.hash())
+                const txIsValid = tx.isValid()
+                const senderIsCorrect = forkTestData.sender === sender
+                const hashIsCorrect = forkTestData.hash === hash
+
+                const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
+                if (shouldBeInvalid) {
+                  assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
+                } else {
+                  assert.ok(
+                    hashAndSenderAreCorrect && txIsValid,
+                    `Transaction should be valid on ${forkName}`,
+                  )
+                }
+              } catch (e: any) {
+                if (shouldBeInvalid) {
+                  assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+                } else {
+                  assert.fail(`Transaction should be valid on ${forkName}`)
+                }
+              }
+              resolve(null)
+            })
+          })
+        }
       }
-    }
+    })
   })
+  ps.push(p)
 }
+
+await Promise.all(ps)
