@@ -69,40 +69,52 @@ export type AccessEventFlags = {
  *
  * Experimental (do not implement)
  */
-export interface AccessWitnessInterface {
-  touchAndChargeProofOfAbsence(address: Address): bigint
-  touchAndChargeMessageCall(address: Address): bigint
-  touchAndChargeValueTransfer(target: Address): bigint
-  touchAndChargeContractCreateInit(address: Address): bigint
-  touchAndChargeContractCreateCompleted(address: Address): bigint
-  touchTxOriginAndComputeGas(origin: Address): bigint
-  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchAddressOnWriteAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressOnReadAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressAndChargeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): bigint
-  touchAddress(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): AccessEventFlags
-  shallowCopy(): AccessWitnessInterface
-  merge(accessWitness: AccessWitnessInterface): void
+
+export enum VerkleAccessedStateType {
+  BasicData = 'basicData',
+  CodeHash = 'codeHash',
+  Code = 'code',
+  Storage = 'storage',
+}
+
+export type RawVerkleAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
+
+export type VerkleAccessedState =
+  | {
+      type: Exclude<
+        VerkleAccessedStateType,
+        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+      >
+    }
+  | { type: VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+
+export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface VerkleAccessWitnessInterface {
+  accesses(): Generator<VerkleAccessedStateWithAddress>
+  rawAccesses(): Generator<RawVerkleAccessedState>
+  debugWitnessCost(): void
+  readAccountBasicData(address: Address): bigint
+  writeAccountBasicData(address: Address): bigint
+  readAccountCodeHash(address: Address): bigint
+  writeAccountCodeHash(address: Address): bigint
+  readAccountHeader(address: Address): bigint
+  writeAccountHeader(address: Address): bigint
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  readAccountStorage(contract: Address, storageSlot: bigint): bigint
+  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
+  merge(accessWitness: VerkleAccessWitnessInterface): void
+  commit(): void
+  revert(): void
 }
 
 /*
@@ -161,14 +173,11 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  // only Verkle/EIP-6800 (experimental)
-  accessWitness?: AccessWitnessInterface
   initVerkleExecutionWitness?(
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitnessInterface,
   ): void
-  verifyPostState?(): Promise<boolean>
+  verifyPostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

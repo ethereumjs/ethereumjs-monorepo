@@ -220,17 +220,25 @@ Then start the Lodestar client with:
 
 The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
 
-### Stateless Verkle
+### Verkle testnet
 
-We are currently supporting the Verkle Kaustinen6 testnet. Getting the EthereumJS client started alongside the Lodestar consensus client should only require the following commands:
+We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
 
 Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
 
-`npm run client:start:ts -- --dataDir /data/k6data --network kaustinen6 --rpcEngine --rpcEngineAuth false --logLevel warn`
+For stateless execution: 
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statelessVerkle=true`
+
+For stateful execution:
+
+`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statefulVerkle=true`
 
 Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repository)
 
-`setup.sh --dataDir k6data --network kaustinen6 --justCL`
+`./setup.sh --network kaustinen7 --dataDir kaust --justCL`
+
+Additional information on the Kaustinen7 testnet can be retrieve from this page: https://verkle-gen-devnet-7.ethpandaops.io/
 
 The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
@@ -501,6 +509,37 @@ Additional log selections can be added with a comma separated list (no spaces). 
 #### Hive testing
 
 See [DEVELOPER.md](./DEVELOPER.md)
+
+### REPL
+
+An under-development REPL is now available to users. It can be run using the npm script available in the client package:
+
+`npm run repl`
+
+In order to pass parameters to the client while using the repl, you can append it to the npm script command:
+
+`npm run repl -- --gethGenesis /data/genesis.json`
+
+The repl allows access to the JSON-RPC and ENGINE API's from the terminal. For help and a list of supported functions, type `.help` upon repl startup:
+```
+[01-17|09:05:57] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:05:57] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .help
+```
+
+Example usage of repl commands:
+```
+[01-17|09:10:54] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:10:54] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .eth_getBlockByNumber ["latest", true]
+EthJS > {
+  number: '0x0',
+  hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+  parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  nonce: '0x0000000000000042',
+  ...
+```
 
 ### Diagram Updates
 

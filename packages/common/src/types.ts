@@ -1,5 +1,11 @@
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike, ECDSASignature, KZG, PrefixedHexString } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  ECDSASignature,
+  KZG,
+  PrefixedHexString,
+  VerkleCrypto,
+} from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -52,6 +58,7 @@ export interface GenesisBlockConfig {
   extraData: PrefixedHexString
   baseFeePerGas?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
+  requestsHash?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {
@@ -84,10 +91,15 @@ export interface CustomCrypto {
     chainId?: bigint,
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
-  ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
+  ecsign?: (
+    msg: Uint8Array,
+    pk: Uint8Array,
+    ecSignOpts?: { chainId?: bigint; extraEntropy?: Uint8Array | boolean },
+  ) => ECDSASignature
   ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
+  verkle?: VerkleCrypto
 }
 
 export interface BaseOpts {
@@ -151,7 +163,6 @@ export interface CommonOpts extends BaseOpts {
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
   genesisHash?: Uint8Array
-  mergeForkIdPostMerge?: boolean
 }
 
 export interface HardforkByOpts {

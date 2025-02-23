@@ -1,4 +1,3 @@
-import { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
@@ -12,11 +11,10 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from '../baseTransaction.js'
 import * as Legacy from '../capabilities/legacy.js'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { paramsTx } from '../index.js'
 import { Capability, TransactionType } from '../types.js'
-import { validateNotArray } from '../util.js'
 
 import { createLegacyTx } from './constructors.js'
 
@@ -24,8 +22,12 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JSONTx,
+  TransactionCache,
+  TransactionInterface,
   TxOptions,
 } from '../types.js'
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
@@ -37,13 +39,78 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 }
 
 /**
+ * Validates tx's `v` value and extracts the chain id
+ */
+function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undefined {
+  let chainIdBigInt
+  const v = _v !== undefined ? Number(_v) : undefined
+  // Check for valid v values in the scope of a signed legacy tx
+  if (v !== undefined) {
+    // v is 1. not matching the EIP-155 chainId included case and...
+    // v is 2. not matching the classic v=27 or v=28 case
+    if (v < 37 && v !== 27 && v !== 28) {
+      throw new Error(
+        `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
+      )
+    }
+  }
+
+  // No unsigned tx and EIP-155 activated and chain ID included
+  if (v !== undefined && v !== 0 && common.gteHardfork('spuriousDragon') && v !== 27 && v !== 28) {
+    if (!meetsEIP155(BigInt(v), common.chainId())) {
+      throw new Error(
+        `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
+      )
+    }
+    // Derive the original chain ID
+    let numSub
+    if ((v - 35) % 2 === 0) {
+      numSub = 35
+    } else {
+      numSub = 36
+    }
+    // Use derived chain ID to create a proper Common
+    chainIdBigInt = BigInt(v - numSub) / BIGINT_2
+  }
+  return chainIdBigInt
+}
+
+/**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
-  public readonly gasPrice: bigint
+export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
+  /* Tx public data fields */
+  public type: number = TransactionType.Legacy // Legacy tx type
 
-  public readonly common: Common
+  // Tx data part (part of the RLP)
+  public readonly gasPrice: bigint
+  public readonly nonce!: bigint
+  public readonly gasLimit!: bigint
+  public readonly value!: bigint
+  public readonly data!: Uint8Array
+  public readonly to?: Address
+
+  // Props only for signed txs
+  public readonly v?: bigint
+  public readonly r?: bigint
+  public readonly s?: bigint
+
+  // End of Tx data part
+
+  /* Other handy tx props */
+  public readonly common!: Common
   private keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  readonly txOptions!: TxOptions
+
+  readonly cache: TransactionCache = {}
+
+  /**
+   * List of tx type defining EIPs,
+   * e.g. 1559 (fee market) and 2930 (access lists)
+   * for FeeMarket1559Tx objects
+   */
+  protected activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -53,27 +120,26 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.Legacy }, opts)
+    sharedConstructor(this, txData, opts)
 
-    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
-    const chainId = this._validateTxV(this.common, this.v)
+    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
+    valueBoundaryCheck({ gasPrice: this.gasPrice })
+
+    // Everything from BaseTransaction done here
+    this.common.updateParams(opts.params ?? paramsTx) // TODO should this move higher?
+
+    const chainId = validateVAndExtractChainID(this.common, this.v)
     if (chainId !== undefined && chainId !== this.common.chainId()) {
       throw new Error(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
 
-    this.common.updateParams(opts.params ?? paramsTx)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
-    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
-      const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
-      throw new Error(msg)
+      throw new Error('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
     }
-
-    this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
-    validateNotArray(txData)
 
     if (this.common.gteHardfork('spuriousDragon')) {
       if (!this.isSigned()) {
@@ -95,6 +161,30 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  /**
+   * Checks if a tx type defining capability is active
+   * on a tx, for example the EIP-1559 fee market mechanism
+   * or the EIP-2930 access list feature.
+   *
+   * Note that this is different from the tx type itself,
+   * so EIP-2930 access lists can very well be active
+   * on an EIP-1559 tx for example.
+   *
+   * This method can be useful for feature checks if the
+   * tx type is unknown (e.g. when instantiated with
+   * the tx factory).
+   *
+   * See `Capabilities` in the `types` module for a reference
+   * on all supported capabilities.
+   */
+  supports(capability: Capability) {
+    return this.activeCapabilities.includes(capability)
+  }
+
+  isSigned(): boolean {
+    return Legacy.isSigned(this)
   }
 
   getEffectivePriorityFee(baseFee?: bigint): bigint {
@@ -189,6 +279,23 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
     return Legacy.getDataGas(this)
   }
 
+  // TODO figure out if this is necessary
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return Legacy.toCreationAddress(this)
+  }
+
+  /**
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+   */
+  getIntrinsicGas(): bigint {
+    return Legacy.getIntrinsicGas(this)
+  }
   /**
    * The up front amount that an account must have for this transaction to be valid
    */
@@ -211,7 +318,7 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
    */
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
-      const msg = this._errorMsg('This transaction is not signed')
+      const msg = Legacy.errorMsg(this, 'This transaction is not signed')
       throw new Error(msg)
     }
     return this.getHashedMessageToSign()
@@ -258,72 +365,40 @@ export class LegacyTx extends BaseTransaction<TransactionType.Legacy> {
    * Returns an object with the JSON representation of the transaction.
    */
   toJSON(): JSONTx {
-    const baseJSON = super.toJSON()
-    return {
-      ...baseJSON,
-      gasPrice: bigIntToHex(this.gasPrice),
-    }
+    // TODO this is just copied. Make this execution-api compliant
+
+    const baseJSON = getBaseJSON(this) as JSONTx
+    baseJSON.gasPrice = bigIntToHex(this.gasPrice)
+
+    return baseJSON
   }
 
-  /**
-   * Validates tx's `v` value
-   */
-  protected _validateTxV(common: Common, _v?: bigint): BigInt | undefined {
-    let chainIdBigInt
-    const v = _v !== undefined ? Number(_v) : undefined
-    // Check for valid v values in the scope of a signed legacy tx
-    if (v !== undefined) {
-      // v is 1. not matching the EIP-155 chainId included case and...
-      // v is 2. not matching the classic v=27 or v=28 case
-      if (v < 37 && v !== 27 && v !== 28) {
-        throw new Error(
-          `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
-        )
-      }
-    }
+  getValidationErrors(): string[] {
+    return Legacy.getValidationErrors(this)
+  }
 
-    // No unsigned tx and EIP-155 activated and chain ID included
-    if (
-      v !== undefined &&
-      v !== 0 &&
-      common.gteHardfork('spuriousDragon') &&
-      v !== 27 &&
-      v !== 28
-    ) {
-      if (!meetsEIP155(BigInt(v), common.chainId())) {
-        throw new Error(
-          `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
-        )
-      }
-      // Derive the original chain ID
-      let numSub
-      if ((v - 35) % 2 === 0) {
-        numSub = 35
-      } else {
-        numSub = 36
-      }
-      // Use derived chain ID to create a proper Common
-      chainIdBigInt = BigInt(v - numSub) / BIGINT_2
-    }
-    return chainIdBigInt
+  isValid(): boolean {
+    return Legacy.isValid(this)
+  }
+
+  verifySignature(): boolean {
+    return Legacy.verifySignature(this)
+  }
+
+  getSenderAddress(): Address {
+    return Legacy.getSenderAddress(this)
+  }
+
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): LegacyTx {
+    return <LegacyTx>Legacy.sign(this, privateKey, extraEntropy)
   }
 
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
+    let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` gasPrice=${this.gasPrice}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }

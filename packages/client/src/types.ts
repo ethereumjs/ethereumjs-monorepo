@@ -78,7 +78,6 @@ export interface ClientOpts {
   customGenesisState?: string
   gethGenesis?: string
   trustedSetup?: string
-  mergeForkIdPostMerge?: boolean
   bootnodes?: string | string[]
   port?: number
   extIP?: string
@@ -143,6 +142,7 @@ export interface ClientOpts {
   savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
   ignoreStatelessInvalidExecs?: boolean

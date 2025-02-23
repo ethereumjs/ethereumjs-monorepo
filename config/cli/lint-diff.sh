@@ -2,9 +2,9 @@
 REMOTE=$(git rev-parse --symbolic-full-name --abbrev-ref @{u})
 
 if [ -z "$REMOTE" ]; then
-    FILESCHANGED=". --ext .js,.jsx,.ts,.tsx"
+    FILESCHANGED=". --ext .js,.ts"
 else
-    FILESCHANGED=$(git diff --diff-filter=d --name-only --relative $REMOTE | grep -E '\.(js|jsx|ts|tsx)')
+    FILESCHANGED=$(git diff --diff-filter=d --name-only --relative $REMOTE | grep -E '\.(js|ts)')
 fi
 
 echo $FILESCHANGED
@@ -25,8 +25,8 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --format codeframe --config ./.eslintrc.cjs . \\ "
-dim "\t --ext .js,.jsx,.ts,.tsx \\ "
+dim "> eslint --format codeframe --config ./config/eslint.cjs . \\ "
+dim "\t --ext .js,.ts \\ "
 
 blue "[Lint]${NOCOLOR} checking..."
 
@@ -35,7 +35,7 @@ if [ -z "$FILESCHANGED" ]; then
     exit
 fi
 
-eslint --format codeframe --config ./.eslintrc.cjs $FILESCHANGED
+eslint --format codeframe --config ./config/eslint.cjs $FILESCHANGED
 
 RETURN_CODE=$?
 

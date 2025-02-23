@@ -1,7 +1,10 @@
 {
   "language": "en-US",
-  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/"],
+  "ignoreRegExpList": [
+    "/0x[0-9A-Fa-f]+/"
+  ],
   "words": [
+    "binarytree",
     "trienode",
     "t8ntool",
     "calldatasize",
@@ -316,6 +319,16 @@
     "triggerable",
     "MCLBLS",
     "heartedly",
-    "beaconroot"
+    "beaconroot",
+    "Grandine",
+    "EVMBN",
+    "kaust",
+    "Scotty",
+    "ScottyPoi",
+    "snappystream",
+    "Unsnappy",
+    "unsnappy",
+    "ethportal",
+    "bytevector"
   ]
 }

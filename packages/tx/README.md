@@ -41,11 +41,11 @@ Initialization can then be done like the following:
 // ./examples/initKzg.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
-
+  const kzg = new microEthKZG(trustedSetup)
   // Instantiate `common`
   const common = new Common({
     chain: Mainnet,
@@ -127,11 +127,11 @@ See the following code snipped for an example on how to instantiate (using the `
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {
-  const kzg = await loadKZG()
-
+  const kzg = new microEthKZG(trustedSetup)
   const common = new Common({
     chain: Mainnet,
     hardfork: Hardfork.Shanghai,
@@ -223,8 +223,7 @@ The following is a simple example how to use an `EOACodeEIP7702Transaction` with
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEOACode7702Tx } from '@ethereumjs/tx'
-
-import type { PrefixedHexString } from '@ethereumjs/util'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
 
 const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
 
@@ -235,12 +234,13 @@ const tx = createEOACode7702Tx(
       {
         chainId: '0x2',
         address: `0x${'20'.repeat(20)}`,
-        nonce: ['0x1'],
+        nonce: '0x1',
         yParity: '0x1',
         r: ones32,
         s: ones32,
       },
     ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
   },
   { common },
 )
@@ -344,14 +344,14 @@ If you only know on runtime which tx type will be used within your code or if yo
 // ./examples/txFactory.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { Capability, createTxFromTxData } from '@ethereumjs/tx'
+import { Capability, createTx } from '@ethereumjs/tx'
 
 import type { EIP1559CompatibleTx } from '@ethereumjs/tx'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
 const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transaction
-const tx = createTxFromTxData(txData, { common })
+const tx = createTx(txData, { common })
 
 if (tx.supports(Capability.EIP1559FeeMarket)) {
   console.log(

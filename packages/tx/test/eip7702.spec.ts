@@ -3,8 +3,8 @@ import {
   BIGINT_1,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
+  bytesToHex,
   createAddressFromPrivateKey,
   createZeroAddress,
   hexToBytes,
@@ -65,6 +65,16 @@ describe('[EOACode7702Transaction]', () => {
     assert.ok(signed.getSenderAddress().equals(addr))
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
+
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(txn.sign(pkey).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
   })
 
   it('valid and invalid authorizationList values', () => {
@@ -86,9 +96,9 @@ describe('[EOACode7702Transaction]', () => {
         { nonce: bigIntToHex(MAX_UINT64 + BIGINT_1) },
         'Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1',
       ],
-      [{ yParity: '0x2' }, 'yParity should be 0 or 1'],
+      [{ yParity: '0x0100' }, 'yParity should be < 2^8'],
       [{ r: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 'r exceeds 2^256 - 1'],
-      [{ s: bigIntToHex(SECP256K1_ORDER_DIV_2 + BIGINT_1) }, 's > secp256k1n/2'],
+      [{ s: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 's exceeds 2^256 - 1'],
       [{ yParity: '0x0002' }, 'yParity cannot have leading zeros'],
       [{ r: '0x0001' }, 'r cannot have leading zeros'],
       [{ s: '0x0001' }, 's cannot have leading zeros'],

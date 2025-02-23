@@ -42,13 +42,19 @@ If you prefer to instantiate the verkle tree class directly, you can do so by pa
 
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 const verkleCrypto = await loadVerkleCrypto()
 
 const main = async () => {
-  const tree = new VerkleTree({ verkleCrypto, db: new MapDB<Uint8Array, Uint8Array>() })
-  await tree['_createRootNode']()
+  const tree = new VerkleTree({
+    cacheSize: 0,
+    db: new MapDB<Uint8Array, Uint8Array>(),
+    useRootPersistence: false,
+    verkleCrypto,
+  })
+  await tree.createRootNode()
   console.log(bytesToHex(tree.root())) // 0x0000000000000000000000000000000000000000000000000000000000000000
 }
 

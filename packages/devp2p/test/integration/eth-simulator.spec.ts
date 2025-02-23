@@ -43,7 +43,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 21762, tcpPort: 21762 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -74,7 +74,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 27126, tcpPort: 27126 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -107,7 +107,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 27126, tcpPort: 27126 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -136,7 +136,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 21762, tcpPort: 21762 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -156,7 +156,7 @@ describe('ETH simulator tests', () => {
         resolve(undefined)
       })
       const peer = { address: util.localhost, udpPort: 50505, tcpPort: 50505 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -187,7 +187,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 21762, tcpPort: 21762 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -214,7 +214,7 @@ describe('ETH simulator tests', () => {
         protocol.sendStatus(status0)
       })
       const peer = { address: util.localhost, udpPort: 37812, tcpPort: 37812 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -238,7 +238,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 12439, tcpPort: 12439 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -257,7 +257,7 @@ describe('ETH simulator tests', () => {
         resolve(undefined)
       })
       const peer = { address: util.localhost, udpPort: 12437, tcpPort: 12437 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 
@@ -301,7 +301,7 @@ describe('ETH simulator tests', () => {
         })
       })
       const peer = { address: util.localhost, udpPort: 19601, tcpPort: 19601 }
-      rlpxs[1]['_dpt']!.addPeer(peer)
+      void rlpxs[1]['_dpt']!.addPeer(peer)
     })
   })
 })

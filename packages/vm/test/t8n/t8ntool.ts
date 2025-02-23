@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
-import { CLRequestType, bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { readFileSync, writeFileSync } from 'fs'
@@ -25,13 +25,80 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
-import type {
-  ConsolidationRequestV1,
-  DepositRequestV1,
-  PrefixedHexString,
-  WithdrawalRequestV1,
-} from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 const kzg = new microEthKZG(trustedSetup)
+
+// Helper methods
+
+/**
+ * Returns a blockchain with an overridden "getBlock" method to return the correct block hash
+ * @param inputEnv the T8NEnv input, which contains a `blockHashes` list containing the respective block hashes
+ * @returns
+ */
+function getBlockchain(inputEnv: T8NEnv) {
+  const blockchain = new EVMMockBlockchain()
+
+  blockchain.getBlock = async function (number?: Number) {
+    for (const key in inputEnv.blockHashes) {
+      if (Number(key) === number) {
+        return {
+          hash() {
+            return hexToBytes(<PrefixedHexString>inputEnv.blockHashes[key])
+          },
+        }
+      }
+    }
+    return {
+      hash() {
+        return new Uint8Array(32)
+      },
+    }
+  }
+  return blockchain
+}
+
+/**
+ * Normalizes txData to use with EthereumJS keywords. For instance, 1559-txs have `v` fields on the inputs, where EthereumJS expects `yParity`
+ * @param txData Array of txData
+ * @returns Normalized array of txData
+ */
+function normalizeTxData(txData: TypedTxData[]) {
+  return txData.map((data: any) => {
+    if (data.v !== undefined) {
+      data.yParity = data.v
+    }
+    if (data.gas !== undefined) {
+      data.gasLimit = data.gas
+    }
+
+    if (data.authorizationList !== undefined) {
+      data.authorizationList.map((e: any) => {
+        if (e.yParity === undefined) {
+          e.yParity = e.v
+        }
+        if (e.yParity === '0x0') {
+          e.yParity = '0x'
+        }
+        if (e.nonce === '0x0') {
+          e.nonce = '0x'
+        }
+        if (e.chainId === '0x0') {
+          e.chainId = '0x'
+        }
+        if (e.r === '0x0') {
+          e.r = '0x'
+        }
+        if (e.s === '0x0') {
+          e.s = '0x'
+        }
+      })
+    }
+    if (data.input !== undefined) {
+      data.data = data.input
+    }
+    return data as TypedTxData
+  })
+}
 
 /**
  * This is the TransitionTool class to run transitions. The entire class is marked `private` since
@@ -79,7 +146,9 @@ export class TransitionTool {
 
   private async run(args: T8NOptions) {
     await this.setup(args)
-
+    // HACK: fix me!
+    this.inputEnv.parentUncleHash =
+      '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
     const block = makeBlockFromEnv(this.inputEnv, { common: this.common })
     const parentBlockHeader = makeParentBlockHeader(this.inputEnv, { common: this.common })
     const parentBlock = createBlock({ header: parentBlockHeader }, { common: this.common })
@@ -102,6 +171,9 @@ export class TransitionTool {
     for (const txData of this.txsData) {
       try {
         const tx = createTx(txData, { common: this.common })
+        if (!tx.isValid()) {
+          throw new Error(tx.getValidationErrors().join(', '))
+        }
         // Set `allowNoBlobs` to `true`, since the test might not have the blob
         // The 4844-tx at this should still be valid, since it has the `blobHashes` field
         await builder.addTransaction(tx, { allowNoBlobs: true })
@@ -123,7 +195,7 @@ export class TransitionTool {
 
     const result = await builder.build()
 
-    const convertedOutput = this.getOutput(result)
+    const convertedOutput = this.getOutput(result.block, result.requests)
     const alloc = await this.stateTracker.dumpAlloc()
 
     this.writeOutput(args, convertedOutput, alloc)
@@ -201,7 +273,7 @@ export class TransitionTool {
     })
   }
 
-  private getOutput(block: Block): T8NOutput {
+  private getOutput(block: Block, requests?: CLRequest<CLRequestType>[]): T8NOutput {
     const output: T8NOutput = {
       stateRoot: bytesToHex(block.header.stateRoot),
       txRoot: bytesToHex(block.header.transactionsTrie),
@@ -228,30 +300,16 @@ export class TransitionTool {
       output.currentExcessBlobGas = bigIntToHex(block.header.excessBlobGas)
     }
 
-    if (block.header.requestsRoot !== undefined) {
-      output.requestsRoot = bytesToHex(block.header.requestsRoot)
+    if (block.header.requestsHash !== undefined) {
+      output.requestsHash = bytesToHex(block.header.requestsHash)
     }
 
-    if (block.requests !== undefined) {
-      if (this.common.isActivatedEIP(6110)) {
-        output.depositRequests = []
-      }
-
-      if (this.common.isActivatedEIP(7002)) {
-        output.withdrawalRequests = []
-      }
-
-      if (this.common.isActivatedEIP(7251)) {
-        output.consolidationRequests = []
-      }
-
-      for (const request of block.requests) {
-        if (request.type === CLRequestType.Deposit) {
-          output.depositRequests!.push(<DepositRequestV1>request.toJSON())
-        } else if (request.type === CLRequestType.Withdrawal) {
-          output.withdrawalRequests!.push(<WithdrawalRequestV1>request.toJSON())
-        } else if (request.type === CLRequestType.Consolidation) {
-          output.consolidationRequests!.push(<ConsolidationRequestV1>request.toJSON())
+    if (requests !== undefined) {
+      // NOTE: EEST currently wants the raw request bytes, **excluding** the type
+      output.requests = []
+      for (const request of requests) {
+        if (request.bytes.length > 1) {
+          output.requests.push(bytesToHex(request.bytes.slice(1)))
         }
       }
     }
@@ -270,76 +328,4 @@ export class TransitionTool {
     writeFileSync(outputResultFilePath, JSON.stringify(output))
     writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
   }
-}
-
-// Helper methods
-
-/**
- * Returns a blockchain with an overridden "getBlock" method to return the correct block hash
- * @param inputEnv the T8NEnv input, which contains a `blockHashes` list containing the respective block hashes
- * @returns
- */
-function getBlockchain(inputEnv: T8NEnv) {
-  const blockchain = new EVMMockBlockchain()
-
-  blockchain.getBlock = async function (number?: Number) {
-    for (const key in inputEnv.blockHashes) {
-      if (Number(key) === number) {
-        return {
-          hash() {
-            return hexToBytes(<PrefixedHexString>inputEnv.blockHashes[key])
-          },
-        }
-      }
-    }
-    return {
-      hash() {
-        return new Uint8Array(32)
-      },
-    }
-  }
-  return blockchain
-}
-
-/**
- * Normalizes txData to use with EthereumJS keywords. For instance, 1559-txs have `v` fields on the inputs, where EthereumJS expects `yParity`
- * @param txData Array of txData
- * @returns Normalized array of txData
- */
-function normalizeTxData(txData: TypedTxData[]) {
-  return txData.map((data: any) => {
-    if (data.v !== undefined) {
-      data.yParity = data.v
-    }
-    if (data.gas !== undefined) {
-      data.gasLimit = data.gas
-    }
-
-    if (data.authorizationList !== undefined) {
-      data.authorizationList.map((e: any) => {
-        if (e.yParity === undefined) {
-          e.yParity = e.v
-        }
-        if (e.yParity === '0x0') {
-          e.yParity = '0x'
-        }
-        if (e.nonce === '0x0') {
-          e.nonce = '0x'
-        }
-        if (e.chainId === '0x0') {
-          e.chainId = '0x'
-        }
-        if (e.r === '0x0') {
-          e.r = '0x'
-        }
-        if (e.s === '0x0') {
-          e.s = '0x'
-        }
-      })
-    }
-    if (data.input !== undefined) {
-      data.data = data.input
-    }
-    return data as TypedTxData
-  })
 }

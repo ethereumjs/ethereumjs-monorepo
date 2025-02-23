@@ -110,7 +110,7 @@ describe('blob gas tests', () => {
       { common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }) },
     )
 
-    let excessBlobGas = preShardingHeader.calcNextExcessBlobGas()
+    let excessBlobGas = preShardingHeader.calcNextExcessBlobGas(common)
     assert.equal(
       excessBlobGas,
       0n,
@@ -129,7 +129,7 @@ describe('blob gas tests', () => {
       { common, skipConsensusFormatValidation: true },
     )
 
-    excessBlobGas = lowGasHeader.calcNextExcessBlobGas()
+    excessBlobGas = lowGasHeader.calcNextExcessBlobGas(common)
     let blobGasPrice = lowGasHeader.getBlobGasPrice()
     assert.equal(excessBlobGas, 0n, 'excess blob gas should be 0 for small parent header blob gas')
     assert.equal(blobGasPrice, 1n, 'blob gas price should be 1n when low or no excess blob gas')
@@ -137,7 +137,7 @@ describe('blob gas tests', () => {
       { number: 1, excessBlobGas: 6291456, blobGasUsed: BigInt(6) * blobGasPerBlob },
       { common, skipConsensusFormatValidation: true },
     )
-    excessBlobGas = highGasHeader.calcNextExcessBlobGas()
+    excessBlobGas = highGasHeader.calcNextExcessBlobGas(common)
     blobGasPrice = highGasHeader.getBlobGasPrice()
     assert.equal(excessBlobGas, 6684672n)
     assert.equal(blobGasPrice, 6n, 'computed correct blob gas price')
@@ -146,7 +146,7 @@ describe('blob gas tests', () => {
     assert.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
     assert.equal(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
 
-    const nextBlobGas = highGasHeader.calcNextBlobGasPrice()
+    const nextBlobGas = highGasHeader.calcNextBlobGasPrice(common)
     assert.equal(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
 })
@@ -194,7 +194,7 @@ describe('transaction validation tests', () => {
       { number: 1n, excessBlobGas: 4194304, blobGasUsed: 0 },
       { common, skipConsensusFormatValidation: true },
     )
-    const excessBlobGas = parentHeader.calcNextExcessBlobGas()
+    const excessBlobGas = parentHeader.calcNextExcessBlobGas(common)
 
     // eslint-disable-next-line no-inner-declarations
     function getBlock(transactions: TypedTransaction[]) {
@@ -228,7 +228,6 @@ describe('transaction validation tests', () => {
     )
     const blockJSON = blockWithValidTx.toJSON()
     blockJSON.header!.blobGasUsed = '0x0'
-    // @ts-expect-error
     const blockWithInvalidHeader = createBlock(blockJSON, { common })
     assert.throws(
       () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),

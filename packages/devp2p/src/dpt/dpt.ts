@@ -106,16 +106,16 @@ export class DPT {
     for (const peer of oldPeers) {
       this._server
         .ping(peer)
-        .catch((_err: Error) => {
-          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
-          this._kbucket.remove(peer)
-          err = err ?? _err
-        })
         .then(() => {
           if (++count < oldPeers.length) return
           if (err === null)
             this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
           else this._kbucket.add(newPeer)
+        })
+        .catch((_err: Error) => {
+          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
+          this._kbucket.remove(peer)
+          err = err ?? _err
         })
     }
   }

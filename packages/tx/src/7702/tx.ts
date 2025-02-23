@@ -1,4 +1,3 @@
-import { Common } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_27,
@@ -9,12 +8,11 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from '../baseTransaction.js'
 import * as EIP1559 from '../capabilities/eip1559.js'
 import * as EIP2718 from '../capabilities/eip2718.js'
 import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
-import { paramsTx } from '../index.js'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
 import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
 
@@ -27,9 +25,14 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   AuthorizationList,
   AuthorizationListBytes,
+  Capability,
   JSONTx,
+  TransactionCache,
+  TransactionInterface,
   TxOptions,
 } from '../types.js'
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
@@ -40,16 +43,43 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOACodeEIP7702> {
-  public readonly chainId: bigint
+export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACodeEIP7702> {
+  public type: number = TransactionType.EOACodeEIP7702 // 7702 tx type
+
+  // Tx data part (part of the RLP)
+  public readonly nonce!: bigint
+  public readonly gasLimit!: bigint
+  public readonly value!: bigint
+  public readonly data!: Uint8Array
+  public readonly to?: Address
   public readonly accessList: AccessListBytes
-  public readonly AccessListJSON: AccessList
   public readonly authorizationList: AuthorizationListBytes
-  public readonly AuthorizationListJSON: AuthorizationList
+  public readonly chainId: bigint
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
 
-  public readonly common: Common
+  // Props only for signed txs
+  public readonly v?: bigint
+  public readonly r?: bigint
+  public readonly s?: bigint
+
+  // End of Tx data part
+
+  public readonly AccessListJSON: AccessList
+  public readonly AuthorizationListJSON: AuthorizationList
+
+  public readonly common!: Common
+
+  readonly txOptions!: TxOptions
+
+  readonly cache: TransactionCache = {}
+
+  /**
+   * List of tx type defining EIPs,
+   * e.g. 1559 (fee market) and 2930 (access lists)
+   * for FeeMarket1559Tx objects
+   */
+  protected activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -59,16 +89,14 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
+    sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
     const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
-    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw new Error(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(7702)) {
@@ -95,7 +123,7 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    this._validateCannotExceedMaxInteger({
+    valueBoundaryCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
@@ -103,12 +131,16 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     validateNotArray(txData)
 
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
+      const msg = Legacy.errorMsg(
+        this,
+        'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
+      )
       throw new Error(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
       throw new Error(msg)
@@ -118,7 +150,8 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     Legacy.validateHighS(this)
 
     if (this.to === undefined) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw new Error(msg)
@@ -128,6 +161,26 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  /**
+   * Checks if a tx type defining capability is active
+   * on a tx, for example the EIP-1559 fee market mechanism
+   * or the EIP-2930 access list feature.
+   *
+   * Note that this is different from the tx type itself,
+   * so EIP-2930 access lists can very well be active
+   * on an EIP-1559 tx for example.
+   *
+   * This method can be useful for feature checks if the
+   * tx type is unknown (e.g. when instantiated with
+   * the tx factory).
+   *
+   * See `Capabilities` in the `types` module for a reference
+   * on all supported capabilities.
+   */
+  supports(capability: Capability) {
+    return this.activeCapabilities.includes(capability)
   }
 
   /**
@@ -151,6 +204,24 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
    */
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
     return EIP1559.getUpfrontCost(this, baseFee)
+  }
+
+  /**
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+   */
+  getIntrinsicGas(): bigint {
+    return Legacy.getIntrinsicGas(this)
+  }
+
+  // TODO figure out if this is necessary
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return Legacy.toCreationAddress(this)
   }
 
   /**
@@ -253,7 +324,7 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV: boolean = false,
-  ): EOACode7702Transaction {
+  ): EOACode7702Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -283,7 +354,7 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
    */
   toJSON(): JSONTx {
     const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = super.toJSON()
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,
@@ -295,22 +366,41 @@ export class EOACode7702Transaction extends BaseTransaction<TransactionType.EOAC
     }
   }
 
+  getValidationErrors(): string[] {
+    return Legacy.getValidationErrors(this)
+  }
+
+  isValid(): boolean {
+    return Legacy.isValid(this)
+  }
+
+  verifySignature(): boolean {
+    return Legacy.verifySignature(this)
+  }
+
+  getSenderAddress(): Address {
+    return Legacy.getSenderAddress(this)
+  }
+
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): EOACode7702Tx {
+    return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
+  }
+
+  public isSigned(): boolean {
+    const { v, r, s } = this
+    if (v === undefined || r === undefined || s === undefined) {
+      return false
+    } else {
+      return true
+    }
+  }
+
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
+    let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }

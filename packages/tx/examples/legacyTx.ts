@@ -1,7 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const txParams = {
   nonce: '0x0',

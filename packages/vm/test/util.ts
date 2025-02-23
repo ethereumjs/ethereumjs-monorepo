@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Block, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -30,67 +31,14 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import type { BlockOptions } from '@ethereumjs/block'
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   Blob4844Tx,
-  EOACode7702Transaction,
+  EOACode7702Tx,
   FeeMarket1559Tx,
   LegacyTx,
   TxOptions,
 } from '@ethereumjs/tx'
 import type * as tape from 'tape'
-
-export function dumpState(state: any, cb: Function) {
-  function readAccounts(state: any) {
-    return new Promise((resolve) => {
-      const accounts: Account[] = []
-      const rs = state.createReadStream()
-      rs.on('data', function (data: any) {
-        const rlp = data.value
-        const account = createAccountFromRLP(rlp)
-        accounts.push(account)
-      })
-      rs.on('end', function () {
-        resolve(accounts)
-      })
-    })
-  }
-
-  function readStorage(state: any, account: Account) {
-    return new Promise((resolve) => {
-      const storage: any = {}
-      const storageTrie = state.copy(false)
-      storageTrie.root(account.storageRoot)
-      const storageRS = storageTrie.createReadStream()
-
-      storageRS.on('data', function (data: any) {
-        storage[bytesToHex(data.key)] = bytesToHex(data.value)
-      })
-
-      storageRS.on('end', function () {
-        resolve(storage)
-      })
-    })
-  }
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  readAccounts(state).then(async function (accounts: any) {
-    const results: any = []
-    for (let key = 0; key < accounts.length; key++) {
-      const result = await readStorage(state, accounts[key])
-      results.push(result)
-    }
-    for (let i = 0; i < results.length; i++) {
-      console.log('Hashed address: ' + bytesToHex(results[i].address))
-      console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
-      console.log('\tstorage: ')
-      for (const storageKey in results[i].storage) {
-        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
-      }
-      console.log('\tnonce: ' + BigInt(results[i].nonce))
-      console.log('\tbalance: ' + BigInt(results[i].balance))
-    }
-    cb()
-  })
-}
 
 export function format(a: any, toZero: boolean = false, isHex: boolean = false): Uint8Array {
   if (a === '') {
@@ -117,87 +65,6 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
   }
 
   return a
-}
-
-/**
- * Make a tx using JSON from tests repo
- * @param {Object} txData The tx object from tests repo
- * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx} Transaction to be passed to runTx() function
- */
-export function makeTx(
-  txData: any,
-  opts?: TxOptions,
-): EOACode7702Transaction | Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx {
-  let tx
-  if (txData.authorizationList !== undefined) {
-    // Convert `v` keys to `yParity`
-    for (const signature of txData.authorizationList) {
-      if (signature.v !== undefined) {
-        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
-      }
-      if (signature.nonce !== undefined && signature.nonce[0] === '0x00') {
-        signature.nonce[0] = '0x'
-      }
-    }
-    tx = createEOACode7702Tx(txData, opts)
-  } else if (txData.blobVersionedHashes !== undefined) {
-    tx = createBlob4844Tx(txData, opts)
-  } else if (txData.maxFeePerGas !== undefined) {
-    tx = createFeeMarket1559Tx(txData, opts)
-  } else if (txData.accessLists !== undefined) {
-    tx = createAccessList2930Tx(txData, opts)
-  } else {
-    tx = createLegacyTx(txData, opts)
-  }
-
-  if (txData.secretKey !== undefined) {
-    const privKey = toBytes(txData.secretKey)
-    return tx.sign(privKey)
-  }
-
-  return tx
-}
-
-export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
-  return new Promise<void>((resolve) => {
-    const hashedAccounts: any = {}
-    const keyMap: any = {}
-
-    for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
-      hashedAccounts[hash] = testData[key]
-      keyMap[hash] = key
-    }
-
-    const queue: any = []
-
-    const stream = state.createReadStream()
-
-    stream.on('data', function (data: any) {
-      const rlp = data.value
-      const account = createAccountFromRLP(rlp)
-      const key = bytesToHex(data.key)
-      const testData = hashedAccounts[key]
-      const address = keyMap[key]
-      delete keyMap[key]
-
-      if (testData !== undefined) {
-        const promise = verifyAccountPostConditions(state, address, account, testData, t)
-        queue.push(promise)
-      } else {
-        t.comment('invalid account in the trie: ' + <string>key)
-      }
-    })
-
-    stream.on('end', async function () {
-      await Promise.all(queue)
-      for (const [_key, address] of Object.entries(keyMap)) {
-        t.comment(`Missing account!: ${address}`)
-      }
-      resolve()
-    })
-  })
 }
 
 /**
@@ -269,6 +136,149 @@ export function verifyAccountPostConditions(
       }
 
       state.root(origRoot)
+      resolve()
+    })
+  })
+}
+
+export function dumpState(state: any, cb: Function) {
+  function readAccounts(state: any) {
+    return new Promise((resolve) => {
+      const accounts: Account[] = []
+      const rs = state.createReadStream()
+      rs.on('data', function (data: any) {
+        const rlp = data.value
+        const account = createAccountFromRLP(rlp)
+        accounts.push(account)
+      })
+      rs.on('end', function () {
+        resolve(accounts)
+      })
+    })
+  }
+
+  function readStorage(state: any, account: Account) {
+    return new Promise((resolve) => {
+      const storage: any = {}
+      const storageTrie = state.copy(false)
+      storageTrie.root(account.storageRoot)
+      const storageRS = storageTrie.createReadStream()
+
+      storageRS.on('data', function (data: any) {
+        storage[bytesToHex(data.key)] = bytesToHex(data.value)
+      })
+
+      storageRS.on('end', function () {
+        resolve(storage)
+      })
+    })
+  }
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  readAccounts(state).then(async function (accounts: any) {
+    const results: any = []
+    for (let key = 0; key < accounts.length; key++) {
+      const result = await readStorage(state, accounts[key])
+      results.push(result)
+    }
+    for (let i = 0; i < results.length; i++) {
+      console.log('Hashed address: ' + bytesToHex(results[i].address))
+      console.log('\tstorage root: ' + bytesToHex(results[i].storageRoot))
+      console.log('\tstorage: ')
+      for (const storageKey in results[i].storage) {
+        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
+      }
+      console.log('\tnonce: ' + BigInt(results[i].nonce))
+      console.log('\tbalance: ' + BigInt(results[i].balance))
+    }
+    cb()
+  })
+}
+
+/**
+ * Make a tx using JSON from tests repo
+ * @param {Object} txData The tx object from tests repo
+ * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
+ * @returns {Blob4844Tx | FeeMarket1559Tx | AccessList2930Transaction | LegacyTx} Transaction to be passed to runTx() function
+ */
+export function makeTx(
+  txData: any,
+  opts?: TxOptions,
+): EOACode7702Tx | Blob4844Tx | FeeMarket1559Tx | AccessList2930Tx | LegacyTx {
+  let tx
+  if (txData.authorizationList !== undefined) {
+    // Convert `v` keys to `yParity`
+    for (const signature of txData.authorizationList) {
+      if (signature.v !== undefined) {
+        signature.yParity = bytesToHex(unpadBytes(hexToBytes(signature.v)))
+      }
+      if (signature.r !== undefined) {
+        signature.r = bytesToHex(unpadBytes(hexToBytes(signature.r)))
+      }
+      if (signature.s !== undefined) {
+        signature.s = bytesToHex(unpadBytes(hexToBytes(signature.s)))
+      }
+      if (signature.chainId !== undefined) {
+        signature.chainId = bytesToHex(unpadBytes(hexToBytes(signature.chainId)))
+      }
+      if (signature.nonce !== undefined && signature.nonce === '0x00') {
+        signature.nonce = '0x'
+      }
+    }
+    tx = createEOACode7702Tx(txData, opts)
+  } else if (txData.blobVersionedHashes !== undefined) {
+    tx = createBlob4844Tx(txData, opts)
+  } else if (txData.maxFeePerGas !== undefined) {
+    tx = createFeeMarket1559Tx(txData, opts)
+  } else if (txData.accessLists !== undefined) {
+    tx = createAccessList2930Tx(txData, opts)
+  } else {
+    tx = createLegacyTx(txData, opts)
+  }
+
+  if (txData.secretKey !== undefined) {
+    const privKey = toBytes(txData.secretKey)
+    return tx.sign(privKey)
+  }
+
+  return tx
+}
+
+export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
+  return new Promise<void>((resolve) => {
+    const hashedAccounts: any = {}
+    const keyMap: any = {}
+
+    for (const key in testData) {
+      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
+      hashedAccounts[hash] = testData[key]
+      keyMap[hash] = key
+    }
+
+    const queue: any = []
+
+    const stream = state.createReadStream()
+
+    stream.on('data', function (data: any) {
+      const rlp = data.value
+      const account = createAccountFromRLP(rlp)
+      const key = bytesToHex(data.key)
+      const testData = hashedAccounts[key]
+      const address = keyMap[key]
+      delete keyMap[key]
+
+      if (testData !== undefined) {
+        const promise = verifyAccountPostConditions(state, address, account, testData, t)
+        queue.push(promise)
+      } else {
+        t.comment('invalid account in the trie: ' + <string>key)
+      }
+    })
+
+    stream.on('end', async function () {
+      await Promise.all(queue)
+      for (const [_key, address] of Object.entries(keyMap)) {
+        t.comment(`Missing account!: ${address}`)
+      }
       resolve()
     })
   })
@@ -363,7 +373,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('cancun')) {
     headerData['excessBlobGas'] = currentExcessBlobGas
     if (currentExcessBlobGas === undefined) {
-      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas()
+      headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas(opts.common)
     }
   }
   return createBlockHeader(headerData, opts)

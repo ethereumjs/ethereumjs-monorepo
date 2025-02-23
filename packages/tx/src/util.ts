@@ -1,10 +1,7 @@
 import {
-  BIGINT_0,
-  BIGINT_1,
   MAX_INTEGER,
   MAX_UINT64,
   type PrefixedHexString,
-  SECP256K1_ORDER_DIV_2,
   TypeOutput,
   bytesToBigInt,
   bytesToHex,
@@ -220,14 +217,16 @@ export class AuthorizationLists {
         throw new Error('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
       }
       const yParityBigInt = bytesToBigInt(yParity)
-      if (yParityBigInt !== BIGINT_0 && yParityBigInt !== BIGINT_1) {
-        throw new Error('Invalid EIP-7702 transaction: yParity should be 0 or 1')
+      if (yParityBigInt >= BigInt(2 ** 8)) {
+        throw new Error(
+          'Invalid EIP-7702 transaction: yParity should be fit within 1 byte (0 - 255)',
+        )
       }
       if (bytesToBigInt(r) > MAX_INTEGER) {
         throw new Error('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
       }
-      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
-        throw new Error('Invalid EIP-7702 transaction: s > secp256k1n/2')
+      if (bytesToBigInt(s) > MAX_INTEGER) {
+        throw new Error('Invalid EIP-7702 transaction: s exceeds 2^256 - 1')
       }
     }
   }

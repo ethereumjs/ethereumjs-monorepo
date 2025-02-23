@@ -243,7 +243,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   // currently we don't have a way to create verkle genesis root so we will
   // use genesisStateRoot for blockchain init as well as to start of the stateless
   // client. else the stateroot could have been generated out of box
-  const genesisMeta = common.gteHardfork(Hardfork.Osaka) ? { genesisStateRoot } : { genesisState }
+  const genesisMeta = common.gteHardfork(Hardfork.Verkle) ? { genesisStateRoot } : { genesisState }
   const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
@@ -306,7 +306,7 @@ export async function runBlockWithTxs(
   for (const tx of txs) {
     await blockBuilder.addTransaction(tx, { skipHardForkValidation: true })
   }
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
 
   // put block into chain and run execution
   await chain.putBlocks([block], fromEngine)
@@ -347,4 +347,13 @@ export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
     const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
     assert.equal(res.result.status, 'VALID')
   }
+}
+
+export async function testSetup(blockchain: Blockchain, common?: Common) {
+  const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
+  const chain = await Chain.create({ config, blockchain })
+  const exec = new VMExecution({ config, chain })
+  await chain.open()
+  await exec.open()
+  return exec
 }

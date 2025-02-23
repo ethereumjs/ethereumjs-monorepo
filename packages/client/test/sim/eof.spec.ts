@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
@@ -32,7 +33,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     externalRun: process.env.EXTERNAL_RUN,
   })
 
-  if (result.includes('EthereumJS')) {
+  if (result.includes('EthereumJS') === true) {
     assert.ok(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')

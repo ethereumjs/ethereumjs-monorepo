@@ -1,6 +1,6 @@
 import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
@@ -27,6 +27,7 @@ import { getLogger } from '../../src/logging.js'
 import { PendingBlock } from '../../src/miner/index.js'
 import { TxPool } from '../../src/service/txpool.js'
 import { mockBlockchain } from '../rpc/mockBlockchain.js'
+import { Goerli } from '../testdata/common/goerliCommon.js'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -366,7 +367,7 @@ describe('[PendingBlock]', async () => {
     const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
     const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
-    const blobGasLimit = txPool['config'].chainCommon.param('maxblobGasPerBlock')
+    const blobGasLimit = txPool['config'].chainCommon.param('maxBlobGasPerBlock')
     const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
     const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
     const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks

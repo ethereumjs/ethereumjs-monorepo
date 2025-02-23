@@ -7,11 +7,12 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bn254 } from 'ethereum-cryptography/bn.js'
+import { bn254 } from '@noble/curves/bn254'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
 import type { EVMBN254Interface } from '../../types.js'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 const G2_INFINITY_POINT_BYTES = new Uint8Array(128)
@@ -22,19 +23,13 @@ const G2_POINT_BYTE_LENGTH = 128
 const ZERO_BUFFER = new Uint8Array(32)
 const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
-// Copied from @noble/curves/abstract/curve.ts (not exported in ethereum-cryptography)
-export type AffinePoint<T> = {
-  x: T
-  y: T
-} & { z?: never; t?: never }
-
 /**
  * Converts an Uint8Array to a Noble G1 point.
  * @param input Input Uint8Array. Should be 64 bytes
  * @returns Noble G1 point
  */
 function toG1Point(input: Uint8Array) {
-  if (equalsBytes(input, G1_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
     return bn254.G1.ProjectivePoint.ZERO
   }
 
@@ -67,6 +62,20 @@ function toFrPoint(input: Uint8Array): bigint {
   return Fr
 }
 
+function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
+
+  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
+
 /**
  * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
@@ -74,7 +83,7 @@ function toFrPoint(input: Uint8Array): bigint {
  * @returns Noble G2 point
  */
 function toG2Point(input: Uint8Array) {
-  if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {
     return bn254.G2.ProjectivePoint.ZERO
   }
 
@@ -102,20 +111,6 @@ function toG2Point(input: Uint8Array) {
   pG2.assertValidity()
 
   return pG2
-}
-
-function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
-  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
-  }
-  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
-  }
-
-  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
-
-  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
-  return FP
 }
 
 /**

@@ -1,12 +1,8 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.4",
+  "version": "3.0.0-alpha.1",
   "description": "Utilities for handling Ethereum keys",
-  "keywords": [
-    "ethereum",
-    "wallets",
-    "keys"
-  ],
+  "keywords": ["ethereum", "wallets", "keys"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
@@ -27,20 +23,16 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "src",
-    "dist"
-  ],
+  "files": ["src", "dist"],
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
@@ -48,9 +40,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/util": "^10.0.0-alpha.1",
     "@scure/base": "^1.1.7",
-    "ethereum-cryptography": "^3.0.0",
+    "ethereum-cryptography": "^3.1.0",
     "js-md5": "^0.8.3",
     "uuid": "^9.0.1"
   },

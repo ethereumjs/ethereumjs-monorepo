@@ -83,7 +83,7 @@ describe(method, () => {
       gasLimit: 21000,
       gasPrice: 0,
       nonce: 0,
-    }).sign(hexToBytes(`0x${'42'.repeat(32)}`))
+    }).sign(hexToBytes(`0x${'42'.repeat(32)}`), false)
 
     const txData = bytesToHex(transaction.serialize())
 

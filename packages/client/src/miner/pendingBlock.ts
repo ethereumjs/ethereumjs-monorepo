@@ -19,7 +19,7 @@ import type { Config } from '../config.js'
 import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
@@ -192,7 +192,7 @@ export class PendingBlock {
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasLimit = vm.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
     } else {
@@ -239,7 +239,16 @@ export class PendingBlock {
    */
   async build(
     payloadIdBytes: Uint8Array | string,
-  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
+  ): Promise<
+    | void
+    | [
+        block: Block,
+        receipts: TxReceipt[],
+        value: bigint,
+        blobs?: BlobsBundle,
+        requests?: CLRequest<CLRequestType>[],
+      ]
+  > {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
@@ -261,7 +270,7 @@ export class PendingBlock {
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasLimit = vm.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob) - bundle.blobs.length
     } else {
@@ -283,7 +292,7 @@ export class PendingBlock {
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
 
-    const block = await builder.build()
+    const { block, requests } = await builder.build()
 
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
@@ -301,7 +310,7 @@ export class PendingBlock {
       )}`,
     )
 
-    return [block, builder.transactionReceipts, builder.minerValue, blobs]
+    return [block, builder.transactionReceipts, builder.minerValue, blobs, requests]
   }
 
   private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {

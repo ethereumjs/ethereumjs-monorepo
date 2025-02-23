@@ -7,6 +7,7 @@ import {
   KECCAK256_RLP,
   Lock,
   MapDB,
+  SHA256_NULL,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -37,7 +38,13 @@ import type {
 } from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type {
+  BigIntLike,
+  DB,
+  DBObject,
+  GenesisState,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -574,15 +581,15 @@ export class Blockchain implements BlockchainInterface {
     }
 
     if (header.common.isActivatedEIP(4844)) {
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(header.common)
       if (header.excessBlobGas !== expectedExcessBlobGas) {
         throw new Error(`expected blob gas: ${expectedExcessBlobGas}, got: ${header.excessBlobGas}`)
       }
     }
 
     if (header.common.isActivatedEIP(7685)) {
-      if (header.requestsRoot === undefined) {
-        throw new Error(`requestsRoot must be provided when EIP-7685 is active`)
+      if (header.requestsHash === undefined) {
+        throw new Error(`requestsHash must be provided when EIP-7685 is active`)
       }
     }
   }
@@ -600,12 +607,6 @@ export class Blockchain implements BlockchainInterface {
     // (one for each uncle header and then for validateBlobTxs).
     const parentBlock = await this.getBlock(block.header.parentHash)
     block.validateBlobTransactions(parentBlock.header)
-    if (block.common.isActivatedEIP(7685)) {
-      const valid = await block.requestsTrieIsValid()
-      if (!valid) {
-        throw new Error('invalid requestsRoot')
-      }
-    }
   }
   /**
    * The following rules are checked in this method:
@@ -1319,6 +1320,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      requestsHash: common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1329,8 +1331,13 @@ export class Blockchain implements BlockchainInterface {
         header.extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
       }
     }
+
     return createBlock(
-      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      {
+        header,
+        withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
+        executionWitness: common.isActivatedEIP(6800) ? ({} as VerkleExecutionWitness) : undefined,
+      },
       { common },
     )
   }
