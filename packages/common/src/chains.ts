@@ -164,7 +164,7 @@ export const Mainnet: ChainConfig = {
 export const Sepolia: ChainConfig = {
   name: 'sepolia',
   chainId: 11155111,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -259,6 +259,12 @@ export const Sepolia: ChainConfig = {
       timestamp: '1706655072',
       forkHash: '0x88cf81d9',
     },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1741159776',
+      forkHash: '0xed88b5fd',
+    },
   ],
   bootstrapNodes: [
     {
@@ -298,7 +304,7 @@ export const Sepolia: ChainConfig = {
 export const Holesky: ChainConfig = {
   name: 'holesky',
   chainId: 17000,
-  defaultHardfork: 'paris',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -390,6 +396,12 @@ export const Holesky: ChainConfig = {
       block: null,
       timestamp: '1707305664',
       forkHash: '0x9b192ad0',
+    },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1740434112',
+      forkHash: '0xdfbd9bed',
     },
   ],
   bootstrapNodes: [
