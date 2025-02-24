@@ -585,11 +585,9 @@ async function inputAccounts(args: ClientOpts) {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
-          /* eslint-disable no-console */
-          console.error(
+          throw new Error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
-          process.exit()
         }
       }
     } else {
@@ -599,9 +597,7 @@ async function inputAccounts(args: ClientOpts) {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
-    /* eslint-disable no-console */
-    console.error(`Encountered error unlocking account:\n${e.message}`)
-    process.exit()
+    throw new Error(`Encountered error unlocking account:\n${e.message}`)
   }
   rl.close()
   return accounts
@@ -651,11 +647,16 @@ export async function generateClientConfig(args: ClientOpts) {
         ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
-    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
+    cryptoFunctions.ecsign = (
+      msg: Uint8Array,
+      pk: Uint8Array,
+      ecSignOpts: { chainId?: bigint } = {},
+    ) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw new Error('message length must be 32 bytes or greater')
       }
+      const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
@@ -718,11 +719,7 @@ export async function generateClientConfig(args: ClientOpts) {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      /* eslint-disable no-console */
-      console.error(err)
-      console.error(`invalid chain parameters: ${err.message}`)
-      /* eslint-enable no-console */
-      process.exit()
+      throw new Error(`invalid chain parameters: ${err.message}`)
     }
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
@@ -736,11 +733,9 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   if (args.mine === true && accounts.length === 0) {
-    /* eslint-disable-next-line no-console */
-    console.error(
+    throw new Error(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
-    process.exit()
   }
 
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT

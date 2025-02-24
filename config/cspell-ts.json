@@ -24,6 +24,8 @@
     }
   ],
   "words": [
+    "binarytree",
+    "merkelize",
     "kaust",
     "EEST",
     "paulmillr",
@@ -629,6 +631,7 @@
     "Unsnappy",
     "unsnappy",
     "ethportal",
-    "bytevector"
+    "bytevector",
+    "blobschedule"
   ]
 }

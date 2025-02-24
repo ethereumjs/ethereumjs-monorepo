@@ -1,6 +1,6 @@
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { TWO_POW256, bytesToHex, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createFeeMarket1559Tx } from '../src/index.js'
@@ -104,12 +104,12 @@ describe('[FeeMarket1559Tx]', () => {
     assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
   })
 
-  it('sign()', () => {
+  it('sign() - deterministic', () => {
     for (let index = 0; index < eip1559Data.length; index++) {
       const data = eip1559Data[index]
       const pkey = hexToBytes(data.privateKey)
       const txn = createFeeMarket1559Tx(data, { common })
-      const signed = txn.sign(pkey)
+      const signed = txn.sign(pkey, false)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
         equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
@@ -118,10 +118,24 @@ describe('[FeeMarket1559Tx]', () => {
     }
   })
 
+  it('sign() - should default to hedged signatures', () => {
+    const privKey = hexToBytes(eip1559Data[0].privateKey)
+    const txn = createFeeMarket1559Tx({}, { common })
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(txn.sign(privKey).hash())
+      if (hashSet.has(hash)) {
+        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
+  })
+
   it('addSignature() -> correctly adds correct signature values', () => {
     const privKey = hexToBytes(eip1559Data[0].privateKey)
     const tx = createFeeMarket1559Tx({})
-    const signedTx = tx.sign(privKey)
+    const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -132,9 +146,9 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
-    const signedTx = tx.sign(privKey)
+    const signedTx = tx.sign(privKey, false)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -157,7 +171,7 @@ describe('[FeeMarket1559Tx]', () => {
     const data = eip1559Data[0]
     const pkey = hexToBytes(data.privateKey)
     let txn = createFeeMarket1559Tx(data, { common })
-    let signed = txn.sign(pkey)
+    let signed = txn.sign(pkey, false)
     const expectedHash = hexToBytes(
       '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
     )
@@ -169,7 +183,7 @@ describe('[FeeMarket1559Tx]', () => {
       common,
       freeze: false,
     })
-    signed = txn.sign(pkey)
+    signed = txn.sign(pkey, false)
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when not frozen',
@@ -241,7 +255,7 @@ describe('[FeeMarket1559Tx]', () => {
     const data = eip1559Data[0]
     const pkey = hexToBytes(data.privateKey)
     const txn = createFeeMarket1559Tx(data, { common })
-    const signed = txn.sign(pkey)
+    const signed = txn.sign(pkey, false)
 
     const json = signed.toJSON()
     const expectedJSON: JSONTx = {
