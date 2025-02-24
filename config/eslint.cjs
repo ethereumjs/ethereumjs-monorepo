@@ -120,7 +120,7 @@ module.exports = {
       'error',
       {
         selector: "ThrowStatement > NewExpression[callee.name='Error']",
-        message: "Throwing default JS Errors is not allowed. It is only possible to throw `EthereumJSError` (see the util package)",
+        message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
       }
     ]
   },
