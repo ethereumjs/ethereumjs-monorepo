@@ -2,6 +2,7 @@ import { Mainnet } from '@ethereumjs/common'
 import {
   CLRequest,
   CLRequestType,
+  EthereumJSErrorUnsetCode,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
@@ -31,7 +32,7 @@ export const accumulateRequests = async (
     const depositContractAddress =
       vm.common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
     if (depositContractAddress === undefined)
-      throw new Error('deposit contract address required with EIP 6110')
+      throw EthereumJSErrorUnsetCode('deposit contract address required with EIP 6110')
     const depositsRequest = accumulateDepositsRequest(depositContractAddress, txResults)
     requests.push(depositsRequest)
   }

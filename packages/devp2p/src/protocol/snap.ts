@@ -1,5 +1,5 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { bytesToHex } from '@ethereumjs/util'
+import { EthereumJSErrorUnsetCode, bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
 import { ProtocolType } from '../types.js'
@@ -81,7 +81,7 @@ export class SNAP extends Protocol {
       case SNAP.MESSAGE_CODES.TRIE_NODES:
         break
       default:
-        throw new Error(`Unknown code ${code}`)
+        throw EthereumJSErrorUnsetCode(`Unknown code ${code}`)
     }
 
     payload = RLP.encode(payload)
