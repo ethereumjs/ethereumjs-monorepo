@@ -3,7 +3,7 @@ import type { ChainConfig } from './types.js'
 export const Mainnet: ChainConfig = {
   name: 'mainnet',
   chainId: 1,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -116,6 +116,8 @@ export const Mainnet: ChainConfig = {
     {
       name: 'prague',
       block: null,
+      timestamp: '9999999999', // TEMP: placeholder until mainnet timestamp is set
+      // forkHash: '0xFFFFFFFF' // TODO: set correct forkHash once mainnet timestamp is set
     },
     {
       name: 'osaka',
