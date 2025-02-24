@@ -1,6 +1,6 @@
 export * from './cache/index.js'
 export * from './merkleStateManager.js'
-export * from './proofs/index.js'
+export * from './proof/index.js'
 export * from './rpcStateManager.js'
 export * from './simpleStateManager.js'
 export * from './statefulVerkleStateManager.js'

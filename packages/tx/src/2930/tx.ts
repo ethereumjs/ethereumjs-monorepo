@@ -331,8 +331,8 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array): AccessList2930Tx {
-    return <AccessList2930Tx>Legacy.sign(this, privateKey)
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): AccessList2930Tx {
+    return <AccessList2930Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 
   isSigned(): boolean {
