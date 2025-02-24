@@ -18,7 +18,7 @@ import {
 import {
   BIGINT_0,
   BIGINT_1,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   Lock,
   ValueEncoding,
   bytesToHex,
@@ -210,7 +210,8 @@ export class VMExecution extends Execution {
     } else if (this.config.statefulVerkle) {
       this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
-    } else throw EthereumJSErrorUnsetCode('EIP-6800 active and no verkle execution mode specified')
+    } else
+      throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
@@ -271,7 +272,7 @@ export class VMExecution extends Execution {
 
       const blockchain = this.chain.blockchain
       if (typeof blockchain.getIteratorHead !== 'function') {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           'cannot get iterator head: blockchain has no getIteratorHead function',
         )
       }
@@ -285,7 +286,7 @@ export class VMExecution extends Execution {
       }
 
       if (typeof blockchain.getTotalDifficulty !== 'function') {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           'cannot get iterator head: blockchain has no getTotalDifficulty function',
         )
       }
@@ -310,7 +311,7 @@ export class VMExecution extends Execution {
           !genesisState &&
           (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
         ) {
-          throw EthereumJSErrorUnsetCode('genesisState not available')
+          throw EthereumJSErrorWithoutCode('genesisState not available')
         } else {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }

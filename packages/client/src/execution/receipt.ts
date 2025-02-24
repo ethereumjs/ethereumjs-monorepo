@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToBigInt,
   bytesToInt,
@@ -278,7 +278,7 @@ export class ReceiptsManager extends MetaDBManager {
         break
       }
       default:
-        throw EthereumJSErrorUnsetCode('Unsupported index type')
+        throw EthereumJSErrorWithoutCode('Unsupported index type')
     }
   }
 
@@ -296,7 +296,7 @@ export class ReceiptsManager extends MetaDBManager {
         return this.rlp(RlpConvert.Decode, RlpType.TxHash, encoded)
       }
       default:
-        throw EthereumJSErrorUnsetCode('Unsupported index type')
+        throw EthereumJSErrorWithoutCode('Unsupported index type')
     }
   }
 
@@ -368,7 +368,7 @@ export class ReceiptsManager extends MetaDBManager {
           return [blockHash, bytesToInt(txIndex)] as TxHashIndex
         }
       default:
-        throw EthereumJSErrorUnsetCode('Unknown rlp conversion')
+        throw EthereumJSErrorWithoutCode('Unknown rlp conversion')
     }
   }
 

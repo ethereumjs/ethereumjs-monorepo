@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bytesToInt,
   concatBytes,
   hexToBytes,
@@ -405,7 +405,7 @@ export class ECIES {
   }
 
   parseBody(data: Uint8Array): Uint8Array | undefined {
-    if (this._bodySize === null) throw EthereumJSErrorUnsetCode('need to parse header first')
+    if (this._bodySize === null) throw EthereumJSErrorWithoutCode('need to parse header first')
 
     const body = data.subarray(0, -16)
     const mac = data.subarray(-16)

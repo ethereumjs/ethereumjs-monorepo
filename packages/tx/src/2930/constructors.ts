@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
@@ -37,7 +37,7 @@ export function createAccessList2930Tx(txData: TxData, opts: TxOptions = {}) {
  */
 export function createAccessList2930TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 8 && values.length !== 11) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).',
     )
   }
@@ -77,7 +77,7 @@ export function createAccessList2930TxFromRLP(serialized: Uint8Array, opts: TxOp
   if (
     equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.AccessListEIP2930)) === false
   ) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
         TransactionType.AccessListEIP2930
       }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
@@ -87,7 +87,7 @@ export function createAccessList2930TxFromRLP(serialized: Uint8Array, opts: TxOp
   const values = RLP.decode(Uint8Array.from(serialized.subarray(1)))
 
   if (!Array.isArray(values)) {
-    throw EthereumJSErrorUnsetCode('Invalid serialized tx input: must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized tx input: must be array')
   }
 
   return createAccessList2930TxFromBytesArray(values as TxValuesArray, opts)

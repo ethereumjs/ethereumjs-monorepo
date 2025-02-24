@@ -1,5 +1,5 @@
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bytesToUnprefixedHex,
   hexToBytes,
   randomBytes,
@@ -49,7 +49,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
 
   // If jwtFilePath is provided, it should exist
   if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
-    throw EthereumJSErrorUnsetCode(`No file exists at provided jwt secret path=${jwtFilePath}`)
+    throw EthereumJSErrorWithoutCode(`No file exists at provided jwt secret path=${jwtFilePath}`)
   }
 
   if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {

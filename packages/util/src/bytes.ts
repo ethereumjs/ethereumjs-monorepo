@@ -5,7 +5,7 @@ import {
   hexToBytes as nobleH2B,
 } from 'ethereum-cryptography/utils.js'
 
-import { EthereumJSErrorUnsetCode } from './errors.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexString, padToEven, stripHexPrefix } from './internal.js'
 
@@ -25,12 +25,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @throws If the input is not a valid 0x-prefixed hex string
  */
 export const hexToBytes = (hex: string) => {
-  if (!hex.startsWith('0x')) throw EthereumJSErrorUnsetCode('input string must be 0x prefixed')
+  if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
 
 export const unprefixedHexToBytes = (hex: string) => {
-  if (hex.startsWith('0x')) throw EthereumJSErrorUnsetCode('input string cannot be 0x prefixed')
+  if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
   return nobleH2B(padToEven(hex))
 }
 
@@ -77,7 +77,7 @@ export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint =
  */
 export const bytesToInt = (bytes: Uint8Array): number => {
   const res = Number(bytesToBigInt(bytes))
-  if (!Number.isSafeInteger(res)) throw EthereumJSErrorUnsetCode('Number exceeds 53 bits')
+  if (!Number.isSafeInteger(res)) throw EthereumJSErrorWithoutCode('Number exceeds 53 bits')
   return res
 }
 
@@ -90,7 +90,7 @@ export const bytesToInt = (bytes: Uint8Array): number => {
  */
 export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
-    throw EthereumJSErrorUnsetCode(`Received an invalid integer type: ${i}`)
+    throw EthereumJSErrorWithoutCode(`Received an invalid integer type: ${i}`)
   }
   return ('0x' + i.toString(16)) as PrefixedHexString
 }
@@ -238,7 +238,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
 
   if (typeof v === 'string') {
     if (!isHexString(v)) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`,
       )
     }
@@ -251,7 +251,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
 
   if (typeof v === 'bigint') {
     if (v < BIGINT_0) {
-      throw EthereumJSErrorUnsetCode(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
+      throw EthereumJSErrorWithoutCode(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)
     if (n.length % 2) n = '0' + n
@@ -263,7 +263,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
     return v.toBytes()
   }
 
-  throw EthereumJSErrorUnsetCode('invalid type')
+  throw EthereumJSErrorWithoutCode('invalid type')
 }
 
 /**
@@ -333,7 +333,9 @@ export const short = (bytes: Uint8Array | string, maxLength: number = 50): strin
 export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | undefined }) => {
   for (const [k, v] of Object.entries(values)) {
     if (v !== undefined && v.length > 0 && v[0] === 0) {
-      throw EthereumJSErrorUnsetCode(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
+      throw EthereumJSErrorWithoutCode(
+        `${k} cannot have leading zeroes, received: ${bytesToHex(v)}`,
+      )
     }
   }
 }

@@ -1,4 +1,4 @@
-import { EthereumJSErrorUnsetCode, hexToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, hexToBytes } from '@ethereumjs/util'
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import { URL } from 'url'
 
@@ -64,10 +64,10 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       if (ip && port) {
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
-      throw EthereumJSErrorUnsetCode(`Unable to parse bootnode URL: ${s}`)
+      throw EthereumJSErrorWithoutCode(`Unable to parse bootnode URL: ${s}`)
     })
   } catch (e: any) {
-    throw EthereumJSErrorUnsetCode(`Invalid bootnode URLs: ${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Invalid bootnode URLs: ${e.message}`)
   }
 }
 

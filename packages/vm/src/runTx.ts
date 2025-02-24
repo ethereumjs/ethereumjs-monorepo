@@ -9,7 +9,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
@@ -98,14 +98,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
   const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
   if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
-    throw EthereumJSErrorUnsetCode(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   // Ensure we start with a clear warmed accounts Map
@@ -136,7 +136,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (opts.tx.supports(Capability.EIP1559FeeMarket) && !vm.common.isActivatedEIP(1559)) {
       await vm.evm.journal.revert()
@@ -146,7 +146,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     const castedTx = <AccessList2930Tx>opts.tx
@@ -206,7 +206,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       !(vm.stateManager instanceof StatefulVerkleStateManager) &&
       !(vm.stateManager instanceof StatelessVerkleStateManager)
     ) {
-      throw EthereumJSErrorUnsetCode(`Verkle State Manager needed for execution of verkle blocks`)
+      throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
     txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
@@ -274,7 +274,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       block,
       tx,
     )
-    throw EthereumJSErrorUnsetCode(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
   gasLimit -= intrinsicGas
   if (vm.DEBUG) {
@@ -296,7 +296,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
   if (enableProfiler) {
@@ -332,7 +332,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           block,
           tx,
         )
-        throw EthereumJSErrorUnsetCode(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -354,7 +354,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -372,7 +372,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     // EIP-4844 spec
     // the signer must be able to afford the transaction
@@ -389,7 +389,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -405,7 +405,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -417,7 +417,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 

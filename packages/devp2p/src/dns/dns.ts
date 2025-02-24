@@ -1,4 +1,4 @@
-import { EthereumJSErrorUnsetCode } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dns from 'dns'
 
@@ -143,7 +143,7 @@ export class DNS {
     }
     // If all possible paths are circular...
     if (Object.keys(circularRefs).length === branches.length) {
-      throw EthereumJSErrorUnsetCode('Unresolvable circular path detected')
+      throw EthereumJSErrorWithoutCode('Unresolvable circular path detected')
     }
 
     // Randomly select a viable path
@@ -175,8 +175,8 @@ export class DNS {
     const response = await dns.promises.resolve(location, 'TXT')
 
     if (response.length === 0)
-      throw EthereumJSErrorUnsetCode('Received empty result array while fetching TXT record')
-    if (response[0].length === 0) throw EthereumJSErrorUnsetCode('Received empty TXT record')
+      throw EthereumJSErrorWithoutCode('Received empty result array while fetching TXT record')
+    if (response[0].length === 0) throw EthereumJSErrorWithoutCode('Received empty TXT record')
     // Branch entries can be an array of strings of comma delimited subdomains, with
     // some subdomain strings split across the array elements
     // (e.g btw end of arr[0] and beginning of arr[1])

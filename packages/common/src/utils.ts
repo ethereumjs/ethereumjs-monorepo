@@ -1,4 +1,4 @@
-import { EthereumJSErrorUnsetCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
 import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
@@ -80,7 +80,7 @@ function parseGethParams(json: any) {
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
   }
@@ -92,7 +92,7 @@ function parseGethParams(json: any) {
     for (const [hfKey, hfSchedule] of Object.entries(config.blobSchedule)) {
       const hfConfig = hardforksDict[hfKey]
       if (hfConfig === undefined) {
-        throw EthereumJSErrorUnsetCode(`unknown hardfork=${hfKey} specified in blobSchedule`)
+        throw EthereumJSErrorWithoutCode(`unknown hardfork=${hfKey} specified in blobSchedule`)
       }
       const {
         target,
@@ -100,7 +100,7 @@ function parseGethParams(json: any) {
         baseFeeUpdateFraction: blobGasPriceUpdateFraction,
       } = hfSchedule as { target?: number; max?: number; baseFeeUpdateFraction?: undefined }
       if (target === undefined || max === undefined || blobGasPriceUpdateFraction === undefined) {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           `undefined target, max or baseFeeUpdateFraction specified in blobSchedule for hardfork=${hfKey}`,
         )
       }
@@ -292,7 +292,7 @@ export function parseGethGenesis(json: any, name?: string) {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
     if (required.some((field) => !(field in json))) {
       const missingField = required.filter((field) => !(field in json))
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Invalid format, expected geth genesis field "${missingField}" missing`,
       )
     }
@@ -305,7 +305,7 @@ export function parseGethGenesis(json: any, name?: string) {
     }
     return parseGethParams(finalJSON)
   } catch (e: any) {
-    throw EthereumJSErrorUnsetCode(`Error parsing parameters file: ${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Error parsing parameters file: ${e.message}`)
   }
 }
 

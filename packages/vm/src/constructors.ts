@@ -4,7 +4,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   createAccount,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -40,14 +40,14 @@ export async function createVM(opts: VMOpts = {}): Promise<VM> {
   if (opts.profilerOpts !== undefined) {
     const profilerOpts = opts.profilerOpts
     if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time',
       )
     }
   }
 
   if (opts.evm !== undefined && opts.evmOpts !== undefined) {
-    throw EthereumJSErrorUnsetCode('the evm and evmOpts options cannot be used in conjunction')
+    throw EthereumJSErrorWithoutCode('the evm and evmOpts options cannot be used in conjunction')
   }
 
   if (opts.evm === undefined) {

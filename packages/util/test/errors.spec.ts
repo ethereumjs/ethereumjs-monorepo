@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { EthereumJSError, EthereumJSErrorUnsetCode } from '../src/errors.js'
+import { EthereumJSError, EthereumJSErrorWithoutCode } from '../src/errors.js'
 
 enum EthereumJSErrorType {
   ETHEREUMJS_ERROR = 'ETHEREUMJS_ERROR',
@@ -18,7 +18,7 @@ describe('EthereumJSError', () => {
   })
 
   it('should create an error using the unset code', () => {
-    const error = EthereumJSErrorUnsetCode('test error')
+    const error = EthereumJSErrorWithoutCode('test error')
     assert.equal(error.type.code, 'ETHEREUMJS_UNSET_ERROR_CODE')
     assert.equal(error.message, 'test error')
     const object = error.toObject()

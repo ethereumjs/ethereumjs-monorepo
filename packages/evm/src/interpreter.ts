@@ -4,7 +4,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -175,7 +175,7 @@ export class Interpreter {
       this.common.consensusType() === 'poa' &&
       this._evm['_optsCached'].cliqueSigner === undefined
     )
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'Must include cliqueSigner function if clique/poa is being used for consensus type',
       )
 
@@ -264,7 +264,7 @@ export class Interpreter {
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
     if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
-      throw EthereumJSErrorUnsetCode('Internal error: program counter not in range')
+      throw EthereumJSErrorWithoutCode('Internal error: program counter not in range')
     }
 
     let err
@@ -634,7 +634,7 @@ export class Interpreter {
     await this._stateManager.putStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
-      throw EthereumJSErrorUnsetCode('could not read account while persisting memory')
+      throw EthereumJSErrorWithoutCode('could not read account while persisting memory')
     }
     this._env.contract = account
   }
@@ -853,7 +853,7 @@ export class Interpreter {
     const baseFee = this._env.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
-      throw EthereumJSErrorUnsetCode('Block has no Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Base Fee')
     }
     return baseFee
   }
@@ -865,7 +865,7 @@ export class Interpreter {
     const blobBaseFee = this._env.block.header.getBlobGasPrice()
     if (blobBaseFee === undefined) {
       // Sanity check
-      throw EthereumJSErrorUnsetCode('Block has no Blob Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Blob Base Fee')
     }
     return blobBaseFee
   }
@@ -1030,7 +1030,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw EthereumJSErrorUnsetCode('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
@@ -1134,7 +1134,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw EthereumJSErrorUnsetCode('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0

@@ -1,5 +1,5 @@
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bytesToInt,
   bytesToUnprefixedHex,
   randomBytes,
@@ -155,7 +155,7 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this._banlist.has(obj)) throw EthereumJSErrorUnsetCode('Peer is banned')
+    if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
     if (this.DEBUG) {
       this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
     }

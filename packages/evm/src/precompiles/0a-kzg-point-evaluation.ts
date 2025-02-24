@@ -1,5 +1,5 @@
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToHex,
   computeVersionedHash,
@@ -26,7 +26,7 @@ const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0a')
   if (opts.common.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode('kzg not initialized')
+    throw EthereumJSErrorWithoutCode('kzg not initialized')
   }
   const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
   if (!gasLimitCheck(opts, gasUsed, pName)) {

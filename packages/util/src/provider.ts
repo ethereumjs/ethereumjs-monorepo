@@ -1,4 +1,4 @@
-import { EthereumJSErrorUnsetCode } from './errors.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 
 type rpcParams = {
   method: string
@@ -39,7 +39,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     body: data,
   })
   if (!res.ok) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `JSONRPCError: ${JSON.stringify(
         {
           method: params.method,
@@ -69,7 +69,7 @@ export const getProvider = (provider: string | EthersProvider) => {
   } else if (typeof provider === 'object' && provider._getConnection !== undefined) {
     return provider._getConnection().url
   } else {
-    throw EthereumJSErrorUnsetCode('Must provide valid provider URL or Web3Provider')
+    throw EthereumJSErrorWithoutCode('Must provide valid provider URL or Web3Provider')
   }
 }
 

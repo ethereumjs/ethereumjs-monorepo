@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bigInt64ToBytes,
   bytesToHex,
   concatBytes,
@@ -36,7 +36,7 @@ export async function parseEntry(entry: e2StoreEntry) {
       data = decompressed
       break
     default:
-      throw EthereumJSErrorUnsetCode(`unknown entry type - ${bytesToHex(entry.type)}`)
+      throw EthereumJSErrorWithoutCode(`unknown entry type - ${bytesToHex(entry.type)}`)
   }
   return { type: entry.type, data }
 }
@@ -49,7 +49,9 @@ export async function parseEntry(entry: e2StoreEntry) {
  */
 export const readEntry = (bytes: Uint8Array): e2StoreEntry => {
   if (bytes.length < 8)
-    throw EthereumJSErrorUnsetCode(`invalid data length, got ${bytes.length}, expected at least 8`)
+    throw EthereumJSErrorWithoutCode(
+      `invalid data length, got ${bytes.length}, expected at least 8`,
+    )
   const type = bytes.slice(0, 2)
   const lengthBytes = concatBytes(bytes.subarray(2, 8), new Uint8Array([0, 0]))
   const length = Number(
@@ -57,7 +59,7 @@ export const readEntry = (bytes: Uint8Array): e2StoreEntry => {
   )
   if (length > bytes.length) {
     // Check for overflow
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `invalid data length, got ${length}, expected max of ${bytes.length - 8}`,
     )
   }

@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -64,7 +64,7 @@ export function assertEq(
     } else {
       debug(debugMsg)
     }
-    throw EthereumJSErrorUnsetCode(fullMsg)
+    throw EthereumJSErrorWithoutCode(fullMsg)
   }
 
   if (expected === actual) return
@@ -74,7 +74,7 @@ export function assertEq(
   } else {
     debug(fullMsg)
   }
-  throw EthereumJSErrorUnsetCode(fullMsg)
+  throw EthereumJSErrorWithoutCode(fullMsg)
 }
 
 export function formatLogId(id: string, verbose: boolean): string {

@@ -15,7 +15,7 @@ import {
   utf8ToBytes,
 } from './bytes.js'
 import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
-import { EthereumJSErrorUnsetCode } from './errors.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
 import { stripHexPrefix } from './internal.js'
 
@@ -153,19 +153,19 @@ export class Account {
 
   private _validate() {
     if (this._nonce !== null && this._nonce < BIGINT_0) {
-      throw EthereumJSErrorUnsetCode('nonce must be greater than zero')
+      throw EthereumJSErrorWithoutCode('nonce must be greater than zero')
     }
     if (this._balance !== null && this._balance < BIGINT_0) {
-      throw EthereumJSErrorUnsetCode('balance must be greater than zero')
+      throw EthereumJSErrorWithoutCode('balance must be greater than zero')
     }
     if (this._storageRoot !== null && this._storageRoot.length !== 32) {
-      throw EthereumJSErrorUnsetCode('storageRoot must have a length of 32')
+      throw EthereumJSErrorWithoutCode('storageRoot must have a length of 32')
     }
     if (this._codeHash !== null && this._codeHash.length !== 32) {
-      throw EthereumJSErrorUnsetCode('codeHash must have a length of 32')
+      throw EthereumJSErrorWithoutCode('codeHash must have a length of 32')
     }
     if (this._codeSize !== null && this._codeSize < BIGINT_0) {
-      throw EthereumJSErrorUnsetCode('codeSize must be greater than zero')
+      throw EthereumJSErrorWithoutCode('codeSize must be greater than zero')
     }
   }
 
@@ -318,7 +318,7 @@ export function createAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized) as Uint8Array[]
 
   if (!Array.isArray(values)) {
-    throw EthereumJSErrorUnsetCode('Invalid serialized account input. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized account input. Must be array')
   }
 
   return createAccountFromBytesArray(values)
@@ -328,16 +328,16 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized) as Uint8Array[][]
 
   if (!Array.isArray(values)) {
-    throw EthereumJSErrorUnsetCode('Invalid serialized account input. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized account input. Must be array')
   }
 
   let nonce = null
   if (!Array.isArray(values[0])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial nonce encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial nonce encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[0][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
+      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
     }
     if (isNotNullIndicator === 1) {
       nonce = bytesToBigInt(values[0][1])
@@ -346,11 +346,11 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 
   let balance = null
   if (!Array.isArray(values[1])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial balance encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial balance encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[1][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
+      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
     }
     if (isNotNullIndicator === 1) {
       balance = bytesToBigInt(values[1][1])
@@ -359,11 +359,11 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 
   let storageRoot = null
   if (!Array.isArray(values[2])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial storageRoot encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial storageRoot encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[2][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Invalid isNullIndicator=${isNotNullIndicator} for storageRoot`,
       )
     }
@@ -374,11 +374,11 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 
   let codeHash = null
   if (!Array.isArray(values[3])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial codeHash encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial codeHash encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[3][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
+      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
     }
     if (isNotNullIndicator === 1) {
       codeHash = values[3][1]
@@ -387,11 +387,11 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 
   let codeSize = null
   if (!Array.isArray(values[4])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial codeSize encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial codeSize encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[4][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
+      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
     }
     if (isNotNullIndicator === 1) {
       codeSize = bytesToInt(values[4][1])
@@ -400,11 +400,11 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 
   let version = null
   if (!Array.isArray(values[5])) {
-    throw EthereumJSErrorUnsetCode('Invalid partial version encoding. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid partial version encoding. Must be array')
   } else {
     const isNotNullIndicator = bytesToInt(values[5][0])
     if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorUnsetCode(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
+      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
     }
     if (isNotNullIndicator === 1) {
       version = bytesToInt(values[5][1])
@@ -514,10 +514,10 @@ export const generateAddress2 = function (
   assertIsBytes(initCode)
 
   if (from.length !== 20) {
-    throw EthereumJSErrorUnsetCode('Expected from to be of length 20')
+    throw EthereumJSErrorWithoutCode('Expected from to be of length 20')
   }
   if (salt.length !== 32) {
-    throw EthereumJSErrorUnsetCode('Expected salt to be of length 32')
+    throw EthereumJSErrorWithoutCode('Expected salt to be of length 32')
   }
 
   const address = keccak256(concatBytes(hexToBytes('0xff'), from, salt, keccak256(initCode)))
@@ -575,7 +575,7 @@ export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = fa
     pubKey = secp256k1.ProjectivePoint.fromHex(pubKey).toRawBytes(false).slice(1)
   }
   if (pubKey.length !== 64) {
-    throw EthereumJSErrorUnsetCode('Expected pubKey to be of length 64')
+    throw EthereumJSErrorWithoutCode('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
   return keccak256(pubKey).subarray(-20)

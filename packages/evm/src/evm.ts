@@ -5,7 +5,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   KECCAK256_RLP,
   MAX_INTEGER,
@@ -171,7 +171,7 @@ export class EVM implements EVMInterface {
       const mandatory = ['checkChunkWitnessPresent']
       for (const m of mandatory) {
         if (!(m in this.stateManager)) {
-          throw EthereumJSErrorUnsetCode(
+          throw EthereumJSErrorWithoutCode(
             `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
           )
         }
@@ -190,12 +190,12 @@ export class EVM implements EVMInterface {
 
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
-        throw EthereumJSErrorUnsetCode(`EIP-${eip} is not supported by the EVM`)
+        throw EthereumJSErrorWithoutCode(`EIP-${eip} is not supported by the EVM`)
       }
     }
 
     if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
@@ -267,7 +267,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(6800)) {
       if (message.accessWitness === undefined) {
-        throw EthereumJSErrorUnsetCode('accessWitness is required for EIP-6800')
+        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800')
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
@@ -1028,7 +1028,7 @@ export class EVM implements EVMInterface {
     gasLimit: bigint,
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
-      throw EthereumJSErrorUnsetCode('Invalid precompile')
+      throw EthereumJSErrorWithoutCode('Invalid precompile')
     }
 
     const opts = {

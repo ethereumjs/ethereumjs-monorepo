@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bigIntToHex,
   blobsToCommitments,
   blobsToProofs,
@@ -36,28 +36,28 @@ const validateBlobTransactionNetworkWrapper = (
   kzg: KZG,
 ) => {
   if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'Number of blobVersionedHashes, blobs, and commitments not all equal',
     )
   }
   if (blobVersionedHashes.length === 0) {
-    throw EthereumJSErrorUnsetCode('Invalid transaction with empty blobs')
+    throw EthereumJSErrorWithoutCode('Invalid transaction with empty blobs')
   }
 
   let isValid
   try {
     isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
   } catch (error) {
-    throw EthereumJSErrorUnsetCode(`KZG verification of blobs fail with error=${error}`)
+    throw EthereumJSErrorWithoutCode(`KZG verification of blobs fail with error=${error}`)
   }
   if (!isValid) {
-    throw EthereumJSErrorUnsetCode('KZG proof cannot be verified from blobs/commitments')
+    throw EthereumJSErrorWithoutCode('KZG proof cannot be verified from blobs/commitments')
   }
 
   for (let x = 0; x < blobVersionedHashes.length; x++) {
     const computedVersionedHash = computeVersionedHash(commitments[x], version)
     if (computedVersionedHash !== blobVersionedHashes[x]) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `commitment for blob at index ${x} does not match versionedHash`,
       )
     }
@@ -78,29 +78,29 @@ const validateBlobTransactionNetworkWrapper = (
  */
 export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
   const kzg = opts!.common!.customCrypto!.kzg!
   if (txData.blobsData !== undefined) {
     if (txData.blobs !== undefined) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'cannot have both raw blobs data and encoded blobs in constructor',
       )
     }
     if (txData.kzgCommitments !== undefined) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'cannot have both raw blobs data and KZG commitments in constructor',
       )
     }
     if (txData.blobVersionedHashes !== undefined) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'cannot have both raw blobs data and versioned hashes in constructor',
       )
     }
     if (txData.kzgProofs !== undefined) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         'cannot have both raw blobs data and KZG proofs in constructor',
       )
     }
@@ -127,13 +127,13 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
  */
 export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
   if (values.length !== 11 && values.length !== 14) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).',
     )
   }
@@ -197,13 +197,13 @@ export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOp
  */
 export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
   if (equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
       }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
@@ -213,7 +213,7 @@ export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions 
   const values = RLP.decode(serialized.subarray(1))
 
   if (!Array.isArray(values)) {
-    throw EthereumJSErrorUnsetCode('Invalid serialized tx input: must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized tx input: must be array')
   }
 
   return createBlob4844TxFromBytesArray(values as TxValuesArray, opts)
@@ -230,17 +230,17 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   opts?: TxOptions,
 ): Blob4844Tx {
   if (!opts || !opts.common) {
-    throw EthereumJSErrorUnsetCode('common instance required to validate versioned hashes')
+    throw EthereumJSErrorWithoutCode('common instance required to validate versioned hashes')
   }
 
   if (opts.common?.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }
 
   if (equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
         TransactionType.BlobEIP4844
       }, received: ${bytesToHex(serialized.subarray(0, 1))}`,
@@ -303,7 +303,7 @@ export function createMinimal4844TxFromNetworkWrapper(
   opts?: TxOptions,
 ): Blob4844Tx {
   if (opts?.common?.customCrypto?.kzg === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx',
     )
   }

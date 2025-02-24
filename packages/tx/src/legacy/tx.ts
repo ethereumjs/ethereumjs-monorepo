@@ -2,7 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
   BIGINT_8,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -50,7 +50,7 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
     // v is 1. not matching the EIP-155 chainId included case and...
     // v is 2. not matching the classic v=27 or v=28 case
     if (v < 37 && v !== 27 && v !== 28) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
       )
     }
@@ -59,7 +59,7 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
   // No unsigned tx and EIP-155 activated and chain ID included
   if (v !== undefined && v !== 0 && common.gteHardfork('spuriousDragon') && v !== 27 && v !== 28) {
     if (!meetsEIP155(BigInt(v), common.chainId())) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
       )
     }
@@ -131,7 +131,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
 
     const chainId = validateVAndExtractChainID(this.common, this.v)
     if (chainId !== undefined && chainId !== this.common.chainId()) {
-      throw EthereumJSErrorUnsetCode(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
@@ -139,7 +139,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
-      throw EthereumJSErrorUnsetCode('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
+      throw EthereumJSErrorWithoutCode('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
     }
 
     if (this.common.gteHardfork('spuriousDragon')) {
@@ -320,7 +320,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
       const msg = Legacy.errorMsg(this, 'This transaction is not signed')
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     return this.getHashedMessageToSign()
   }

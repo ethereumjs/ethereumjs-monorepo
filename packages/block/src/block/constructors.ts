@@ -8,7 +8,7 @@ import {
   normalizeTxParams,
 } from '@ethereumjs/tx'
 import {
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   bigIntToHex,
   bytesToHex,
   bytesToUtf8,
@@ -119,7 +119,7 @@ export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions) {
  */
 export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions) {
   if (values.length > 5) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `invalid  More values=${values.length} than expected were received (at most 5)`,
     )
   }
@@ -143,13 +143,13 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     header.common.isActivatedEIP(4895) &&
     (withdrawalBytes === undefined || !Array.isArray(withdrawalBytes))
   ) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array',
     )
   }
 
   if (header.common.isActivatedEIP(6800) && executionWitnessBytes === undefined) {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined',
     )
   }
@@ -220,7 +220,7 @@ export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) 
   const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
   if (!Array.isArray(values)) {
-    throw EthereumJSErrorUnsetCode('Invalid serialized block input. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized block input. Must be array')
   }
 
   return createBlockFromBytesArray(values, opts)
@@ -294,13 +294,13 @@ export const createBlockFromJSONRPCProvider = async (
       params: [blockTag, true],
     })
   } else {
-    throw EthereumJSErrorUnsetCode(
+    throw EthereumJSErrorWithoutCode(
       `expected blockTag to be block hash, bigint, hex prefixed string, or earliest/latest/pending; got ${blockTag}`,
     )
   }
 
   if (blockData === null) {
-    throw EthereumJSErrorUnsetCode('No block data returned from provider')
+    throw EthereumJSErrorWithoutCode('No block data returned from provider')
   }
 
   const uncleHeaders = []

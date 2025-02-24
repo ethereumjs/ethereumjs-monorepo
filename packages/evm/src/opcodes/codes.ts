@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { EthereumJSErrorUnsetCode } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
 import { handlers } from './functions.js'
 import { dynamicGasHandlers } from './gas.js'
@@ -440,7 +440,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
     const baseFee = Number(common.param(`${opcodeBuilder[key].name.toLowerCase()}Gas`))
     // explicitly verify that we have defined a base fee
     if (baseFee === undefined) {
-      throw EthereumJSErrorUnsetCode(`base fee not defined for: ${opcodeBuilder[key].name}`)
+      throw EthereumJSErrorWithoutCode(`base fee not defined for: ${opcodeBuilder[key].name}`)
     }
     opcodeBuilder[key].fee = baseFee
   }
@@ -455,7 +455,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
 
       // Sanity checks
       if (code.opcodeName === undefined || code.baseFee === undefined) {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`,
         )
       }

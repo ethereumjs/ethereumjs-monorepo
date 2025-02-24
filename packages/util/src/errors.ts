@@ -16,7 +16,7 @@ export type EthereumJSErrorObject = {
 // In order to update all our errors to use `EthereumJSError`, temporarily include the
 // unset error code. All errors throwing this code should be updated to use the relevant
 // error code.
-export const UNSET_ERROR_CODE = 'ETHEREUMJS_UNSET_ERROR_CODE'
+export const DEFAULT_ERROR_CODE = 'ETHEREUMJS_DEFAULT_ERROR_CODE'
 
 /**
  * Generic EthereumJS error with attached metadata
@@ -52,8 +52,8 @@ export class EthereumJSError<T extends { code: string }> extends Error {
  * @param stack Optional stack trace
  * @returns
  */
-export function EthereumJSErrorUnsetCode(message?: string, stack?: string) {
-  return new EthereumJSError({ code: UNSET_ERROR_CODE }, message, stack)
+export function EthereumJSErrorWithoutCode(message?: string, stack?: string) {
+  return new EthereumJSError({ code: DEFAULT_ERROR_CODE }, message, stack)
 }
 
 // Below here: specific monorepo-wide errors (examples and commented out)

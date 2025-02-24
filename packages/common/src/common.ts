@@ -1,6 +1,6 @@
 import {
   BIGINT_0,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bytesToHex,
   concatBytes,
@@ -155,7 +155,7 @@ export class Common {
       }
     }
     if (!existing) {
-      throw EthereumJSErrorUnsetCode(`Hardfork with name ${hardfork} not supported`)
+      throw EthereumJSErrorWithoutCode(`Hardfork with name ${hardfork} not supported`)
     }
   }
 
@@ -275,11 +275,11 @@ export class Common {
   setEIPs(eips: number[] = []) {
     for (const eip of eips) {
       if (!(eip in eipsDict)) {
-        throw EthereumJSErrorUnsetCode(`${eip} not supported`)
+        throw EthereumJSErrorWithoutCode(`${eip} not supported`)
       }
       const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
         )
       }
@@ -292,7 +292,7 @@ export class Common {
       if (eipsDict[eip].requiredEIPs !== undefined) {
         for (const elem of eipsDict[eip].requiredEIPs!) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
-            throw EthereumJSErrorUnsetCode(
+            throw EthereumJSErrorWithoutCode(
               `${eip} requires EIP ${elem}, but is not included in the EIP list`,
             )
           }
@@ -361,7 +361,7 @@ export class Common {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
     if (!(name in this._paramsCache)) {
-      throw EthereumJSErrorUnsetCode(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = this._paramsCache[name]
     return BigInt(value ?? 0)
@@ -396,7 +396,7 @@ export class Common {
       if (hfChanges[0] === hardfork) break
     }
     if (value === undefined) {
-      throw EthereumJSErrorUnsetCode(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     return BigInt(value ?? 0)
   }
@@ -409,12 +409,12 @@ export class Common {
    */
   paramByEIP(name: string, eip: number): bigint | undefined {
     if (!(eip in eipsDict)) {
-      throw EthereumJSErrorUnsetCode(`${eip} not supported`)
+      throw EthereumJSErrorWithoutCode(`${eip} not supported`)
     }
 
     const eipParams = this._params[eip]
     if (eipParams?.[name] === undefined) {
-      throw EthereumJSErrorUnsetCode(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = eipParams![name]
     return BigInt(value ?? 0)
@@ -662,13 +662,13 @@ export class Common {
     const data = this._getHardfork(hardfork)
     if (data === null || (data?.block === null && data?.timestamp === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
-      throw EthereumJSErrorUnsetCode(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (data?.forkHash !== null && data?.forkHash !== undefined) {
       return data.forkHash
     }
     if (!genesisHash)
-      throw EthereumJSErrorUnsetCode('genesisHash required for forkHash calculation')
+      throw EthereumJSErrorWithoutCode('genesisHash required for forkHash calculation')
     return this._calcForkHash(hardfork, genesisHash)
   }
 

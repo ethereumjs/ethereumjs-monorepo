@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { EthereumJSErrorUnsetCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
@@ -49,7 +49,7 @@ export class ENR {
    */
   static parseAndVerifyRecord(enr: string, common?: Common): PeerInfo {
     if (!enr.startsWith(this.RECORD_PREFIX))
-      throw EthereumJSErrorUnsetCode(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
+      throw EthereumJSErrorWithoutCode(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
     // ENRs are RLP encoded and written to DNS TXT entries as base64 url-safe strings respectively
     // RawURLEncoding, which is the unpadded alternate base64 encoding defined in RFC 4648
@@ -77,7 +77,7 @@ export class ENR {
       obj.secp256k1,
     )
 
-    if (!isVerified) throw EthereumJSErrorUnsetCode('Unable to verify ENR signature')
+    if (!isVerified) throw EthereumJSErrorWithoutCode('Unable to verify ENR signature')
 
     const peerInfo: PeerInfo = {
       address: ipToString(obj.ip),
@@ -98,7 +98,7 @@ export class ENR {
    */
   static parseAndVerifyRoot(root: string, publicKey: string, common?: Common): string {
     if (!root.startsWith(this.ROOT_PREFIX))
-      throw EthereumJSErrorUnsetCode(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
+      throw EthereumJSErrorWithoutCode(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
 
     const rootValues = sscanf(
       root,
@@ -110,13 +110,13 @@ export class ENR {
     ) as ENRRootValues
 
     if (!rootValues.eRoot)
-      throw EthereumJSErrorUnsetCode("Could not parse 'e' value from ENR root entry")
+      throw EthereumJSErrorWithoutCode("Could not parse 'e' value from ENR root entry")
     if (!rootValues.lRoot)
-      throw EthereumJSErrorUnsetCode("Could not parse 'l' value from ENR root entry")
+      throw EthereumJSErrorWithoutCode("Could not parse 'l' value from ENR root entry")
     if (!rootValues.seq)
-      throw EthereumJSErrorUnsetCode("Could not parse 'seq' value from ENR root entry")
+      throw EthereumJSErrorWithoutCode("Could not parse 'seq' value from ENR root entry")
     if (!rootValues.signature)
-      throw EthereumJSErrorUnsetCode("Could not parse 'sig' value from ENR root entry")
+      throw EthereumJSErrorWithoutCode("Could not parse 'sig' value from ENR root entry")
 
     const decodedPublicKey = [...base32.decode(publicKey + '===').values()]
 
@@ -137,7 +137,7 @@ export class ENR {
       keyBytes,
     )
 
-    if (!isVerified) throw EthereumJSErrorUnsetCode('Unable to verify ENR root signature')
+    if (!isVerified) throw EthereumJSErrorWithoutCode('Unable to verify ENR root signature')
 
     return rootValues.eRoot
   }
@@ -152,7 +152,7 @@ export class ENR {
    */
   static parseTree(tree: string): ENRTreeValues {
     if (!tree.startsWith(this.TREE_PREFIX))
-      throw EthereumJSErrorUnsetCode(`ENR tree entry must start with '${this.TREE_PREFIX}'`)
+      throw EthereumJSErrorWithoutCode(`ENR tree entry must start with '${this.TREE_PREFIX}'`)
 
     const treeValues = sscanf(
       tree,
@@ -162,9 +162,9 @@ export class ENR {
     ) as ENRTreeValues
 
     if (!treeValues.publicKey)
-      throw EthereumJSErrorUnsetCode('Could not parse public key from ENR tree entry')
+      throw EthereumJSErrorWithoutCode('Could not parse public key from ENR tree entry')
     if (!treeValues.domain)
-      throw EthereumJSErrorUnsetCode('Could not parse domain from ENR tree entry')
+      throw EthereumJSErrorWithoutCode('Could not parse domain from ENR tree entry')
 
     return treeValues
   }
@@ -177,7 +177,7 @@ export class ENR {
    */
   static parseBranch(branch: string): string[] {
     if (!branch.startsWith(this.BRANCH_PREFIX))
-      throw EthereumJSErrorUnsetCode(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
+      throw EthereumJSErrorWithoutCode(`ENR branch entry must start with '${this.BRANCH_PREFIX}'`)
 
     return branch.split(this.BRANCH_PREFIX)[1].split(',')
   }

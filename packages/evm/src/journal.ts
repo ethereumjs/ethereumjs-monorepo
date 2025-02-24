@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   RIPEMD160_ADDRESS_STRING,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -100,7 +100,7 @@ export class Journal {
     if (this.preimages !== undefined) {
       const bytesAddress = unprefixedHexToBytes(address)
       if (this.stateManager.getAppliedKey === undefined) {
-        throw EthereumJSErrorUnsetCode(
+        throw EthereumJSErrorWithoutCode(
           'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
         )
       }

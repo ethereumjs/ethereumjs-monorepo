@@ -1,7 +1,7 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   Account,
-  EthereumJSErrorUnsetCode,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   VERKLE_CODE_CHUNK_SIZE,
@@ -117,11 +117,11 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
 
     if (opts.common.isActivatedEIP(6800) === false) {
-      throw EthereumJSErrorUnsetCode('EIP-6800 required for stateless verkle state management')
+      throw EthereumJSErrorWithoutCode('EIP-6800 required for stateless verkle state management')
     }
 
     if (opts.common.customCrypto.verkle === undefined) {
-      throw EthereumJSErrorUnsetCode('verkle crypto required')
+      throw EthereumJSErrorWithoutCode('verkle crypto required')
     }
 
     this.common = opts.common
@@ -677,7 +677,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
    */
   async getStateRoot(): Promise<Uint8Array> {
     if (this._cachedStateRoot === undefined) {
-      throw EthereumJSErrorUnsetCode('Cache state root missing')
+      throw EthereumJSErrorWithoutCode('Cache state root missing')
     }
     return this._cachedStateRoot
   }
