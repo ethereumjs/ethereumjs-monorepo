@@ -9,8 +9,6 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   MAX_INTEGER,
-  UsageError,
-  UsageErrorType,
   bigIntToBytes,
   bytesToUnprefixedHex,
   createZeroAddress,
