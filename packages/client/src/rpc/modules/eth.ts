@@ -521,7 +521,7 @@ export class Eth {
       throw {
         code: 3,
         data: bytesToHex(execResult.returnValue),
-        message: execResult.exceptionError.error,
+        message: execResult.exceptionError.type.code,
       }
     }
     return bytesToHex(execResult.returnValue)
