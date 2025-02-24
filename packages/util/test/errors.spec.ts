@@ -1,28 +1,26 @@
 import { assert, describe, it } from 'vitest'
 
-import { EthereumJSError, EthereumJSErrorWithoutCode } from '../src/errors.js'
+import { DEFAULT_ERROR_CODE, EthereumJSError, EthereumJSErrorWithoutCode } from '../src/errors.js'
 
-enum EthereumJSErrorType {
-  ETHEREUMJS_ERROR = 'ETHEREUMJS_ERROR',
-  ETHEREUMJS_UNSET_ERROR_CODE = 'ETHEREUMJS_UNSET_ERROR_CODE',
-}
+const TEST_ERROR_CODE = 'TEST_ERROR_CODE'
+const TEST_MSG = 'test error message'
 
 describe('EthereumJSError', () => {
   it('should create an error with a code', () => {
-    const error = new EthereumJSError({ code: EthereumJSErrorType.ETHEREUMJS_ERROR }, 'test error')
-    assert.equal(error.type.code, 'ETHEREUMJS_ERROR')
-    assert.equal(error.message, 'test error')
+    const error = new EthereumJSError({ code: TEST_ERROR_CODE }, TEST_MSG)
+    assert.equal(error.type.code, TEST_ERROR_CODE)
+    assert.equal(error.message, TEST_MSG)
     const object = error.toObject()
-    assert.equal(object.type.code, 'ETHEREUMJS_ERROR')
-    assert.equal(object.message, 'test error')
+    assert.equal(object.type.code, TEST_ERROR_CODE)
+    assert.equal(object.message, TEST_MSG)
   })
 
-  it('should create an error using the unset code', () => {
-    const error = EthereumJSErrorWithoutCode('test error')
-    assert.equal(error.type.code, 'ETHEREUMJS_UNSET_ERROR_CODE')
-    assert.equal(error.message, 'test error')
+  it('should create an error using the ethereumjs error without code', () => {
+    const error = EthereumJSErrorWithoutCode(TEST_MSG)
+    assert.equal(error.type.code, DEFAULT_ERROR_CODE)
+    assert.equal(error.message, TEST_MSG)
     const object = error.toObject()
-    assert.equal(object.type.code, 'ETHEREUMJS_UNSET_ERROR_CODE')
-    assert.equal(object.message, 'test error')
+    assert.equal(object.type.code, DEFAULT_ERROR_CODE)
+    assert.equal(object.message, TEST_MSG)
   })
 })
