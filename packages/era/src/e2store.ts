@@ -1,5 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigInt64ToBytes, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bigInt64ToBytes,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { uint256 } from 'micro-eth-signer/ssz'
 
 import { compressData, decompressData } from './snappy.js'
@@ -30,7 +36,7 @@ export async function parseEntry(entry: e2StoreEntry) {
       data = decompressed
       break
     default:
-      throw new Error(`unknown entry type - ${bytesToHex(entry.type)}`)
+      throw EthereumJSErrorWithoutCode(`unknown entry type - ${bytesToHex(entry.type)}`)
   }
   return { type: entry.type, data }
 }
@@ -43,7 +49,9 @@ export async function parseEntry(entry: e2StoreEntry) {
  */
 export const readEntry = (bytes: Uint8Array): e2StoreEntry => {
   if (bytes.length < 8)
-    throw new Error(`invalid data length, got ${bytes.length}, expected at least 8`)
+    throw EthereumJSErrorWithoutCode(
+      `invalid data length, got ${bytes.length}, expected at least 8`,
+    )
   const type = bytes.slice(0, 2)
   const lengthBytes = concatBytes(bytes.subarray(2, 8), new Uint8Array([0, 0]))
   const length = Number(
@@ -51,7 +59,9 @@ export const readEntry = (bytes: Uint8Array): e2StoreEntry => {
   )
   if (length > bytes.length) {
     // Check for overflow
-    throw new Error(`invalid data length, got ${length}, expected max of ${bytes.length - 8}`)
+    throw EthereumJSErrorWithoutCode(
+      `invalid data length, got ${length}, expected max of ${bytes.length - 8}`,
+    )
   }
 
   const data = length > 0 ? bytes.subarray(8, 8 + length) : new Uint8Array()
