@@ -6,6 +6,7 @@ import {
   Hardfork,
   Mainnet,
   createCustomCommon,
+  parseGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import {
@@ -46,6 +47,14 @@ import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { HardforkTransitionConfig, StateManagerInterface } from '@ethereumjs/common'
 import type { KZG } from '@ethereumjs/util'
 import type { VerkleTree } from '@ethereumjs/verkle'
+import { createClient, createManager, getRPCClient, setupChain, startRPC } from './rpc/helpers.js'
+import { VMExecution } from '../src/execution/vmexecution.js'
+import { Chain } from '../src/blockchain/chain.js'
+import { getLogger } from '../src/logging.js'
+import { Config } from '../src/config.js'
+import { Skeleton } from '../src/service/skeleton.js'
+import { MemoryLevel } from 'memory-level'
+import { postMergeData } from './testdata/geth-genesis/post-merge.js'
 
 const argv = minimist.default(process.argv.slice(2))
 
@@ -822,9 +831,51 @@ async function runBlockchainEngineTest(options: any, testData: any) {
   //   }
   // }
 
-  console.log('dbg180')
-  console.log(testData.engineNewPayloads)
+  console.log(common)
+  testData.config.blobSchedule = Object.fromEntries(
+    Object.entries(testData.config.blobSchedule).map(([key, value]) => [key.toLowerCase(), value]),
+  )
+  // const params = parseGethGenesis({...testData.genesisBlockHeader, config: testData.config, alloc: testData.pre})
+  // console.log(params)
+  const { service, server } = await setupChain(
+    { ...testData.genesisBlockHeader, config: testData.config, alloc: testData.pre },
+    'post-merge',
+    { engine: true },
+  )
+  const rpc = getRPCClient(server)
 
+  const config = new Config({
+    minerCoinbase: undefined,
+    common,
+    accountCache: 10000,
+    storageCache: 1000,
+    logger: getLogger({}),
+  })
+
+  // const chain = await Chain.create({ config, blockchain })
+  // chain.opened = true
+
+  // const execution = new VMExecution({ config, chain })
+  // await execution.open()
+  // const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+
+  // const client = await createClient({
+  //   commonChain: common,
+  //   blockchain,
+  //   includeVM: true,
+  //   enableMetaDB: false
+  // })
+
+  // client.chain = chain
+  // client.service.execution = execution
+
+  // const manager = createManager(client)
+  // const engineMethods =  manager.getMethods(true)
+  // const rpc = getRPCClient(startRPC({ ...manager.getMethods(), ...engineMethods }, {port: 0, wsServer: false}))
+
+  const res = await rpc.request(`engine_newPayloadV4`, testData.engineNewPayloads[0].params)
+
+  console.log(res)
   assert.equal(
     bytesToHex(blockchain['_headHeaderHash']),
     '0x' + testData.lastblockhash,
@@ -850,10 +901,10 @@ describe('BlockchainEngine', async () => {
 
     // TODO the argument parsing isn't working as expected here, currently hardcoding
     // HF to Prague because I can't pass it as -- --fork
-    console.log('dbg151')
-    console.log(argv)
-    console.log(process.argv)
-    console.log(process.argv.slice(2))
+    // console.log('dbg151')
+    // console.log(argv)
+    // console.log(process.argv)
+    // console.log(process.argv.slice(2))
 
     // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
     const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
@@ -882,10 +933,10 @@ describe('BlockchainEngine', async () => {
 
     const kzg = new microEthKZG(trustedSetup)
 
-    console.log('dbg150')
-    console.log(FORK_CONFIG)
-    console.log(FORK_CONFIG_VM)
-    console.log(getCommon(FORK_CONFIG_VM, kzg))
+    // console.log('dbg150')
+    // console.log(FORK_CONFIG)
+    // console.log(FORK_CONFIG_VM)
+    // console.log(getCommon(FORK_CONFIG_VM, kzg))
 
     const runnerArgs: {
       forkConfigVM: string
@@ -905,7 +956,7 @@ describe('BlockchainEngine', async () => {
     } = {
       forkConfigVM: FORK_CONFIG_VM,
       forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-      common: getCommon('prague', kzg),
+      common: getCommon('prague+1559', kzg),
       jsontrace: argv.jsontrace,
       dist: argv.dist,
       debug: argv.debug, // BlockchainTests
@@ -917,5 +968,5 @@ describe('BlockchainEngine', async () => {
     }
 
     await runBlockchainEngineTest(runnerArgs, data)
-  })
+  }, 120000)
 })
