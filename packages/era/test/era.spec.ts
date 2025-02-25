@@ -16,7 +16,7 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
     assert.equal(slotIndex.startSlot, 10969088)
   })
   it('should extract the beacon state', async () => {
-    const state = await readBeaconState(data)
+    const state = await readBeaconState(data, 'deneb')
     assert.equal(Number(state.slot), 10969088)
   }, 30000)
   it('should read a block from the era file and decompress it', async () => {
@@ -37,4 +37,19 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
       assert.equal(block, undefined)
     }
   })
+})
+
+describe('it should be able to extract beacon objects from an era file', () => {
+  it('should extract the beacon state for Altair state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00291-5cffd097.era
+    const data = readBinaryFile(__dirname + '/mainnet-00291-5cffd097.era')
+    const state = await readBeaconState(data, 'altair')
+    assert.equal(Number(state.slot), 2383872)
+  }, 30000)
+  it('should extract the beacon state for Bellatrix state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00600-e031a37d.era
+    const data = readBinaryFile(__dirname + '/mainnet-00600-e031a37d.era')
+    const state = await readBeaconState(data, 'bellatrix')
+    assert.equal(Number(state.slot), 2383872)
+  }, 30000)
 })
