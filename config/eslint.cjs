@@ -116,7 +116,13 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: "ThrowStatement > NewExpression[callee.name='Error']",
+        message: "Throwing default JS Errors is not allowed. It is only possible to throw `EthereumJSError` (see the util package)",
+      }
+    ]
   },
   parserOptions: {
     extraFileExtensions: ['.json'],
