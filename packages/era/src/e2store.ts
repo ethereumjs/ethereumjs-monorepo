@@ -3,7 +3,7 @@ import { bigInt64ToBytes, bytesToHex, concatBytes, equalsBytes } from '@ethereum
 import { uint256 } from 'micro-eth-signer/ssz'
 
 import { compressData, decompressData } from './snappy.js'
-import { Era1Types } from './types.js'
+import { Era1Types, EraTypes } from './types.js'
 
 import type { e2StoreEntry } from './types.js'
 
@@ -27,6 +27,12 @@ export async function parseEntry(entry: e2StoreEntry) {
       data = RLP.decode(decompressed)
       break
     case bytesToHex(Era1Types.AccumulatorRoot):
+      data = decompressed
+      break
+    case bytesToHex(EraTypes.CompressedBeaconState):
+      data = decompressed
+      break
+    case bytesToHex(EraTypes.CompressedSignedBeaconBlockType):
       data = decompressed
       break
     default:
