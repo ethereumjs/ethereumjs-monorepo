@@ -4,7 +4,9 @@ import { assert, beforeAll, describe, it } from 'vitest'
 import { readBeaconBlock, readBeaconState, readBlocksFromEra, readSlotIndex } from '../src/era.js'
 import { readBinaryFile } from '../src/index.js'
 
-describe('it should be able to extract beacon objects from an era file', () => {
+// To test this, download mainnet-01339-75d1c621.era from https://mainnet.era.nimbus.team/mainnet-01339-75d1c621.era
+// This era file is around 500mb in size so don't commit it to the repo
+describe.skip('it should be able to extract beacon objects from an era file', () => {
   let data: Uint8Array
   beforeAll(() => {
     data = readBinaryFile(__dirname + '/mainnet-01339-75d1c621.era')
