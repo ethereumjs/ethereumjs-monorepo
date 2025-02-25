@@ -14,24 +14,17 @@ export async function parseEntry(entry: e2StoreEntry) {
   const decompressed = await decompressData(entry.data)
   let data
   switch (bytesToHex(entry.type)) {
-    case bytesToHex(Era1Types.CompressedHeader):
-      data = RLP.decode(decompressed)
-      break
     case bytesToHex(Era1Types.CompressedBody): {
       const [txs, uncles, withdrawals] = RLP.decode(decompressed)
       data = { txs, uncles, withdrawals }
       break
     }
+    case bytesToHex(Era1Types.CompressedHeader):
     case bytesToHex(Era1Types.CompressedReceipts):
-      data = decompressed
       data = RLP.decode(decompressed)
       break
     case bytesToHex(Era1Types.AccumulatorRoot):
-      data = decompressed
-      break
     case bytesToHex(EraTypes.CompressedBeaconState):
-      data = decompressed
-      break
     case bytesToHex(EraTypes.CompressedSignedBeaconBlockType):
       data = decompressed
       break
