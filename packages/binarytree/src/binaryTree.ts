@@ -11,6 +11,7 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
+import { createBinaryTree } from './constructors.js'
 import { CheckpointDB } from './db/index.js'
 import { InternalBinaryNode } from './node/internalNode.js'
 import { StemBinaryNode } from './node/stemNode.js'
@@ -576,8 +577,16 @@ export class BinaryTree {
    * Saves the nodes from a proof into the tree.
    * @param proof
    */
-  async fromProof(_proof: any): Promise<void> {
-    throw new Error('Not implemented')
+  async fromProof(_proof: Uint8Array[]): Promise<BinaryTree> {
+    const proofTrie = await createBinaryTree()
+    const putStack: [Uint8Array, BinaryNode][] = _proof.map((bytes) => {
+      const node = decodeBinaryNode(bytes)
+      return [this.merkelize(node), node]
+    })
+    await proofTrie.saveStack(putStack)
+    const root = putStack[0][0]
+    proofTrie.root(root)
+    return proofTrie
   }
 
   /**
