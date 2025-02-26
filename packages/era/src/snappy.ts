@@ -54,33 +54,21 @@ export async function decompressData(compressedData: Uint8Array) {
   })
 
   stream.push(compressedData)
+
   const data: Uint8Array = await new Promise((resolve, reject) => {
     unsnappy.on('data', (data: Uint8Array) => {
-      try {
-        destroy()
-        resolve(data)
-        // eslint-disable-next-line
-      } catch {}
+      destroy()
+      resolve(data)
     })
     unsnappy.on('end', (data: any) => {
-      try {
-        destroy()
-        resolve(data)
-      } catch (err: any) {
-        destroy()
-        reject(`unable to deserialize data with reason - ${err.message}`)
-      }
+      destroy()
+      resolve(data)
     })
     unsnappy.on('close', (data: any) => {
-      try {
-        destroy()
-        resolve(data)
-      } catch (err: any) {
-        destroy()
-        reject(`unable to deserialize data with reason - ${err.message}`)
-      }
+      destroy()
+      data !== undefined ? resolve(data) : reject('no data received')
     })
-    stream.pipe(unsnappy)
+    stream.pipe(unsnappy, { end: true })
   })
   return data
 }

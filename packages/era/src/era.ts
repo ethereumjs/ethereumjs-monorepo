@@ -136,8 +136,9 @@ export async function* readBlocksFromEra(eraFile: Uint8Array) {
       const block = await readBeaconBlock(eraFile, x)
       yield block
     } catch (err) {
+      // TODO: we need to check for empty slots (basically where the next offset is the same as the current one)
+      // and skip them
       console.log(err)
-      throw err
       // noop - we skip empty slots
     }
   }
