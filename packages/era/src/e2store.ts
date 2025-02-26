@@ -9,7 +9,7 @@ import {
 import { uint256 } from 'micro-eth-signer/ssz'
 
 import { compressData, decompressData } from './snappy.js'
-import { Era1Types } from './types.js'
+import { Era1Types, EraTypes } from './types.js'
 
 import type { e2StoreEntry } from './types.js'
 
@@ -20,19 +20,18 @@ export async function parseEntry(entry: e2StoreEntry) {
   const decompressed = await decompressData(entry.data)
   let data
   switch (bytesToHex(entry.type)) {
-    case bytesToHex(Era1Types.CompressedHeader):
-      data = RLP.decode(decompressed)
-      break
     case bytesToHex(Era1Types.CompressedBody): {
       const [txs, uncles, withdrawals] = RLP.decode(decompressed)
       data = { txs, uncles, withdrawals }
       break
     }
+    case bytesToHex(Era1Types.CompressedHeader):
     case bytesToHex(Era1Types.CompressedReceipts):
-      data = decompressed
       data = RLP.decode(decompressed)
       break
     case bytesToHex(Era1Types.AccumulatorRoot):
+    case bytesToHex(EraTypes.CompressedBeaconState):
+    case bytesToHex(EraTypes.CompressedSignedBeaconBlockType):
       data = decompressed
       break
     default:
