@@ -609,9 +609,20 @@ export class BinaryTree {
   async verifyBinaryProof(
     _rootHash: Uint8Array,
     _key: Uint8Array,
-    _proof: any,
+    _proof: Uint8Array[],
   ): Promise<Uint8Array | null> {
-    throw new Error('Not implemented')
+    const proofTrie = await this.fromProof(_proof)
+    const [value] = await proofTrie.get(_key.slice(0, 31), [_key[31]])
+    const valueNode = decodeBinaryNode(_proof[_proof.length - 1]) as StemBinaryNode
+    const expectedValue = valueNode.values[_key[31]]
+    if (!expectedValue) {
+      if (value) {
+        throw new Error('Proof is invalid')
+      }
+    } else if (value && !equalsBytes(value, expectedValue)) {
+      throw new Error('Proof is invalid')
+    }
+    return value
   }
 
   /**
