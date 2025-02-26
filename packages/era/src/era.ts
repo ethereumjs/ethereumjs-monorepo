@@ -4,7 +4,10 @@ import * as ssz from 'micro-eth-signer/ssz'
 import {
   AltairBeaconState,
   BellatrixBeaconState,
+  CapellaBeaconState,
   EraTypes,
+  ForkSlots,
+  Phase0BeaconState,
   parseEntry,
   readEntry,
 } from './index.js'
@@ -62,10 +65,10 @@ export const getEraIndexes = (
 /**
  *
  * @param eraData a bytestring representing an era file
- * @returns a BeaconState object of the same time as returned by {@link ssz.ETH2_TYPES.BeaconState}
+ * @returns a BeaconState object of the type corresponding to the fork the state snapshot occurred at
  * @throws if BeaconState cannot be found
  */
-export const readBeaconState = async (eraData: Uint8Array, fork: string) => {
+export const readBeaconState = async (eraData: Uint8Array) => {
   const indices = getEraIndexes(eraData)
   const stateEntry = readEntry(
     eraData.slice(indices.stateSlotIndex.recordStart + indices.stateSlotIndex.slotOffsets[0]),
@@ -74,14 +77,13 @@ export const readBeaconState = async (eraData: Uint8Array, fork: string) => {
   if (equalsBytes(stateEntry.type, EraTypes.CompressedBeaconState) === false) {
     throw new Error(`expected CompressedBeaconState type, got ${stateEntry.type}`)
   }
-  switch (fork) {
-    case 'bellatrix':
-      return BellatrixBeaconState.decode(data.data as Uint8Array)
-    case 'altair':
-      return AltairBeaconState.decode(data.data as Uint8Array)
-    default:
-      return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array)
-  }
+  const stateSlot = indices.stateSlotIndex.startSlot
+  if (stateSlot < ForkSlots.Altair) return Phase0BeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ForkSlots.Bellatrix) return AltairBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ForkSlots.Capella)
+    return BellatrixBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ForkSlots.Deneb) return CapellaBeaconState.decode(data.data as Uint8Array)
+  else return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array)
 }
 
 /**
