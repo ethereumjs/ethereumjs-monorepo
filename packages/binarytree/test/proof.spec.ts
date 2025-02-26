@@ -32,6 +32,7 @@ describe('binary tree proof', async () => {
     const index = hashedKey[31]
     await tree1.put(stem, [index], [value])
   }
+
   it('should create and verify a merkle proof for existing key', async () => {
     // create merkle proof for first key/value pair
     const proof = await tree1.createBinaryProof(keyValuePairs[0].hashedKey)
@@ -70,5 +71,13 @@ describe('binary tree proof', async () => {
       proof,
     )
     assert.deepEqual(keyValuePairs[0].value, proofValue, 'verify proof should return target value')
+  })
+
+  it('should create and verify a proof of non-existence', async () => {
+    const fakeKey = new Uint8Array(keyValuePairs[0].hashedKey.length).fill(5)
+
+    const proof = await tree1.createBinaryProof(fakeKey)
+    const proofValue = await tree1.verifyBinaryProof(tree1.root(), fakeKey, proof)
+    assert.deepEqual(proofValue, undefined, 'verify proof of non-existence should return undefined')
   })
 })
