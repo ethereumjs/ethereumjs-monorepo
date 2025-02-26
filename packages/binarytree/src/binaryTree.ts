@@ -584,8 +584,9 @@ export class BinaryTree {
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
    * @param key
    */
-  async createBinaryProof(_key: Uint8Array): Promise<any> {
-    throw new Error('Not implemented')
+  async createBinaryProof(_key: Uint8Array): Promise<Uint8Array[]> {
+    const { stack } = await this.findPath(_key)
+    return stack.map(([node, _]) => node.serialize())
   }
 
   /**
