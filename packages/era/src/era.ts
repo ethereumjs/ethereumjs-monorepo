@@ -3,11 +3,15 @@ import * as ssz from 'micro-eth-signer/ssz'
 
 import {
   AltairBeaconState,
+  AltairSignedBeaconBlock,
   BellatrixBeaconState,
+  BellatrixSignedBeaconBlock,
   CapellaBeaconState,
+  CapellaSignedBeaconBlock,
   EraTypes,
   ForkSlots,
   Phase0BeaconState,
+  Phase0SignedBeaconBlock,
   parseEntry,
   readEntry,
 } from './index.js'
@@ -103,7 +107,15 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   if (equalsBytes(blockEntry.type, EraTypes.CompressedSignedBeaconBlockType) === false) {
     throw new Error(`expected CompressedSignedBeaconBlockType type, got ${blockEntry.type}`)
   }
-  return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array)
+
+  const slot = indices.blockSlotIndex!.startSlot + offset
+  if (slot < ForkSlots.Altair) return Phase0SignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ForkSlots.Bellatrix)
+    return AltairSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ForkSlots.Capella)
+    return BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ForkSlots.Deneb) return CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
+  else return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array)
 }
 
 /**
@@ -123,7 +135,9 @@ export async function* readBlocksFromEra(eraFile: Uint8Array) {
     try {
       const block = await readBeaconBlock(eraFile, x)
       yield block
-    } catch {
+    } catch (err) {
+      console.log(err)
+      throw err
       // noop - we skip empty slots
     }
   }
