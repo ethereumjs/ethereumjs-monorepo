@@ -16,7 +16,7 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
     assert.equal(slotIndex.startSlot, 10969088)
   })
   it('should extract the beacon state', async () => {
-    const state = await readBeaconState(data, 'deneb')
+    const state = await readBeaconState(data)
     assert.equal(Number(state.slot), 10969088)
   }, 30000)
   it('should read a block from the era file and decompress it', async () => {
@@ -32,6 +32,7 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
     }
   }, 30000)
   it('reads no blocks from the genesis era file', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00000-4b363db9.era
     const data = new Uint8Array(readFileSync(__dirname + '/mainnet-00000-4b363db9.era'))
     for await (const block of readBlocksFromEra(data)) {
       assert.equal(block, undefined)
