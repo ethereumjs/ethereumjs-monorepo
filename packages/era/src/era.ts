@@ -1,4 +1,4 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
 import {
@@ -105,7 +105,9 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   )
   const data = await parseEntry(blockEntry)
   if (equalsBytes(blockEntry.type, EraTypes.CompressedSignedBeaconBlockType) === false) {
-    throw new Error(`expected CompressedSignedBeaconBlockType type, got ${blockEntry.type}`)
+    throw new Error(
+      `expected CompressedSignedBeaconBlockType type, got ${bytesToHex(blockEntry.type)}`,
+    )
   }
 
   const slot = indices.blockSlotIndex!.startSlot + offset
@@ -135,11 +137,13 @@ export async function* readBlocksFromEra(eraFile: Uint8Array) {
     try {
       const block = await readBeaconBlock(eraFile, x)
       yield block
-    } catch (err) {
-      // TODO: we need to check for empty slots (basically where the next offset is the same as the current one)
-      // and skip them
-      console.log(err)
-      // noop - we skip empty slots
+    } catch (err: any) {
+      // Nimbus ERA files appear to have a block entry where the entry type is 0x6532 (i.e. the version type) for empty slots
+      if (err?.message?.includes('0x6532') === true) {
+        // Skip empty slots
+        continue
+      }
+      throw err
     }
   }
 }

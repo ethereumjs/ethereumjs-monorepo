@@ -59,18 +59,17 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
     const state = await readBeaconState(data)
     assert.equal(Number(state.slot), 4915200)
   }, 30000)
-  it('should extract the beacon state for Capella state', async () => {
+  it('should extract the beacon state and blocks for Capella state', async () => {
     // https://mainnet.era.nimbus.team/mainnet-00780-bb546fec.era
-    const data = readBinaryFile(__dirname + '/mainnet-00001-40cf2f3c.era')
+    const data = readBinaryFile(__dirname + '/mainnet-00780-bb546fec.era')
     const state = await readBeaconState(data)
-    assert.equal(Number(state.slot), 8192)
+    assert.equal(Number(state.slot), 6389760)
+
     let count = 0
 
     for await (const _block of readBlocksFromEra(data)) {
       count++
       if (count > 10) break
     }
-
-    assert.equal(Number(state.slot), 6389760)
   }, 30000)
 })
