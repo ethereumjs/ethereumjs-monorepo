@@ -94,7 +94,7 @@ export const readBeaconState = async (eraData: Uint8Array) => {
  *
  * @param eraData a bytestring representing an era file
  * @returns a decompressed SignedBeaconBlock object of the same time as returned by {@link ssz.ETH2_TYPES.SignedBeaconBlock}
- * @throws if SignedBeaconBlock cannot be found
+ * @throws if SignedBeaconBlock is not found when reading an entry
  */
 export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   const indices = getEraIndexes(eraData)

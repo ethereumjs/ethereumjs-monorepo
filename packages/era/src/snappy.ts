@@ -1,6 +1,6 @@
-import { SnappyStream, UnsnappyStream } from 'snappystream'
-import { Duplex, Writable } from 'stream'
-
+import snappyStream from '@chainsafe/snappy-stream'
+import { concatBytes } from '@ethereumjs/util'
+import { Writable } from 'stream'
 /**
  * Compress data using snappy
  * @param uncompressedData
@@ -16,7 +16,7 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
       },
     })
 
-    const compress = new SnappyStream()
+    const compress = snappyStream.createCompressStream()
 
     compress.on('error', reject)
     writableStream.on('error', reject)
@@ -33,42 +33,29 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
 
     compress.pipe(writableStream)
 
-    compress.end(uncompressedData)
+    compress.write(uncompressedData)
+    compress.end()
   })
 }
 
 export async function decompressData(compressedData: Uint8Array) {
-  const unsnappy = new UnsnappyStream()
-  const stream = new Duplex()
+  const unsnappy = snappyStream.createUncompressStream({ asBuffer: true })
   const destroy = () => {
     unsnappy.destroy()
-    stream.destroy()
   }
-  stream.on('error', (err) => {
-    if (err.message.includes('_read() method is not implemented')) {
-      // ignore errors about unimplemented methods
-      return
-    } else {
-      throw err
-    }
-  })
 
-  stream.push(compressedData)
-
-  const data: Uint8Array = await new Promise((resolve, reject) => {
+  const data: Uint8Array = await new Promise((resolve) => {
+    const chunks: Uint8Array[] = []
     unsnappy.on('data', (data: Uint8Array) => {
-      destroy()
-      resolve(data)
+      chunks.push(data)
     })
-    unsnappy.on('end', (data: any) => {
+
+    unsnappy.on('end', () => {
       destroy()
-      resolve(data)
+      resolve(concatBytes(...chunks))
     })
-    unsnappy.on('close', (data: any) => {
-      destroy()
-      data !== undefined ? resolve(data) : reject('no data received')
-    })
-    stream.pipe(unsnappy, { end: true })
+    unsnappy.write(compressedData)
+    unsnappy.end()
   })
   return data
 }
