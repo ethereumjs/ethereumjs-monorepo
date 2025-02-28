@@ -97,7 +97,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
-    const accessListData = getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [], true)
     this.accessList = accessListData.accessList
     this.cache.accessListJSON = accessListData.accessListJSON
 

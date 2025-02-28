@@ -117,7 +117,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [], true)
     this.accessList = accessListData.accessList
     this.cache.accessListJSON = accessListData.accessListJSON
     // Verify the access list format.

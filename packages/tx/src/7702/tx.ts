@@ -109,14 +109,14 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 7702])
 
     // Populate the access list fields
-    const accessListData = getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [], true)
     this.accessList = accessListData.accessList
     this.cache.accessListJSON = accessListData.accessListJSON
     // Verify the access list format.
     verifyAccessList(this.accessList)
 
     // Populate the authority list fields
-    const authorizationListData = getAuthorizationListData(authorizationList ?? [])
+    const authorizationListData = getAuthorizationListData(authorizationList ?? [], true)
     this.authorizationList = authorizationListData.authorizationList
     this.cache.authorityListJSON = authorizationListData.authorizationListJSON
     // Verify the authority list format.
