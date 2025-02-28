@@ -577,16 +577,16 @@ export class BinaryTree {
    * Saves the nodes from a proof into the tree.
    * @param proof
    */
-  async fromProof(_proof: Uint8Array[]): Promise<BinaryTree> {
-    return binaryTreeFromProof(_proof)
+  async fromProof(proof: Uint8Array[]): Promise<BinaryTree> {
+    return binaryTreeFromProof(proof)
   }
 
   /**
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
    * @param key
    */
-  async createBinaryProof(_key: Uint8Array): Promise<Uint8Array[]> {
-    const { stack } = await this.findPath(_key)
+  async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
+    const { stack } = await this.findPath(key)
     return stack.map(([node, _]) => node.serialize())
   }
 
@@ -599,11 +599,11 @@ export class BinaryTree {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   async verifyBinaryProof(
-    _rootHash: Uint8Array,
-    _key: Uint8Array,
-    _proof: Uint8Array[],
+    rootHash: Uint8Array,
+    key: Uint8Array,
+    proof: Uint8Array[],
   ): Promise<Uint8Array | null> {
-    return verifyBinaryProof(_rootHash, _key, _proof)
+    return verifyBinaryProof(rootHash, key, proof)
   }
 
   /**

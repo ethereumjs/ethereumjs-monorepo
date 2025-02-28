@@ -11,9 +11,9 @@ import type { StemBinaryNode } from './node/stemNode.js'
  * Saves the nodes from a proof into the tree.
  * @param proof
  */
-export async function binaryTreeFromProof(_proof: Uint8Array[]): Promise<BinaryTree> {
+export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTree> {
   const proofTrie = await createBinaryTree()
-  const putStack: [Uint8Array, BinaryNode][] = _proof.map((bytes) => {
+  const putStack: [Uint8Array, BinaryNode][] = proof.map((bytes) => {
     const node = decodeBinaryNode(bytes)
     return [proofTrie['merkelize'](node), node]
   })
