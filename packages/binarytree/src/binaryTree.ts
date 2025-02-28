@@ -11,7 +11,6 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { createBinaryTree } from './constructors.js'
 import { CheckpointDB } from './db/index.js'
 import { InternalBinaryNode } from './node/internalNode.js'
 import { StemBinaryNode } from './node/stemNode.js'
@@ -574,55 +573,12 @@ export class BinaryTree {
   }
 
   /**
-   * Saves the nodes from a proof into the tree.
-   * @param proof
-   */
-  async fromProof(_proof: Uint8Array[]): Promise<BinaryTree> {
-    const proofTrie = await createBinaryTree()
-    const putStack: [Uint8Array, BinaryNode][] = _proof.map((bytes) => {
-      const node = decodeBinaryNode(bytes)
-      return [this.merkelize(node), node]
-    })
-    await proofTrie.saveStack(putStack)
-    const root = putStack[0][0]
-    proofTrie.root(root)
-    return proofTrie
-  }
-
-  /**
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
    * @param key
    */
-  async createBinaryProof(_key: Uint8Array): Promise<Uint8Array[]> {
-    const { stack } = await this.findPath(_key)
+  async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
+    const { stack } = await this.findPath(key)
     return stack.map(([node, _]) => node.serialize())
-  }
-
-  /**
-   * Verifies a proof.
-   * @param rootHash
-   * @param key
-   * @param proof
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  async verifyBinaryProof(
-    _rootHash: Uint8Array,
-    _key: Uint8Array,
-    _proof: Uint8Array[],
-  ): Promise<Uint8Array | null> {
-    const proofTrie = await this.fromProof(_proof)
-    const [value] = await proofTrie.get(_key.slice(0, 31), [_key[31]])
-    const valueNode = decodeBinaryNode(_proof[_proof.length - 1]) as StemBinaryNode
-    const expectedValue = valueNode.values[_key[31]]
-    if (!expectedValue) {
-      if (value) {
-        throw new Error('Proof is invalid')
-      }
-    } else if (value && !equalsBytes(value, expectedValue)) {
-      throw new Error('Proof is invalid')
-    }
-    return value
   }
 
   /**
