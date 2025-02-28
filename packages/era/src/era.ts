@@ -1,4 +1,4 @@
-import { bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
 import {
@@ -30,7 +30,7 @@ export const readSlotIndex = (bytes: Uint8Array): SlotIndex => {
   const recordStart = recordEnd - (8 * count + 24)
   const slotIndexEntry = readEntry(bytes.subarray(recordStart, recordEnd))
   if (equalsBytes(slotIndexEntry.type, EraTypes.SlotIndex) === false) {
-    throw new Error(`expected SlotIndex type, got ${slotIndexEntry.type}`)
+    throw EthereumJSErrorWithoutCode(`expected SlotIndex type, got ${slotIndexEntry.type}`)
   }
 
   const startSlot = Number(
@@ -79,7 +79,7 @@ export const readBeaconState = async (eraData: Uint8Array) => {
   )
   const data = await parseEntry(stateEntry)
   if (equalsBytes(stateEntry.type, EraTypes.CompressedBeaconState) === false) {
-    throw new Error(`expected CompressedBeaconState type, got ${stateEntry.type}`)
+    throw EthereumJSErrorWithoutCode(`expected CompressedBeaconState type, got ${stateEntry.type}`)
   }
   const stateSlot = indices.stateSlotIndex.startSlot
   if (stateSlot < ForkSlots.Altair) return Phase0BeaconState.decode(data.data as Uint8Array)
@@ -105,7 +105,7 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   )
   const data = await parseEntry(blockEntry)
   if (equalsBytes(blockEntry.type, EraTypes.CompressedSignedBeaconBlockType) === false) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `expected CompressedSignedBeaconBlockType type, got ${bytesToHex(blockEntry.type)}`,
     )
   }
