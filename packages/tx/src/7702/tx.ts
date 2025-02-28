@@ -15,16 +15,22 @@ import * as EIP7702 from '../capabilities/eip7702.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+import {
+  getAccessListData,
+  getAccessListJSON,
+  getAuthorizationListData,
+  getAuthorizationListJSON,
+  validateNotArray,
+  verifyAccessList,
+  verifyAuthorizationList,
+} from '../util.js'
 
 import { createEOACode7702Tx } from './constructors.js'
 
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  AuthorizationList,
   AuthorizationListBytes,
   Capability,
   JSONTx,
@@ -66,9 +72,6 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
 
   // End of Tx data part
 
-  public readonly AccessListJSON: AccessList
-  public readonly AuthorizationListJSON: AuthorizationList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -106,20 +109,18 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 7702])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [])
     this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.cache.accessListJSON = accessListData.accessListJSON
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    verifyAccessList(this.accessList)
 
     // Populate the authority list fields
-    const authorizationListData = AuthorizationLists.getAuthorizationListData(
-      authorizationList ?? [],
-    )
+    const authorizationListData = getAuthorizationListData(authorizationList ?? [])
     this.authorizationList = authorizationListData.authorizationList
-    this.AuthorizationListJSON = authorizationListData.AuthorizationListJSON
+    this.cache.authorityListJSON = authorizationListData.authorizationListJSON
     // Verify the authority list format.
-    AuthorizationLists.verifyAuthorizationList(this.authorizationList)
+    verifyAuthorizationList(this.authorizationList)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -354,7 +355,13 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = this.cache.accessListJSON ?? getAccessListJSON(this.accessList)
+    this.cache.accessListJSON = accessListJSON
+
+    const authorizationList =
+      this.cache.authorityListJSON ?? getAuthorizationListJSON(this.authorizationList)
+    this.cache.authorityListJSON = authorizationList
+
     const baseJSON = getBaseJSON(this)
 
     return {
@@ -363,7 +370,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
-      authorizationList: this.AuthorizationListJSON,
+      authorizationList,
     }
   }
 

@@ -18,12 +18,16 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import {
+  getAccessListData,
+  getAccessListJSON,
+  validateNotArray,
+  verifyAccessList,
+} from '../util.js'
 
 import { createBlob4844Tx } from './constructors.js'
 
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -72,8 +76,6 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
   kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
 
-  public readonly AccessListJSON: AccessList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -115,11 +117,11 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [])
     this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.cache.accessListJSON = accessListData.accessListJSON
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    verifyAccessList(this.accessList)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -375,7 +377,8 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
   }
 
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = this.cache.accessListJSON ?? getAccessListJSON(this.accessList)
+    this.cache.accessListJSON = accessListJSON
     const baseJSON = getBaseJSON(this)
 
     return {
