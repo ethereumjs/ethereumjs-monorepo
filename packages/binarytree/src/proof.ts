@@ -37,6 +37,9 @@ export async function verifyBinaryProof(
   proof: Uint8Array[],
 ): Promise<Uint8Array | null> {
   const proofTrie = await binaryTreeFromProof(proof)
+  if (!equalsBytes(proofTrie.root(), rootHash)) {
+    throw new Error('rootHash does not match proof root')
+  }
   const [value] = await proofTrie.get(key.slice(0, 31), [key[31]])
   const valueNode = decodeBinaryNode(proof[proof.length - 1]) as StemBinaryNode
   const expectedValue = valueNode.values[key[31]]
