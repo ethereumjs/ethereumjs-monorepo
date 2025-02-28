@@ -29,6 +29,7 @@ export async function parseEntry(entry: e2StoreEntry) {
     case bytesToHex(Era1Types.CompressedReceipts):
       data = RLP.decode(decompressed)
       break
+    case bytesToHex(Era1Types.Version):
     case bytesToHex(Era1Types.AccumulatorRoot):
     case bytesToHex(EraTypes.CompressedBeaconState):
     case bytesToHex(EraTypes.CompressedSignedBeaconBlockType):

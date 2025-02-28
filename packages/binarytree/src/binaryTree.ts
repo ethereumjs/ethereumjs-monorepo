@@ -580,35 +580,12 @@ export class BinaryTree {
   }
 
   /**
-   * Saves the nodes from a proof into the tree.
-   * @param proof
-   */
-  async fromProof(_proof: any): Promise<void> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
-  }
-
-  /**
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
    * @param key
    */
-  async createBinaryProof(_key: Uint8Array): Promise<any> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
-  }
-
-  /**
-   * Verifies a proof.
-   * @param rootHash
-   * @param key
-   * @param proof
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  async verifyBinaryProof(
-    _rootHash: Uint8Array,
-    _key: Uint8Array,
-    _proof: any,
-  ): Promise<Uint8Array | null> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
+  async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
+    const { stack } = await this.findPath(key)
+    return stack.map(([node, _]) => node.serialize())
   }
 
   /**

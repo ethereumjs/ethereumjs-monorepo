@@ -32,9 +32,44 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
     }
   }, 30000)
   it('reads no blocks from the genesis era file', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00000-4b363db9.era
     const data = new Uint8Array(readFileSync(__dirname + '/mainnet-00000-4b363db9.era'))
     for await (const block of readBlocksFromEra(data)) {
       assert.equal(block, undefined)
     }
   })
+})
+
+describe.skip('it should be able to extract beacon objects from an era file', () => {
+  it('should extract the beacon state for Phase0 state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00265-1468e348.era
+    const data = readBinaryFile(__dirname + '/mainnet-00265-1468e348.era')
+    const state = await readBeaconState(data)
+    assert.equal(Number(state.slot), 2170880)
+  }, 30000)
+  it('should extract the beacon state for Altair state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00291-5cffd097.era
+    const data = readBinaryFile(__dirname + '/mainnet-00291-5cffd097.era')
+    const state = await readBeaconState(data)
+    assert.equal(Number(state.slot), 2383872)
+  }, 30000)
+  it('should extract the beacon state for Bellatrix state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00600-e031a37d.era
+    const data = readBinaryFile(__dirname + '/mainnet-00600-e031a37d.era')
+    const state = await readBeaconState(data)
+    assert.equal(Number(state.slot), 4915200)
+  }, 30000)
+  it('should extract the beacon state and blocks for Capella state', async () => {
+    // https://mainnet.era.nimbus.team/mainnet-00780-bb546fec.era
+    const data = readBinaryFile(__dirname + '/mainnet-00780-bb546fec.era')
+    const state = await readBeaconState(data)
+    assert.equal(Number(state.slot), 6389760)
+
+    let count = 0
+
+    for await (const _block of readBlocksFromEra(data)) {
+      count++
+      if (count > 10) break
+    }
+  }, 30000)
 })
