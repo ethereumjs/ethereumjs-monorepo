@@ -211,14 +211,6 @@ const opcodes: OpcodeEntry = {
   0xa3: dynamicGasOp('LOG'),
   0xa4: dynamicGasOp('LOG'),
 
-  // '0xf0' range - extended range/width modular arithmetic
-  0xc0: asyncAndDynamicGasOp('SETMODX'),
-  0xc1: asyncAndDynamicGasOp('LOADX'),
-  0xc2: asyncAndDynamicGasOp('STOREX'),
-  0xc3: asyncAndDynamicGasOp('ADDMODX'),
-  0xc4: asyncAndDynamicGasOp('SUBMODX'),
-  0xc5: asyncAndDynamicGasOp('MULMODX'),
-
   // '0xf0' range - closures
   0xf0: asyncAndDynamicGasOp('CREATE'),
   0xf1: asyncAndDynamicGasOp('CALL'),
