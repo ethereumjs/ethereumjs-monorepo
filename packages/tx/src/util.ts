@@ -37,6 +37,11 @@ export function checkMaxInitCodeSize(common: Common, length: number) {
   }
 }
 
+/**
+ * Converts an access list to a JSON format
+ * @param accessList
+ * @returns
+ */
 export function getAccessListJSON(accessList: AccessListBytes) {
   const accessListJSON = []
   for (let index = 0; index < accessList.length; index++) {
@@ -94,6 +99,10 @@ export function getAccessListData(
   }
 }
 
+/**
+ * Verifies an access list. Throws if invalid.
+ * @param accessList
+ */
 export function verifyAccessList(accessList: AccessListBytes) {
   for (let key = 0; key < accessList.length; key++) {
     const accessListItem = accessList[key]
@@ -119,6 +128,12 @@ export function verifyAccessList(accessList: AccessListBytes) {
   }
 }
 
+/**
+ * Calculates the intrinsic data gas cost for a given access list
+ * @param accessList
+ * @param common
+ * @returns
+ */
 export function getAccessListDataGasEIP2930(accessList: AccessListBytes, common: Common): number {
   const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
   const accessListAddressCost = common.param('accessListAddressGas')
@@ -134,6 +149,11 @@ export function getAccessListDataGasEIP2930(accessList: AccessListBytes, common:
   return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
 }
 
+/**
+ * Converts an authorization list to a JSON format
+ * @param authorizationList
+ * @returns
+ */
 export function getAuthorizationListJSON(authorizationList: AuthorizationListBytes) {
   const json: AuthorizationList = []
   for (let i = 0; i < authorizationList.length; i++) {
@@ -206,6 +226,10 @@ export function getAuthorizationListData(
   }
 }
 
+/**
+ * Checks if the authorization list is valid. Throws if invalid.
+ * @param authorizationList
+ */
 export function verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
   if (authorizationList.length === 0) {
     throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: authorization list is empty')
