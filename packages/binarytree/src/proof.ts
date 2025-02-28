@@ -1,4 +1,4 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
 
 import { createBinaryTree } from './constructors.js'
 import { decodeBinaryNode } from './node/index.js'
@@ -38,17 +38,17 @@ export async function verifyBinaryProof(
 ): Promise<Uint8Array | null> {
   const proofTrie = await binaryTreeFromProof(proof)
   if (!equalsBytes(proofTrie.root(), rootHash)) {
-    throw new Error('rootHash does not match proof root')
+    throw EthereumJSErrorWithoutCode('rootHash does not match proof root')
   }
   const [value] = await proofTrie.get(key.slice(0, 31), [key[31]])
   const valueNode = decodeBinaryNode(proof[proof.length - 1]) as StemBinaryNode
   const expectedValue = valueNode.values[key[31]]
   if (!expectedValue) {
     if (value) {
-      throw new Error('Proof is invalid')
+      throw EthereumJSErrorWithoutCode('Proof is invalid')
     }
   } else if (value && !equalsBytes(value, expectedValue)) {
-    throw new Error('Proof is invalid')
+    throw EthereumJSErrorWithoutCode('Proof is invalid')
   }
   return value
 }
