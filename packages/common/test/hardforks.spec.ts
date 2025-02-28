@@ -5,7 +5,6 @@ import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
-  Goerli,
   Hardfork,
   Holesky,
   Mainnet,
@@ -13,6 +12,8 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '../src/index.js'
+
+import { Goerli } from './data/goerliCommon.js'
 
 import type { ChainConfig } from '../src/index.js'
 
@@ -310,7 +311,6 @@ describe('[Common]: Hardfork logic', () => {
       chain: 'testnet',
       eips: [],
       hardfork: Hardfork.Cancun,
-      mergeForkIdPostMerge: true,
     }
     const genesisHash = new Uint8Array(32)
     const zeroCommon = createCommonFromGethGenesis(defaultConfig, gethConfig)
@@ -380,7 +380,7 @@ describe('[Common]: Hardfork logic', () => {
   })
 
   it('Should correctly apply hardfork changes', () => {
-    // For sepolia MergeForkIdTransition happens AFTER merge
+    // For sepolia mergeNetsplitBlock happens AFTER merge
     const c = new Common({ chain: Sepolia, hardfork: Hardfork.London })
     assert.equal(
       c['HARDFORK_CHANGES'][11][0],
@@ -389,7 +389,7 @@ describe('[Common]: Hardfork logic', () => {
     )
     assert.equal(
       c['HARDFORK_CHANGES'][12][0],
-      Hardfork.MergeForkIdTransition,
+      Hardfork.MergeNetsplitBlock,
       'should correctly apply hardfork changes',
     )
 
@@ -405,7 +405,7 @@ describe('[Common]: Hardfork logic', () => {
       ConsensusType.ProofOfStake,
       `should switch to ProofOfStake consensus on merge`,
     )
-    c.setHardfork(Hardfork.MergeForkIdTransition)
+    c.setHardfork(Hardfork.MergeNetsplitBlock)
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,

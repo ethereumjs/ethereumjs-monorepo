@@ -26,14 +26,16 @@
   },
   "files": ["dist", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- statemanager",
     "examples:build": "npx embedme README.md",
-    "lint": "eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
@@ -48,7 +50,7 @@
     "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "@js-sdsl/ordered-map": "^4.4.2",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0",
+    "ethereum-cryptography": "^3.1.0",
     "lru-cache": "10.1.0"
   },
   "devDependencies": {

@@ -9,6 +9,7 @@ export const paramsVM: ParamsDict = {
     maxRefundQuotient: 2, // Maximum refund quotient; max tx refund is min(tx.gasUsed/maxRefundQuotient, tx.gasRefund)
     blobGasPerBlob: 0,
     maxBlobGasPerBlock: 0,
+    targetBlobGasPerBlock: 0,
     // pow
     minerReward: '5000000000000000000', // the amount a miner get rewarded for mining a block
   },
@@ -39,7 +40,7 @@ export const paramsVM: ParamsDict = {
    */
   2935: {
     // config
-    historyStorageAddress: '0x0F792be4B0c0cb4DAE440Ef133E90C0eCD48CCCC', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8191, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
@@ -54,8 +55,13 @@ export const paramsVM: ParamsDict = {
 .  * Shard Blob Transactions
 .  */
   4844: {
+    // gasConfig
+    targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
     blobGasPerBlob: 131072, // The base fee for blob gas per blob
     maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
+    // gasPrices
+    minBlobGas: 1, // The minimum fee per blob gas
   },
   /**
 .  * Beacon block root in the EVM
@@ -65,20 +71,13 @@ export const paramsVM: ParamsDict = {
     historicalRootsLength: 8191, // The modulo parameter of the beaconroot ring buffer in the beaconroot stateful precompile
   },
   /**
-   * Ethereum state using a unified verkle tree (experimental)
-   */
-  6800: {
-    // config
-    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
-  },
-  /**
    * Execution layer triggerable withdrawals (experimental)
    */
   7002: {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
-    withdrawalRequestPredeployAddress: '0x0c15F14308530b7CDB8460094BbB9cC28b9AaaAA', // Address of the validator excess address
+    withdrawalRequestPredeployAddress: '0x00000961EF480EB55E80D19AD83579A64C007002', // Address of the validator excess address
   },
 
   /**
@@ -88,12 +87,15 @@ export const paramsVM: ParamsDict = {
     // config
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
-    consolidationRequestPredeployAddress: '0x00431F263cE400f4455c2dCf564e53007Ca4bbBb', // Address of the consolidations contract
+    consolidationRequestPredeployAddress: '0x0000BBDDC7CE488642FB579F8B00F3A590007251', // Address of the consolidations contract
   },
   /**
 .  * Shard Blob Transactions
 .  */
   7691: {
+    // gasConfig
+    targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
 }

@@ -26,6 +26,7 @@ module.exports = {
     'vitest.config.ts',
     'vitest.config.browser.ts',
     'vitest.config.unit.ts',
+    'vitest.config.coverage.ts',
     'vite.*.ts',
     'ethereum-tests',
     'archive',
@@ -115,7 +116,13 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'ethereumjs/noBuffer': 'error',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: "ThrowStatement > NewExpression[callee.name='Error']",
+        message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
+      }
+    ]
   },
   parserOptions: {
     extraFileExtensions: ['.json'],
@@ -128,6 +135,7 @@ module.exports = {
       rules: {
         'implicit-dependencies/no-implicit': 'off',
         'import/no-extraneous-dependencies': 'off',
+        'no-restricted-syntax': 'off',
       },
     },
     {
@@ -137,6 +145,7 @@ module.exports = {
         'import/no-extraneous-dependencies': 'off',
         'no-console': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
+        'no-restricted-syntax': 'off'
       },
     },
     {
@@ -144,7 +153,6 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-use-before-define': 'off',
         'no-invalid-this': 'off',
-        'no-restricted-syntax': 'off',
       },
     },
     {
@@ -157,10 +165,29 @@ module.exports = {
       },
     },
     {
+      files: ['packages/devp2p/src/ext/**'],
+      rules: {
+        'no-restricted-syntax': 'off'
+      },
+    },
+    {
+      files: ['packages/client/src/ext/**'],
+      rules: {
+        'no-restricted-syntax': 'off'
+      },
+    },
+    {
       files: ['packages/wallet/**'],
       rules: {
         'github/array-foreach': 'warn',
         'no-prototype-builtins': 'warn',
+        'no-restricted-syntax': 'off'
+      },
+    },
+    {
+      files: ['packages/rlp/**'],
+      rules: {
+        'no-restricted-syntax': 'off'
       },
     },
   ],

@@ -44,7 +44,7 @@ describe(method, async () => {
         `vm execution should set hash to new head`,
       )
     }
-  }, 30000)
+  })
 
   it('should return error for pending block', async () => {
     const blockchain = await createBlockchainFromBlocksData(mainnetData, {

@@ -1,6 +1,7 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   VERKLE_BASIC_DATA_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
   VERKLE_CODE_OFFSET,
@@ -8,10 +9,12 @@ import {
   VERKLE_MAIN_STORAGE_OFFSET,
   VERKLE_NODE_WIDTH,
   bytesToHex,
+  equalsBytes,
   getVerkleKey,
   getVerkleStem,
   getVerkleTreeIndicesForCodeChunk,
   getVerkleTreeIndicesForStorageSlot,
+  hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -26,7 +29,14 @@ import type {
   VerkleAccessedState,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import type {
+  Address,
+  PrefixedHexString,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
+import type { VerkleTree } from '@ethereumjs/verkle'
 
 const debug = debugDefault('evm:verkle:aw')
 
@@ -95,7 +105,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     chunks?: Map<PrefixedHexString, ChunkAccessEvent>
   }) {
     if (opts.verkleCrypto === undefined) {
-      throw new Error('verkle crypto required')
+      throw EthereumJSErrorWithoutCode('verkle crypto required')
     }
     this.verkleCrypto = opts.verkleCrypto
     this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent & StemMeta>()
@@ -376,4 +386,71 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
       yield { ...accessedState, address, chunkKey }
     }
   }
+}
+
+/**
+ * Generate a {@link VerkleExecutionWitness} from a state manager and an access witness.
+ * @param stateManager - The state manager containing the state to generate the witness for.
+ * @param accessWitness - The access witness containing the accessed states.
+ * @param parentStateRoot - The parent state root (i.e. prestate root) to generate the witness for.
+ * @returns The generated verkle execution witness
+ *
+ * Note: This does not provide the verkle proof, which is not implemented
+ */
+export const generateExecutionWitness = async (
+  stateManager: StatefulVerkleStateManager,
+  accessWitness: VerkleAccessWitness,
+  parentStateRoot: Uint8Array,
+): Promise<VerkleExecutionWitness> => {
+  const trie = stateManager['_trie'] as VerkleTree
+  await trie['_lock'].acquire()
+  const postStateRoot = await stateManager.getStateRoot()
+  const ew: VerkleExecutionWitness = {
+    stateDiff: [],
+    parentStateRoot: bytesToHex(parentStateRoot),
+    verkleProof: undefined as any, // Verkle proofs are not implemented (and never will be)
+  }
+
+  // Generate a map of all stems with their accessed suffixes
+  const accessedSuffixes = new Map<PrefixedHexString, number[]>()
+  for (const chunkKey of accessWitness['chunks'].keys()) {
+    const stem = chunkKey.slice(0, 64) as PrefixedHexString
+    if (accessedSuffixes.has(stem)) {
+      const suffixes = accessedSuffixes.get(stem)
+      suffixes!.push(parseInt(chunkKey.slice(64), 16))
+      accessedSuffixes.set(stem, suffixes!)
+    } else {
+      accessedSuffixes.set(stem, [parseInt(chunkKey.slice(64), 16)])
+    }
+  }
+
+  // Get values from the trie for each stem and suffix
+  for (const stem of accessedSuffixes.keys()) {
+    trie.root(parentStateRoot)
+    const suffixes = accessedSuffixes.get(stem)
+    if (suffixes === undefined || suffixes.length === 0) continue
+    const currentValues = await trie.get(hexToBytes(stem), suffixes)
+    trie.root(postStateRoot)
+    const newValues = await trie.get(hexToBytes(stem), suffixes)
+    const stemStateDiff = []
+    for (let x = 0; x < suffixes.length; x++) {
+      // skip if both are the same
+      const currentValue = currentValues[x]
+      const newValue = newValues[x]
+      if (
+        currentValue instanceof Uint8Array &&
+        newValue instanceof Uint8Array &&
+        equalsBytes(currentValue, newValue)
+      )
+        continue
+      stemStateDiff.push({
+        suffix: suffixes[x],
+        currentValue: currentValue ? bytesToHex(currentValue) : null,
+        newValue: newValue ? bytesToHex(newValue) : null,
+      })
+    }
+    ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
+  }
+  trie['_lock'].release()
+  return ew
 }

@@ -4,13 +4,14 @@ import {
   createBlockHeader,
   createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
-import { Common, Goerli, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
+import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
 
 import { blocksMainnetData } from './testdata/blocks_mainnet.js'
+import { Goerli } from './testdata/goerliCommon.js'
 import { preLondonData } from './testdata/testdata_pre-london.js'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 

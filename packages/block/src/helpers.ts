@@ -1,12 +1,20 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, toType } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  EthereumJSErrorWithoutCode,
+  TypeOutput,
+  concatBytes,
+  isHexString,
+  toType,
+} from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
+import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
-
 /**
  * Returns a 0x-prefixed hex number string from a hex string or string integer.
  * @param {string} input string to check, convert, and return
@@ -17,7 +25,7 @@ export const numberToHex = function (input?: string): PrefixedHexString | undefi
     const regex = new RegExp(/^\d+$/) // test to make sure input contains only digits
     if (!regex.test(input)) {
       const msg = `Cannot convert string to hex string. numberToHex only supports 0x-prefixed hex or integer strings but the given string was: ${input}`
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     return `0x${parseInt(input, 10).toString(16)}`
   }
@@ -50,12 +58,12 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   ] = values
 
   if (values.length > 21) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
     )
   }
   if (values.length < 15) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `invalid header. Less values than expected were received. Min: 15, got: ${values.length}`,
     )
   }
@@ -120,6 +128,19 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
 }
 
 /**
+ * Returns the blob gas price depending upon the `excessBlobGas` value
+ * @param excessBlobGas
+ * @param common
+ */
+export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
+  return fakeExponential(
+    common.param('minBlobGas'),
+    excessBlobGas,
+    common.param('blobGasPriceUpdateFraction'),
+  )
+}
+
+/**
  * Returns the withdrawals trie root for array of Withdrawal.
  * @param wts array of Withdrawal to compute the root of
  * @param optional emptyTrie to use to generate the root
@@ -163,7 +184,7 @@ export function genRequestsRoot(
   if (requests.length > 1) {
     for (let x = 1; x < requests.length; x++) {
       if (requests[x].type < requests[x - 1].type)
-        throw new Error('requests are not sorted in ascending order')
+        throw EthereumJSErrorWithoutCode('requests are not sorted in ascending order')
     }
   }
 

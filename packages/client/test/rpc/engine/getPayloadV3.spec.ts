@@ -108,7 +108,7 @@ describe(method, () => {
         to: createZeroAddress(),
       },
       { common },
-    ).sign(pkey)
+    ).sign(pkey, false)
 
     await service.txPool.add(tx, true)
 

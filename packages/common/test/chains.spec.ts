@@ -4,11 +4,12 @@ import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
-  Goerli,
   Hardfork,
   Mainnet,
   getPresetChainConfig,
 } from '../src/index.js'
+
+import { Goerli } from './data/goerliCommon.js'
 
 import type { ChainConfig } from '../src/index.js'
 
@@ -52,9 +53,6 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     let chain = getPresetChainConfig('mainnet')
     let c = new Common({ chain })
     assert.equal(c.chainName(), 'mainnet')
-    chain = getPresetChainConfig(5)
-    c = new Common({ chain })
-    assert.equal(c.chainName(), 'goerli')
     chain = getPresetChainConfig(123)
     c = new Common({ chain })
     assert.equal(c.chainName(), 'mainnet')

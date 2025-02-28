@@ -27,17 +27,18 @@
   "files": ["dist", "src"],
   "scripts": {
     "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks mainnetBlocks:10",
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "coverage:test": "npm run test:API",
+    "coverage": "DEBUG=ethjs npx vitest run -c ./vitest.config.coverage.ts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- vm",
     "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
-    "lint": "eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
+    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:buildIntegrity",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
@@ -65,7 +66,7 @@
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^3.0.0",
+    "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
@@ -84,7 +85,8 @@
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",
     "solc": "^0.8.1",
-    "tape": "^5.3.1"
+    "tape": "^5.3.1",
+    "yargs": "^17.7.1"
   },
   "engines": {
     "node": ">=18"

@@ -23,9 +23,8 @@ import {
   bytesToHex,
   bytesToInt,
   concatBytes,
-  equalsBytes,
-  hexToBytes,
   setLengthLeft,
+  setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -33,7 +32,6 @@ import { EOFContainer, EOFContainerMode } from '../eof/container.js'
 import { EOFError } from '../eof/errors.js'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
 import { ERROR } from '../exceptions.js'
-import { DELEGATION_7702_FLAG } from '../types.js'
 
 import {
   createAddressFromStackBigInt,
@@ -60,44 +58,6 @@ export interface AsyncOpHandler {
 }
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
-
-// The PR https://github.com/ethereum/EIPs/pull/8969 has two definitions of the
-// designator: the original (0xef0100) and the designator added in the changes (0xef01)
-const eip7702Designator = hexToBytes('0xef01')
-const eip7702HashBigInt = bytesToBigInt(keccak256(eip7702Designator))
-
-function getEIP7702DelegatedAddress(code: Uint8Array) {
-  if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
-    return new Address(code.slice(3, 24))
-  }
-}
-
-/**
- * This method performs checks to transform the code which the EVM observes regarding EIP-7702.
- * If the code is 7702-delegated code, it will retrieve the code of the designated address
- * in case of an executable operation (`isReadOperation` == false), or the 7702 designator
- * code in case of a read operation
- * @param runState
- * @param code
- * @param isReadOperation Boolean to determine if the target code is meant to be read or executed (default: `false`)
- * @returns
- */
-async function eip7702CodeCheck(
-  runState: RunState,
-  code: Uint8Array,
-  isReadOperation: boolean = false,
-) {
-  const address = getEIP7702DelegatedAddress(code)
-  if (address !== undefined) {
-    if (isReadOperation) {
-      return eip7702Designator
-    } else {
-      return runState.stateManager.getCode(address)
-    }
-  }
-
-  return code
-}
 
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
@@ -551,17 +511,15 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3b: EXTCODESIZE
   [
     0x3b,
-    async function (runState, common) {
+    async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
-      let code = await runState.stateManager.getCode(address)
+      const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
-      } else if (common.isActivatedEIP(7702)) {
-        code = await eip7702CodeCheck(runState, code, true)
       }
 
       const size = BigInt(code.length)
@@ -572,7 +530,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3c: EXTCODECOPY
   [
     0x3c,
-    async function (runState, common) {
+    async function (runState) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
@@ -582,8 +540,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
-        } else if (common.isActivatedEIP(7702)) {
-          code = await eip7702CodeCheck(runState, code, true)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -596,7 +552,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3f: EXTCODEHASH
   [
     0x3f,
-    async function (runState, common) {
+    async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
 
@@ -607,13 +563,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
-      } else if (common.isActivatedEIP(7702)) {
-        const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
-        if (possibleDelegatedAddress !== undefined) {
-          // The account is delegated by an EIP-7702 tx. Push the EIP-7702 designator hash to the stack
-          runState.stack.push(eip7702HashBigInt)
-          return
-        }
       }
 
       const account = await runState.stateManager.getAccount(address)
@@ -987,11 +936,16 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
-        const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush),
+        let loadedBytes = runState.code.subarray(
+          runState.programCounter,
+          runState.programCounter + numToPush,
         )
+        if (loadedBytes.length < numToPush) {
+          loadedBytes = setLengthRight(loadedBytes, numToPush)
+        }
+
         runState.programCounter += numToPush
-        runState.stack.push(loaded)
+        runState.stack.push(bytesToBigInt(loadedBytes))
       }
     },
   ],

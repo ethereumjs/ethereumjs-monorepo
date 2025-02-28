@@ -5,7 +5,7 @@ import {
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
@@ -41,6 +41,7 @@ import { createVM, runBlock } from '../../src/index.js'
 import { getDAOCommon, setupPreConditions } from '../util.js'
 
 import { blockchainData } from './testdata/blockchain.js'
+import { Goerli } from './testdata/goerliCommon.js'
 import { testnetData } from './testdata/testnet.js'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 
@@ -626,7 +627,14 @@ describe('runBlock() -> tx types', async () => {
 
       const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
 
-      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
+      return [
+        chainIdBytes,
+        addressBytes,
+        nonceBytes,
+        yParity,
+        unpadBytes(signed.r),
+        unpadBytes(signed.s),
+      ]
     }
 
     const common = new Common({

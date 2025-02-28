@@ -1,5 +1,6 @@
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bytesToHex,
   concatBytes,
@@ -66,8 +67,9 @@ export class Common {
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name,
-      hardforksDict[hf.name] ??
-        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
+      // Allow to even override an existing hardfork specification
+      (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]) ??
+        hardforksDict[hf.name],
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
@@ -153,7 +155,7 @@ export class Common {
       }
     }
     if (!existing) {
-      throw new Error(`Hardfork with name ${hardfork} not supported`)
+      throw EthereumJSErrorWithoutCode(`Hardfork with name ${hardfork} not supported`)
     }
   }
 
@@ -273,11 +275,11 @@ export class Common {
   setEIPs(eips: number[] = []) {
     for (const eip of eips) {
       if (!(eip in eipsDict)) {
-        throw new Error(`${eip} not supported`)
+        throw EthereumJSErrorWithoutCode(`${eip} not supported`)
       }
       const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
         )
       }
@@ -290,7 +292,9 @@ export class Common {
       if (eipsDict[eip].requiredEIPs !== undefined) {
         for (const elem of eipsDict[eip].requiredEIPs!) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
-            throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
+            throw EthereumJSErrorWithoutCode(
+              `${eip} requires EIP ${elem}, but is not included in the EIP list`,
+            )
           }
         }
       }
@@ -322,7 +326,7 @@ export class Common {
           this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
-      // Parameter-inlining HF config (e.g. for istanbul)
+      // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       this._mergeWithParamsCache(hfChanges[1].params ?? {})
       if (hfChanges[0] === hardfork) break
     }
@@ -357,7 +361,7 @@ export class Common {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
     if (!(name in this._paramsCache)) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = this._paramsCache[name]
     return BigInt(value ?? 0)
@@ -392,7 +396,7 @@ export class Common {
       if (hfChanges[0] === hardfork) break
     }
     if (value === undefined) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     return BigInt(value ?? 0)
   }
@@ -405,12 +409,12 @@ export class Common {
    */
   paramByEIP(name: string, eip: number): bigint | undefined {
     if (!(eip in eipsDict)) {
-      throw new Error(`${eip} not supported`)
+      throw EthereumJSErrorWithoutCode(`${eip} not supported`)
     }
 
     const eipParams = this._params[eip]
     if (eipParams?.[name] === undefined) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = eipParams![name]
     return BigInt(value ?? 0)
@@ -658,12 +662,13 @@ export class Common {
     const data = this._getHardfork(hardfork)
     if (data === null || (data?.block === null && data?.timestamp === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (data?.forkHash !== null && data?.forkHash !== undefined) {
       return data.forkHash
     }
-    if (!genesisHash) throw new Error('genesisHash required for forkHash calculation')
+    if (!genesisHash)
+      throw EthereumJSErrorWithoutCode('genesisHash required for forkHash calculation')
     return this._calcForkHash(hardfork, genesisHash)
   }
 

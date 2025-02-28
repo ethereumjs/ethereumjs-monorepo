@@ -24,6 +24,10 @@
     }
   ],
   "words": [
+    "bytelist",
+    "bytestring",
+    "binarytree",
+    "merkelize",
     "kaust",
     "EEST",
     "paulmillr",
@@ -621,6 +625,15 @@
     "Statetest",
     "testeth",
     "PUSHDATA",
-    "chunkified"
+    "chunkified",
+    "ScottyPoi",
+    "Scotty",
+    "snappystream",
+    "ethjs",
+    "Unsnappy",
+    "unsnappy",
+    "ethportal",
+    "bytevector",
+    "blobschedule"
   ]
 }

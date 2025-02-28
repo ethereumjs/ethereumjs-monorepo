@@ -99,7 +99,6 @@ export const paramsEVM: ParamsDict = {
     prevrandaoGas: 0, // TODO: these below 0-gas additions might also point to non-clean implementations in the code base
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
-    callCreateDepth: 1024, // Maximum depth of call/create stack
   },
   /**
 .  * Homestead HF Meta EIP
@@ -272,7 +271,7 @@ export const paramsEVM: ParamsDict = {
    */
   2935: {
     // evm
-    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },

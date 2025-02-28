@@ -9,6 +9,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
@@ -97,14 +98,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
   const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
   if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   // Ensure we start with a clear warmed accounts Map
@@ -135,7 +136,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (opts.tx.supports(Capability.EIP1559FeeMarket) && !vm.common.isActivatedEIP(1559)) {
       await vm.evm.journal.revert()
@@ -145,7 +146,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     const castedTx = <AccessList2930Tx>opts.tx
@@ -186,7 +187,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-        ; (<EVM>vm.evm).clearPerformanceLogs()
+      ;(<EVM>vm.evm).clearPerformanceLogs()
     }
   }
 }
@@ -205,7 +206,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       !(vm.stateManager instanceof StatefulVerkleStateManager) &&
       !(vm.stateManager instanceof StatelessVerkleStateManager)
     ) {
-      throw new Error(`Verkle State Manager needed for execution of verkle blocks`)
+      throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
     txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
@@ -225,7 +226,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const caller = tx.getSenderAddress()
   if (vm.DEBUG) {
     debug(
-      `New tx run hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `New tx run hash=${
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -272,7 +274,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       block,
       tx,
     )
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
   gasLimit -= intrinsicGas
   if (vm.DEBUG) {
@@ -287,13 +289,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's ${'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        `Transaction's ${
+          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
         } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         vm,
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
   if (enableProfiler) {
@@ -329,7 +332,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           block,
           tx,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -351,7 +354,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -369,7 +372,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     // EIP-4844 spec
     // the signer must be able to afford the transaction
@@ -386,7 +389,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -402,7 +405,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -414,7 +417,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -564,8 +567,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.DEBUG) {
     debug(
-      `Running tx=${tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
-      } with caller=${caller} gasLimit=${gasLimit} to=${to?.toString() ?? 'none'
+      `Running tx=${
+        tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
+      } with caller=${caller} gasLimit=${gasLimit} to=${
+        to?.toString() ?? 'none'
       } value=${value} data=${short(data)}`,
     )
   }
@@ -603,7 +608,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const { executionGasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
+      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
+        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
       } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`,
     )
   }
@@ -823,7 +829,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await vm._emit('afterTx', event)
   if (vm.DEBUG) {
     debug(
-      `tx run finished hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `tx run finished hash=${
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -883,8 +890,10 @@ export async function generateTxReceipt(
   let receipt
   if (vm.DEBUG) {
     debug(
-      `Generate tx receipt transactionType=${tx.type
-      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${baseReceipt.bitvector.length
+      `Generate tx receipt transactionType=${
+        tx.type
+      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
+        baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`,
     )
   }

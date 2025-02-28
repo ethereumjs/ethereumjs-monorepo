@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/common'
 import {
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -122,12 +123,6 @@ export function getArgs(): ClientOpts {
       .option('trustedSetup', {
         describe: 'A custom trusted setup txt file for initializing the kzg library',
         coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
-      })
-      .option('mergeForkIdPostMerge', {
-        describe:
-          'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
-        boolean: true,
-        default: true,
       })
       .option('bootnodes', {
         describe:
@@ -479,7 +474,7 @@ export function getArgs(): ClientOpts {
         if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
         if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
-        if (collision) throw new Error('cannot reuse ports between RPC instances')
+        if (collision) throw EthereumJSErrorWithoutCode('cannot reuse ports between RPC instances')
         return true
       })
       .parseSync()
@@ -591,11 +586,9 @@ async function inputAccounts(args: ClientOpts) {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
-          /* eslint-disable no-console */
-          console.error(
+          throw EthereumJSErrorWithoutCode(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
-          process.exit()
         }
       }
     } else {
@@ -605,9 +598,7 @@ async function inputAccounts(args: ClientOpts) {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
-    /* eslint-disable no-console */
-    console.error(`Encountered error unlocking account:\n${e.message}`)
-    process.exit()
+    throw EthereumJSErrorWithoutCode(`Encountered error unlocking account:\n${e.message}`)
   }
   rl.close()
   return accounts
@@ -657,11 +648,16 @@ export async function generateClientConfig(args: ClientOpts) {
         ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
-    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
+    cryptoFunctions.ecsign = (
+      msg: Uint8Array,
+      pk: Uint8Array,
+      ecSignOpts: { chainId?: bigint } = {},
+    ) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw new Error('message length must be 32 bytes or greater')
+        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
+      const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
@@ -724,11 +720,7 @@ export async function generateClientConfig(args: ClientOpts) {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      /* eslint-disable no-console */
-      console.error(err)
-      console.error(`invalid chain parameters: ${err.message}`)
-      /* eslint-enable no-console */
-      process.exit()
+      throw EthereumJSErrorWithoutCode(`invalid chain parameters: ${err.message}`)
     }
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
@@ -736,18 +728,15 @@ export async function generateClientConfig(args: ClientOpts) {
     const chainName = path.parse(args.gethGenesis).base.split('.')[0]
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
-      mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
     ;(common.customCrypto as any) = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 
   if (args.mine === true && accounts.length === 0) {
-    /* eslint-disable-next-line no-console */
-    console.error(
+    throw EthereumJSErrorWithoutCode(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
-    process.exit()
   }
 
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT

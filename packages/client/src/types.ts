@@ -78,7 +78,6 @@ export interface ClientOpts {
   customGenesisState?: string
   gethGenesis?: string
   trustedSetup?: string
-  mergeForkIdPostMerge?: boolean
   bootnodes?: string | string[]
   port?: number
   extIP?: string
