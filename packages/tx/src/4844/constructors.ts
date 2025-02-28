@@ -15,7 +15,7 @@ import {
 
 import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
-import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
+import { getAccessListJSON, txTypeBytes, validateNotArray } from '../util.js'
 
 import { Blob4844Tx } from './tx.js'
 
@@ -331,7 +331,7 @@ export function blobTxNetworkWrapperToJSON(
 ): JSONBlobTxNetworkWrapper {
   const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts)
 
-  const accessListJSON = AccessLists.getAccessListJSON(tx.accessList)
+  const accessListJSON = getAccessListJSON(tx.accessList)
   const baseJSON = tx.toJSON()
 
   return {
