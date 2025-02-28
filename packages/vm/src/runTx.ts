@@ -151,10 +151,13 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessList2930Tx>opts.tx
 
-    for (const accessListItem of castedTx.AccessListJSON) {
-      vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
-      for (const storageKey of accessListItem.storageKeys) {
-        vm.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
+    for (const accessListItem of castedTx.accessList) {
+      const [addressBytes, slotBytesList] = accessListItem
+      const address = bytesToUnprefixedHex(addressBytes)
+      // Note: in here, the 0x is stripped, so immediately do this here
+      vm.evm.journal.addAlwaysWarmAddress(address, true)
+      for (const storageKey of slotBytesList) {
+        vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
       }
     }
   }
