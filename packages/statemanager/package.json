@@ -43,6 +43,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@ethereumjs/binarytree": "^0.0.1",
     "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/mpt": "^7.0.0-alpha.1",

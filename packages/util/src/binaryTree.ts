@@ -129,7 +129,7 @@ export const getBinaryTreeKey = (stem: Uint8Array, leaf: BinaryTreeLeafType | Ui
  * @param {bigint} storageKey - The key representing a specific storage slot.
  * @returns {Object} - An object containing the tree index and subindex
  */
-export function getBinaryTreeTreeIndicesForStorageSlot(storageKey: bigint): {
+export function getBinaryTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
 } {
@@ -152,7 +152,7 @@ export function getBinaryTreeTreeIndicesForStorageSlot(storageKey: bigint): {
  * @param {bigint} chunkId - The ID representing a specific chunk.
  * @returns {Object} - An object containing the tree index and subindex
  */
-export function getBinaryTreeTreeIndicesForCodeChunk(chunkId: number) {
+export function getBinaryTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((BINARY_TREE_CODE_OFFSET + chunkId) / BINARY_TREE_NODE_WIDTH)
   const subIndex = (BINARY_TREE_CODE_OFFSET + chunkId) % BINARY_TREE_NODE_WIDTH
   return { treeIndex, subIndex }
@@ -165,17 +165,17 @@ export function getBinaryTreeTreeIndicesForCodeChunk(chunkId: number) {
  * @param hashFunction - The hash function used for BinaryTree-related operations.
  * @returns {Uint8Array} - The BinaryTree tree key as a byte array.
  */
-export const getBinaryTreeTreeKeyForCodeChunk = (
+export const getBinaryTreeKeyForCodeChunk = (
   address: Address,
   chunkId: number,
   hashFunction: (input: Uint8Array) => Uint8Array,
 ) => {
-  const { treeIndex, subIndex } = getBinaryTreeTreeIndicesForCodeChunk(chunkId)
+  const { treeIndex, subIndex } = getBinaryTreeIndicesForCodeChunk(chunkId)
   return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), toBytes(subIndex))
 }
 
 // This code was written by robots based on the reference implementation in EIP-7864
-export const chunkifyCode = (code: Uint8Array) => {
+export const chunkifyBinaryTreeCode = (code: Uint8Array) => {
   const PUSH1 = 0x60 // Assuming PUSH1 is defined as 0x60
   const PUSH32 = 0x7f // Assuming PUSH32 is defined as 0x7f
   const PUSH_OFFSET = 0x5f // Assuming PUSH_OFFSET is defined as 0x5f
@@ -222,12 +222,12 @@ export const chunkifyCode = (code: Uint8Array) => {
  * @param hashFunction - The hash function used in the Binary Tree.
  * @returns {Uint8Array} - The BinaryTree tree key as a byte array.
  */
-export const getBinaryTreeTreeKeyForStorageSlot = (
+export const getBinaryTreeKeyForStorageSlot = (
   address: Address,
   storageKey: bigint,
   hashFunction: (input: Uint8Array) => Uint8Array,
 ) => {
-  const { treeIndex, subIndex } = getBinaryTreeTreeIndicesForStorageSlot(storageKey)
+  const { treeIndex, subIndex } = getBinaryTreeIndicesForStorageSlot(storageKey)
 
   return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), intToBytes(subIndex))
 }
@@ -300,7 +300,7 @@ export function encodeBinaryTreeLeafBasicData(account: Account): Uint8Array {
  * @param numChunks number of chunks to generate suffixes for
  * @returns number[] - an array of numbers corresponding to the code chunks being put
  */
-export const generateChunkSuffixes = (numChunks: number) => {
+export const generateBinaryTreeChunkSuffixes = (numChunks: number) => {
   if (numChunks === 0) return []
   const chunkSuffixes: number[] = new Array<number>(numChunks)
   let currentSuffix = BINARY_TREE_CODE_OFFSET
@@ -321,7 +321,7 @@ export const generateChunkSuffixes = (numChunks: number) => {
  * @param hashFunction an initialized {@link BinaryTreeCrypto} object
  * @returns an array of stems for putting code
  */
-export function generateCodeStems(
+export function generateBinaryTreeCodeStems(
   numChunks: number,
   address: Address,
   hashFunction: (input: Uint8Array) => Uint8Array,
@@ -337,11 +337,11 @@ export function generateCodeStems(
     numChunks > BINARY_TREE_CODE_OFFSET ? Math.ceil(numChunks / BINARY_TREE_NODE_WIDTH) + 1 : 1
   const chunkStems = new Array<Uint8Array>(numStems)
   // Compute the stem for the initial set of code chunks
-  chunkStems[0] = getBinaryTreeTreeKeyForCodeChunk(address, 0, hashFunction).slice(0, 31)
+  chunkStems[0] = getBinaryTreeKeyForCodeChunk(address, 0, hashFunction).slice(0, 31)
 
   for (let stemNum = 0; stemNum < numStems - 1; stemNum++) {
     // Generate additional stems
-    const firstChunkKey = getBinaryTreeTreeKeyForCodeChunk(
+    const firstChunkKey = getBinaryTreeKeyForCodeChunk(
       address,
       BINARY_TREE_CODE_OFFSET + stemNum * BINARY_TREE_NODE_WIDTH,
       hashFunction,
