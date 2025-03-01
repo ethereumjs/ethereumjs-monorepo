@@ -348,7 +348,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           vm.evm.binaryTreeAccessWitness,
         )) === false
       ) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `Binary tree post state verification failed on block ${block.header.number}`,
         )
       }
