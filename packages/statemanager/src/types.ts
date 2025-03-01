@@ -80,7 +80,7 @@ export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
 }
 
 export interface StatefulBinaryTreeStateManagerOpts extends BaseStateManagerOpts {
-  hashFunction: (data: Uint8Array) => Uint8Array
+  hashFunction?: (data: Uint8Array) => Uint8Array
   tree?: BinaryTree
   caches?: Caches
 }

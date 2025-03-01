@@ -32,6 +32,7 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { blake3 } from '@noble/hashes/blake3'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -98,11 +99,11 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       throw new Error('EIP-7864 required for binary tree state management')
     }
 
-    this.hashFunction = opts.hashFunction
+    this.hashFunction = opts.hashFunction ?? blake3
     this._tree =
       opts.tree ??
       new BinaryTree({
-        hashFunction: opts.hashFunction,
+        hashFunction: this.hashFunction,
         db: new MapDB<string, string | Uint8Array>(),
         useRootPersistence: false,
         cacheSize: 0,
@@ -135,7 +136,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     ])
 
     let account
-    if (accountValues[0] !== null) {
+    if (accountValues[0] !== null && accountValues[0] !== undefined) {
       const basicData = decodeBinaryTreeLeafBasicData(accountValues[0]!)
       account = createPartialAccount({
         version: basicData.version,
@@ -143,13 +144,15 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
         nonce: basicData.nonce,
         // Codehash is either untouched (i.e. null) or deleted (i.e. overwritten with zeros)
         codeHash:
-          accountValues[1] === null || equalsBytes(accountValues[1], new Uint8Array(32))
+          accountValues[1] === null ||
+          accountValues[1] === undefined ||
+          equalsBytes(accountValues[1], new Uint8Array(32))
             ? KECCAK256_NULL
             : accountValues[1],
         codeSize: basicData.codeSize,
         storageRoot: KECCAK256_NULL, // TODO: Add storage stuff
       })
-    } else if (accountValues[1] === undefined) {
+    } else if (accountValues[1] === undefined || accountValues[1] === null) {
       // account does not exist if both basic fields and codehash are undefined
       if (this.DEBUG) {
         this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
@@ -265,7 +268,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
-    //@ts-ignore
     await modifyAccountFields(this, address, accountFields)
   }
   putCode = async (address: Address, value: Uint8Array): Promise<void> => {
@@ -427,7 +429,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     if (!account) {
       return new Uint8Array()
     }
-    const storageKey = await getBinaryTreeKeyForStorageSlot(
+    const storageKey = getBinaryTreeKeyForStorageSlot(
       address,
       bytesToBigInt(key),
       this.hashFunction,
@@ -442,7 +444,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   putStorage = async (address: Address, key: Uint8Array, value: Uint8Array): Promise<void> => {
     this._caches?.storage?.put(address, key, RLP.encode(value))
     if (this._caches?.storage === undefined) {
-      const storageKey = await getBinaryTreeKeyForStorageSlot(
+      const storageKey = getBinaryTreeKeyForStorageSlot(
         address,
         bytesToBigInt(key),
         this.hashFunction,
