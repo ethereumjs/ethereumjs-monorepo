@@ -51,6 +51,7 @@ export * from './types.js'
 /**
  * Export ethjs-util methods
  */
+export * from './binaryTree.js'
 export * from './blobs.js'
 export * from './genesis.js'
 export {

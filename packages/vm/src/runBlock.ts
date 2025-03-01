@@ -330,13 +330,29 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
       // If verkle is activated and executing statelessly, only validate the post-state
       if (
-        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+        (await vm['_opts'].stateManager!.verifyVerklePostState!(vm.evm.verkleAccessWitness)) ===
+        false
       ) {
         throw EthereumJSErrorWithoutCode(
           `Verkle post state verification failed on block ${block.header.number}`,
         )
       }
       debug(`Verkle post state verification succeeded`)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.binaryTreeAccessWitness === undefined) {
+        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // If binary tree is activated and executing statelessly, only validate the post-state
+      if (
+        (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
+          vm.evm.binaryTreeAccessWitness,
+        )) === false
+      ) {
+        throw EthereumJSErrorWithoutCode(
+          `Binary tree post state verification failed on block ${block.header.number}`,
+        )
+      }
+      debug(`Binary tree post state verification succeeded`)
     }
   }
 

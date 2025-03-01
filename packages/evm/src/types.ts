@@ -7,6 +7,7 @@ import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type {
+  BinaryTreeAccessWitnessInterface,
   Common,
   ParamsDict,
   StateManagerInterface,
@@ -168,6 +169,8 @@ export interface EVMInterface {
   events?: EventEmitter<EVMEvent>
   verkleAccessWitness?: VerkleAccessWitnessInterface
   systemVerkleAccessWitness?: VerkleAccessWitnessInterface
+  binaryTreeAccessWitness?: BinaryTreeAccessWitnessInterface
+  systemBinaryTreeAccessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 export type EVMProfilerOpts = {
