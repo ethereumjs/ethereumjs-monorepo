@@ -291,11 +291,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     }
 
     const codeChunks = chunkifyBinaryTreeCode(value)
-    const chunkStems = await generateBinaryTreeCodeStems(
-      codeChunks.length,
-      address,
-      this.hashFunction,
-    )
+    const chunkStems = generateBinaryTreeCodeStems(codeChunks.length, address, this.hashFunction)
 
     const chunkSuffixes: number[] = generateBinaryTreeChunkSuffixes(codeChunks.length)
     // Put the code chunks corresponding to the first stem (up to 128 chunks)
@@ -353,7 +349,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     // allocate the code
     const codeSize = account.codeSize
 
-    const stems = await generateBinaryTreeCodeStems(
+    const stems = generateBinaryTreeCodeStems(
       Math.ceil(codeSize / BINARY_TREE_CODE_CHUNK_SIZE),
       address,
       this.hashFunction,
