@@ -77,6 +77,12 @@ for (const bls of [undefined, mclbls]) {
           } else {
             try {
               const result = await precompile(callData)
+              // First, check if an exception is thrown (this should not happen here)
+              if (result.exceptionError !== undefined) {
+                assert.fail(
+                  `Test raised an exception where this is not expected: ${result.exceptionError.toString()}`,
+                )
+              }
               assert.deepEqual(
                 '0x' + data.Expected,
                 bytesToHex(result.returnValue),
