@@ -186,7 +186,6 @@ export class BinaryTree {
 
     // Step 1) Create or update the stem node
     let stemNode: StemBinaryNode
-    let newStem = false
     // If we found a stem node with the same stem, we'll update it.
     if (
       foundPath.node &&
@@ -196,12 +195,11 @@ export class BinaryTree {
       stemNode = foundPath.node
     } else {
       // Otherwise, we'll create a new stem node.
-      newStem = true
       stemNode = StemBinaryNode.create(stem)
       this.DEBUG && this.debug(`Creating new stem node for stem: ${bytesToHex(stem)}`, ['put'])
     }
 
-    // Update the values in the stem node.
+    // Update the values in the stem node
     for (let i = 0; i < suffixes.length; i++) {
       const suffix = suffixes[i]
       const value = values[i]
@@ -232,7 +230,8 @@ export class BinaryTree {
     let lastUpdatedParentPath: number[] = []
 
     // Step 2: Add any needed new internal nodes if inserting a new stem.
-    if (foundPath.stack.length > 1 && newStem) {
+    //         If updating an existing stem, just update the parent internal node reference
+    if (foundPath.stack.length > 1) {
       // Pop the nearest node on the path.
       const [nearestNode, nearestNodePath] = foundPath.stack.pop()!
       const parentPath = foundPath.stack[foundPath.stack.length - 1]?.[1] ?? []
@@ -253,7 +252,7 @@ export class BinaryTree {
     while (foundPath.stack.length > 1) {
       const [node, path] = foundPath.stack.pop()!
       if (isInternalBinaryNode(node)) {
-        // Set child pointer to the last internal node  in the putStack (last updated internal node)
+        // Set child pointer to the last internal node in the putStack (last updated internal node)
         node.setChild(lastUpdatedParentPath[lastUpdatedParentPath.length - 1], {
           hash: putStack[putStack.length - 1][0], // Reuse hash already computed above
           path: lastUpdatedParentPath,
