@@ -8,6 +8,7 @@ import {
   BINARY_TREE_CODE_OFFSET,
   BINARY_TREE_NODE_WIDTH,
   BinaryTreeLeafType,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MapDB,
   bigIntToBytes,
@@ -96,7 +97,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     // TODO: Do we need to check this?
     if (opts.common?.isActivatedEIP(7864) === false) {
-      throw new Error('EIP-7864 required for binary tree state management')
+      throw EthereumJSErrorWithoutCode('EIP-7864 required for binary tree state management')
     }
 
     this.hashFunction = opts.hashFunction ?? blake3
@@ -384,7 +385,8 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     const code = new Uint8Array(codeSize)
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
-      if (chunks[x] === undefined) throw new Error(`expected code chunk at ID ${x}, got undefined`)
+      if (chunks[x] === undefined)
+        throw EthereumJSErrorWithoutCode(`expected code chunk at ID ${x}, got undefined`)
 
       let lastChunkByteIndex = BINARY_TREE_CODE_CHUNK_SIZE
       // Determine code ending byte (if we're on the last chunk)
@@ -413,7 +415,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   }
   getStorage = async (address: Address, key: Uint8Array): Promise<Uint8Array> => {
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
     const cachedValue = this._caches?.storage?.get(address, key)
     if (cachedValue !== undefined) {
@@ -736,19 +738,19 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     return this._tree.checkRoot(root)
   }
   dumpStorage?(_address: Address): Promise<StorageDump> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   dumpStorageRange?(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   clearCaches(): void {
     this._caches?.clear()
   }
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   async generateCanonicalGenesis(genesisState: GenesisState) {
     await this._tree.createRootNode()
