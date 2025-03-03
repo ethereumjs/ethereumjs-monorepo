@@ -385,7 +385,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
       if (chunks[x] === undefined)
-        throw EthereumJSErrorWithoutCode(`expected code chunk at ID ${x}, got undefined`)
+        throw EthereumJSErrorWithoutCode(`expected code chunk at index ${x}, got undefined`)
 
       let lastChunkByteIndex = BINARY_TREE_CODE_CHUNK_SIZE
       // Determine code ending byte (if we're on the last chunk)
