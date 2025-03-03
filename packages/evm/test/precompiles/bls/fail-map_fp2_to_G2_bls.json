@@ -1,9 +1,5 @@
 [
-  {
-    "Input": "",
-    "ExpectedError": "invalid input length",
-    "Name": "bls_mapg2_empty_input"
-  },
+  { "Input": "", "ExpectedError": "invalid input length", "Name": "bls_mapg2_empty_input" },
   {
     "Input": "0000000000000000000000000000000007355d25caf6e7f2f0cb2812ca0e513bd026ed09dda65b177500fa31714e09ea0ded3a078b526bed3307f804d4b93b040000000000000000000000000000000002829ce3c021339ccb5caf3e187f6370e1e2a311dec9b75363117063ab2015603ff52c3d3b98f19c2f65575e99e8b7",
     "ExpectedError": "invalid input length",
