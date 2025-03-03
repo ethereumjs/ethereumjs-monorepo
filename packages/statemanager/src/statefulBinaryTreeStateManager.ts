@@ -176,7 +176,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       throw Error(errorMsg)
     }
 
-    this.preStateRoot = hexToBytes(executionWitness.parentStateRoot) // set prestate root if given
+    this.preStateRoot = hexToBytes(executionWitness.parentStateRoot) // set prestate root
 
     // Populate the post-state from the executionWitness
 
