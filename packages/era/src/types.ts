@@ -25,9 +25,17 @@ export const VERSION = {
 export const HeaderRecord = ssz.container({
   blockHash: ssz.bytevector(32),
   totalDifficulty: ssz.uint256,
-})
+}) as ssz.SSZCoder<{
+  blockHash: Uint8Array
+  totalDifficulty: bigint
+}>
 
-export const EpochAccumulator = ssz.list(8192, HeaderRecord)
+export const EpochAccumulator = ssz.list(8192, HeaderRecord) as ssz.SSZCoder<
+  Array<{
+    blockHash: Uint8Array
+    totalDifficulty: bigint
+  }>
+>
 
 /** Era Type Identifiers */
 export const EraTypes = {
