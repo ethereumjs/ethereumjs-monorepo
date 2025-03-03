@@ -255,9 +255,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     if (this._caches?.account === undefined) {
       const stem = getBinaryTreeStem(this.hashFunction, address)
-      // TODO: Make sure this is properly implemented
-      // Will need to inspect all possible code and storage keys to see if it's anything
-      // other than untouched leaf values
       // Special instance where we delete the account and revert the trie value to untouched
       await this._tree.put(
         stem,
