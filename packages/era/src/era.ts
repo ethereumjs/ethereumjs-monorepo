@@ -40,7 +40,8 @@ export const readSlotIndex = (bytes: Uint8Array): SlotIndex => {
 
   for (let i = 0; i < count; i++) {
     const slotEntry = slotIndexEntry.data.subarray((i + 1) * 8, (i + 2) * 8)
-    const slotOffset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
+    let slotOffset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
+    if (slotOffset === -1 * recordStart) slotOffset = 0 // If offset is the same as the block record start, this is a skipped slot
     slotOffsets.push(slotOffset)
   }
   return {
@@ -103,6 +104,7 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
       indices.blockSlotIndex!.recordStart + indices.blockSlotIndex!.slotOffsets[offset],
     ),
   )
+
   const data = await parseEntry(blockEntry)
   if (equalsBytes(blockEntry.type, EraTypes.CompressedSignedBeaconBlockType) === false) {
     throw EthereumJSErrorWithoutCode(
@@ -134,16 +136,8 @@ export async function* readBlocksFromEra(eraFile: Uint8Array) {
   }
 
   for (let x = 0; x < maxBlocks; x++) {
-    try {
-      const block = await readBeaconBlock(eraFile, x)
-      yield block
-    } catch (err: any) {
-      // Nimbus ERA files appear to have a block entry where the entry type is 0x6532 (i.e. the version type) for empty slots
-      if (err?.message?.includes('0x6532') === true) {
-        // Skip empty slots
-        continue
-      }
-      throw err
-    }
+    if (indices.blockSlotIndex!.slotOffsets[x] === 0) continue // skip empty slots
+    const block = await readBeaconBlock(eraFile, x)
+    yield block
   }
 }
