@@ -95,7 +95,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    // TODO: Do we need to check this?
     if (opts.common?.isActivatedEIP(7864) === false) {
       throw EthereumJSErrorWithoutCode('EIP-7864 required for binary tree state management')
     }
