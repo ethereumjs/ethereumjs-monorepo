@@ -451,12 +451,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   }
 
   clearStorage = async (address: Address): Promise<void> => {
-    // TODO: Determine if it's possible to clear the actual slots in the trie
-    // since the EIP doesn't seem to state how to handle this
-    // The main concern I have is that we have no way of identifying all storage slots
-    // for a given account so we can't correctly update the trie's root hash
-    // (since presumably "clearStorage" would imply writing over all of the storage slots with zeros)
-    // Also, do we still need a storageRoot? - presumably not since we don't have separate storage tries
     this._caches?.storage?.clearStorage(address)
   }
 
