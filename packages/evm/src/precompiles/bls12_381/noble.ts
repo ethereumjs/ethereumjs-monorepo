@@ -317,8 +317,11 @@ export class NobleBLS implements EVMBLSInterface {
       pairs.push({ g1: G1, g2: G2 })
     }
 
-    // @ts-ignore
-    const FP12 = bls12_381.pairingBatch(pairs, true)
+    // Filter out infinity pairs
+    const pairsf = pairs.filter((pair) => !pair.g1.equals(G1_ZERO) && !pair.g2.equals(G2_ZERO))
+
+    // TODO: what if above filter does not match any? Does the empty array create the desired result?
+    const FP12 = bls12_381.pairingBatch(pairsf, true)
 
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
       return BLS_ONE_BUFFER
