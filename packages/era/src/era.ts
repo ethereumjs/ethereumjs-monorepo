@@ -1,20 +1,7 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import {
-  AltairBeaconState,
-  AltairSignedBeaconBlock,
-  BellatrixBeaconState,
-  BellatrixSignedBeaconBlock,
-  CapellaBeaconState,
-  CapellaSignedBeaconBlock,
-  EraTypes,
-  ForkSlots,
-  Phase0BeaconState,
-  Phase0SignedBeaconBlock,
-  parseEntry,
-  readEntry,
-} from './index.js'
+import { EraTypes, parseEntry, readEntry } from './index.js'
 
 import type { SlotIndex } from './index.js'
 
@@ -83,11 +70,13 @@ export const readBeaconState = async (eraData: Uint8Array) => {
     throw EthereumJSErrorWithoutCode(`expected CompressedBeaconState type, got ${stateEntry.type}`)
   }
   const stateSlot = indices.stateSlotIndex.startSlot
-  if (stateSlot < ForkSlots.Altair) return Phase0BeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Bellatrix) return AltairBeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Capella)
-    return BellatrixBeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Deneb) return CapellaBeaconState.decode(data.data as Uint8Array)
+  if (stateSlot < ssz.ForkSlots.Altair) return ssz.Phase0BeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Bellatrix)
+    return ssz.AltairBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Capella)
+    return ssz.BellatrixBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Deneb)
+    return ssz.CapellaBeaconState.decode(data.data as Uint8Array)
   else return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array)
 }
 
@@ -113,12 +102,14 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   }
 
   const slot = indices.blockSlotIndex!.startSlot + offset
-  if (slot < ForkSlots.Altair) return Phase0SignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Bellatrix)
-    return AltairSignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Capella)
-    return BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Deneb) return CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
+  if (slot < ssz.ForkSlots.Altair)
+    return ssz.Phase0SignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Bellatrix)
+    return ssz.AltairSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Capella)
+    return ssz.BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Deneb)
+    return ssz.CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
   else return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array)
 }
 
