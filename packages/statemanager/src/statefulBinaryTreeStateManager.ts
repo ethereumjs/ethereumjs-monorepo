@@ -176,7 +176,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       throw Error(errorMsg)
     }
 
-    this.preStateRoot = hexToBytes(executionWitness.parentStateRoot) // set prestate root if given
+    this.preStateRoot = hexToBytes(executionWitness.parentStateRoot) // set prestate root
 
     // Populate the post-state from the executionWitness
 
@@ -255,9 +255,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     if (this._caches?.account === undefined) {
       const stem = getBinaryTreeStem(this.hashFunction, address)
-      // TODO: Make sure this is properly implemented
-      // Will need to inspect all possible code and storage keys to see if it's anything
-      // other than untouched leaf values
       // Special instance where we delete the account and revert the trie value to untouched
       await this._tree.put(
         stem,
@@ -385,7 +382,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
       if (chunks[x] === undefined)
-        throw EthereumJSErrorWithoutCode(`expected code chunk at ID ${x}, got undefined`)
+        throw EthereumJSErrorWithoutCode(`expected code chunk at index ${x}, got undefined`)
 
       let lastChunkByteIndex = BINARY_TREE_CODE_CHUNK_SIZE
       // Determine code ending byte (if we're on the last chunk)
@@ -451,12 +448,6 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   }
 
   clearStorage = async (address: Address): Promise<void> => {
-    // TODO: Determine if it's possible to clear the actual slots in the trie
-    // since the EIP doesn't seem to state how to handle this
-    // The main concern I have is that we have no way of identifying all storage slots
-    // for a given account so we can't correctly update the trie's root hash
-    // (since presumably "clearStorage" would imply writing over all of the storage slots with zeros)
-    // Also, do we still need a storageRoot? - presumably not since we don't have separate storage tries
     this._caches?.storage?.clearStorage(address)
   }
 
