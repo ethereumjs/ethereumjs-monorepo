@@ -46,13 +46,13 @@ import type { Debugger } from 'debug'
 export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
- * Default StateManager implementation for the VM.
+ * Merkle StateManager implementation for the VM.
  *
  * The state manager abstracts from the underlying data store
  * by providing higher level access to accounts, contract code
  * and storage slots.
  *
- * The default state manager implementation uses a
+ * The merkle state manager implementation uses a
  * `@ethereumjs/mpt` trie as a data backend.
  *
  * Note that there is a `SimpleStateManager` dependency-free state

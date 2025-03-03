@@ -394,6 +394,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Verkle state transition via an overlay tree
+   * URL         : https://eips.ethereum.org/EIPS/eip-7612
+   * Status      : Draft
+   */
+  7612: {
+    minimumHardfork: Hardfork.Verkle,
+    requiredEIPs: [4762, 6800 /* 7545 */],
+  },
+  /**
    * Description : EOF Contract Creation
    * URL         : https://github.com/ethereum/EIPs/blob/dd32a34cfe4473bce143641bfffe4fd67e1987ab/EIPS/eip-7620.md
    * Status      : Review
@@ -469,5 +478,14 @@ export const eipsDict: EIPsDict = {
   7709: {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
+  },
+  /**
+   * Description : State conversion to Verkle Tree
+   * URL         : https://eips.ethereum.org/EIPS/eip-7748
+   * Status      : Draft
+   */
+  7742: {
+    minimumHardfork: Hardfork.Verkle,
+    requiredEIPs: [7612],
   },
 }
