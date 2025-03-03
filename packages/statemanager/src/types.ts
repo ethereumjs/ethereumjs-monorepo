@@ -64,6 +64,13 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   caches?: Caches
 }
 
+export interface TransitionStateManagerOpts extends BaseStateManagerOpts {
+  frozenTree: MerklePatriciaTrie
+  activeTree?: VerkleTree
+  common: Common // Common required since it provides verkleCrypto through customCrypto
+  caches?: Caches
+}
+
 /**
  * Options dictionary.
  */
