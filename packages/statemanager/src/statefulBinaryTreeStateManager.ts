@@ -108,7 +108,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
         useRootPersistence: false,
         cacheSize: 0,
       })
-    this._debug = debugDefault('statemanager:binarytree:stateful')
+    this._debug = debugDefault('statemanager:binarytree')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
     this.keccakFunction = keccak256
@@ -150,7 +150,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
             ? KECCAK256_NULL
             : accountValues[1],
         codeSize: basicData.codeSize,
-        storageRoot: KECCAK256_NULL, // TODO: Add storage stuff
+        storageRoot: KECCAK256_NULL,
       })
     } else if (accountValues[1] === undefined || accountValues[1] === null) {
       // account does not exist if both basic fields and codehash are undefined
