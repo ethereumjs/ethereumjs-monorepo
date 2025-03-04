@@ -134,7 +134,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (vm.common.isActivatedEIP(6800)) {
+  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
     // Initialize the access witness
 
     if (vm.common.customCrypto.verkle === undefined) {
@@ -511,7 +511,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
-  // Merge systemVerkleAccessWitness with verkleAccessWitness
+  // Merge system AccessWitness with AccessWitness
   if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
     vm.evm.systemVerkleAccessWitness?.commit()
     if (vm.DEBUG) {
@@ -523,6 +523,16 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 
+  if (vm.common.isActivatedEIP(7864) && vm.evm.systemBinaryTreeAccessWitness !== undefined) {
+    vm.evm.systemBinaryTreeAccessWitness?.commit()
+    if (vm.DEBUG) {
+      debug('Binary tree access witness aggregate costs:')
+      vm.evm.binaryTreeAccessWitness?.debugWitnessCost()
+      debug('System binary tree access witness aggregate costs:')
+      vm.evm.systemBinaryTreeAccessWitness?.debugWitnessCost()
+    }
+    vm.evm.binaryTreeAccessWitness?.merge(vm.evm.systemBinaryTreeAccessWitness)
+  }
   return blockResults
 }
 
@@ -568,6 +578,12 @@ export async function accumulateParentBlockHash(
       }
       // Add to system verkle access witness so that it doesn't warm up tx accesses
       vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // Add to system binary tree access witness so that it doesn't warm up tx accesses
+      vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -782,6 +798,12 @@ export async function rewardAccount(
       }
       evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
+    if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+      if (evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      evm.systemBinaryTreeAccessWitness.writeAccountHeader(address)
+    }
     account = new Account()
   }
   account.balance += reward
@@ -794,6 +816,13 @@ export async function rewardAccount(
     // use vm utility to build access but the computed gas is not charged and hence free
     evm.systemVerkleAccessWitness.writeAccountBasicData(address)
     evm.systemVerkleAccessWitness.readAccountCodeHash(address)
+  }
+  if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+    if (evm.systemBinaryTreeAccessWitness === undefined) {
+      throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+    }
+    evm.systemBinaryTreeAccessWitness.writeAccountBasicData(address)
+    evm.systemBinaryTreeAccessWitness.readAccountCodeHash(address)
   }
   return account
 }
