@@ -70,6 +70,8 @@ export const readBeaconState = async (eraData: Uint8Array) => {
     throw EthereumJSErrorWithoutCode(`expected CompressedBeaconState type, got ${stateEntry.type}`)
   }
   const stateSlot = indices.stateSlotIndex.startSlot
+  // TODO: Add a helper to identify the fork programmatically so the right types can be selected based on fork number rather
+  // than hardcoded as below
   if (stateSlot < ssz.ForkSlots.Altair) return ssz.Phase0BeaconState.decode(data.data as Uint8Array)
   else if (stateSlot < ssz.ForkSlots.Bellatrix)
     return ssz.AltairBeaconState.decode(data.data as Uint8Array)
