@@ -129,7 +129,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
