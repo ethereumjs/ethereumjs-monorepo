@@ -5,6 +5,7 @@ import {
   hexToBytes as nobleH2B,
 } from 'ethereum-cryptography/utils.js'
 
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexString, padToEven, stripHexPrefix } from './internal.js'
 
@@ -24,12 +25,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @throws If the input is not a valid 0x-prefixed hex string
  */
 export const hexToBytes = (hex: string) => {
-  if (!hex.startsWith('0x')) throw new Error('input string must be 0x prefixed')
+  if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
 
 export const unprefixedHexToBytes = (hex: string) => {
-  if (hex.startsWith('0x')) throw new Error('input string cannot be 0x prefixed')
+  if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
   return nobleH2B(padToEven(hex))
 }
 
@@ -76,7 +77,7 @@ export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint =
  */
 export const bytesToInt = (bytes: Uint8Array): number => {
   const res = Number(bytesToBigInt(bytes))
-  if (!Number.isSafeInteger(res)) throw new Error('Number exceeds 53 bits')
+  if (!Number.isSafeInteger(res)) throw EthereumJSErrorWithoutCode('Number exceeds 53 bits')
   return res
 }
 
@@ -89,7 +90,7 @@ export const bytesToInt = (bytes: Uint8Array): number => {
  */
 export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
-    throw new Error(`Received an invalid integer type: ${i}`)
+    throw EthereumJSErrorWithoutCode(`Received an invalid integer type: ${i}`)
   }
   return ('0x' + i.toString(16)) as PrefixedHexString
 }
@@ -237,7 +238,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
 
   if (typeof v === 'string') {
     if (!isHexString(v)) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Cannot convert string to Uint8Array. toBytes only supports 0x-prefixed hex strings and this string was given: ${v}`,
       )
     }
@@ -250,7 +251,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
 
   if (typeof v === 'bigint') {
     if (v < BIGINT_0) {
-      throw new Error(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
+      throw EthereumJSErrorWithoutCode(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)
     if (n.length % 2) n = '0' + n
@@ -262,7 +263,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
     return v.toBytes()
   }
 
-  throw new Error('invalid type')
+  throw EthereumJSErrorWithoutCode('invalid type')
 }
 
 /**
@@ -332,7 +333,9 @@ export const short = (bytes: Uint8Array | string, maxLength: number = 50): strin
 export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | undefined }) => {
   for (const [k, v] of Object.entries(values)) {
     if (v !== undefined && v.length > 0 && v[0] === 0) {
-      throw new Error(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
+      throw EthereumJSErrorWithoutCode(
+        `${k} cannot have leading zeroes, received: ${bytesToHex(v)}`,
+      )
     }
   }
 }
@@ -495,9 +498,44 @@ export function hexToBigInt(input: PrefixedHexString): bigint {
 }
 
 /**
+ * Converts a Uint8Array of bytes into an array of bits.
+ * @param {Uint8Array} bytes - The input byte array.
+ * @param {number} bitLength - The number of bits to extract from the input bytes.
+ * @returns {number[]} An array of bits (each 0 or 1) corresponding to the input bytes.
+ */
+export function bytesToBits(bytes: Uint8Array, bitLength?: number): number[] {
+  const bits: number[] = []
+
+  for (let i = 0; i < (bitLength ?? bytes.length * 8); i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    bits.push((bytes[byteIndex] >> bitIndex) & 1)
+  }
+
+  return bits
+}
+
+/**
+ * Converts an array of bits into a Uint8Array.
+ * The input bits are grouped into sets of 8, with the first bit in each group being the most significant.
+ * @param {number[]} bits - The input array of bits (each should be 0 or 1). Its length should be a multiple of 8.
+ * @returns {Uint8Array} A Uint8Array constructed from the input bits.
+ */
+export function bitsToBytes(bits: number[]): Uint8Array {
+  const numBytes = Math.ceil(bits.length / 8) // Ensure partial byte storage
+  const byteData = new Uint8Array(numBytes)
+
+  for (let i = 0; i < bits.length; i++) {
+    const byteIndex = Math.floor(i / 8)
+    const bitIndex = 7 - (i % 8)
+    byteData[byteIndex] |= bits[i] << bitIndex
+  }
+
+  return byteData
+}
+
+/**
  * Compares two byte arrays and returns the count of consecutively matching items from the start.
- *
- * @function
  * @param {Uint8Array} bytes1 - The first Uint8Array to compare.
  * @param {Uint8Array} bytes2 - The second Uint8Array to compare.
  * @returns {number} The count of consecutively matching items from the start.
@@ -515,4 +553,44 @@ export function matchingBytesLength(bytes1: Uint8Array, bytes2: Uint8Array): num
     }
   }
   return count
+}
+
+/**
+ * Compares two arrays of bits (0 or 1) and returns the count of consecutively matching bits from the start.
+ * @param {number[]} bits1 - The first array of bits, in bytes or bits.
+ * @param {number[]} bits2 - The second array of bits, in bytes or bits.
+ * @returns {number} The count of consecutively matching bits from the start.
+ */
+export function matchingBitsLength(bits1: number[], bits2: number[]): number {
+  let count = 0
+  const minLength = Math.min(bits1.length, bits2.length)
+  for (let i = 0; i < minLength; i++) {
+    if (bits1[i] === bits2[i]) {
+      count++
+    } else {
+      return count
+    }
+  }
+  return count
+}
+
+/**
+ * Checks whether two arrays of bits are equal.
+ *
+ * Two arrays are considered equal if they have the same length and each corresponding element is identical.
+ *
+ * @param {number[]} bits1 - The first bits array.
+ * @param {number[]} bits2 - The second bits array.
+ * @returns {boolean} True if the arrays are equal; otherwise, false.
+ */
+export function equalsBits(bits1: number[], bits2: number[]): boolean {
+  if (bits1.length !== bits2.length) {
+    return false
+  }
+  for (let i = 0; i < bits1.length; i++) {
+    if (bits1[i] !== bits2[i]) {
+      return false
+    }
+  }
+  return true
 }

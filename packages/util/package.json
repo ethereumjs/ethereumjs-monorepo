@@ -92,7 +92,7 @@
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.1.2",
     "kzg-wasm": "^0.5.0",
-    "micro-eth-signer": "^0.12.1"
+    "micro-eth-signer": "^0.14.0"
   },
   "engines": {
     "node": ">=18"
