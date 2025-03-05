@@ -15,6 +15,8 @@ import {
 import type { RunTxResult } from './types.js'
 import type { VM } from './vm.js'
 
+const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
+
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
  * @param vm VM instance (used in deriving partial withdrawal requests)
@@ -132,8 +134,13 @@ const accumulateDepositsRequest = (
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
       const log = tx.receipt.logs[i]
-      if (bytesToHex(log[0]).toLowerCase() === depositContractAddressLowerCase) {
-        const { pubkey, withdrawalCredentials, amount, signature, index } = parseDepositLog(log[2])
+      const [address, topics, data] = log
+      if (
+        topics.length > 0 &&
+        bytesToHex(topics[0]) === DEPOSIT_TOPIC &&
+        depositContractAddressLowerCase === bytesToHex(address).toLowerCase()
+      ) {
+        const { pubkey, withdrawalCredentials, amount, signature, index } = parseDepositLog(data)
         const depositRequestBytes = concatBytes(
           pubkey,
           withdrawalCredentials,
