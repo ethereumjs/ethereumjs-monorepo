@@ -29,7 +29,7 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
-    if (chargeGas && (!common.isActivatedEIP(6800) || !common.isActivatedEIP(7864))) {
+    if (chargeGas && !(common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       return common.param('coldaccountaccessGas')
     } else if (chargeGas && (common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       // If Verkle is active, then the warmstoragereadGas should still be charged
@@ -66,7 +66,7 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
-    if (chargeGas && (!common.isActivatedEIP(6800) || !common.isActivatedEIP(7864))) {
+    if (chargeGas && !(common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       return common.param('coldsloadGas')
     }
   } else if (

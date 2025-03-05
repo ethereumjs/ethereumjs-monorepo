@@ -580,7 +580,7 @@ export async function accumulateParentBlockHash(
       vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
     } else if (vm.common.isActivatedEIP(7864)) {
       if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
-        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
       }
       // Add to system binary tree access witness so that it doesn't warm up tx accesses
       vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
@@ -800,7 +800,7 @@ export async function rewardAccount(
     }
     if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
       if (evm.systemBinaryTreeAccessWitness === undefined) {
-        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
       }
       evm.systemBinaryTreeAccessWitness.writeAccountHeader(address)
     }
@@ -819,7 +819,7 @@ export async function rewardAccount(
   }
   if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
     if (evm.systemBinaryTreeAccessWitness === undefined) {
-      throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
     }
     evm.systemBinaryTreeAccessWitness.writeAccountBasicData(address)
     evm.systemBinaryTreeAccessWitness.readAccountCodeHash(address)
