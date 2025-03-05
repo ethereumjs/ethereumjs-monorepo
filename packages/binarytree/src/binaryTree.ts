@@ -444,11 +444,6 @@ export class BinaryTree {
     // The root is an internal node. Determine the branch to follow using the first bit of the key
     let childNode = rootNode.getChild(keyInBits[0])
 
-    // If no child exists on that branch, return what we have.
-    if (childNode === null) {
-      this.DEBUG && this.debug(`Partial Path ${keyInBits[0]} - found no child.`, ['find_path'])
-      return result
-    }
     let finished = false
     while (!finished) {
       if (childNode === null) break
@@ -584,7 +579,8 @@ export class BinaryTree {
    */
   async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
     const { stack } = await this.findPath(key)
-    return stack.map(([node, _]) => node.serialize())
+    const proof = stack.map(([node, _]) => node.serialize())
+    return proof
   }
 
   /**
