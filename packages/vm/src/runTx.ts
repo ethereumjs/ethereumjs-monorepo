@@ -46,11 +46,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  Common,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Tx,
