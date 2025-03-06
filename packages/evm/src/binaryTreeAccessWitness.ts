@@ -397,7 +397,7 @@ export const generateBinaryExecutionWitness = async (
   const ew: BinaryTreeExecutionWitness = {
     stateDiff: [],
     parentStateRoot: bytesToHex(parentStateRoot),
-    proof: undefined as any, // Binary proofs are not implemented
+    proof: undefined as any,
   }
 
   // Generate a map of all stems with their accessed suffixes
@@ -439,6 +439,8 @@ export const generateBinaryExecutionWitness = async (
       })
     }
     ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
+    const proof = await tree.createBinaryProof(hexToBytes(stem))
+    ew.proof[stem] = proof
   }
   tree['_lock'].release()
   return ew
