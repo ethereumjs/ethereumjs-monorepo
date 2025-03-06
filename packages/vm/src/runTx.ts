@@ -46,11 +46,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  Common,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Tx,
@@ -203,8 +199,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface | undefined
-  let txAccesses: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface | undefined
+  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
+  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
@@ -230,7 +226,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = vm.evm.binaryTreeAccessWitness
     txAccesses = new BinaryTreeAccessWitness({
-      hashFunction: (vm.evm.binaryTreeAccessWitness as BinaryTreeAccessWitness).hashFunction,
+      hashFunction: vm.evm.binaryTreeAccessWitness.hashFunction,
     })
   }
 
@@ -610,9 +606,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    stateAccesses?.merge(
-      txAccesses! as VerkleAccessWitnessInterface & BinaryTreeAccessWitnessInterface,
-    )
+    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+  } else if (vm.common.isActivatedEIP(7864)) {
+    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {

@@ -275,7 +275,7 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
       if (message.accessWitness === undefined) {
-        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800')
+        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800 & EIP-7864')
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {

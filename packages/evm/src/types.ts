@@ -1,3 +1,4 @@
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
 import type { EOFContainer } from './eof/container.js'
 import type { EvmError } from './exceptions.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
@@ -6,6 +7,7 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
+import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type {
   BinaryTreeAccessWitnessInterface,
   Common,
@@ -167,10 +169,10 @@ export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
-  verkleAccessWitness?: VerkleAccessWitnessInterface
-  systemVerkleAccessWitness?: VerkleAccessWitnessInterface
-  binaryTreeAccessWitness?: BinaryTreeAccessWitnessInterface
-  systemBinaryTreeAccessWitness?: BinaryTreeAccessWitnessInterface
+  verkleAccessWitness?: VerkleAccessWitness
+  systemVerkleAccessWitness?: VerkleAccessWitness
+  binaryTreeAccessWitness?: BinaryTreeAccessWitness
+  systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
 }
 
 export type EVMProfilerOpts = {

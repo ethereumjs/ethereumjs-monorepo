@@ -31,7 +31,7 @@ import type { BinaryTreeAccessedState, RawBinaryTreeAccessedState } from '@ether
 import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 
-const debug = debugDefault('evm:verkle:aw')
+const debug = debugDefault('evm:binaryTree:aw')
 
 /**
  * Tree key constants.
@@ -44,7 +44,6 @@ const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
 export type BinaryStemAccessEvent = { write?: boolean }
-// chunk fill access event was not charged in verkle testnets, not sure if it will be charged in binary
 export type BinaryChunkAccessEvent = BinaryStemAccessEvent & { fill?: boolean }
 
 // Since stem is hashed, it is useful to maintain the reverse relationship
@@ -324,7 +323,7 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
   }
 
   debugWitnessCost(): void {
-    // Calculate the aggregate gas cost for verkle access witness per type
+    // Calculate the aggregate gas cost for binary access witness per type
     let stemReads = 0,
       stemWrites = 0,
       chunkReads = 0,
@@ -385,9 +384,7 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
  * @param stateManager - The state manager containing the state to generate the witness for.
  * @param accessWitness - The access witness containing the accessed states.
  * @param parentStateRoot - The parent state root (i.e. prestate root) to generate the witness for.
- * @returns The generated verkle execution witness
- *
- * Note: This does not provide the verkle proof, which is not implemented
+ * @returns The generated binary tree execution witness
  */
 export const generateBinaryExecutionWitness = async (
   stateManager: StatefulBinaryTreeStateManager,
