@@ -9,6 +9,7 @@ import {
   createAddressFromPrivateKey,
   createAddressFromString,
   hexToBytes,
+  randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
@@ -131,6 +132,11 @@ describe('runCall', () => {
     const l2StateManager = new StatefulBinaryTreeStateManager({ common, tree: l2Tree })
     await l2StateManager.putAccount(address, account)
 
+    // Add a random account to ensure that proof is providing enough inner nodes to validate state transition
+    await l2StateManager.putAccount(
+      createAddressFromPrivateKey(randomBytes(32)),
+      createAccount({ balance: 0x1n }),
+    )
     const preStateRoot = l2Tree.root()
     const l2EVM = await createEVM({ stateManager: l2StateManager, common })
 
