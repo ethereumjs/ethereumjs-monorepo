@@ -1,4 +1,4 @@
-import { createBinaryTree } from '@ethereumjs/binarytree'
+import { binaryTreeFromProof, decodeBinaryNode } from '@ethereumjs/binarytree'
 import { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import {
   bytesToBigInt,
@@ -9,7 +9,10 @@ import {
 } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import { BinaryTreeAccessWitness } from '../binaryTreeAccessWitness.js'
+import {
+  BinaryTreeAccessWitness,
+  type generateBinaryExecutionWitness,
+} from '../binaryTreeAccessWitness.js'
 import { createEVM } from '../constructors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
@@ -18,13 +21,41 @@ import { gasLimitCheck } from './util.js'
 
 import { getPrecompileName } from './index.js'
 
-// import type { generateStateWitness } from '../binaryTreeAccessWitness.js'
+import type {} from '../binaryTreeAccessWitness.js'
+
 import type { EVM } from '../evm.js'
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
+import type { BinaryNode } from '@ethereumjs/binarytree'
+
+// For suffix diffs in state diff
+const SuffixDiff = ssz.container({
+  suffix: ssz.uint8,
+  currentValue: ssz.bytevector(32),
+  newValue: ssz.bytevector(32),
+})
+
+// For state diff entries
+const StateDiff = ssz.container({
+  stem: ssz.bytevector(31), // The stem as a hex string
+  suffixDiffs: ssz.list(256, SuffixDiff), // List of suffix diffs
+})
+
+// For proof entries
+const ProofEntry = ssz.container({
+  stem: ssz.bytevector(31), // 31-byte vector for the stem
+  proofData: ssz.list(32, ssz.bytelist(16384)), // List of byte arrays, each up to 16384 bytes
+})
+
+// Define the BinaryTreeExecutionWitness container
+const BinaryTreeExecutionWitness = ssz.container({
+  stateDiff: ssz.list(1024, StateDiff), // List of state diffs
+  parentStateRoot: ssz.bytevector(32), // Parent state root as hex
+  proof: ssz.list(256, ProofEntry), // List of proof entries with stems and proof data
+})
 
 const MAX_CALL_DATA_SIZE = 7500000 // Assuming a transaction with all zero bytes fills up an entire block worth of gas
-export const traceContainer = ssz.container({
+export const traceContainer: ssz.SSZCoder<any> = ssz.container({
   txs: ssz.list(
     // An ssz list of tx objects that match the `eth_call` tx object format
     256,
@@ -37,31 +68,30 @@ export const traceContainer = ssz.container({
       data: ssz.bytelist(MAX_CALL_DATA_SIZE),
     }),
   ),
-  witnesses: ssz.container({
-    // A state witness that contains all the reads and writes to the state that are part of the tx list
-    proofs: ssz.list(1024, ssz.list(248, ssz.bytevector(32))), //
-    parentStateRoot: ssz.bytevector(32),
-  }),
+  witness: BinaryTreeExecutionWitness,
 })
 
 export const stateWitnessJSONToSSZ = (
-  witness: Awaited<ReturnType<typeof generateStateWitness>>,
+  witness: Awaited<ReturnType<typeof generateBinaryExecutionWitness>>,
 ) => {
-  const reads = Array.from(witness.reads.entries()).map(([key, value]) => ({
-    key: hexToBytes(key),
-    currentValue: hexToBytes(value),
-  }))
-
-  const writes = Array.from(witness.writes.entries()).map(([key, value]) => ({
-    key: hexToBytes(key),
-    currentValue: hexToBytes(value.currentValue),
-    newValue: hexToBytes(value.newValue),
-  }))
-
   return {
-    reads,
-    writes,
+    stateDiff: witness.stateDiff.map((diff) => ({
+      stem: hexToBytes(diff.stem),
+      suffixDiffs: diff.suffixDiffs.map((suffixDiff) => ({
+        suffix: suffixDiff.suffix,
+        currentValue:
+          suffixDiff.currentValue !== null
+            ? hexToBytes(suffixDiff.currentValue)
+            : new Uint8Array(32),
+        newValue:
+          suffixDiff.newValue !== null ? hexToBytes(suffixDiff.newValue) : new Uint8Array(32),
+      })),
+    })),
     parentStateRoot: hexToBytes(witness.parentStateRoot),
+    proof: Object.entries(witness.proof).map(([stem, proof]) => ({
+      stem: hexToBytes(stem),
+      proofData: proof,
+    })),
   }
 }
 
@@ -89,15 +119,19 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
   }
   const executeGasUsed = bytesToBigInt(data.subarray(96))
-  const witness = decodedTrace.witness
-  const tree = await createBinaryTree()
+
   // Populate the L2 state trie with the prestate
-  for (const chunk of witness.reads) {
-    await tree.put(chunk.key.slice(0, 31), [Number(chunk.key.slice(31))], [chunk.currentValue])
+
+  const witness = decodedTrace.witness
+  const tree = await binaryTreeFromProof(witness.proof[0].proofData)
+  for (const proof of witness.proof.slice(1)) {
+    const putStack: [Uint8Array, BinaryNode][] = proof.proofData.map((bytes: Uint8Array) => {
+      const node = decodeBinaryNode(bytes)
+      return [tree['merkelize'](node), node]
+    })
+    await tree.saveStack(putStack)
   }
-  for (const chunk of witness.writes) {
-    await tree.put(chunk.key.slice(0, 31), [Number(chunk.key.slice(31))], [chunk.currentValue])
-  }
+
   let executionResult = true
   const stateManager = new StatefulBinaryTreeStateManager({ common: opts.common, tree })
   const l2EVM = await createEVM({ stateManager, common: opts.common })
