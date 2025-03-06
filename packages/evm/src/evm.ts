@@ -56,6 +56,7 @@ import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -154,6 +155,8 @@ export class EVM implements EVMInterface {
 
   private _bn254: EVMBN254Interface
 
+  private executionBlobs: Map<PrefixedHexString, Uint8Array> // Map of <sha256 hash of trace, trace bytes>
+
   /**
    *
    * Creates new EVM object
@@ -188,7 +191,7 @@ export class EVM implements EVMInterface {
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
       3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709, 7864, 9999,
     ]
 
     for (const eip of this.common.eips()) {
@@ -249,6 +252,8 @@ export class EVM implements EVMInterface {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+
+    this.executionBlobs = new Map()
   }
 
   /**
@@ -891,7 +896,10 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: this.verkleAccessWitness,
+        accessWitness:
+          this.verkleAccessWitness !== undefined
+            ? this.verkleAccessWitness
+            : this.binaryAccessWitness,
       })
     }
 
