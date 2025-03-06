@@ -444,11 +444,6 @@ export class BinaryTree {
     // The root is an internal node. Determine the branch to follow using the first bit of the key
     let childNode = rootNode.getChild(keyInBits[0])
 
-    // If no child exists on that branch, return what we have.
-    if (childNode === null) {
-      this.DEBUG && this.debug(`Partial Path ${keyInBits[0]} - found no child.`, ['find_path'])
-      return result
-    }
     let finished = false
     while (!finished) {
       if (childNode === null) break
@@ -473,6 +468,7 @@ export class BinaryTree {
           matchingKeyLength === keyInBits.length &&
           equalsBits(keyInBits, childNode.path) === true
         ) {
+          // We found the sought node
           this.DEBUG &&
             this.debug(
               `Path ${bytesToHex(keyInBytes)} - found full path to node ${bytesToHex(
@@ -484,7 +480,7 @@ export class BinaryTree {
           result.remaining = []
           return result
         }
-        // Otherwise, record the unmatched tail of the key.
+        // We didn't find the sought node so record the unmatched tail of the key.
         result.remaining = keyInBits.slice(matchingKeyLength)
         result.stack.push([decodedNode, childNode.path])
         return result
@@ -580,11 +576,20 @@ export class BinaryTree {
 
   /**
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
-   * @param key
+   * @param key a 32 byte binary tree key (31 byte stem + 1 byte suffix)
    */
   async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
-    const { stack } = await this.findPath(key)
-    return stack.map(([node, _]) => node.serialize())
+    this.DEBUG && this.debug(`creating proof for ${bytesToHex(key)}`, ['create_proof'])
+    // We only use the stem (i.e. the first 31 bytes) to find the path to the node
+
+    const { node, stack } = await this.findPath(key.slice(0, 31))
+    const proof = stack.map(([node, _]) => node.serialize())
+    if (node !== null) {
+      // If node is found, add node to proof
+      proof.push(node.serialize())
+    }
+
+    return proof
   }
 
   /**
