@@ -19,11 +19,11 @@ async function setUp() {
         to: '0x0000000000000000000000000000000000000000',
       },
       { common },
-    ).sign(dummy.privKey),
+    ).sign(dummy.privKey, false),
     createLegacyTx(
       { gasLimit: 21000, gasPrice: 50, nonce: 1, to: '0x0000000000000000000000000000000000000000' },
       { common },
-    ).sign(dummy.privKey),
+    ).sign(dummy.privKey, false),
   ]
 
   await runBlockWithTxs(chain, execution, txs)

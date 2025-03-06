@@ -5,6 +5,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   KECCAK256_RLP,
   MAX_INTEGER,
@@ -46,6 +47,7 @@ import {
   type ExecResult,
 } from './types.js'
 
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
 import type { MessageWithTo } from './message.js'
@@ -103,6 +105,8 @@ export class EVM implements EVMInterface {
   public journal: Journal
   public verkleAccessWitness?: VerkleAccessWitness
   public systemVerkleAccessWitness?: VerkleAccessWitness
+  public binaryAccessWitness?: BinaryTreeAccessWitness
+  public systemBinaryAccessWitness?: BinaryTreeAccessWitness
 
   public readonly transientStorage: TransientStorage
 
@@ -166,11 +170,11 @@ export class EVM implements EVMInterface {
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
 
-    if (this.common.isActivatedEIP(6800)) {
+    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
       const mandatory = ['checkChunkWitnessPresent']
       for (const m of mandatory) {
         if (!(m in this.stateManager)) {
-          throw new Error(
+          throw EthereumJSErrorWithoutCode(
             `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
           )
         }
@@ -189,12 +193,12 @@ export class EVM implements EVMInterface {
 
     for (const eip of this.common.eips()) {
       if (!supportedEIPs.includes(eip)) {
-        throw new Error(`EIP-${eip} is not supported by the EVM`)
+        throw EthereumJSErrorWithoutCode(`EIP-${eip} is not supported by the EVM`)
       }
     }
 
     if (!EVM.supportedHardforks.includes(this.common.hardfork() as Hardfork)) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Hardfork ${this.common.hardfork()} not set as supported in supportedHardforks`,
       )
     }
@@ -264,9 +268,9 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
 
-    if (this.common.isActivatedEIP(6800)) {
+    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
       if (message.accessWitness === undefined) {
-        throw new Error('accessWitness is required for EIP-6800')
+        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800 & EIP-7864')
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
@@ -319,7 +323,7 @@ export class EVM implements EVMInterface {
     // Load `to` account
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
-      if (this.common.isActivatedEIP(6800)) {
+      if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const absenceProofAccessGas = message.accessWitness!.readAccountHeader(message.to)
         gasLimit -= absenceProofAccessGas
         if (gasLimit < BIGINT_0) {
@@ -419,7 +423,7 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
 
-    if (this.common.isActivatedEIP(6800)) {
+    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
       if (message.depth === 0) {
         const originAccessGas = message.accessWitness!.readAccountHeader(fromAddress)
         debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
@@ -466,7 +470,7 @@ export class EVM implements EVMInterface {
       toAccount = new Account()
     }
 
-    if (this.common.isActivatedEIP(6800)) {
+    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
       const contractCreateAccessGas =
         message.accessWitness!.writeAccountBasicData(message.to) +
         message.accessWitness!.readAccountCodeHash(message.to)
@@ -552,7 +556,7 @@ export class EVM implements EVMInterface {
     }
 
     if (exit) {
-      if (this.common.isActivatedEIP(6800)) {
+      if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
         gasLimit -= createCompleteAccessGas
         if (gasLimit < BIGINT_0) {
@@ -672,7 +676,10 @@ export class EVM implements EVMInterface {
 
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
-    if (!result.exceptionError && this.common.isActivatedEIP(6800)) {
+    if (
+      !result.exceptionError &&
+      (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864))
+    ) {
       const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
@@ -698,7 +705,7 @@ export class EVM implements EVMInterface {
       result.returnValue.length !== 0
     ) {
       // Add access charges for writing this code to the state
-      if (this.common.isActivatedEIP(6800)) {
+      if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const byteCodeWriteAccessfee = message.accessWitness!.writeAccountCodeChunks(
           message.to,
           0,
@@ -1027,7 +1034,7 @@ export class EVM implements EVMInterface {
     gasLimit: bigint,
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
-      throw new Error('Invalid precompile')
+      throw EthereumJSErrorWithoutCode('Invalid precompile')
     }
 
     const opts = {

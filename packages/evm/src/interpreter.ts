@@ -4,6 +4,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -36,6 +37,7 @@ import type {
   Log,
 } from './types.js'
 import type {
+  BinaryTreeAccessWitnessInterface,
   Common,
   StateManagerInterface,
   VerkleAccessWitnessInterface,
@@ -83,7 +85,7 @@ export interface Env {
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: VerkleAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
@@ -174,7 +176,7 @@ export class Interpreter {
       this.common.consensusType() === 'poa' &&
       this._evm['_optsCached'].cliqueSigner === undefined
     )
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'Must include cliqueSigner function if clique/poa is being used for consensus type',
       )
 
@@ -263,7 +265,7 @@ export class Interpreter {
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
     if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
-      throw new Error('Internal error: program counter not in range')
+      throw EthereumJSErrorWithoutCode('Internal error: program counter not in range')
     }
 
     let err
@@ -304,7 +306,7 @@ export class Interpreter {
       // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
-        this.common.isActivatedEIP(6800) &&
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
         // is this a code loaded from state using witnesses
         this._runState.env.chargeCodeAccesses === true
       ) {
@@ -385,7 +387,10 @@ export class Interpreter {
         await this._runStepHook(gas, this.getGasLeft())
       }
 
-      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+      if (
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
+        this._env.chargeCodeAccesses === true
+      ) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas = this._runState.env.accessWitness!.readAccountCodeChunks(
           contract,
@@ -633,7 +638,7 @@ export class Interpreter {
     await this._stateManager.putStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
-      throw new Error('could not read account while persisting memory')
+      throw EthereumJSErrorWithoutCode('could not read account while persisting memory')
     }
     this._env.contract = account
   }
@@ -852,7 +857,7 @@ export class Interpreter {
     const baseFee = this._env.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
-      throw new Error('Block has no Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Base Fee')
     }
     return baseFee
   }
@@ -864,7 +869,7 @@ export class Interpreter {
     const blobBaseFee = this._env.block.header.getBlobGasPrice()
     if (blobBaseFee === undefined) {
       // Sanity check
-      throw new Error('Block has no Blob Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Blob Base Fee')
     }
     return blobBaseFee
   }
@@ -1029,7 +1034,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw new Error('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
@@ -1133,7 +1138,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw new Error('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0

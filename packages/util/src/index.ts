@@ -4,6 +4,11 @@
 export * from './constants.js'
 
 /**
+ * Errors
+ */
+export * from './errors.js'
+
+/**
  * Units helpers
  */
 export * from './units.js'
@@ -46,6 +51,7 @@ export * from './types.js'
 /**
  * Export ethjs-util methods
  */
+export * from './binaryTree.js'
 export * from './blobs.js'
 export * from './genesis.js'
 export {
