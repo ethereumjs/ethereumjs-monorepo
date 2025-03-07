@@ -3,5 +3,5 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "../client/test/sim/configs/4844-devnet.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }
