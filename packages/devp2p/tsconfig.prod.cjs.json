@@ -3,8 +3,7 @@
   "exclude": ["test", "examples", "scripts", "node_modules", "dist"],
   "compilerOptions": {
     "outDir": "dist/cjs",
-    "rootDir": "src",
-    "composite": true
+    "rootDir": "src"
   },
   "references": [
     { "path": "../common/tsconfig.prod.cjs.json" },

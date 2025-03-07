@@ -2,8 +2,7 @@
   "extends": "../../config/tsconfig.prod.esm.json",
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
-    "outDir": "dist/esm",
-    "composite": true
+    "outDir": "dist/esm"
   },
   "references": [
     { "path": "../block/tsconfig.prod.esm.json" },
