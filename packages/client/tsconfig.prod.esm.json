@@ -3,9 +3,7 @@
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "typeRoots": ["node_modules/@types", "src/@types"],
-    "composite": true,
-    "allowSyntheticDefaultImports": true
+    "composite": true
   },
   "references": [
     { "path": "../block/tsconfig.prod.esm.json" },

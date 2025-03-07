@@ -9,8 +9,5 @@
     "examples/peer-communication.ts",
     "examples/peer-communication-les.ts",
     "scripts/singlePeerRun.ts"
-  ],
-  "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "src/@types"]
-  }
+  ]
 }

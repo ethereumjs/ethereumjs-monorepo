@@ -1,8 +1,4 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["bin", "src", "test", "package.json"],
-  "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "src/@types"],
-    "allowSyntheticDefaultImports": true
-  }
+  "include": ["bin", "src", "test", "package.json"]
 }

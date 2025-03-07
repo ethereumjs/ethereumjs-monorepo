@@ -11,11 +11,12 @@ import type { TAlgorithm } from '../ext/jwt-simple.js'
 import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
-import type { HttpServer } from 'jayson/promise'
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
 const algorithm: TAlgorithm = 'HS256'
+
+type HttpServer = jayson.HttpServer
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
@@ -215,7 +216,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
   const { server, withEngineMiddleware, RPCCors } = opts
 
   // Get the server to hookup upgrade request on
-  let httpServer = opts.httpServer
+  let httpServer = opts.httpServer as HttpServer | undefined
   if (!httpServer) {
     const app = Connect()
     // In case browser pre-flights the upgrade request with an options request
