@@ -1,4 +1,14 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["bin", "src", "test", "package.json"]
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": [
+    "bin",
+    "src",
+    "test",
+    "package.json",
+    "test/**/*.js",
+    "../block/test/testdata/4844-hardfork.ts"
+  ]
 }

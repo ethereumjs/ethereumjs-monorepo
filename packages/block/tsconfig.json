@@ -1,4 +1,7 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "../client/test/sim/configs/4844-devnet.ts"]
 }
