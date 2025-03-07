@@ -4,9 +4,7 @@
     "declaration": true,
     "declarationMap": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "moduleResolution": "nodenext",
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -15,6 +13,8 @@
     "target": "es2020",
     "composite": true,
     "lib": ["ES2020", "DOM"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   }
 }

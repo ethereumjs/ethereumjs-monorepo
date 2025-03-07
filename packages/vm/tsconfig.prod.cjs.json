@@ -4,7 +4,7 @@
     "rootDir": "src",
     "outDir": "dist/cjs"
   },
-  "include": ["src/**/*.ts", "src/**/*.json"],
+  "include": ["src/**/*.ts"],
   "references": [
     { "path": "../block/tsconfig.prod.cjs.json" },
     { "path": "../blockchain/tsconfig.prod.cjs.json" },

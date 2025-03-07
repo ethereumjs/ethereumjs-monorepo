@@ -21,7 +21,7 @@ const BLS_MODULUS = BigInt(
 
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
-    const { eip4844Data } = await import('../../../client/test/testdata/geth-genesis/eip4844.js')
+    const { eip4844Data } = await import('../testdata/eip4844.js')
 
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
