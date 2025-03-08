@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### New JavaScript REPL
 
-This release comes with a new REPL - see PR [#3781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3781). It can be run using the npm script available in the client package:
+This release comes with a new REPL - see PRs [#3781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3781) and [#3867](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3867). It can be run using the npm script available in the client package:
 
 `npm run repl`
 

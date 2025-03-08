@@ -46,8 +46,10 @@ evm.events.on('afterMessage', (event, resolve) => {
 
 ### Verkle Updates (experimental)
 
+- New method to generate a verkle execution witness, PR [#3864](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3864)
 - Migrate verkle `AccessWitness` from StateManager to EVM (experimental), PR [#3770](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3770)
 - Simplify/rename verkle access witness methods, PR [#3830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3830)
+- Verkle updates, PR [#3832](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3832)
 
 ### Other Changes
 

@@ -35,6 +35,7 @@ All this might affect you if you listen to events emitted by the `common.events`
 
 - Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
 - Add `requestsHash` to genesis block/configuration, PR [#3771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3771)
+- Allow specifying eip-7840 blobSchedule via geth genesis, PR [#3835](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3835)
 
 ### Other Changes
 

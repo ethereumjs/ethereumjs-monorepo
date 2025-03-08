@@ -25,6 +25,7 @@ As a start we bump all major release versions to version 10, these `RC` releases
 ### Other Changes
 
 - Removal of `BaseTransaction` parent class to allow for more independent custom tx type implementations, PR [#3744](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3744)
+- Optional support for hedged signatures, PR [#3873](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3873)
 - Rename `AccessList2930Transaction` -> `AccessList2930Tx` (same PR)
 - Rename `EOACode7702Transaction` -> `EOACode7702Tx` (same PR, both to follow new naming pattern)
 
