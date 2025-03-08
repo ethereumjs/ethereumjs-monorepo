@@ -16,9 +16,20 @@ This breaking release round will come with a new versioning scheme (thanks to @p
 
 As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
 
-### Other Changes
+### Native Node.js EventEmitter Replacement
 
-- Integration of `debug` logging functionality for easier internal debugging, PR [#3676](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3676)
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement.
+
+The new package is meant to be performant and mostly compatible regarding usage and API.
+
+If you directly import the Node.js event emitter, you need to switch your imports to:
+
+```ts
+import { EventEmitter } from 'events' // old
+import { EventEmitter } from 'eventemitter3' // new
+```
+
+All this might affect you if you listen to events emitted by the `blockchain.events` `EventEmitter` instance.
 
 ## 8.0.0-alpha.1 - 2024-10-17
 
