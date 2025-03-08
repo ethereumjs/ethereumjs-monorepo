@@ -44,9 +44,16 @@ evm.events.on('afterMessage', (event, resolve) => {
 })
 ```
 
-### Other Changes
+### Verkle Updates (experimental)
 
 - Migrate verkle `AccessWitness` from StateManager to EVM (experimental), PR [#3770](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3770)
+- Simplify/rename verkle access witness methods, PR [#3830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3830)
+
+### Other Changes
+
+- Various EOF fixes and spec updates, PR [#3568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3568)
+- Fix `PUSHN` non-compliance issue, PR [#3863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3863)
+- Remove unused params from common, PR [#3836](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3836)
 
 ## 4.0.0-alpha.1 - 2024-10-17
 

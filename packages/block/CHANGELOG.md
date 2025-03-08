@@ -18,7 +18,9 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 ### Pectra Spec Updates
 
+- Support for EIP-7691 Blob Throughput Increase, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
 - Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- Fix the param resolution for excess gas and blob fee compute, PR [#3841](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3841)
 
 
 ## 6.0.0-alpha.1 - 2024-10-17

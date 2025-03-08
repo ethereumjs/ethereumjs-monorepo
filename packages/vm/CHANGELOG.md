@@ -47,8 +47,13 @@ evm.events.on('afterMessage', (event, resolve) => {
 ### Pectra Spec Updates
 
 - Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- Additional EIP-7685 adjustments/updates, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
+- Support for EIP-7623 Calldata Cost Increase, PR [#3813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3813)
+- Support for EIP-7691 Blob Throughput Increase, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
 - Adjust `BlockBuilder.build()` return value format to return a dictionary containing the block built together with the requests generated, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
 - EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
+- More EIP-7702 updates (devnet-5), PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
+- Fix requests contract address (devnet-5), PR [#3818](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3818)
 
 ### Verkle Updates (experimental)
 

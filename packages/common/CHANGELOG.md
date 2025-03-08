@@ -36,6 +36,11 @@ All this might affect you if you listen to events emitted by the `common.events`
 - Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
 - Add `requestsHash` to genesis block/configuration, PR [#3771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3771)
 
+### Other Changes
+
+- Remove Goerli support, PR [#3851](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3851)
+- Fix TTD related failed Geth genesis parsing, PR [#3847](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3847)
+
 ## 5.0.0-alpha.1 - 2024-10-17
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.

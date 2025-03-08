@@ -8,6 +8,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.10.4 - [ UNPUBLISHED ]
 
+### New JavaScript REPL
+
+This release comes with a new REPL - see PR [#3781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3781). It can be run using the npm script available in the client package:
+
+`npm run repl`
+
+In order to pass parameters to the client while using the repl, you can append it to the npm script command:
+
+`npm run repl -- --gethGenesis /data/genesis.json`
+
+The repl allows access to the JSON-RPC and ENGINE API's from the terminal. For help and a list of supported functions, type `.help` upon repl startup:
+```
+[01-17|09:05:57] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:05:57] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .help
+```
+
+Example usage of repl commands:
+```
+[01-17|09:10:54] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:10:54] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .eth_getBlockByNumber ["latest", true]
+EthJS > {
+  number: '0x0',
+  hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+  parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  nonce: '0x0000000000000042',
+  ...
+```
+
 ### RPC Methods
 
 - Added support for `admin_addPeer` method, PR [#3788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3788)

@@ -18,6 +18,8 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 ### Pectra Spec Updates
 
+- Support for EIP-7623 Calldata Cost Increase, PR [#3813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3813)
+- Support for EIP-7691 Blob Throughput Increase, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
 - EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
 
 ### Other Changes
