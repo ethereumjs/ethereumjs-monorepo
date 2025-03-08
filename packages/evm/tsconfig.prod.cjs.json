@@ -6,6 +6,7 @@
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
+    { "path": "../binarytree/tsconfig.prod.cjs.json" },
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../rlp/tsconfig.prod.cjs.json" },
     { "path": "../statemanager/tsconfig.prod.cjs.json" },

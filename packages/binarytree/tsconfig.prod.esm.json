@@ -5,5 +5,8 @@
     "outDir": "dist/esm"
   },
   "include": ["src/**/*.ts"],
-  "references": [{ "path": "../util/tsconfig.prod.esm.json" }]
+  "references": [
+    { "path": "../rlp/tsconfig.prod.esm.json" },
+    { "path": "../util/tsconfig.prod.esm.json" }
+  ]
 }
