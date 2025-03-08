@@ -18,7 +18,7 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 ### Native Node.js EventEmitter Replacement
 
-We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement.
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
 
 The new package is meant to be performant and mostly compatible regarding usage and API.
 
@@ -43,6 +43,21 @@ evm.events.on('afterMessage', (event, resolve) => {
   resolve?.()
 })
 ```
+
+### Pectra Spec Updates
+
+- Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- Adjust `BlockBuilder.build()` return value format to return a dictionary containing the block built together with the requests generated, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
+
+### Verkle Updates (experimental)
+
+- Verkle execution witness support, PR [#3731](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3731)
+- Small adjustments, PR [#3775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3775)
+
+### Other Changes
+- Support for `t8ntool` for `execution-spec-tests` test filling, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Block builder adjustments, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
 
 ## 9.0.0-alpha.1 - 2024-10-17
 

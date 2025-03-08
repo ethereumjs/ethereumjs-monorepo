@@ -18,7 +18,7 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 ### Native Node.js EventEmitter Replacement
 
-We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement.
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
 
 The new package is meant to be performant and mostly compatible regarding usage and API.
 
@@ -43,6 +43,10 @@ evm.events.on('afterMessage', (event, resolve) => {
   resolve?.()
 })
 ```
+
+### Other Changes
+
+- Migrate verkle `AccessWitness` from StateManager to EVM (experimental), PR [#3770](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3770)
 
 ## 4.0.0-alpha.1 - 2024-10-17
 

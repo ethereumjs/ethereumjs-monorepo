@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.4 - [ UNPUBLISHED ]
+
+### RPC Methods
+
+- Added support for `admin_addPeer` method, PR [#3788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3788)
+
+### Other Changes
+
+- Fix double execution of a newplayload block on fcu, PR [#3777](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3777)
+- Outdated `LES` respectively `lightServ` support has been removed, PR [#3759](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3759)
+- Engine API adjustments (mainly related to EL requests) along with devnet-4, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+
 ## 0.10.3 - 2024-10-17
 
 ### Engine API
