@@ -20,6 +20,13 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 - EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
 
+### Other Changes
+
+- Removal of `BaseTransaction` parent class to allow for more independent custom tx type implementations, PR [#3744](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3744)
+- Rename `AccessList2930Transaction` -> `AccessList2930Tx` (same PR)
+- Rename `EOACode7702Transaction` -> `EOACode7702Tx` (same PR, both to follow new naming pattern)
+
+
 ## 6.0.0-alpha.1 - 2024-10-17
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.

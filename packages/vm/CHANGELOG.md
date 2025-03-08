@@ -54,6 +54,7 @@ evm.events.on('afterMessage', (event, resolve) => {
 
 - Verkle execution witness support, PR [#3731](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3731)
 - Small adjustments, PR [#3775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3775)
+- Add simple cache to EVM access witness, PR [#3810](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3810)
 
 ### Other Changes
 - Support for `t8ntool` for `execution-spec-tests` test filling, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)

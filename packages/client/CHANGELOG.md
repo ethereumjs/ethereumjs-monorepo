@@ -11,9 +11,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### RPC Methods
 
 - Added support for `admin_addPeer` method, PR [#3788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3788)
+- Added support for `debug_verbosity` method, PR [#3809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3809)
+- Added support for `debug_setHead` method, PR [#3811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3811)
 
 ### Other Changes
 
+- Experimental support for stateful verkle execution (`statefulVerkle` option), PR [#3800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3800)
 - Fix double execution of a newplayload block on fcu, PR [#3777](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3777)
 - Outdated `LES` respectively `lightServ` support has been removed, PR [#3759](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3759)
 - Engine API adjustments (mainly related to EL requests) along with devnet-4, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
