@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.2.0-alpha.1 - [ UNPUBLISHED ]
+## 0.2.0-rc.1 - [ UNPUBLISHED ]
+
+- Switch to JS (`micro-eth-signer`) for verkle cryptography, PR [#3785](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3785)
+- Read verkle crypto through common `customCrypto`, PRs [#3790](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3790) and [#3797](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3797)
+- Improvements to verkle tree instantiation, PR [#3768](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3768)
+- Fix handling of storage values, PR [#3778](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3778)
+- Rewrite `chunkifyCode` (Util package), PR [#3798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3798)
+
+## 0.2.0-alpha.1 - 2024-10-17
 
 We are getting there! 😁 While still in an experimental stage this release makes a big leap towards stateful Verkle-based EVM execution, by applying various updates and aligning with a new experimental `StatefulVerkleStateManager`.
 
