@@ -129,13 +129,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  ethash:
-    needs: build
-    uses: ./.github/workflows/ethash-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   evm:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/evm-build.yml
