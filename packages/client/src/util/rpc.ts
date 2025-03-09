@@ -2,7 +2,6 @@ import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
-import { Server } from 'jayson/promise/index.js'
 import { inspect } from 'util'
 
 import { jwt } from '../ext/jwt-simple.js'
@@ -11,7 +10,9 @@ import type { TAlgorithm } from '../ext/jwt-simple.js'
 import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
+import type jayson from 'jayson/promise/index.js'
 import type { HttpServer } from 'jayson/promise/index.js'
+type Server = jayson.Server
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
