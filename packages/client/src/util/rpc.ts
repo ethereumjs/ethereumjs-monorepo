@@ -2,6 +2,7 @@ import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
+import jayson from 'jayson/promise/index.js'
 import { inspect } from 'util'
 
 import { jwt } from '../ext/jwt-simple.js'
@@ -10,9 +11,6 @@ import type { TAlgorithm } from '../ext/jwt-simple.js'
 import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
-import type jayson from 'jayson/promise/index.js'
-import type { HttpServer } from 'jayson/promise/index.js'
-type Server = jayson.Server
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
@@ -25,7 +23,7 @@ type CreateRPCServerOpts = {
   logger?: Logger
 }
 type CreateRPCServerReturn = {
-  server: Server
+  server: jayson.Server
   methods: { [key: string]: Function }
   namespaces: string
 }
@@ -34,7 +32,7 @@ type CreateRPCServerListenerOpts = {
   server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
-type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
+type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
@@ -162,7 +160,7 @@ export function createRPCServer(
     }
   }
 
-  const server = new Server(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')
@@ -182,7 +180,7 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   }
 }
 
-export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
+export function createRPCServerListener(opts: CreateRPCServerListenerOpts): jayson.HttpServer {
   const { server, withEngineMiddleware, RPCCors } = opts
 
   const app = Connect()
@@ -212,7 +210,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   return httpServer
 }
 
-export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
+export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.HttpServer | undefined {
   const { server, withEngineMiddleware, RPCCors } = opts
 
   // Get the server to hookup upgrade request on
