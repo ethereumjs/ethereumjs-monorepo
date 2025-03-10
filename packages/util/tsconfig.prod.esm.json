@@ -2,8 +2,7 @@
   "extends": "../../config/tsconfig.prod.esm.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist/esm",
-    "composite": true
+    "outDir": "dist/esm"
   },
   "include": ["src/**/*.ts"],
   "references": [{ "path": "../rlp/tsconfig.prod.esm.json" }]

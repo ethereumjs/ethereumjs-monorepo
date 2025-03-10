@@ -16,10 +16,11 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../client/test/testdata/geth-genesis/eip4844.js'
 import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
 import { createEVM } from '../src/index.js'
+
+import { eip4844Data } from './testdata/eip4844.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 

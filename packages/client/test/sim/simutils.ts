@@ -27,7 +27,7 @@ import type { EthereumClient } from '../../src/client.js'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise'
+import type { Client } from 'jayson/promise/index.js'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
