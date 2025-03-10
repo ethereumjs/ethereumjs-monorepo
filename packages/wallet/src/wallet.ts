@@ -155,10 +155,12 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict
 
 // KDF
 
-const enum KDFFunctions {
-  PBKDF = 'pbkdf2',
-  Scrypt = 'scrypt',
-}
+export type KDFFunctions = (typeof KDFFunctions)[keyof typeof KDFFunctions]
+
+export const KDFFunctions = {
+  PBKDF: 'pbkdf2',
+  Scrypt: 'scrypt',
+} as const
 
 interface ScryptKDFParams {
   dklen: number

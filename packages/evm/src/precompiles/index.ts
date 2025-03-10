@@ -39,18 +39,21 @@ type PrecompileAvailabilityCheckType =
   | PrecompileAvailabilityCheckTypeHardfork
   | PrecompileAvailabilityCheckTypeEIP
 
-enum PrecompileAvailabilityCheck {
-  EIP,
-  Hardfork,
-}
+export type PrecompileAvailabilityCheck =
+  (typeof PrecompileAvailabilityCheck)[keyof typeof PrecompileAvailabilityCheck]
+
+export const PrecompileAvailabilityCheck = {
+  EIP: 0,
+  Hardfork: 1,
+} as const
 
 interface PrecompileAvailabilityCheckTypeHardfork {
-  type: PrecompileAvailabilityCheck.Hardfork
+  type: typeof PrecompileAvailabilityCheck.Hardfork
   param: string
 }
 
 interface PrecompileAvailabilityCheckTypeEIP {
-  type: PrecompileAvailabilityCheck.EIP
+  type: typeof PrecompileAvailabilityCheck.EIP
   param: number
 }
 const BYTES_19 = '00000000000000000000000000000000000000'

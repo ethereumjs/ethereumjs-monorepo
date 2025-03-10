@@ -74,10 +74,12 @@ export interface BinaryTreeExecutionWitness {
   proof: any
 }
 
-export enum BinaryTreeLeafType {
-  BasicData = 0,
-  CodeHash = 1,
-}
+export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]
+
+export const BinaryTreeLeafType = {
+  BasicData: 0,
+  CodeHash: 1,
+} as const
 
 export type BinaryTreeLeafBasicData = {
   version: number

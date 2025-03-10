@@ -54,13 +54,18 @@ type GetLogsReturn = {
  */
 type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
 
-enum IndexType {
-  TxHash,
-}
-enum IndexOperation {
-  Save,
-  Delete,
-}
+export type IndexType = (typeof IndexType)[keyof typeof IndexType]
+
+export const IndexType = {
+  TxHash: 0,
+} as const
+
+export type IndexOperation = (typeof IndexOperation)[keyof typeof IndexOperation]
+
+export const IndexOperation = {
+  Save: 0,
+  Delete: 1,
+} as const
 
 /**
  * Storage encodings
@@ -69,15 +74,19 @@ type rlpLog = Log
 type rlpReceipt = [postStateOrStatus: Uint8Array, cumulativeGasUsed: Uint8Array, logs: rlpLog[]]
 type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
 
-enum RlpConvert {
-  Encode,
-  Decode,
-}
-enum RlpType {
-  Receipts,
-  Logs,
-  TxHash,
-}
+export type RlpConvert = (typeof RlpConvert)[keyof typeof RlpConvert]
+
+export const RlpConvert = {
+  Encode: 0,
+  Decode: 1,
+} as const
+export type RlpType = (typeof RlpType)[keyof typeof RlpType]
+
+export const RlpType = {
+  Receipts: 0,
+  Logs: 1,
+  TxHash: 2,
+} as const
 type rlpOut = Log[] | TxReceipt[] | TxHashIndex
 
 export class ReceiptsManager extends MetaDBManager {

@@ -29,19 +29,21 @@ import type { EVM } from '../evm.js'
 
 /*
   This file creates EOF Containers
-  EOF Containers are described in EIP-3540. 
+  EOF Containers are described in EIP-3540.
   A container consists of a header and a body. The header describes the layout of the body.
-  The body has the actual "interesting" contents, such as the bytecode to run, the data section, 
+  The body has the actual "interesting" contents, such as the bytecode to run, the data section,
   and possibly yet-to-be-deployed containers (via EOFCREATE, to create new EOF contracts from an existing one)
 */
 
 // This enum marks the "mode" of a container
 // Depending on this mode, certain extra checks for validity have to be done, or some checks can be skipped
-export enum EOFContainerMode {
-  Default, // Default container validation
-  Initmode, // Initmode container validation (for subcontainers pointed to by EOFCreate)
-  TxInitmode, // Tx initmode container validation (for txs deploying EOF contracts)
-}
+export type EOFContainerMode = (typeof EOFContainerMode)[keyof typeof EOFContainerMode]
+
+export const EOFContainerMode = {
+  Default: 0, // Default container validation
+  Initmode: 1, // Initmode container validation (for subcontainers pointed to by EOFCreate)
+  TxInitmode: 2, // Tx initmode container validation (for txs deploying EOF contracts)
+} as const
 
 // The StreamReader is a helper class to help reading byte arrays
 class StreamReader {

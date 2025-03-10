@@ -21,15 +21,14 @@ const { combine, timestamp, label, printf } = format
 let attentionHF: string | null = null
 let attentionCL: string | null = null
 
-/**
- * Colors for logger levels
- */
-enum LevelColors {
-  error = 'red',
-  warn = 'yellow',
-  info = 'green',
-  debug = 'white',
-}
+export type LevelColors = (typeof LevelColors)[keyof typeof LevelColors]
+
+export const LevelColors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  debug: 'white',
+} as const
 
 /**
  * Adds stack trace to error message if included

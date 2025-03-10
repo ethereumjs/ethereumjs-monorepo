@@ -17,18 +17,22 @@ import type winston from 'winston'
 
 const enginePrefix = '[ CL ] '
 
-enum logLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug',
-}
+export type logLevel = (typeof logLevel)[keyof typeof logLevel]
 
-export enum ConnectionStatus {
-  Connected = 'connected',
-  Disconnected = 'disconnected',
-  Uncertain = 'uncertain',
-}
+export const logLevel = {
+  ERROR: 'error',
+  WARN: 'warn',
+  INFO: 'info',
+  DEBUG: 'debug',
+} as const
+
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus]
+
+export const ConnectionStatus = {
+  Connected: 'connected',
+  Disconnected: 'disconnected',
+  Uncertain: 'uncertain',
+} as const
 
 type CLConnectionManagerOpts = {
   config: Config

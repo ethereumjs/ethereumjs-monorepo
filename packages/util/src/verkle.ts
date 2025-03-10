@@ -138,10 +138,12 @@ export interface VerkleExecutionWitness {
   verkleProof: VerkleProof
 }
 
-export enum VerkleLeafType {
-  BasicData = 0,
-  CodeHash = 1,
-}
+export type VerkleLeafType = (typeof VerkleLeafType)[keyof typeof VerkleLeafType]
+
+export const VerkleLeafType = {
+  BasicData: 0,
+  CodeHash: 1,
+} as const
 
 export type VerkleLeafBasicData = {
   version: number

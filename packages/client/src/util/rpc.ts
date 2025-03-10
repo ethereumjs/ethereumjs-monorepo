@@ -35,11 +35,13 @@ type CreateRPCServerListenerOpts = {
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
-export enum MethodConfig {
-  WithEngine = 'withengine',
-  WithoutEngine = 'withoutengine',
-  EngineOnly = 'engineonly',
-}
+export type MethodConfig = (typeof MethodConfig)[keyof typeof MethodConfig]
+
+export const MethodConfig = {
+  WithEngine: 'withengine',
+  WithoutEngine: 'withoutengine',
+  EngineOnly: 'engineonly',
+} as const
 
 /** Allowed drift for jwt token issuance is 60 seconds */
 const ALLOWED_DRIFT = 60_000
