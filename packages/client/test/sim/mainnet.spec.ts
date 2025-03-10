@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import {

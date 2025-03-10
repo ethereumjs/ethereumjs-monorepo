@@ -25,7 +25,7 @@ import { getRPCClient, setupChain } from '../helpers.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise/index.js'
 
 const genesisStateRoot = '0x78026f1e4f2ff57c340634f844f47cb241beef4c965be86a483c855793e4b07d'
 const genesisBlockHash = '0x76a519ccb8a2b12d733ad7d88e2d5f4a11d6dc6ca320edccd3b8a3e9081ca1b3'

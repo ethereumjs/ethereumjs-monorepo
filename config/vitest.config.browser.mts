@@ -18,7 +18,6 @@ const config = defineConfig({
     maxConcurrency: 1
   },
   optimizeDeps: {
-
     exclude: ['kzg-wasm'],
   },
 })

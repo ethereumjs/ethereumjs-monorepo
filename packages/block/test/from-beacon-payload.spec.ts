@@ -3,9 +3,9 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { devnet4844Config } from '../../client/test/sim/configs/4844-devnet.js'
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.js'
 
+import { devnet4844Config } from './testdata/4844-devnet.ts'
 import { payloadKaustinenData } from './testdata/payload-kaustinen.js'
 import { payloadSlot87335Data } from './testdata/payload-slot-87335.js'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.js'

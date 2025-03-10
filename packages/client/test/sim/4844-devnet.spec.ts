@@ -2,7 +2,7 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { randomBytes } from 'node:crypto'
 import { assert, describe, it } from 'vitest'
 

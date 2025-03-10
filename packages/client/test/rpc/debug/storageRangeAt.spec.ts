@@ -18,7 +18,7 @@ import { dummy, getRPCClient, setupChain } from '../helpers.js'
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise/index.js'
 
 const method = 'debug_storageRangeAt'
 
