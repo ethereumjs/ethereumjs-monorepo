@@ -48,10 +48,10 @@
   },
   "dependencies": {
     "@chainsafe/snappy-stream": "^5.1.2",
-    "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/blockchain": "^8.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/block": "^10.0.0-rc.1",
+    "@ethereumjs/blockchain": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "level": "^8.0.0",
     "micro-eth-signer": "^0.14.0"
   },

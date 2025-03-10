@@ -40,14 +40,14 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/block": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "bigint-crypto-utils": "^3.2.2",
     "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^5.0.0-alpha.1"
+    "@ethereumjs/common": "^10.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"
