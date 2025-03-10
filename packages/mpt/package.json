@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/mpt",
-  "version": "7.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": ["merkle", "radix", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt#readme",

@@ -6,7 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.2.0-rc.1 - [ UNPUBLISHED ]
+## 10.0.0-rc.1 - [ UNPUBLISHED ]
+
+This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024. The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.
+
+### New Versioning Scheme
+
+This breaking release round will come with a new versioning scheme (thanks to @paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
+
+As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
+
+**Note: while we also bump the verkle package version for consistency reasons please be aware that this package is still in an experimental stage and not yet production ready!**
+
+### Changes
 
 - Switch to JS (`micro-eth-signer`) for verkle cryptography, PR [#3785](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3785)
 - Read verkle crypto through common `customCrypto`, PRs [#3790](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3790) and [#3797](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3797)

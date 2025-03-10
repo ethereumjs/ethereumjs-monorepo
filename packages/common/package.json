@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "5.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "4.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": ["ethash", "ethereum", "POW"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",

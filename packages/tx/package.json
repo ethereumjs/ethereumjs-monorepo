@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "6.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",

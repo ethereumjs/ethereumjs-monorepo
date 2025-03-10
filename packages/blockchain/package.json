@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "8.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "A module to store and interact with blocks",
   "keywords": ["ethereum", "blockchain"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",

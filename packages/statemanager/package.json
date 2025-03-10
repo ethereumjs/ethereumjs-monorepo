@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "3.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "An Ethereum statemanager implementation",
   "keywords": ["ethereum", "statemanager"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",

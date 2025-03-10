@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "4.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": ["ethereum", "EVM", "JavaScript", "TypeScript"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.3.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "A module to provide genesis states of well known networks",
   "keywords": ["ethereum", "genesis"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
