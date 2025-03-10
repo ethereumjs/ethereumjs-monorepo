@@ -52,4 +52,6 @@ export class LevelDB implements DB {
   shallowCopy(): DB {
     return new LevelDB(this._leveldb)
   }
+
+  async open(): Promise<void> {}
 }

@@ -58,7 +58,11 @@ export class MetaDBManager {
 
   async get(type: DBKey, hash: Uint8Array): Promise<Uint8Array | null> {
     try {
-      return await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
+      const value = await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
+      if (value === null || value === undefined) {
+        return null
+      }
+      return value as Uint8Array
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {
         return null

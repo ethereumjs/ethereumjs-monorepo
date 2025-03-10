@@ -9,6 +9,7 @@ import { LevelDB } from '../../src/execution/level.js'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
 
 export async function createInlineClient(
   config: Config,
@@ -21,20 +22,29 @@ export async function createInlineClient(
   let stateDB
   let metaDB
   if (memoryDB) {
-    chainDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    stateDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    metaDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
+    chainDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    stateDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    metaDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   } else {
     chainDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/chainDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
     stateDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/stateDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
     metaDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/metaDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   }
   let validateConsensus = false
   const consensusDict: ConsensusDict = {}

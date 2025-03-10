@@ -45,21 +45,30 @@ function initDBs(config: Config): {
   mkdirSync(chainDataDir, {
     recursive: true,
   })
-  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
+    chainDataDir,
+    // `Level` and `AbstractLevel` somehow have a few property differences even though
+    // `Level` extends `AbstractLevel`.  We don't use any of the missing properties so
+    // just ignore this error
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   mkdirSync(stateDataDir, {
     recursive: true,
   })
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
+    stateDataDir,
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
   mkdirSync(metaDataDir, {
     recursive: true,
   })
-  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
+    metaDataDir,
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   return { chainDB, stateDB, metaDB }
 }
