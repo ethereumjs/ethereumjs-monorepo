@@ -76,7 +76,7 @@ export function getArgs(): ClientOpts {
       })
       .option('chainId', {
         describe: 'Chain ID',
-        choices: Object.entries(Chain)
+        choices: Object.entries(typeof Chain)
           .map((n) => parseInt(n[1] as string))
           .filter((el) => !isNaN(el)),
         default: undefined,
@@ -86,7 +86,7 @@ export function getArgs(): ClientOpts {
         describe: 'Network ID',
         deprecated: true,
         deprecate: 'use --chainId instead',
-        choices: Object.entries(Chain)
+        choices: Object.entries(typeof Chain)
           .map((n) => parseInt(n[1] as string))
           .filter((el) => !isNaN(el)),
         default: undefined,

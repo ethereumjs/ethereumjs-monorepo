@@ -166,7 +166,7 @@ export class VerkleTree {
   async put(
     stem: Uint8Array,
     suffixes: number[],
-    values: (Uint8Array | LeafVerkleNodeValue.Untouched)[] = [],
+    values: (Uint8Array | typeof LeafVerkleNodeValue.Untouched)[] = [],
   ): Promise<void> {
     if (stem.length !== 31)
       throw EthereumJSErrorWithoutCode(`expected stem with length 31, got ${stem.length}`)

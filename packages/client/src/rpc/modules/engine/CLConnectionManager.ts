@@ -90,7 +90,7 @@ export class CLConnectionManager {
   private _payloadLogInterval?: NodeJS.Timeout
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
-  private connectionStatus = ConnectionStatus.Disconnected
+  private connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected
   private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
@@ -276,7 +276,8 @@ export class CLConnectionManager {
   updateStatus() {
     if (!this.running) this.start()
     if (
-      [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
+      this.connectionStatus === ConnectionStatus.Disconnected ||
+      this.connectionStatus === ConnectionStatus.Uncertain
     ) {
       this.config.superMsg('Consensus client connection established')
     }

@@ -48,7 +48,7 @@ async function getCallStatus(vm: VM) {
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
-  transactions: Array<TxData[TransactionType]>,
+  transactions: Array<TxData[typeof TransactionType]>,
 ) {
   const newTxData = []
 

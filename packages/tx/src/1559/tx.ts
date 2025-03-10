@@ -33,8 +33,8 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -42,9 +42,11 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarket1559Tx implements TransactionInterface<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx
+  implements TransactionInterface<typeof TransactionType.FeeMarketEIP1559>
+{
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
+  public type = TransactionType.FeeMarketEIP1559 // 1559 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint

@@ -91,11 +91,11 @@ export type BinaryTreeAccessedState =
   | {
       type: Exclude<
         BinaryTreeAccessedStateType,
-        BinaryTreeAccessedStateType.Code | BinaryTreeAccessedStateType.Storage
+        typeof BinaryTreeAccessedStateType.Code | typeof BinaryTreeAccessedStateType.Storage
       >
     }
-  | { type: BinaryTreeAccessedStateType.Code; codeOffset: number }
-  | { type: BinaryTreeAccessedStateType.Storage; slot: bigint }
+  | { type: typeof BinaryTreeAccessedStateType.Code; codeOffset: number }
+  | { type: typeof BinaryTreeAccessedStateType.Storage; slot: bigint }
 
 export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
   address: Address
@@ -141,11 +141,11 @@ export type VerkleAccessedState =
   | {
       type: Exclude<
         VerkleAccessedStateType,
-        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+        typeof VerkleAccessedStateType.Code | typeof VerkleAccessedStateType.Storage
       >
     }
-  | { type: VerkleAccessedStateType.Code; codeOffset: number }
-  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+  | { type: typeof VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: typeof VerkleAccessedStateType.Storage; slot: bigint }
 
 export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
   address: Address

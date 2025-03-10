@@ -321,7 +321,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = createAddressFromPrivateKey(pkey)
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',

@@ -83,6 +83,7 @@ module.exports = {
     'import/no-cycle': 'error',
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
+    'no-dupe-class-members': 'off',
     'import/no-duplicates': 'error',
     'import/no-dynamic-require': 'off',
     'import/no-extraneous-dependencies': 'error',

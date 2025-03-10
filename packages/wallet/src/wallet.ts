@@ -266,10 +266,12 @@ interface EthSaleKeystore {
 // wallet implementation
 
 export class Wallet {
-  constructor(
-    private readonly privateKey?: Uint8Array | undefined,
-    private publicKey: Uint8Array | undefined = undefined,
-  ) {
+  private readonly privateKey?: Uint8Array
+  private publicKey: Uint8Array | undefined
+
+  constructor(privateKey?: Uint8Array, publicKey?: Uint8Array) {
+    this.privateKey = privateKey
+    this.publicKey = publicKey
     if (privateKey && publicKey) {
       throw new Error('Cannot supply both a private and a public key to the constructor')
     }

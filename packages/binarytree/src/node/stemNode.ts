@@ -11,7 +11,7 @@ export class StemBinaryNode {
 
   public type = BinaryNodeType.Stem
 
-  constructor(options: BinaryNodeOptions[BinaryNodeType.Stem]) {
+  constructor(options: BinaryNodeOptions[typeof BinaryNodeType.Stem]) {
     this.stem = options.stem
     this.values = options.values ?? new Array(256).fill(null)
   }

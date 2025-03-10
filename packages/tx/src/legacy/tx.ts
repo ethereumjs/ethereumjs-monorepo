@@ -30,8 +30,8 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.Legacy]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
+export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -79,9 +79,9 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
+export class LegacyTx implements TransactionInterface<typeof TransactionType.Legacy> {
   /* Tx public data fields */
-  public type: number = TransactionType.Legacy // Legacy tx type
+  public type = TransactionType.Legacy // Legacy tx type
 
   // Tx data part (part of the RLP)
   public readonly gasPrice: bigint

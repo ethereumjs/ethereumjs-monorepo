@@ -162,20 +162,22 @@ describe('[Invalid Array Input values]', () => {
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
-                createLegacyTxFromBytesArray(rawValues as TxValuesArray[TransactionType.Legacy]),
+                createLegacyTxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.Legacy],
+                ),
               )
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 createAccessList2930TxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                  rawValues as TxValuesArray[typeof TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 create1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                  rawValues as TxValuesArray[typeof TransactionType.FeeMarketEIP1559],
                 ),
               )
               break
@@ -188,7 +190,7 @@ describe('[Invalid Array Input values]', () => {
 
 describe('[Invalid Access Lists]', () => {
   it('should work', () => {
-    const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
+    const txTypes = [typeof TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
     const invalidAccessLists = [
       [[]], // does not have an address and does not have slots
       [[[], []]], // the address is an array
@@ -243,14 +245,14 @@ describe('[Invalid Access Lists]', () => {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 createAccessList2930TxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                  rawValues as TxValuesArray[typeof TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 create1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                  rawValues as TxValuesArray[typeof TransactionType.FeeMarketEIP1559],
                 ),
               )
               break
