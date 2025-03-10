@@ -21,12 +21,12 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
-import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
 import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { PendingBlock } from '../../src/miner/index.js'
 import { TxPool } from '../../src/service/txpool.js'
 import { mockBlockchain } from '../rpc/mockBlockchain.js'
+import { hardfork4844Data } from '../testdata/blocks/4844-hardfork.js'
 import { Goerli } from '../testdata/common/goerliCommon.js'
 
 import type { Blockchain } from '@ethereumjs/blockchain'

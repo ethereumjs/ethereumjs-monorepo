@@ -221,7 +221,7 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+    const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.js')
 
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',

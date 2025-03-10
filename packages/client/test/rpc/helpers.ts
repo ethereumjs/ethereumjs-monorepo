@@ -17,7 +17,7 @@ import {
   parseGethGenesisState,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { Client, Server as RPCServer } from 'jayson/promise'
+import { Client, Server as RPCServer } from 'jayson/promise/index.js'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
@@ -39,7 +39,7 @@ import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
-import type { HttpClient, HttpServer } from 'jayson/promise'
+import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
 import type { AddressInfo } from 'node:net'
 
 const config: any = {}

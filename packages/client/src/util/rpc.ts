@@ -11,7 +11,6 @@ import type { TAlgorithm } from '../ext/jwt-simple.js'
 import type { Logger } from '../logging.js'
 import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
-import type { HttpServer } from 'jayson/promise'
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
@@ -33,7 +32,7 @@ type CreateRPCServerListenerOpts = {
   server: any
   withEngineMiddleware?: WithEngineMiddleware
 }
-type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: HttpServer }
+type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export enum MethodConfig {
@@ -181,10 +180,10 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   }
 }
 
-export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
+export function createRPCServerListener(opts: CreateRPCServerListenerOpts): jayson.HttpServer {
   const { server, withEngineMiddleware, RPCCors } = opts
 
-  const app = Connect() as any
+  const app = Connect()
   if (typeof RPCCors === 'string') app.use(cors({ origin: RPCCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(JSONParser({ limit: '11mb' }))
@@ -211,7 +210,7 @@ export function createRPCServerListener(opts: CreateRPCServerListenerOpts): Http
   return httpServer
 }
 
-export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer | undefined {
+export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.HttpServer | undefined {
   const { server, withEngineMiddleware, RPCCors } = opts
 
   // Get the server to hookup upgrade request on
@@ -235,8 +234,8 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
         socket.destroy()
       }
     }
-    ;(wss as any).handleUpgrade(req, socket, head, (ws: any) => {
-      ;(wss as any).emit('connection', ws, req)
+    wss.handleUpgrade(req, socket, head, (ws: any) => {
+      wss.emit('connection', ws, req)
     })
   })
   // Only return something if a new server was created

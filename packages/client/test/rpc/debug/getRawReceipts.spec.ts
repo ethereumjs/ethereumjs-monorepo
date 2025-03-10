@@ -103,7 +103,7 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+      const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.js')
 
       const common = createCommonFromGethGenesis(hardfork4844Data, {
         chain: 'customChain',
