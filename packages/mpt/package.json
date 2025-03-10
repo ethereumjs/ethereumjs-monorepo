@@ -54,13 +54,13 @@
   "devDependencies": {
     "@ethereumjs/genesis": "^0.3.0-alpha.1",
     "@types/benchmark": "^1.0.33",
-    "abstract-level": "^1.0.3",
-    "level": "^8.0.0",
+    "abstract-level": "^3.0.1",
+    "level": "^9.0.0",
     "level-legacy": "npm:level@^7.0.0",
     "level-mem": "^6.0.1",
     "levelup": "^5.1.1",
     "lmdb": "^2.5.3",
-    "memory-level": "^1.0.0",
+    "memory-level": "^3.0.0",
     "micro-bmark": "0.2.0"
   },
   "engines": {
