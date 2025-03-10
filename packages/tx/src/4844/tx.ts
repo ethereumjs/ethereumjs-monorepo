@@ -439,7 +439,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): Blob4844Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return <Blob4844Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

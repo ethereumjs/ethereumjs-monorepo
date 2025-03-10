@@ -358,7 +358,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): FeeMarket1559Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return <FeeMarket1559Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 
