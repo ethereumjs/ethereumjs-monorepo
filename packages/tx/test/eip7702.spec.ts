@@ -69,7 +69,7 @@ describe('[EOACode7702Transaction]', () => {
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(txn.sign(pkey).hash())
+      const hash = bytesToHex(txn.sign(pkey, true).hash())
       if (hashSet.has(hash)) {
         assert.ok(false, 'should not reuse the same hash (hedged signature test)')
       }
