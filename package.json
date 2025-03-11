@@ -52,7 +52,7 @@
     "lockfile-lint-api": "^5.5.1",
     "sort-package-json": "1.57.0",
     "tape": "5.6.0",
-    "tsx": "^4.6.2",
+    "tsx": "^4.19.3",
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "^4.2.5",
     "typescript": "5.0.4",
