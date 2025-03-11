@@ -83,7 +83,6 @@ module.exports = {
     'import/no-cycle': 'error',
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
-    'no-dupe-class-members': 'off',
     'import/no-duplicates': 'error',
     'import/no-dynamic-require': 'off',
     'import/no-extraneous-dependencies': 'error',
@@ -106,6 +105,7 @@ module.exports = {
     ],
     'no-console': 'warn',
     'no-debugger': 'error',
+    'no-dupe-class-members': 'off',
     'no-extra-semi': 'off',
     'no-redeclare': 'off',
     'no-unused-vars': 'off',
