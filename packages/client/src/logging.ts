@@ -24,13 +24,14 @@ let attentionCL: string | null = null
 /**
  * Colors for logger levels
  */
-enum LevelColors {
-  error = 'red',
-  warn = 'yellow',
-  info = 'green',
-  debug = 'white',
-}
+export type LevelColors = (typeof LevelColors)[keyof typeof LevelColors]
 
+export const LevelColors = {
+  error: '#FF0000', // red
+  warn: '#FFFF00', // yellow
+  info: '#00FF00', // green
+  debug: '#FFFFFF', // white
+} as const
 /**
  * Adds stack trace to error message if included
  */
@@ -67,7 +68,7 @@ function logFormat(colors = false) {
 
       if (colors) {
         const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-        const color = chalk.keyword(colorLevel).bind(chalk)
+        const color = chalk.hex(colorLevel)
         level = color(level)
 
         const regex = /(\w+)=(.+?)(?:\s|$)/g
