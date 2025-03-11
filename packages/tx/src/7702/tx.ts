@@ -383,7 +383,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): EOACode7702Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): EOACode7702Tx {
     return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

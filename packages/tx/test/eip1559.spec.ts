@@ -118,15 +118,15 @@ describe('[FeeMarket1559Tx]', () => {
     }
   })
 
-  it('sign() - should default to hedged signatures', () => {
+  it('sign() - should create non-deterministic to hedged signatures if `extraEntropy=true` when signing', () => {
     const privKey = hexToBytes(eip1559Data[0].privateKey)
     const txn = createFeeMarket1559Tx({}, { common })
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(txn.sign(privKey).hash())
+      const hash = bytesToHex(txn.sign(privKey, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }
@@ -135,7 +135,7 @@ describe('[FeeMarket1559Tx]', () => {
   it('addSignature() -> correctly adds correct signature values', () => {
     const privKey = hexToBytes(eip1559Data[0].privateKey)
     const tx = createFeeMarket1559Tx({})
-    const signedTx = tx.sign(privKey, false)
+    const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -148,7 +148,7 @@ describe('[FeeMarket1559Tx]', () => {
     const msgHash = tx.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
-    const signedTx = tx.sign(privKey, false)
+    const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -171,7 +171,7 @@ describe('[FeeMarket1559Tx]', () => {
     const data = eip1559Data[0]
     const pkey = hexToBytes(data.privateKey)
     let txn = createFeeMarket1559Tx(data, { common })
-    let signed = txn.sign(pkey, false)
+    let signed = txn.sign(pkey)
     const expectedHash = hexToBytes(
       '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
     )
@@ -183,7 +183,7 @@ describe('[FeeMarket1559Tx]', () => {
       common,
       freeze: false,
     })
-    signed = txn.sign(pkey, false)
+    signed = txn.sign(pkey)
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when not frozen',
@@ -255,7 +255,7 @@ describe('[FeeMarket1559Tx]', () => {
     const data = eip1559Data[0]
     const pkey = hexToBytes(data.privateKey)
     const txn = createFeeMarket1559Tx(data, { common })
-    const signed = txn.sign(pkey, false)
+    const signed = txn.sign(pkey)
 
     const json = signed.toJSON()
     const expectedJSON: JSONTx = {

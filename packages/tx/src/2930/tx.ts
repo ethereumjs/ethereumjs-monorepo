@@ -334,7 +334,7 @@ export class AccessList2930Tx
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): AccessList2930Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): AccessList2930Tx {
     return <AccessList2930Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

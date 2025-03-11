@@ -390,7 +390,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): LegacyTx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
     return <LegacyTx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

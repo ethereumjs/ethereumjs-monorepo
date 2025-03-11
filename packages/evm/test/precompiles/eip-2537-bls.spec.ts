@@ -44,12 +44,13 @@ const mclbls = new MCLBLS(mcl)
 // as MCL (optional).
 // Remove from array to run only with one specific interface implementation.
 for (const bls of [undefined, mclbls]) {
+  const BLSType = bls === undefined ? 'Noble' : 'MCL'
   for (const fname of files) {
     // Uncomment for running single test cases (example)
     // if (fname !== 'pairing_check_bls.json') continue
     const fullName = `${dir}/${fname}`
     const parsedJSON = JSON.parse(readFileSync(fullName, 'utf-8'))
-    describe(`Precompiles: ${fname}`, () => {
+    describe(`Precompiles: ${fname} [${BLSType}]`, () => {
       for (const data of parsedJSON) {
         it(`${data.Name}`, async () => {
           const evm = await createEVM({
@@ -76,6 +77,12 @@ for (const bls of [undefined, mclbls]) {
           } else {
             try {
               const result = await precompile(callData)
+              // First, check if an exception is thrown (this should not happen here)
+              if (result.exceptionError !== undefined) {
+                assert.fail(
+                  `Test raised an exception where this is not expected: ${result.exceptionError.toString()}`,
+                )
+              }
               assert.deepEqual(
                 '0x' + data.Expected,
                 bytesToHex(result.returnValue),
