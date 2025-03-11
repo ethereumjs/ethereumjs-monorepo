@@ -17,6 +17,6 @@
     "strict": true,
     "target": "es2020",
     "verbatimModuleSyntax": true,
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
   }
 }
