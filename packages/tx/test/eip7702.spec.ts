@@ -71,7 +71,7 @@ describe('[EOACode7702Transaction]', () => {
     for (let i = 0; i < 1000; i++) {
       const hash = bytesToHex(txn.sign(pkey, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }
