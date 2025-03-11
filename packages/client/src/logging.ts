@@ -24,14 +24,12 @@ let attentionCL: string | null = null
 /**
  * Colors for logger levels
  */
-export type LevelColors = (typeof LevelColors)[keyof typeof LevelColors]
-
 export const LevelColors = {
   error: '#FF0000', // red
   warn: '#FFFF00', // yellow
   info: '#00FF00', // green
   debug: '#FFFFFF', // white
-} as const
+}
 /**
  * Adds stack trace to error message if included
  */
