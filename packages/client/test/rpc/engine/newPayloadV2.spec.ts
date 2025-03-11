@@ -183,7 +183,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
         gasLimit: 53_000,
       },
       { common },
-    ).sign(accountPk, false)
+    ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,

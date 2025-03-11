@@ -186,7 +186,7 @@ describe(method, () => {
         gasLimit: 53_000,
       },
       { common },
-    ).sign(accountPk, false)
+    ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
@@ -230,7 +230,7 @@ describe(method, () => {
           gasLimit: 53_000,
         },
         { common },
-      ).sign(accountPk, false)
+      ).sign(accountPk)
 
       return bytesToHex(tx.serialize())
     })
