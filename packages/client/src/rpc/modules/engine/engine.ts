@@ -1,7 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_1,
-  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -445,9 +444,7 @@ export class Engine {
         (await validExecutedChainBlock(hexToBytes(parentHash as PrefixedHexString), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!executedParentExists) {
-        throw EthereumJSErrorWithoutCode(
-          `Parent block not yet executed number=${parent.header.number}`,
-        )
+        throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
     } catch (error: any) {
       // Stash the block for a potential forced forkchoice update to it later.

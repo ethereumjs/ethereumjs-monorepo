@@ -1,10 +1,4 @@
-import {
-  EthereumJSErrorWithoutCode,
-  bigInt64ToBytes,
-  bytesToBigInt64,
-  concatBytes,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
 import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
@@ -106,7 +100,7 @@ export function getBlockIndex(bytes: Uint8Array) {
   const recordStart = recordEnd - recordLength
   const { data, type } = readEntry(bytes.subarray(recordStart, recordEnd))
   if (!equalsBytes(type, Era1Types.BlockIndex)) {
-    throw EthereumJSErrorWithoutCode('not a valid block index')
+    throw new Error('not a valid block index')
   }
   return { data, type, count, recordStart }
 }

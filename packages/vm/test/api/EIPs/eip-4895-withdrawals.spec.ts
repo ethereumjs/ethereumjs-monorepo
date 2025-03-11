@@ -72,7 +72,7 @@ describe('EIP4895 tests', () => {
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
       gasLimit: BigInt(50000),
-    }).sign(pkey, false)
+    }).sign(pkey)
 
     await vm.stateManager.putAccount(transaction.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(transaction.getSenderAddress())

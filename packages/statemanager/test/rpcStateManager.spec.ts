@@ -19,7 +19,7 @@ import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.js'
-import { getRPCStateProof } from '../src/proof/index.js'
+import { getRPCStateProof } from '../src/proofs/index.js'
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
 import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'

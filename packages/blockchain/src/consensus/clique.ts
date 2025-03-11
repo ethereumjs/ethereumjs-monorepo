@@ -11,7 +11,6 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  EthereumJSErrorWithoutCode,
   TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
@@ -145,16 +144,16 @@ export class CliqueConsensus implements Consensus {
 
   async validateConsensus(block: Block): Promise<void> {
     if (!this.blockchain) {
-      throw EthereumJSErrorWithoutCode('blockchain not provided')
+      throw new Error('blockchain not provided')
     }
 
     const { header } = block
     const valid = cliqueVerifySignature(header, this.cliqueActiveSigners(header.number))
     if (!valid) {
-      throw EthereumJSErrorWithoutCode('invalid PoA block signature (clique)')
+      throw new Error('invalid PoA block signature (clique)')
     }
     if (this.cliqueCheckRecentlySigned(header)) {
-      throw EthereumJSErrorWithoutCode('recently signed')
+      throw new Error('recently signed')
     }
 
     // validate checkpoint signers towards active signers on epoch transition blocks
@@ -166,7 +165,7 @@ export class CliqueConsensus implements Consensus {
       const activeSigners = this.cliqueActiveSigners(header.number)
       for (const [i, cSigner] of checkpointSigners.entries()) {
         if (activeSigners[i]?.equals(cSigner) !== true) {
-          throw EthereumJSErrorWithoutCode(
+          throw new Error(
             `checkpoint signer not found in active signers list at index ${i}: ${cSigner}`,
           )
         }
@@ -176,19 +175,19 @@ export class CliqueConsensus implements Consensus {
 
   async validateDifficulty(header: BlockHeader): Promise<void> {
     if (!this.blockchain) {
-      throw EthereumJSErrorWithoutCode('blockchain not provided')
+      throw new Error('blockchain not provided')
     }
 
     if (header.difficulty !== CLIQUE_DIFF_INTURN && header.difficulty !== CLIQUE_DIFF_NOTURN) {
       const msg = `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${header.difficulty}`
-      throw EthereumJSErrorWithoutCode(`${msg} ${header.errorStr()}`)
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
 
     const signers = this.cliqueActiveSigners(header.number)
     if (signers.length === 0) {
       // abort if signers are unavailable
       const msg = 'no signers available'
-      throw EthereumJSErrorWithoutCode(`${msg} ${header.errorStr()}`)
+      throw new Error(`${msg} ${header.errorStr()}`)
     }
     const signerIndex = signers.findIndex((address: Address) =>
       address.equals(cliqueSigner(header)),
@@ -200,7 +199,7 @@ export class CliqueConsensus implements Consensus {
     ) {
       return
     }
-    throw EthereumJSErrorWithoutCode(`'invalid clique difficulty ${header.errorStr()}`)
+    throw new Error(`'invalid clique difficulty ${header.errorStr()}`)
   }
 
   async newBlock(block: Block, commonAncestor: BlockHeader | undefined): Promise<void> {
@@ -453,7 +452,7 @@ export class CliqueConsensus implements Consensus {
         return signers[i][1]
       }
     }
-    throw EthereumJSErrorWithoutCode(`Could not load signers for block ${blockNum}`)
+    throw new Error(`Could not load signers for block ${blockNum}`)
   }
 
   /**
@@ -619,7 +618,7 @@ export class CliqueConsensus implements Consensus {
     const signers = this.cliqueActiveSigners(blockNum)
     const signerIndex = signers.findIndex((address) => address.equals(signer))
     if (signerIndex === -1) {
-      throw EthereumJSErrorWithoutCode('Signer not found')
+      throw new Error('Signer not found')
     }
     const { number } = await this.blockchain!.getCanonicalHeadHeader()
     //eslint-disable-next-line

@@ -1,5 +1,3 @@
-import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-
 type EVMPerformanceLogEntry = {
   calls: number
   time: number
@@ -115,7 +113,7 @@ export class EVMPerformanceLogger {
   // Only one timer can be timing at the same time
   startTimer(tag: string) {
     if (this.currentTimer !== undefined) {
-      throw EthereumJSErrorWithoutCode('Cannot have two timers running at the same time')
+      throw new Error('Cannot have two timers running at the same time')
     }
 
     this.currentTimer = new Timer(tag)
@@ -126,7 +124,7 @@ export class EVMPerformanceLogger {
   pauseTimer() {
     const timer = this.currentTimer
     if (timer === undefined) {
-      throw EthereumJSErrorWithoutCode('No timer to pause')
+      throw new Error('No timer to pause')
     }
     timer.pause()
     this.currentTimer = undefined
@@ -136,7 +134,7 @@ export class EVMPerformanceLogger {
   // Unpauses current timer and returns that timer
   unpauseTimer(timer: Timer) {
     if (this.currentTimer !== undefined) {
-      throw EthereumJSErrorWithoutCode('Cannot unpause timer: another timer is already running')
+      throw new Error('Cannot unpause timer: another timer is already running')
     }
     timer.unpause()
     this.currentTimer = timer
@@ -151,7 +149,7 @@ export class EVMPerformanceLogger {
     dynamicGas?: number,
   ) {
     if (this.currentTimer === undefined || this.currentTimer !== timer) {
-      throw EthereumJSErrorWithoutCode('Cannot stop timer: another timer is already running')
+      throw new Error('Cannot stop timer: another timer is already running')
     }
     const time = timer.time()
     const tag = timer.tag

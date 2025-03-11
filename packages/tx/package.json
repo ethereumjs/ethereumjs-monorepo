@@ -58,7 +58,7 @@
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
     "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.12.1",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16",
     "yargs": "^17.7.1"

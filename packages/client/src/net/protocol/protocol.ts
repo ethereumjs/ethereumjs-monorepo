@@ -1,5 +1,3 @@
-import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-
 import type { Config } from '../../config.js'
 import type { Sender } from './sender.js'
 
@@ -68,7 +66,7 @@ export class Protocol {
     return new Promise((resolve, reject) => {
       let timeout: any = setTimeout(() => {
         timeout = null
-        reject(EthereumJSErrorWithoutCode(`Handshake timed out after ${this.timeout}ms`))
+        reject(new Error(`Handshake timed out after ${this.timeout}ms`))
       }, this.timeout)
       const handleStatus = (status: any) => {
         if (timeout !== null && timeout !== 0) {
@@ -95,21 +93,21 @@ export class Protocol {
    * Protocol versions supported
    */
   get versions(): number[] {
-    throw EthereumJSErrorWithoutCode('Unimplemented')
+    throw new Error('Unimplemented')
   }
 
   /**
    * Messages defined by this protocol
    */
   get messages(): Message[] {
-    throw EthereumJSErrorWithoutCode('Unimplemented')
+    throw new Error('Unimplemented')
   }
 
   /**
    * Encodes status into status message payload. Must be implemented by subclass.
    */
   encodeStatus(): any {
-    throw EthereumJSErrorWithoutCode('Unimplemented')
+    throw new Error('Unimplemented')
   }
 
   /**
@@ -118,7 +116,7 @@ export class Protocol {
    * @param _status status message payload
    */
   decodeStatus(_status: any): Object {
-    throw EthereumJSErrorWithoutCode('Unimplemented')
+    throw new Error('Unimplemented')
   }
 
   /**

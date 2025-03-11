@@ -191,7 +191,9 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await verifyMerkleRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof)
+      await verifyMerkleRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+        useKeyHashingFunction: keccak256,
+      })
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
@@ -329,6 +331,9 @@ describe('[SnapProtocol]', () => {
         keys,
         values,
         proof,
+        {
+          useKeyHashingFunction: keccak256,
+        },
       )
     } catch (e) {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)

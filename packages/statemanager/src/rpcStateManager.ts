@@ -2,7 +2,6 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
-  EthereumJSErrorWithoutCode,
   bigIntToHex,
   bytesToHex,
   createAccount,
@@ -46,7 +45,7 @@ export class RPCStateManager implements StateManagerInterface {
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {
-      throw EthereumJSErrorWithoutCode(`valid RPC provider url required; got ${opts.provider}`)
+      throw new Error(`valid RPC provider url required; got ${opts.provider}`)
     }
 
     this._blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
@@ -138,7 +137,7 @@ export class RPCStateManager implements StateManagerInterface {
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
-      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
+      throw new Error('Storage key must be 32 bytes long')
     }
 
     let value = this._caches.storage?.get(address, key)
@@ -355,15 +354,14 @@ export class RPCStateManager implements StateManagerInterface {
    * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
-    throw EthereumJSErrorWithoutCode('function not implemented')
+    throw new Error('function not implemented')
   }
 }
 
 export class RPCBlockChain {
   readonly provider: string
   constructor(provider: string) {
-    if (provider === undefined || provider === '')
-      throw EthereumJSErrorWithoutCode('provider URL is required')
+    if (provider === undefined || provider === '') throw new Error('provider URL is required')
     this.provider = provider
   }
   async getBlock(blockId: number) {

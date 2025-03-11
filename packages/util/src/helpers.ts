@@ -1,4 +1,3 @@
-import { EthereumJSErrorWithoutCode } from './errors.js'
 import { isHexString } from './internal.js'
 
 /**
@@ -8,7 +7,7 @@ import { isHexString } from './internal.js'
 export const assertIsHexString = function (input: string): void {
   if (!isHexString(input)) {
     const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }
 
@@ -19,7 +18,7 @@ export const assertIsHexString = function (input: string): void {
 export const assertIsBytes = function (input: Uint8Array): void {
   if (!(input instanceof Uint8Array)) {
     const msg = `This method only supports Uint8Array but input was: ${input}`
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }
 
@@ -30,7 +29,7 @@ export const assertIsBytes = function (input: Uint8Array): void {
 export const assertIsArray = function (input: number[]): void {
   if (!Array.isArray(input)) {
     const msg = `This method only supports number arrays but input was: ${input}`
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }
 
@@ -41,6 +40,6 @@ export const assertIsArray = function (input: number[]): void {
 export const assertIsString = function (input: string): void {
   if (typeof input !== 'string') {
     const msg = `This method only supports strings but input was: ${input}`
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }

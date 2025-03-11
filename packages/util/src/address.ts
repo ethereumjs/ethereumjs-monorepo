@@ -14,7 +14,6 @@ import {
   setLengthLeft,
 } from './bytes.js'
 import { BIGINT_0 } from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -26,7 +25,7 @@ export class Address {
 
   constructor(bytes: Uint8Array) {
     if (bytes.length !== 20) {
-      throw EthereumJSErrorWithoutCode('Invalid address length')
+      throw new Error('Invalid address length')
     }
     this.bytes = bytes
   }
@@ -85,7 +84,7 @@ export function createZeroAddress(): Address {
 export function createAddressFromBigInt(value: bigint): Address {
   const bytes = bigIntToBytes(value)
   if (bytes.length > 20) {
-    throw EthereumJSErrorWithoutCode(`Invalid address, too long: ${bytes.length}`)
+    throw new Error(`Invalid address, too long: ${bytes.length}`)
   }
   return new Address(setLengthLeft(bytes, 20))
 }
@@ -96,7 +95,7 @@ export function createAddressFromBigInt(value: bigint): Address {
  */
 export function createAddressFromString(str: string): Address {
   if (!isValidAddress(str)) {
-    throw EthereumJSErrorWithoutCode(`Invalid address input=${str}`)
+    throw new Error(`Invalid address input=${str}`)
   }
   return new Address(hexToBytes(str))
 }
@@ -107,7 +106,7 @@ export function createAddressFromString(str: string): Address {
  */
 export function createAddressFromPublicKey(pubKey: Uint8Array): Address {
   if (!(pubKey instanceof Uint8Array)) {
-    throw EthereumJSErrorWithoutCode('Public key should be Uint8Array')
+    throw new Error('Public key should be Uint8Array')
   }
   const bytes = pubToAddress(pubKey)
   return new Address(bytes)
@@ -119,7 +118,7 @@ export function createAddressFromPublicKey(pubKey: Uint8Array): Address {
  */
 export function createAddressFromPrivateKey(privateKey: Uint8Array): Address {
   if (!(privateKey instanceof Uint8Array)) {
-    throw EthereumJSErrorWithoutCode('Private key should be Uint8Array')
+    throw new Error('Private key should be Uint8Array')
   }
   const bytes = privateToAddress(privateKey)
   return new Address(bytes)
@@ -132,7 +131,7 @@ export function createAddressFromPrivateKey(privateKey: Uint8Array): Address {
  */
 export function createContractAddress(from: Address, nonce: bigint): Address {
   if (typeof nonce !== 'bigint') {
-    throw EthereumJSErrorWithoutCode('Expected nonce to be a bigint')
+    throw new Error('Expected nonce to be a bigint')
   }
   return new Address(generateAddress(from.bytes, bigIntToBytes(nonce)))
 }
@@ -149,10 +148,10 @@ export function createContractAddress2(
   initCode: Uint8Array,
 ): Address {
   if (!(salt instanceof Uint8Array)) {
-    throw EthereumJSErrorWithoutCode('Expected salt to be a Uint8Array')
+    throw new Error('Expected salt to be a Uint8Array')
   }
   if (!(initCode instanceof Uint8Array)) {
-    throw EthereumJSErrorWithoutCode('Expected initCode to be a Uint8Array')
+    throw new Error('Expected initCode to be a Uint8Array')
   }
   return new Address(generateAddress2(from.bytes, salt, initCode))
 }

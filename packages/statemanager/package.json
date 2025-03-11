@@ -43,14 +43,12 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^0.0.1",
     "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/mpt": "^7.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "@ethereumjs/verkle": "^0.2.0-alpha.1",
     "@js-sdsl/ordered-map": "^4.4.2",
-    "@noble/hashes": "^1.7.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^3.1.0",
     "lru-cache": "10.1.0"

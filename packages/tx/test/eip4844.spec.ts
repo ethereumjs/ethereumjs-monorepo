@@ -67,9 +67,9 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
+    const { v, r, s } = ecsign(msgHash, privKey)
 
-    const signedTx = tx.sign(privKey, false)
+    const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -127,16 +127,6 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       sender,
       'signature and sender were deserialized correctly',
     )
-
-    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
-    const hashSet = new Set<string>()
-    for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(tx.sign(pk).hash())
-      if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
-      }
-      hashSet.add(hash)
-    }
   })
 })
 

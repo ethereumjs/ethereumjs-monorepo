@@ -1,7 +1,6 @@
 import {
   Address,
   BIGINT_0,
-  EthereumJSErrorWithoutCode,
   SECP256K1_ORDER_DIV_2,
   bigIntMax,
   bigIntToUnpaddedBytes,
@@ -86,7 +85,7 @@ export function toCreationAddress(tx: LegacyTxInterface): boolean {
 export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 
   const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
@@ -112,7 +111,7 @@ export function validateHighS(tx: LegacyTxInterface): void {
       tx,
       'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
     )
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }
 
@@ -142,13 +141,13 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
     return sender
   } catch (e: any) {
     const msg = errorMsg(tx, 'Invalid Signature')
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 }
 
 export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
   if (baseFee !== undefined && baseFee > gasPrice) {
-    throw EthereumJSErrorWithoutCode('Tx cannot pay baseFee')
+    throw new Error('Tx cannot pay baseFee')
   }
 
   if (baseFee === undefined) {
@@ -227,15 +226,11 @@ export function getSenderAddress(tx: LegacyTxInterface): Address {
  * const signedTx = tx.sign(privateKey)
  * ```
  */
-export function sign(
-  tx: LegacyTxInterface,
-  privateKey: Uint8Array,
-  extraEntropy: Uint8Array | boolean = true,
-): Transaction[TransactionType] {
+export function sign(tx: LegacyTxInterface, privateKey: Uint8Array): Transaction[TransactionType] {
   if (privateKey.length !== 32) {
     // TODO figure out this errorMsg logic how this diverges on other txs
     const msg = errorMsg(tx, 'Private key must be 32 bytes in length.')
-    throw EthereumJSErrorWithoutCode(msg)
+    throw new Error(msg)
   }
 
   // TODO (Jochem, 05 nov 2024): figure out what this hack does and clean it up
@@ -257,7 +252,7 @@ export function sign(
 
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
+  const { v, r, s } = ecSignFunction(msgHash, privateKey)
   const signedTx = tx.addSignature(v, r, s, true)
 
   // Hack part 2

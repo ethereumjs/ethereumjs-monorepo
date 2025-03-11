@@ -14,6 +14,7 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.js'
 import { getInitFetcherDoneFlags } from './types.js'
@@ -134,7 +135,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         keys,
         values,
         proof ?? null,
-        this.config.chainCommon?.customCrypto?.keccak256,
+        {
+          common: this.config.chainCommon,
+          useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+        },
       )
     } catch (err) {
       this.DEBUG && this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
@@ -283,6 +287,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             [],
             [],
             <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 },
           )
 
           // if proof is false, reject corrupt peer
@@ -339,7 +344,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             accountSlots.map((s) => s.hash),
             accountSlots.map((s) => s.body),
             null,
-            this.config.chainCommon?.customCrypto?.keccak256,
+            {
+              common: this.config.chainCommon,
+              useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+            },
           )
 
           if (proof?.length === 0)

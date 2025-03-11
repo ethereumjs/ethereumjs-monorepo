@@ -19,7 +19,7 @@ import {
   addMerkleStateProofData,
   fromMerkleStateProof,
   getMerkleStateProof,
-} from '../src/proof/index.js'
+} from '../src/proofs/index.js'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

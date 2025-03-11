@@ -1,11 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import {
-  EthereumJSErrorWithoutCode,
-  bytesToHex,
-  bytesToUnprefixedHex,
-  concatBytes,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import debug from 'debug'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
@@ -64,7 +58,7 @@ export function assertEq(
     } else {
       debug(debugMsg)
     }
-    throw EthereumJSErrorWithoutCode(fullMsg)
+    throw new Error(fullMsg)
   }
 
   if (expected === actual) return
@@ -74,7 +68,7 @@ export function assertEq(
   } else {
     debug(fullMsg)
   }
-  throw EthereumJSErrorWithoutCode(fullMsg)
+  throw new Error(fullMsg)
 }
 
 export function formatLogId(id: string, verbose: boolean): string {

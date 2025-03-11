@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.14.0"
+    "micro-eth-signer": "^0.12.1"
   },
   "engines": {
     "node": ">=18"

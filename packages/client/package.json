@@ -79,7 +79,7 @@
     "level": "^8.0.0",
     "mcl-wasm": "^1.5.0",
     "memory-level": "^1.0.0",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.12.1",
     "prom-client": "^15.1.0",
     "rustbn-wasm": "^0.4.0",
     "winston": "^3.3.3",

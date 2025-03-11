@@ -2,13 +2,7 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type {
-  Account,
-  Address,
-  BinaryTreeExecutionWitness,
-  PrefixedHexString,
-  VerkleExecutionWitness,
-} from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -68,59 +62,6 @@ export type AccessEventFlags = {
   chunkRead: boolean
   chunkWrite: boolean
   chunkFill: boolean
-}
-
-/**
- * Binary tree related
- *
- * Experimental (do not implement)
- */
-
-export enum BinaryTreeAccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
-}
-
-export type RawBinaryTreeAccessedState = {
-  address: Address
-  treeIndex: number | bigint
-  chunkIndex: number
-  chunkKey: PrefixedHexString
-}
-
-export type BinaryTreeAccessedState =
-  | {
-      type: Exclude<
-        BinaryTreeAccessedStateType,
-        BinaryTreeAccessedStateType.Code | BinaryTreeAccessedStateType.Storage
-      >
-    }
-  | { type: BinaryTreeAccessedStateType.Code; codeOffset: number }
-  | { type: BinaryTreeAccessedStateType.Storage; slot: bigint }
-
-export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
-  address: Address
-  chunkKey: PrefixedHexString
-}
-export interface BinaryTreeAccessWitnessInterface {
-  accesses(): Generator<BinaryTreeAccessedStateWithAddress>
-  rawAccesses(): Generator<RawBinaryTreeAccessedState>
-  debugWitnessCost(): void
-  readAccountBasicData(address: Address): bigint
-  writeAccountBasicData(address: Address): bigint
-  readAccountCodeHash(address: Address): bigint
-  writeAccountCodeHash(address: Address): bigint
-  readAccountHeader(address: Address): bigint
-  writeAccountHeader(address: Address): bigint
-  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
-  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
-  readAccountStorage(contract: Address, storageSlot: bigint): bigint
-  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
-  merge(accessWitness: BinaryTreeAccessWitnessInterface): void
-  commit(): void
-  revert(): void
 }
 
 /**
@@ -236,12 +177,7 @@ export interface StateManagerInterface {
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
   ): void
-  verifyVerklePostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
-  initBinaryTreeExecutionWitness?(
-    blockNum: bigint,
-    executionWitness?: BinaryTreeExecutionWitness | null,
-  ): void
-  verifyBinaryTreePostState?(accessWitness: BinaryTreeAccessWitnessInterface): Promise<boolean>
+  verifyPostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

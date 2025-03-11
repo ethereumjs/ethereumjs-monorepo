@@ -18,7 +18,6 @@ import {
 import {
   BIGINT_0,
   BIGINT_1,
-  EthereumJSErrorWithoutCode,
   Lock,
   ValueEncoding,
   bytesToHex,
@@ -210,8 +209,7 @@ export class VMExecution extends Execution {
     } else if (this.config.statefulVerkle) {
       this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
-    } else
-      throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
+    } else throw new Error('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
@@ -272,9 +270,7 @@ export class VMExecution extends Execution {
 
       const blockchain = this.chain.blockchain
       if (typeof blockchain.getIteratorHead !== 'function') {
-        throw EthereumJSErrorWithoutCode(
-          'cannot get iterator head: blockchain has no getIteratorHead function',
-        )
+        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
       const headBlock = await blockchain.getIteratorHead()
       const { number, timestamp, stateRoot } = headBlock.header
@@ -286,9 +282,7 @@ export class VMExecution extends Execution {
       }
 
       if (typeof blockchain.getTotalDifficulty !== 'function') {
-        throw EthereumJSErrorWithoutCode(
-          'cannot get iterator head: blockchain has no getTotalDifficulty function',
-        )
+        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
@@ -311,7 +305,7 @@ export class VMExecution extends Execution {
           !genesisState &&
           (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
         ) {
-          throw EthereumJSErrorWithoutCode('genesisState not available')
+          throw new Error('genesisState not available')
         } else {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }

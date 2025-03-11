@@ -15,7 +15,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerkleStateManager } from '../src/index.js'
-import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.js'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proofs/index.js'
 
 import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
 import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'

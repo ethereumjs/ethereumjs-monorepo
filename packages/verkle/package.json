@@ -52,7 +52,7 @@
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "debug": "^4.3.4",
     "lru-cache": "10.1.0",
-    "micro-eth-signer": "0.14.0"
+    "micro-eth-signer": "0.12.1"
   },
   "engines": {
     "node": ">=18"

@@ -4,7 +4,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
-  EthereumJSErrorWithoutCode,
   KeyEncoding,
   Lock,
   MapDB,
@@ -20,7 +19,7 @@ import {
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CheckpointDB } from './db/checkpointDB.js'
+import { CheckpointDB } from './db/index.js'
 import {
   BranchMPTNode,
   ExtensionMPTNode,
@@ -89,7 +88,7 @@ export class MerklePatriciaTrie {
       // Sanity check: can only set valueEncoding if a db is provided
       // The valueEncoding defaults to `Bytes` if no DB is provided (use a MapDB in memory)
       if (opts?.valueEncoding !== undefined && opts.db === undefined) {
-        throw EthereumJSErrorWithoutCode('`valueEncoding` can only be set if a `db` is provided')
+        throw new Error('`valueEncoding` can only be set if a `db` is provided')
       }
       this._opts = { ...this._opts, ...opts }
       this._opts.useKeyHashingFunction =
@@ -137,7 +136,7 @@ export class MerklePatriciaTrie {
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
-        throw EthereumJSErrorWithoutCode('Cannot pass in an instance of CheckpointDB')
+        throw new Error('Cannot pass in an instance of CheckpointDB')
       }
 
       this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize, valueEncoding })
@@ -156,7 +155,7 @@ export class MerklePatriciaTrie {
       }
       this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
-        throw EthereumJSErrorWithoutCode(
+        throw new Error(
           `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`,
         )
       }
@@ -214,9 +213,7 @@ export class MerklePatriciaTrie {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['put'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['put'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
-      throw EthereumJSErrorWithoutCode(
-        `Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`,
-      )
+      throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
 
     // If value is empty, delete
@@ -524,7 +521,7 @@ export class MerklePatriciaTrie {
 
     if (value === null) {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyMPTWithMerkleProof`, and `findPath`
-      throw EthereumJSErrorWithoutCode('Missing node in DB')
+      throw new Error('Missing node in DB')
     }
 
     const decoded = decodeMPTNode(value)
@@ -549,7 +546,7 @@ export class MerklePatriciaTrie {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
-      throw EthereumJSErrorWithoutCode('Stack underflow')
+      throw new Error('Stack underflow')
     }
 
     // add the new nodes
@@ -707,7 +704,7 @@ export class MerklePatriciaTrie {
     }
 
     let lastNode = stack.pop()
-    if (lastNode === undefined) throw EthereumJSErrorWithoutCode('missing last node')
+    if (lastNode === undefined) throw new Error('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
 
@@ -725,7 +722,7 @@ export class MerklePatriciaTrie {
       // the lastNode has to be a leaf if it's not a branch.
       // And a leaf's parent, if it has one, must be a branch.
       if (!(parentNode instanceof BranchMPTNode)) {
-        throw EthereumJSErrorWithoutCode('Expected branch node')
+        throw new Error('Expected branch node')
       }
       const lastNodeKey = lastNode.key()
       key.splice(key.length - lastNodeKey.length)
@@ -790,7 +787,7 @@ export class MerklePatriciaTrie {
     while (stack.length) {
       const node = stack.pop()
       if (node === undefined) {
-        throw EthereumJSErrorWithoutCode('saveStack: missing node')
+        throw new Error('saveStack: missing node')
       }
       if (node instanceof LeafMPTNode || node instanceof ExtensionMPTNode) {
         key.splice(key.length - node.key().length)
@@ -873,7 +870,7 @@ export class MerklePatriciaTrie {
     for (const op of ops) {
       if (op.type === 'put') {
         if (op.value === null || op.value === undefined) {
-          throw EthereumJSErrorWithoutCode('Invalid batch db operation')
+          throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value, skipKeyTransform)
       } else if (op.type === 'del') {
@@ -1045,7 +1042,7 @@ export class MerklePatriciaTrie {
    */
   async commit(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw EthereumJSErrorWithoutCode('trying to commit when not checkpointed')
+      throw new Error('trying to commit when not checkpointed')
     }
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['commit'])
     await this._lock.acquire()
@@ -1061,7 +1058,7 @@ export class MerklePatriciaTrie {
    */
   async revert(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw EthereumJSErrorWithoutCode('trying to revert when not checkpointed')
+      throw new Error('trying to revert when not checkpointed')
     }
 
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'before'])

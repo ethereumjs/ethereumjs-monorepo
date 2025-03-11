@@ -2,7 +2,6 @@ import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
-  EthereumJSErrorWithoutCode,
   KeyEncoding,
   TWO_POW256,
   ValueEncoding,
@@ -68,7 +67,7 @@ export class Miner {
       this.block = mineObject
       this.blockHeader = mineObject.header
     } else {
-      throw EthereumJSErrorWithoutCode('unsupported mineObject')
+      throw new Error('unsupported mineObject')
     }
     this.currentNonce = BIGINT_0
     this.ethash = ethash
@@ -211,7 +210,7 @@ export class Ethash {
   run(val: Uint8Array, nonce: Uint8Array, fullSize?: number) {
     if (fullSize === undefined) {
       if (this.fullSize === undefined) {
-        throw EthereumJSErrorWithoutCode('fullSize needed')
+        throw new Error('fullSize needed')
       } else {
         fullSize = this.fullSize
       }
@@ -286,7 +285,7 @@ export class Ethash {
     this.epoc = epoc
 
     if (!this.cacheDB) {
-      throw EthereumJSErrorWithoutCode('cacheDB needed')
+      throw new Error('cacheDB needed')
     }
 
     // gives the seed the first epoc found

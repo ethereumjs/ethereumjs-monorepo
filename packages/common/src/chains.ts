@@ -179,7 +179,6 @@ export const Sepolia: ChainConfig = {
     nonce: '0x0000000000000000',
     extraData: '0x5365706f6c69612c20417468656e732c204174746963612c2047726565636521',
   },
-  depositContractAddress: '0x7f02c3e3c98b133055b8b348b2ac625669ed295d',
   hardforks: [
     {
       name: 'chainstart',
@@ -314,7 +313,6 @@ export const Holesky: ChainConfig = {
     nonce: '0x0000000000001234',
     timestamp: '0x65156994',
   },
-  depositContractAddress: '0x4242424242424242424242424242424242424242',
   hardforks: [
     {
       name: 'chainstart',

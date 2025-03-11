@@ -1,7 +1,11 @@
-import { EthereumJSErrorWithoutCode, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createMPTFromProof } from '../constructors.js'
 import { MerklePatriciaTrie } from '../index.js'
+import { bytesToNibbles } from '../util/nibbles.js'
+
+import { verifyRangeProof } from './range.js'
 
 import type { MPTOpts, Proof } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
@@ -26,8 +30,41 @@ export async function verifyMerkleProof(
     const value = await proofTrie.get(key, true)
     return value
   } catch (err: any) {
-    throw EthereumJSErrorWithoutCode('Invalid proof provided')
+    throw new Error('Invalid proof provided')
   }
+}
+
+// /**
+//  * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
+//  * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
+//  * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}.
+//  * @param rootHash - root hash of state trie this proof is being verified against.
+//  * @param firstKey - first key of range being proven.
+//  * @param lastKey - last key of range being proven.
+//  * @param keys - key list of leaf data being proven.
+//  * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
+//  * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+//  * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
+//  * @returns a flag to indicate whether there exists more trie node in the trie
+//  */
+export function verifyMerkleRangeProof(
+  rootHash: Uint8Array,
+  firstKey: Uint8Array | null,
+  lastKey: Uint8Array | null,
+  keys: Uint8Array[],
+  values: Uint8Array[],
+  proof: Uint8Array[] | null,
+  opts?: MPTOpts,
+): Promise<boolean> {
+  return verifyRangeProof(
+    rootHash,
+    firstKey && bytesToNibbles(firstKey),
+    lastKey && bytesToNibbles(lastKey),
+    keys.map((k) => k).map(bytesToNibbles),
+    values,
+    proof,
+    opts?.useKeyHashingFunction ?? keccak256,
+  )
 }
 
 /**
@@ -74,7 +111,7 @@ export async function updateMPTFromMerkleProof(
   if (shouldVerifyRoot) {
     if (opStack[0] !== undefined && opStack[0] !== null) {
       if (!equalsBytes(trie.root(), opStack[0].key)) {
-        throw EthereumJSErrorWithoutCode('The provided proof does not have the expected trie root')
+        throw new Error('The provided proof does not have the expected trie root')
       }
     }
   }
@@ -117,7 +154,7 @@ export async function verifyMPTWithMerkleProof(
   try {
     await updateMPTFromMerkleProof(proofTrie, proof, true)
   } catch (e: any) {
-    throw EthereumJSErrorWithoutCode('Invalid proof nodes given')
+    throw new Error('Invalid proof nodes given')
   }
   try {
     trie['DEBUG'] &&
@@ -129,7 +166,7 @@ export async function verifyMPTWithMerkleProof(
     return value
   } catch (err: any) {
     if (err.message === 'Missing node in DB') {
-      throw EthereumJSErrorWithoutCode('Invalid proof provided')
+      throw new Error('Invalid proof provided')
     } else {
       throw err
     }

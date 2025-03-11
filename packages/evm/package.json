@@ -46,7 +46,6 @@
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^0.0.1",
     "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/statemanager": "^3.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
@@ -68,7 +67,7 @@
     "level": "^8.0.0",
     "mcl-wasm": "^1.5.0",
     "memory-level": "^1.0.0",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.12.1",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.12.0",

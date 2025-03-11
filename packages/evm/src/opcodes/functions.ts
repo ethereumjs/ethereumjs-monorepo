@@ -633,7 +633,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const historyServeWindow = common.param('historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
-        if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
+        if (common.isActivatedEIP(6800)) {
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.readAccountStorage(
             historyAddress,
@@ -920,10 +920,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
 
-      if (
-        (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
-        runState.env.chargeCodeAccesses === true
-      ) {
+      if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)

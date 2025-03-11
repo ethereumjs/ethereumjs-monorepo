@@ -25,7 +25,7 @@ All helpers are re-exported from the root level and deep imports are not necessa
 import { formatEntry } from "@ethereumjs/era";
 ```
 
-### Export History as Era1
+#### Export History as Era1
 
 Export history in epochs of 8192 blocks as Era1 files
 
@@ -39,7 +39,7 @@ const epoch = 0;
 await exportEpochAsEra1(epoch, dataDir);
 ```
 
-### Read Era1 file
+#### Read Era1 file
 
 `readERA1` returns an async iterator of block tuples (header + body + receipts + totalDifficulty)
 
@@ -72,26 +72,6 @@ for await (const blockTuple of blocks) {
 const headerRecords = await getHeaderRecords(era1File);
 const epochAccumulator = EpochAccumulator.encode(headerRecords);
 const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords);
-```
-
-### Read Era file
-
-```ts
-import { readBeaconState } from "@ethereumjs/era";
-
-const eraFile = readBinaryFile(PATH_TO_ERA_FILE);
-
-// Extract BeaconState
-const state = await readBeaconState(eraFile);
-console.log(state.slot)
-
-// Read Beacon Blocks from era file
-let count = 0
-for await (const block of readBlocksFromEra(eraFile)) {
-  console.log(block.message.slot)
-  count++
-  if (count > 10) break
-}
 ```
 
 ## EthereumJS

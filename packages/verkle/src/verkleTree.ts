@@ -1,11 +1,4 @@
-import {
-  EthereumJSErrorWithoutCode,
-  Lock,
-  bytesToHex,
-  equalsBytes,
-  intToHex,
-  matchingBytesLength,
-} from '@ethereumjs/util'
+import { Lock, bytesToHex, equalsBytes, intToHex, matchingBytesLength } from '@ethereumjs/util'
 import debug from 'debug'
 
 import { CheckpointDB } from './db/checkpoint.js'
@@ -56,7 +49,7 @@ export class VerkleTree {
     this._opts = opts
 
     if (opts.db instanceof CheckpointDB) {
-      throw EthereumJSErrorWithoutCode('Cannot pass in an instance of CheckpointDB')
+      throw new Error('Cannot pass in an instance of CheckpointDB')
     }
     this._db = new CheckpointDB({ db: opts.db, cacheSize: opts.cacheSize })
 
@@ -100,7 +93,7 @@ export class VerkleTree {
       }
 
       if (value.length !== this._hashLen) {
-        throw EthereumJSErrorWithoutCode(`Invalid root length. Roots are ${this._hashLen} bytes`)
+        throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
       }
 
       this._root = value
@@ -133,8 +126,7 @@ export class VerkleTree {
    * was found or `undefined` if no value was found at a given suffixes.
    */
   async get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | undefined)[]> {
-    if (stem.length !== 31)
-      throw EthereumJSErrorWithoutCode(`expected stem with length 31; got ${stem.length}`)
+    if (stem.length !== 31) throw new Error(`expected stem with length 31; got ${stem.length}`)
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffixes}`, ['get'])
     const res = await this.findPath(stem)
     if (res.node instanceof LeafVerkleNode) {
@@ -168,13 +160,10 @@ export class VerkleTree {
     suffixes: number[],
     values: (Uint8Array | LeafVerkleNodeValue.Untouched)[] = [],
   ): Promise<void> {
-    if (stem.length !== 31)
-      throw EthereumJSErrorWithoutCode(`expected stem with length 31, got ${stem.length}`)
+    if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
     if (values.length > 0 && values.length !== suffixes.length) {
       // Must have an equal number of values and suffixes
-      throw EthereumJSErrorWithoutCode(
-        `expected number of values; ${values.length} to equal ${suffixes.length}`,
-      )
+      throw new Error(`expected number of values; ${values.length} to equal ${suffixes.length}`)
     }
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}`, ['put'])
 
@@ -184,7 +173,7 @@ export class VerkleTree {
 
     // Sanity check - we should at least get the root node back
     if (foundPath.stack.length === 0) {
-      throw EthereumJSErrorWithoutCode(`Root node not found in trie`)
+      throw new Error(`Root node not found in trie`)
     }
 
     // Step 1) Create or update the leaf node
@@ -193,14 +182,14 @@ export class VerkleTree {
     if (foundPath.node !== null) {
       // Sanity check to verify we have the right node type
       if (!isLeafVerkleNode(foundPath.node)) {
-        throw EthereumJSErrorWithoutCode(
+        throw new Error(
           `expected leaf node found at ${bytesToHex(stem)}. Got internal node instead`,
         )
       }
       leafNode = foundPath.node
       // Sanity check to verify we have the right leaf node
       if (!equalsBytes(leafNode.stem, stem)) {
-        throw EthereumJSErrorWithoutCode(
+        throw new Error(
           `invalid leaf node found. Expected stem: ${bytesToHex(stem)}; got ${bytesToHex(
             foundPath.node.stem,
           )}`,
@@ -388,9 +377,7 @@ export class VerkleTree {
             this.verkleCrypto.hashCommitment(children[0]!.commitment),
           )
           if (rawNode === undefined)
-            throw EthereumJSErrorWithoutCode(
-              `missing node in DB at ${bytesToHex(children[0]!.path)}`,
-            )
+            throw new Error(`missing node in DB at ${bytesToHex(children[0]!.path)}`)
           return {
             node: decodeVerkleNode(rawNode, this.verkleCrypto) as VerkleNode,
             lastPath: children[0]!.path,
@@ -434,7 +421,7 @@ export class VerkleTree {
 
     // Get root node
     let rawNode = await this._db.get(this.root())
-    if (rawNode === undefined) throw EthereumJSErrorWithoutCode('root node should exist')
+    if (rawNode === undefined) throw new Error('root node should exist')
 
     const rootNode = decodeVerkleNode(rawNode, this.verkleCrypto) as InternalVerkleNode
 
@@ -452,8 +439,7 @@ export class VerkleTree {
       // Look up child node by node hash
       rawNode = await this._db.get(this.verkleCrypto.hashCommitment(child!.commitment))
       // We should always find the node if the path is specified in child.path
-      if (rawNode === undefined)
-        throw EthereumJSErrorWithoutCode(`missing node at ${bytesToHex(child!.path)}`)
+      if (rawNode === undefined) throw new Error(`missing node at ${bytesToHex(child!.path)}`)
       const decodedNode = decodeVerkleNode(rawNode, this.verkleCrypto)
 
       // Calculate the index of the last matching byte in the key
@@ -555,7 +541,7 @@ export class VerkleTree {
    * @param proof
    */
   async fromProof(_proof: Proof): Promise<void> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
+    throw new Error('Not implemented')
   }
 
   /**
@@ -563,7 +549,7 @@ export class VerkleTree {
    * @param key
    */
   async createVerkleProof(_key: Uint8Array): Promise<Proof> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
+    throw new Error('Not implemented')
   }
 
   /**
@@ -579,7 +565,7 @@ export class VerkleTree {
     _key: Uint8Array,
     _proof: Proof,
   ): Promise<Uint8Array | null> {
-    throw EthereumJSErrorWithoutCode('Not implemented')
+    throw new Error('Not implemented')
   }
 
   /**
@@ -587,7 +573,7 @@ export class VerkleTree {
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `tree`
    */
   createReadStream(): any {
-    throw EthereumJSErrorWithoutCode('Not implemented')
+    throw new Error('Not implemented')
   }
 
   /**
@@ -647,7 +633,7 @@ export class VerkleTree {
    */
   async commit(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw EthereumJSErrorWithoutCode('trying to commit when not checkpointed')
+      throw new Error('trying to commit when not checkpointed')
     }
 
     await this._lock.acquire()
@@ -663,7 +649,7 @@ export class VerkleTree {
    */
   async revert(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw EthereumJSErrorWithoutCode('trying to revert when not checkpointed')
+      throw new Error('trying to revert when not checkpointed')
     }
 
     await this._lock.acquire()

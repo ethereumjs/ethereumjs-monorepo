@@ -1,11 +1,8 @@
-import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
+import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { EOFEnv } from './types.js'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
+import type { VerkleAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const defaults = {
@@ -43,7 +40,7 @@ interface MessageOpts {
   delegatecall?: boolean
   gasRefund?: bigint
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 }
 
 export class Message {
@@ -76,7 +73,7 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -98,7 +95,7 @@ export class Message {
     this.blobVersionedHashes = opts.blobVersionedHashes
     this.accessWitness = opts.accessWitness
     if (this.value < 0) {
-      throw EthereumJSErrorWithoutCode(`value field cannot be negative, received ${this.value}`)
+      throw new Error(`value field cannot be negative, received ${this.value}`)
     }
   }
 
@@ -108,7 +105,7 @@ export class Message {
   get codeAddress(): Address {
     const codeAddress = this._codeAddress ?? this.to
     if (!codeAddress) {
-      throw EthereumJSErrorWithoutCode('Missing codeAddress')
+      throw new Error('Missing codeAddress')
     }
     return codeAddress
   }

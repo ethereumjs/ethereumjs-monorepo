@@ -1,4 +1,4 @@
-import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
+import { Account, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
@@ -143,12 +143,12 @@ export class SimpleStateManager implements StateManagerInterface {
 
   // State root functionality not implemented
   getStateRoot(): Promise<Uint8Array> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   setStateRoot(): Promise<void> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   hasStateRoot(): Promise<boolean> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
 }

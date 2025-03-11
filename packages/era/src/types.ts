@@ -5,7 +5,6 @@ export type e2StoreEntry = {
   data: Uint8Array
 }
 
-/** Era 1 Type Identifiers */
 export const Era1Types = {
   Version: new Uint8Array([0x65, 0x32]),
   CompressedHeader: new Uint8Array([0x03, 0x00]),
@@ -21,32 +20,9 @@ export const VERSION = {
   data: new Uint8Array([]),
 }
 
-/** Era1 SSZ containers */
 export const HeaderRecord = ssz.container({
   blockHash: ssz.bytevector(32),
   totalDifficulty: ssz.uint256,
-}) as ssz.SSZCoder<{
-  blockHash: Uint8Array
-  totalDifficulty: bigint
-}>
+})
 
-export const EpochAccumulator = ssz.list(8192, HeaderRecord) as ssz.SSZCoder<
-  Array<{
-    blockHash: Uint8Array
-    totalDifficulty: bigint
-  }>
->
-
-/** Era Type Identifiers */
-export const EraTypes = {
-  CompressedSignedBeaconBlockType: new Uint8Array([0x01, 0x00]),
-  CompressedBeaconState: new Uint8Array([0x02, 0x00]),
-  Empty: new Uint8Array([0x00, 0x00]),
-  SlotIndex: new Uint8Array([0x69, 0x32]),
-}
-
-export type SlotIndex = {
-  startSlot: number
-  recordStart: number
-  slotOffsets: number[]
-}
+export const EpochAccumulator = ssz.list(8192, HeaderRecord)

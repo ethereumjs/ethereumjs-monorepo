@@ -1,9 +1,4 @@
-import {
-  EthereumJSErrorWithoutCode,
-  equalsBytes,
-  intToBytes,
-  setLengthRight,
-} from '@ethereumjs/util'
+import { equalsBytes, intToBytes, setLengthRight } from '@ethereumjs/util'
 
 import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
@@ -109,12 +104,12 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): LeafVerkleNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
-      throw EthereumJSErrorWithoutCode('Invalid node type')
+      throw new Error('Invalid node type')
     }
 
     // The length of the rawNode should be the # of values (node width) + 5 for the node type, the stem, the commitment and the 2 commitments
     if (rawNode.length !== NODE_WIDTH + 5) {
-      throw EthereumJSErrorWithoutCode('Invalid node length')
+      throw new Error('Invalid node length')
     }
 
     const stem = rawNode[1]

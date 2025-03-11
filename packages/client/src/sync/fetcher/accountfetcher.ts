@@ -17,6 +17,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Event } from '../../types.js'
 import { short } from '../../util/index.js'
@@ -323,15 +324,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return verifyMerkleRangeProof(
-      stateRoot,
-      origin,
-      keys[keys.length - 1],
-      keys,
-      values,
-      proof,
-      this.config.chainCommon?.customCrypto?.keccak256,
-    )
+    return verifyMerkleRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+      common: this.config.chainCommon,
+      useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+    })
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
@@ -416,6 +412,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             [],
             [],
             <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 },
           )
           // if proof is false, reject corrupt peer
           if (isMissingRightRange !== false) return undefined

@@ -1,6 +1,6 @@
-import snappyStream from '@chainsafe/snappy-stream'
-import { concatBytes } from '@ethereumjs/util'
-import { Writable } from 'stream'
+import { SnappyStream, UnsnappyStream } from 'snappystream'
+import { Duplex, Writable } from 'stream'
+
 /**
  * Compress data using snappy
  * @param uncompressedData
@@ -16,7 +16,7 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
       },
     })
 
-    const compress = snappyStream.createCompressStream()
+    const compress = new SnappyStream()
 
     compress.on('error', reject)
     writableStream.on('error', reject)
@@ -33,29 +33,54 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
 
     compress.pipe(writableStream)
 
-    compress.write(uncompressedData)
-    compress.end()
+    compress.end(uncompressedData)
   })
 }
 
 export async function decompressData(compressedData: Uint8Array) {
-  const unsnappy = snappyStream.createUncompressStream({ asBuffer: true })
+  const unsnappy = new UnsnappyStream()
+  const stream = new Duplex()
   const destroy = () => {
     unsnappy.destroy()
+    stream.destroy()
   }
+  stream.on('error', (err) => {
+    if (err.message.includes('_read() method is not implemented')) {
+      // ignore errors about unimplemented methods
+      return
+    } else {
+      throw err
+    }
+  })
 
-  const data: Uint8Array = await new Promise((resolve) => {
-    const chunks: Uint8Array[] = []
+  stream.push(compressedData)
+  const data: Uint8Array = await new Promise((resolve, reject) => {
     unsnappy.on('data', (data: Uint8Array) => {
-      chunks.push(data)
+      try {
+        destroy()
+        resolve(data)
+        // eslint-disable-next-line
+      } catch {}
     })
-
-    unsnappy.on('end', () => {
-      destroy()
-      resolve(concatBytes(...chunks))
+    unsnappy.on('end', (data: any) => {
+      try {
+        destroy()
+        resolve(data)
+      } catch (err: any) {
+        destroy()
+        reject(`unable to deserialize data with reason - ${err.message}`)
+      }
     })
-    unsnappy.write(compressedData)
-    unsnappy.end()
+    unsnappy.on('close', (data: any) => {
+      try {
+        destroy()
+        resolve(data)
+      } catch (err: any) {
+        destroy()
+        reject(`unable to deserialize data with reason - ${err.message}`)
+      }
+    })
+    stream.pipe(unsnappy)
   })
   return data
 }

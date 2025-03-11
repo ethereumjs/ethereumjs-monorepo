@@ -1,15 +1,7 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import {
-  BIGINT_0,
-  BIGINT_1,
-  EthereumJSErrorWithoutCode,
-  TypeOutput,
-  concatBytes,
-  isHexString,
-  toType,
-} from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, TypeOutput, concatBytes, isHexString, toType } from '@ethereumjs/util'
 
 import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { Common } from '@ethereumjs/common'
@@ -25,7 +17,7 @@ export const numberToHex = function (input?: string): PrefixedHexString | undefi
     const regex = new RegExp(/^\d+$/) // test to make sure input contains only digits
     if (!regex.test(input)) {
       const msg = `Cannot convert string to hex string. numberToHex only supports 0x-prefixed hex or integer strings but the given string was: ${input}`
-      throw EthereumJSErrorWithoutCode(msg)
+      throw new Error(msg)
     }
     return `0x${parseInt(input, 10).toString(16)}`
   }
@@ -58,12 +50,12 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   ] = values
 
   if (values.length > 21) {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
     )
   }
   if (values.length < 15) {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       `invalid header. Less values than expected were received. Min: 15, got: ${values.length}`,
     )
   }
@@ -184,7 +176,7 @@ export function genRequestsRoot(
   if (requests.length > 1) {
     for (let x = 1; x < requests.length; x++) {
       if (requests[x].type < requests[x - 1].type)
-        throw EthereumJSErrorWithoutCode('requests are not sorted in ascending order')
+        throw new Error('requests are not sorted in ascending order')
     }
   }
 

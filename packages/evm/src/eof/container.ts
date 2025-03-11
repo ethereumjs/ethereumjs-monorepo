@@ -1,5 +1,3 @@
-import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-
 import {
   CODE_MIN,
   CODE_SIZE_MIN,
@@ -149,7 +147,7 @@ class EOFHeader {
    */
   constructor(input: Uint8Array) {
     if (input.length > MAX_HEADER_SIZE) {
-      throw EthereumJSErrorWithoutCode('err: container size more than maximum valid size')
+      throw new Error('err: container size more than maximum valid size')
     }
     const stream = new StreamReader(input)
     // Verify that the header starts with 0xEF0001
@@ -157,7 +155,7 @@ class EOFHeader {
     stream.verifyUint(MAGIC, EOFError.MAGIC)
     stream.verifyUint(VERSION, EOFError.VERSION)
     if (input.length < 15) {
-      throw EthereumJSErrorWithoutCode('err: container size less than minimum valid size')
+      throw new Error('err: container size less than minimum valid size')
     }
     // Verify that the types section is present and its length is valid
     stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
@@ -169,9 +167,7 @@ class EOFHeader {
       validationError(EOFError.InvalidTypeSize, typeSize)
     }
     if (typeSize > TYPE_MAX) {
-      throw EthereumJSErrorWithoutCode(
-        `err: number of code sections must not exceed 1024 (got ${typeSize})`,
-      )
+      throw new Error(`err: number of code sections must not exceed 1024 (got ${typeSize})`)
     }
     // Verify that the code section is present and its size is valid
     stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)

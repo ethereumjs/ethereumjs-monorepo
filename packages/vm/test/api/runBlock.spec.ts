@@ -627,14 +627,7 @@ describe('runBlock() -> tx types', async () => {
 
       const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
 
-      return [
-        chainIdBytes,
-        addressBytes,
-        nonceBytes,
-        yParity,
-        unpadBytes(signed.r),
-        unpadBytes(signed.s),
-      ]
+      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
     }
 
     const common = new Common({

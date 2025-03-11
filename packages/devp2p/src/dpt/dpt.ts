@@ -1,9 +1,4 @@
-import {
-  EthereumJSErrorWithoutCode,
-  bytesToInt,
-  bytesToUnprefixedHex,
-  randomBytes,
-} from '@ethereumjs/util'
+import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
@@ -155,7 +150,7 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
+    if (this._banlist.has(obj)) throw new Error('Peer is banned')
     if (this.DEBUG) {
       this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
     }

@@ -3,7 +3,6 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   type Address,
-  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MapDB,
   VERKLE_CODE_CHUNK_SIZE,
@@ -99,11 +98,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._checkpointCount = 0
 
     if (opts.common.isActivatedEIP(6800) === false) {
-      throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
+      throw new Error('EIP-6800 required for verkle state management')
     }
 
     if (opts.common.customCrypto.verkle === undefined) {
-      throw EthereumJSErrorWithoutCode('verkle crypto required')
+      throw new Error('verkle crypto required')
     }
 
     this.common = opts.common
@@ -384,8 +383,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     const code = new Uint8Array(codeSize)
     // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
     for (let x = 0; x < chunks.length; x++) {
-      if (chunks[x] === undefined)
-        throw EthereumJSErrorWithoutCode(`expected code chunk at ID ${x}, got undefined`)
+      if (chunks[x] === undefined) throw new Error(`expected code chunk at ID ${x}, got undefined`)
 
       let lastChunkByteIndex = VERKLE_CODE_CHUNK_SIZE
       // Determine code ending byte (if we're on the last chunk)
@@ -412,7 +410,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
   getStorage = async (address: Address, key: Uint8Array): Promise<Uint8Array> => {
     if (key.length !== 32) {
-      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
+      throw new Error('Storage key must be 32 bytes long')
     }
     const cachedValue = this._caches?.storage?.get(address, key)
     if (cachedValue !== undefined) {
@@ -729,19 +727,19 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     return this._trie.checkRoot(root)
   }
   dumpStorage?(_address: Address): Promise<StorageDump> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   dumpStorageRange?(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   clearCaches(): void {
     this._caches?.clear()
   }
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
-    throw EthereumJSErrorWithoutCode('Method not implemented.')
+    throw new Error('Method not implemented.')
   }
   async generateCanonicalGenesis(genesisState: GenesisState) {
     await this._trie.createRootNode()

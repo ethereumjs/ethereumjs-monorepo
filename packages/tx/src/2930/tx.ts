@@ -1,6 +1,5 @@
 import {
   BIGINT_27,
-  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -87,7 +86,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     const { chainId, accessList, gasPrice } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw EthereumJSErrorWithoutCode(
+      throw new Error(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
@@ -95,7 +94,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
-      throw EthereumJSErrorWithoutCode('EIP-2930 not enabled on Common')
+      throw new Error('EIP-2930 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
@@ -112,7 +111,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
-      throw EthereumJSErrorWithoutCode(msg)
+      throw new Error(msg)
     }
 
     EIP2718.validateYParity(this)
@@ -332,8 +331,8 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): AccessList2930Tx {
-    return <AccessList2930Tx>Legacy.sign(this, privateKey, extraEntropy)
+  sign(privateKey: Uint8Array): AccessList2930Tx {
+    return <AccessList2930Tx>Legacy.sign(this, privateKey)
   }
 
   isSigned(): boolean {

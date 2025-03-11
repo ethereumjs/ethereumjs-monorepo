@@ -24,16 +24,8 @@ describe('[Common]: Custom Crypto', () => {
     return msg
   }
 
-  const customEcSign = (
-    _msg: Uint8Array,
-    _pk: Uint8Array,
-    ecSignOpts?: { chainId?: bigint; extraEntropy?: Uint8Array | boolean },
-  ): ECDSASignature => {
-    return {
-      v: ecSignOpts?.chainId ?? 27n,
-      r: Uint8Array.from([0, 1, 2, 3]),
-      s: Uint8Array.from([0, 1, 2, 3]),
-    }
+  const customEcSign = (_msg: Uint8Array, _pk: Uint8Array, chainId?: bigint): ECDSASignature => {
+    return { v: chainId ?? 27n, r: Uint8Array.from([0, 1, 2, 3]), s: Uint8Array.from([0, 1, 2, 3]) }
   }
 
   it('keccak256', () => {
@@ -85,7 +77,7 @@ describe('[Common]: Custom Crypto', () => {
       ecsign: customEcSign,
     }
     const c = new Common({ chain: Mainnet, customCrypto })
-    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32), { chainId: 0n }).v, 0n)
+    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32), 0n).v, 0n)
     assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).v, 27n)
   })
 })

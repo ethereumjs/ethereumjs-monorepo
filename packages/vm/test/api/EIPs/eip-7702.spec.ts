@@ -68,8 +68,8 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
     addressBytes,
     nonceBytes,
     bigIntToUnpaddedBytes(signed.v - BigInt(27)),
-    unpadBytes(signed.r),
-    unpadBytes(signed.s),
+    signed.r,
+    signed.s,
   ]
 }
 

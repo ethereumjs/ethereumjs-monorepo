@@ -23,7 +23,6 @@ THE SOFTWARE
  */
 
 import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -48,9 +47,7 @@ export function isHexString(value: string, length?: number): value is PrefixedHe
  */
 export const stripHexPrefix = (str: string): string => {
   if (typeof str !== 'string')
-    throw EthereumJSErrorWithoutCode(
-      `[stripHexPrefix] input must be type 'string', received ${typeof str}`,
-    )
+    throw new Error(`[stripHexPrefix] input must be type 'string', received ${typeof str}`)
 
   return isHexString(str) ? str.slice(2) : str
 }
@@ -64,9 +61,7 @@ export function padToEven(value: string): string {
   let a = value
 
   if (typeof a !== 'string') {
-    throw EthereumJSErrorWithoutCode(
-      `[padToEven] value must be type 'string', received ${typeof a}`,
-    )
+    throw new Error(`[padToEven] value must be type 'string', received ${typeof a}`)
   }
 
   if (a.length % 2) a = `0${a}`
@@ -81,9 +76,7 @@ export function padToEven(value: string): string {
  */
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
-    throw EthereumJSErrorWithoutCode(
-      `[getBinarySize] method requires input type 'string', received ${typeof str}`,
-    )
+    throw new Error(`[getBinarySize] method requires input type 'string', received ${typeof str}`)
   }
 
   return utf8ToBytes(str).byteLength
@@ -103,12 +96,12 @@ export function arrayContainsArray(
   some?: boolean,
 ): boolean {
   if (Array.isArray(superset) !== true) {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       `[arrayContainsArray] method requires input 'superset' to be an array, got type '${typeof superset}'`,
     )
   }
   if (Array.isArray(subset) !== true) {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       `[arrayContainsArray] method requires input 'subset' to be an array, got type '${typeof subset}'`,
     )
   }
@@ -182,12 +175,10 @@ export function fromAscii(stringValue: string) {
  */
 export function getKeys(params: Record<string, string>[], key: string, allowEmpty?: boolean) {
   if (!Array.isArray(params)) {
-    throw EthereumJSErrorWithoutCode(
-      `[getKeys] method expects input 'params' to be an array, got ${typeof params}`,
-    )
+    throw new Error(`[getKeys] method expects input 'params' to be an array, got ${typeof params}`)
   }
   if (typeof key !== 'string') {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       `[getKeys] method expects input 'key' to be type 'string', got ${typeof params}`,
     )
   }
@@ -199,9 +190,7 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
     if (allowEmpty === true && !value) {
       value = ''
     } else if (typeof value !== 'string') {
-      throw EthereumJSErrorWithoutCode(
-        `invalid abi - expected type 'string', received ${typeof value}`,
-      )
+      throw new Error(`invalid abi - expected type 'string', received ${typeof value}`)
     }
     result.push(value)
   }

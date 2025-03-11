@@ -215,7 +215,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   verifySignature(): boolean
   getSenderAddress(): Address
   getSenderPublicKey(): Uint8Array
-  sign(privateKey: Uint8Array, extraEntropy?: Uint8Array | boolean): Transaction[T]
+  sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JSONTx
   errorStr(): string
 

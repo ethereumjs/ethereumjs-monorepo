@@ -9,7 +9,6 @@ import {
 } from '@ethereumjs/common'
 import {
   BIGINT_2,
-  EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -474,7 +473,7 @@ export function getArgs(): ClientOpts {
         if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
         if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
-        if (collision) throw EthereumJSErrorWithoutCode('cannot reuse ports between RPC instances')
+        if (collision) throw new Error('cannot reuse ports between RPC instances')
         return true
       })
       .parseSync()
@@ -586,7 +585,7 @@ async function inputAccounts(args: ClientOpts) {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
-          throw EthereumJSErrorWithoutCode(
+          throw new Error(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
         }
@@ -598,7 +597,7 @@ async function inputAccounts(args: ClientOpts) {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
-    throw EthereumJSErrorWithoutCode(`Encountered error unlocking account:\n${e.message}`)
+    throw new Error(`Encountered error unlocking account:\n${e.message}`)
   }
   rl.close()
   return accounts
@@ -648,16 +647,11 @@ export async function generateClientConfig(args: ClientOpts) {
         ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
-    cryptoFunctions.ecsign = (
-      msg: Uint8Array,
-      pk: Uint8Array,
-      ecSignOpts: { chainId?: bigint } = {},
-    ) => {
+    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
+        throw new Error('message length must be 32 bytes or greater')
       }
-      const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
@@ -720,7 +714,7 @@ export async function generateClientConfig(args: ClientOpts) {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      throw EthereumJSErrorWithoutCode(`invalid chain parameters: ${err.message}`)
+      throw new Error(`invalid chain parameters: ${err.message}`)
     }
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
@@ -734,7 +728,7 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   if (args.mine === true && accounts.length === 0) {
-    throw EthereumJSErrorWithoutCode(
+    throw new Error(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
   }
