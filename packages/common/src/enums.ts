@@ -9,6 +9,15 @@ export const Chain = {
   Kaustinen6: 69420,
 } as const
 
+// Reverse mapping: from numeric value back to the key name
+export const ChainNames: { [key in Chain]: string } = Object.entries(Chain).reduce(
+  (acc, [key, value]) => {
+    acc[value as Chain] = key
+    return acc
+  },
+  {} as { [key in Chain]: string },
+)
+
 /**
  * Genesis state meta info which is decoupled from common's genesis params
  */

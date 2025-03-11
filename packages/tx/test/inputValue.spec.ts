@@ -190,7 +190,7 @@ describe('[Invalid Array Input values]', () => {
 
 describe('[Invalid Access Lists]', () => {
   it('should work', () => {
-    const txTypes = [typeof TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
+    const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
     const invalidAccessLists = [
       [[]], // does not have an address and does not have slots
       [[[], []]], // the address is an array
