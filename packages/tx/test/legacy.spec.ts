@@ -348,7 +348,7 @@ describe('[Transaction]', () => {
     for (let i = 0; i < 1000; i++) {
       const hash = bytesToHex(tx.sign(privateKey, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }
