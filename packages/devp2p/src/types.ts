@@ -1,7 +1,7 @@
 import type { DPT } from './dpt/index.js'
-import type { ETH } from './protocol/eth.js'
+import type { EthMessageCodes } from './protocol/eth.js'
 import type { Protocol } from './protocol/protocol.js'
-import type { SNAP } from './protocol/snap.js'
+import type { SnapMessageCodes } from './protocol/snap.ts'
 import type { Peer } from './rlpx/peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { NestedUint8Array } from '@ethereumjs/rlp'
@@ -23,7 +23,7 @@ export interface PeerEvent {
 }
 
 export interface ProtocolEvent {
-  message: [code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES, payload: Uint8Array | NestedUint8Array]
+  message: [code: SnapMessageCodes | EthMessageCodes, payload: Uint8Array | NestedUint8Array]
   status: {
     chainId: Uint8Array | Uint8Array[]
     td: Uint8Array
@@ -83,6 +83,18 @@ export const DISCONNECT_REASON = {
   TIMEOUT: 0x0b,
   SUBPROTOCOL_ERROR: 0x10,
 } as const
+
+// Create a reverse mapping: numeric value -> key name
+export const DisconnectReasonNames: { [key in DISCONNECT_REASON]: string } = Object.entries(
+  DISCONNECT_REASON,
+).reduce(
+  (acc, [key, value]) => {
+    acc[value as DISCONNECT_REASON] = key
+    return acc
+  },
+  {} as { [key in DISCONNECT_REASON]: string },
+)
+
 export type DNSOptions = {
   /**
    * ipv4 or ipv6 address of server to pass to native dns.setServers()

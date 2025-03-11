@@ -55,8 +55,8 @@ await new Promise<void>((resolve, reject) => {
             const expected = test.results.Osaka.result
             const _exception = test.results.Osaka.exception
 
-            let containerSectionType = ContainerSectionType.RuntimeCode
-            let eofContainerMode = EOFContainerMode.Default
+            let containerSectionType: ContainerSectionType = ContainerSectionType.RuntimeCode
+            let eofContainerMode: EOFContainerMode = EOFContainerMode.Default
 
             if (test.containerKind !== undefined) {
               if (test.containerKind === 'INITCODE') {

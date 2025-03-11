@@ -14,7 +14,7 @@ import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
 
-import { DISCONNECT_REASON } from '../types.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.js'
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { Peer } from './peer.js'
@@ -275,7 +275,7 @@ export class RLPx {
       if (disconnectWe === true) {
         if (this.DEBUG) {
           this._debug(
-            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DisconnectReasonNames[reason as DISCONNECT_REASON]}`,
             `disconnect`,
           )
         }
