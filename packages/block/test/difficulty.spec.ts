@@ -1,16 +1,36 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
-import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json'
-import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json'
-import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json'
-import * as difficultyEIP2384 from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json'
-import * as difficultyEIP2384_random from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json'
-import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json'
-import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json'
-import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json'
-import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json'
+import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json' with {
+  type: 'json',
+}
+import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json' with {
+  type: 'json',
+}
+import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json' with {
+  type: 'json',
+}
+import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384 from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384_random from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json' with {
+  type: 'json',
+}
+import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json' with {
+  type: 'json',
+}
+import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json' with {
+  type: 'json',
+}
+import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json' with {
+  type: 'json',
+}
 import { type Block, createBlock, ethashCanonicalDifficulty } from '../src/index.js'
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {

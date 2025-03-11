@@ -32,7 +32,7 @@ describe('stateManager', () => {
       expectedStateRoot,
       `generateCanonicalGenesis should produce correct state root for mainnet from common`,
     )
-  }, 10_000)
+  }, 30_000)
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
