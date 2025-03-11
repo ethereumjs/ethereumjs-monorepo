@@ -31,7 +31,7 @@ import type { BinaryTreeAccessedState, RawBinaryTreeAccessedState } from '@ether
 import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 
-const debug = debugDefault('evm:verkle:aw')
+const debug = debugDefault('evm:binaryTree:aw')
 
 /**
  * Tree key constants.
@@ -43,14 +43,14 @@ const WitnessChunkWriteCost = BigInt(500)
 const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
-export type StemAccessEvent = { write?: boolean }
-// chunk fill access event was not charged in verkle testnets, not sure if it will be charged in binary
-export type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
+export type BinaryStemAccessEvent = { write?: boolean }
+
+export type BinaryChunkAccessEvent = BinaryStemAccessEvent & { fill?: boolean }
 
 // Since stem is hashed, it is useful to maintain the reverse relationship
-export type StemMeta = { address: Address; treeIndex: number | bigint }
+export type BinaryStemMeta = { address: Address; treeIndex: number | bigint }
 
-export function decodeAccessedState(
+export function decodeBinaryAccessState(
   treeIndex: number | bigint,
   chunkIndex: number,
 ): BinaryTreeAccessedState {
@@ -89,19 +89,19 @@ export function decodeAccessedState(
 }
 
 export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface {
-  stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
-  chunks: Map<PrefixedHexString, ChunkAccessEvent>
+  stems: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
+  chunks: Map<PrefixedHexString, BinaryChunkAccessEvent>
   stemCache: StemCache = new StemCache()
   chunkCache: ChunkCache = new ChunkCache()
   hashFunction: (msg: Uint8Array) => Uint8Array
   constructor(opts: {
     hashFunction: (msg: Uint8Array) => Uint8Array
-    stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
-    chunks?: Map<PrefixedHexString, ChunkAccessEvent>
+    stems?: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
+    chunks?: Map<PrefixedHexString, BinaryChunkAccessEvent>
   }) {
     this.hashFunction = opts.hashFunction
-    this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent & StemMeta>()
-    this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
+    this.stems = opts.stems ?? new Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>()
+    this.chunks = opts.chunks ?? new Map<PrefixedHexString, BinaryChunkAccessEvent>()
   }
 
   readAccountBasicData(address: Address): bigint {
@@ -324,7 +324,7 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
   }
 
   debugWitnessCost(): void {
-    // Calculate the aggregate gas cost for verkle access witness per type
+    // Calculate the aggregate gas cost for binary access witness per type
     let stemReads = 0,
       stemWrites = 0,
       chunkReads = 0,
@@ -374,7 +374,7 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
   *accesses(): Generator<BinaryTreeAccessedStateWithAddress> {
     for (const rawAccess of this.rawAccesses()) {
       const { address, treeIndex, chunkIndex, chunkKey } = rawAccess
-      const accessedState = decodeAccessedState(treeIndex, chunkIndex)
+      const accessedState = decodeBinaryAccessState(treeIndex, chunkIndex)
       yield { ...accessedState, address, chunkKey }
     }
   }
@@ -385,11 +385,9 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
  * @param stateManager - The state manager containing the state to generate the witness for.
  * @param accessWitness - The access witness containing the accessed states.
  * @param parentStateRoot - The parent state root (i.e. prestate root) to generate the witness for.
- * @returns The generated verkle execution witness
- *
- * Note: This does not provide the verkle proof, which is not implemented
+ * @returns The generated binary tree execution witness
  */
-export const generateExecutionWitness = async (
+export const generateBinaryExecutionWitness = async (
   stateManager: StatefulBinaryTreeStateManager,
   accessWitness: BinaryTreeAccessWitness,
   parentStateRoot: Uint8Array,

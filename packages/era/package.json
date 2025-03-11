@@ -53,7 +53,7 @@
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "level": "^8.0.0",
-    "micro-eth-signer": "^0.13.3"
+    "micro-eth-signer": "^0.14.0"
   },
   "engines": {
     "node": ">=18"

@@ -1,8 +1,12 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
+import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
-import { StatefulVerkleStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  StatefulBinaryTreeStateManager,
+  StatefulVerkleStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -42,7 +46,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { Common, VerkleAccessWitnessInterface } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Tx,
@@ -195,8 +199,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses: VerkleAccessWitnessInterface | undefined
-  let txAccesses: VerkleAccessWitnessInterface | undefined
+  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
+  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
@@ -210,6 +214,20 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = vm.evm.verkleAccessWitness
     txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+  } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.evm.binaryTreeAccessWitness === undefined) {
+      throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
+    }
+
+    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+      throw EthereumJSErrorWithoutCode(
+        `Binary tree State Manager needed for execution of binary tree blocks`,
+      )
+    }
+    stateAccesses = vm.evm.binaryTreeAccessWitness
+    txAccesses = new BinaryTreeAccessWitness({
+      hashFunction: vm.evm.binaryTreeAccessWitness.hashFunction,
+    })
   }
 
   const { tx, block } = opts
@@ -588,7 +606,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    stateAccesses?.merge(txAccesses!)
+    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+  } else if (vm.common.isActivatedEIP(7864)) {
+    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {
