@@ -22,6 +22,9 @@ export async function createInlineClient(
   let stateDB
   let metaDB
   if (memoryDB) {
+    // `Level` and `AbstractLevel` somehow have a few property differences even though
+    // `Level` extends `AbstractLevel`.  We don't use any of the missing properties so
+    // just ignore this error
     chainDB = new MemoryLevel<
       string | Uint8Array,
       string | Uint8Array
