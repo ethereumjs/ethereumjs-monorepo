@@ -317,17 +317,13 @@ export class NobleBLS implements EVMBLSInterface {
       pairs.push({ g1: G1, g2: G2 })
     }
 
-    // NOTE: check for point of infinity should happen only after all points parsed (in case they are malformed)
-    for (const { g1, g2 } of pairs) {
-      const _g2 = g2 as unknown as any
-      // EIP: "If any input is the infinity point, pairing result will be 1"
-      if (g1.equals(G1_ZERO) || (_g2.equals(G2_ZERO) as boolean)) {
-        return BLS_ONE_BUFFER
-      }
-    }
+    // Filter out infinity pairs
+    const filteredPairs = pairs.filter(
+      (pair) => !pair.g1.equals(G1_ZERO) && !pair.g2.equals(G2_ZERO),
+    )
 
-    // @ts-ignore
-    const FP12 = bls12_381.pairingBatch(pairs, true)
+    // TODO: what if above filter does not match any? Does the empty array create the desired result?
+    const FP12 = bls12_381.pairingBatch(filteredPairs, true)
 
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
       return BLS_ONE_BUFFER
