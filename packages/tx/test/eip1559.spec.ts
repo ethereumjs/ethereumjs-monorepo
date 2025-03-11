@@ -126,7 +126,7 @@ describe('[FeeMarket1559Tx]', () => {
     for (let i = 0; i < 1000; i++) {
       const hash = bytesToHex(txn.sign(privKey, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }
