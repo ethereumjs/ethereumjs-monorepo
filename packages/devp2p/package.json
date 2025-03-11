@@ -60,22 +60,22 @@
     "@ethereumjs/common": "^5.0.0-alpha.1",
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
-    "@scure/base": "^1.1.7",
-    "debug": "^4.3.3",
+    "@scure/base": "^1.2.4",
+    "debug": "^4.4.0",
     "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1",
-    "lru-cache": "10.1.0",
-    "scanf": "1.1.2",
-    "snappyjs": "^0.6.1"
+    "lru-cache": "11.0.2",
+    "scanf": "1.2.0",
+    "snappyjs": "^0.7.0"
   },
   "devDependencies": {
     "@ethereumjs/block": "^6.0.0-alpha.1",
     "@ethereumjs/tx": "^6.0.0-alpha.1",
-    "@types/debug": "^4.1.9",
-    "@types/k-bucket": "^5.0.0",
-    "@types/node": "^22.7.6",
-    "chalk": "^4.1.2",
-    "testdouble": "^3.8.2"
+    "@types/debug": "^4.1.12",
+    "@types/k-bucket": "^5.0.4",
+    "@types/node": "^22.13.10",
+    "chalk": "^5.4.1",
+    "testdouble": "^3.20.2"
   },
   "engines": {
     "node": ">=18"
