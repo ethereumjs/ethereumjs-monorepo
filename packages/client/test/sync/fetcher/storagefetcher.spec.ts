@@ -490,14 +490,14 @@ describe('[StorageFetcher]', async () => {
       )
     }
     // send end of range input to store
-    ;(fetcher as any)['destroyWhenDone'] = false
+    fetcher['destroyWhenDone'] = false
     await fetcher.store([Object.create(null)] as any)
     assert.ok(
       fetcher['destroyWhenDone'] === false,
       'should still be open to enqueue and process new requests',
     )
     fetcher.setDestroyWhenDone()
-    assert.ok(fetcher['destroyWhenDone'] === true, 'should mark to close on finished')
+    assert.ok((fetcher['destroyWhenDone'] as boolean) === true, 'should mark to close on finished')
   })
 
   it('should find a fetchable peer', async () => {
