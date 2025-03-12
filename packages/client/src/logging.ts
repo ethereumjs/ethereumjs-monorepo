@@ -21,9 +21,7 @@ const { combine, timestamp, label, printf } = format
 let attentionHF: string | null = null
 let attentionCL: string | null = null
 
-export type LevelColors = (typeof LevelColors)[keyof typeof LevelColors]
-
-export const LevelColors = {
+const LevelColors = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
@@ -65,8 +63,7 @@ function logFormat(colors = false) {
       if (info.message === undefined) info.message = '(empty message)'
 
       if (colors) {
-        const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-        const color = chalk.keyword(colorLevel).bind(chalk)
+        const color = chalk[LevelColors[info.level as keyof typeof LevelColors]]
         level = color(level)
 
         const regex = /(\w+)=(.+?)(?:\s|$)/g
