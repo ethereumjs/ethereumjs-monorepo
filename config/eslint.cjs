@@ -1,18 +1,37 @@
-module.exports = {
-  parser: '@typescript-eslint/parser',
-  plugins: [
-    '@typescript-eslint',
-    'github',
-    'implicit-dependencies',
-    'import',
-    'simple-import-sort',
-    'ethereumjs',
-  ],
-  env: {
-    es2020: true,
-    node: true,
+const typeScriptPlugin = require('@typescript-eslint/eslint-plugin');
+const githubPlugin = require('eslint-plugin-github');
+const implicitDependenciesPlugin = require('eslint-plugin-implicit-dependencies');
+const importPlugin = require('eslint-plugin-import');
+const simpleImportSortPlugin = require('eslint-plugin-simple-import-sort');
+const ethereumjsPlugin = require('eslint-plugin-ethereumjs');
+const jsPlugin = require('@eslint/js');
+
+module.exports = [
+  importPlugin.flatConfigs.recommended,
+  importPlugin.flatConfigs.typescript,
+  jsPlugin.configs.recommended,
+  {
+    languageOptions: {
+    globals: {
+      es2020: true,
+      node: true
+    },
+    parser: require('@typescript-eslint/parser'),
+    parserOptions: {
+      project: './tsconfig.json',
+      extraFileExtensions: ['.json'],
+      sourceType: 'module',
+      project: './config/tsconfig.lint.json',
+    },
   },
-  ignorePatterns: [
+  plugins: {
+    '@typescript-eslint': typeScriptPlugin,
+    'github': githubPlugin,
+    'implicit-dependencies': implicitDependenciesPlugin,
+    'simple-import-sort': simpleImportSortPlugin,
+    'ethereumjs': ethereumjsPlugin
+  },
+  ignores: [
     '.eslintrc.cjs',
     '.eslintrc.js',
     'benchmarks',
@@ -35,12 +54,6 @@ module.exports = {
     'lint-staged.config.js',
     'tsconfig.lint.json',
     'package.json',
-  ],
-  extends: [
-    'typestrict',
-    'eslint:recommended',
-    'plugin:import/recommended',
-    'plugin:import/typescript',
   ],
   rules: {
     'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
@@ -81,7 +94,7 @@ module.exports = {
     'import/namespace': 'off',
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
-    'import/no-cycle': 'error', 
+    'import/no-cycle': 'error',
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/no-duplicates': 'error',
@@ -123,72 +136,72 @@ module.exports = {
         message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
       }
     ]
+  }},
+  // Override for test files
+  {
+    files: ['**/test/**/*.ts'],
+    rules: {
+      'implicit-dependencies/no-implicit': 'off',
+      'import/no-extraneous-dependencies': 'off',
+      'no-restricted-syntax': 'off',
+    },
   },
-  parserOptions: {
-    extraFileExtensions: ['.json'],
-    sourceType: 'module',
-    project: './config/tsconfig.lint.json',
+  // Override for examples and benchmarks
+  {
+    files: ['**/examples/**/*.ts', '**/examples/**/*.js', '**/benchmarks/*.ts'],
+    rules: {
+      'implicit-dependencies/no-implicit': 'off',
+      'import/no-extraneous-dependencies': 'off',
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-restricted-syntax': 'off',
+    },
   },
-  overrides: [
-    {
-      files: ['**/test/**/*.ts', ],
-      rules: {
-        'implicit-dependencies/no-implicit': 'off',
-        'import/no-extraneous-dependencies': 'off',
-        'no-restricted-syntax': 'off',
-      },
+  // Override for packages/statemanager/src and packages/vm/src
+  {
+    files: ['packages/statemanager/src/**', 'packages/vm/src/**'],
+    rules: {
+      '@typescript-eslint/no-use-before-define': 'off',
+      'no-invalid-this': 'off',
     },
-    {
-      files: ['**/examples/**/*.ts', '**/examples/**/*.js','**/benchmarks/*.ts'],
-      rules: {
-        'implicit-dependencies/no-implicit': 'off',
-        'import/no-extraneous-dependencies': 'off',
-        'no-console': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
-        'no-restricted-syntax': 'off'
-      },
+  },
+  // Override for packages/devp2p
+  {
+    files: ['packages/devp2p/**'],
+    rules: {
+      'no-redeclare': 'off',
+      'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
-    {
-      files: ['packages/statemanager/src/**', 'packages/vm/src/**', ],
-      rules: {
-        '@typescript-eslint/no-use-before-define': 'off',
-        'no-invalid-this': 'off',
-      },
+  },
+  // Override for packages/devp2p/src/ext
+  {
+    files: ['packages/devp2p/src/ext/**'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
-    {
-      files: ['packages/devp2p/**'],
-      rules: {
-        'no-redeclare': 'off',
-        'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
-        'no-console': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
-      },
+  },
+  // Override for packages/client/src/ext
+  {
+    files: ['packages/client/src/ext/**'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
-    {
-      files: ['packages/devp2p/src/ext/**'],
-      rules: {
-        'no-restricted-syntax': 'off'
-      },
+  },
+  // Override for packages/wallet
+  {
+    files: ['packages/wallet/**'],
+    rules: {
+      'github/array-foreach': 'warn',
+      'no-prototype-builtins': 'warn',
+      'no-restricted-syntax': 'off',
     },
-    {
-      files: ['packages/client/src/ext/**'],
-      rules: {
-        'no-restricted-syntax': 'off'
-      },
+  },
+  // Override for packages/rlp
+  {
+    files: ['packages/rlp/**'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
-    {
-      files: ['packages/wallet/**'],
-      rules: {
-        'github/array-foreach': 'warn',
-        'no-prototype-builtins': 'warn',
-        'no-restricted-syntax': 'off'
-      },
-    },
-    {
-      files: ['packages/rlp/**'],
-      rules: {
-        'no-restricted-syntax': 'off'
-      },
-    },
-  ],
-}
+}]
