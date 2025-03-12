@@ -43,8 +43,8 @@ export type PrecompileAvailabilityCheck =
   (typeof PrecompileAvailabilityCheck)[keyof typeof PrecompileAvailabilityCheck]
 
 export const PrecompileAvailabilityCheck = {
-  EIP: 0,
-  Hardfork: 1,
+  EIP: 'eip',
+  Hardfork: 'hardfork',
 } as const
 
 interface PrecompileAvailabilityCheckTypeHardfork {

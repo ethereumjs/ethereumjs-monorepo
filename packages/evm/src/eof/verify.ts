@@ -23,9 +23,9 @@ import type { EOFContainer } from './container.js'
 export type ContainerSectionType = (typeof ContainerSectionType)[keyof typeof ContainerSectionType]
 
 export const ContainerSectionType = {
-  InitCode: 0, // Targeted by EOFCreate
-  DeploymentCode: 1, // Targeted by RETURNCONTRACT
-  RuntimeCode: 2, // "Default" runtime code
+  InitCode: 'initCode', // Targeted by EOFCreate
+  DeploymentCode: 'deploymentCode', // Targeted by RETURNCONTRACT
+  RuntimeCode: 'runtimeCode', // "Default" runtime code
 } as const
 
 /**

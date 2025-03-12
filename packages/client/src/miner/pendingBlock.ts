@@ -49,14 +49,14 @@ export interface BlobsBundle {
 // Max two payload to be cached
 const MAX_PAYLOAD_CACHE = 2
 
-export type AddTxResult = (typeof AddTxResult)[keyof typeof AddTxResult]
+type AddTxResult = (typeof AddTxResult)[keyof typeof AddTxResult]
 
-export const AddTxResult = {
-  Success: 0,
-  BlockFull: 1,
-  SkippedByGasLimit: 2,
-  SkippedByErrors: 3,
-  RemovedByErrors: 4,
+const AddTxResult = {
+  Success: 'Success',
+  BlockFull: 'BlockFull',
+  SkippedByGasLimit: 'SkippedByGasLimit',
+  SkippedByErrors: 'SkippedByErrors',
+  RemovedByErrors: 'RemovedByErrors',
 } as const
 
 export class PendingBlock {

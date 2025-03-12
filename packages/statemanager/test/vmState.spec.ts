@@ -1,4 +1,4 @@
-import { Chain, ChainNames } from '@ethereumjs/common'
+import { Chain, ChainNameFromNumber } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -52,7 +52,7 @@ describe('stateManager', () => {
       assert.deepEqual(
         stateRoot,
         expectedStateRoot,
-        `generateCanonicalGenesis should produce correct state root for ${ChainNames[chain]}`,
+        `generateCanonicalGenesis should produce correct state root for ${ChainNameFromNumber[chain]}`,
       )
     }
   })

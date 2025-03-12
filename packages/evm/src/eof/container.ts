@@ -40,9 +40,9 @@ import type { EVM } from '../evm.js'
 export type EOFContainerMode = (typeof EOFContainerMode)[keyof typeof EOFContainerMode]
 
 export const EOFContainerMode = {
-  Default: 0, // Default container validation
-  Initmode: 1, // Initmode container validation (for subcontainers pointed to by EOFCreate)
-  TxInitmode: 2, // Tx initmode container validation (for txs deploying EOF contracts)
+  Default: 'default', // Default container validation
+  Initmode: 'initMode', // Initmode container validation (for subcontainers pointed to by EOFCreate)
+  TxInitmode: 'txInitMode', // Tx initmode container validation (for txs deploying EOF contracts)
 } as const
 
 // The StreamReader is a helper class to help reading byte arrays

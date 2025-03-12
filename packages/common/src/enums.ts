@@ -10,7 +10,7 @@ export const Chain = {
 } as const
 
 // Reverse mapping: from numeric value back to the key name
-export const ChainNames: { [key in Chain]: string } = Object.entries(Chain).reduce(
+export const ChainNameFromNumber: { [key in Chain]: string } = Object.entries(Chain).reduce(
   (acc, [key, value]) => {
     acc[value as Chain] = key
     return acc
