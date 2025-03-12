@@ -385,7 +385,7 @@ curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":1
 
 Note that `"params": []` can also be omitted in this case.
 
-Or - somewhat more convenient and with formatted output - with a tool like [httpie](http://httpie.org/):
+Or - somewhat more convenient and with formatted output - with a tool like [httpie](https://httpie.io/):
 
 ```shell
 http POST http://localhost:8545 jsonrpc=2.0 id=1 method=web3_clientVersion params:=[]
