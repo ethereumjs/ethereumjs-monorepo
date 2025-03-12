@@ -35,8 +35,8 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
+export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
  * Typed transaction with the ability to set codes on EOA accounts
@@ -44,8 +44,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACodeEIP7702> {
-  public type: number = TransactionType.EOACodeEIP7702 // 7702 tx type
+export class EOACode7702Tx implements TransactionInterface<typeof TransactionType.EOACodeEIP7702> {
+  public type = TransactionType.EOACodeEIP7702 // 7702 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint

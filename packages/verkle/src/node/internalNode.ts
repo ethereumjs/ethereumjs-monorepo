@@ -5,12 +5,12 @@ import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
 import type { ChildNode, VerkleNodeOptions } from './types.js'
 
-export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> {
+export class InternalVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
   public children: Array<ChildNode | null>
   public type = VerkleNodeType.Internal
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Internal]) {
     super(options)
     this.children = options.children ?? new Array(256).fill(null)
   }

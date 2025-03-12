@@ -21,15 +21,12 @@ const { combine, timestamp, label, printf } = format
 let attentionHF: string | null = null
 let attentionCL: string | null = null
 
-/**
- * Colors for logger levels
- */
-enum LevelColors {
-  error = 'red',
-  warn = 'yellow',
-  info = 'green',
-  debug = 'white',
-}
+const LevelColors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  debug: 'white',
+} as const
 
 /**
  * Adds stack trace to error message if included
@@ -66,8 +63,7 @@ function logFormat(colors = false) {
       if (info.message === undefined) info.message = '(empty message)'
 
       if (colors) {
-        const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-        const color = chalk.keyword(colorLevel).bind(chalk)
+        const color = chalk[LevelColors[info.level as keyof typeof LevelColors]]
         level = color(level)
 
         const regex = /(\w+)=(.+?)(?:\s|$)/g

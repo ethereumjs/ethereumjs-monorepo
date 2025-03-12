@@ -50,7 +50,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
 
 export function getTransaction(
   common: Common,
-  txType = TransactionType.Legacy,
+  txType: TransactionType = TransactionType.Legacy,
   sign = false,
   value = '0x00',
   createContract = false,

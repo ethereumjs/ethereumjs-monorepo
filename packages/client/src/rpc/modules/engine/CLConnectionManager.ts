@@ -17,18 +17,22 @@ import type winston from 'winston'
 
 const enginePrefix = '[ CL ] '
 
-enum logLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug',
-}
+export type logLevel = (typeof logLevel)[keyof typeof logLevel]
 
-export enum ConnectionStatus {
-  Connected = 'connected',
-  Disconnected = 'disconnected',
-  Uncertain = 'uncertain',
-}
+export const logLevel = {
+  ERROR: 'error',
+  WARN: 'warn',
+  INFO: 'info',
+  DEBUG: 'debug',
+} as const
+
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus]
+
+export const ConnectionStatus = {
+  Connected: 'connected',
+  Disconnected: 'disconnected',
+  Uncertain: 'uncertain',
+} as const
 
 type CLConnectionManagerOpts = {
   config: Config
@@ -86,7 +90,7 @@ export class CLConnectionManager {
   private _payloadLogInterval?: NodeJS.Timeout
   private _forkchoiceLogInterval?: NodeJS.Timeout
 
-  private connectionStatus = ConnectionStatus.Disconnected
+  private connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected
   private oneTimeMergeCLConnectionCheck = false
   private lastRequestTimestamp = 0
 
@@ -272,7 +276,8 @@ export class CLConnectionManager {
   updateStatus() {
     if (!this.running) this.start()
     if (
-      [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
+      this.connectionStatus === ConnectionStatus.Disconnected ||
+      this.connectionStatus === ConnectionStatus.Uncertain
     ) {
       this.config.superMsg('Consensus client connection established')
     }

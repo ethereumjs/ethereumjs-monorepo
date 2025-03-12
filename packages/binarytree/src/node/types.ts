@@ -1,10 +1,11 @@
 import type { InternalBinaryNode } from './internalNode.js'
 import type { StemBinaryNode } from './stemNode.js'
 
-export enum BinaryNodeType {
-  Internal,
-  Stem,
-}
+export type BinaryNodeType = (typeof BinaryNodeType)[keyof typeof BinaryNodeType]
+export const BinaryNodeType = {
+  Internal: 0,
+  Stem: 1,
+} as const
 
 export interface TypedBinaryNode {
   [BinaryNodeType.Internal]: InternalBinaryNode

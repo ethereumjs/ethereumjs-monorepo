@@ -54,13 +54,18 @@ type GetLogsReturn = {
  */
 type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
 
-enum IndexType {
-  TxHash,
-}
-enum IndexOperation {
-  Save,
-  Delete,
-}
+export type IndexType = (typeof IndexType)[keyof typeof IndexType]
+
+export const IndexType = {
+  TxHash: 'txhash',
+} as const
+
+export type IndexOperation = (typeof IndexOperation)[keyof typeof IndexOperation]
+
+export const IndexOperation = {
+  Save: 'save',
+  Delete: 'delete',
+} as const
 
 /**
  * Storage encodings
@@ -69,15 +74,19 @@ type rlpLog = Log
 type rlpReceipt = [postStateOrStatus: Uint8Array, cumulativeGasUsed: Uint8Array, logs: rlpLog[]]
 type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
 
-enum RlpConvert {
-  Encode,
-  Decode,
-}
-enum RlpType {
-  Receipts,
-  Logs,
-  TxHash,
-}
+export type RlpConvert = (typeof RlpConvert)[keyof typeof RlpConvert]
+
+export const RlpConvert = {
+  Encode: 'encode',
+  Decode: 'decode',
+} as const
+export type RlpType = (typeof RlpType)[keyof typeof RlpType]
+
+export const RlpType = {
+  Receipts: 'receipts',
+  Logs: 'logs',
+  TxHash: 'txhash',
+} as const
 type rlpOut = Log[] | TxReceipt[] | TxHashIndex
 
 export class ReceiptsManager extends MetaDBManager {
@@ -245,7 +254,7 @@ export class ReceiptsManager extends MetaDBManager {
    */
   private async updateIndex(
     operation: IndexOperation,
-    type: IndexType.TxHash,
+    type: typeof IndexType.TxHash,
     value: Block,
   ): Promise<void>
   private async updateIndex(operation: IndexOperation, type: IndexType, value: any): Promise<void> {
@@ -287,7 +296,10 @@ export class ReceiptsManager extends MetaDBManager {
    * @param type the {@link IndexType}
    * @param value for {@link IndexType.TxHash}, the txHash to get
    */
-  private async getIndex(type: IndexType.TxHash, value: Uint8Array): Promise<TxHashIndex | null>
+  private async getIndex(
+    type: typeof IndexType.TxHash,
+    value: Uint8Array,
+  ): Promise<TxHashIndex | null>
   private async getIndex(type: IndexType, value: Uint8Array): Promise<any | null> {
     switch (type) {
       case IndexType.TxHash: {
@@ -306,14 +318,22 @@ export class ReceiptsManager extends MetaDBManager {
    * @param type one of {@link RlpType}
    * @param value the value to encode or decode
    */
-  private rlp(conversion: RlpConvert.Encode, type: RlpType, value: rlpOut): Uint8Array
+  private rlp(conversion: typeof RlpConvert.Encode, type: RlpType, value: rlpOut): Uint8Array
   private rlp(
-    conversion: RlpConvert.Decode,
-    type: RlpType.Receipts,
+    conversion: typeof RlpConvert.Decode,
+    type: typeof RlpType.Receipts,
     values: Uint8Array,
   ): TxReceipt[]
-  private rlp(conversion: RlpConvert.Decode, type: RlpType.Logs, value: rlpLog[]): Log[]
-  private rlp(conversion: RlpConvert.Decode, type: RlpType.TxHash, value: Uint8Array): TxHashIndex
+  private rlp(
+    conversion: typeof RlpConvert.Decode,
+    type: typeof RlpType.Logs,
+    value: rlpLog[],
+  ): Log[]
+  private rlp(
+    conversion: typeof RlpConvert.Decode,
+    type: typeof RlpType.TxHash,
+    value: Uint8Array,
+  ): TxHashIndex
   private rlp(
     conversion: RlpConvert,
     type: RlpType,

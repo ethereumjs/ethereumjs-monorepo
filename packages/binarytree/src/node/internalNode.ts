@@ -10,7 +10,7 @@ export class InternalBinaryNode {
 
   public type = BinaryNodeType.Internal
 
-  constructor(options: BinaryNodeOptions[BinaryNodeType.Internal]) {
+  constructor(options: BinaryNodeOptions[typeof BinaryNodeType.Internal]) {
     this.children = options.children ?? Array(2).fill(null)
   }
 
