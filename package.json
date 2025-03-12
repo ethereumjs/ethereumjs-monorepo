@@ -41,6 +41,7 @@
     "cspell": "^8.17.5",
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
+    "eslint-formatter-codeframe": "^7.32.1",
     "eslint-plugin-ethereumjs": "file:./eslint",
     "eslint-plugin-github": "5.1.8",
     "eslint-plugin-implicit-dependencies": "1.1.1",
