@@ -1,4 +1,4 @@
-export * from './constants.js'
-export { MCLBLS } from './mcl.js'
-export { NobleBLS } from './noble.js'
-export * from './util.js'
+export * from './constants.ts'
+export { MCLBLS } from './mcl.ts'
+export { NobleBLS } from './noble.ts'
+export * from './util.ts'

@@ -3,7 +3,7 @@ import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager } from '../src/index.js'
+import { MerkleStateManager } from '../src/index.ts'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)

@@ -1,8 +1,8 @@
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVerkleTree } from '../src/index.js'
-import { dumpLeafValues, dumpNodeHashes } from '../src/util.js'
+import { createVerkleTree } from '../src/index.ts'
+import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
 // Values taken from verkle fixtures
 const values = [

@@ -14,8 +14,8 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { Caches } from '../src/index.js'
-import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.js'
+import { Caches } from '../src/index.ts'
+import { StatefulVerkleStateManager } from '../src/statefulVerkleStateManager.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -85,7 +85,7 @@ describe('Verkle Tree API tests', () => {
     const retrievedBigByteCode = await sm.getCode(address)
     assert.deepEqual(bigByteCode, retrievedBigByteCode)
     const reallyBigByteCode = hexToBytes(
-      (await import('./testdata/biggestContractEver.js')).biggestContractEverData
+      (await import('./testdata/biggestContractEver.ts')).biggestContractEverData
         .bytecode as PrefixedHexString,
     )
     // Biggest mainnet contract - 0x10C621008B210C3A5d0385e458B48af05BF4Ec88 (supposedly anyway)

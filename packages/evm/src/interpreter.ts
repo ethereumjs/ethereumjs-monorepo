@@ -14,20 +14,20 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
-import { EOFContainerMode, validateEOF } from './eof/container.js'
-import { setupEOF } from './eof/setup.js'
-import { ContainerSectionType } from './eof/verify.js'
-import { ERROR, EvmError } from './exceptions.js'
-import { type EVMPerformanceLogger, type Timer } from './logger.js'
-import { Memory } from './memory.js'
-import { Message } from './message.js'
-import { trap } from './opcodes/index.js'
-import { Stack } from './stack.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
+import { EOFContainerMode, validateEOF } from './eof/container.ts'
+import { setupEOF } from './eof/setup.ts'
+import { ContainerSectionType } from './eof/verify.ts'
+import { ERROR, EvmError } from './exceptions.ts'
+import { type EVMPerformanceLogger, type Timer } from './logger.ts'
+import { Memory } from './memory.ts'
+import { Message } from './message.ts'
+import { trap } from './opcodes/index.ts'
+import { Stack } from './stack.ts'
 
-import type { EVM } from './evm.js'
-import type { Journal } from './journal.js'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
+import type { EVM } from './evm.ts'
+import type { Journal } from './journal.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -35,7 +35,7 @@ import type {
   EVMProfilerOpts,
   EVMResult,
   Log,
-} from './types.js'
+} from './types.ts'
 import type {
   BinaryTreeAccessWitnessInterface,
   Common,

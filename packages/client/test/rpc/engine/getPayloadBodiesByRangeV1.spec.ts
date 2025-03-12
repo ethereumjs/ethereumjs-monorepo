@@ -11,10 +11,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
 

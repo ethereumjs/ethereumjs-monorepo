@@ -9,8 +9,8 @@ import path from 'path'
 import solc from 'solc'
 import { fileURLToPath } from 'url'
 
-import { getAccountNonce, insertAccount } from './helpers/account-utils.js'
-import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.js'
+import { getAccountNonce, insertAccount } from './helpers/account-utils.ts'
+import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.ts'
 
 import type { Address } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'

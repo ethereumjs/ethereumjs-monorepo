@@ -3,8 +3,8 @@ import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
-import { toRPCTx } from '../../../src/rpc/types.js'
-import { debugData } from '../../testdata/geth-genesis/debug.js'
+import { toRPCTx } from '../../../src/rpc/types.ts'
+import { debugData } from '../../testdata/geth-genesis/debug.ts'
 import {
   createClient,
   createManager,
@@ -13,9 +13,9 @@ import {
   runBlockWithTxs,
   setupChain,
   startRPC,
-} from '../helpers.js'
+} from '../helpers.ts'
 
-import type { RPCTx } from '../../../src/rpc/types.js'
+import type { RPCTx } from '../../../src/rpc/types.ts'
 
 const method = 'debug_traceCall'
 

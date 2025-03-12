@@ -11,15 +11,15 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
-import type { Chain } from '../../../src/blockchain/chain.js'
-import type { VMExecution } from '../../../src/execution/vmexecution.js'
+import type { Chain } from '../../../src/blockchain/chain.ts'
+import type { VMExecution } from '../../../src/execution/vmexecution.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_blobBaseFee'

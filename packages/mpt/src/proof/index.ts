@@ -1,2 +1,2 @@
-export * from './proof.js'
-export * from './range.js'
+export * from './proof.ts'
+export * from './range.ts'

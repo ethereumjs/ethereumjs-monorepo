@@ -8,14 +8,14 @@ import {
 } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { getRandomBytesSync } from 'ethereum-cryptography/random.ts'
+import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
 
-import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.js'
+import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
-import { MAC } from './mac.js'
+import { MAC } from './mac.ts'
 
 import type { Common } from '@ethereumjs/common'
 type Decipher = crypto.Decipher

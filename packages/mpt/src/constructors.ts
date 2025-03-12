@@ -7,9 +7,9 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './index.js'
+import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './index.ts'
 
-import type { MPTOpts, Proof } from './index.js'
+import type { MPTOpts, Proof } from './index.ts'
 
 export async function createMPT(opts?: MPTOpts) {
   const keccakFunction =

@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { sha256 } from 'ethereum-cryptography/sha256.ts'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,8 +15,8 @@ import {
   ROOT_DB_KEY,
   createMerkleProof,
   verifyMerkleProof,
-} from '../../src/index.js'
-import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.js'
+} from '../../src/index.ts'
+import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.ts'
 
 describe('SecureTrie', () => {
   const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })

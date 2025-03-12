@@ -3,10 +3,10 @@ import { EVM, createEVM } from '@ethereumjs/evm'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { type VMOpts, createVM, paramsVM } from '../../src/index.js'
+import { type VMOpts, createVM, paramsVM } from '../../src/index.ts'
 
-import { testnetMergeData } from './testdata/testnetMerge.js'
-import { setupVM } from './utils.js'
+import { testnetMergeData } from './testdata/testnetMerge.ts'
+import { setupVM } from './utils.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 

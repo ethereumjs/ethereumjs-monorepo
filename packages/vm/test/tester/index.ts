@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'
@@ -17,10 +17,10 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config.js'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
-import { runStateTest } from './runners/GeneralStateTestsRunner.js'
-import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
+} from './config.ts'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.ts'
+import { runStateTest } from './runners/GeneralStateTestsRunner.ts'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'

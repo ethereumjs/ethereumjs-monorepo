@@ -24,9 +24,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../src/index.js'
+import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
-import { setBalance } from './utils.js'
+import { setBalance } from './utils.ts'
 
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 

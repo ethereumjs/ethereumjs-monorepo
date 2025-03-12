@@ -8,8 +8,8 @@ import {
   createCValues,
   decodeVerkleNode,
   isLeafVerkleNode,
-} from '../src/node/index.js'
-import { LeafVerkleNode } from '../src/node/leafNode.js'
+} from '../src/node/index.ts'
+import { LeafVerkleNode } from '../src/node/leafNode.ts'
 
 describe('verkle node - leaf', () => {
   it('constructor should create an leaf node', async () => {

@@ -2,7 +2,7 @@ import { type StateManagerInterface } from '@ethereumjs/common'
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager, SimpleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager, SimpleStateManager } from '../src/index.ts'
 
 const codeEval = async (
   sm: StateManagerInterface,

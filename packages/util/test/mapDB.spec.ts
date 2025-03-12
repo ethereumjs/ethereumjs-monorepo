@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { MapDB } from '../src/index.js'
+import { MapDB } from '../src/index.ts'
 
 describe('MapDB: get', () => {
   it('should return the value for an existing key', async () => {

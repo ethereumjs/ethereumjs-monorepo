@@ -9,9 +9,9 @@ import { Config } from '../src/config'
 import { LevelDB } from '../src/execution/level'
 import { parseMultiaddrs } from '../src/util'
 
-import { getLogger } from './logging.js'
+import { getLogger } from './logging.ts'
 // Blockchain
-export * from '../src/blockchain/chain/index.js'
+export * from '../src/blockchain/chain/index.ts'
 
 // Peer
 export * from '../src/net/peer/libp2ppeer'

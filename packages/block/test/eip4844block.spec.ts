@@ -6,15 +6,15 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { fakeExponential, getNumBlobs } from '../src/helpers.js'
-import { createBlock, createBlockHeader } from '../src/index.js'
-import { paramsBlock } from '../src/params.js'
+import { fakeExponential, getNumBlobs } from '../src/helpers.ts'
+import { createBlock, createBlockHeader } from '../src/index.ts'
+import { paramsBlock } from '../src/params.ts'
 
-import { hardfork4844Data } from './testdata/4844-hardfork.js'
+import { hardfork4844Data } from './testdata/4844-hardfork.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 

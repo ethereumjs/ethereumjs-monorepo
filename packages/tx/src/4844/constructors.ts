@@ -13,18 +13,18 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { paramsTx } from '../params.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, txTypeBytes, validateNotArray } from '../util.js'
+import { paramsTx } from '../params.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists, txTypeBytes, validateNotArray } from '../util.ts'
 
-import { Blob4844Tx } from './tx.js'
+import { Blob4844Tx } from './tx.ts'
 
 import type {
   BlobEIP4844NetworkValuesArray,
   JSONBlobTxNetworkWrapper,
   TxOptions,
-} from '../types.js'
-import type { TxData, TxValuesArray } from './tx.js'
+} from '../types.ts'
+import type { TxData, TxValuesArray } from './tx.ts'
 import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 
 const validateBlobTransactionNetworkWrapper = (

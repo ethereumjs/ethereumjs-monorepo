@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { PrioritizedTaskExecutor } from '../src/index.js'
+import { PrioritizedTaskExecutor } from '../src/index.ts'
 
 const taskExecutor = new PrioritizedTaskExecutor(2)
 

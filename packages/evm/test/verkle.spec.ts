@@ -14,7 +14,7 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.js'
+import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.ts'
 
 describe('verkle tests', () => {
   it('should execute bytecode and update the state', async () => {

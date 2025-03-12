@@ -20,17 +20,17 @@ import {
   hexToBytes,
   toType,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 
 import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
-} from '../consensus/clique.js'
-import { computeBlobGasPrice } from '../helpers.js'
-import { paramsBlock } from '../params.js'
+} from '../consensus/clique.ts'
+import { computeBlobGasPrice } from '../helpers.ts'
+import { paramsBlock } from '../params.ts'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.ts'
 
 interface HeaderCache {
   hash: Uint8Array | undefined

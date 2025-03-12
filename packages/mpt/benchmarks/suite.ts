@@ -1,8 +1,8 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark' // cspell:disable-line
 
-import { MerklePatriciaTrie } from '../dist/cjs/index.js'
+import { MerklePatriciaTrie } from '../dist/cjs/index.ts'
 import { keys } from './keys'
 
 import type { DB } from '@ethereumjs/util'

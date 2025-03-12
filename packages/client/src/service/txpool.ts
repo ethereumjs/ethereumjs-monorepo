@@ -18,13 +18,13 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import { Heap } from '../ext/qheap.js'
+import { Heap } from '../ext/qheap.ts'
 
-import type { Config } from '../config.js'
-import type { QHeap } from '../ext/qheap.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { PeerPool } from '../net/peerpool.js'
-import type { FullEthereumService } from './fullethereumservice.js'
+import type { Config } from '../config.ts'
+import type { QHeap } from '../ext/qheap.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { PeerPool } from '../net/peerpool.ts'
+import type { FullEthereumService } from './fullethereumservice.ts'
 import type { Block } from '@ethereumjs/block'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'

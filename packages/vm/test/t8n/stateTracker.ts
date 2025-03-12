@@ -7,8 +7,8 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import type { VM } from '../../src/vm.js'
-import type { T8NAlloc } from './types.js'
+import type { VM } from '../../src/vm.ts'
+import type { T8NAlloc } from './types.ts'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 
 export class StateTracker {

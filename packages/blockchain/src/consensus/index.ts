@@ -1,5 +1,5 @@
-import { CasperConsensus } from './casper.js'
-import { CliqueConsensus } from './clique.js'
-import { EthashConsensus } from './ethash.js'
+import { CasperConsensus } from './casper.ts'
+import { CliqueConsensus } from './clique.ts'
+import { EthashConsensus } from './ethash.ts'
 
 export { CasperConsensus, CliqueConsensus, EthashConsensus }

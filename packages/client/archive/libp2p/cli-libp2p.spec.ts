@@ -14,7 +14,7 @@ const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean) => {
 
 describe('[CLI] RPC', () => {
   it('libp2p should start up', () => {
-    const file = require.resolve('../../dist/bin/cli.js')
+    const file = require.resolve('../../dist/bin/cli.ts')
     const child = spawn(process.execPath, [
       file,
       ...[

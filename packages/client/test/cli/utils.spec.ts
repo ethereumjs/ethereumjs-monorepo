@@ -3,9 +3,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as fs from 'fs'
 import { assert, describe, it } from 'vitest'
 
-import { generateClientConfig } from '../../bin/utils.js'
+import { generateClientConfig } from '../../bin/utils.ts'
 
-import type { ClientOpts } from '../../src/types.js'
+import type { ClientOpts } from '../../src/types.ts'
 
 describe('generateClientConfig', () => {
   it('should use chainId over networkId and network name', async () => {

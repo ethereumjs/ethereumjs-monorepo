@@ -7,14 +7,14 @@ import {
   createTx,
   createTxFromJSONRPCProvider,
   createTxFromRPC,
-} from '../src/index.js'
-import { normalizeTxParams } from '../src/util.js'
+} from '../src/index.ts'
+import { normalizeTxParams } from '../src/util.ts'
 
-import { optimismTxData } from './testData/optimismTx.js'
-import { rpcTxData } from './testData/rpcTx.js'
-import { v0txData } from './testData/v0tx.js'
+import { optimismTxData } from './testData/optimismTx.ts'
+import { rpcTxData } from './testData/rpcTx.ts'
+import { v0txData } from './testData/v0tx.ts'
 
-import type { TypedTxData } from '../src/index.js'
+import type { TypedTxData } from '../src/index.ts'
 
 const txTypes = [
   TransactionType.Legacy,

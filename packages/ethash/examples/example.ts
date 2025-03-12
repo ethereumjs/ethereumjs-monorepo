@@ -1,6 +1,6 @@
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-import { Ethash } from '../dist/cjs/index.js'
+import { Ethash } from '../dist/cjs/index.ts'
 
 const ethash = new Ethash()
 

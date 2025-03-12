@@ -3,11 +3,11 @@ import * as dir from 'node-dir'
 import path from 'path'
 import { assert, describe, it } from 'vitest'
 
-import { EOFContainerMode, validateEOF } from '../../src/eof/container.js'
-import { ContainerSectionType } from '../../src/eof/verify.js'
-import { createEVM } from '../../src/index.js'
+import { EOFContainerMode, validateEOF } from '../../src/eof/container.ts'
+import { ContainerSectionType } from '../../src/eof/verify.ts'
+import { createEVM } from '../../src/index.ts'
 
-import { getCommon } from './eof-utils.js'
+import { getCommon } from './eof-utils.ts'
 
 // Rename this test dir to the location of EOF header tests
 // To test, use `npx vitest run ./scripts/eof-header-validation.spec.ts

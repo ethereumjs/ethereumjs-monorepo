@@ -1,6 +1,6 @@
-import { UNKNOWN_PAYLOAD } from '../../error-code.js'
+import { UNKNOWN_PAYLOAD } from '../../error-code.ts'
 
-import type { Skeleton } from '../../../service/index.js'
+import type { Skeleton } from '../../../service/index.ts'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

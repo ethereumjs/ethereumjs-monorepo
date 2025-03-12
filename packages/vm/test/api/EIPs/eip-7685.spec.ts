@@ -5,8 +5,8 @@ import { createCLRequest, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { assert, describe, expect, it } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 

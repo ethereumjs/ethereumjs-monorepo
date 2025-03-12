@@ -1,13 +1,13 @@
 import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { getClientVersion } from '../../util/index.js'
-import { callWithStackTrace } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { getClientVersion } from '../../util/index.ts'
+import { callWithStackTrace } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../index.js'
-import type { FullEthereumService } from '../../service/index.js'
+import type { Chain } from '../../blockchain/index.ts'
+import type { EthereumClient } from '../../index.ts'
+import type { FullEthereumService } from '../../service/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**

@@ -1,9 +1,9 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DISCONNECT_REASON } from '../../src/types.js'
+import { DISCONNECT_REASON } from '../../src/types.ts'
 
-import * as util from './util.js'
+import * as util from './util.ts'
 
 describe('RLPx simulator tests', () => {
   it('RLPX: add working node', async () => {

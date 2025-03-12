@@ -8,13 +8,13 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { Client } from 'jayson/promise/index.js'
+import { Client } from 'jayson/promise/index.ts'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Event } from '../../src/types.js'
-import { createInlineClient } from '../../src/util/index.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { Event } from '../../src/types.ts'
+import { createInlineClient } from '../../src/util/index.ts'
 
 import {
   filterKeywords,
@@ -23,9 +23,9 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { EthereumClient } from '../../src/client.ts'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

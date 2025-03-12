@@ -24,14 +24,14 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 
-import { OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/index.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { Caches } from './cache/index.js'
-import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
-import type { MerkleStateManager } from './merkleStateManager.js'
+import type { Caches } from './cache/index.ts'
+import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.ts'
+import type { MerkleStateManager } from './merkleStateManager.ts'
 import type {
   AccountFields,
   Common,

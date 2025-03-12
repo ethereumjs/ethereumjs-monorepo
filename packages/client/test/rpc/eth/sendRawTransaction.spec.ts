@@ -11,12 +11,12 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
-import { baseSetup } from '../helpers.js'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.ts'
+import { baseSetup } from '../helpers.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -221,7 +221,7 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.js')
+    const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.ts')
 
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',

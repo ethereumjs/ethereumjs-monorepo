@@ -2,13 +2,13 @@ import { RLP, utils } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolType } from '../types.js'
-import { formatLogData } from '../util.js'
+import { ProtocolType } from '../types.ts'
+import { formatLogData } from '../util.ts'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
+import type { Peer } from '../rlpx/peer.ts'
+import type { SendMethod } from '../types.ts'
 
 export const SnapMessageCodes = {
   // snap1

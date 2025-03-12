@@ -7,20 +7,20 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
 
-import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.js'
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
-import { Peer } from './peer.js'
+import { Peer } from './peer.ts'
 
-import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
+import type { DPT } from '../dpt/index.ts'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 

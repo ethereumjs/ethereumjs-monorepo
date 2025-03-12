@@ -1,8 +1,8 @@
-import { AccessLists } from '../util.js'
+import { AccessLists } from '../util.ts'
 
-import * as Legacy from './legacy.js'
+import * as Legacy from './legacy.ts'
 
-import type { EIP7702CompatibleTx } from '../types.js'
+import type { EIP7702CompatibleTx } from '../types.ts'
 
 /**
  * The amount of gas paid for the data in this tx

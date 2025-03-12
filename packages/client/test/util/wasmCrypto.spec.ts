@@ -19,8 +19,8 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
-import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.ts'
 import { assert, describe, it } from 'vitest'
 describe('WASM crypto tests', () => {
   it('should compute public key and hash correctly using common.customCrypto functions', async () => {

@@ -21,11 +21,11 @@ import {
   TYPE_MAX,
   TYPE_MIN,
   VERSION,
-} from './constants.js'
-import { EOFError, validationError } from './errors.js'
-import { ContainerSectionType, verifyCode } from './verify.js'
+} from './constants.ts'
+import { EOFError, validationError } from './errors.ts'
+import { ContainerSectionType, verifyCode } from './verify.ts'
 
-import type { EVM } from '../evm.js'
+import type { EVM } from '../evm.ts'
 
 /*
   This file creates EOF Containers

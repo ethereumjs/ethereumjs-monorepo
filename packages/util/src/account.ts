@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
 
 import {
   bigIntToUnpaddedBytes,
@@ -13,13 +13,13 @@ import {
   intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
-} from './bytes.js'
-import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
-import { stripHexPrefix } from './internal.js'
+} from './bytes.ts'
+import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.ts'
+import { stripHexPrefix } from './internal.ts'
 
-import type { BigIntLike, BytesLike, PrefixedHexString } from './types.js'
+import type { BigIntLike, BytesLike, PrefixedHexString } from './types.ts'
 
 export interface AccountData {
   nonce?: BigIntLike

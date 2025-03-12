@@ -22,7 +22,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -33,7 +33,7 @@ import {
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from 'ethereum-cryptography/sha256.ts'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -46,14 +46,14 @@ import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { Config, SyncMode } from '../src/config.js'
-import { getLogger } from '../src/logging.js'
-import { Event } from '../src/types.js'
-import { parseMultiaddrs } from '../src/util/index.js'
-import { setupMetrics } from '../src/util/metrics.js'
+import { Config, SyncMode } from '../src/config.ts'
+import { getLogger } from '../src/logging.ts'
+import { Event } from '../src/types.ts'
+import { parseMultiaddrs } from '../src/util/index.ts'
+import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { Logger } from '../src/logging.js'
-import type { ClientOpts } from '../src/types.js'
+import type { Logger } from '../src/logging.ts'
+import type { ClientOpts } from '../src/types.ts'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 

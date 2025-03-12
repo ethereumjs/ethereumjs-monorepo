@@ -29,10 +29,10 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
 
 import type {
   AfterTxEvent,
@@ -43,8 +43,8 @@ import type {
   RunTxOpts,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
+} from './types.ts'
+import type { VM } from './vm.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type {

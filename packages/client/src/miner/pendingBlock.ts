@@ -15,8 +15,8 @@ import {
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { Config } from '../config.js'
-import type { TxPool } from '../service/txpool.js'
+import type { Config } from '../config.ts'
+import type { TxPool } from '../service/txpool.ts'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'

@@ -7,10 +7,10 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
 
-import type { EthStatusMsg } from './protocol/eth.js'
+import type { EthStatusMsg } from './protocol/eth.ts'
 
 export const devp2pDebug = debug('devp2p:#')
 

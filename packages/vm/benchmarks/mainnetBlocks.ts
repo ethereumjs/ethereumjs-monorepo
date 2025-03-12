@@ -3,7 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createVM, runBlock as runBlockVM, VM } from '@ethereumjs/vm'
 import Benchmark from 'benchmark'
 import { readFileSync } from 'fs'
-import { getBlockchain, getPreState, verifyResult } from './util.js'
+import { getBlockchain, getPreState, verifyResult } from './util.ts'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 

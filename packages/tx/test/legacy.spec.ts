@@ -15,13 +15,13 @@ import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { Goerli } from './testData/goerliCommon.js'
-import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.js'
-import { txsData } from './testData/txs.js'
+import { Goerli } from './testData/goerliCommon.ts'
+import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.ts'
+import { txsData } from './testData/txs.ts'
 
-import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
+import type { TransactionType, TxData, TypedTransaction } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('[Transaction]', () => {

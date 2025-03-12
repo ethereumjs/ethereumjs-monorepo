@@ -33,7 +33,7 @@ import {
   unprefixedHexToBytes,
   validateNoLeadingZeroes,
   zeroAddress,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 describe('zero address', () => {
   it('should generate a zero address', () => {

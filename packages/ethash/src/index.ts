@@ -14,7 +14,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
+import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.ts'
 
 import {
   bytesReverse,
@@ -25,7 +25,7 @@ import {
   getFullSize,
   getSeed,
   params,
-} from './util.js'
+} from './util.ts'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'

@@ -6,7 +6,7 @@ import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'

@@ -10,12 +10,12 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }

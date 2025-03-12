@@ -2,7 +2,7 @@ import { EthereumJSErrorWithoutCode, hexToBytes } from '@ethereumjs/util'
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import { URL } from 'url'
 
-import type { MultiaddrLike } from '../types.js'
+import type { MultiaddrLike } from '../types.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // From: https://community.fortra.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4

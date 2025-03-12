@@ -1,6 +1,6 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import type { RunState } from '../interpreter.js'
+import type { RunState } from '../interpreter.ts'
 import type { Common } from '@ethereumjs/common'
 
 /**

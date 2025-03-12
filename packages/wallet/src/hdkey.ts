@@ -1,8 +1,8 @@
 // cspell:ignore xprv xpub
-import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
-import { HDKey } from 'ethereum-cryptography/hdkey.js'
+import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.ts'
+import { HDKey } from 'ethereum-cryptography/hdkey.ts'
 
-import { Wallet } from './wallet.js'
+import { Wallet } from './wallet.ts'
 
 export class EthereumHDKey {
   private readonly _hdkey: HDKey

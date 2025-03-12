@@ -1,13 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.ts'
 import { sscanf } from 'scanf'
 
-import { ipToString } from '../util.js'
+import { ipToString } from '../util.ts'
 
-import type { PeerInfo } from '../types.js'
+import type { PeerInfo } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 
 type ENRRootValues = {

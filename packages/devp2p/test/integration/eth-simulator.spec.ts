@@ -2,12 +2,12 @@ import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import * as devp2p from '../../src/index.js'
-import { ETH, EthMessageCodes } from '../../src/index.js'
+import * as devp2p from '../../src/index.ts'
+import { ETH, EthMessageCodes } from '../../src/index.ts'
 
-import * as util from './util.js'
+import * as util from './util.ts'
 
-import type { Peer } from '../../src/index.js'
+import type { Peer } from '../../src/index.ts'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(

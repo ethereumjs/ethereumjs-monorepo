@@ -10,7 +10,7 @@ import {
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 /* eslint-disable */
@@ -30,9 +30,9 @@ import {
   type createBlockFromRLP,
   type createBlockFromRPC,
   type createBlockFromBytesArray,
-} from '../index.js'
+} from '../index.ts'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'

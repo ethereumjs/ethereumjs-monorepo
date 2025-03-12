@@ -1,4 +1,4 @@
-import { EthereumJSErrorWithoutCode } from './errors.js'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
 
 type rpcParams = {
   method: string

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise/index.js'
+import { Client } from 'jayson/promise/index.ts'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -11,7 +11,7 @@ import {
   startNetwork,
   validateBlockHashesInclusionInBeacon,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

@@ -25,20 +25,19 @@ import {
 } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
-import { Bloom } from './bloom/index.js'
-import { accumulateRequests } from './requests.js'
+import { Bloom } from './bloom/index.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
-} from './runBlock.js'
+} from './runBlock.ts'
 
-import { runTx } from './index.js'
-
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
-import type { VM } from './vm.js'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.ts'
+import type { VM } from './vm.ts'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'

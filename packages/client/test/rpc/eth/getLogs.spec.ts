@@ -2,9 +2,9 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createContractAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.ts'
 
 const method = 'eth_getLogs'
 

@@ -15,8 +15,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { withdrawalsData } from '../testdata/withdrawals.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { withdrawalsData } from '../testdata/withdrawals.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'

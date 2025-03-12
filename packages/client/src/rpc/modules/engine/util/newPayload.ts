@@ -9,13 +9,13 @@ import {
 } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
-import { short } from '../../../../util/index.js'
-import { Status } from '../types.js'
+import { short } from '../../../../util/index.ts'
+import { Status } from '../types.ts'
 
-import { validHash } from './generic.js'
+import { validHash } from './generic.ts'
 
-import type { Chain } from '../../../../blockchain/index.js'
-import type { ChainCache, PayloadStatusV1 } from '../types.js'
+import type { Chain } from '../../../../blockchain/index.ts'
+import type { ChainCache, PayloadStatusV1 } from '../types.ts'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'

@@ -1,9 +1,9 @@
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { RLP } from '../src/index.js'
+import { RLP } from '../src/index.ts'
 
-import { rlpTestData } from './fixture/rlptest.js'
-import { bytesToUtf8 } from './utils.js'
+import { rlpTestData } from './fixture/rlptest.ts'
+import { bytesToUtf8 } from './utils.ts'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 

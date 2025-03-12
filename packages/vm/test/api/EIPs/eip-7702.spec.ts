@@ -19,9 +19,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
+import type { VM } from '../../../src/index.ts'
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 

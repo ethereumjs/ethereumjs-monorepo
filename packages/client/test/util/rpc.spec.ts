@@ -2,18 +2,18 @@ import { bytesToHex } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config } from '../../src/config.js'
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
-import { RPCManager } from '../../src/rpc/index.js'
+import { EthereumClient } from '../../src/client.ts'
+import { Config } from '../../src/config.ts'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.ts'
+import { RPCManager } from '../../src/rpc/index.ts'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../../src/util/rpc.js'
-import { getRPCClient, setupChain } from '../rpc/helpers.js'
-import { powData } from '../testdata/geth-genesis/pow.js'
+} from '../../src/util/rpc.ts'
+import { getRPCClient, setupChain } from '../rpc/helpers.ts'
+import { powData } from '../testdata/geth-genesis/pow.ts'
 
 describe('[Util/RPC]', () => {
   it('should return enabled RPC servers', async () => {

@@ -1,11 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bigIntToBytes, equalsBytes } from '@ethereumjs/util'
 
-import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { numberToHex, valuesArrayToHeaderData } from '../helpers.js'
-import { BlockHeader } from '../index.js'
+import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
+import { numberToHex, valuesArrayToHeaderData } from '../helpers.ts'
+import { BlockHeader } from '../index.ts'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.ts'
 
 /**
  * Static constructor to create a block header from a header data dictionary

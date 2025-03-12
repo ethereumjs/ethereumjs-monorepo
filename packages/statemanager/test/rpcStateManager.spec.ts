@@ -18,13 +18,13 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { MerkleStateManager } from '../src/merkleStateManager.js'
-import { getRPCStateProof } from '../src/proof/index.js'
-import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
+import { MerkleStateManager } from '../src/merkleStateManager.ts'
+import { getRPCStateProof } from '../src/proof/index.ts'
+import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.ts'
 
-import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
-import { getValues } from './testdata/providerData/mockProvider.js'
-import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
+import { block as blockData } from './testdata/providerData/blocks/block0x7a120.ts'
+import { getValues } from './testdata/providerData/mockProvider.ts'
+import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.ts'
 
 import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
 

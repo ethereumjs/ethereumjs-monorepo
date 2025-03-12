@@ -16,10 +16,10 @@ import {
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it, test } from 'vitest'
 
-import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.js'
+import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.ts'
 
-import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.js'
-import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.js'
+import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.ts'
+import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.ts'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {

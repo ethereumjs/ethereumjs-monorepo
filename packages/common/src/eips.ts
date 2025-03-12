@@ -1,6 +1,6 @@
-import { Hardfork } from './enums.js'
+import { Hardfork } from './enums.ts'
 
-import type { EIPsDict } from './types.js'
+import type { EIPsDict } from './types.ts'
 
 export const eipsDict: EIPsDict = {
   /**

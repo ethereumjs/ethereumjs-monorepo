@@ -26,12 +26,12 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.ts'
 
-import { EOFContainer, EOFContainerMode } from '../eof/container.js'
-import { EOFError } from '../eof/errors.js'
-import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
-import { ERROR } from '../exceptions.js'
+import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
+import { EOFError } from '../eof/errors.ts'
+import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
+import { ERROR } from '../exceptions.ts'
 
 import {
   createAddressFromStackBigInt,
@@ -44,9 +44,9 @@ import {
   toTwos,
   trap,
   writeCallOutput,
-} from './util.js'
+} from './util.ts'
 
-import type { RunState } from '../interpreter.js'
+import type { RunState } from '../interpreter.ts'
 import type { Common } from '@ethereumjs/common'
 
 export interface SyncOpHandler {

@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import * as devp2p from '../../src/index.js'
+import * as devp2p from '../../src/index.ts'
 
-import * as util from './util.js'
+import * as util from './util.ts'
 
 const capabilities = [devp2p.SNAP.snap]
 

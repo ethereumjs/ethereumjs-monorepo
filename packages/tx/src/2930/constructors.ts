@@ -7,13 +7,13 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { TransactionType } from '../types.js'
-import { txTypeBytes, validateNotArray } from '../util.js'
+import { TransactionType } from '../types.ts'
+import { txTypeBytes, validateNotArray } from '../util.ts'
 
-import { AccessList2930Tx } from './tx.js'
+import { AccessList2930Tx } from './tx.ts'
 
-import type { AccessList, TxOptions } from '../types.js'
-import type { TxData, TxValuesArray } from './tx.js'
+import type { AccessList, TxOptions } from '../types.ts'
+import type { TxData, TxValuesArray } from './tx.ts'
 
 /**
  * Instantiate a transaction from a data dictionary.
