@@ -1,10 +1,10 @@
+const jsPlugin = require('@eslint/js');
 const typeScriptPlugin = require('@typescript-eslint/eslint-plugin');
+const ethereumjsPlugin = require('eslint-plugin-ethereumjs');
 const githubPlugin = require('eslint-plugin-github');
 const implicitDependenciesPlugin = require('eslint-plugin-implicit-dependencies');
 const importPlugin = require('eslint-plugin-import');
 const simpleImportSortPlugin = require('eslint-plugin-simple-import-sort');
-const ethereumjsPlugin = require('eslint-plugin-ethereumjs');
-const jsPlugin = require('@eslint/js');
 
 module.exports = [
   importPlugin.flatConfigs.recommended,
@@ -18,10 +18,10 @@ module.exports = [
     },
     parser: require('@typescript-eslint/parser'),
     parserOptions: {
-      project: './tsconfig.json',
+      project: './config/tsconfig.lint.json',
       extraFileExtensions: ['.json'],
       sourceType: 'module',
-      project: './config/tsconfig.lint.json',
+
     },
   },
   plugins: {

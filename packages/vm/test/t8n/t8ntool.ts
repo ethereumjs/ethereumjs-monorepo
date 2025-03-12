@@ -17,10 +17,10 @@ import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../
 import { normalizeNumbers } from './helpers.js'
 import { StateTracker } from './stateTracker.js'
 
+import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
 import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
 import type { BlockBuilder, VM } from '../../src/index.js'
 import type { AfterTxEvent } from '../../src/types.js'
-import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'

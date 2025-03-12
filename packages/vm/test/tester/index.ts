@@ -314,4 +314,4 @@ async function runTests() {
   }
 }
 
-runTests() // eslint-disable-line @typescript-eslint/no-floating-promises
+runTests()
