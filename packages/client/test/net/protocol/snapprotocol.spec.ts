@@ -10,7 +10,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.ts'

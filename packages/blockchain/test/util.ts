@@ -9,7 +9,7 @@ import {
   toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createBlockchain } from '../src/index.ts'
 

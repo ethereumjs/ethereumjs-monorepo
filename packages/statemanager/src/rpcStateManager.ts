@@ -14,7 +14,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Caches, OriginalStorageCache } from './cache/index.ts'
 import { modifyAccountFields } from './util.ts'

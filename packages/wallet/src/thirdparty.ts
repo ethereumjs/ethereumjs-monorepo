@@ -1,9 +1,9 @@
 // cspell:ignore ivsize cryptojs
 import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { base64 } from '@scure/base'
-import { decrypt } from 'ethereum-cryptography/aes'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2'
+import { decrypt } from 'ethereum-cryptography/aes.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
 import { md5 } from 'js-md5'
 
 import { Wallet } from './wallet.ts'

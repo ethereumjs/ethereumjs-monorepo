@@ -9,7 +9,7 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-// import { keccak256 } from 'ethereum-cryptography/keccak'
+// import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it, vi } from 'vitest'
 
 // import { Chain } from '../../src/blockchain/index.ts'

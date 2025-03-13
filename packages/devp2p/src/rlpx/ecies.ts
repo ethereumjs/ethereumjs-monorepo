@@ -8,10 +8,10 @@ import {
 } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 

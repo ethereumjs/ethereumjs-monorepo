@@ -13,7 +13,7 @@ import {
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import type { Config } from '../config.ts'
 import type { TxPool } from '../service/txpool.ts'

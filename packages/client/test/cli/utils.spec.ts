@@ -1,5 +1,5 @@
 import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import * as fs from 'fs'
 import { assert, describe, it } from 'vitest'
 

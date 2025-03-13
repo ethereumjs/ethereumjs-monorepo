@@ -16,11 +16,11 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { base58check } from '@scure/base'
-import * as aes from 'ethereum-cryptography/aes'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { pbkdf2 } from 'ethereum-cryptography/pbkdf2'
-import { scrypt } from 'ethereum-cryptography/scrypt'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import * as aes from 'ethereum-cryptography/aes.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'
+import { scrypt } from 'ethereum-cryptography/scrypt.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { PrefixedHexString } from '@ethereumjs/util'

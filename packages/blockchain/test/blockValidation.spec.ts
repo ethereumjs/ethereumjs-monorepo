@@ -3,7 +3,7 @@ import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/commo
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { EthashConsensus, createBlockchain } from '../src/index.ts'

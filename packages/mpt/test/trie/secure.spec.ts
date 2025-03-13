@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
 import {

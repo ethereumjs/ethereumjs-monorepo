@@ -7,7 +7,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'

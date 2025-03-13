@@ -8,8 +8,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { blake2b } from 'ethereum-cryptography/blake2b.ts'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { blake2b } from 'ethereum-cryptography/blake2b.js'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.ts'

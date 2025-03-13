@@ -1,8 +1,8 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sscanf } from 'scanf'
 
 import { ipToString } from '../util.ts'

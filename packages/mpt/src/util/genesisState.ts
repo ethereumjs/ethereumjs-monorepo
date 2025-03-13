@@ -6,7 +6,7 @@ import {
   unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { MerklePatriciaTrie } from '../mpt.ts'
 

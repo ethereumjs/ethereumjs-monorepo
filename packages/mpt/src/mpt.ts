@@ -18,7 +18,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/checkpointDB.ts'
 import {

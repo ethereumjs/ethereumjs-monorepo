@@ -34,7 +34,7 @@ import {
 } from '@ethereumjs/util'
 import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'

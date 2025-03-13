@@ -1,5 +1,5 @@
 import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { createMPTFromProof } from '../index.ts'
 import { MerklePatriciaTrie } from '../mpt.ts'
