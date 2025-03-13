@@ -243,7 +243,7 @@ Starting with v5.3.0 this library supports requests to the consensus layer which
 [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer. Starting with v5.3.0 this library supports deposit requests and a containing block can be instantiated as follows:
 
 ```ts
-// ./examples/6110Requests.js
+// ./examples/6110Requests.ts
 
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
@@ -300,7 +300,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various d
 [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer. Starting with v5.3.0 this library supports withdrawal requests and a containing block can be instantiated as follows:
 
 ```ts
-// ./examples/7002Requests.js
+// ./examples/7002Requests.ts
 
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
@@ -352,7 +352,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer. Starting with v5.3.0 this library supports consolidation requests and a containing block can be instantiated as follows:
 
 ```ts
-// ./examples/7251Requests.js
+// ./examples/7251Requests.ts
 
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
