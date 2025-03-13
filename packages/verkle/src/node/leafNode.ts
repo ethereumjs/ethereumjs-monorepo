@@ -12,14 +12,14 @@ import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } f
 import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
+export class LeafVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Leaf> {
   public stem: Uint8Array
   public values: (Uint8Array | LeafVerkleNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Leaf]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Leaf]) {
     super(options)
 
     this.stem = options.stem

@@ -15,16 +15,20 @@ import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export enum DataDirectory {
-  Chain = 'chain',
-  State = 'state',
-  Meta = 'meta',
-}
+export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
-export enum SyncMode {
-  Full = 'full',
-  None = 'none',
-}
+export const DataDirectory = {
+  Chain: 'chain',
+  State: 'state',
+  Meta: 'meta',
+} as const
+
+export type SyncMode = (typeof SyncMode)[keyof typeof SyncMode]
+
+export const SyncMode = {
+  Full: 'full',
+  None: 'none',
+} as const
 
 export interface ConfigOptions {
   /**

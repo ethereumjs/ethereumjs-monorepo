@@ -4,11 +4,13 @@ import type { PrefixedHexString } from './types.js'
 
 export type RequestBytes = Uint8Array
 
-export enum CLRequestType {
-  Deposit = 0x00,
-  Withdrawal = 0x01,
-  Consolidation = 0x02,
-}
+export type CLRequestType = (typeof CLRequestType)[keyof typeof CLRequestType]
+
+export const CLRequestType = {
+  Deposit: 0,
+  Withdrawal: 1,
+  Consolidation: 2,
+} as const
 
 export interface RequestJSON {
   type: PrefixedHexString

@@ -27,10 +27,12 @@ import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
 
-export enum PutStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-}
+export type PutStatus = (typeof PutStatus)[keyof typeof PutStatus]
+
+export const PutStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+} as const
 
 type FillStatus = {
   status: PutStatus

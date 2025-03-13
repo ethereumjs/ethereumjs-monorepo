@@ -1,128 +1,106 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-export enum EOFError {
-  // Stream Reader
-  OutOfBounds = 'Trying to read out of bounds',
-  VerifyUint = 'Uint does not match expected value ',
-  VerifyBytes = 'Bytes do not match expected value',
+export type EOFError = (typeof EOFError)[keyof typeof EOFError]
 
-  // Section Markers
-  FORMAT = 'err: invalid format',
-  MAGIC = 'err: invalid magic',
-  VERSION = `err: invalid eof version`,
-  KIND_TYPE = `err: expected kind types`,
-  KIND_CODE = `err: expected kind code`,
-  KIND_DATA = `err: expected kind data`,
-  TERMINATOR = `err: expected terminator`,
+export const EOFError = {
+  OutOfBounds: 'Trying to read out of bounds',
+  VerifyUint: 'Uint does not match expected value ',
+  VerifyBytes: 'Bytes do not match expected value',
+  FORMAT: 'err: invalid format',
+  MAGIC: 'err: invalid magic',
+  VERSION: 'err: invalid eof version',
+  KIND_TYPE: 'err: expected kind types',
+  KIND_CODE: 'err: expected kind code',
+  KIND_DATA: 'err: expected kind data',
+  TERMINATOR: 'err: expected terminator',
+  TypeSize: 'missing type size',
+  InvalidTypeSize: 'err: type section size invalid',
+  CodeSize: 'missing code size',
+  CodeSectionSize: 'code section should be at least one byte',
+  InvalidCodeSize: 'code size does not match type size',
+  DataSize: 'missing data size',
+  ContainerSize: 'missing container size',
+  ContainerSectionSize:
+    'container section should at least contain one section and at most 255 sections',
+  TypeSections: 'err: mismatch of code sections count and type signatures',
+  Inputs: 'expected inputs',
+  Outputs: 'expected outputs',
+  MaxInputs: 'inputs exceeds 127, the maximum, got: ',
+  MaxOutputs: 'outputs exceeds 127, the maximum, got: ',
+  Code0Inputs: 'first code section should have 0 inputs',
+  Code0Outputs: 'first code section should have 0x80 (terminating section) outputs',
+  MaxStackHeight: 'expected maxStackHeight',
+  MaxStackHeightLimit: 'stack height limit of 1024 exceeded: ',
+  MinCodeSections: 'should have at least 1 code section',
+  MaxCodeSections: 'can have at most 1024 code sections',
+  CodeSection: 'expected a code section',
+  DataSection: 'Expected data section',
+  ContainerSection: 'expected a container section',
+  ContainerSectionMin: 'container section should be at least 1 byte',
+  InvalidEOFCreateTarget: 'EOFCREATE targets an undefined container',
+  InvalidRETURNContractTarget: 'RETURNCONTRACT targets an undefined container',
+  ContainerDoubleType: 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
+  UnreachableContainerSections: 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
+  ContainerTypeError:
+    'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
+  DanglingBytes: 'got dangling bytes in body',
+  InvalidOpcode: 'invalid opcode',
+  InvalidTerminator: 'invalid terminating opcode',
+  OpcodeIntermediatesOOB: 'invalid opcode: intermediates out-of-bounds',
+  InvalidRJUMP: 'invalid rjump* target',
+  InvalidCallTarget: 'invalid callf/jumpf target',
+  InvalidCALLFReturning: 'invalid callf: calls to non-returning function',
+  InvalidStackHeight: 'invalid stack height',
+  InvalidJUMPF: 'invalid jumpf target (output count)',
+  InvalidReturningSection: 'invalid returning code section: section is not returning',
+  ReturningNoReturn: 'invalid section: section should return but has no RETF/JUMP to return',
+  RJUMPVTableSize0: 'invalid RJUMPV: table size 0',
+  UnreachableCodeSections: 'unreachable code sections',
+  UnreachableCode: 'unreachable code (by forward jumps)',
+  DataLoadNOutOfBounds: 'DATALOADN reading out of bounds',
+  MaxStackHeightViolation: 'Max stack height does not match the reported max stack height',
+  StackUnderflow: 'Stack underflow',
+  StackOverflow: 'Stack overflow',
+  UnstableStack: 'Unstable stack (can reach stack under/overflow by jumps)',
+  RetfNoReturn: 'Trying to return to undefined function',
+  ReturnStackOverflow: 'Return stack overflow',
+  InvalidExtcallTarget: 'invalid extcall target: address > 20 bytes',
+  InvalidReturnContractDataSize: 'invalid RETURNCONTRACT: data size lower than expected',
+  InvalidEofFormat: 'invalid EOF format',
+} as const
 
-  // Section Sizes
-  TypeSize = `missing type size`,
-  InvalidTypeSize = `err: type section size invalid`,
-  CodeSize = `missing code size`,
-  CodeSectionSize = `code section should be at least one byte`,
-  InvalidCodeSize = `code size does not match type size`,
-  DataSize = `missing data size`,
-  ContainerSize = 'missing container size',
-  ContainerSectionSize = 'container section should at least contain one section and at most 255 sections',
+export type SimpleErrors = (typeof SimpleErrors)[keyof typeof SimpleErrors]
 
-  // Type Section
-  TypeSections = `err: mismatch of code sections count and type signatures`,
-  Inputs = 'expected inputs',
-  Outputs = 'expected outputs',
-  MaxInputs = 'inputs exceeds 127, the maximum, got: ',
-  MaxOutputs = 'outputs exceeds 127, the maximum, got: ',
-  Code0Inputs = 'first code section should have 0 inputs',
-  Code0Outputs = 'first code section should have 0x80 (terminating section) outputs',
-  MaxStackHeight = `expected maxStackHeight`,
-  MaxStackHeightLimit = `stack height limit of 1024 exceeded: `,
-
-  // Code/Data Section
-  MinCodeSections = `should have at least 1 code section`,
-  MaxCodeSections = `can have at most 1024 code sections`,
-  CodeSection = `expected a code section`,
-  DataSection = `Expected data section`,
-
-  // Container section
-  ContainerSection = 'expected a container section',
-  ContainerSectionMin = 'container section should be at least 1 byte',
-  InvalidEOFCreateTarget = 'EOFCREATE targets an undefined container',
-  InvalidRETURNContractTarget = 'RETURNCONTRACT targets an undefined container',
-  ContainerDoubleType = 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
-  UnreachableContainerSections = 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
-  ContainerTypeError = 'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
-
-  // Dangling Bytes
-  DanglingBytes = 'got dangling bytes in body',
-
-  // Code verification
-  InvalidOpcode = 'invalid opcode',
-  InvalidTerminator = 'invalid terminating opcode',
-  OpcodeIntermediatesOOB = 'invalid opcode: intermediates out-of-bounds',
-
-  InvalidRJUMP = 'invalid rjump* target',
-  InvalidCallTarget = 'invalid callf/jumpf target',
-  InvalidCALLFReturning = 'invalid callf: calls to non-returning function',
-  InvalidStackHeight = 'invalid stack height',
-  InvalidJUMPF = 'invalid jumpf target (output count)',
-  InvalidReturningSection = 'invalid returning code section: section is not returning',
-  ReturningNoReturn = 'invalid section: section should return but has no RETF/JUMP to return',
-  RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
-  UnreachableCodeSections = 'unreachable code sections',
-  UnreachableCode = 'unreachable code (by forward jumps)',
-  DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
-  MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
-  StackUnderflow = 'Stack underflow',
-  StackOverflow = 'Stack overflow',
-  UnstableStack = 'Unstable stack (can reach stack under/overflow by jumps)',
-  RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
-  ReturnStackOverflow = 'Return stack overflow',
-  InvalidExtcallTarget = 'invalid extcall target: address > 20 bytes',
-  InvalidReturnContractDataSize = 'invalid RETURNCONTRACT: data size lower than expected',
-
-  InvalidEofFormat = 'invalid EOF format',
-}
-
-export enum SimpleErrors {
-  minContainerSize = 'err: container size less than minimum valid size',
-  invalidContainerSize = 'err: invalid container size',
-  typeSize = 'err: type section size invalid',
-  code0msh = 'err: computed max stack height for code section 0 does not match expect',
-  underflow = 'err: stack underflow',
-  code0IO = 'err: input and output of first code section must be 0',
-
-  // Stream Reader
-  // OutOfBounds = 'err: relative offset out-of-bounds: ',
-  VerifyUint = 'Uint does not match expected value ',
-  VerifyBytes = 'Bytes do not match expected value',
-
-  // Section Sizes
-  TypeSize = `missing type size`,
-  InvalidTypeSize = `err: type section invalid`,
-  CodeSize = `missing code size`,
-  CodeSectionSize = `code section should be at least one byte`,
-  InvalidCodeSize = `code size does not match type size`,
-  DataSize = `missing data size`,
-
-  // Type Section
-  TypeSections = `need to have a type section for each code section`,
-  Inputs = 'expected inputs',
-  Outputs = 'expected outputs',
-  MaxInputs = 'inputs exceeds 127, the maximum, got: ',
-  MaxOutputs = 'outputs exceeds 127, the maximum, got: ',
-  Code0Inputs = 'first code section should have 0 inputs',
-  Code0Outputs = 'first code section should have 0 outputs',
-  MaxStackHeight = `expected maxStackHeight`,
-  MaxStackHeightLimit = `stack height limit of 1024 exceeded: `,
-
-  // Code/Data Section
-  MinCodeSections = `should have at least 1 code section`,
-  MaxCodeSections = `can have at most 1024 code sections`,
-  CodeSection = `expected a code section`,
-  DataSection = `Expected data section`,
-
-  // Dangling Bytes
-  DanglingBytes = 'got dangling bytes in body',
-}
+export const SimpleErrors = {
+  minContainerSize: 'err: container size less than minimum valid size',
+  invalidContainerSize: 'err: invalid container size',
+  typeSize: 'err: type section size invalid',
+  code0msh: 'err: computed max stack height for code section 0 does not match expect',
+  underflow: 'err: stack underflow',
+  code0IO: 'err: input and output of first code section must be 0',
+  VerifyUint: 'Uint does not match expected value ',
+  VerifyBytes: 'Bytes do not match expected value',
+  TypeSize: 'missing type size',
+  InvalidTypeSize: 'err: type section invalid',
+  CodeSize: 'missing code size',
+  CodeSectionSize: 'code section should be at least one byte',
+  InvalidCodeSize: 'code size does not match type size',
+  DataSize: 'missing data size',
+  TypeSections: 'need to have a type section for each code section',
+  Inputs: 'expected inputs',
+  Outputs: 'expected outputs',
+  MaxInputs: 'inputs exceeds 127, the maximum, got: ',
+  MaxOutputs: 'outputs exceeds 127, the maximum, got: ',
+  Code0Inputs: 'first code section should have 0 inputs',
+  Code0Outputs: 'first code section should have 0 outputs',
+  MaxStackHeight: 'expected maxStackHeight',
+  MaxStackHeightLimit: 'stack height limit of 1024 exceeded: ',
+  MinCodeSections: 'should have at least 1 code section',
+  MaxCodeSections: 'can have at most 1024 code sections',
+  CodeSection: 'expected a code section',
+  DataSection: 'Expected data section',
+  DanglingBytes: 'got dangling bytes in body',
+} as const
 
 export function validationErrorMsg(type: EOFError, ...args: any) {
   switch (type) {

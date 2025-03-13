@@ -31,8 +31,10 @@ describe('[Types]', () => {
     type OptionalTxFields = 'to' | 'r' | 's' | 'v'
 
     // Legacy tx
-    const legacyTx: RequiredExceptOptionals<TxData[TransactionType.Legacy], OptionalTxFields> =
-      createLegacyTx({}, { common })
+    const legacyTx: RequiredExceptOptionals<
+      TxData[typeof TransactionType.Legacy],
+      OptionalTxFields
+    > = createLegacyTx({}, { common })
     assert.ok(legacyTx, 'legacy tx')
 
     // Access List tx

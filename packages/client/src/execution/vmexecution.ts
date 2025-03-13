@@ -44,11 +44,13 @@ import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
 
-export enum ExecStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-  IGNORE_INVALID = 'IGNORE_INVALID',
-}
+export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
+
+export const ExecStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  IGNORE_INVALID: 'IGNORE_INVALID',
+} as const
 
 type ChainStatus = {
   height: bigint

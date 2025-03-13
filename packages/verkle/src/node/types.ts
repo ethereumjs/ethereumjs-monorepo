@@ -3,10 +3,12 @@ import { type VerkleCrypto } from '@ethereumjs/util'
 import type { InternalVerkleNode } from './internalNode.js'
 import type { LeafVerkleNode } from './leafNode.js'
 
-export enum VerkleNodeType {
-  Internal,
-  Leaf,
-}
+export type VerkleNodeType = (typeof VerkleNodeType)[keyof typeof VerkleNodeType]
+
+export const VerkleNodeType = {
+  Internal: 0,
+  Leaf: 1,
+} as const
 
 export interface ChildNode {
   commitment: Uint8Array // 64 byte commitment to child node
@@ -34,10 +36,12 @@ interface InternalVerkleNodeOptions extends BaseVerkleNodeOptions {
   children?: (ChildNode | null)[]
 }
 
-export enum LeafVerkleNodeValue {
-  Untouched = 0,
-  Deleted = 1,
-}
+export type LeafVerkleNodeValue = (typeof LeafVerkleNodeValue)[keyof typeof LeafVerkleNodeValue]
+
+export const LeafVerkleNodeValue = {
+  Untouched: 0,
+  Deleted: 1,
+} as const
 interface LeafVerkleNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values?: (Uint8Array | LeafVerkleNodeValue)[]

@@ -20,11 +20,13 @@ import type { EOFContainer } from './container.js'
  * This flag is thus to distinguish between subcontainers, and also thus also allows for data section sizes
  * lower than the size in the header in case of `InitCode`
  */
-export enum ContainerSectionType {
-  InitCode, // Targeted by EOFCreate
-  DeploymentCode, // Targeted by RETURNCONTRACT
-  RuntimeCode, // "Default" runtime code
-}
+export type ContainerSectionType = (typeof ContainerSectionType)[keyof typeof ContainerSectionType]
+
+export const ContainerSectionType = {
+  InitCode: 'initCode', // Targeted by EOFCreate
+  DeploymentCode: 'deploymentCode', // Targeted by RETURNCONTRACT
+  RuntimeCode: 'runtimeCode', // "Default" runtime code
+} as const
 
 /**
  * This method validates an EOF container deeply. It will validate the opcodes, validate the stack, and performs

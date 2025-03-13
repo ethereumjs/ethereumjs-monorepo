@@ -102,7 +102,7 @@ async function run(data: any) {
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = createAddressFromPrivateKey(randomBytes(32))
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: '0x1',

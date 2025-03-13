@@ -435,7 +435,7 @@ describe('[Transaction]', () => {
   })
 
   it('sign(), verifySignature(): should ignore any previous signature when decided if EIP155 should be used in a new one', () => {
-    const txData: TxData[TransactionType.Legacy] = {
+    const txData: TxData[typeof TransactionType.Legacy] = {
       data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
       gasLimit: '0x15f90',
       gasPrice: '0x1',
@@ -552,7 +552,7 @@ describe('[Transaction]', () => {
     let tx = createLegacyTx({})
     assert.notOk(tx.isSigned())
 
-    const txData: TxData[TransactionType.Legacy] = {
+    const txData: TxData[typeof TransactionType.Legacy] = {
       data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
       gasLimit: '0x15f90',
       gasPrice: '0x1',

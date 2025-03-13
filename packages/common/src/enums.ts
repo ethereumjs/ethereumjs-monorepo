@@ -1,11 +1,22 @@
 import { BIGINT_0, hexToBytes } from '@ethereumjs/util'
 
-export enum Chain {
-  Mainnet = 1,
-  Sepolia = 11155111,
-  Holesky = 17000,
-  Kaustinen6 = 69420,
-}
+export type Chain = (typeof Chain)[keyof typeof Chain]
+
+export const Chain = {
+  Mainnet: 1,
+  Sepolia: 11155111,
+  Holesky: 17000,
+  Kaustinen6: 69420,
+} as const
+
+// Reverse mapping: from numeric value back to the key name
+export const ChainNameFromNumber: { [key in Chain]: string } = Object.entries(Chain).reduce(
+  (acc, [key, value]) => {
+    acc[value as Chain] = key
+    return acc
+  },
+  {} as { [key in Chain]: string },
+)
 
 /**
  * Genesis state meta info which is decoupled from common's genesis params
@@ -45,38 +56,44 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
   },
 }
 
-export enum Hardfork {
-  Chainstart = 'chainstart',
-  Homestead = 'homestead',
-  Dao = 'dao',
-  TangerineWhistle = 'tangerineWhistle',
-  SpuriousDragon = 'spuriousDragon',
-  Byzantium = 'byzantium',
-  Constantinople = 'constantinople',
-  Petersburg = 'petersburg',
-  Istanbul = 'istanbul',
-  MuirGlacier = 'muirGlacier',
-  Berlin = 'berlin',
-  London = 'london',
-  ArrowGlacier = 'arrowGlacier',
-  GrayGlacier = 'grayGlacier',
-  MergeNetsplitBlock = 'mergeNetsplitBlock',
-  Paris = 'paris',
-  Shanghai = 'shanghai',
-  Cancun = 'cancun',
-  Prague = 'prague',
-  Osaka = 'osaka',
-  Verkle = 'verkle',
-}
+export type Hardfork = (typeof Hardfork)[keyof typeof Hardfork]
 
-export enum ConsensusType {
-  ProofOfStake = 'pos',
-  ProofOfWork = 'pow',
-  ProofOfAuthority = 'poa',
-}
+export const Hardfork = {
+  Chainstart: 'chainstart',
+  Homestead: 'homestead',
+  Dao: 'dao',
+  TangerineWhistle: 'tangerineWhistle',
+  SpuriousDragon: 'spuriousDragon',
+  Byzantium: 'byzantium',
+  Constantinople: 'constantinople',
+  Petersburg: 'petersburg',
+  Istanbul: 'istanbul',
+  MuirGlacier: 'muirGlacier',
+  Berlin: 'berlin',
+  London: 'london',
+  ArrowGlacier: 'arrowGlacier',
+  GrayGlacier: 'grayGlacier',
+  MergeNetsplitBlock: 'mergeNetsplitBlock',
+  Paris: 'paris',
+  Shanghai: 'shanghai',
+  Cancun: 'cancun',
+  Prague: 'prague',
+  Osaka: 'osaka',
+  Verkle: 'verkle',
+} as const
 
-export enum ConsensusAlgorithm {
-  Ethash = 'ethash',
-  Clique = 'clique',
-  Casper = 'casper',
-}
+export type ConsensusType = (typeof ConsensusType)[keyof typeof ConsensusType]
+
+export const ConsensusType = {
+  ProofOfStake: 'pos',
+  ProofOfWork: 'pow',
+  ProofOfAuthority: 'poa',
+} as const
+
+export type ConsensusAlgorithm = (typeof ConsensusAlgorithm)[keyof typeof ConsensusAlgorithm]
+
+export const ConsensusAlgorithm = {
+  Ethash: 'ethash',
+  Clique: 'clique',
+  Casper: 'casper',
+} as const
