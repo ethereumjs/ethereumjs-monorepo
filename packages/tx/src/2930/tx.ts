@@ -13,12 +13,11 @@ import * as EIP2930 from '../capabilities/eip2930.js'
 import * as Legacy from '../capabilities/legacy.js'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
 import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import { getAccessListData, getAccessListJSON, verifyAccessList } from '../util.js'
 
 import { createAccessList2930Tx } from './constructors.js'
 
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -62,8 +61,6 @@ export class AccessList2930Tx
 
   // End of Tx data part
 
-  public readonly AccessListJSON: AccessList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -102,11 +99,12 @@ export class AccessList2930Tx
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
+    const accessListData = getAccessListData(accessList ?? [], true)
     this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.cache.accessListJSON = accessListData.accessListJSON
+
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    verifyAccessList(this.accessList)
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
@@ -307,7 +305,8 @@ export class AccessList2930Tx
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = this.cache.accessListJSON ?? getAccessListJSON(this.accessList)
+    this.cache.accessListJSON = accessListJSON
     const baseJSON = getBaseJSON(this)
 
     return {

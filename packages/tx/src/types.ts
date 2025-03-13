@@ -144,6 +144,8 @@ export interface TransactionCache {
     hardfork: string | Hardfork
   }
   senderPubKey?: Uint8Array
+  accessListJSON?: AccessList
+  authorityListJSON?: AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
@@ -240,7 +242,6 @@ export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2718CompatibleTx<T> {
   readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
 }
 
 export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
