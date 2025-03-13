@@ -10,11 +10,11 @@ export default [
     },
   },
   {
-    files: ['examples/**/*'],
-
+    files: ['test/index.spec.ts', 'examples/**/*'],
     rules: {
+      'github/array-foreach': 'warn',
+      'no-prototype-builtins': 'warn',
       'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 ]

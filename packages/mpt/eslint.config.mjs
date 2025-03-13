@@ -10,11 +10,9 @@ export default [
     },
   },
   {
-    files: ['examples/**/*'],
-
+    files: ['benchmarks/*.ts', 'examples/**/*'],
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 ]
