@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark' // cspell:disable-line
 

@@ -35,7 +35,7 @@ import {
 } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'

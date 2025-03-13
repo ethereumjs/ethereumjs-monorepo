@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 let curr = keccak256(new Uint8Array(32))
 

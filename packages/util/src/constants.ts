@@ -1,5 +1,5 @@
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
-import { sha256 } from 'ethereum-cryptography/sha256.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { hexToBytes } from './bytes.ts'
 

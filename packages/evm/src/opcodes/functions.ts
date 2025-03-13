@@ -26,7 +26,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFError } from '../eof/errors.ts'

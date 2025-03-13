@@ -10,7 +10,7 @@ import {
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import * as Legacy from '../capabilities/legacy.ts'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'

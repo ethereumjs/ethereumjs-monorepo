@@ -18,7 +18,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { OriginalStorageCache } from './cache/index.ts'
 import { type MerkleStateManagerOpts } from './index.ts'

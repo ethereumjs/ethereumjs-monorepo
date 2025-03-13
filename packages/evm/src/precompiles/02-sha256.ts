@@ -1,5 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256.ts'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { OOGResult } from '../evm.ts'
 

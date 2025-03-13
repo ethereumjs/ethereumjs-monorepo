@@ -21,7 +21,7 @@ import {
 } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'

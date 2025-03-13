@@ -1,6 +1,6 @@
 import { unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.ts'
-import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
+import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat'
 import { assert, it } from 'vitest'
 
 import { ECIES } from '../src/rlpx/ecies.ts'

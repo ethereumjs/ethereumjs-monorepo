@@ -7,7 +7,7 @@ import {
   hexToBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
 import { Caches, MerkleStateManager } from '../src/index.ts'

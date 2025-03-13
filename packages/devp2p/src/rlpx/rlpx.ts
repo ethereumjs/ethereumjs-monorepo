@@ -7,8 +7,8 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 import * as net from 'net'

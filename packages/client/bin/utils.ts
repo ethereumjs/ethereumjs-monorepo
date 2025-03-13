@@ -22,7 +22,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -33,7 +33,7 @@ import {
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { sha256 } from 'ethereum-cryptography/sha256.ts'
+import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'

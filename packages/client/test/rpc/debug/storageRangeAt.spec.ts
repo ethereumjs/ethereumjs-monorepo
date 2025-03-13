@@ -8,7 +8,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'

@@ -10,7 +10,7 @@ import {
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 /* eslint-disable */

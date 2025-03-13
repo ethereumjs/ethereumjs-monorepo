@@ -1,5 +1,5 @@
 import { hexToBytes } from '@ethereumjs/util'
-import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat'
 import { assert, describe, it } from 'vitest'
 
 import * as message from '../src/dpt/message.ts'

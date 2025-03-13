@@ -1,5 +1,5 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import type { Common } from '@ethereumjs/common'
 

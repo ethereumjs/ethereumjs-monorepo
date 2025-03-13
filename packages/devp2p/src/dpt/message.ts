@@ -8,8 +8,8 @@ import {
   intToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 

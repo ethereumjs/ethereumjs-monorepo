@@ -1,5 +1,5 @@
 import { createCipheriv } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { xor } from '../util.ts'
 

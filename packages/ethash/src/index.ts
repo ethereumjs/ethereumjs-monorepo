@@ -14,7 +14,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256, keccak512 } from 'ethereum-cryptography/keccak'
 
 import {
   bytesReverse,

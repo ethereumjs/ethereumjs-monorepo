@@ -1,9 +1,9 @@
-import { getRandomBytesSync } from 'ethereum-cryptography/random.ts'
+import { getRandomBytesSync } from 'ethereum-cryptography/random'
 // eslint-disable-next-line no-restricted-imports
 import {
   bytesToHex as _bytesToUnprefixedHex,
   hexToBytes as nobleH2B,
-} from 'ethereum-cryptography/utils.ts'
+} from 'ethereum-cryptography/utils'
 
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.ts'
@@ -491,7 +491,7 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 }
 
 // eslint-disable-next-line no-restricted-imports
-export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.ts'
+export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 
 export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))

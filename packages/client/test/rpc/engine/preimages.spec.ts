@@ -14,7 +14,7 @@ import {
   intToHex,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 

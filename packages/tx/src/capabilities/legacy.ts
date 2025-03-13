@@ -11,7 +11,7 @@ import {
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Capability, TransactionType } from '../types.ts'
 

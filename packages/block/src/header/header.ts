@@ -20,7 +20,7 @@ import {
   hexToBytes,
   toType,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.ts'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import {
   CLIQUE_EXTRA_SEAL,

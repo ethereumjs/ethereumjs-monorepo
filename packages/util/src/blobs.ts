@@ -1,4 +1,4 @@
-import { sha256 } from 'ethereum-cryptography/sha256.ts'
+import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { bytesToHex, hexToBytes, utf8ToBytes } from './bytes.ts'
 

@@ -7,8 +7,8 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.ts'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.ts'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat'
 
 import type { EthStatusMsg } from './protocol/eth.ts'
 

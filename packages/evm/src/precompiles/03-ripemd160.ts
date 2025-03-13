@@ -1,5 +1,5 @@
 import { bytesToHex, setLengthLeft } from '@ethereumjs/util'
-import { ripemd160 } from 'ethereum-cryptography/ripemd160.ts'
+import { ripemd160 } from 'ethereum-cryptography/ripemd160'
 
 import { OOGResult } from '../evm.ts'
 
