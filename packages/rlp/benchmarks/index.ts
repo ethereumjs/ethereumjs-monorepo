@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark'
-import { encode, decode } from '../dist/cjs/index.ts'
+import { encode, decode } from '../dist/cjs/index.js'
 
 const suite = new Benchmark.Suite()
 

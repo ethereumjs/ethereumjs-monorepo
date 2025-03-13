@@ -1,6 +1,6 @@
 import { MapDB, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-import { Ethash } from '../dist/cjs/index.ts'
+import { Ethash } from '../dist/cjs/index.js'
 
 import type { DBObject } from '@ethereumjs/util'
 
