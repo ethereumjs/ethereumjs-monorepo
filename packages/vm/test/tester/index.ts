@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'

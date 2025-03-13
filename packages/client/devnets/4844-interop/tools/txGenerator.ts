@@ -11,8 +11,8 @@ import {
 } from '@ethereumjs/util'
 
 import { randomBytes } from '@ethereumjs/util'
-import { Client } from 'jayson/promise/index.ts'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { Client } from 'jayson/promise/index.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 const kzg = new microEthKZG(trustedSetup)
 

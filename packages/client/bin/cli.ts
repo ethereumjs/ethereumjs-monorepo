@@ -26,7 +26,7 @@ import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type * as http from 'http'
-import type { Server as RPCServer } from 'jayson/promise/index.ts'
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 let logger: Logger
 

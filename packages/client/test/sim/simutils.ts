@@ -13,7 +13,7 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { execSync, spawn } from 'node:child_process'
@@ -27,7 +27,7 @@ import type { EthereumClient } from '../../src/client.ts'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise/index.ts'
+import type { Client } from 'jayson/promise/index.js'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))

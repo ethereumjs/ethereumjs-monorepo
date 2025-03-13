@@ -1,5 +1,5 @@
 import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
-import { Client } from 'jayson/promise/index.ts'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code.ts'

@@ -8,7 +8,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
@@ -18,7 +18,7 @@ import { dummy, getRPCClient, setupChain } from '../helpers.ts'
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise/index.ts'
+import type { HttpClient } from 'jayson/promise/index.js'
 
 const method = 'debug_storageRangeAt'
 

@@ -23,7 +23,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 

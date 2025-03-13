@@ -1,5 +1,5 @@
 import { randomBytes } from '@ethereumjs/util'
-import { Client } from 'jayson/promise/index.ts'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import { jwt } from '../../src/ext/jwt-simple.ts'

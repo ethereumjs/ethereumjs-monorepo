@@ -17,7 +17,7 @@ import {
 
 import type { EthereumClient } from '../src/client.ts'
 import type { Config } from '../src/config.ts'
-import type { Server } from 'jayson/promise/index.ts'
+import type { Server } from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean

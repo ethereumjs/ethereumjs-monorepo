@@ -18,7 +18,7 @@ import type { Chain } from '../../../src/blockchain/index.ts'
 import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise/index.ts'
+import type { HttpClient } from 'jayson/promise/index.js'
 const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
 const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11fbe35c7032fab5b9a8a'
 

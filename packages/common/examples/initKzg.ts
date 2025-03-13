@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 const main = async () => {

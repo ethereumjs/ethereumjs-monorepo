@@ -8,7 +8,7 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { Client } from 'jayson/promise/index.ts'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'

@@ -31,9 +31,9 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'

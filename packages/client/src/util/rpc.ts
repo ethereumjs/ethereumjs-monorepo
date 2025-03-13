@@ -2,7 +2,7 @@ import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
-import jayson from 'jayson/promise/index.ts'
+import jayson from 'jayson/promise/index.js'
 import { inspect } from 'util'
 
 import { jwt } from '../ext/jwt-simple.ts'

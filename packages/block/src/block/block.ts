@@ -10,8 +10,8 @@ import {
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
