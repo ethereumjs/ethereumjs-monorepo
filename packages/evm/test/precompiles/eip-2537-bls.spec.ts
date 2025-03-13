@@ -1,6 +1,6 @@
+import { readFileSync, readdirSync } from 'fs'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
 

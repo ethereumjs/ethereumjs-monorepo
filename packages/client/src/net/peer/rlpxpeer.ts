@@ -6,10 +6,10 @@ import { RlpxSender } from '../protocol/index.js'
 
 import { Peer } from './peer.js'
 
+import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 import type { Protocol } from '../protocol/index.js'
 import type { RlpxServer } from '../server/index.js'
 import type { PeerOptions } from './peer.js'
-import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,

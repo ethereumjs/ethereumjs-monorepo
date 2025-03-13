@@ -20,10 +20,10 @@ import { FullEthereumService } from '../../src/service/index.js'
 import { wait } from '../integration/util.js'
 import { Goerli } from '../testdata/common/goerliCommon.js'
 
-import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import type { FullSynchronizer } from '../../src/sync/index.js'
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -84,7 +84,7 @@ class FakeChain {
     getTotalDifficulty: () => {
       return 1n
     },
-    // eslint-disable-next-line no-invalid-this
+
     shallowCopy: () => this.blockchain,
     _init: async () => undefined,
     events: {

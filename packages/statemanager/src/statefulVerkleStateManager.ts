@@ -1,14 +1,19 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
+import type {
   Account,
   type Address,
   EthereumJSErrorWithoutCode,
+  GenesisState,
   KECCAK256_NULL,
   MapDB,
+  PrefixedHexString,
+  StoragePair,
   VERKLE_CODE_CHUNK_SIZE,
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
+  VerkleCrypto,
+  VerkleExecutionWitness,
   VerkleLeafType,
   bigIntToBytes,
   bytesToBigInt,
@@ -39,8 +44,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
-import type { Caches } from './cache/caches.js'
-import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 import type {
   AccountFields,
   Common,
@@ -50,14 +53,9 @@ import type {
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type {
-  GenesisState,
-  PrefixedHexString,
-  StoragePair,
-  VerkleCrypto,
-  VerkleExecutionWitness,
-} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { Caches } from './cache/caches.js'
+import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulVerkleStateManager implements StateManagerInterface {

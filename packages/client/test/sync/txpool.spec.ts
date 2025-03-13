@@ -1,3 +1,5 @@
+import * as http from 'http'
+import * as url from 'url'
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
@@ -11,9 +13,7 @@ import {
   hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
-import * as http from 'http'
 import * as promClient from 'prom-client'
-import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.js'

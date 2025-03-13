@@ -7,12 +7,12 @@ import { AccountFetcher } from './fetcher/index.js'
 import { getInitFetcherDoneFlags } from './fetcher/types.js'
 import { Synchronizer } from './sync.js'
 
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { VMExecution } from '../execution/index.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { Skeleton } from '../service/skeleton.js'
 import type { SnapFetcherDoneFlags } from './fetcher/types.js'
 import type { SynchronizerOptions } from './sync.js'
-import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
 interface SnapSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */

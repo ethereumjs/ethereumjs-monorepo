@@ -25,9 +25,9 @@ import {
   waitForELStart,
 } from './simutils.js'
 
-import type { EthereumClient } from '../../src/client.js'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EthereumClient } from '../../src/client.js'
 
 const client = Client.http({ port: 8545 })
 
@@ -173,7 +173,6 @@ describe('simple mainnet test run', async () => {
         snapSyncCompletedPromise,
         beaconSyncRelayer: relayer,
       } = (await createSnapClient(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         common,
         customGenesisState,
         [nodeInfo.enode],

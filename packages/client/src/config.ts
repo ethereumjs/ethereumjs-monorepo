@@ -9,11 +9,11 @@ import { RlpxServer } from './net/server/index.js'
 import { Event } from './types.js'
 import { isBrowser, short } from './util/index.js'
 
-import type { Logger } from './logging.js'
-import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Logger } from './logging.js'
+import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 

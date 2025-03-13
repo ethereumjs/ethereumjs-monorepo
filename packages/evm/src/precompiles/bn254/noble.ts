@@ -11,8 +11,8 @@ import { bn254 } from '@noble/curves/bn254'
 
 import { ERROR, EvmError } from '../../exceptions.js'
 
-import type { EVMBN254Interface } from '../../types.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { EVMBN254Interface } from '../../types.js'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 const G2_INFINITY_POINT_BYTES = new Uint8Array(128)

@@ -1,3 +1,9 @@
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import * as http from 'http'
+import { homedir } from 'os'
+import * as path from 'path'
+import * as readline from 'readline'
+import * as url from 'url'
 import {
   Chain,
   Common,
@@ -34,15 +40,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import * as http from 'http'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
-import { homedir } from 'os'
-import * as path from 'path'
 import * as promClient from 'prom-client'
-import * as readline from 'readline'
-import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
@@ -52,10 +52,10 @@ import { Event } from '../src/types.js'
 import { parseMultiaddrs } from '../src/util/index.js'
 import { setupMetrics } from '../src/util/metrics.js'
 
-import type { Logger } from '../src/logging.js'
-import type { ClientOpts } from '../src/types.js'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { Logger } from '../src/logging.js'
+import type { ClientOpts } from '../src/types.js'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 

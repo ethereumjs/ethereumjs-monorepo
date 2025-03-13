@@ -5,10 +5,10 @@ import { Event } from '../../types.js'
 
 import { BlockFetcherBase } from './blockfetcherbase.js'
 
+import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { Peer } from '../../net/peer/index.js'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.js'
 import type { Job } from './types.js'
-import type { Block, BlockBytes } from '@ethereumjs/block'
 
 /**
  * Implements an eth/66 based block fetcher

@@ -3,8 +3,8 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_100,
   BIGINT_2EXP256,
+  BIGINT_100,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -27,13 +27,13 @@ import { StorageFetcher } from './storagefetcher.js'
 import { TrieNodeFetcher } from './trienodefetcher.js'
 import { getInitFetcherDoneFlags } from './types.js'
 
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import type { Debugger } from 'debug'
 import type { Peer } from '../../net/peer/index.js'
 import type { AccountData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { StorageRequest } from './storagefetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import type { Debugger } from 'debug'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -225,11 +225,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
   }
 
-  snapFetchersCompleted(fetcherType: Object, root?: Uint8Array): void {
+  snapFetchersCompleted(fetcherType: object, root?: Uint8Array): void {
     const fetcherDoneFlags = this.fetcherDoneFlags
 
     switch (fetcherType) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
         fetcherDoneFlags.accountFetcher.done = true
         fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256

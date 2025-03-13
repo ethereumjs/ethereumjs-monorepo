@@ -4,9 +4,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
-import type { SimpleStateManagerOpts } from './index.js'
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { SimpleStateManagerOpts } from './index.js'
 
 /**
  * Simple and dependency-free state manager for basic state access use cases

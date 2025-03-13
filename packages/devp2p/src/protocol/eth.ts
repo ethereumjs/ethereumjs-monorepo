@@ -18,9 +18,9 @@ import { assertEq, formatLogData, formatLogId } from '../util.js'
 
 import { Protocol } from './protocol.js'
 
+import type { Input } from '@ethereumjs/rlp'
 import type { Peer } from '../rlpx/peer.js'
 import type { SendMethod } from '../types.js'
-import type { Input } from '@ethereumjs/rlp'
 
 export interface EthStatusMsg extends Array<Uint8Array | Uint8Array[]> {}
 

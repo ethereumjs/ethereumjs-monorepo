@@ -1,6 +1,6 @@
-import { getGenesis } from '@ethereumjs/genesis'
 import { spawn } from 'child_process'
 import * as fs from 'fs'
+import { getGenesis } from '@ethereumjs/genesis'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 

@@ -2,19 +2,19 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
+  BIGINT_2EXP96,
+  BIGINT_2EXP160,
+  BIGINT_2EXP224,
+  BIGINT_7,
+  BIGINT_8,
+  BIGINT_31,
+  BIGINT_32,
+  BIGINT_96,
+  BIGINT_160,
   BIGINT_224,
   BIGINT_255,
   BIGINT_256,
-  BIGINT_2EXP160,
-  BIGINT_2EXP224,
-  BIGINT_2EXP96,
-  BIGINT_31,
-  BIGINT_32,
-  BIGINT_7,
-  BIGINT_8,
-  BIGINT_96,
   MAX_INTEGER_BIGINT,
   TWO_POW256,
   bigIntToAddressBytes,
@@ -46,8 +46,8 @@ import {
   writeCallOutput,
 } from './util.js'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.js'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void

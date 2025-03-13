@@ -1,6 +1,6 @@
+import * as fs from 'fs'
 import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import * as fs from 'fs'
 import { assert, describe, it } from 'vitest'
 
 import { generateClientConfig } from '../../bin/utils.js'

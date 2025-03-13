@@ -4,10 +4,10 @@ import { EventEmitter } from 'eventemitter3'
 import { createVM } from './constructors.js'
 import { paramsVM } from './params.js'
 
-import type { VMEvent, VMOpts } from './types.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
+import type { VMEvent, VMOpts } from './types.js'
 
 /**
  * Execution engine which can be used to run a blockchain, individual

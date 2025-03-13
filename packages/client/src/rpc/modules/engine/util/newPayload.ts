@@ -14,11 +14,11 @@ import { Status } from '../types.js'
 
 import { validHash } from './generic.js'
 
-import type { Chain } from '../../../../blockchain/index.js'
-import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../../../blockchain/index.js'
+import type { ChainCache, PayloadStatusV1 } from '../types.js'
 
 type CLData = {
   parentBeaconBlockRoot?: PrefixedHexString

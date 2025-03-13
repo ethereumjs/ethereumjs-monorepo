@@ -9,8 +9,8 @@ import { Event } from '../../src/types.js'
 import { MockChain } from './mocks/mockchain.js'
 import { MockServer } from './mocks/mockserver.js'
 
-import type { SyncMode } from '../../src/config.js'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { SyncMode } from '../../src/config.js'
 
 interface SetupOptions {
   location?: string

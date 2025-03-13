@@ -29,9 +29,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/index.js'
 import { modifyAccountFields } from './util.js'
 
-import type { Caches } from './cache/index.js'
-import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
-import type { MerkleStateManager } from './merkleStateManager.js'
 import type {
   AccountFields,
   Common,
@@ -47,6 +44,9 @@ import type {
   VerkleProof,
 } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { Caches } from './cache/index.js'
+import type { StatelessVerkleStateManagerOpts, VerkleState } from './index.js'
+import type { MerkleStateManager } from './merkleStateManager.js'
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

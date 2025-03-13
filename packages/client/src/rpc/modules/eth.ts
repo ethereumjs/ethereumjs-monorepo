@@ -45,17 +45,17 @@ import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from 
 import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
+import type { Block, JSONRPCBlock } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
+import type { Proof } from '@ethereumjs/statemanager'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.js'
 import type { ReceiptsManager } from '../../execution/receipt.js'
 import type { EthereumClient } from '../../index.js'
 import type { EthProtocol } from '../../net/protocol/index.js'
 import type { FullEthereumService, Service } from '../../service/index.js'
 import type { RPCTx } from '../types.js'
-import type { Block, JSONRPCBlock } from '@ethereumjs/block'
-import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 

@@ -19,8 +19,8 @@ import {
 } from './types.js'
 import { normalizeTxParams } from './util.js'
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 /**
  * Create a transaction from a `txData` object
  *

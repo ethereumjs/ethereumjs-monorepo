@@ -25,6 +25,13 @@ import { Message } from './message.js'
 import { trap } from './opcodes/index.js'
 import { Stack } from './stack.js'
 
+import type {
+  BinaryTreeAccessWitnessInterface,
+  Common,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
@@ -36,13 +43,6 @@ import type {
   EVMResult,
   Log,
 } from './types.js'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  Common,
-  StateManagerInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const debugGas = debugDefault('evm:gas')
 

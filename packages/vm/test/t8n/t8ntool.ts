@@ -1,3 +1,5 @@
+import { readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
 import { createBlock } from '@ethereumjs/block'
 import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
@@ -5,9 +7,7 @@ import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { readFileSync, writeFileSync } from 'fs'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-import { join } from 'path'
 
 import { buildBlock, createVM } from '../../src/index.js'
 import { rewardAccount } from '../../src/runBlock.js'
@@ -17,15 +17,15 @@ import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../
 import { normalizeNumbers } from './helpers.js'
 import { StateTracker } from './stateTracker.js'
 
-import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
-import type { BlockBuilder, VM } from '../../src/index.js'
-import type { AfterTxEvent } from '../../src/types.js'
-import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Log } from '@ethereumjs/evm'
 import type { TypedTxData } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt } from '../../dist/esm/types.js'
+import type { BlockBuilder, VM } from '../../src/index.js'
+import type { AfterTxEvent } from '../../src/types.js'
+import type { T8NAlloc, T8NEnv, T8NOptions, T8NOutput, T8NReceipt, T8NRejectedTx } from './types.js'
 const kzg = new microEthKZG(trustedSetup)
 
 // Helper methods
@@ -38,7 +38,7 @@ const kzg = new microEthKZG(trustedSetup)
 function getBlockchain(inputEnv: T8NEnv) {
   const blockchain = new EVMMockBlockchain()
 
-  blockchain.getBlock = async function (number?: Number) {
+  blockchain.getBlock = async function (number?: number) {
     for (const key in inputEnv.blockHashes) {
       if (Number(key) === number) {
         return {

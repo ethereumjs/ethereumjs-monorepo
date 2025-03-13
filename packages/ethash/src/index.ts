@@ -158,7 +158,7 @@ export class Miner {
 }
 
 export class Ethash {
-  dbOpts: Object
+  dbOpts: object
   cacheDB?: DB<number, DBObject>
   cache: Uint8Array[]
   epoc?: number

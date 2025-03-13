@@ -40,8 +40,8 @@ import {
 
 import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
 
-import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.js'
 import type { Input } from '@ethereumjs/rlp'
+import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.js'
 
 const _0n = BigInt(0)
 

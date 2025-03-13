@@ -54,7 +54,7 @@ describe('should connect/disconnect peer', () => {
 })
 
 const Peer = function (this: any, id: string) {
-  this.id = id // eslint-disable-line no-invalid-this
+  this.id = id
 }
 vi.doMock('../../src/net/peer/peer', () => Peer)
 describe('should check contains', () => {

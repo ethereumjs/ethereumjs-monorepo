@@ -19,9 +19,9 @@ import {
   waitForELStart,
 } from './simutils.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EthereumClient } from '../../src/client.js'
 import type { RlpxServer } from '../../src/net/server/index.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 

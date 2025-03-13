@@ -13,12 +13,12 @@ import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
 import { callWithStackTrace, getBlockByOption } from '../helpers.js'
 import { middleware, validators } from '../validation.js'
 
+import type { Block } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.js'
 import type { EthereumClient } from '../../index.js'
 import type { FullEthereumService } from '../../service/index.js'
 import type { RPCTx } from '../types.js'
-import type { Block } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 export interface tracerOpts {
   disableStack?: boolean

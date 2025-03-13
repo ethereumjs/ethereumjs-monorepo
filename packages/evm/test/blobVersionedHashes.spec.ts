@@ -11,8 +11,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.js'
 
-import type { EVMRunCallOpts } from '../src/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EVMRunCallOpts } from '../src/types.js'
 
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {

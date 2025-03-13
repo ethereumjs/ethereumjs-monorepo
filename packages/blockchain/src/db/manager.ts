@@ -13,10 +13,10 @@ import {
 import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
 
-import type { DatabaseKey } from './operation.js'
 import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
+import type { DatabaseKey } from './operation.js'
 
 /**
  * @hidden

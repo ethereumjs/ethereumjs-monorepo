@@ -1,5 +1,5 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-// eslint-disable-next-line no-restricted-imports
+
 import {
   bytesToHex as _bytesToUnprefixedHex,
   hexToBytes as nobleH2B,
@@ -490,7 +490,6 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
   return new Uint8Array(buffer)
 }
 
-// eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 export function hexToBigInt(input: PrefixedHexString): bigint {

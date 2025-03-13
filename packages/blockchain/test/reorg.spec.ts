@@ -9,8 +9,8 @@ import { createBlockchain } from '../src/index.js'
 import { Goerli } from './testdata/goerliCommon.js'
 import { generateConsecutiveBlock } from './util.js'
 
-import type { ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { ConsensusDict } from '../src/index.js'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {

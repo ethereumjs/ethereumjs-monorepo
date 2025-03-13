@@ -25,9 +25,9 @@ import { blocksGoerliData } from './testdata/blocks_goerli.js'
 import { blocksMainnetData } from './testdata/blocks_mainnet.js'
 import { Goerli } from './testdata/goerliCommon.js'
 
-import type { BlockHeader } from '../src/index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlockHeader } from '../src/index.js'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {

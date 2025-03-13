@@ -20,15 +20,15 @@ import {
 
 import { Heap } from '../ext/qheap.js'
 
+import type { Block } from '@ethereumjs/block'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 import type { Config } from '../config.js'
 import type { QHeap } from '../ext/qheap.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { PeerPool } from '../net/peerpool.js'
 import type { FullEthereumService } from './fullethereumservice.js'
-import type { Block } from '@ethereumjs/block'
-import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10

@@ -37,11 +37,11 @@ import {
 
 import { runTx } from './index.js'
 
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
-import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
+import type { VM } from './vm.js'
 
 export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
 export const BuildStatus = {

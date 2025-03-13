@@ -1,16 +1,16 @@
-import process from 'process'
 import repl from 'repl'
+import process from 'process'
 
 import { createInlineClient } from '../src/util/index.js'
 
 import { startRPCServers } from './startRPC.js'
 import { generateClientConfig, getArgs } from './utils.js'
 
+import type { Common } from '@ethereumjs/common'
+import type { GenesisState } from '@ethereumjs/util'
 import type { Config } from '../src/config.js'
 import type { EthereumClient } from '../src/index.js'
 import type { ClientOpts } from '../src/types.js'
-import type { Common } from '@ethereumjs/common'
-import type { GenesisState } from '@ethereumjs/util'
 
 const setupClient = async (
   config: Config,

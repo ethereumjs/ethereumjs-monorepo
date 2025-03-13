@@ -45,6 +45,9 @@ import { Goerli } from './testdata/goerliCommon.js'
 import { testnetData } from './testdata/testnet.js'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
 
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
+import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { VM } from '../../src/index.js'
 import type {
   AfterBlockEvent,
@@ -52,9 +55,6 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types.js'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {

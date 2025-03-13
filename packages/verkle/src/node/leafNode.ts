@@ -9,8 +9,8 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
 import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.js'
 
-import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
+import type { VerkleNodeOptions } from './types.js'
 
 export class LeafVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Leaf> {
   public stem: Uint8Array

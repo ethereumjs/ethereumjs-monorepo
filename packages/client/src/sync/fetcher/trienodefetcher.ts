@@ -26,11 +26,11 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Fetcher } from './fetcher.js'
 import { getInitFetcherDoneFlags } from './types.js'
 
+import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 import type { Peer } from '../../net/peer/index.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { BatchDBOp, DB } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
@@ -40,7 +40,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
-  accountToStorageTrie?: Map<String, MerklePatriciaTrie>
+  accountToStorageTrie?: Map<string, MerklePatriciaTrie>
   stateManager?: MerkleStateManager
 
   /** Destroy fetcher once all tasks are done */

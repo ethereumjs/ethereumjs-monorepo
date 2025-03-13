@@ -9,8 +9,8 @@ import { RlpxServer } from '../../src/net/server/index.js'
 import { Event } from '../../src/types.js'
 import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
 
-import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
+import type { BeaconSynchronizer } from '../../src/sync/index.js'
 
 vi.mock('../../src/net/peerpool.js', () => {
   const PeerPool = vi.fn()

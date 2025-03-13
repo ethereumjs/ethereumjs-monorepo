@@ -1,20 +1,20 @@
+import { PeerId } from '@libp2p/interface-peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 //@ts-nocheck
 // cspell:ignore pnode addrs
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
-import { multiaddr } from '@multiformats/multiaddr'
-import { PeerId } from '@libp2p/interface-peer-id'
 
-import { Event } from '../../../src/types'
 import { Libp2pPeer } from '../../../src/net/peer'
+import { Event } from '../../../src/types'
 import { Libp2pNode } from '../peer/libp2pnode'
 
 import { Server } from '../../../src/net/server/server'
 
-import type { ServerOptions } from '../../../src/net/server/server'
-import type Connection from 'libp2p-interfaces/dist/src/connection/connection'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type Connection from 'libp2p-interfaces/dist/src/connection/connection'
+import type { ServerOptions } from '../../../src/net/server/server'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */

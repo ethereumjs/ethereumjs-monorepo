@@ -1,10 +1,10 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import {
   EthereumJSErrorWithoutCode,
   bytesToUnprefixedHex,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
 import * as modules from '../src/rpc/modules/index.js'
@@ -15,9 +15,9 @@ import {
   createWsRPCServerListener,
 } from '../src/util/index.js'
 
+import type { Server } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../src/client.js'
 import type { Config } from '../src/config.js'
-import type { Server } from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean

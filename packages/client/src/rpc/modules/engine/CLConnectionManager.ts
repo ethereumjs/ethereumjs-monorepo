@@ -3,6 +3,8 @@ import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../../../types.js'
 import { short, timeDiff } from '../../../util/index.js'
 
+import type { Block } from '@ethereumjs/block'
+import type winston from 'winston'
 import type { Config } from '../../../config.js'
 import type {
   ExecutionPayloadV1,
@@ -12,8 +14,6 @@ import type {
   ForkchoiceStateV1,
   PayloadStatusV1,
 } from './types.js'
-import type { Block } from '@ethereumjs/block'
-import type winston from 'winston'
 
 const enginePrefix = '[ CL ] '
 

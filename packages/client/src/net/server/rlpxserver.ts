@@ -7,8 +7,8 @@ import { RlpxPeer } from '../peer/rlpxpeer.js'
 
 import { Server } from './server.js'
 
-import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
+import type { ServerOptions } from './server.js'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */

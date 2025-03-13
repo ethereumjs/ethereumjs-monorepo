@@ -24,9 +24,9 @@ import { createBlockchain } from '../src/index.js'
 
 import { Goerli } from './testdata/goerliCommon.js'
 
-import type { Blockchain, ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { Blockchain, ConsensusDict } from '../src/index.js'
 
 const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)

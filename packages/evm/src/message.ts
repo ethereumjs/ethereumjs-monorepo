@@ -1,12 +1,12 @@
 import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles/index.js'
-import type { EOFEnv } from './types.js'
 import type {
   BinaryTreeAccessWitnessInterface,
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrecompileFunc } from './precompiles/index.js'
+import type { EOFEnv } from './types.js'
 
 const defaults = {
   value: BIGINT_0,

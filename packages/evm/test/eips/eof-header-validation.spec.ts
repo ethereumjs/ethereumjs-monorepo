@@ -1,6 +1,6 @@
+import path from 'path'
 import { hexToBytes } from '@ethereumjs/util'
 import * as dir from 'node-dir'
-import path from 'path'
 import { assert, describe, it } from 'vitest'
 
 import { EOFContainerMode, validateEOF } from '../../src/eof/container.js'

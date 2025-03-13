@@ -22,6 +22,8 @@ import { AccessLists, validateNotArray } from '../util.js'
 
 import { createBlob4844Tx } from './constructors.js'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -33,8 +35,6 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]

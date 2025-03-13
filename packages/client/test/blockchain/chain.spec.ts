@@ -6,8 +6,8 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../src/blockchain/index.js'
 import { Config } from '../../src/config.js'
 
-import type { LevelDB } from '../../src/execution/level.js'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { LevelDB } from '../../src/execution/level.js'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 

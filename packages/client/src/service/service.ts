@@ -3,11 +3,11 @@ import { PeerPool } from '../net/peerpool.js'
 import { Event } from '../types.js'
 import { type V8Engine, getV8Engine } from '../util/index.js'
 
+import type { AbstractLevel } from 'abstract-level'
 import type { Config } from '../config.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { Protocol } from '../net/protocol/index.js'
 import type { Synchronizer } from '../sync/index.js'
-import type { AbstractLevel } from 'abstract-level'
 
 export interface ServiceOptions {
   /* Config */
@@ -163,7 +163,6 @@ export class Service {
     }
 
     this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
       this.STATS_INTERVAL,
     )

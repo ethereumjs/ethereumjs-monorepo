@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { mkdirSync, readFileSync } from 'fs'
 import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToHex, short } from '@ethereumjs/util'
-import { mkdirSync, readFileSync } from 'fs'
 import { Level } from 'level'
 
 import { EthereumClient } from '../src/client.js'
@@ -16,17 +16,17 @@ import { generateVKTStateRoot } from '../src/util/vkt.js'
 import { helpRPC, startRPCServers } from './startRPC.js'
 import { generateClientConfig, getArgs } from './utils.js'
 
+import type * as http from 'http'
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.js'
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
 import type { ClientOpts } from '../src/types.js'
 import type { RPCArgs } from './startRPC.js'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { ConsensusDict } from '@ethereumjs/blockchain'
-import type { GenesisState } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
-import type * as http from 'http'
-import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 let logger: Logger
 

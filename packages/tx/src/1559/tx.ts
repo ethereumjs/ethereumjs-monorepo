@@ -19,6 +19,8 @@ import { AccessLists } from '../util.js'
 
 import { createFeeMarket1559Tx } from './constructors.js'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -30,8 +32,6 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]

@@ -24,7 +24,25 @@ import { callWithStackTrace } from '../../helpers.js'
 import { middleware, validators } from '../../validation.js'
 
 import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.js'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.js'
+import type {
+  BlobAndProofV1,
+  Bytes8,
+  Bytes32,
+  type ChainCache,
+  EngineError,
+  ExecutionPayloadBodyV1,
+  ExecutionPayloadV1,
+  ExecutionPayloadV2,
+  ExecutionPayloadV3,
+  ForkchoiceResponseV1,
+  ForkchoiceStateV1,
+  PayloadAttributes,
+  PayloadAttributesV1,
+  PayloadAttributesV2,
+  PayloadAttributesV3,
+  type PayloadStatusV1,
+  Status,
+} from './types.js'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -45,29 +63,14 @@ import {
   payloadAttributesFieldValidatorsV3,
 } from './validators.js'
 
+import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 import type { Chain } from '../../../blockchain/index.js'
 import type { EthereumClient } from '../../../client.js'
 import type { Config } from '../../../config.js'
 import type { VMExecution } from '../../../execution/index.js'
 import type { FullEthereumService, Skeleton } from '../../../service/index.js'
-import type {
-  BlobAndProofV1,
-  Bytes32,
-  Bytes8,
-  ExecutionPayloadBodyV1,
-  ExecutionPayloadV1,
-  ExecutionPayloadV2,
-  ExecutionPayloadV3,
-  ForkchoiceResponseV1,
-  ForkchoiceStateV1,
-  PayloadAttributes,
-  PayloadAttributesV1,
-  PayloadAttributesV2,
-  PayloadAttributesV3,
-} from './types.js'
-import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = new Uint8Array(32)
 
@@ -92,9 +95,9 @@ export class Engine {
   private lastNewPayloadHF: string = ''
   private lastForkchoiceUpdatedHF: string = ''
 
-  private remoteBlocks: Map<String, Block>
-  private executedBlocks: Map<String, Block>
-  private invalidBlocks: Map<String, Error>
+  private remoteBlocks: Map<string, Block>
+  private executedBlocks: Map<string, Block>
+  private invalidBlocks: Map<string, Error>
   private chainCache: ChainCache
 
   private lastAnnouncementTime = Date.now()

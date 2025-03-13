@@ -13,7 +13,7 @@ describe('official tests', () => {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
-        incoming = numberToBytes(BigInt(incoming.slice(1))) // eslint-disable-line
+        incoming = numberToBytes(BigInt(incoming.slice(1)))
       }
 
       const encoded = RLP.encode(incoming)

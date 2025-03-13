@@ -8,10 +8,10 @@ import { Event } from '../../../src/types.js'
 import { MockSender } from './mocksender.js'
 import { createStream } from './network.js'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { PeerOptions } from '../../../src/net/peer/index.js'
 import type { MockServer } from './mockserver.js'
 import type { RemoteStream } from './network.js'
-import type { BlockHeader } from '@ethereumjs/block'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.

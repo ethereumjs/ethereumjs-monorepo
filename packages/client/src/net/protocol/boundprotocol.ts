@@ -2,15 +2,15 @@ import { EthereumJSErrorWithoutCode, Lock } from '@ethereumjs/util'
 
 import { Event } from '../../types.js'
 
+import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TxReceipt } from '@ethereumjs/vm'
 import type { Config } from '../../config.js'
 import type { Peer } from '../peer/peer.js'
 import type { EthProtocolMethods } from './ethprotocol.js'
 import type { Message, Protocol } from './protocol.js'
 import type { Sender } from './sender.js'
 import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
-import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import type { TxReceipt } from '@ethereumjs/vm'
 
 export interface BoundProtocolOptions {
   /* Config */

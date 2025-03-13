@@ -7,11 +7,11 @@ import { short } from '../util/index.js'
 import { BlockFetcher } from './fetcher/index.js'
 import { Synchronizer } from './sync.js'
 
+import type { Block } from '@ethereumjs/block'
 import type { VMExecution } from '../execution/index.js'
 import type { Peer } from '../net/peer/peer.js'
 import type { TxPool } from '../service/txpool.js'
 import type { SynchronizerOptions } from './sync.js'
-import type { Block } from '@ethereumjs/block'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */

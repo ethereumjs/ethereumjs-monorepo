@@ -3,17 +3,17 @@
 import { multiaddr } from '@multiformats/multiaddr'
 
 import { Peer } from '../../../src/net/peer/peer'
-import { Libp2pSender } from '../libp2psender'
 import { Event } from '../../../src/types'
+import { Libp2pSender } from '../libp2psender'
 
 import { Libp2pNode } from './libp2pnode'
 
+import { PeerId, isPeerId } from '@libp2p/interface-peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
 import type { PeerOptions } from '../../../src/net/peer/peer'
 import type { Protocol } from '../../../src/net/protocol'
 import type { Libp2pServer } from '../../../src/net/server'
-import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { PeerId, isPeerId } from '@libp2p/interface-peer-id'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
   /* Multiaddrs to listen on */

@@ -1,16 +1,20 @@
 import { BinaryTree } from '@ethereumjs/binarytree'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import {
+import type {
   Account,
   type Address,
   BINARY_TREE_CODE_CHUNK_SIZE,
   BINARY_TREE_CODE_OFFSET,
   BINARY_TREE_NODE_WIDTH,
+  BinaryTreeExecutionWitness,
   BinaryTreeLeafType,
   EthereumJSErrorWithoutCode,
+  GenesisState,
   KECCAK256_NULL,
   MapDB,
+  PrefixedHexString,
+  StoragePair,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -40,8 +44,6 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 import { modifyAccountFields } from './util.js'
 
-import type { Caches } from './cache/caches.js'
-import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.js'
 import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,
@@ -50,13 +52,9 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type {
-  BinaryTreeExecutionWitness,
-  GenesisState,
-  PrefixedHexString,
-  StoragePair,
-} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { Caches } from './cache/caches.js'
+import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.js'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulBinaryTreeStateManager implements StateManagerInterface {

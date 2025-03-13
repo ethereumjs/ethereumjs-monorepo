@@ -18,11 +18,11 @@ import debugDefault from 'debug'
 import { Fetcher } from './fetcher.js'
 import { getInitFetcherDoneFlags } from './types.js'
 
+import type { Debugger } from 'debug'
 import type { Peer } from '../../net/peer/index.js'
 import type { StorageData } from '../../net/protocol/snapprotocol.js'
 import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { Debugger } from 'debug'
 
 const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
@@ -77,7 +77,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
 
-  accountToHighestKnownHash: Map<String, Uint8Array>
+  accountToHighestKnownHash: Map<string, Uint8Array>
 
   /**
    * Create new storage fetcher
@@ -92,7 +92,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
-    this.accountToHighestKnownHash = new Map<String, Uint8Array>()
+    this.accountToHighestKnownHash = new Map<string, Uint8Array>()
     this.debug = debugDefault('client:fetcher:storage')
     if (this.storageRequests.length > 0) {
       const fullJob = {

@@ -7,8 +7,8 @@ import { createBlockchain } from '../src/index.js'
 
 import { testnetData } from './testdata/testnet.js'
 
-import type { Consensus, ConsensusDict } from '../src/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Consensus, ConsensusDict } from '../src/index.js'
 
 class fibonacciConsensus implements Consensus {
   algorithm: string

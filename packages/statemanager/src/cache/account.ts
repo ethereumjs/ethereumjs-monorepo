@@ -6,8 +6,8 @@ import { LRUCache } from 'lru-cache'
 import { Cache } from './cache.js'
 import { CacheType } from './types.js'
 
-import type { CacheOpts } from './types.js'
 import type { Account, Address } from '@ethereumjs/util'
+import type { CacheOpts } from './types.js'
 
 /**
  * account: undefined

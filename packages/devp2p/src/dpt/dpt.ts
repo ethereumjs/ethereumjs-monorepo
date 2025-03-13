@@ -15,8 +15,8 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
-import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
 
 const DEBUG_BASE_NAME = 'dpt'
 

@@ -1,3 +1,4 @@
+import * as crypto from 'crypto'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
@@ -6,7 +7,6 @@ import {
   hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
-import * as crypto from 'crypto'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'

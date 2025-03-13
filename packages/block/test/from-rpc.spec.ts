@@ -11,10 +11,10 @@ import {
 import { alchemy14151203Data } from './testdata/alchemy14151203.js'
 import { Goerli } from './testdata/goerliCommon.js'
 import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.js'
-import { infura15571241Data } from './testdata/infura15571241.js'
-import { infura15571241withTransactionsData } from './testdata/infura15571241withTransactions.js'
 import { infura2000004withTransactionsData } from './testdata/infura2000004withTransactions.js'
 import { infura2000004withoutTransactionsData } from './testdata/infura2000004withoutTransactions.js'
+import { infura15571241Data } from './testdata/infura15571241.js'
+import { infura15571241withTransactionsData } from './testdata/infura15571241withTransactions.js'
 import { testdataFromRPCDifficultyAsIntegerData } from './testdata/testdata-from-rpc-difficulty-as-integer.js'
 import { testdataFromRPCGoerliLondonData } from './testdata/testdata-from-rpc-goerli-london.js'
 import { testdataFromRPCWithUnclesData } from './testdata/testdata-from-rpc-with-uncles.js'
@@ -22,8 +22,8 @@ import { testdataFromRPCWithUnclesUncleBlockData } from './testdata/testdata-fro
 import { testdataFromRPCWithWithdrawalsData } from './testdata/testdata-from-rpc-with-withdrawals.js'
 import { testdataFromRPCData } from './testdata/testdata-from-rpc.js'
 
-import type { JSONRPCBlock } from '../src/index.js'
 import type { JSONRPCTx, LegacyTx } from '@ethereumjs/tx'
+import type { JSONRPCBlock } from '../src/index.js'
 
 describe('[fromRPC]: block #2924874', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })

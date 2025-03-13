@@ -6,11 +6,11 @@ import { BIGINT_0, EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/u
 import { LevelDB } from '../execution/level.js'
 import { Event } from '../types.js'
 
-import type { Config } from '../config.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { Config } from '../config.js'
 
 /**
  * The options that the Blockchain constructor can receive.
@@ -113,9 +113,9 @@ export interface ChainHeaders {
 }
 
 type BlockCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
+  remoteBlocks: Map<string, Block>
+  executedBlocks: Map<string, Block>
+  invalidBlocks: Map<string, Error>
 }
 
 /**

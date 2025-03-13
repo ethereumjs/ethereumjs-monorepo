@@ -4,8 +4,8 @@ import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
 import { Hardfork } from './enums.js'
 import { hardforksDict } from './hardforks.js'
 
-import type { HardforksDict } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { HardforksDict } from './types.js'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }

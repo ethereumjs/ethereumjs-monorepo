@@ -21,9 +21,9 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.js'
 
-import type { VM } from '../../../src/index.js'
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../../src/index.js'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
 const eip7702Designator = hexToBytes('0xef01')

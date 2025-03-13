@@ -29,8 +29,8 @@ import {
 import { hardfork4844Data } from './testData/4844-hardfork.js'
 import { serialized4844TxData } from './testData/serialized4844tx.js'
 
-import type { BlobEIP4844TxData } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlobEIP4844TxData } from '../src/index.js'
 
 const pk = randomBytes(32)
 const kzg = new microEthKZG(trustedSetup)

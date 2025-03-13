@@ -1,6 +1,6 @@
+import { readFileSync } from 'fs'
 import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { bytesToHex } from '@ethereumjs/util'
-import { readFileSync } from 'fs'
 import { assert, describe, expect, it } from 'vitest'
 
 import {

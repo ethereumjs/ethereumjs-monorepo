@@ -75,7 +75,7 @@ export class LevelDB<
         throw error
       }
     }
-    // eslint-disable-next-line
+
     if (value instanceof Buffer) value = Uint8Array.from(value)
     return value as TValue
   }

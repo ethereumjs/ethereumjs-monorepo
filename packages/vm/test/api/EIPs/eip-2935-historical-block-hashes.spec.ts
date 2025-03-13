@@ -24,10 +24,10 @@ import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
 
-import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { LegacyTxData } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../../src/index.js'
 
 function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [
@@ -123,7 +123,6 @@ describe('EIP 2935: historical block hashes', () => {
     const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
     const contract2935Code = hexToBytes(contract2935CodeHex as string)
 
-    // eslint-disable-next-line no-inner-declarations
     async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
       const tx = createLegacyTx({
         to: historyAddress,

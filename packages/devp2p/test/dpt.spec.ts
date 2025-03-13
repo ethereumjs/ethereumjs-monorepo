@@ -1,5 +1,5 @@
 import { hexToBytes } from '@ethereumjs/util'
-import { afterEach, assert, describe, expect, it, vi } from 'vitest'
+import { assert, afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DPT } from '../src/dpt/index.js'
 

@@ -1,6 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
 import { type Address, bytesToUnprefixedHex } from '@ethereumjs/util'
 
+import { precompile0a } from './0a-kzg-point-evaluation.js'
+import { precompile0b } from './0b-bls12-g1add.js'
+import { precompile0c } from './0c-bls12-g1msm.js'
+import { precompile0d } from './0d-bls12-g2add.js'
+import { precompile0e } from './0e-bls12-g2msm.js'
+import { precompile0f } from './0f-bls12-pairing.js'
 import { precompile01 } from './01-ecrecover.js'
 import { precompile02 } from './02-sha256.js'
 import { precompile03 } from './03-ripemd160.js'
@@ -10,19 +16,13 @@ import { precompile06 } from './06-bn254-add.js'
 import { precompile07 } from './07-bn254-mul.js'
 import { precompile08 } from './08-bn254-pairing.js'
 import { precompile09 } from './09-blake2f.js'
-import { precompile0a } from './0a-kzg-point-evaluation.js'
-import { precompile0b } from './0b-bls12-g1add.js'
-import { precompile0c } from './0c-bls12-g1msm.js'
-import { precompile0d } from './0d-bls12-g2add.js'
-import { precompile0e } from './0e-bls12-g2msm.js'
-import { precompile0f } from './0f-bls12-pairing.js'
 import { precompile10 } from './10-bls12-map-fp-to-g1.js'
 import { precompile11 } from './11-bls12-map-fp2-to-g2.js'
 import { MCLBLS, NobleBLS } from './bls12_381/index.js'
 import { NobleBN254, RustBN254 } from './bn254/index.js'
 
-import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { PrecompileFunc, PrecompileInput } from './types.js'
 
 interface PrecompileEntry {
   address: string

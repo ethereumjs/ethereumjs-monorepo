@@ -32,8 +32,8 @@ import { createVM, runTx } from '../../src/index.js'
 import { Goerli } from './testdata/goerliCommon.js'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
 
-import type { VM } from '../../src/vm.js'
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
+import type { VM } from '../../src/vm.js'
 
 const TRANSACTION_TYPES = [
   {

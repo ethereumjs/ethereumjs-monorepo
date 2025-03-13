@@ -462,7 +462,7 @@ describe('blockchain test', () => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      //eslint-disable-next-line
+
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = createBlockHeader(headerData, {

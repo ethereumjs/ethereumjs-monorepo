@@ -4,9 +4,9 @@ import { bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 import { UNSUPPORTED_FORK } from '../../../error-code.js'
 import { type ChainCache } from '../types.js'
 
-import type { Chain } from '../../../../blockchain/index.js'
 import type { Common, Hardfork } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../../../blockchain/index.js'
 
 /**
  * Recursively finds parent blocks starting from the parentHash.

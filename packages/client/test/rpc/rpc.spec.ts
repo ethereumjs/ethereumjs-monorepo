@@ -6,8 +6,8 @@ import { jwt } from '../../src/ext/jwt-simple.js'
 
 import { createClient, createManager, getRPCClient, startRPC } from './helpers.js'
 
-import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 import type { AddressInfo } from 'net'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 
 const { encode } = jwt
 const jwtSecret = randomBytes(32)

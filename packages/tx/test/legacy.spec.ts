@@ -21,8 +21,8 @@ import { Goerli } from './testData/goerliCommon.js'
 import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.js'
 import { txsData } from './testData/txs.js'
 
-import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { TransactionType, TxData, TypedTransaction } from '../src/index.js'
 
 describe('[Transaction]', () => {
   const transactions: TypedTransaction[] = []

@@ -196,7 +196,6 @@ describe('transaction validation tests', () => {
     )
     const excessBlobGas = parentHeader.calcNextExcessBlobGas(common)
 
-    // eslint-disable-next-line no-inner-declarations
     function getBlock(transactions: TypedTransaction[]) {
       const blobs = getNumBlobs(transactions)
 

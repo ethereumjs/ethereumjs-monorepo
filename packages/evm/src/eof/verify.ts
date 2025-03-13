@@ -141,7 +141,6 @@ function validateOpcodes(
     // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
     const jumpLocations = new Set<number>()
 
-    // eslint-disable-next-line no-inner-declarations
     function addJump(location: number) {
       if (intermediateBytes.has(location)) {
         // When trying to JUMP into an intermediate byte: this is invalid
@@ -150,7 +149,6 @@ function validateOpcodes(
       jumpLocations.add(location)
     }
 
-    // eslint-disable-next-line no-inner-declarations
     function addIntermediate(location: number) {
       if (jumpLocations.has(location)) {
         // When trying to add an intermediate to a location already JUMPed to: this is invalid

@@ -7,8 +7,8 @@ import { sscanf } from 'scanf'
 
 import { ipToString } from '../util.js'
 
-import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
+import type { PeerInfo } from '../types.js'
 
 type ENRRootValues = {
   eRoot: string

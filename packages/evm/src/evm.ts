@@ -47,6 +47,7 @@ import {
   type ExecResult,
 } from './types.js'
 
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
 import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
@@ -55,7 +56,6 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type { VerkleAccessWitness } from './verkleAccessWitness.js'
-import type { Common, StateManagerInterface } from '@ethereumjs/common'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')

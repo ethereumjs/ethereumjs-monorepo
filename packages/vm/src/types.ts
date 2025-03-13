@@ -1,4 +1,3 @@
-import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
 import type {
@@ -16,6 +15,7 @@ import type {
   PrefixedHexString,
   WithdrawalData,
 } from '@ethereumjs/util'
+import type { Bloom } from './bloom/index.js'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**

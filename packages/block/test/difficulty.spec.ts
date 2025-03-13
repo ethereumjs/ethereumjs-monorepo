@@ -67,7 +67,6 @@ describe('[Header]: difficulty tests', () => {
     })
 
   it('by hardfork', () => {
-    /* eslint-disable no-restricted-syntax */
     for (const hardfork in hardforkTestData) {
       const testData = hardforkTestData[hardfork]
       for (const testName in testData) {

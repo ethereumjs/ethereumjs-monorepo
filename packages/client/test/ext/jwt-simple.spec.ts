@@ -1,6 +1,6 @@
+import fs from 'fs'
 import { bytesToUtf8 } from '@ethereumjs/util'
 import { base64url } from '@scure/base'
-import fs from 'fs'
 import { describe, expect, it } from 'vitest'
 
 import { jwt } from '../../src/ext/jwt-simple.js'

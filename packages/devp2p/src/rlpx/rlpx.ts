@@ -1,3 +1,5 @@
+import * as net from 'net'
+import * as os from 'os'
 import {
   EthereumJSErrorWithoutCode,
   bytesToInt,
@@ -11,18 +13,16 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
-import * as net from 'net'
-import * as os from 'os'
 
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.js'
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { Peer } from './peer.js'
 
-import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
+import type { DPT } from '../dpt/index.js'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
 
 // note: relative path only valid in .js file in dist
 

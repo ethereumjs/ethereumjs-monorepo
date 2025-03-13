@@ -1,6 +1,6 @@
+import { rmSync } from 'fs'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createAddressFromPrivateKey, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.js'

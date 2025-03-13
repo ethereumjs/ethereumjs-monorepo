@@ -73,7 +73,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
     const msg = 'should throw an exception on non-existing hardfork'
-    assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new
+    assert.throws(f, /not supported$/, undefined, msg)
   })
 
   it('Should provide correct access to chain parameters', () => {

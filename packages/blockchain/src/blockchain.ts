@@ -29,14 +29,6 @@ import {
 import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
-import type {
-  BlockchainEvent,
-  BlockchainInterface,
-  BlockchainOptions,
-  Consensus,
-  ConsensusDict,
-  OnBlock,
-} from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type {
@@ -47,6 +39,14 @@ import type {
   VerkleExecutionWitness,
 } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type {
+  BlockchainEvent,
+  BlockchainInterface,
+  BlockchainOptions,
+  Consensus,
+  ConsensusDict,
+  OnBlock,
+} from './types.js'
 
 /**
  * Blockchain implementation to create and maintain a valid canonical chain

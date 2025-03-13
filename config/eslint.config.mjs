@@ -36,7 +36,7 @@ export default [
     ]
   },
   { files: ["**/*.{js,mjs,cjs,ts,cts,mts}"] },
-  { languageOptions: { globals: globals.browser, parserOptions: { extraFileExtensions: ['.json'], sourceType: 'module', project: './config/tsconfig.lint.json' } } },
+  { languageOptions: { globals: globals.browser, parser: tseslint.parser, parserOptions: { extraFileExtensions: ['.json'], sourceType: 'module', project: './config/tsconfig.lint.json' } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   importPlugin.flatConfigs.recommended,

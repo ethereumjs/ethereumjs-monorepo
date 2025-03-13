@@ -27,9 +27,9 @@ export const isBrowser = new Function('try {return this===window;}catch(e){ retu
 function verifyAccount(
   account: Account,
   state: {
-    balance: BigInt
+    balance: bigint
     codeHash: Uint8Array
-    nonce: BigInt
+    nonce: bigint
     storageRoot: Uint8Array
   },
 ) {

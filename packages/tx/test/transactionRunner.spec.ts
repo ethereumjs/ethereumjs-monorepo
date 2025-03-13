@@ -7,8 +7,8 @@ import { createTxFromRLP } from '../src/transactionFactory.js'
 
 import { getTests } from './testLoader.js'
 
-import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

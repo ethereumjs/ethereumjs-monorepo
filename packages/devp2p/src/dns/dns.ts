@@ -1,11 +1,11 @@
+import * as dns from 'dns'
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import * as dns from 'dns'
 
 import { ENR } from './enr.js'
 
-import type { DNSOptions, PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
+import type { DNSOptions, PeerInfo } from '../types.js'
 
 const debug = debugDefault('devp2p:dns:dns')
 

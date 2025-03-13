@@ -19,11 +19,11 @@ import { devp2pDebug, formatLogData } from '../util.js'
 
 import { ECIES } from './ecies.js'
 
-import type { Protocol } from '../protocol/protocol.js'
-import type { Capabilities, PeerOptions } from '../types.js'
+import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type { Socket } from 'net'
+import type { Protocol } from '../protocol/protocol.js'
+import type { Capabilities, PeerOptions } from '../types.js'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = debugDefault('verbose').enabled

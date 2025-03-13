@@ -1,5 +1,5 @@
-import type { FeeMarketEIP1559TxData } from '../../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { FeeMarketEIP1559TxData } from '../../src/index.js'
 
 export const eip1559Data: Array<
   FeeMarketEIP1559TxData & {

@@ -11,8 +11,8 @@ import {
   createTx,
 } from '../src/index.js'
 
-import type { TxValuesArray } from '../src/index.js'
 import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
+import type { TxValuesArray } from '../src/index.js'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: PrefixedHexString): AddressLike[] {
