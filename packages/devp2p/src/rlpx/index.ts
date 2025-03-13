@@ -1,4 +1,3 @@
-export * from '../types.ts'
 export * from './ecies.ts'
 export * from './mac.ts'
 export * from './peer.ts'

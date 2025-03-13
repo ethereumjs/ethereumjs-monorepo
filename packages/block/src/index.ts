@@ -1,4 +1,3 @@
-export { Block } from './block/block.ts'
 export * from './block/index.ts'
 export * from './consensus/index.ts'
 export { type BeaconPayloadJSON, executionPayloadFromBeaconPayload } from './from-beacon-payload.ts'
