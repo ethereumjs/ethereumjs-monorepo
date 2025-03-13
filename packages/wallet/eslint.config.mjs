@@ -10,9 +10,13 @@ export default [
     },
   },
   {
+    rules: {
+      'no-restricted-syntax': 'warn',
+    },
+  },
+  {
     files: ['test/index.spec.ts', 'examples/**/*'],
     rules: {
-      'github/array-foreach': 'warn',
       'no-prototype-builtins': 'warn',
       'no-console': 'off',
     },
