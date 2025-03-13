@@ -163,7 +163,6 @@ process.on('message', async (message) => {
     running = true
     try {
       await runTransition(message)
-       
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e)
