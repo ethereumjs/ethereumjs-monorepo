@@ -1,8 +1,8 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import type {
+import {
   type TxOptions,
-  TypedTransaction,
+  type TypedTransaction,
   createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,

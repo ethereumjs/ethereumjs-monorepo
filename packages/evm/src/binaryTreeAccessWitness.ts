@@ -1,10 +1,10 @@
-import type {
+import {
   type AccessEventFlags,
   type BinaryTreeAccessWitnessInterface,
-  BinaryTreeAccessedState,
+  type BinaryTreeAccessedState,
   BinaryTreeAccessedStateType,
   type BinaryTreeAccessedStateWithAddress,
-  RawBinaryTreeAccessedState,
+  type RawBinaryTreeAccessedState,
 } from '@ethereumjs/common'
 import {
   BIGINT_0,

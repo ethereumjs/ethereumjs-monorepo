@@ -28,8 +28,7 @@ import type {
   BlobAndProofV1,
   Bytes8,
   Bytes32,
-  type ChainCache,
-  EngineError,
+  ChainCache,
   ExecutionPayloadBodyV1,
   ExecutionPayloadV1,
   ExecutionPayloadV2,
@@ -40,9 +39,9 @@ import type {
   PayloadAttributesV1,
   PayloadAttributesV2,
   PayloadAttributesV3,
-  type PayloadStatusV1,
-  Status,
+  PayloadStatusV1,
 } from './types.js'
+import { EngineError, Status } from './types.js'
 import {
   assembleBlock,
   blockToExecutionPayload,

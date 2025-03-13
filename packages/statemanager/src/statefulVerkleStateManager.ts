@@ -1,19 +1,19 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type {
+import {
   Account,
   type Address,
   EthereumJSErrorWithoutCode,
-  GenesisState,
+  type GenesisState,
   KECCAK256_NULL,
   MapDB,
-  PrefixedHexString,
-  StoragePair,
+  type PrefixedHexString,
+  type StoragePair,
   VERKLE_CODE_CHUNK_SIZE,
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
-  VerkleCrypto,
-  VerkleExecutionWitness,
+  type VerkleCrypto,
+  type VerkleExecutionWitness,
   VerkleLeafType,
   bigIntToBytes,
   bytesToBigInt,
