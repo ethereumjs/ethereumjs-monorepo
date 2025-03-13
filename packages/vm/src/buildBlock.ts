@@ -23,7 +23,7 @@ import {
   toBytes,
   toType,
 } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { Bloom } from './bloom/index.ts'
 import { runTx } from './index.ts'

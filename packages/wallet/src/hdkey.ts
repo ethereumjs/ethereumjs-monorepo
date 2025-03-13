@@ -1,6 +1,6 @@
 // cspell:ignore xprv xpub
-import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index'
-import { HDKey } from 'ethereum-cryptography/hdkey'
+import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
+import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
 import { Wallet } from './wallet.ts'
 
