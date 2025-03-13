@@ -76,6 +76,7 @@ export default [
       '@typescript-eslint/no-use-before-define': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
+      '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
       eqeqeq: 'error',
       'no-console': 'warn',
       'no-debugger': 'error',

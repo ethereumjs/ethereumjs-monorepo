@@ -1,6 +1,6 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import type { EVMMockBlockchainInterface, type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { type EVMMockBlockchainInterface, type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
