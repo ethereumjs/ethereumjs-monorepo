@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import { pipe } from 'it-pipe'
-import pushable from 'it-pushable'
+import { pushable } from 'it-pushable'
 
 import { Peer } from '../../../src/net/peer/index.js'
 import { Event } from '../../../src/types.js'
