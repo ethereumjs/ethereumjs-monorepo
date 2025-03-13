@@ -1,5 +1,6 @@
 export type ERROR = (typeof ERROR)[keyof typeof ERROR]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ERROR = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',

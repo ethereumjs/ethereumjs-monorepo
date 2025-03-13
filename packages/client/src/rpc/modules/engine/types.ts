@@ -6,6 +6,7 @@ import type { Skeleton } from '../../../service/index.js'
 
 export type Status = (typeof Status)[keyof typeof Status]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Status = {
   ACCEPTED: 'ACCEPTED',
   INVALID: 'INVALID',

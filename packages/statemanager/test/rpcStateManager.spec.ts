@@ -79,6 +79,7 @@ describe('RPC State Manager API tests', () => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
       state['_caches'].account?.get(vitalikDotEth)?.accountRLP!,
     )
 

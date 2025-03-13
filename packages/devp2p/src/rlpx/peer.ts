@@ -35,6 +35,7 @@ const PING_INTERVAL = 15000 // 15 sec * 1000
 
 export type PREFIXES = (typeof PREFIXES)[keyof typeof PREFIXES]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PREFIXES = {
   HELLO: 0x00,
   DISCONNECT: 0x01,

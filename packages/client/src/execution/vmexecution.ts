@@ -46,6 +46,7 @@ import type { ExecutionOptions } from './execution.js'
 
 export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ExecStatus = {
   VALID: 'VALID',
   INVALID: 'INVALID',

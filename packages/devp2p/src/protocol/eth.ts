@@ -54,6 +54,7 @@ export const EthMessageCodes = {
   POOLED_TRANSACTIONS: 0x0a,
 } as const
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type EthMessageCodes = (typeof EthMessageCodes)[keyof typeof EthMessageCodes]
 
 // Create a reverse mapping: from numeric value back to the key name

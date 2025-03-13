@@ -15,6 +15,7 @@ import type { CacheMap } from './manager.js'
 
 export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DBTarget = {
   Heads: 0,
   HeadHeader: 1,

@@ -140,6 +140,7 @@ export interface VerkleExecutionWitness {
 
 export type VerkleLeafType = (typeof VerkleLeafType)[keyof typeof VerkleLeafType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerkleLeafType = {
   BasicData: 0,
   CodeHash: 1,

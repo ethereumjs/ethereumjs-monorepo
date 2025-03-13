@@ -5,6 +5,7 @@ import type { LeafVerkleNode } from './leafNode.js'
 
 export type VerkleNodeType = (typeof VerkleNodeType)[keyof typeof VerkleNodeType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerkleNodeType = {
   Internal: 0,
   Leaf: 1,
@@ -38,6 +39,7 @@ interface InternalVerkleNodeOptions extends BaseVerkleNodeOptions {
 
 export type LeafVerkleNodeValue = (typeof LeafVerkleNodeValue)[keyof typeof LeafVerkleNodeValue]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LeafVerkleNodeValue = {
   Untouched: 0,
   Deleted: 1,

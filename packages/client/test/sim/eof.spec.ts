@@ -19,6 +19,8 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'eof'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const eofJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(eofJSON, { chain: network })
 

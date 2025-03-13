@@ -56,12 +56,14 @@ type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
 
 export type IndexType = (typeof IndexType)[keyof typeof IndexType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const IndexType = {
   TxHash: 'txhash',
 } as const
 
 export type IndexOperation = (typeof IndexOperation)[keyof typeof IndexOperation]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const IndexOperation = {
   Save: 'save',
   Delete: 'delete',
@@ -76,12 +78,14 @@ type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
 
 export type RlpConvert = (typeof RlpConvert)[keyof typeof RlpConvert]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RlpConvert = {
   Encode: 'encode',
   Decode: 'decode',
 } as const
 export type RlpType = (typeof RlpType)[keyof typeof RlpType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RlpType = {
   Receipts: 'receipts',
   Logs: 'logs',
@@ -219,12 +223,13 @@ export class ReceiptsManager extends MetaDBManager {
         //  * [null, B] - anything in first position AND B in second position (and anything after)
         //  * [A, B] - A in first position AND B in second position (and anything after)
         //  * [[A, B], [A, B]] - (A OR B) in first position AND (A OR B) in second position (and anything after)
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         logs = logs.filter((l) => {
           for (const [i, topic] of topics.entries()) {
-            if (Array.isArray(topic)) {
+            if (Array.isArray(topic) === true) {
               // Can match any items in this array
               if (!topic.find((t) => equalsBytes(t, l.log[1][i]))) return false
-            } else if (!topic) {
+            } else if (topic === null) {
               // If null then can match any
             } else {
               // If a value is specified then it must match

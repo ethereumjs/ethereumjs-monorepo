@@ -44,6 +44,8 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 
 export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BuildStatus = {
   Reverted: 'reverted',
   Build: 'build',

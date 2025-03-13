@@ -29,6 +29,7 @@ const INVALID_PARAMS = -32602
 
 export type PutStatus = (typeof PutStatus)[keyof typeof PutStatus]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PutStatus = {
   VALID: 'VALID',
   INVALID: 'INVALID',

@@ -31,6 +31,7 @@ export class StateTracker {
 
     this.vm = vm
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     vm.stateManager.putAccount = async function (...args: [Address, Account?]) {

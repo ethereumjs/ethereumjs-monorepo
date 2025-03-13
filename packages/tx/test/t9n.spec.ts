@@ -112,7 +112,6 @@ function runTests(filePath: string) {
 }
 
 function recursiveLoad(dir: string) {
-  // eslint-disable-next-line github/array-foreach
   fs.readdirSync(dir).forEach((file) => {
     const fullName = dir + '/' + file
     const stat = fs.statSync(fullName)

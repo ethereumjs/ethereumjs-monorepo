@@ -13,6 +13,7 @@ export type BigIntLike = bigint | PrefixedHexString | number | Uint8Array
 /*
  * A type that represents an input that can be converted to a Uint8Array.
  */
+
 export type BytesLike =
   | Uint8Array
   | number[]
@@ -60,6 +61,7 @@ export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
 
 export type TypeOutput = (typeof TypeOutput)[keyof typeof TypeOutput]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TypeOutput = {
   Number: 0,
   BigInt: 1,

@@ -194,6 +194,7 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0): U
       for (i = 9 - sections.length; i > 0; i--) {
         argv.push('0')
       }
+      // eslint-disable-next-line prefer-spread
       sections.splice.apply(sections, argv)
     }
 

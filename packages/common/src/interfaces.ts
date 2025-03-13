@@ -73,6 +73,7 @@ export type AccessEventFlags = {
 export type BinaryTreeAccessedStateType =
   (typeof BinaryTreeAccessedStateType)[keyof typeof BinaryTreeAccessedStateType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BinaryTreeAccessedStateType = {
   BasicData: 'basicData',
   CodeHash: 'codeHash',
@@ -123,6 +124,7 @@ export interface BinaryTreeAccessWitnessInterface {
 export type VerkleAccessedStateType =
   (typeof VerkleAccessedStateType)[keyof typeof VerkleAccessedStateType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerkleAccessedStateType = {
   BasicData: 'basicData',
   CodeHash: 'codeHash',

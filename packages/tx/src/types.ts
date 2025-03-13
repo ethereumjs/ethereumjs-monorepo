@@ -19,6 +19,8 @@ export type Capability = (typeof Capability)[keyof typeof Capability]
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
  */
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Capability = {
   /**
    * Tx supports EIP-155 replay protection
@@ -148,6 +150,7 @@ export interface TransactionCache {
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TransactionType = {
   Legacy: 0,
   AccessListEIP2930: 1,

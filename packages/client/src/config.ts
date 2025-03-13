@@ -17,6 +17,7 @@ import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DataDirectory = {
   Chain: 'chain',
   State: 'state',
@@ -25,6 +26,7 @@ export const DataDirectory = {
 
 export type SyncMode = (typeof SyncMode)[keyof typeof SyncMode]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SyncMode = {
   Full: 'full',
   None: 'none',

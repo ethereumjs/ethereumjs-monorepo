@@ -25,6 +25,7 @@ export default [
       '**/vitest.config.browser.ts',
       '**/vitest.config.unit.ts',
       '**/vitest.config.coverage.ts',
+      '**/vitest.config.coverage.mts',
       '**/vite.*.ts',
       '**/ethereum-tests/**',
       '**/archive/**',
@@ -77,6 +78,12 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_'}],
+      '@typescript-eslint/ban-ts-comment': 'warn',  // TODO: Clean up ts comments
+      '@typescript-eslint/no-empty-object-type': ['error', {
+        allowInterfaces: 'with-single-extends',
+        allowObjectTypes: 'always'
+      }],
       eqeqeq: 'error',
       'no-console': 'warn',
       'no-debugger': 'error',

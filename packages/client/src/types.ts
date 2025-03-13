@@ -12,6 +12,7 @@ export type Event = (typeof Event)[keyof typeof Event]
  * Types for the central event bus, emitted
  * by different components of the client.
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Event = {
   CHAIN_UPDATED: 'blockchain:chain:updated',
   CLIENT_SHUTDOWN: 'client:shutdown',

@@ -2,6 +2,7 @@ import { BIGINT_0, hexToBytes } from '@ethereumjs/util'
 
 export type Chain = (typeof Chain)[keyof typeof Chain]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Chain = {
   Mainnet: 1,
   Sepolia: 11155111,
@@ -58,6 +59,7 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
 
 export type Hardfork = (typeof Hardfork)[keyof typeof Hardfork]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Hardfork = {
   Chainstart: 'chainstart',
   Homestead: 'homestead',
@@ -84,6 +86,7 @@ export const Hardfork = {
 
 export type ConsensusType = (typeof ConsensusType)[keyof typeof ConsensusType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConsensusType = {
   ProofOfStake: 'pos',
   ProofOfWork: 'pow',
@@ -92,6 +95,7 @@ export const ConsensusType = {
 
 export type ConsensusAlgorithm = (typeof ConsensusAlgorithm)[keyof typeof ConsensusAlgorithm]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConsensusAlgorithm = {
   Ethash: 'ethash',
   Clique: 'clique',

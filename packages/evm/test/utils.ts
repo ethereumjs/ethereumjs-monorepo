@@ -10,5 +10,6 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
  * @param file
  */
 export function getSingleFile(file: string) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require(path.join(path.resolve('../ethereum-tests'), file))
 }

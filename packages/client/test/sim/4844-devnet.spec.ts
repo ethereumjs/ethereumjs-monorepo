@@ -24,6 +24,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const shardingJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 

@@ -8,6 +8,7 @@ export type BatchDBOp<
 
 export type KeyEncoding = (typeof KeyEncoding)[keyof typeof KeyEncoding]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const KeyEncoding = {
   String: 'string',
   Bytes: 'view',
@@ -16,6 +17,7 @@ export const KeyEncoding = {
 
 export type ValueEncoding = (typeof ValueEncoding)[keyof typeof ValueEncoding]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ValueEncoding = {
   String: 'string',
   Bytes: 'view',

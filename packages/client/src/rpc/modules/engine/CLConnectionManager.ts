@@ -19,6 +19,7 @@ const enginePrefix = '[ CL ] '
 
 export type logLevel = (typeof logLevel)[keyof typeof logLevel]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const logLevel = {
   ERROR: 'error',
   WARN: 'warn',
@@ -28,6 +29,7 @@ export const logLevel = {
 
 export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionStatus = {
   Connected: 'connected',
   Disconnected: 'disconnected',

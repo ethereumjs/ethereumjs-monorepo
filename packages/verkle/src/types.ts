@@ -3,6 +3,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 import type { DB, VerkleCrypto } from '@ethereumjs/util'
 
 // Field representation of a commitment
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Fr {}
 
 export type Proof = Uint8Array[]

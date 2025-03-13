@@ -51,6 +51,7 @@ const MAX_PAYLOAD_CACHE = 2
 
 type AddTxResult = (typeof AddTxResult)[keyof typeof AddTxResult]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 const AddTxResult = {
   Success: 'Success',
   BlockFull: 'BlockFull',

@@ -22,6 +22,7 @@ import type { EOFContainer } from './container.js'
  */
 export type ContainerSectionType = (typeof ContainerSectionType)[keyof typeof ContainerSectionType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContainerSectionType = {
   InitCode: 'initCode', // Targeted by EOFCreate
   DeploymentCode: 'deploymentCode', // Targeted by RETURNCONTRACT

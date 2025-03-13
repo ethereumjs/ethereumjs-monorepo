@@ -68,6 +68,7 @@ export interface Capabilities {
 
 export type DISCONNECT_REASON = (typeof DISCONNECT_REASON)[keyof typeof DISCONNECT_REASON]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DISCONNECT_REASON = {
   DISCONNECT_REQUESTED: 0x00,
   NETWORK_ERROR: 0x01,
@@ -222,6 +223,7 @@ export interface DPTServerOptions {
 
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProtocolType = {
   ETH: 'eth',
   SNAP: 'snap',

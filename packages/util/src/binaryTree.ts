@@ -76,6 +76,7 @@ export interface BinaryTreeExecutionWitness {
 
 export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BinaryTreeLeafType = {
   BasicData: 0,
   CodeHash: 1,

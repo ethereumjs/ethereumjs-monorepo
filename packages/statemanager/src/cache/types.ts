@@ -1,5 +1,6 @@
 export type CacheType = (typeof CacheType)[keyof typeof CacheType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CacheType = {
   LRU: 'lru',
   ORDERED_MAP: 'ordered_map',

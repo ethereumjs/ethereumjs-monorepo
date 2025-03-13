@@ -20,7 +20,7 @@ export const blockToExecutionPayload = (
     delete executionPayload.parentBeaconBlockRoot
   }
 
-  const blobsBundle: BlobsBundleV1 | undefined = bundle ? bundle : undefined
+  const blobsBundle: BlobsBundleV1 | undefined = bundle ?? undefined
 
   // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks

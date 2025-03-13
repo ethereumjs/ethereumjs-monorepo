@@ -157,6 +157,7 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3ParamsStrict
 
 export type KDFFunctions = (typeof KDFFunctions)[keyof typeof KDFFunctions]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const KDFFunctions = {
   PBKDF: 'pbkdf2',
   Scrypt: 'scrypt',

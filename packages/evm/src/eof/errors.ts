@@ -2,6 +2,7 @@ import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
 export type EOFError = (typeof EOFError)[keyof typeof EOFError]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EOFError = {
   OutOfBounds: 'Trying to read out of bounds',
   VerifyUint: 'Uint does not match expected value ',
@@ -71,6 +72,7 @@ export const EOFError = {
 
 export type SimpleErrors = (typeof SimpleErrors)[keyof typeof SimpleErrors]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SimpleErrors = {
   minContainerSize: 'err: container size less than minimum valid size',
   invalidContainerSize: 'err: invalid container size',

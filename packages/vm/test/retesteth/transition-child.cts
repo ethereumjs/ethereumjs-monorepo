@@ -1,21 +1,22 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
+import { Block, createBlock, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
-import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ethereumjs/tx'
+import { createLegacyTxFromBytesArray, createTxFromRLP } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { VM } from '../../dist/cjs'
-import { BlockBuilder } from '../../dist/cjs/buildBlock'
-import { getCommon } from '../tester/config'
-import { makeBlockFromEnv, setupPreConditions } from '../util'
+import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
+import { createVM } from '../../dist/cjs/index.js'
+import { getCommon } from '../tester/config.js'
+import { makeBlockFromEnv, setupPreConditions } from '../util.js'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array } from '@ethereumjs/util'
-import type { PostByzantiumTxReceipt } from '../../dist/cjs'
+import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
+import type { PostByzantiumTxReceipt } from '../../dist/cjs/index.js'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const yargs = require('yargs/yargs')
 
 async function runTransition(argsIn: any) {
@@ -52,15 +53,16 @@ async function runTransition(argsIn: any) {
     const genesisBlockData = {
       gasLimit: 5000,
       difficulty: 0,
-      nonce: '0x0000000000000000',
-      extraData: '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa',
+      nonce: '0x0000000000000000' as PrefixedHexString,
+      extraData:
+        '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa' as PrefixedHexString,
     }
-    const genesis = createBlockFromBlockData({
-      header: BlockHeader.fromHeaderData(genesisBlockData),
+    const genesis = createBlock({
+      header: createBlockHeader(genesisBlockData),
     })
     blockchain = await createBlockchain({ common, genesisBlock: genesis })
   }
-  const vm = blockchain ? await VM.create({ common, blockchain }) : await VM.create({ common })
+  const vm = blockchain ? await createVM({ common, blockchain }) : await createVM({ common })
   await setupPreConditions(vm.stateManager, { pre: alloc })
 
   const block = makeBlockFromEnv(inputEnv, { common })
@@ -109,7 +111,7 @@ async function runTransition(argsIn: any) {
     try {
       let tx: TypedTransaction
       if (txData instanceof Uint8Array) {
-        tx = createTxFromSerializedData(txData as Uint8Array, { common })
+        tx = createTxFromRLP(txData as Uint8Array, { common })
       } else {
         tx = createLegacyTxFromBytesArray(txData as Uint8Array[], { common })
       }

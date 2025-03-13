@@ -32,6 +32,7 @@ import type { EthereumClient } from '../../src/client.js'
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const networkJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(networkJSON, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJSON)

@@ -18,13 +18,10 @@ export class InternalVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Int
   // Updates the commitment value for a child node at the corresponding index
   setChild(childIndex: number, child: ChildNode | null) {
     // Get previous child commitment at `index`
-    const oldChildReference =
-      this.children[childIndex] !== null
-        ? this.children[childIndex]
-        : {
-            commitment: this.verkleCrypto.zeroCommitment,
-            path: new Uint8Array(),
-          }
+    const oldChildReference = this.children[childIndex] ?? {
+      commitment: this.verkleCrypto.zeroCommitment,
+      path: new Uint8Array(),
+    }
     // Updates the commitment to the child node at `index`
     this.children[childIndex] = child !== null ? { ...child } : null
     // Updates the overall node commitment based on the update to this child

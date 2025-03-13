@@ -6,6 +6,7 @@ export type RequestBytes = Uint8Array
 
 export type CLRequestType = (typeof CLRequestType)[keyof typeof CLRequestType]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CLRequestType = {
   Deposit: 0,
   Withdrawal: 1,

@@ -56,6 +56,7 @@ export class Heap {
         }
     opts = this.options
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     this._isBefore = opts.compar

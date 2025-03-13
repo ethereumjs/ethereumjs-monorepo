@@ -37,6 +37,7 @@ type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMe
 
 export type MethodConfig = (typeof MethodConfig)[keyof typeof MethodConfig]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MethodConfig = {
   WithEngine: 'withengine',
   WithoutEngine: 'withoutengine',

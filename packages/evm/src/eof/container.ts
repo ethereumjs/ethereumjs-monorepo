@@ -39,6 +39,7 @@ import type { EVM } from '../evm.js'
 // Depending on this mode, certain extra checks for validity have to be done, or some checks can be skipped
 export type EOFContainerMode = (typeof EOFContainerMode)[keyof typeof EOFContainerMode]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EOFContainerMode = {
   Default: 'default', // Default container validation
   Initmode: 'initMode', // Initmode container validation (for subcontainers pointed to by EOFCreate)

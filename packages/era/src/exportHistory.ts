@@ -15,6 +15,7 @@ type DatabaseKey = {
 
 export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DBTarget = {
   NumberToHash: 4,
   TotalDifficulty: 5,
@@ -24,6 +25,7 @@ export const DBTarget = {
 
 export type DBKey = (typeof DBKey)[keyof typeof DBKey]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DBKey = {
   Receipts: 0,
 } as const

@@ -136,6 +136,8 @@ export class RlpxServer extends Server {
    * Bootstrap bootnode and DNS mapped peers from the network
    */
   async bootstrap(): Promise<void> {
+    // TODO: Figure out why we do this
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     // Bootnodes

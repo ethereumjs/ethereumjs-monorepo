@@ -158,5 +158,6 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
  * @param file
  */
 export function getSingleFile(file: string) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require(path.join(DEFAULT_TESTS_PATH, file))
 }

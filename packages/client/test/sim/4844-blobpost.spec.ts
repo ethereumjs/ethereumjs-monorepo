@@ -35,6 +35,7 @@ const numTxs = Number(process.env.NUM_TXS ?? 1)
 console.log({ sender, rpcUrl, chainId, numTxs })
 
 const network = 'sharding'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const shardingJSON = require(`./configs/${network}.json`)
 
 // safely change chainId without modifying underlying json

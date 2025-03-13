@@ -42,6 +42,7 @@ type PrecompileAvailabilityCheckType =
 export type PrecompileAvailabilityCheck =
   (typeof PrecompileAvailabilityCheck)[keyof typeof PrecompileAvailabilityCheck]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PrecompileAvailabilityCheck = {
   EIP: 'eip',
   Hardfork: 'hardfork',

@@ -22,6 +22,7 @@ export const SnapMessageCodes = {
   TRIE_NODES: 0x07,
 } as const
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type SnapMessageCodes = (typeof SnapMessageCodes)[keyof typeof SnapMessageCodes]
 
 // Create a reverse mapping: from numeric value back to the key name

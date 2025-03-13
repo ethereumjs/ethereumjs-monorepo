@@ -8,6 +8,7 @@ const encodingOpts = { keyEncoding: 'view', valueEncoding: 'view' }
 
 export type DBKey = (typeof DBKey)[keyof typeof DBKey]
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DBKey = {
   Receipts: 0,
   TxHash: 1,
