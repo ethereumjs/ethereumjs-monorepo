@@ -5,6 +5,10 @@ import { HDKey } from 'ethereum-cryptography/hdkey.js'
 import { Wallet } from './wallet.js'
 
 export class EthereumHDKey {
+  private readonly _hdkey: HDKey
+  constructor(hdkey: HDKey) {
+    this._hdkey = hdkey
+  }
   /**
    * Creates an instance based on a seed.
    */
@@ -25,8 +29,6 @@ export class EthereumHDKey {
   public static fromExtendedKey(base58Key: string): EthereumHDKey {
     return new EthereumHDKey(HDKey.fromExtendedKey(base58Key))
   }
-
-  constructor(private readonly _hdkey: HDKey) {}
 
   /**
    * Returns a BIP32 extended private key (xprv)

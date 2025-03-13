@@ -27,7 +27,7 @@ import type { EthereumClient } from '../../src/client.js'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise'
+import type { Client } from 'jayson/promise/index.js'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -321,7 +321,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = createAddressFromPrivateKey(pkey)
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',

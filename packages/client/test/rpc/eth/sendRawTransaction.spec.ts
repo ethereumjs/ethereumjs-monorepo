@@ -83,7 +83,7 @@ describe(method, () => {
       gasLimit: 21000,
       gasPrice: 0,
       nonce: 0,
-    }).sign(hexToBytes(`0x${'42'.repeat(32)}`), false)
+    }).sign(hexToBytes(`0x${'42'.repeat(32)}`))
 
     const txData = bytesToHex(transaction.serialize())
 
@@ -221,7 +221,7 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+    const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.js')
 
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',

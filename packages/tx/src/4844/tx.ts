@@ -36,8 +36,8 @@ import type {
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -45,8 +45,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4844> {
-  public type: number = TransactionType.BlobEIP4844 // 4844 tx type
+export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
+  public type = TransactionType.BlobEIP4844 // 4844 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -439,7 +439,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): Blob4844Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return <Blob4844Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

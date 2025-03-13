@@ -1,7 +1,7 @@
 import type { DPT } from './dpt/index.js'
-import type { ETH } from './protocol/eth.js'
+import type { EthMessageCodes } from './protocol/eth.js'
 import type { Protocol } from './protocol/protocol.js'
-import type { SNAP } from './protocol/snap.js'
+import type { SnapMessageCodes } from './protocol/snap.ts'
 import type { Peer } from './rlpx/peer.js'
 import type { Common } from '@ethereumjs/common'
 import type { NestedUint8Array } from '@ethereumjs/rlp'
@@ -23,7 +23,7 @@ export interface PeerEvent {
 }
 
 export interface ProtocolEvent {
-  message: [code: SNAP.MESSAGE_CODES | ETH.MESSAGE_CODES, payload: Uint8Array | NestedUint8Array]
+  message: [code: SnapMessageCodes | EthMessageCodes, payload: Uint8Array | NestedUint8Array]
   status: {
     chainId: Uint8Array | Uint8Array[]
     td: Uint8Array
@@ -66,21 +66,35 @@ export interface Capabilities {
   constructor: ProtocolConstructor
 }
 
-export enum DISCONNECT_REASON {
-  DISCONNECT_REQUESTED = 0x00,
-  NETWORK_ERROR = 0x01,
-  PROTOCOL_ERROR = 0x02,
-  USELESS_PEER = 0x03,
-  TOO_MANY_PEERS = 0x04,
-  ALREADY_CONNECTED = 0x05,
-  INCOMPATIBLE_VERSION = 0x06,
-  INVALID_IDENTITY = 0x07,
-  CLIENT_QUITTING = 0x08,
-  UNEXPECTED_IDENTITY = 0x09,
-  SAME_IDENTITY = 0x0a,
-  TIMEOUT = 0x0b,
-  SUBPROTOCOL_ERROR = 0x10,
-}
+export type DISCONNECT_REASON = (typeof DISCONNECT_REASON)[keyof typeof DISCONNECT_REASON]
+
+export const DISCONNECT_REASON = {
+  DISCONNECT_REQUESTED: 0x00,
+  NETWORK_ERROR: 0x01,
+  PROTOCOL_ERROR: 0x02,
+  USELESS_PEER: 0x03,
+  TOO_MANY_PEERS: 0x04,
+  ALREADY_CONNECTED: 0x05,
+  INCOMPATIBLE_VERSION: 0x06,
+  INVALID_IDENTITY: 0x07,
+  CLIENT_QUITTING: 0x08,
+  UNEXPECTED_IDENTITY: 0x09,
+  SAME_IDENTITY: 0x0a,
+  TIMEOUT: 0x0b,
+  SUBPROTOCOL_ERROR: 0x10,
+} as const
+
+// Create a reverse mapping: numeric value -> key name
+export const DisconnectReasonNames: { [key in DISCONNECT_REASON]: string } = Object.entries(
+  DISCONNECT_REASON,
+).reduce(
+  (acc, [key, value]) => {
+    acc[value as DISCONNECT_REASON] = key
+    return acc
+  },
+  {} as { [key in DISCONNECT_REASON]: string },
+)
+
 export type DNSOptions = {
   /**
    * ipv4 or ipv6 address of server to pass to native dns.setServers()
@@ -206,10 +220,12 @@ export interface DPTServerOptions {
   common?: Common
 }
 
-export enum ProtocolType {
-  ETH = 'eth',
-  SNAP = 'snap',
-}
+export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
+
+export const ProtocolType = {
+  ETH: 'eth',
+  SNAP: 'snap',
+} as const
 
 export interface KBucketOptions {
   /**

@@ -52,7 +52,7 @@
     "@ethereumjs/blockchain": "^10.0.0-rc.1",
     "@ethereumjs/rlp": "^10.0.0-rc.1",
     "@ethereumjs/util": "^10.0.0-rc.1",
-    "level": "^8.0.0",
+    "level": "^9.0.0",
     "micro-eth-signer": "^0.14.0"
   },
   "engines": {

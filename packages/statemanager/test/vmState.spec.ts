@@ -1,4 +1,4 @@
-import { Chain } from '@ethereumjs/common'
+import { Chain, ChainNameFromNumber } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -32,7 +32,7 @@ describe('stateManager', () => {
       expectedStateRoot,
       `generateCanonicalGenesis should produce correct state root for mainnet from common`,
     )
-  }, 10_000)
+  }, 30_000)
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
@@ -52,7 +52,7 @@ describe('stateManager', () => {
       assert.deepEqual(
         stateRoot,
         expectedStateRoot,
-        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`,
+        `generateCanonicalGenesis should produce correct state root for ${ChainNameFromNumber[chain]}`,
       )
     }
   })

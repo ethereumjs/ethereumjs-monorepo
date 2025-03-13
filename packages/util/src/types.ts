@@ -58,15 +58,14 @@ export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
   return true
 }
 
-/**
- * Type output options
- */
-export enum TypeOutput {
-  Number,
-  BigInt,
-  Uint8Array,
-  PrefixedHexString,
-}
+export type TypeOutput = (typeof TypeOutput)[keyof typeof TypeOutput]
+
+export const TypeOutput = {
+  Number: 0,
+  BigInt: 1,
+  Uint8Array: 2,
+  PrefixedHexString: 3,
+} as const
 
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number

@@ -43,15 +43,16 @@ import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
 
-export enum BuildStatus {
-  Reverted = 'reverted',
-  Build = 'build',
-  Pending = 'pending',
-}
+export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+export const BuildStatus = {
+  Reverted: 'reverted',
+  Build: 'build',
+  Pending: 'pending',
+} as const
 
 type BlockStatus =
-  | { status: BuildStatus.Pending | BuildStatus.Reverted }
-  | { status: BuildStatus.Build; block: Block }
+  | { status: typeof BuildStatus.Pending | typeof BuildStatus.Reverted }
+  | { status: typeof BuildStatus.Build; block: Block }
 
 export class BlockBuilder {
   /**

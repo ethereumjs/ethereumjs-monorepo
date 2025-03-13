@@ -15,8 +15,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { withdrawalsData } from '../../../../client/test/testdata/geth-genesis/withdrawals.js'
 import { buildBlock, createVM, runBlock } from '../../../src/index.js'
+import { withdrawalsData } from '../testdata/withdrawals.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
@@ -72,7 +72,7 @@ describe('EIP4895 tests', () => {
       maxFeePerGas: BigInt(7),
       maxPriorityFeePerGas: BigInt(0),
       gasLimit: BigInt(50000),
-    }).sign(pkey, false)
+    }).sign(pkey)
 
     await vm.stateManager.putAccount(transaction.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(transaction.getSenderAddress())

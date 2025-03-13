@@ -50,8 +50,8 @@ describe('WASM crypto tests', () => {
     const common = new Common({ chain: Mainnet })
 
     const pk = randomBytes(32)
-    const tx = createLegacyTx({}, { common }).sign(pk, false)
-    const tx2 = createLegacyTx({}, { common: commonWithCustomCrypto }).sign(pk, false)
+    const tx = createLegacyTx({}, { common }).sign(pk)
+    const tx2 = createLegacyTx({}, { common: commonWithCustomCrypto }).sign(pk)
 
     assert.deepEqual(tx.getSenderPublicKey(), tx2.getSenderPublicKey())
     assert.deepEqual(tx.hash(), tx2.hash())
@@ -85,7 +85,7 @@ describe('WASM crypto tests', () => {
     await waitReady()
     const msg = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
     const pk = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
-    const jsSig = ecsign(msg, pk, { extraEntropy: false })
+    const jsSig = ecsign(msg, pk)
     const wasmSig = wasmSign(msg, pk)
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
     assert.throws(

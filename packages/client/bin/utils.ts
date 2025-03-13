@@ -77,7 +77,7 @@ export function getArgs(): ClientOpts {
       .option('chainId', {
         describe: 'Chain ID',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
@@ -87,7 +87,7 @@ export function getArgs(): ClientOpts {
         deprecated: true,
         deprecate: 'use --chainId instead',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
