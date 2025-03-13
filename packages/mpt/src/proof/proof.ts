@@ -1,9 +1,7 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
-import { createMPTFromProof } from '../constructors.ts'
-import { MerklePatriciaTrie } from '../index.ts'
+import { type MPTOpts, MerklePatriciaTrie, type Proof, createMPTFromProof } from '../index.ts'
 
-import type { MPTOpts, Proof } from '../index.ts'
 import type { PutBatch } from '@ethereumjs/util'
 
 /**
