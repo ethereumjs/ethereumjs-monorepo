@@ -13,10 +13,7 @@ import type { MockServer } from './mockserver.js'
 import type { RemoteStream } from './network.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
-// TypeScript doesn't have support yet for ReturnType
-// with generic types, so this wrapper is used as a helper.
-const wrapperPushable = () => pushable<Uint8Array>()
-export type Pushable = ReturnType<typeof wrapperPushable>
+export type Pushable = ReturnType<typeof pushable>
 
 interface MockPeerOptions extends PeerOptions {
   location: string

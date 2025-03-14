@@ -29,10 +29,10 @@ export class MockSender extends Sender {
   }
 
   sendStatus(status: any) {
-    this.pushable.push([this.protocol, 0, status] as any)
+    this.pushable.push([this.protocol, 0, status])
   }
 
   sendMessage(code: any, data: any) {
-    this.pushable.push([this.protocol, code, data] as any)
+    this.pushable.push([this.protocol, code, data])
   }
 }
