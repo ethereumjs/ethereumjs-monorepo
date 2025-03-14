@@ -1,3 +1,4 @@
+/* eslint-disable no-global-assign */
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -186,7 +187,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global value
-    // eslint-disable-next-line no-global-assign
+
     fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
