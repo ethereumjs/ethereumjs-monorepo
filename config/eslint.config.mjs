@@ -1,4 +1,3 @@
-import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from 'eslint-plugin-import'
@@ -37,7 +36,7 @@ export default [
     ]
   },
   { files: ["**/*.{js,mjs,cjs,ts,cts,mts}"] },
-  { languageOptions: { globals: globals.browser, parser: tseslint.parser, parserOptions: { extraFileExtensions: ['.json'], sourceType: 'module', project: './config/tsconfig.lint.json' } } },
+  { languageOptions: { parser: tseslint.parser, parserOptions: { extraFileExtensions: ['.json'], sourceType: 'module', project: './config/tsconfig.lint.json' } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   importPlugin.flatConfigs.recommended,
