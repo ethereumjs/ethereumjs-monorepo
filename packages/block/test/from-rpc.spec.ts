@@ -232,8 +232,7 @@ describe('[fromJSONRPCProvider]', () => {
         'returned correct error message',
       )
     }
-    // @ts-expect-error
-
+    // @ts-expect-error -- Typescript doesn't like assigning a function back to a global
     fetch = realFetch
   })
 })
