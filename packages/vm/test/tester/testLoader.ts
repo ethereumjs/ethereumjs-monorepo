@@ -78,7 +78,7 @@ export function getTestFromSource(file: string, onFile: Function) {
   let test: any = null
 
   stream
-    .on('data', function (data: string) {
+    .on('data', function (data: Uint8Array | string) {
       contents += data
     })
     .on('error', function (err: Error) {
