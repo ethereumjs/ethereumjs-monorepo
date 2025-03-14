@@ -13,8 +13,6 @@ import type { MockServer } from './mockserver.js'
 import type { RemoteStream } from './network.js'
 import type { BlockHeader } from '@ethereumjs/block'
 
-export type Pushable = ReturnType<typeof pushable>
-
 interface MockPeerOptions extends PeerOptions {
   location: string
 }
@@ -62,7 +60,7 @@ export class MockPeer extends Peer {
 
   async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
-    const pushableFn: Pushable = pushable()
+    const pushableFn = pushable({ objectMode: true })
     void pipe(pushableFn, stream)
     void pipe(stream, async (source: any) => {
       for await (const data of source) {
