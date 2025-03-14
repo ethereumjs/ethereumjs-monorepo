@@ -66,7 +66,7 @@ export class MockPeer extends Peer {
   async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
     const pushableFn: Pushable = pushable()
-    pipe(pushableFn, stream)
+    void pipe(pushableFn, stream)
     void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
