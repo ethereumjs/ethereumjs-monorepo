@@ -1,6 +1,6 @@
 import { toBytes } from '@ethereumjs/util'
 
-import type { Nibbles } from '../types.js'
+import type { Nibbles } from '../types.ts'
 
 /**
  * Converts a bytes to a nibble array.

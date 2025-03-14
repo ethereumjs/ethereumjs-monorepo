@@ -9,9 +9,9 @@ import {
   headerKey,
   numberToHashKey,
   tdKey,
-} from './constants.js'
+} from './constants.ts'
 
-import type { CacheMap } from './manager.js'
+import type { CacheMap } from './manager.ts'
 
 export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 

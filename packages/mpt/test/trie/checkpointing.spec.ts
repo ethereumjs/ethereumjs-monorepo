@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie } from '../../src/index.js'
+import { MerklePatriciaTrie } from '../../src/index.ts'
 
 // exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by
 // the statemanager checkpointing.*.spec.ts tests

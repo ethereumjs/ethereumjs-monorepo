@@ -20,10 +20,10 @@ import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
 
-import { RPCManager } from '../../src/rpc/index.js'
-import { Event } from '../../src/types.js'
+import { RPCManager } from '../../src/rpc/index.ts'
+import { Event } from '../../src/types.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { EthereumClient } from '../../src/client.ts'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'

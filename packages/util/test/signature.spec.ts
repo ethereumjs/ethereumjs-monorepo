@@ -14,9 +14,9 @@ import {
   toCompactSig,
   toRPCSig,
   utf8ToBytes,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import type { ECDSASignature } from '../src/index.js'
+import type { ECDSASignature } from '../src/index.ts'
 
 const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const ecPrivKey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')

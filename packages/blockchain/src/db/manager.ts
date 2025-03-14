@@ -10,10 +10,10 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { Cache } from './cache.js'
-import { DBOp, DBTarget } from './operation.js'
+import { Cache } from './cache.ts'
+import { DBOp, DBTarget } from './operation.ts'
 
-import type { DatabaseKey } from './operation.js'
+import type { DatabaseKey } from './operation.ts'
 import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'

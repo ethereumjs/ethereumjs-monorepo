@@ -1,7 +1,7 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager, SimpleStateManager } from '../src/index.js'
+import { MerkleStateManager, SimpleStateManager } from '../src/index.ts'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
 

@@ -1,11 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 
-import { BranchMPTNode } from '../node/branch.js'
-import { ExtensionMPTNode } from '../node/extension.js'
+import { BranchMPTNode } from '../node/branch.ts'
+import { ExtensionMPTNode } from '../node/extension.ts'
 
-import type { MerklePatriciaTrie } from '../mpt.js'
-import type { MPTNode } from '../types.js'
+import type { MerklePatriciaTrie } from '../mpt.ts'
+import type { MPTNode } from '../types.ts'
 
 export type NodeFilter = (node: MPTNode, key: number[]) => Promise<boolean>
 export type OnFound = (node: MPTNode, key: number[]) => Promise<any>

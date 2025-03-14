@@ -9,9 +9,9 @@ import {
   hexToBytes,
   intToHex,
   withdrawalToBytesArray,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import type { WithdrawalBytes, WithdrawalData } from '../src/index.js'
+import type { WithdrawalBytes, WithdrawalData } from '../src/index.ts'
 
 const withdrawalsVector = [
   {

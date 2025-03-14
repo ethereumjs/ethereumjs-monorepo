@@ -1,12 +1,12 @@
-export { Blockchain } from './blockchain.js'
-export { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.js'
-export * from './constructors.js'
+export { Blockchain } from './blockchain.ts'
+export { CasperConsensus, CliqueConsensus, EthashConsensus } from './consensus/index.ts'
+export * from './constructors.ts'
 export {
   DBOp,
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
   DBSetTD,
-} from './db/helpers.js'
-export * from './helpers.js'
-export * from './types.js'
+} from './db/helpers.ts'
+export * from './helpers.ts'
+export * from './types.ts'

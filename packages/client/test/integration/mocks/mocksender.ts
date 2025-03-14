@@ -1,4 +1,4 @@
-import { Sender } from '../../../src/net/protocol/index.js'
+import { Sender } from '../../../src/net/protocol/index.ts'
 
 import type { EventEmitter } from 'eventemitter3'
 import type { Pushable } from 'it-pushable'

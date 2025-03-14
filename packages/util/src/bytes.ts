@@ -5,11 +5,11 @@ import {
   hexToBytes as nobleH2B,
 } from 'ethereum-cryptography/utils.js'
 
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
-import { isHexString, padToEven, stripHexPrefix } from './internal.js'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.ts'
+import { isHexString, padToEven, stripHexPrefix } from './internal.ts'
 
-import type { PrefixedHexString, TransformableToBytes } from './types.js'
+import type { PrefixedHexString, TransformableToBytes } from './types.ts'
 
 const BIGINT_0 = BigInt(0)
 

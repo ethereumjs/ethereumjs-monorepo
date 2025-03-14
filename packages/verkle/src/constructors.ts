@@ -1,10 +1,10 @@
 import { KeyEncoding, MapDB, ValueEncoding } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
 
-import { ROOT_DB_KEY } from './types.js'
-import { VerkleTree } from './verkleTree.js'
+import { ROOT_DB_KEY } from './types.ts'
+import { VerkleTree } from './verkleTree.ts'
 
-import type { VerkleTreeOpts } from './types.js'
+import type { VerkleTreeOpts } from './types.ts'
 
 export async function createVerkleTree(opts?: Partial<VerkleTreeOpts>) {
   const key = ROOT_DB_KEY

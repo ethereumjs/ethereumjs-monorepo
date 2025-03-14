@@ -1,6 +1,6 @@
 import { type PrefixedHexString } from '@ethereumjs/util'
 
-import type { Caches } from './index.js'
+import type { Caches } from './index.ts'
 import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { Common } from '@ethereumjs/common'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'

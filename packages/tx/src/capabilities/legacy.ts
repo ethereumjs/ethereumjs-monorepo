@@ -13,9 +13,9 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Capability, TransactionType } from '../types.js'
+import { Capability, TransactionType } from '../types.ts'
 
-import type { LegacyTxInterface, Transaction } from '../types.js'
+import type { LegacyTxInterface, Transaction } from '../types.ts'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`

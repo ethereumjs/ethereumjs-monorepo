@@ -1,9 +1,9 @@
 import { EthereumJSErrorWithoutCode, type VerkleCrypto } from '@ethereumjs/util'
 
-import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types.js'
+import { BaseVerkleNode } from './baseVerkleNode.ts'
+import { NODE_WIDTH, VerkleNodeType } from './types.ts'
 
-import type { ChildNode, VerkleNodeOptions } from './types.js'
+import type { ChildNode, VerkleNodeOptions } from './types.ts'
 
 export class InternalVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)

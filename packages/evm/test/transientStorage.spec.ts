@@ -8,8 +8,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
-import { TransientStorage } from '../src/transientStorage.js'
+import { createEVM } from '../src/index.ts'
+import { TransientStorage } from '../src/transientStorage.ts'
 
 describe('Transient Storage', () => {
   it('should set and get storage', () => {

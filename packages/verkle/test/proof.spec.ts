@@ -2,8 +2,8 @@ import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { createVerkleTree } from '../src/constructors.js'
-import { LeafVerkleNode } from '../src/index.js'
+import { createVerkleTree } from '../src/constructors.ts'
+import { LeafVerkleNode } from '../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle'

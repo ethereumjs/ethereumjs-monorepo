@@ -24,11 +24,11 @@ import {
   createFeeMarket1559Tx,
   createFeeMarket1559TxFromRLP,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { Goerli } from './testData/goerliCommon.js'
+import { Goerli } from './testData/goerliCommon.ts'
 
-import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.js'
+import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.ts'
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)

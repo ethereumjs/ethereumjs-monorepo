@@ -13,7 +13,7 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { isAccessList, isAuthorizationList } from './types.js'
+import { isAccessList, isAuthorizationList } from './types.ts'
 
 import type {
   AccessList,
@@ -24,7 +24,7 @@ import type {
   AuthorizationListItem,
   TransactionType,
   TypedTxData,
-} from './types.js'
+} from './types.ts'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {

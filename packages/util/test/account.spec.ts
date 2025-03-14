@@ -36,11 +36,11 @@ import {
   toBytes,
   toChecksumAddress,
   utf8ToBytes,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
+import { eip1404ExamplesData } from './testdata/eip1014Examples.ts'
 
-import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.js'
+import type { AccountBodyBytes, AccountData, PrefixedHexString } from '../src/index.ts'
 import type { Input } from '@ethereumjs/rlp'
 
 const _0n = BigInt(0)

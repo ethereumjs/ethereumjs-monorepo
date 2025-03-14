@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src/index.js'
+import { RLP, utils } from '../src/index.ts'
 
-import { bytesToUtf8 } from './utils.js'
+import { bytesToUtf8 } from './utils.ts'
 
 const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils
 

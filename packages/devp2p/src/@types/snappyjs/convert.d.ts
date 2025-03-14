@@ -1,1 +1,1 @@
-declare module 'multiaddr/src/convert.js'
+declare module 'multiaddr/src/convert.ts'

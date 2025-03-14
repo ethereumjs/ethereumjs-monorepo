@@ -10,10 +10,10 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { paramsTx } from '../params.js'
-import { checkMaxInitCodeSize, validateNotArray } from '../util.js'
+import { paramsTx } from '../params.ts'
+import { checkMaxInitCodeSize, validateNotArray } from '../util.ts'
 
-import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.js'
+import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.ts'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })

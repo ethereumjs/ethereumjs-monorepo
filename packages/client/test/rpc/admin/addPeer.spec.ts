@@ -2,10 +2,10 @@ import { DPT } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/index.js'
-import { PeerPool } from '../../../src/net/peerpool.js'
-import { RlpxServer } from '../../../src/net/server/index.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { Config } from '../../../src/index.ts'
+import { PeerPool } from '../../../src/net/peerpool.ts'
+import { RlpxServer } from '../../../src/net/server/index.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'admin_addPeer'
 const localEndpointInfo = { address: '0.0.0.0', tcpPort: 30303 }

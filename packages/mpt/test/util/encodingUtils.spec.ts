@@ -9,10 +9,10 @@ import {
   nibbleTypeToByteType,
   nibblesToCompactBytes,
   pathToHexKey,
-} from '../../src/util/encoding.js'
-import { nibblesTypeToPackedBytes } from '../../src/util/nibbles.js'
+} from '../../src/util/encoding.ts'
+import { nibblesTypeToPackedBytes } from '../../src/util/nibbles.ts'
 
-import type { Nibbles } from '../../src/types.js'
+import type { Nibbles } from '../../src/types.ts'
 
 describe('encoding', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {

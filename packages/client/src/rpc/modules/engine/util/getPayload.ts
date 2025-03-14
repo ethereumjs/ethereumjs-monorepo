@@ -1,7 +1,7 @@
 import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
 
-import type { BlobsBundle } from '../../../../miner/index.js'
-import type { BlobsBundleV1 } from '../types.js'
+import type { BlobsBundle } from '../../../../miner/index.ts'
+import type { BlobsBundleV1 } from '../types.ts'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 

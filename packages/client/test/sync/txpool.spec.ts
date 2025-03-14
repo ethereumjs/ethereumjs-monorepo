@@ -16,12 +16,12 @@ import * as promClient from 'prom-client'
 import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { PeerPool } from '../../src/net/peerpool.js'
-import { TxPool } from '../../src/service/txpool.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { PeerPool } from '../../src/net/peerpool.ts'
+import { TxPool } from '../../src/service/txpool.ts'
 
-import type { PrometheusMetrics } from '../../src/types.js'
+import type { PrometheusMetrics } from '../../src/types.ts'
 
 let prometheusMetrics: PrometheusMetrics | undefined
 

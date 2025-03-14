@@ -27,13 +27,12 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
-import { accumulateRequests } from './requests.js'
-
-import { runTx } from './index.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 
 import type {
   AfterBlockEvent,
@@ -44,8 +43,8 @@ import type {
   RunBlockResult,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
+} from './types.ts'
+import type { VM } from './vm.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'

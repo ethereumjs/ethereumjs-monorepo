@@ -4,7 +4,7 @@ import { bytesToBigInt, concatBytes, intToBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { Level } from 'level'
 
-import { formatEra1 } from './era1.js'
+import { formatEra1 } from './era1.ts'
 
 import type { BlockBodyBytes } from '@ethereumjs/block'
 

@@ -2,8 +2,8 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import type { Blockchain } from '../index.js'
-import type { Consensus, ConsensusOptions } from '../types.js'
+import type { Blockchain } from '../index.ts'
+import type { Consensus, ConsensusOptions } from '../types.ts'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Debugger } from 'debug'
 

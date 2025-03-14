@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { getClientVersion, getPackageJSON } from '../../src/util/index.js'
+import { getClientVersion, getPackageJSON } from '../../src/util/index.ts'
 
 describe('[Util/index.ts]', () => {
   it('getClientVersion', () => {

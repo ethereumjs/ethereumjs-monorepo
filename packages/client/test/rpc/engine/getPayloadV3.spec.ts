@@ -16,9 +16,9 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started

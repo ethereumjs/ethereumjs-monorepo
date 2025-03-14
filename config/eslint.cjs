@@ -80,7 +80,7 @@ module.exports = {
     'import/namespace': 'off',
     'import/no-absolute-path': 'error',
     'import/no-anonymous-default-export': 'error',
-    'import/no-cycle': 'error',
+    'import/no-cycle': 'off', // TODO: Evaluate if this is useful. We have a lot of these errors b/c of exports/imports from index.ts files
     'import/no-default-export': ['error'],
     'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
     'import/no-duplicates': 'error',

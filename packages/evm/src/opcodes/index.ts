@@ -1,3 +1,3 @@
-export * from './codes.js'
-export * from './functions.js'
-export * from './util.js'
+export * from './codes.ts'
+export * from './functions.ts'
+export * from './util.ts'

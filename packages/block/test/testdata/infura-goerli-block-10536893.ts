@@ -1,4 +1,4 @@
-import type { JSONRPCBlock } from '../../src/index.js'
+import type { JSONRPCBlock } from '../../src/index.ts'
 
 export const infuraGoerliBlock10536893Data: JSONRPCBlock = {
   baseFeePerGas: '0x8',

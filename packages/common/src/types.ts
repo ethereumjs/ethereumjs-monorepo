@@ -1,4 +1,4 @@
-import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
+import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 import type {
   BigIntLike,
   ECDSASignature,

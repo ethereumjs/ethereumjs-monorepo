@@ -20,7 +20,7 @@ import {
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CheckpointDB } from './db/checkpointDB.js'
+import { CheckpointDB } from './db/checkpointDB.ts'
 import {
   BranchMPTNode,
   ExtensionMPTNode,
@@ -28,11 +28,11 @@ import {
   decodeMPTNode,
   decodeRawMPTNode,
   isRawMPTNode,
-} from './node/index.js'
-import { ROOT_DB_KEY } from './types.js'
-import { _walkTrie } from './util/asyncWalk.js'
-import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
-import { WalkController } from './util/walkController.js'
+} from './node/index.ts'
+import { ROOT_DB_KEY } from './types.ts'
+import { _walkTrie } from './util/asyncWalk.ts'
+import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.ts'
+import { WalkController } from './util/walkController.ts'
 
 import type {
   BranchMPTNodeBranchValue,
@@ -44,8 +44,8 @@ import type {
   NodeReferenceOrRawMPTNode,
   Path,
   TrieShallowCopyOpts,
-} from './types.js'
-import type { OnFound } from './util/asyncWalk.js'
+} from './types.ts'
+import type { OnFound } from './util/asyncWalk.ts'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 

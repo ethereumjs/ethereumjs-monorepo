@@ -2,5 +2,5 @@
  * @module net/peer
  */
 
-export * from './peer.js'
-export * from './rlpxpeer.js'
+export * from './peer.ts'
+export * from './rlpxpeer.ts'

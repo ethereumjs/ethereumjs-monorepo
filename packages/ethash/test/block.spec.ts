@@ -4,10 +4,10 @@ import { RLP } from '@ethereumjs/rlp'
 import { MapDB, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Ethash } from '../src/index.js'
+import { Ethash } from '../src/index.ts'
 
-import { blockTestsData } from './block_tests_data.js'
-import { invalidBlockRLP, validBlockRLP } from './ethash_block_rlp_tests.js'
+import { blockTestsData } from './block_tests_data.ts'
+import { invalidBlockRLP, validBlockRLP } from './ethash_block_rlp_tests.ts'
 
 import type { BlockBytes } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'

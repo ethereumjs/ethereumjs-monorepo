@@ -8,15 +8,15 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { CheckpointDB } from './db/checkpoint.js'
-import { InternalVerkleNode } from './node/internalNode.js'
-import { LeafVerkleNode } from './node/leafNode.js'
-import { LeafVerkleNodeValue, type VerkleNode } from './node/types.js'
-import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.js'
-import { type Proof, ROOT_DB_KEY, type VerkleTreeOpts } from './types.js'
+import { CheckpointDB } from './db/checkpoint.ts'
+import { InternalVerkleNode } from './node/internalNode.ts'
+import { LeafVerkleNode } from './node/leafNode.ts'
+import { LeafVerkleNodeValue, type VerkleNode } from './node/types.ts'
+import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.ts'
+import { type Proof, ROOT_DB_KEY, type VerkleTreeOpts } from './types.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { createVerkleTree } from './constructors.js' // Imported so intellisense can display docs
+import type { createVerkleTree } from './constructors.ts' // Imported so intellisense can display docs
 import type { PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 interface Path {

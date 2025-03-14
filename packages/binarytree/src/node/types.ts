@@ -1,5 +1,5 @@
-import type { InternalBinaryNode } from './internalNode.js'
-import type { StemBinaryNode } from './stemNode.js'
+import type { InternalBinaryNode } from './internalNode.ts'
+import type { StemBinaryNode } from './stemNode.ts'
 
 export type BinaryNodeType = (typeof BinaryNodeType)[keyof typeof BinaryNodeType]
 export const BinaryNodeType = {

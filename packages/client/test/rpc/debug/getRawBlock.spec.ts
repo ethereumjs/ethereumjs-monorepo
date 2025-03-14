@@ -6,8 +6,8 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })

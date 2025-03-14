@@ -1,4 +1,4 @@
-import type { StemAccessEvent, StemMeta } from './verkleAccessWitness.js'
+import type { StemAccessEvent, StemMeta } from './verkleAccessWitness.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 export class StemCache {
   cache: Map<PrefixedHexString, StemAccessEvent & StemMeta>

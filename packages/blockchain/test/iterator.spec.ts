@@ -1,9 +1,9 @@
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
-import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.js'
+import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.ts'
 
 import type { Block } from '@ethereumjs/block'
 
