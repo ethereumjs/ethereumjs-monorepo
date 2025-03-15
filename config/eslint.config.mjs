@@ -67,7 +67,7 @@ export default [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/no-redeclare': ['error'],
+      '@typescript-eslint/no-redeclare': ['warn'], // TODO: This generates noise because we redeclare the former enums as types and constants
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/restrict-plus-operands': 'off',
@@ -78,7 +78,7 @@ export default [
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_'}],
-      '@typescript-eslint/ban-ts-comment': 'warn',  // TODO: Clean up ts comments
+      '@typescript-eslint/ban-ts-comment': 'warn',  // TODO: We should clean up ts comments and replace with ts-expect-error
       '@typescript-eslint/no-empty-object-type': ['error', {
         allowInterfaces: 'with-single-extends',
         allowObjectTypes: 'always'
@@ -129,7 +129,6 @@ export default [
 
     files: ['**/test/**/*.ts',],
     rules: {
-      'implicit-dependencies/no-implicit': 'off',
       'import/no-extraneous-dependencies': 'off',
       'no-restricted-syntax': 'off',
     },
@@ -137,7 +136,6 @@ export default [
   {
     files: ['**/examples/**/*.ts', '**/examples/**/*.js', '**/examples/**/*.cjs', '**/benchmarks/*.ts'],
     rules: {
-      'implicit-dependencies/no-implicit': 'off',
       'import/no-extraneous-dependencies': 'off',
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
@@ -154,7 +152,6 @@ export default [
   {
     files: ['packages/devp2p/**'],
     rules: {
-      'no-redeclare': 'off',
       'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
