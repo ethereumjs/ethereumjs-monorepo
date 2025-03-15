@@ -4,7 +4,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { genTransactionsTrieRoot } from '../src/helpers.js'
+import { genTransactionsTrieRoot } from '../src/helpers.ts'
 import {
   type Block,
   type BlockBytes,
@@ -14,14 +14,14 @@ import {
   createBlockFromRPC,
   createEmptyBlock,
   paramsBlock,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { genesisHashesTestData } from './testdata/genesisHashesTest.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.js'
-import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.js'
-import { testdataPreLondonData } from './testdata/testdata_pre-london.js'
-import { testnetMergeData } from './testdata/testnetMerge.js'
+import { genesisHashesTestData } from './testdata/genesisHashesTest.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.ts'
+import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.ts'
+import { testdataPreLondonData } from './testdata/testdata_pre-london.ts'
+import { testnetMergeData } from './testdata/testnetMerge.ts'
 
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 

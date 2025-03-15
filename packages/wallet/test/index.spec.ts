@@ -3,8 +3,8 @@ import { encryptKeystoreJsonSync, Wallet as ethersWallet } from 'ethers'
 import zip from 'lodash.zip'
 import { assert, describe, it } from 'vitest'
 
-import { Wallet } from '../src/index.js'
-import { Thirdparty } from '../src/thirdparty.js'
+import { Wallet } from '../src/index.ts'
+import { Thirdparty } from '../src/thirdparty.ts'
 
 const n = 262144
 const r = 8

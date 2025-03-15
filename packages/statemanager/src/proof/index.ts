@@ -1,3 +1,3 @@
-export * from './merkle.js'
-export * from './rpc.js'
-export * from './verkle.js'
+export * from './merkle.ts'
+export * from './rpc.ts'
+export * from './verkle.ts'

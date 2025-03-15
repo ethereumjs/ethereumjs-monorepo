@@ -8,7 +8,7 @@ import {
   createMerkleProof,
   updateMPTFromMerkleProof,
   verifyMerkleProof,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 describe('simple merkle proofs generation and verification', () => {
   it('create a merkle proof and verify it', async () => {

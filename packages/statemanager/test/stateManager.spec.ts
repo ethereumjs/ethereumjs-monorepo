@@ -14,12 +14,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, Caches, MerkleStateManager } from '../src/index.js'
+import { CacheType, Caches, MerkleStateManager } from '../src/index.ts'
 import {
   addMerkleStateProofData,
   fromMerkleStateProof,
   getMerkleStateProof,
-} from '../src/proof/index.js'
+} from '../src/proof/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

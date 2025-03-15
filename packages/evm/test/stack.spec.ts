@@ -9,10 +9,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
-import { Stack } from '../src/stack.js'
+import { createEVM } from '../src/index.ts'
+import { Stack } from '../src/stack.ts'
 
-import { createAccount } from './utils.js'
+import { createAccount } from './utils.ts'
 
 describe('Stack', () => {
   it('should be empty initially', () => {

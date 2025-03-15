@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { createTxFromRLP } from '../src/transactionFactory.js'
+import { createTxFromRLP } from '../src/transactionFactory.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

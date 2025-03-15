@@ -1,4 +1,4 @@
-import type { BlockHeader } from './index.js'
+import type { BlockHeader } from './index.ts'
 import type { Common, ParamsDict } from '@ethereumjs/common'
 import type { JSONRPCTx, JSONTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {

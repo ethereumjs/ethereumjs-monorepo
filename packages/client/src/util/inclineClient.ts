@@ -3,9 +3,9 @@ import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level.js'
+import { EthereumClient } from '../client.ts'
+import { Config } from '../config.ts'
+import { LevelDB } from '../execution/level.ts'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'

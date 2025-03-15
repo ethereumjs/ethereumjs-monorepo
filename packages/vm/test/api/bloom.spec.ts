@@ -1,7 +1,7 @@
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Bloom } from '../../src/bloom/index.js'
+import { Bloom } from '../../src/bloom/index.ts'
 
 const byteSize = 256
 

@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadV1'
 

@@ -7,9 +7,9 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { describe, expect, it, vi } from 'vitest'
 
-import { RLPx, pk2id } from '../src/index.js'
+import { RLPx, pk2id } from '../src/index.ts'
 
-import type { RLPxOptions } from '../src/index.js'
+import type { RLPxOptions } from '../src/index.ts'
 
 const privateKey = randomBytes(32)
 describe('RLPx', () => {
@@ -85,8 +85,8 @@ describe('RLPx', () => {
         Socket,
       }
     })
-    vi.mock('../src/util.js', async () => {
-      const util: any = await vi.importActual('../src/util.js')
+    vi.mock('../src/util.ts', async () => {
+      const util: any = await vi.importActual('../src/util.ts')
       return {
         ...util,
         createDeferred: vi.fn().mockImplementation(() => {

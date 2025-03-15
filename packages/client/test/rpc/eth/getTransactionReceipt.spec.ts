@@ -11,14 +11,14 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.js'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
 import {
   dummy,
   getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
-} from '../helpers.js'
+} from '../helpers.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

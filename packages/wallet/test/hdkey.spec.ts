@@ -1,7 +1,7 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EthereumHDKey } from '../src/hdkey.js'
+import { EthereumHDKey } from '../src/hdkey.ts'
 
 // from BIP39 mnemonic: awake book subject inch gentle blur grant damage process float month clown
 const fixtureseed = hexToBytes(

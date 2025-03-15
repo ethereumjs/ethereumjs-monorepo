@@ -3,10 +3,10 @@ import { Hardfork } from '@ethereumjs/common'
 import { KECCAK256_RLP } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain.js'
-import { Config } from '../../../src/config.js'
-import { Event } from '../../../src/types.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/chain.ts'
+import { Config } from '../../../src/config.ts'
+import { Event } from '../../../src/types.ts'
+import { wait } from '../../integration/util.ts'
 class PeerPool {
   idle() {}
   ban() {}
@@ -14,7 +14,7 @@ class PeerPool {
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
 
-const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher.js')
+const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher.ts')
 
 describe('[BlockFetcher]', async () => {
   it('should start/stop', async () => {

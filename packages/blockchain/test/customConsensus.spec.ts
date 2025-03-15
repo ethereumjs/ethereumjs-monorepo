@@ -3,11 +3,11 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
-import { testnetData } from './testdata/testnet.js'
+import { testnetData } from './testdata/testnet.ts'
 
-import type { Consensus, ConsensusDict } from '../src/index.js'
+import type { Consensus, ConsensusDict } from '../src/index.ts'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 
 class fibonacciConsensus implements Consensus {

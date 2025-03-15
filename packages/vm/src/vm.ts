@@ -1,10 +1,10 @@
 import { createEVM } from '@ethereumjs/evm'
 import { EventEmitter } from 'eventemitter3'
 
-import { createVM } from './constructors.js'
-import { paramsVM } from './params.js'
+import { createVM } from './constructors.ts'
+import { paramsVM } from './params.ts'
 
-import type { VMEvent, VMOpts } from './types.js'
+import type { VMEvent, VMOpts } from './types.ts'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'

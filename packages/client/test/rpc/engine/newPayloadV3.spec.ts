@@ -1,10 +1,10 @@
 import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { batchBlocks, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV3'
 const [blockData] = beaconData

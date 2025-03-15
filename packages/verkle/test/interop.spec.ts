@@ -2,7 +2,7 @@ import { MapDB, bytesToHex } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { createVerkleTree } from '../src/constructors.js'
+import { createVerkleTree } from '../src/constructors.ts'
 
 describe('rust-verkle test vectors', () => {
   it('should produce the correct commitment', async () => {

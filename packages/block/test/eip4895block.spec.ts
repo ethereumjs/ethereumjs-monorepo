@@ -9,8 +9,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { genWithdrawalsTrieRoot } from '../src/helpers.js'
-import { createBlock, createBlockFromRLP, createBlockHeader } from '../src/index.js'
+import { genWithdrawalsTrieRoot } from '../src/helpers.ts'
+import { createBlock, createBlockFromRLP, createBlockHeader } from '../src/index.ts'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 

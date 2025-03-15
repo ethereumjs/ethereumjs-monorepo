@@ -1,7 +1,7 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { BIGINT_0, EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import type { Consensus } from '../types.js'
+import type { Consensus } from '../types.ts'
 import type { BlockHeader } from '@ethereumjs/block'
 
 /**

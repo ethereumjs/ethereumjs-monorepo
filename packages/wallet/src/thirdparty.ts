@@ -6,7 +6,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
 import { md5 } from 'js-md5'
 
-import { Wallet } from './wallet.js'
+import { Wallet } from './wallet.ts'
 
 // evp_kdf
 

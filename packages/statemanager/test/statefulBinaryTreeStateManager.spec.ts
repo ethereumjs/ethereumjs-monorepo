@@ -13,8 +13,8 @@ import {
 import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, it } from 'vitest'
 
-import { Caches } from '../src/index.js'
-import { StatefulBinaryTreeStateManager } from '../src/statefulBinaryTreeStateManager.js'
+import { Caches } from '../src/index.ts'
+import { StatefulBinaryTreeStateManager } from '../src/statefulBinaryTreeStateManager.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -56,7 +56,7 @@ describe('Binary Tree API tests', () => {
     const retrievedBigByteCode = await sm.getCode(address)
     assert.deepEqual(bigByteCode, retrievedBigByteCode)
     const reallyBigByteCode = hexToBytes(
-      (await import('./testdata/biggestContractEver.js')).biggestContractEverData
+      (await import('./testdata/biggestContractEver.ts')).biggestContractEverData
         .bytecode as PrefixedHexString,
     )
     // Biggest mainnet contract - 0x10C621008B210C3A5d0385e458B48af05BF4Ec88 (supposedly anyway)

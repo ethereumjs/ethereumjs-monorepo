@@ -8,10 +8,10 @@ import {
 } from '@ethereumjs/util'
 import { uint256 } from 'micro-eth-signer/ssz'
 
-import { compressData, decompressData } from './snappy.js'
-import { Era1Types, EraTypes } from './types.js'
+import { compressData, decompressData } from './snappy.ts'
+import { Era1Types, EraTypes } from './types.ts'
 
-import type { e2StoreEntry } from './types.js'
+import type { e2StoreEntry } from './types.ts'
 
 export async function parseEntry(entry: e2StoreEntry) {
   if (equalsBytes(entry.type, Era1Types.TotalDifficulty)) {

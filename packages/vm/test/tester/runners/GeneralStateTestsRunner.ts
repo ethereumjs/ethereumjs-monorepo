@@ -15,8 +15,8 @@ import {
 import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
 
-import { createVM, runTx } from '../../../src/index.js'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
+import { createVM, runTx } from '../../../src/index.ts'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type { VerkleTree } from '@ethereumjs/verkle'

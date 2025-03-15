@@ -1,7 +1,7 @@
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MAC } from '../src/rlpx/mac.js'
+import { MAC } from '../src/rlpx/mac.ts'
 
 const secret = hexToBytes('0x4caf4671e713d083128973de159d02688dc86f51535a80178264631e193ed2ea')
 

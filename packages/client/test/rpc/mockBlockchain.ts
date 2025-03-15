@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { equalsBytes, toBytes } from '@ethereumjs/util'
 
-import { dummy } from './helpers.js'
+import { dummy } from './helpers.ts'
 
 import type { LegacyTx } from '@ethereumjs/tx'
 

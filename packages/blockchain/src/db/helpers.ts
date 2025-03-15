@@ -2,8 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import { bytesBE8 } from './constants.js'
-import { DBOp, DBTarget } from './operation.js'
+import { bytesBE8 } from './constants.ts'
+import { DBOp, DBTarget } from './operation.ts'
 
 import type { BlockHeader } from '@ethereumjs/block'
 

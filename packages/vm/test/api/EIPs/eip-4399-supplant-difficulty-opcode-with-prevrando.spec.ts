@@ -4,7 +4,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
 describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
   it('should return the right values', async () => {

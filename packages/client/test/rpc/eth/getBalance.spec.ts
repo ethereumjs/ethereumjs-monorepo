@@ -7,8 +7,8 @@ import { bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'eth_getBalance'
 

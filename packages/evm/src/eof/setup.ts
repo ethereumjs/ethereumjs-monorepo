@@ -1,6 +1,6 @@
-import { EOFContainer, EOFContainerMode } from './container.js'
+import { EOFContainer, EOFContainerMode } from './container.ts'
 
-import type { RunState } from '../interpreter.js'
+import type { RunState } from '../interpreter.ts'
 
 /**
  * Setup EOF by preparing the `RunState` to run EVM in EOF mode

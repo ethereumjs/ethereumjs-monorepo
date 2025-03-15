@@ -1,4 +1,4 @@
-import type { Bloom } from './bloom/index.js'
+import type { Bloom } from './bloom/index.ts'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
 import type {

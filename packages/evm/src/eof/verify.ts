@@ -1,8 +1,8 @@
-import { EOFError, validationError } from './errors.js'
-import { stackDelta } from './stackDelta.js'
+import { EOFError, validationError } from './errors.ts'
+import { stackDelta } from './stackDelta.ts'
 
-import type { EVM } from '../evm.js'
-import type { EOFContainer } from './container.js'
+import type { EVM } from '../evm.ts'
+import type { EOFContainer } from './container.ts'
 
 /**
  * Note for reviewers regarding these flags: these only reside inside `verify.ts` (this file)

@@ -1,6 +1,6 @@
-import { Common, parseGethGenesis } from './index.js'
+import { Common, parseGethGenesis } from './index.ts'
 
-import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.js'
+import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
 
 /**
  * Creates a {@link Common} object for a custom chain, based on a standard one.

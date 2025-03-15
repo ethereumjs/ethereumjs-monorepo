@@ -1,4 +1,4 @@
-import { ERROR, EvmError } from './exceptions.js'
+import { ERROR, EvmError } from './exceptions.ts'
 
 /**
  * Implementation of the stack used in evm.

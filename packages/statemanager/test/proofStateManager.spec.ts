@@ -14,12 +14,12 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager } from '../src/index.js'
-import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.js'
+import { MerkleStateManager } from '../src/index.ts'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.ts'
 
-import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
-import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
-import { ropstenValidAccountData } from './testdata/ropsten_validAccount.js'
+import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.ts'
+import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.ts'
+import { ropstenValidAccountData } from './testdata/ropsten_validAccount.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

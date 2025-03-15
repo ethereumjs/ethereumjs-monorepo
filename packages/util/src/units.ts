@@ -1,5 +1,5 @@
-import { BIGINT_0, BIGINT_1 } from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
+import { BIGINT_0, BIGINT_1 } from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
 
 /** Conversion constants to wei */
 export const GWEI_TO_WEI = BigInt(10 ** 9) // Multiplier to convert from Gwei to Wei

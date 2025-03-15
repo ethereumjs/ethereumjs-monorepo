@@ -1,7 +1,7 @@
 import { platform } from 'os'
 import { assert, describe, it } from 'vitest'
 
-import { baseSetup } from '../helpers.js'
+import { baseSetup } from '../helpers.ts'
 
 const method = 'web3_clientVersion'
 

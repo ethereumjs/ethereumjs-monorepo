@@ -1,6 +1,6 @@
 import { bench, describe } from 'vitest'
 
-import { bytesToHex, hexToBytes } from '../../src/bytes.js'
+import { bytesToHex, hexToBytes } from '../../src/bytes.ts'
 
 // Simple benchmarks for our bytes conversion utility
 describe('hexToBytes', () => {

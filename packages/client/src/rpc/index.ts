@@ -1,8 +1,8 @@
-import { INTERNAL_ERROR } from './error-code.js'
-import * as modules from './modules/index.js'
+import { INTERNAL_ERROR } from './error-code.ts'
+import * as modules from './modules/index.ts'
 
-import type { EthereumClient } from '../client.js'
-import type { Config } from '../config.js'
+import type { EthereumClient } from '../client.ts'
+import type { Config } from '../config.ts'
 
 export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTransactionByHash']
 

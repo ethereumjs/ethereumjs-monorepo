@@ -82,7 +82,7 @@ This state manager can be instantiated and used as follows:
 
 import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
 
-import { SimpleStateManager } from '../src/index.js'
+import { SimpleStateManager } from '../src/index.ts'
 
 const main = async () => {
   const sm = new SimpleStateManager()
@@ -93,6 +93,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 ### `MerkleStateManager` -> Proofs

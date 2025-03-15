@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, createMerkleProof, verifyMerkleRangeProof } from '../../src/index.js'
+import { MerklePatriciaTrie, createMerkleProof, verifyMerkleRangeProof } from '../../src/index.ts'
 
 import type { DB } from '@ethereumjs/util'
 

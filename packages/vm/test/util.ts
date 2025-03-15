@@ -26,7 +26,7 @@ import {
   toType,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { StateManagerInterface } from '@ethereumjs/common'

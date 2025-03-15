@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { DEFAULT_ERROR_CODE, EthereumJSError, EthereumJSErrorWithoutCode } from '../src/errors.js'
+import { DEFAULT_ERROR_CODE, EthereumJSError, EthereumJSErrorWithoutCode } from '../src/errors.ts'
 
 const TEST_ERROR_CODE = 'TEST_ERROR_CODE'
 const TEST_MSG = 'test error message'

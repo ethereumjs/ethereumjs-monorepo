@@ -37,11 +37,11 @@ import { blake3 } from '@noble/hashes/blake3'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { Caches } from './cache/caches.js'
-import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.js'
+import type { Caches } from './cache/caches.ts'
+import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.ts'
 import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,

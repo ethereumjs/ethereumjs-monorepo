@@ -2,7 +2,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 
-import { postMergeGethGenesis } from './genesisData/post-merge.js'
+import { postMergeGethGenesis } from './genesisData/post-merge.ts'
 
 const main = async () => {
   // Load geth genesis file
