@@ -1,12 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 
-import { UNSUPPORTED_FORK } from '../../../error-code.js'
-import { type ChainCache } from '../types.js'
+import { UNSUPPORTED_FORK } from '../../../error-code.ts'
+import { type ChainCache } from '../types.ts'
 
-import type { Chain } from '../../../../blockchain/index.js'
 import type { Common, Hardfork } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../../../blockchain/index.ts'
 
 /**
  * Recursively finds parent blocks starting from the parentHash.

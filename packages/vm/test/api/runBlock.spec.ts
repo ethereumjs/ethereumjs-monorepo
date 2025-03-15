@@ -33,28 +33,28 @@ import {
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runBlock } from '../../src/index.js'
-import { getDAOCommon, setupPreConditions } from '../util.js'
+import { createVM, runBlock } from '../../src/index.ts'
+import { getDAOCommon, setupPreConditions } from '../util.ts'
 
-import { blockchainData } from './testdata/blockchain.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { testnetData } from './testdata/testnet.js'
-import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
+import { blockchainData } from './testdata/blockchain.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { testnetData } from './testdata/testnet.ts'
+import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
-import type { VM } from '../../src/index.js'
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
+import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
-} from '../../src/types.js'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+} from '../../src/types.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
@@ -89,7 +89,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   }
 
   async function uncleRun(vm: VM) {
-    const { uncleData } = await import('./testdata/uncleData.js')
+    const { uncleData } = await import('./testdata/uncleData.ts')
 
     await setupPreConditions(vm.stateManager, uncleData)
 
@@ -703,8 +703,8 @@ describe('runBlock() -> tx types', async () => {
 
 describe.skip('run a verkle block', () => {
   it('should execute a verkle block and produce an executionWitness', async () => {
-    const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.js')).block
-    const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.js')).block
+    const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.ts')).block
+    const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.ts')).block
     const verkleBlocks = [verkleJSONWithoutValue, verkleJSONWithValue]
 
     const common = new Common({

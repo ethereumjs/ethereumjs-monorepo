@@ -1,14 +1,14 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { PeerPool } from '../../src/net/peerpool.js'
-import { EthProtocol } from '../../src/net/protocol/index.js'
-import { Event } from '../../src/types.js'
+import { Config } from '../../src/config.ts'
+import { PeerPool } from '../../src/net/peerpool.ts'
+import { EthProtocol } from '../../src/net/protocol/index.ts'
+import { Event } from '../../src/types.ts'
 
-import { MockChain } from './mocks/mockchain.js'
-import { MockServer } from './mocks/mockserver.js'
-import { wait } from './util.js'
+import { MockChain } from './mocks/mockchain.ts'
+import { MockServer } from './mocks/mockserver.ts'
+import { wait } from './util.ts'
 
 async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
   const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })

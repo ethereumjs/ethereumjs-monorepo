@@ -1,12 +1,12 @@
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, hexToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as fs from 'fs'
 import path from 'path'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, hexToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { createTxFromRLP } from '../src/transactionFactory.js'
+import { createTxFromRLP } from '../src/transactionFactory.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

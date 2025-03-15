@@ -1,5 +1,5 @@
-import type { Chain } from '../../../../blockchain/index.js'
-import type { ChainCache } from '../types.js'
+import type { Chain } from '../../../../blockchain/index.ts'
+import type { ChainCache } from '../types.ts'
 
 export const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
   const { remoteBlocks, executedBlocks, invalidBlocks } = chainCache

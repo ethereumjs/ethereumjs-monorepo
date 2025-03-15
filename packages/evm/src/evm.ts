@@ -20,17 +20,17 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
-import { FORMAT } from './eof/constants.js'
-import { isEOF } from './eof/util.js'
-import { ERROR, EvmError } from './exceptions.js'
-import { Interpreter } from './interpreter.js'
-import { Journal } from './journal.js'
-import { EVMPerformanceLogger } from './logger.js'
-import { Message } from './message.js'
-import { getOpcodesForHF } from './opcodes/index.js'
-import { paramsEVM } from './params.js'
-import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
-import { TransientStorage } from './transientStorage.js'
+import { FORMAT } from './eof/constants.ts'
+import { isEOF } from './eof/util.ts'
+import { ERROR, EvmError } from './exceptions.ts'
+import { Interpreter } from './interpreter.ts'
+import { Journal } from './journal.ts'
+import { EVMPerformanceLogger } from './logger.ts'
+import { Message } from './message.ts'
+import { getOpcodesForHF } from './opcodes/index.ts'
+import { paramsEVM } from './params.ts'
+import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.ts'
+import { TransientStorage } from './transientStorage.ts'
 import {
   type Block,
   type CustomOpcode,
@@ -45,17 +45,17 @@ import {
   type EVMRunCallOpts,
   type EVMRunCodeOpts,
   type ExecResult,
-} from './types.js'
+} from './types.ts'
 
-import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
-import type { InterpreterOpts } from './interpreter.js'
-import type { Timer } from './logger.js'
-import type { MessageWithTo } from './message.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
+import type { InterpreterOpts } from './interpreter.ts'
+import type { Timer } from './logger.ts'
+import type { MessageWithTo } from './message.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
+import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.ts'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.ts'
+import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')

@@ -18,16 +18,16 @@ import {
   createBlockHeader,
   createBlockHeaderFromBytesArray,
   createBlockHeaderFromRLP,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.js'
-import { blocksGoerliData } from './testdata/blocks_goerli.js'
-import { blocksMainnetData } from './testdata/blocks_mainnet.js'
-import { Goerli } from './testdata/goerliCommon.js'
+import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.ts'
+import { blocksGoerliData } from './testdata/blocks_goerli.ts'
+import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
 
-import type { BlockHeader } from '../src/index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlockHeader } from '../src/index.ts'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {

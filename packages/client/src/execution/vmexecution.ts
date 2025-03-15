@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -26,23 +27,22 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { Event } from '../types.js'
-import { debugCodeReplayBlock } from '../util/debug.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { debugCodeReplayBlock } from '../util/debug.ts'
+import { short } from '../util/index.ts'
 
-import { Execution } from './execution.js'
-import { LevelDB } from './level.js'
-import { PreimagesManager } from './preimage.js'
-import { ReceiptsManager } from './receipt.js'
+import { Execution } from './execution.ts'
+import { LevelDB } from './level.ts'
+import { PreimagesManager } from './preimage.ts'
+import { ReceiptsManager } from './receipt.ts'
 
-import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
+import type { ExecutionOptions } from './execution.ts'
 
 export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
 

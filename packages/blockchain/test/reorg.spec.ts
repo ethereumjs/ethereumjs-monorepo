@@ -3,14 +3,14 @@ import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/commo
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.js'
-import { createBlockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.ts'
+import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
-import { generateConsecutiveBlock } from './util.js'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { generateConsecutiveBlock } from './util.ts'
 
-import type { ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { ConsensusDict } from '../src/index.ts'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {

@@ -7,10 +7,10 @@ import {
 } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3'
 
-import { BinaryTree } from './binaryTree.js'
-import { ROOT_DB_KEY } from './types.js'
+import { BinaryTree } from './binaryTree.ts'
+import { ROOT_DB_KEY } from './types.ts'
 
-import type { BinaryTreeOpts } from './types.js'
+import type { BinaryTreeOpts } from './types.ts'
 
 export async function createBinaryTree(opts?: Partial<BinaryTreeOpts>) {
   const key = bytesToHex(ROOT_DB_KEY)

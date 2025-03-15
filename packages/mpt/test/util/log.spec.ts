@@ -1,8 +1,8 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createMPTFromProof, createMerkleProof, verifyMPTWithMerkleProof } from '../../src/index.js'
-import { MerklePatriciaTrie } from '../../src/mpt.js'
+import { createMPTFromProof, createMerkleProof, verifyMPTWithMerkleProof } from '../../src/index.ts'
+import { MerklePatriciaTrie } from '../../src/mpt.ts'
 
 describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
   const trie_entries: [string, string | null][] = [

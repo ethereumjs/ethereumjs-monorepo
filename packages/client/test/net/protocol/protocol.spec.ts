@@ -1,9 +1,9 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.js'
-import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol/index.js'
+import { Config } from '../../../src/config.ts'
+import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.ts'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol/index.ts'
 
 describe('[Protocol]', () => {
   const testMessage = {

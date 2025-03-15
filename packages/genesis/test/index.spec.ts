@@ -1,7 +1,7 @@
 import { Chain, ChainGenesis } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { getGenesis } from '../src/index.js'
+import { getGenesis } from '../src/index.ts'
 
 describe('genesis test', () => {
   it('tests getGenesis', async () => {

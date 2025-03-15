@@ -3,19 +3,19 @@ import { RLP } from '@ethereumjs/rlp'
 import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { wait } from '../../integration/util.ts'
 
 import {
   _accountRangeRLP,
   _zeroElementProof,
   _zeroElementProofOrigin,
   _zeroElementProofRoot,
-} from './accountfetcher.spec.js'
+} from './accountfetcher.spec.ts'
 
-import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefetcher.js'
+import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefetcher.ts'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -31,7 +31,7 @@ describe('[StorageFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher.js')
+  const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -490,14 +490,15 @@ describe('[StorageFetcher]', async () => {
       )
     }
     // send end of range input to store
-    ;(fetcher as any)['destroyWhenDone'] = false
+
+    fetcher['destroyWhenDone'] = false
     await fetcher.store([Object.create(null)] as any)
     assert.ok(
       fetcher['destroyWhenDone'] === false,
       'should still be open to enqueue and process new requests',
     )
     fetcher.setDestroyWhenDone()
-    assert.ok(fetcher['destroyWhenDone'] === true, 'should mark to close on finished')
+    assert.ok((fetcher['destroyWhenDone'] as boolean) === true, 'should mark to close on finished')
   })
 
   it('should find a fetchable peer', async () => {

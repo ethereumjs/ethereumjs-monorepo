@@ -3,14 +3,14 @@ import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
 
-import { LevelDB } from '../execution/level.js'
-import { Event } from '../types.js'
+import { LevelDB } from '../execution/level.ts'
+import { Event } from '../types.ts'
 
-import type { Config } from '../config.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { Config } from '../config.ts'
 
 /**
  * The options that the Blockchain constructor can receive.

@@ -1,11 +1,11 @@
 import { EthereumJSErrorWithoutCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
-import { Hardfork } from './enums.js'
-import { hardforksDict } from './hardforks.js'
+import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
+import { Hardfork } from './enums.ts'
+import { hardforksDict } from './hardforks.ts'
 
-import type { HardforksDict } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { HardforksDict } from './types.ts'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }

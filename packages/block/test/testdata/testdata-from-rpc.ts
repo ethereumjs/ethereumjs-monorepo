@@ -1,4 +1,4 @@
-import type { JSONRPCBlock } from '../../src/index.js'
+import type { JSONRPCBlock } from '../../src/index.ts'
 
 export const testdataFromRPCData: JSONRPCBlock = {
   difficulty: '0x4aff04ba6f83',

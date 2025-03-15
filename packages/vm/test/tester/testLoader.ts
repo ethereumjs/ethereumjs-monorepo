@@ -1,8 +1,8 @@
 import * as fs from 'fs'
-import * as dir from 'node-dir'
 import * as path from 'path'
+import * as dir from 'node-dir'
 
-import { DEFAULT_TESTS_PATH } from './config.js'
+import { DEFAULT_TESTS_PATH } from './config.ts'
 
 const falsePredicate = () => false
 
@@ -78,7 +78,7 @@ export function getTestFromSource(file: string, onFile: Function) {
   let test: any = null
 
   stream
-    .on('data', function (data: string) {
+    .on('data', function (data: Uint8Array | string) {
       contents += data
     })
     .on('error', function (err: Error) {

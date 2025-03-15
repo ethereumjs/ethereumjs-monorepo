@@ -1,6 +1,6 @@
 import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 
-import type { EVMBN254Interface } from '../../types.js'
+import type { EVMBN254Interface } from '../../types.ts'
 
 /**
  * Implementation of the `EVMBN254Interface` using a WASM wrapper https://github.com/ethereumjs/rustbn.js

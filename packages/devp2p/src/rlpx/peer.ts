@@ -14,16 +14,16 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.js'
-import { devp2pDebug, formatLogData } from '../util.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { devp2pDebug, formatLogData } from '../util.ts'
 
-import { ECIES } from './ecies.js'
+import { ECIES } from './ecies.ts'
 
-import type { Protocol } from '../protocol/protocol.js'
-import type { Capabilities, PeerOptions } from '../types.js'
+import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type { Socket } from 'net'
+import type { Protocol } from '../protocol/protocol.ts'
+import type { Capabilities, PeerOptions } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = debugDefault('verbose').enabled

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'eventemitter3'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { Event } from '../../../src/types.js'
+import { Config } from '../../../src/config.ts'
+import { Event } from '../../../src/types.ts'
 
 describe('[RlpxPeer]', async () => {
   vi.mock('@ethereumjs/devp2p', async () => {
@@ -20,7 +20,7 @@ describe('[RlpxPeer]', async () => {
     }
   })
 
-  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer.js')
+  const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer.ts')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

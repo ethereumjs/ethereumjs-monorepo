@@ -1,11 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert } from 'vitest'
 
-import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.js'
-import { testData } from '../testdata.js'
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.ts'
+import { testData } from '../testdata.ts'
 
-import type { Capabilities } from '../../src/index.js'
 import type { it } from 'vitest'
+import type { Capabilities } from '../../src/index.ts'
 
 export const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))

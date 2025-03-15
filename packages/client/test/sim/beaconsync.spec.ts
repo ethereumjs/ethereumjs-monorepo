@@ -5,10 +5,10 @@ import debug from 'debug'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Event } from '../../src/types.js'
-import { createInlineClient } from '../../src/util/index.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { Event } from '../../src/types.ts'
+import { createInlineClient } from '../../src/util/index.ts'
 
 import {
   filterKeywords,
@@ -17,11 +17,11 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
-import type { EthereumClient } from '../../src/client.js'
-import type { RlpxServer } from '../../src/net/server/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EthereumClient } from '../../src/client.ts'
+import type { RlpxServer } from '../../src/net/server/index.ts'
 
 const client = Client.http({ port: 8545 })
 

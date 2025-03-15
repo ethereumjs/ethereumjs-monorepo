@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { ERROR, EvmError } from '../../exceptions.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -18,11 +18,11 @@ import {
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
-} from './constants.js'
+} from './constants.ts'
 
-import type { EVMBLSInterface } from '../../types.js'
 import type { Fp2 } from '@noble/curves/abstract/tower'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { EVMBLSInterface } from '../../types.ts'
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO

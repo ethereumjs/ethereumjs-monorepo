@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { unprefixedHexToBytes } from '@ethereumjs/util'
 import split from 'split'
 
-import { createEVM, validateEOF } from '../src/index.js'
+import { createEVM, validateEOF } from '../src/index.ts'
 
 /**
  * This script reads hex strings (either prefixed or non-prefixed with 0x) from stdin

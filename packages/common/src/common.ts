@@ -10,12 +10,13 @@ import {
 } from '@ethereumjs/util'
 import { EventEmitter } from 'eventemitter3'
 
-import { crc32 } from './crc.js'
-import { eipsDict } from './eips.js'
-import { Hardfork } from './enums.js'
-import { hardforksDict } from './hardforks.js'
+import { crc32 } from './crc.ts'
+import { eipsDict } from './eips.ts'
+import { Hardfork } from './enums.ts'
+import { hardforksDict } from './hardforks.ts'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.ts'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
@@ -31,8 +32,7 @@ import type {
   HardforkTransitionConfig,
   ParamsConfig,
   ParamsDict,
-} from './types.js'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+} from './types.ts'
 
 /**
  * Common class to access chain and hardfork parameters and to provide

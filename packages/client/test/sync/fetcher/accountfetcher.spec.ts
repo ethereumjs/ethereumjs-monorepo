@@ -4,14 +4,14 @@ import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher.js'
-import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher.js'
-import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher.js'
-import { Event } from '../../../src/types.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher.ts'
+import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher.ts'
+import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher.ts'
+import { Event } from '../../../src/types.ts'
+import { wait } from '../../integration/util.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -38,7 +38,7 @@ describe('[AccountFetcher]', async () => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.js')
+  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })

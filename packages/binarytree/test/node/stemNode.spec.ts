@@ -1,8 +1,8 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BinaryNodeType, decodeBinaryNode } from '../../src/index.js'
-import { StemBinaryNode } from '../../src/node/stemNode.js'
+import { BinaryNodeType, decodeBinaryNode } from '../../src/index.ts'
+import { StemBinaryNode } from '../../src/node/stemNode.ts'
 
 describe('StemBinaryNode', () => {
   it('should round-trip encode and decode a stem node', () => {

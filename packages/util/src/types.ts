@@ -1,9 +1,9 @@
-import { bytesToBigInt, bytesToHex, toBytes } from './bytes.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { isHexString } from './internal.js'
+import { bytesToBigInt, bytesToHex, toBytes } from './bytes.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { isHexString } from './internal.ts'
 
-import type { Address } from './address.js'
-import type { ToBytesInputTypes } from './bytes.js'
+import type { Address } from './address.ts'
+import type { ToBytesInputTypes } from './bytes.ts'
 
 /*
  * A type that represents an input that can be converted to a BigInt.

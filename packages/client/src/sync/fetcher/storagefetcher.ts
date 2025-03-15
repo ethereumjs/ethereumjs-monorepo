@@ -15,14 +15,14 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { Fetcher } from './fetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { Fetcher } from './fetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { StorageData } from '../../net/protocol/snapprotocol.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.ts'
+import type { StorageData } from '../../net/protocol/snapprotocol.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 
 const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 

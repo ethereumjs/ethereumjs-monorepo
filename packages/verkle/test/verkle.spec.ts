@@ -9,10 +9,10 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleNode } from '../src/index.ts'
 
 describe('Verkle tree', () => {
   it('should instantiate with verkle crypto and a MapDB if no options are provided', async () => {

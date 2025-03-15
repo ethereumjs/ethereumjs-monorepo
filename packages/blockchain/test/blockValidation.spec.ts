@@ -6,11 +6,11 @@ import { bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { EthashConsensus, createBlockchain } from '../src/index.js'
+import { EthashConsensus, createBlockchain } from '../src/index.ts'
 
-import { generateBlock } from './util.js'
+import { generateBlock } from './util.ts'
 
-import type { ConsensusDict } from '../src/index.js'
+import type { ConsensusDict } from '../src/index.ts'
 
 describe('[Blockchain]: Block validation tests', () => {
   it('should throw if an uncle is included before', async () => {

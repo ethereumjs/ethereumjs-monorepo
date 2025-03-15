@@ -1,10 +1,5 @@
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
-import type { FeeMarket1559Tx } from './1559/tx.js'
-import type { AccessList2930Tx } from './2930/tx.js'
-import type { Blob4844Tx } from './4844/tx.js'
-import type { EOACode7702Tx } from './7702/tx.js'
-import type { LegacyTx } from './legacy/tx.js'
 import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
@@ -13,6 +8,11 @@ import type {
   BytesLike,
   PrefixedHexString,
 } from '@ethereumjs/util'
+import type { FeeMarket1559Tx } from './1559/tx.ts'
+import type { AccessList2930Tx } from './2930/tx.ts'
+import type { Blob4844Tx } from './4844/tx.ts'
+import type { EOACode7702Tx } from './7702/tx.ts'
+import type { LegacyTx } from './legacy/tx.ts'
 export type Capability = (typeof Capability)[keyof typeof Capability]
 
 /**

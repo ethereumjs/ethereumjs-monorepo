@@ -2,10 +2,10 @@ import { BlockHeader } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Event } from '../../src/types.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Event } from '../../src/types.ts'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
-import { destroy, setup, wait } from './util.js'
+import { destroy, setup, wait } from './util.ts'
 
 const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
 common.setHardforkBy({ blockNumber: BigInt(0) })

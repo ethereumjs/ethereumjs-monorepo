@@ -9,22 +9,22 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { ExecStatus } from '../../../execution/index.js'
-import { PendingBlock } from '../../../miner/index.js'
-import { PutStatus } from '../../../sync/index.js'
-import { short } from '../../../util/index.js'
+import { ExecStatus } from '../../../execution/index.ts'
+import { PendingBlock } from '../../../miner/index.ts'
+import { PutStatus } from '../../../sync/index.ts'
+import { short } from '../../../util/index.ts'
 import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
   TOO_LARGE_REQUEST,
   UNSUPPORTED_FORK,
   validEngineCodes,
-} from '../../error-code.js'
-import { callWithStackTrace } from '../../helpers.js'
-import { middleware, validators } from '../../validation.js'
+} from '../../error-code.ts'
+import { callWithStackTrace } from '../../helpers.ts'
+import { middleware, validators } from '../../validation.ts'
 
-import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.js'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.js'
+import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
+import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.ts'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -34,7 +34,7 @@ import {
   validExecutedChainBlock,
   validHash,
   validateHardforkRange,
-} from './util/index.js'
+} from './util/index.ts'
 import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
@@ -43,17 +43,20 @@ import {
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
   payloadAttributesFieldValidatorsV3,
-} from './validators.js'
+} from './validators.ts'
 
-import type { Chain } from '../../../blockchain/index.js'
-import type { EthereumClient } from '../../../client.js'
-import type { Config } from '../../../config.js'
-import type { VMExecution } from '../../../execution/index.js'
-import type { FullEthereumService, Skeleton } from '../../../service/index.js'
+import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
+import type { Chain } from '../../../blockchain/index.ts'
+import type { EthereumClient } from '../../../client.ts'
+import type { Config } from '../../../config.ts'
+import type { VMExecution } from '../../../execution/index.ts'
+import type { FullEthereumService, Skeleton } from '../../../service/index.ts'
 import type {
   BlobAndProofV1,
-  Bytes32,
   Bytes8,
+  Bytes32,
   ExecutionPayloadBodyV1,
   ExecutionPayloadV1,
   ExecutionPayloadV2,
@@ -64,10 +67,7 @@ import type {
   PayloadAttributesV1,
   PayloadAttributesV2,
   PayloadAttributesV3,
-} from './types.js'
-import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
+} from './types.ts'
 
 const zeroBlockHash = new Uint8Array(32)
 

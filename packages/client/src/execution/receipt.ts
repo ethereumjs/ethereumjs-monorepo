@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { Bloom } from '@ethereumjs/vm'
 
-import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'

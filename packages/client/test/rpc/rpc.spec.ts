@@ -2,12 +2,12 @@ import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { jwt } from '../../src/ext/jwt-simple.js'
+import { jwt } from '../../src/ext/jwt-simple.ts'
 
-import { createClient, createManager, getRPCClient, startRPC } from './helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from './helpers.ts'
 
-import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
 import type { AddressInfo } from 'net'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.ts'
 
 const { encode } = jwt
 const jwtSecret = randomBytes(32)

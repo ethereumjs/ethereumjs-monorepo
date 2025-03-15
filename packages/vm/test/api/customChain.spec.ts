@@ -11,10 +11,10 @@ import {
 import { Interface } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../src/index.js'
+import { createVM, runTx } from '../../src/index.ts'
 
-import { testnetData } from './testdata/testnet.js'
-import { testnetMergeData } from './testdata/testnetMerge.js'
+import { testnetData } from './testdata/testnet.ts'
+import { testnetMergeData } from './testdata/testnetMerge.ts'
 
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 

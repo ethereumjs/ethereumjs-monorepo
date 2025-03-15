@@ -1,15 +1,14 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
+import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { ERROR, EvmError } from '../exceptions.ts'
 
-import { gasLimitCheck, moduloLengthCheck } from './util.js'
+import { getPrecompileName } from './index.ts'
+import { gasLimitCheck, moduloLengthCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
-
-import type { EVM } from '../evm.js'
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { EVM } from '../evm.ts'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 export function precompile08(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('08')

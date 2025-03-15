@@ -3,8 +3,8 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_100,
   BIGINT_2EXP256,
+  BIGINT_100,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -18,22 +18,22 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { Event } from '../../types.js'
-import { short } from '../../util/index.js'
+import { Event } from '../../types.ts'
+import { short } from '../../util/index.ts'
 
-import { ByteCodeFetcher } from './bytecodefetcher.js'
-import { Fetcher } from './fetcher.js'
-import { StorageFetcher } from './storagefetcher.js'
-import { TrieNodeFetcher } from './trienodefetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { ByteCodeFetcher } from './bytecodefetcher.ts'
+import { Fetcher } from './fetcher.ts'
+import { StorageFetcher } from './storagefetcher.ts'
+import { TrieNodeFetcher } from './trienodefetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { AccountData } from '../../net/protocol/snapprotocol.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { StorageRequest } from './storagefetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.ts'
+import type { AccountData } from '../../net/protocol/snapprotocol.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { StorageRequest } from './storagefetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 

@@ -1,3 +1,5 @@
+import { execSync, spawn } from 'node:child_process'
+import * as net from 'node:net'
 /* eslint-disable no-console */
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { type Common } from '@ethereumjs/common'
@@ -16,18 +18,16 @@ import {
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-import { execSync, spawn } from 'node:child_process'
-import * as net from 'node:net'
 import qs from 'qs'
 
-import { RPCManager } from '../../src/rpc/index.js'
-import { Event } from '../../src/types.js'
+import { RPCManager } from '../../src/rpc/index.ts'
+import { Event } from '../../src/types.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise/index.js'
+import type { EthereumClient } from '../../src/client.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -36,7 +36,7 @@ export async function getEventSource(): Promise<typeof EventSource> {
   if (globalThis.EventSource !== undefined) {
     return EventSource
   } else {
-    return (await import('eventsource')).default as unknown as typeof EventSource
+    return (await import('eventsource')).EventSource
   }
 }
 

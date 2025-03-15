@@ -1,4 +1,4 @@
-import type { JSONRPCBlock } from '../../src/index.js'
+import type { JSONRPCBlock } from '../../src/index.ts'
 
 export const infura2000004withoutTransactionsData: JSONRPCBlock = {
   difficulty: '0x2d5c0e55ad87',

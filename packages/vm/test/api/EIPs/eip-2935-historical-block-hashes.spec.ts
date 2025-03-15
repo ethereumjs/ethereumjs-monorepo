@@ -22,12 +22,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
+import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { LegacyTxData } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../../src/index.ts'
 
 function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
   const hfs = [

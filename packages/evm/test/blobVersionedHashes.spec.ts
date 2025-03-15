@@ -9,15 +9,15 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { createEVM } from '../src/index.ts'
 
-import type { EVMRunCallOpts } from '../src/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EVMRunCallOpts } from '../src/types.ts'
 
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
-    const { eip4844Data } = await import('./testdata/eip4844.js')
+    const { eip4844Data } = await import('./testdata/eip4844.ts')
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
@@ -47,7 +47,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
 describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   it('should work', async () => {
     // setup the evm
-    const { eip4844Data } = await import('./testdata/eip4844.js')
+    const { eip4844Data } = await import('./testdata/eip4844.ts')
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
@@ -97,7 +97,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () => {
   it('should work', async () => {
     // setup the evm
-    const { eip4844Data } = await import('./testdata/eip4844.js')
+    const { eip4844Data } = await import('./testdata/eip4844.ts')
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,

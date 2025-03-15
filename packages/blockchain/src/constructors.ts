@@ -9,11 +9,11 @@ import {
   DBSetTD,
   genGenesisStateRoot,
   getGenesisStateRoot,
-} from './index.js'
+} from './index.ts'
 
-import type { BlockchainOptions, DBOp } from './index.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
+import type { BlockchainOptions, DBOp } from './index.ts'
 
 const DEBUG =
   typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false

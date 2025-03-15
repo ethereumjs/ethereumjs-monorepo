@@ -1,11 +1,11 @@
 import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, it } from 'vitest'
 
-import { createBinaryTree } from '../src/constructors.js'
-import { decodeBinaryNode } from '../src/index.js'
-import { binaryTreeFromProof, verifyBinaryProof } from '../src/proof.js'
+import { createBinaryTree } from '../src/constructors.ts'
+import { decodeBinaryNode } from '../src/index.ts'
+import { binaryTreeFromProof, verifyBinaryProof } from '../src/proof.ts'
 
-import type { StemBinaryNode } from '../src/node/stemNode.js'
+import type { StemBinaryNode } from '../src/node/stemNode.ts'
 
 // Create an array of 100 random key/value pairs by hashing keys.
 

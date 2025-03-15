@@ -1,14 +1,14 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types.js'
-import { getClientVersion } from '../../util/index.js'
-import { RlpxPeer } from '../peer/rlpxpeer.js'
+import { Event } from '../../types.ts'
+import { getClientVersion } from '../../util/index.ts'
+import { RlpxPeer } from '../peer/rlpxpeer.ts'
 
-import { Server } from './server.js'
+import { Server } from './server.ts'
 
-import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
+import type { ServerOptions } from './server.ts'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */

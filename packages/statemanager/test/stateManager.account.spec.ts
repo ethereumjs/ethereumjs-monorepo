@@ -1,9 +1,9 @@
 import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.ts'
 
-import { createAccountWithDefaults } from './util.js'
+import { createAccountWithDefaults } from './util.ts'
 
 describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {

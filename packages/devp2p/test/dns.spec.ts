@@ -1,9 +1,9 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { DNS } from '../src/dns/index.js'
+import { DNS } from '../src/dns/index.ts'
 
-import { testData } from './testdata.js'
+import { testData } from './testdata.ts'
 
 describe('DNS', () => {
   const mockData = testData.dns

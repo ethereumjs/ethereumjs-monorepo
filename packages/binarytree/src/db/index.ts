@@ -1,1 +1,1 @@
-export * from './checkpoint.js'
+export * from './checkpoint.ts'

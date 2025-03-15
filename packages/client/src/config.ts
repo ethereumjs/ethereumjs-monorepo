@@ -4,16 +4,16 @@ import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereu
 import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging.js'
-import { RlpxServer } from './net/server/index.js'
-import { Event } from './types.js'
-import { isBrowser, short } from './util/index.js'
+import { getLogger } from './logging.ts'
+import { RlpxServer } from './net/server/index.ts'
+import { Event } from './types.ts'
+import { isBrowser, short } from './util/index.ts'
 
-import type { Logger } from './logging.js'
-import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Logger } from './logging.ts'
+import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 

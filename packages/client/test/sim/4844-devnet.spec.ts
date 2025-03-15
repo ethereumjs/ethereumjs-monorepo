@@ -1,9 +1,9 @@
+import { randomBytes } from 'node:crypto'
 /* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise/index.js'
-import { randomBytes } from 'node:crypto'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,7 +15,7 @@ import {
   sleep,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

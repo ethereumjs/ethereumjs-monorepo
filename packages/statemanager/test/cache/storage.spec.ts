@@ -1,7 +1,7 @@
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, StorageCache } from '../../src/cache/index.js'
+import { CacheType, StorageCache } from '../../src/cache/index.ts'
 
 describe('Storage Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {

@@ -12,7 +12,7 @@ import {
   stripHexPrefix,
   toAscii,
   utf8ToBytes,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 const buf = utf8ToBytes('hello')
 

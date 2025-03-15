@@ -1,15 +1,14 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
+import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { ERROR, EvmError } from '../exceptions.ts'
 
-import { leading16ZeroBytesCheck } from './bls12_381/index.js'
-import { equalityLengthCheck, gasLimitCheck } from './util.js'
+import { leading16ZeroBytesCheck } from './bls12_381/index.ts'
+import { getPrecompileName } from './index.ts'
+import { equalityLengthCheck, gasLimitCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
-
-import type { EVMBLSInterface, ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { EVMBLSInterface, ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('13')

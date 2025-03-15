@@ -1,11 +1,11 @@
 import { EventEmitter } from 'eventemitter3'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { Event } from '../../src/types.js'
-import { MockPeer } from '../integration/mocks/mockpeer.js'
+import { Config } from '../../src/config.ts'
+import { Event } from '../../src/types.ts'
+import { MockPeer } from '../integration/mocks/mockpeer.ts'
 
-const { PeerPool } = await import('../../src/net/peerpool.js')
+const { PeerPool } = await import('../../src/net/peerpool.ts')
 
 describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })

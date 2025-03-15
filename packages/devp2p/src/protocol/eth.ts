@@ -13,14 +13,14 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolType } from '../types.js'
-import { assertEq, formatLogData, formatLogId } from '../util.js'
+import { ProtocolType } from '../types.ts'
+import { assertEq, formatLogData, formatLogId } from '../util.ts'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
 import type { Input } from '@ethereumjs/rlp'
+import type { Peer } from '../rlpx/peer.ts'
+import type { SendMethod } from '../types.ts'
 
 export interface EthStatusMsg extends Array<Uint8Array | Uint8Array[]> {}
 

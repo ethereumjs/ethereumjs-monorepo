@@ -3,11 +3,11 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
 
-import type { LevelDB } from '../../src/execution/level.js'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { LevelDB } from '../../src/execution/level.ts'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 

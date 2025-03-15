@@ -1,11 +1,11 @@
-import type { DPT } from './dpt/index.js'
-import type { EthMessageCodes } from './protocol/eth.js'
-import type { Protocol } from './protocol/protocol.js'
-import type { SnapMessageCodes } from './protocol/snap.ts'
-import type { Peer } from './rlpx/peer.js'
+import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
 import type { NestedUint8Array } from '@ethereumjs/rlp'
-import type { Socket } from 'net'
+import type { DPT } from './dpt/index.ts'
+import type { EthMessageCodes } from './protocol/eth.ts'
+import type { Protocol } from './protocol/protocol.ts'
+import type { SnapMessageCodes } from './protocol/snap.ts'
+import type { Peer } from './rlpx/peer.ts'
 
 export interface RLPxEvent {
   'peer:added': [peer: Peer]

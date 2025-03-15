@@ -1,4 +1,4 @@
-import { view } from '../dist/cjs/util/view.js'
+import { view } from '../dist/cjs/util/view.ts'
 import { debug } from 'debug'
 
 debug.enable('*')

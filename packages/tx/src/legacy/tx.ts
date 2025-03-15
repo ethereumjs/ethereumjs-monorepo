@@ -12,13 +12,15 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
-import { Capability, TransactionType } from '../types.js'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { paramsTx } from '../index.ts'
+import { Capability, TransactionType } from '../types.ts'
 
-import { createLegacyTx } from './constructors.js'
+import { createLegacyTx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -26,9 +28,7 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]

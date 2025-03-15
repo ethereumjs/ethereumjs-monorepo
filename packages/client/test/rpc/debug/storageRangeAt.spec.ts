@@ -11,9 +11,9 @@ import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { debugData } from '../../testdata/geth-genesis/debug.js'
-import { dummy, getRPCClient, setupChain } from '../helpers.js'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { debugData } from '../../testdata/geth-genesis/debug.ts'
+import { dummy, getRPCClient, setupChain } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common'

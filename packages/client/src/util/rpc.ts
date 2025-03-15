@@ -1,16 +1,16 @@
+import { createServer } from 'http'
+import { inspect } from 'util'
 import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
-import { createServer } from 'http'
 import jayson from 'jayson/promise/index.js'
-import { inspect } from 'util'
 
-import { jwt } from '../ext/jwt-simple.js'
+import { jwt } from '../ext/jwt-simple.ts'
 
-import type { TAlgorithm } from '../ext/jwt-simple.js'
-import type { Logger } from '../logging.js'
-import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
+import type { TAlgorithm } from '../ext/jwt-simple.ts'
+import type { Logger } from '../logging.ts'
+import type { RPCManager } from '../rpc/index.ts'
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 

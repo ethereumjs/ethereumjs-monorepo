@@ -3,8 +3,8 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_100,
   BIGINT_2EXP256,
+  BIGINT_100,
   EthereumJSErrorWithoutCode,
   Lock,
   bigIntToBytes,
@@ -16,14 +16,14 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { INVALID_FORKCHOICE_STATE } from '../rpc/error-code.js'
-import { short, timeDuration } from '../util/index.js'
-import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
+import { INVALID_FORKCHOICE_STATE } from '../rpc/error-code.ts'
+import { short, timeDuration } from '../util/index.ts'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.ts'
 
-import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.js'
-import type { MetaDBManagerOptions } from '../util/metaDBManager.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
+import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.ts'
+import type { MetaDBManagerOptions } from '../util/metaDBManager.ts'
 
 const INVALID_PARAMS = -32602
 

@@ -1,10 +1,10 @@
-import { AccountCache } from './account.js'
-import { CodeCache } from './code.js'
-import { StorageCache } from './storage.js'
-import { CacheType, type CachesStateManagerOpts } from './types.js'
+import { AccountCache } from './account.ts'
+import { CodeCache } from './code.ts'
+import { StorageCache } from './storage.ts'
+import { CacheType, type CachesStateManagerOpts } from './types.ts'
 
-import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
+import type { CacheOpts } from './types.ts'
 
 export class Caches {
   account?: AccountCache
