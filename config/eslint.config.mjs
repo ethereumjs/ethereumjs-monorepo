@@ -119,16 +119,7 @@ export default [
     },
   },
   {
-    languageOptions: {
-      parserOptions: {
-        extraFileExtensions: ['.json'],
-        sourceType: 'module',
-        project: './config/tsconfig.lint.json',
-      },
-    },
-  },
-  {
-    files: ['**/*.js', '**/*.cjs'],
+    files: ['**/*.js', '**/*.cjs','**/*.cts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off',
