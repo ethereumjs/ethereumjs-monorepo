@@ -17,14 +17,8 @@ export default [
       '**/recipes/**',
       '**/rlp.cjs',
       '**/scripts/**',
-      '**/typedoc.js',
-      '**/typedoc.cjs',
-      '**/vitest.config.ts',
-      '**/vitest.config.browser.mts',
-      '**/vitest.config.browser.ts',
-      '**/vitest.config.unit.ts',
-      '**/vitest.config.coverage.ts',
-      '**/vitest.config.coverage.mts',
+      '**/typedoc.*',
+      '**/vitest.config.*',
       '**/vite.*.ts',
       '**/ethereum-tests/**',
       '**/archive/**',
@@ -63,11 +57,6 @@ export default [
           },
         },
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-redeclare': ['warn'], // TODO: This generates noise because we redeclare the former enums as types and constants
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/restrict-plus-operands': 'off',
@@ -88,7 +77,6 @@ export default [
       'no-debugger': 'error',
       'no-dupe-class-members': 'off',
       'no-extra-semi': 'off',
-      'no-redeclare': 'off',
       'no-unused-vars': 'off',
       'no-var': 'error',
       'object-shorthand': 'error',
@@ -152,7 +140,6 @@ export default [
   {
     files: ['packages/devp2p/**'],
     rules: {
-      'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
     },
