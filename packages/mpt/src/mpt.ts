@@ -28,7 +28,7 @@ import {
   decodeRawMPTNode,
   isRawMPTNode,
 } from './node/index.ts'
-import { ROOT_DB_KEY } from './types.ts'
+import { ConsoleLogger, ROOT_DB_KEY } from './types.ts'
 import { _walkTrie } from './util/asyncWalk.ts'
 import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.ts'
 import { WalkController } from './util/walkController.ts'
