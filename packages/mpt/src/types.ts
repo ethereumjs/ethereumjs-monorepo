@@ -44,7 +44,42 @@ export type FoundNodeFunction = (
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
+export interface Logger {
+  info(message: string, ...meta: any[]): void
+  warn(message: string, ...meta: any[]): void
+  error(message: string, ...meta: any[]): void
+  debug?(message: string, ...meta: any[]): void // Optional for production
+  trace?(message: string, ...meta: any[]): void // Optional deep debugging
+}
+
+export class ConsoleLogger implements Logger {
+  info(message: string, ...meta: any[]) {
+    console.info(`[INFO] ${message}`, ...meta)
+  }
+
+  warn(message: string, ...meta: any[]) {
+    console.warn(`[WARN] ${message}`, ...meta)
+  }
+
+  error(message: string, ...meta: any[]) {
+    console.error(`[ERROR] ${message}`, ...meta)
+  }
+
+  debug?(message: string, ...meta: any[]) {
+    if (process.env.DEBUG !== undefined) console.debug(`[DEBUG] ${message}`, ...meta)
+  }
+
+  trace?(message: string, ...meta: any[]) {
+    if (process.env.TRACE !== undefined) console.trace(`[TRACE] ${message}`, ...meta)
+  }
+}
+
 export interface MPTOpts {
+  /**
+   *
+   */
+  logger?: Logger
+
   /**
    * A database instance.
    */

@@ -17,7 +17,6 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/checkpointDB.js'
@@ -29,7 +28,7 @@ import {
   decodeRawMPTNode,
   isRawMPTNode,
 } from './node/index.js'
-import { ROOT_DB_KEY } from './types.js'
+import { ConsoleLogger, ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
 import { WalkController } from './util/walkController.js'
@@ -37,6 +36,7 @@ import { WalkController } from './util/walkController.js'
 import type {
   BranchMPTNodeBranchValue,
   FoundNodeFunction,
+  Logger,
   MPTNode,
   MPTOpts,
   MPTOptsWithDefaults,
@@ -47,7 +47,6 @@ import type {
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
@@ -74,8 +73,8 @@ export class MerklePatriciaTrie {
 
   /** Debug logging */
   protected DEBUG: boolean
-  protected _debug: Debugger = debug('mpt:#')
   protected debug: (...args: any) => void
+  logger: Logger
 
   /**
    * Creates a new trie.
@@ -103,15 +102,20 @@ export class MerklePatriciaTrie {
       valueEncoding = ValueEncoding.Bytes
     }
 
+    if (opts?.logger) {
+      // console.log('dbg100')
+      this.logger = opts.logger
+    } else {
+      // console.log('dbg101')
+      this.logger = new ConsoleLogger()
+    }
+
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
-          let log = this._debug
-          for (const name of namespaces) {
-            log = log.extend(name)
-          }
-          log(message)
+          //@ts-ignore
+          this.logger.debug(message + namespaces) // not sure what's wrong with typing here
         }
       : (..._: any) => {}
 
