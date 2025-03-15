@@ -71,8 +71,10 @@
       "optional": true
     }
   },
-  "resolutions": {
-    "puppeteer-core": "^23.6.1"
+  "overrides": {
+    "typedoc-plugin-markdown": {
+      "typedoc": "^0.28.0"
+    }
   },
   "engines": {
     "node": ">=18",
