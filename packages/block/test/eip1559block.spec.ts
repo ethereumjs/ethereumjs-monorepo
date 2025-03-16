@@ -142,7 +142,7 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('base fee') === true, 'should throw on wrong initial base fee')
+      assert.isTrue(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
   })
 
