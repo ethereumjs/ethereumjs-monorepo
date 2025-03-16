@@ -41,7 +41,6 @@
     "cspell": "^8.13.3",
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
-    "eslint-plugin-ethereumjs": "file:./eslint",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^17.16.2",
     "lint-staged": "13.0.3",

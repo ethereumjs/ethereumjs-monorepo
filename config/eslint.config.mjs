@@ -38,11 +38,11 @@ export default [
     plugins: {
       n: eslintNodePlugin,
     },
+    files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
     rules: {
       'n/no-extraneous-import': 'error',
     },
   },
-
   {
     rules: {
       'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
@@ -51,6 +51,13 @@ export default [
         {
           selector: "ThrowStatement > NewExpression[callee.name='Error']",
           message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
+        }
+      ],
+      "no-restricted-globals": [
+        "error",
+        {
+          "name": "Buffer",
+          "message": "The use of Buffer is not allowed."
         }
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
