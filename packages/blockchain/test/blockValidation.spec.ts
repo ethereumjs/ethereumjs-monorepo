@@ -34,7 +34,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('uncle is already included'),
+        e.message.includes('uncle is already included') === true,
         'block throws if uncle is already included',
       )
     }
@@ -61,7 +61,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (err: any) {
       assert.ok(
-        err.message.includes('not found in DB'),
+        (err.message.includes('not found in DB') === true) === true,
         'block throws if uncle parent hash is not part of the canonical chain',
       )
     }
@@ -94,7 +94,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('uncle block has a parent that is too old'),
+        e.message.includes('uncle block has a parent that is too old') === true,
         'block throws uncle is too old',
       )
     }
@@ -116,7 +116,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('uncle block has a parent that is too old or too young'),
+        e.message.includes('uncle block has a parent that is too old or too young') === true,
         'block throws uncle is too young',
       )
     }
@@ -152,7 +152,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('invalid difficulty block header number=1 '),
+        e.message.includes('invalid difficulty block header number=1 ') === true,
         'block throws when uncle header is invalid',
       )
     }
@@ -175,7 +175,7 @@ describe('[Blockchain]: Block validation tests', () => {
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('The uncle is a canonical block'),
+        e.message.includes('The uncle is a canonical block') === true,
         'block throws if an uncle is a canonical block',
       )
     }

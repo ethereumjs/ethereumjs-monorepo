@@ -238,7 +238,7 @@ describe('Clique: Initialization', () => {
       assert.fail('should fail')
     } catch (error: any) {
       assert.ok(
-        error.message.includes('checkpoint signer not found in active signers list'),
+        error.message.includes('checkpoint signer not found in active signers list') === true,
         'correct error',
       )
     }
@@ -269,7 +269,8 @@ describe('Clique: Initialization', () => {
       assert.fail('should fail')
     } catch (error: any) {
       assert.ok(
-        error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)'),
+        error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)') ===
+          true,
         'correct error',
       )
     }
@@ -294,7 +295,7 @@ describe('Clique: Initialization', () => {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
-      assert.ok(error.message.includes('invalid clique difficulty'), 'correct error')
+      assert.isTrue(error.message.includes('invalid clique difficulty'), 'correct error')
     }
   })
 
@@ -667,7 +668,7 @@ describe('Clique: Initialization', () => {
       assert.fail('should throw error')
     } catch (error: any) {
       assert.ok(
-        error.message.includes('invalid PoA block signature (clique)'),
+        error.message.includes('invalid PoA block signature (clique)') === true,
         'correct error thrown',
       )
     }
@@ -680,7 +681,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 
@@ -709,7 +710,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 

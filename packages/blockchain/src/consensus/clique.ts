@@ -280,8 +280,9 @@ export class CliqueConsensus implements Consensus {
           this.DEBUG && debug(`Clique signer [${i}]: ${signer} (block: ${signerState[0]})`)
           i++
         }
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch {
+        /* empty */
+      }
     }
   }
 
@@ -622,7 +623,7 @@ export class CliqueConsensus implements Consensus {
       throw EthereumJSErrorWithoutCode('Signer not found')
     }
     const { number } = await this.blockchain!.getCanonicalHeadHeader()
-    //eslint-disable-next-line
+
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

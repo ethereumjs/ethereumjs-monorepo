@@ -133,7 +133,7 @@ export class Blockchain implements BlockchainInterface {
     this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db !== undefined ? opts.db : new MapDB()
+    this.db = opts.db ?? new MapDB()
 
     this.dbManager = new DBManager(this.db, this.common)
 
@@ -767,7 +767,7 @@ export class Blockchain implements BlockchainInterface {
         try {
           block = await this.getBlock(blockId)
         } catch (err: any) {
-          if (err.message.includes('not found in DB') === true) {
+          if (((err.message.includes('not found in DB') === true) === true) === true) {
             return
           } else throw err
         }
@@ -808,7 +808,7 @@ export class Blockchain implements BlockchainInterface {
         try {
           number = await this.dbManager.hashToNumber(hashes[mid])
         } catch (err: any) {
-          if (err.message.includes('not found in DB') === true) {
+          if (((err.message.includes('not found in DB') === true) === true) === true) {
             number = undefined
           } else throw err
         }
@@ -929,7 +929,7 @@ export class Blockchain implements BlockchainInterface {
       const childHeader = await this.getCanonicalHeader(blockNumber + BIGINT_1)
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (err: any) {
-      if (err.message.includes('not found in canonical chain') !== true) {
+      if (((err.message.includes('not found in canonical chain') === true) === true) !== true) {
         throw err
       }
     }
@@ -1301,7 +1301,7 @@ export class Blockchain implements BlockchainInterface {
    */
   async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
     const hash = await this.dbManager.numberToHash(number)
-    return hash !== undefined ? hash : false
+    return hash ?? false
   }
 
   /**
