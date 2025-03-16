@@ -1,7 +1,6 @@
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from 'eslint-plugin-import'
-import eslintNodePlugin from 'eslint-plugin-n'
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -34,15 +33,6 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   importPlugin.flatConfigs.recommended,
-  {
-    plugins: {
-      n: eslintNodePlugin,
-    },
-    files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
-    rules: {
-      'n/no-extraneous-import': 'error',
-    },
-  },
   {
     rules: {
       'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
@@ -99,7 +89,7 @@ export default [
       'prefer-const': 'error',
       'import/default': 'off',
       'import/export': 'error',
-      'import/exports-last': 'off', // TODO: set to `warn` for fixing and then `error`
+      'import/exports-last': 'off', 
       'import/extensions': ['error','ignorePackages'],
       'import/first': 'error',
       'import/group-exports': 'off',
@@ -112,7 +102,6 @@ export default [
       'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
       'import/no-duplicates': 'error',
       'import/no-dynamic-require': 'off',
-      'import/no-extraneous-dependencies': 'error',
       'import/no-mutable-exports': 'error',
       'import/no-self-import': 'error',
       'import/no-unresolved': 'off',
@@ -120,6 +109,15 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
+    },
+  },
+  {
+    plugins: {
+      i: importPlugin,
+    },
+    files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
+    rules: {
+      'i/no-extraneous-dependencies': ['error',{ devDependencies: false, optionalDependencies: false, peerDependencies: false }]
     },
   },
   {

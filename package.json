@@ -42,7 +42,6 @@
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.16.2",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
     "sort-package-json": "1.57.0",
