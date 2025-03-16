@@ -159,8 +159,8 @@ describe(method, () => {
 
     context.rpc = rpc
     context.block = await chain.getCanonicalHeadBlock()
-    context.createdAddress = result.createdAddress!!
-    context.createdAddressNoStorage = thirdResult.createdAddress!!
+    context.createdAddress = result.createdAddress!
+    context.createdAddressNoStorage = thirdResult.createdAddress!
   })
 
   it<TestSetup>('Should return the correct (number of) key value pairs.', async ({

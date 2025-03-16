@@ -105,7 +105,7 @@ export class Miner {
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
       const parentBlock = this.service.chain.blocks.latest!
-      //eslint-disable-next-line
+
       const number = parentBlock.header.number + BIGINT_1
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress,
@@ -201,7 +201,7 @@ export class Miner {
     this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
     const parentBlock = this.service.chain.blocks.latest!
-    //eslint-disable-next-line
+
     const number = parentBlock.header.number + BIGINT_1
     let { gasLimit } = parentBlock.header
 

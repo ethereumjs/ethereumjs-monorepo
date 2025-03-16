@@ -77,7 +77,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
 
-  accountToHighestKnownHash: Map<String, Uint8Array>
+  accountToHighestKnownHash: Map<string, Uint8Array>
 
   /**
    * Create new storage fetcher
@@ -92,7 +92,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
-    this.accountToHighestKnownHash = new Map<String, Uint8Array>()
+    this.accountToHighestKnownHash = new Map<string, Uint8Array>()
     this.debug = debugDefault('client:fetcher:storage')
     if (this.storageRequests.length > 0) {
       const fullJob = {

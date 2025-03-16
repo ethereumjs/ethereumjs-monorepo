@@ -186,7 +186,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global values
-    // eslint-disable-next-line no-global-assign
+
     fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
@@ -232,7 +232,7 @@ describe('[fromJSONRPCProvider]', () => {
       )
     }
     // @ts-expect-error
-    // eslint-disable-next-line no-global-assign
+
     fetch = realFetch
   })
 })

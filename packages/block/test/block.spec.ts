@@ -396,7 +396,7 @@ describe('[Block]: block functions', () => {
       /extraData should be 'dao-hard-fork/,
       undefined,
       'should throw on DAO HF block with wrong extra data',
-    ) // eslint-disable-line
+    )
 
     // Set extraData to dao-hard-fork
     blockData[0][12] = hexToBytes('0x64616f2d686172642d666f726b')

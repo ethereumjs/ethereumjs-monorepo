@@ -84,7 +84,7 @@ class FakeChain {
     getTotalDifficulty: () => {
       return 1n
     },
-    // eslint-disable-next-line no-invalid-this
+
     shallowCopy: () => this.blockchain,
     _init: async () => undefined,
     events: {

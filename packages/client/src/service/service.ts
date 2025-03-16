@@ -163,7 +163,6 @@ export class Service {
     }
 
     this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
       this.STATS_INTERVAL,
     )

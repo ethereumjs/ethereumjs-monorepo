@@ -622,7 +622,7 @@ export class CliqueConsensus implements Consensus {
       throw EthereumJSErrorWithoutCode('Signer not found')
     }
     const { number } = await this.blockchain!.getCanonicalHeadHeader()
-    //eslint-disable-next-line
+
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

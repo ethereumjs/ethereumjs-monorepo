@@ -1,8 +1,10 @@
-import {
+import type {
   type AccessEventFlags,
   type BinaryTreeAccessWitnessInterface,
+  BinaryTreeAccessedState,
   BinaryTreeAccessedStateType,
   type BinaryTreeAccessedStateWithAddress,
+  RawBinaryTreeAccessedState,
 } from '@ethereumjs/common'
 import {
   BIGINT_0,
@@ -27,7 +29,6 @@ import { ChunkCache } from './chunkCache.ts'
 import { StemCache } from './stemCache.ts'
 
 import type { BinaryTree } from '@ethereumjs/binarytree'
-import type { BinaryTreeAccessedState, RawBinaryTreeAccessedState } from '@ethereumjs/common'
 import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 

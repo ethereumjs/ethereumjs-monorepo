@@ -103,7 +103,6 @@ export class EthProtocol extends Protocol {
   private chain: Chain
   private nextReqId = BIGINT_0
 
-  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'NewBlockHashes',

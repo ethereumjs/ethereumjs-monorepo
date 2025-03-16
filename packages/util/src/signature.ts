@@ -64,8 +64,8 @@ export function ecsign(
 
   if ([2, 3].includes(sig.recovery)) {
     // From the yellow paper:
-    /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates 
-       of the curve point for which r is the x-value; this value is in the range of [0, 3], 
+    /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates
+       of the curve point for which r is the x-value; this value is in the range of [0, 3],
        however we declare the upper two possibilities, representing infinite values, invalid. */
     throw EthereumJSErrorWithoutCode(
       `Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`,

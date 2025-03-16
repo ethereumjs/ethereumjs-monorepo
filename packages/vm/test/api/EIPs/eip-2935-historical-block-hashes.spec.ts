@@ -123,7 +123,6 @@ describe('EIP 2935: historical block hashes', () => {
     const historyAddressBigInt = bytesToBigInt(historyAddress.bytes)
     const contract2935Code = hexToBytes(contract2935CodeHex as string)
 
-    // eslint-disable-next-line no-inner-declarations
     async function testBlockhashContract(vm: VM, block: Block, i: bigint): Promise<Uint8Array> {
       const tx = createLegacyTx({
         to: historyAddress,

@@ -173,7 +173,6 @@ describe('simple mainnet test run', async () => {
         snapSyncCompletedPromise,
         beaconSyncRelayer: relayer,
       } = (await createSnapClient(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         common,
         customGenesisState,
         [nodeInfo.enode],

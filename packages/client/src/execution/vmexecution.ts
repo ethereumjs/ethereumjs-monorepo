@@ -898,7 +898,6 @@ export class VMExecution extends Execution {
    */
   async start(): Promise<boolean> {
     this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await this.stats.bind(this),
       this.STATS_INTERVAL,
     )

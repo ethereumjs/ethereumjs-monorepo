@@ -173,7 +173,7 @@ export function dumpState(state: any, cb: Function) {
       })
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
   readAccounts(state).then(async function (accounts: any) {
     const results: any = []
     for (let key = 0; key < accounts.length; key++) {

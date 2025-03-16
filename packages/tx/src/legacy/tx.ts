@@ -42,7 +42,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * Validates tx's `v` value and extracts the chain id
  */
-function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undefined {
+function validateVAndExtractChainID(common: Common, _v?: bigint): bigint | undefined {
   let chainIdBigInt
   const v = _v !== undefined ? Number(_v) : undefined
   // Check for valid v values in the scope of a signed legacy tx

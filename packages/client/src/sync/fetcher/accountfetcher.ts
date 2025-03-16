@@ -225,11 +225,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
   }
 
-  snapFetchersCompleted(fetcherType: Object, root?: Uint8Array): void {
+  snapFetchersCompleted(fetcherType: object, root?: Uint8Array): void {
     const fetcherDoneFlags = this.fetcherDoneFlags
 
     switch (fetcherType) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
         fetcherDoneFlags.accountFetcher.done = true
         fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256

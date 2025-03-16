@@ -1,6 +1,6 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import type { EVMMockBlockchainInterface, type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
 import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -25,8 +25,6 @@ import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.ts'
 import { block as blockData } from './testdata/providerData/blocks/block0x7a120.ts'
 import { getValues } from './testdata/providerData/mockProvider.ts'
 import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.ts'
-
-import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url

@@ -102,7 +102,6 @@ export class SnapProtocol extends Protocol {
   private convertSlimBody?: boolean
   private nextReqId = BIGINT_0
 
-  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'GetAccountRange',

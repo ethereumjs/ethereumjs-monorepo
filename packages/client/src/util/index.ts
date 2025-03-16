@@ -29,7 +29,6 @@ export function getPackageJSON() {
   // or we are at the root directory.
   let currentDir = __dirname
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const packageJsonPath = joinPath(currentDir, 'package.json')
     if (existsSync(packageJsonPath)) {

@@ -24,7 +24,25 @@ import { callWithStackTrace } from '../../helpers.ts'
 import { middleware, validators } from '../../validation.ts'
 
 import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.ts'
+import type {
+  BlobAndProofV1,
+  Bytes8,
+  Bytes32,
+  type ChainCache,
+  EngineError,
+  ExecutionPayloadBodyV1,
+  ExecutionPayloadV1,
+  ExecutionPayloadV2,
+  ExecutionPayloadV3,
+  ForkchoiceResponseV1,
+  ForkchoiceStateV1,
+  PayloadAttributes,
+  PayloadAttributesV1,
+  PayloadAttributesV2,
+  PayloadAttributesV3,
+  type PayloadStatusV1,
+  Status,
+} from './types.ts'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -53,21 +71,6 @@ import type { EthereumClient } from '../../../client.ts'
 import type { Config } from '../../../config.ts'
 import type { VMExecution } from '../../../execution/index.ts'
 import type { FullEthereumService, Skeleton } from '../../../service/index.ts'
-import type {
-  BlobAndProofV1,
-  Bytes8,
-  Bytes32,
-  ExecutionPayloadBodyV1,
-  ExecutionPayloadV1,
-  ExecutionPayloadV2,
-  ExecutionPayloadV3,
-  ForkchoiceResponseV1,
-  ForkchoiceStateV1,
-  PayloadAttributes,
-  PayloadAttributesV1,
-  PayloadAttributesV2,
-  PayloadAttributesV3,
-} from './types.ts'
 
 const zeroBlockHash = new Uint8Array(32)
 
@@ -92,9 +95,9 @@ export class Engine {
   private lastNewPayloadHF: string = ''
   private lastForkchoiceUpdatedHF: string = ''
 
-  private remoteBlocks: Map<String, Block>
-  private executedBlocks: Map<String, Block>
-  private invalidBlocks: Map<String, Error>
+  private remoteBlocks: Map<string, Block>
+  private executedBlocks: Map<string, Block>
+  private invalidBlocks: Map<string, Error>
   private chainCache: ChainCache
 
   private lastAnnouncementTime = Date.now()

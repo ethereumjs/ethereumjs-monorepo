@@ -75,11 +75,10 @@ function runTests(filePath: string) {
 
       const tests: { [testName: string]: T9NTest } = JSON.parse(testsRaw)
 
-      // eslint-disable-next-line no-restricted-syntax
       for (const testName in tests) {
         const test = tests[testName]
         const txBytes = hexToBytes(test.txbytes)
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const fork in test.result) {
           it(`${testName} [${getFork(fork)}]`, () => {
             const common = new Common({ chain: Mainnet, hardfork: getFork(fork) })

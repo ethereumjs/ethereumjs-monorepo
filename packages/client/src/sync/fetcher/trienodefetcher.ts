@@ -40,7 +40,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
-  accountToStorageTrie?: Map<String, MerklePatriciaTrie>
+  accountToStorageTrie?: Map<string, MerklePatriciaTrie>
   stateManager?: MerkleStateManager
 
   /** Destroy fetcher once all tasks are done */

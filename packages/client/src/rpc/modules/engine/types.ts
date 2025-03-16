@@ -78,9 +78,9 @@ export type BlobAndProofV1 = {
 }
 
 export type ChainCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
+  remoteBlocks: Map<string, Block>
+  executedBlocks: Map<string, Block>
+  invalidBlocks: Map<string, Error>
   skeleton: Skeleton
 }
 
