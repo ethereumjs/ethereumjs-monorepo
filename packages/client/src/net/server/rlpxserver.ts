@@ -7,8 +7,8 @@ import { RlpxPeer } from '../peer/rlpxpeer.ts'
 
 import { Server } from './server.ts'
 
-import type { ServerOptions } from './server.ts'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
+import type { ServerOptions } from './server.ts'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */
@@ -228,7 +228,7 @@ export class RlpxServer extends Server {
       this.dpt.events.on('error', (e: Error) => {
         this.error(e)
         // If DPT can't bind to port, resolve anyway so client startup doesn't hang
-        if (e.message.includes('EADDRINUSE')) resolve()
+        if (e.message.includes('EADDRINUSE') === true) resolve()
       })
 
       this.dpt.events.on('listening', () => {
@@ -304,7 +304,7 @@ export class RlpxServer extends Server {
       this.rlpx.events.on('error', (e: Error) => {
         this.error(e)
         // If DPT can't bind to port, resolve anyway so client startup doesn't hang
-        if (e.message.includes('EADDRINUSE')) resolve()
+        if (e.message.includes('EADDRINUSE') === true) resolve()
       })
 
       this.rlpx.events.on('listening', () => {
