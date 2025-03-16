@@ -3,6 +3,13 @@ import rootConfig from '../../config/eslint.config.mjs'
 export default [
   ...rootConfig,
   {
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.lint.json'],
+      },
+    },
+  },
+  {
     rules: {
       'no-redeclare': 'off',
       'no-undef': 'off', // temporary until fixed: 'NodeJS' is not defined
