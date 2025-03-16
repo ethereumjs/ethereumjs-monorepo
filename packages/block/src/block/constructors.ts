@@ -1,7 +1,8 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import {
+import type {
   type TxOptions,
+  TypedTransaction,
   createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
@@ -31,7 +32,6 @@ import {
   executionPayloadFromBeaconPayload,
 } from '../index.ts'
 
-import type { TypedTransaction } from '@ethereumjs/tx'
 import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 import type { BeaconPayloadJSON } from '../from-beacon-payload.ts'
 import type {

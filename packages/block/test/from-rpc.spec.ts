@@ -112,10 +112,10 @@ describe('[fromRPC]:', () => {
     assert.ok(block.uncleHashIsValid())
   })
 
-  it('should create a block with EIP-4896 withdrawals', () => {
+  it('should create a block with EIP-4896 withdrawals', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlockFromRPC(testdataFromRPCWithWithdrawalsData, [], { common })
-    assert.ok(block.withdrawalsTrieIsValid())
+    assert.ok(await block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
@@ -186,7 +186,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global values
-    // eslint-disable-next-line no-global-assign
+
     fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
@@ -227,12 +227,12 @@ describe('[fromJSONRPCProvider]', () => {
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(
-        err.message.includes('No block data returned from provider'),
+        err.message.includes('No block data returned from provider') === true,
         'returned correct error message',
       )
     }
-    // @ts-expect-error
-    // eslint-disable-next-line no-global-assign
+    // @ts-expect-error -- Typescript doesn't like us to replace global values
+
     fetch = realFetch
   })
 })

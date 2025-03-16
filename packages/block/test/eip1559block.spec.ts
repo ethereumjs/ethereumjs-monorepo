@@ -75,7 +75,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
       assert.ok(
-        e.message.includes(expectedError),
+        e.message.includes(expectedError) === true,
         'should throw if base fee is not set to initial value',
       )
     }
@@ -99,7 +99,7 @@ describe('EIP1559 tests', () => {
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
       assert.ok(
-        e.message.includes(expectedError),
+        e.message.includes(expectedError) === true,
         'should throw with no base fee field when EIP1559 is activated',
       )
     }
@@ -142,7 +142,7 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
+      assert.ok(e.message.includes('base fee') === true, 'should throw on wrong initial base fee')
     }
   })
 
@@ -200,7 +200,10 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
+      assert.ok(
+        e.message.includes('too much gas used') === true,
+        'should throw when elasticity is exceeded',
+      )
     }
   })
 
@@ -327,7 +330,7 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('gas limit increased too much'),
+        e.message.includes('gas limit increased too much') === true,
         'should throw if gas limit is increased too much (HF transition block)',
       )
     }
@@ -351,7 +354,7 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('gas limit increased too much'),
+        e.message.includes('gas limit increased too much') === true,
         'should throw if gas limit is increased too much (post-HF transition block)',
       )
     }
@@ -377,7 +380,7 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('gas limit decreased too much'),
+        e.message.includes('gas limit decreased too much') === true,
         'should throw if gas limit is decreased too much (HF transition block)',
       )
     }
@@ -401,7 +404,7 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('gas limit decreased too much'),
+        e.message.includes('gas limit decreased too much') === true,
         'should throw if gas limit is decreased too much (post-HF transition block)',
       )
     }

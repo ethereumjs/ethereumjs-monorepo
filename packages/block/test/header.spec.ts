@@ -125,7 +125,10 @@ describe('[Block]: Header functions', () => {
       createBlockHeaderFromRLP(RLP.encode('a'))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
-      assert.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
+      assert.ok(
+        e.message.includes(expectedError) === true,
+        'should throw with header as rlp encoded string',
+      )
     }
   })
 
@@ -172,14 +175,20 @@ describe('[Block]: Header functions', () => {
       createBlockHeaderFromBytesArray(headerArray)
     } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
-      assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
+      assert.ok(
+        e.message.includes(expectedError) === true,
+        'should throw on more values than expected',
+      )
     }
 
     try {
       createBlockHeaderFromBytesArray(headerArray.slice(0, 5))
     } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
-      assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
+      assert.ok(
+        e.message.includes(expectedError) === true,
+        'should throw on less values than expected',
+      )
     }
   })
 
@@ -208,7 +217,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -219,7 +228,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -250,7 +259,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -301,7 +310,7 @@ describe('[Block]: Header functions', () => {
         true,
         'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })
