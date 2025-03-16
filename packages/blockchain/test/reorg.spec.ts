@@ -157,7 +157,7 @@ describe('reorg tests', () => {
 
     let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
 
-    assert.isFalse(
+    assert.isUndefined(
       signerStates.find(
         (s: any): boolean =>
           s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
@@ -166,7 +166,7 @@ describe('reorg tests', () => {
     )
 
     let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.isFalse(
+    assert.isUndefined(
       signerVotes.find(
         (v: any): boolean =>
           v[0] === BigInt(2) &&
@@ -178,16 +178,16 @@ describe('reorg tests', () => {
     )
 
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.ok(
-      !blockSigners.find(
+    assert.isUndefined(
+      blockSigners.find(
         (s: any): boolean => s[0] === BigInt(1) && s[1].equals(cliqueSigner(block1_low.header)),
       ),
       'should not find reorged block signer',
     )
 
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
-    assert.ok(
-      !!signerStates.find(
+    assert.exists(
+      signerStates.find(
         (s: any): boolean =>
           s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
       ),
@@ -195,11 +195,11 @@ describe('reorg tests', () => {
     )
 
     signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.ok(signerVotes.length === 0, 'votes should be empty')
+    assert.equal(signerVotes.length, 0, 'votes should be empty')
 
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.ok(
-      !!blockSigners.find(
+    assert.exists(
+      blockSigners.find(
         (s: any): boolean => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),
       'should find reorged block signer',
