@@ -122,6 +122,7 @@ export class KBucket {
    */
   add(contact: PeerInfo): KBucket {
     if (!(contact.id instanceof Uint8Array)) {
+      // eslint-disable-next-line no-restricted-syntax
       throw new Error('Contact must have an id')
     }
 
@@ -399,9 +400,11 @@ export class KBucket {
   _update(node: KBucketNode, index: number, contact: Contact) {
     // sanity check
     if (!equalsBytes(node.contacts![index].id, contact.id)) {
+      // eslint-disable-next-line no-restricted-syntax
       throw new Error('wrong index for _update')
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     if (node.contacts === null) throw new Error('Missing node.contacts')
 
     const incumbent = node.contacts[index]
