@@ -1,14 +1,13 @@
 import { bytesToHex, setLengthRight } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.js'
+import { EvmErrorResult, OOGResult } from '../evm.ts'
 
-import { gasLimitCheck } from './util.js'
+import { getPrecompileName } from './index.ts'
+import { gasLimitCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
-
-import type { EVM } from '../evm.js'
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { EVM } from '../evm.ts'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 export function precompile07(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('07')

@@ -36,11 +36,11 @@ import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { Caches } from './cache/caches.js'
-import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
+import type { Caches } from './cache/caches.ts'
+import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.ts'
 import type {
   AccountFields,
   Common,

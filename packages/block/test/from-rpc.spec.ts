@@ -6,23 +6,23 @@ import {
   createBlockFromJSONRPCProvider,
   createBlockFromRPC,
   createBlockHeaderFromRPC,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { alchemy14151203Data } from './testdata/alchemy14151203.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.js'
-import { infura15571241Data } from './testdata/infura15571241.js'
-import { infura15571241withTransactionsData } from './testdata/infura15571241withTransactions.js'
-import { infura2000004withTransactionsData } from './testdata/infura2000004withTransactions.js'
-import { infura2000004withoutTransactionsData } from './testdata/infura2000004withoutTransactions.js'
-import { testdataFromRPCDifficultyAsIntegerData } from './testdata/testdata-from-rpc-difficulty-as-integer.js'
-import { testdataFromRPCGoerliLondonData } from './testdata/testdata-from-rpc-goerli-london.js'
-import { testdataFromRPCWithUnclesData } from './testdata/testdata-from-rpc-with-uncles.js'
-import { testdataFromRPCWithUnclesUncleBlockData } from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.js'
-import { testdataFromRPCWithWithdrawalsData } from './testdata/testdata-from-rpc-with-withdrawals.js'
-import { testdataFromRPCData } from './testdata/testdata-from-rpc.js'
+import { alchemy14151203Data } from './testdata/alchemy14151203.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.ts'
+import { infura15571241Data } from './testdata/infura15571241.ts'
+import { infura15571241withTransactionsData } from './testdata/infura15571241withTransactions.ts'
+import { infura2000004withTransactionsData } from './testdata/infura2000004withTransactions.ts'
+import { infura2000004withoutTransactionsData } from './testdata/infura2000004withoutTransactions.ts'
+import { testdataFromRPCDifficultyAsIntegerData } from './testdata/testdata-from-rpc-difficulty-as-integer.ts'
+import { testdataFromRPCGoerliLondonData } from './testdata/testdata-from-rpc-goerli-london.ts'
+import { testdataFromRPCWithUnclesData } from './testdata/testdata-from-rpc-with-uncles.ts'
+import { testdataFromRPCWithUnclesUncleBlockData } from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.ts'
+import { testdataFromRPCWithWithdrawalsData } from './testdata/testdata-from-rpc-with-withdrawals.ts'
+import { testdataFromRPCData } from './testdata/testdata-from-rpc.ts'
 
-import type { JSONRPCBlock } from '../src/index.js'
+import type { JSONRPCBlock } from '../src/index.ts'
 import type { JSONRPCTx, LegacyTx } from '@ethereumjs/tx'
 
 describe('[fromRPC]: block #2924874', () => {

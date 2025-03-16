@@ -9,9 +9,9 @@ import {
   DBSetTD,
   genGenesisStateRoot,
   getGenesisStateRoot,
-} from './index.js'
+} from './index.ts'
 
-import type { BlockchainOptions, DBOp } from './index.js'
+import type { BlockchainOptions, DBOp } from './index.ts'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
 

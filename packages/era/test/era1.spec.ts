@@ -11,7 +11,7 @@ import {
   readBlockTupleAtOffset,
   readOtherEntries,
   validateERA1,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 // Reference file downloaded from era1.ethportal.net
 const filePath = './test/mainnet-00000-5ec1ffb8.era1'

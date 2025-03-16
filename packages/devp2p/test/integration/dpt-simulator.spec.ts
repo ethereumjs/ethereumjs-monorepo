@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { testData } from '../testdata.js'
+import { testData } from '../testdata.ts'
 
-import * as util from './util.js'
+import * as util from './util.ts'
 
 describe('DPT simulator tests', () => {
   it('DPT: new working node', () => {

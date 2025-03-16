@@ -1,8 +1,8 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { BinaryNodeType, InternalBinaryNode, decodeBinaryNode } from '../../src/index.js'
-import {} from '../../src/types.js'
+import { BinaryNodeType, InternalBinaryNode, decodeBinaryNode } from '../../src/index.ts'
+import {} from '../../src/types.ts'
 
 describe('InternalBinaryNode', () => {
   it('should round-trip encode and decode an internal node', () => {

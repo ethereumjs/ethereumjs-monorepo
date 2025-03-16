@@ -2,12 +2,12 @@ import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/index.js'
-import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.js'
-import { Event } from '../../../src/types.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { Config } from '../../../src/index.ts'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.ts'
+import { Event } from '../../../src/types.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 
-import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.js'
+import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.ts'
 
 const payload: NewPayload = {
   payload: {

@@ -9,15 +9,15 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists } from '../util.ts'
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.ts'
 
 import type {
   AccessList,
@@ -29,7 +29,7 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 

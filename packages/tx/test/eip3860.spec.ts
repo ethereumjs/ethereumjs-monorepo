@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TransactionType, createTx, paramsTx } from '../src/index.js'
+import { TransactionType, createTx, paramsTx } from '../src/index.ts'
 
 const common = new Common({
   chain: Mainnet,

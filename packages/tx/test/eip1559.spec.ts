@@ -3,11 +3,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { TWO_POW256, bytesToHex, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createFeeMarket1559Tx } from '../src/index.js'
+import { createFeeMarket1559Tx } from '../src/index.ts'
 
-import { eip1559Data } from './testData/eip1559.js' // Source: Besu
+import { eip1559Data } from './testData/eip1559.ts' // Source: Besu
 
-import type { JSONTx } from '../src/index.js'
+import type { JSONTx } from '../src/index.ts'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)
 common.setHardfork(Hardfork.London)

@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Lock } from '../src/index.js'
+import { Lock } from '../src/index.ts'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 

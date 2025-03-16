@@ -250,7 +250,7 @@ Have a look at the EIP for some guidance on how to use and fill in the various w
 [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer, see PR [#3477](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3477). Starting with this release this library supports consolidation requests and a containing block can be instantiated as follows:
 
 ```ts
-// ./examples/7251Requests.ts
+// ./examples/7251Requests.js
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'

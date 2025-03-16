@@ -14,8 +14,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { buildBlock, runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

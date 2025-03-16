@@ -4,7 +4,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, createZeroAddress, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
 

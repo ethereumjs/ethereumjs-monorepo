@@ -1,10 +1,10 @@
 import { BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
 
-import { Fetcher } from './fetcher.js'
+import { Fetcher } from './fetcher.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { Job } from './types.js'
+import type { Chain } from '../../blockchain/index.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { Job } from './types.ts'
 
 export interface BlockFetcherOptions extends FetcherOptions {
   /** Blockchain */

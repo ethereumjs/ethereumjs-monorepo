@@ -4,10 +4,10 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { wait } from '../../integration/util.ts'
 
 import type { BranchMPTNode } from '@ethereumjs/mpt'
 
@@ -28,7 +28,7 @@ describe('[TrieNodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.js')
+  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })

@@ -1,7 +1,7 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexToBytes, isHexString } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types.js'
+import type { Checkpoint, CheckpointDBOpts } from '../types.ts'
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
 
 /**

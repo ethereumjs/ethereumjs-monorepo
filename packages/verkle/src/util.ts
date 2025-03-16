@@ -5,10 +5,10 @@ import {
   LeafVerkleNode,
   LeafVerkleNodeValue,
   decodeVerkleNode,
-} from './node/index.js'
+} from './node/index.ts'
 
-import type { ChildNode } from './node/index.js'
-import type { VerkleTree } from './verkleTree.js'
+import type { ChildNode } from './node/index.ts'
+import type { VerkleTree } from './verkleTree.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**

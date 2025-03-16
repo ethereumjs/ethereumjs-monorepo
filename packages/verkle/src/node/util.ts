@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, setLengthRight } from '@ethereumjs/util'
 
-import { InternalVerkleNode } from './internalNode.js'
-import { LeafVerkleNode } from './leafNode.js'
-import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
+import { InternalVerkleNode } from './internalNode.ts'
+import { LeafVerkleNode } from './leafNode.ts'
+import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.ts'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 

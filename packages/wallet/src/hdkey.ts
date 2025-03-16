@@ -2,7 +2,7 @@
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
-import { Wallet } from './wallet.js'
+import { Wallet } from './wallet.ts'
 
 export class EthereumHDKey {
   private readonly _hdkey: HDKey

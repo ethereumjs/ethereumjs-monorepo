@@ -1,15 +1,15 @@
 import debug from 'debug'
 import { Readable, Writable } from 'stream'
 
-import { Heap } from '../../ext/qheap.js'
-import { Event } from '../../types.js'
+import { Heap } from '../../ext/qheap.ts'
+import { Event } from '../../types.ts'
 
-import type { Config } from '../../config.js'
-import type { QHeap } from '../../ext/qheap.js'
-import type { Peer } from '../../net/peer/index.js'
-import type { PeerPool } from '../../net/peerpool.js'
-import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
-import type { Job } from './types.js'
+import type { Config } from '../../config.ts'
+import type { QHeap } from '../../ext/qheap.ts'
+import type { Peer } from '../../net/peer/index.ts'
+import type { PeerPool } from '../../net/peerpool.ts'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.ts'
+import type { Job } from './types.ts'
 import type { Debugger } from 'debug'
 
 export interface FetcherOptions {

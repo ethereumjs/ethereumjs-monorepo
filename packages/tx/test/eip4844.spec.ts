@@ -24,12 +24,12 @@ import {
   createMinimal4844TxFromNetworkWrapper,
   createTx,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { hardfork4844Data } from './testData/4844-hardfork.js'
-import { serialized4844TxData } from './testData/serialized4844tx.js'
+import { hardfork4844Data } from './testData/4844-hardfork.ts'
+import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
-import type { BlobEIP4844TxData } from '../src/index.js'
+import type { BlobEIP4844TxData } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)

@@ -2,14 +2,14 @@ import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { MemoryLevel } from 'memory-level'
 
-import { Config } from '../../src/config.js'
-import { FullEthereumService } from '../../src/service/index.js'
-import { Event } from '../../src/types.js'
+import { Config } from '../../src/config.ts'
+import { FullEthereumService } from '../../src/service/index.ts'
+import { Event } from '../../src/types.ts'
 
-import { MockChain } from './mocks/mockchain.js'
-import { MockServer } from './mocks/mockserver.js'
+import { MockChain } from './mocks/mockchain.ts'
+import { MockServer } from './mocks/mockserver.ts'
 
-import type { SyncMode } from '../../src/config.js'
+import type { SyncMode } from '../../src/config.ts'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 
 interface SetupOptions {

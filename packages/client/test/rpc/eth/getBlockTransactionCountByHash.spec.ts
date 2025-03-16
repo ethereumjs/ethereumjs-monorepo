@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { baseSetup } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { baseSetup } from '../helpers.ts'
 
 const method = 'eth_getBlockTransactionCountByHash'
 

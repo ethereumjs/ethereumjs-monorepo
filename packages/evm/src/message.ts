@@ -1,7 +1,7 @@
 import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles/index.js'
-import type { EOFEnv } from './types.js'
+import type { PrecompileFunc } from './precompiles/index.ts'
+import type { EOFEnv } from './types.ts'
 import type {
   BinaryTreeAccessWitnessInterface,
   VerkleAccessWitnessInterface,

@@ -1,3 +1,3 @@
-export * from './encoding.js'
-export * from './genesisState.js'
-export * from './walkController.js'
+export * from './encoding.ts'
+export * from './genesisState.ts'
+export * from './walkController.ts'

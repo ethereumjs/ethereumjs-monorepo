@@ -1,8 +1,8 @@
-import { callWithStackTrace, toJSONRPCTx } from '../helpers.js'
+import { callWithStackTrace, toJSONRPCTx } from '../helpers.ts'
 
-import type { EthereumClient } from '../../index.js'
-import type { FullEthereumService } from '../../service/index.js'
-import type { TxPool as Pool } from '../../service/txpool.js'
+import type { EthereumClient } from '../../index.ts'
+import type { FullEthereumService } from '../../service/index.ts'
+import type { TxPool as Pool } from '../../service/txpool.ts'
 import type { VM } from '@ethereumjs/vm'
 
 /**

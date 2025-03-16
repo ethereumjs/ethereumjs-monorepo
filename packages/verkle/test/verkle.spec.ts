@@ -9,9 +9,9 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import type { VerkleNode } from '../src/index.js'
+import type { VerkleNode } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('Verkle tree', () => {

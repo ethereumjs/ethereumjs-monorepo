@@ -21,9 +21,9 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { MerkleStateManager } from '../merkleStateManager.js'
+import { MerkleStateManager } from '../merkleStateManager.ts'
 
-import type { MerkleStateManagerOpts } from '../index.js'
+import type { MerkleStateManagerOpts } from '../index.ts'
 import type { Proof, StorageProof } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 

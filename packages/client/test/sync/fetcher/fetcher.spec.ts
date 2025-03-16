@@ -1,11 +1,11 @@
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { Fetcher } from '../../../src/sync/fetcher/fetcher.js'
-import { Event } from '../../../src/types.js'
+import { Config } from '../../../src/config.ts'
+import { Fetcher } from '../../../src/sync/fetcher/fetcher.ts'
+import { Event } from '../../../src/types.ts'
 
-import type { Job } from '../../../src/sync/fetcher/types.js'
+import type { Job } from '../../../src/sync/fetcher/types.ts'
 
 class FetcherTest extends Fetcher<any, any, any> {
   process(_job: any, res: any) {

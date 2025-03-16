@@ -9,9 +9,9 @@ import {
 } from '@ethereumjs/util'
 import { bn254 } from '@noble/curves/bn254'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { ERROR, EvmError } from '../../exceptions.ts'
 
-import type { EVMBN254Interface } from '../../types.js'
+import type { EVMBN254Interface } from '../../types.ts'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)

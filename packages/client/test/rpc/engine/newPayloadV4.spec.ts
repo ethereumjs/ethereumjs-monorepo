@@ -2,10 +2,10 @@ import { createTx } from '@ethereumjs/tx'
 import { Units, bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV4'
 const [blockData] = beaconData

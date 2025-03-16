@@ -1,9 +1,9 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { afterEach, assert, describe, expect, it, vi } from 'vitest'
 
-import { DPT } from '../src/dpt/index.js'
+import { DPT } from '../src/dpt/index.ts'
 
-import type { PeerInfo } from '../src/types.js'
+import type { PeerInfo } from '../src/types.ts'
 
 describe('DPT', () => {
   afterEach(() => {

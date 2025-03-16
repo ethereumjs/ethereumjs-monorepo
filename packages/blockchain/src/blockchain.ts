@@ -18,16 +18,16 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
-import { CasperConsensus } from './consensus/casper.js'
+import { CasperConsensus } from './consensus/casper.ts'
 import {
   DBOp,
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
   DBSetTD,
-} from './db/helpers.js'
-import { DBManager } from './db/manager.js'
-import { DBTarget } from './db/operation.js'
+} from './db/helpers.ts'
+import { DBManager } from './db/manager.ts'
+import { DBTarget } from './db/operation.ts'
 
 import type {
   BlockchainEvent,
@@ -36,7 +36,7 @@ import type {
   Consensus,
   ConsensusDict,
   OnBlock,
-} from './types.js'
+} from './types.ts'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type {

@@ -10,9 +10,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.ts'
 
-import { createAccountWithDefaults } from './util.js'
+import { createAccountWithDefaults } from './util.ts'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 describe('StateManager -> Storage', () => {

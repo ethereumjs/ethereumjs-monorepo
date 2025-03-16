@@ -7,12 +7,12 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../dist/esm/node/index.js'
-import { MerklePatriciaTrie } from '../dist/esm/mpt.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../dist/esm/node/index.ts'
+import { MerklePatriciaTrie } from '../dist/esm/mpt.ts'
 
-import { _walkTrie } from '../dist/esm/util/asyncWalk.js'
+import { _walkTrie } from '../dist/esm/util/asyncWalk.ts'
 
-import type { MPTNode } from '../dist/esm/types.js'
+import type { MPTNode } from '../dist/esm/types.ts'
 import type { Debugger } from 'debug'
 
 const debug = _debug('trieview') // cspell:disable-line

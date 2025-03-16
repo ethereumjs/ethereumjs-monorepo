@@ -253,7 +253,7 @@ eth.sendStatus({
 let forkDrop: NodeJS.Timeout
 let forkVerified = false
 eth.events.once('status', () => {
-  eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
+  eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
 ```
 
 Wait for follow-up messages to arrive, send your responses.

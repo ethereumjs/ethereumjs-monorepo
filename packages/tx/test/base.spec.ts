@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { valueBoundaryCheck } from '../src/features/util.js'
+import { valueBoundaryCheck } from '../src/features/util.ts'
 import {
   AccessList2930Tx,
   Capability,
@@ -29,13 +29,13 @@ import {
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { eip1559TxsData } from './testData/eip1559txs.js'
-import { eip2930TxsData } from './testData/eip2930txs.js'
-import { txsData } from './testData/txs.js'
+import { eip1559TxsData } from './testData/eip1559txs.ts'
+import { eip2930TxsData } from './testData/eip2930txs.ts'
+import { txsData } from './testData/txs.ts'
 
-import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
+import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.ts'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)

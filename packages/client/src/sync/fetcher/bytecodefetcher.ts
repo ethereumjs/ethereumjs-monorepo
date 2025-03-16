@@ -7,14 +7,14 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Fetcher } from './fetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { Fetcher } from './fetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
+import type { Peer } from '../../net/peer/index.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 

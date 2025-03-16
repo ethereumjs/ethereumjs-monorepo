@@ -1,9 +1,9 @@
-import { Address } from './address.js'
-import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
-import { BIGINT_0 } from './constants.js'
-import { TypeOutput, toType } from './types.js'
+import { Address } from './address.ts'
+import { bigIntToHex, bytesToHex, toBytes } from './bytes.ts'
+import { BIGINT_0 } from './constants.ts'
+import { TypeOutput, toType } from './types.ts'
 
-import type { AddressLike, BigIntLike, PrefixedHexString } from './types.js'
+import type { AddressLike, BigIntLike, PrefixedHexString } from './types.ts'
 
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to

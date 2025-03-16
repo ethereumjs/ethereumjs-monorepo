@@ -1,6 +1,6 @@
 import { assert, describe, it, vi } from 'vitest'
 
-import { fetchFromProvider, getProvider } from '../src/index.js'
+import { fetchFromProvider, getProvider } from '../src/index.ts'
 
 const providerUrl = 'https://myfakeprovider.com'
 const fakeEthersProvider = {

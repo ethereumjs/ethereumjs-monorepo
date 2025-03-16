@@ -19,8 +19,8 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { ChunkCache } from './chunkCache.js'
-import { StemCache } from './stemCache.js'
+import { ChunkCache } from './chunkCache.ts'
+import { StemCache } from './stemCache.ts'
 
 import type {
   AccessEventFlags,

@@ -12,8 +12,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import type { RunTxResult } from './types.js'
-import type { VM } from './vm.js'
+import type { RunTxResult } from './types.ts'
+import type { VM } from './vm.ts'
 
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
 

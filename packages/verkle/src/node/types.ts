@@ -1,7 +1,7 @@
 import { type VerkleCrypto } from '@ethereumjs/util'
 
-import type { InternalVerkleNode } from './internalNode.js'
-import type { LeafVerkleNode } from './leafNode.js'
+import type { InternalVerkleNode } from './internalNode.ts'
+import type { LeafVerkleNode } from './leafNode.ts'
 
 export type VerkleNodeType = (typeof VerkleNodeType)[keyof typeof VerkleNodeType]
 

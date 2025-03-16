@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Account, Address, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 

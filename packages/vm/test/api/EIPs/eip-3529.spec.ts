@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

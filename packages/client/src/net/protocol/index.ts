@@ -2,9 +2,9 @@
  * @module net/protocol
  */
 
-export * from './boundprotocol.js'
-export * from './ethprotocol.js'
-export * from './protocol.js'
-export * from './rlpxsender.js'
-export * from './sender.js'
-export * from './snapprotocol.js'
+export * from './boundprotocol.ts'
+export * from './ethprotocol.ts'
+export * from './protocol.ts'
+export * from './rlpxsender.ts'
+export * from './sender.ts'
+export * from './snapprotocol.ts'

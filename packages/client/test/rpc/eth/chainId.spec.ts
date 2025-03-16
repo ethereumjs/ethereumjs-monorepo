@@ -1,8 +1,8 @@
 import { Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { Goerli } from '../../testdata/common/goerliCommon.js'
-import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { Goerli } from '../../testdata/common/goerliCommon.ts'
+import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'eth_chainId'
 

@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

@@ -17,9 +17,9 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { eip4844Data } from '../testdata/eip4844.js'
-import { setBalance } from '../utils.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { eip4844Data } from '../testdata/eip4844.ts'
+import { setBalance } from '../utils.ts'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))

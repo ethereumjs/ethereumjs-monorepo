@@ -15,7 +15,7 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import type { BlockHeader } from '../index.js'
+import type { BlockHeader } from '../index.ts'
 import type { CliqueConfig } from '@ethereumjs/common'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity

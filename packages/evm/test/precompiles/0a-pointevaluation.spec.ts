@@ -10,9 +10,9 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-import type { PrecompileInput } from '../../src/index.js'
+import type { PrecompileInput } from '../../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 const kzg = new microEthKZG(trustedSetup)
 const BLS_MODULUS = BigInt(
@@ -21,7 +21,7 @@ const BLS_MODULUS = BigInt(
 
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
-    const { eip4844Data } = await import('../testdata/eip4844.js')
+    const { eip4844Data } = await import('../testdata/eip4844.ts')
 
     const common = createCommonFromGethGenesis(eip4844Data, {
       chain: 'custom',
