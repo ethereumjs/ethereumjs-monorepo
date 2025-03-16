@@ -116,8 +116,8 @@ export const Mainnet: ChainConfig = {
     {
       name: 'prague',
       block: null,
-      timestamp: '9999999999', // TEMP: placeholder until mainnet timestamp is set
-      // forkHash: '0xFFFFFFFF' // TODO: set correct forkHash once mainnet timestamp is set
+      // Note: Prague is not yet scheduled for Mainnet.
+      // Timestamp will be added once it is scheduled.
     },
     {
       name: 'osaka',
