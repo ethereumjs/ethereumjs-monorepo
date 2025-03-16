@@ -157,20 +157,21 @@ describe('reorg tests', () => {
 
     let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
 
-    assert.ok(
-      !signerStates.find(
-        (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
+    assert.isFalse(
+      signerStates.find(
+        (s: any): boolean =>
+          s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
       ),
       'should not find reorged signer state',
     )
 
     let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.ok(
-      !signerVotes.find(
-        (v: any) =>
+    assert.isFalse(
+      signerVotes.find(
+        (v: any): boolean =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(cliqueSigner(block1_low.header)) &&
-          v[1][1].equal(beneficiary1) &&
+          (v[1][0] as Address).equals(cliqueSigner(block1_low.header)) &&
+          (v[1][1] as Address).equals(beneficiary1) &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
       'should not find reorged clique vote',
@@ -179,7 +180,7 @@ describe('reorg tests', () => {
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !blockSigners.find(
-        (s: any) => s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1_low.header)),
+        (s: any): boolean => s[0] === BigInt(1) && s[1].equals(cliqueSigner(block1_low.header)),
       ),
       'should not find reorged block signer',
     )
@@ -187,7 +188,8 @@ describe('reorg tests', () => {
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
     assert.ok(
       !!signerStates.find(
-        (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
+        (s: any): boolean =>
+          s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
       ),
       'should find reorged signer state',
     )
@@ -198,7 +200,7 @@ describe('reorg tests', () => {
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.ok(
       !!blockSigners.find(
-        (s: any) => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
+        (s: any): boolean => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),
       'should find reorged block signer',
     )

@@ -133,7 +133,7 @@ export class Blockchain implements BlockchainInterface {
     this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db !== undefined ? opts.db : new MapDB()
+    this.db = opts.db ?? new MapDB()
 
     this.dbManager = new DBManager(this.db, this.common)
 
@@ -1301,7 +1301,7 @@ export class Blockchain implements BlockchainInterface {
    */
   async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
     const hash = await this.dbManager.numberToHash(number)
-    return hash !== undefined ? hash : false
+    return hash ?? false
   }
 
   /**
