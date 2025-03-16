@@ -15,7 +15,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0xabcd', {}])
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('missing receiptsManager'))
+    assert.isTrue(res.error.message.includes('missing receiptsManager'))
   })
 
   it('call with invalid parameters', async () => {
@@ -23,25 +23,26 @@ describe(method, () => {
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, ['abcd', {}])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('hex string without 0x prefix'))
 
     res = await rpc.request(method, ['0xabcd', { enableReturnData: true }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('enabling return data not implemented'))
+    assert.isTrue(res.error.message.includes('enabling return data not implemented'))
 
     res = await rpc.request(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('custom tracers and tracer configurations are not implemented'),
+      res.error.message.includes('custom tracers and tracer configurations are not implemented') ===
+        true,
     )
 
     res = await rpc.request(method, ['0xabcd', { tracer: 'someTracer' }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('custom tracers not implemented'))
+    assert.isTrue(res.error.message.includes('custom tracers not implemented'))
 
     res = await rpc.request(method, ['0xabcd', { timeout: 1000 }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('custom tracer timeouts not implemented'))
+    assert.isTrue(res.error.message.includes('custom tracer timeouts not implemented'))
   })
 
   it('call with valid parameters', async () => {

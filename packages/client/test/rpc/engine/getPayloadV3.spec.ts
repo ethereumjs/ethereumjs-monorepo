@@ -51,7 +51,9 @@ describe(method, () => {
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
+    assert.ok(
+      res.error.message.includes('invalid argument 0: argument must be a hex string') === true,
+    )
   })
 
   it('call with unknown payloadId', async () => {

@@ -120,7 +120,8 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated'),
+      res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated') ===
+        true,
     )
 
     res = await rpc.request('engine_forkchoiceUpdatedV2', [

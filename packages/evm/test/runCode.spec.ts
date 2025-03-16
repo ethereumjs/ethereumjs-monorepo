@@ -68,11 +68,11 @@ describe('VM.runCode: interpreter', () => {
     let result: any
     try {
       result = await evm.runCode!(runCodeArgs)
-    } catch (e: any) {
+    } catch {
       assert.fail('should not throw error')
     }
     assert.equal(result!.exceptionError!.errorType, 'EvmError')
-    assert.ok(result!.exceptionError!.error.includes('invalid opcode'))
+    assert.isTrue(result!.exceptionError!.error.includes('invalid opcode'))
   })
 
   it('should throw on non-EvmError', async () => {
@@ -98,7 +98,7 @@ describe('VM.runCode: interpreter', () => {
       await evm.runCode!(runCodeArgs)
       assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(e.toString().includes('Test'), 'error thrown')
+      assert.isTrue(e.toString().includes('Test'), 'error thrown')
     }
   })
 })
@@ -117,7 +117,7 @@ describe('VM.runCode: RunCodeOptions', () => {
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
       assert.ok(
-        err.message.includes('value field cannot be negative'),
+        err.message.includes('value field cannot be negative') === true,
         'throws on negative call value',
       )
     }

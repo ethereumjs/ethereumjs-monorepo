@@ -113,7 +113,7 @@ describe(method, async () => {
     const res = await rpc.request(method, ['pending', true])
 
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with non-string block number', async () => {
@@ -122,7 +122,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [10, true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a string'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
   it('call with invalid block number', async () => {
@@ -144,7 +144,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument 1'))
+    assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
   it('call with invalid second parameter', async () => {

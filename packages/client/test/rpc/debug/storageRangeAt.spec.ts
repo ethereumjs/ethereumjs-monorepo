@@ -378,7 +378,7 @@ describe(method, () => {
       100,
     ])
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('Could not get requested block hash.'))
+    assert.isTrue(res.error.message.includes('Could not get requested block hash.'))
   })
 
   it<TestSetup>('Should throw an error if txIndex is too small or too large.', async ({
@@ -394,7 +394,9 @@ describe(method, () => {
       100,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 1: argument must be larger than 0'))
+    assert.ok(
+      res.error.message.includes('invalid argument 1: argument must be larger than 0') === true,
+    )
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -423,7 +425,7 @@ describe(method, () => {
       100,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 2: invalid address'))
+    assert.isTrue(res.error.message.includes('invalid argument 2: invalid address'))
   })
 
   it<TestSetup>('Should throw an error if the address does not exist.', async ({ rpc, block }) => {
@@ -436,7 +438,7 @@ describe(method, () => {
       100,
     ])
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('Account does not exist.'))
+    assert.isTrue(res.error.message.includes('Account does not exist.'))
   })
 
   it<TestSetup>('Should throw an error if limit is too small.', async ({
@@ -452,7 +454,9 @@ describe(method, () => {
       -1,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 4: argument must be larger than 0'))
+    assert.ok(
+      res.error.message.includes('invalid argument 4: argument must be larger than 0') === true,
+    )
   })
 
   it<TestSetup>("Should throw an error if hex parameters do not start with '0x'.", async ({
@@ -468,7 +472,9 @@ describe(method, () => {
       -1,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
+    assert.ok(
+      res.error.message.includes('invalid argument 0: hex string without 0x prefix') === true,
+    )
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -478,7 +484,7 @@ describe(method, () => {
       -1,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 2: missing 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument 2: missing 0x prefix'))
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -488,6 +494,8 @@ describe(method, () => {
       -1,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 3: hex string without 0x prefix'))
+    assert.ok(
+      res.error.message.includes('invalid argument 3: hex string without 0x prefix') === true,
+    )
   })
 })

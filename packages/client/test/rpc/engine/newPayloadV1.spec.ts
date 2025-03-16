@@ -43,7 +43,8 @@ describe(method, () => {
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
     assert.equal(res.error.code, INVALID_PARAMS)
     assert.ok(
-      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
+      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash") ===
+        true,
     )
   })
 

@@ -239,7 +239,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       createBlob4844Tx({ ...baseTxData, ...shortVersionHash }, { common })
     } catch (err: any) {
       assert.ok(
-        err.message.includes('versioned hash is invalid length'),
+        err.message.includes('versioned hash is invalid length') === true,
         'throws on invalid versioned hash length',
       )
     }
@@ -247,7 +247,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       createBlob4844Tx({ ...baseTxData, ...invalidVersionHash }, { common })
     } catch (err: any) {
       assert.ok(
-        err.message.includes('does not start with KZG commitment'),
+        err.message.includes('does not start with KZG commitment') === true,
         'throws on invalid commitment version',
       )
     }
@@ -255,7 +255,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       createBlob4844Tx({ ...baseTxData, ...tooManyBlobs }, { common })
     } catch (err: any) {
       assert.ok(
-        err.message.includes('tx can contain at most'),
+        err.message.includes('tx can contain at most') === true,
         'throws on too many versioned hashes',
       )
     }

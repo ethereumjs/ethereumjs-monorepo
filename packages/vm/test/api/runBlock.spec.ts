@@ -239,7 +239,9 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       skipHardForkValidation: true,
     })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
+      .catch((e) =>
+        assert.isTrue(e.message.includes("sender doesn't have enough funds to send tx")),
+      )
   })
 
   it('should fail when block gas limit higher than 2^63-1', async () => {
@@ -252,7 +254,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     })
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('Invalid block')))
+      .catch((e) => assert.isTrue(e.message.includes('Invalid block')))
   })
 
   it('should fail when block validation fails', async () => {
@@ -266,7 +268,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       .then(() => assert.fail('should have returned error'))
       .catch((e) => {
         assert.ok(
-          e.message.includes('not found in DB'),
+          e.message.includes('not found in DB') === true,
           'block failed validation due to no parent header',
         )
       })
@@ -305,7 +307,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     await runBlock(vm, { block, skipBlockValidation: true })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('higher gas limit')))
+      .catch((e) => assert.isTrue(e.message.includes('higher gas limit')))
   })
 })
 

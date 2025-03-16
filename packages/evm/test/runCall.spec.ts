@@ -471,7 +471,7 @@ describe('RunCall tests', () => {
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
       assert.ok(
-        err.message.includes('value field cannot be negative'),
+        err.message.includes('value field cannot be negative') === true,
         'throws on negative call value',
       )
     }

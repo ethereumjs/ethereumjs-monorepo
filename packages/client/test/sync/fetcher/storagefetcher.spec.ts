@@ -498,7 +498,7 @@ describe('[StorageFetcher]', async () => {
       'should still be open to enqueue and process new requests',
     )
     fetcher.setDestroyWhenDone()
-    assert.ok((fetcher['destroyWhenDone'] as boolean) === true, 'should mark to close on finished')
+    assert.isTrue(fetcher['destroyWhenDone'] as boolean, 'should mark to close on finished')
   })
 
   it('should find a fetchable peer', async () => {

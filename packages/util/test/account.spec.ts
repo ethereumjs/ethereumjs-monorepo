@@ -326,7 +326,7 @@ describe('Utility Functions', () => {
       isValidPublic((<unknown>pubKey) as Uint8Array)
     } catch (err: any) {
       assert.ok(
-        err.message.includes('This method only supports Uint8Array'),
+        err.message.includes('This method only supports Uint8Array') === true,
         'should throw if input is not Uint8Array',
       )
     }
@@ -465,10 +465,13 @@ describe('Utility Functions', () => {
       privateToPublic((<unknown>privateKey) as Uint8Array)
     } catch (err: any) {
       assert.ok(
-        err.message.includes('This method only supports Uint8Array'),
+        err.message.includes('This method only supports Uint8Array') === true,
         'should throw if private key is not Uint8Array',
       )
-      assert.ok(err.message.includes(privateKey), 'should throw if private key is not Uint8Array')
+      assert.ok(
+        err.message.includes(privateKey) === true,
+        'should throw if private key is not Uint8Array',
+      )
     }
   })
 

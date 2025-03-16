@@ -27,9 +27,9 @@ export const isBrowser = new Function('try {return this===window;}catch(e){ retu
 function verifyAccount(
   account: Account,
   state: {
-    balance: BigInt
+    balance: bigint
     codeHash: Uint8Array
-    nonce: BigInt
+    nonce: bigint
     storageRoot: Uint8Array
   },
 ) {
@@ -282,7 +282,7 @@ describe('StateManager -> General', () => {
       await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
     }
 
     await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
@@ -297,7 +297,7 @@ describe('StateManager -> General', () => {
       await fromMerkleStateProof([proof1, zeroAddressProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
     }
 
     await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)

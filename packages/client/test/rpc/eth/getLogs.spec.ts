@@ -210,19 +210,23 @@ describe(method, async () => {
     // fromBlock greater than current height
     let res = await rpc.request(method, [{ fromBlock: '0x1234' }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `fromBlock` greater than current height'))
+    assert.ok(
+      res.error.message.includes('specified `fromBlock` greater than current height') === true,
+    )
 
     // toBlock greater than current height
     res = await rpc.request(method, [{ toBlock: '0x1234' }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `toBlock` greater than current height'))
+    assert.ok(
+      res.error.message.includes('specified `toBlock` greater than current height') === true,
+    )
 
     // unknown blockHash
     res = await rpc.request(method, [
       { blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001' },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('unknown blockHash'))
+    assert.isTrue(res.error.message.includes('unknown blockHash'))
 
     // specifying fromBlock or toBlock with blockHash
     res = await rpc.request(method, [

@@ -273,7 +273,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       // assert.fail('should throw error')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('(EIP-2718) not activated'),
+        e.message.includes('(EIP-2718) not activated') === true,
         `should fail for ${TRANSACTION_TYPES[1].name}`,
       )
     }
@@ -339,7 +339,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx })
       } catch (e: any) {
         assert.ok(
-          e.message.toLowerCase().includes('enough funds'),
+          e.message.toLowerCase().includes('enough funds') === true,
           `should fail for ${txType.name}`,
         )
       }
@@ -361,14 +361,14 @@ describe('runTx() -> API parameter usage/data errors', () => {
       assert.fail('should throw error')
     } catch (e: any) {
       assert.ok(
-        e.message.toLowerCase().includes('max cost'),
+        e.message.toLowerCase().includes('max cost') === true,
         `should fail if max cost exceeds balance`,
       )
     }
     // set sufficient balance
     await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
-    assert.ok(res, 'should pass if balance is sufficient')
+    assert.ok(Boolean(res), 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {
@@ -386,7 +386,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.ok(true, 'successfully threw on insufficient balance for transaction')
     }
   })
@@ -403,7 +403,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.ok(true, 'successfully threw on wrong nonces')
     }
   })
@@ -419,7 +419,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',
         )
@@ -714,7 +714,7 @@ describe('runTx() -> RunTxOptions', () => {
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, false)
       tx.getSenderAddress = () => createZeroAddress()
-      // @ts-ignore overwrite read-only property
+      // @ts-expect-error overwrite read-only property
       tx.value -= BigInt(1)
 
       for (const skipBalance of [true, false]) {
@@ -726,7 +726,7 @@ describe('runTx() -> RunTxOptions', () => {
           assert.fail('should not accept a negative call value')
         } catch (err: any) {
           assert.ok(
-            err.message.includes('value field cannot be negative'),
+            err.message.includes('value field cannot be negative') === true,
             'throws on negative call value',
           )
         }
@@ -879,7 +879,7 @@ describe('EIP 4844 transaction tests', () => {
             {
               excessBlobGas: 0n,
               number: 1,
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
               parentHash: blockchain.genesisBlock.hash(),
             },
             {

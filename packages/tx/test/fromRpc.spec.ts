@@ -29,7 +29,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global values
-    // eslint-disable-next-line no-global-assign
+
     fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0') {
@@ -64,12 +64,12 @@ describe('[fromJSONRPCProvider]', () => {
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(
-        err.message.includes('No data returned from provider'),
+        err.message.includes('No data returned from provider') === true,
         'throws correct error when no tx returned',
       )
     }
     //@ts-expect-error
-    // eslint-disable-next-line no-global-assign
+
     fetch = realFetch
   })
 })

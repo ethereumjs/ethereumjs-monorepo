@@ -28,7 +28,9 @@ describe(method, () => {
     }
     const res = await rpc.request(method, [tooManyHashes])
     assert.equal(res.error.code, TOO_LARGE_REQUEST)
-    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
+    assert.ok(
+      res.error.message.includes('More than 32 execution payload bodies requested') === true,
+    )
   })
 
   it('call with valid parameters', async () => {
