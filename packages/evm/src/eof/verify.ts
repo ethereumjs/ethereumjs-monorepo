@@ -45,7 +45,6 @@ export function verifyCode(
   evm: EVM,
   mode: ContainerSectionType = ContainerSectionType.RuntimeCode,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   return validateOpcodes(container, evm, mode)
 }
 

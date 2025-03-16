@@ -162,10 +162,7 @@ export class Service {
       this.v8Engine = await getV8Engine()
     }
 
-    this._statsInterval = setInterval(
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
     return true

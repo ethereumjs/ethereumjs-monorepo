@@ -45,8 +45,7 @@ await new Promise<void>((resolve, reject) => {
       const evm = await getEVM()
       for (const key in testData) {
         it(`Test ${key}`, () => {
-          //@ts-ignore
-          const input = testData[key]
+          const input = testData[key as keyof typeof testData]
           for (const testKey in input.vectors) {
             const test = input.vectors[testKey]
 

@@ -897,10 +897,7 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
-    this._statsInterval = setInterval(
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
 
     if (this.running || !this.started) {
       return false

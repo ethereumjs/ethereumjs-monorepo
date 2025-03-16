@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
@@ -836,7 +835,7 @@ export class EVM implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : new Uint8Array(0),
+      returnValue: result.returnValue ?? new Uint8Array(0),
     }
   }
 
@@ -1216,4 +1215,3 @@ export function defaultBlock(): Block {
     },
   }
 }
-/* eslint-enable @typescript-eslint/no-use-before-define */
