@@ -2,6 +2,7 @@ import type { InternalBinaryNode } from './internalNode.ts'
 import type { StemBinaryNode } from './stemNode.ts'
 
 export type BinaryNodeType = (typeof BinaryNodeType)[keyof typeof BinaryNodeType]
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BinaryNodeType = {
   Internal: 0,
   Stem: 1,
