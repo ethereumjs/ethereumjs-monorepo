@@ -5,6 +5,7 @@ import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.ts'
 import { Event } from '../../../src/types.ts'
+
 import type { Peer } from '@ethereumjs/devp2p'
 
 class RlpxPeer extends EventEmitter {
