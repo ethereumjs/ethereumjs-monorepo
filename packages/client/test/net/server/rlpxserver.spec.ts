@@ -326,7 +326,7 @@ describe('should init rlpx', async () => {
   })
   config.events.on(Event.PEER_CONNECTED, (peer) =>
     it('should connect', async () => {
-      assert.ok(peer instanceof RlpxPeer, 'connected')
+      assert.isTrue((peer as any).connected, 'connected')
     }),
   )
   config.events.on(Event.PEER_DISCONNECTED, (peer) =>
