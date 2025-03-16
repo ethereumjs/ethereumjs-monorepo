@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { crc32 } from '../src/crc.js'
+import { crc32 } from '../src/crc.ts'
 
 // Test vectors generated from https://asecuritysite.com/encryption/crc32?word
 const TEST_VECTORS: [string, number][] = [

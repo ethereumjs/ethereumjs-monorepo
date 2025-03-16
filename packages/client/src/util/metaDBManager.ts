@@ -1,27 +1,22 @@
 import { concatBytes, intToBytes } from '@ethereumjs/util'
 
-import type { Chain } from '../blockchain/index.js'
-import type { Config } from '../config.js'
+import type { Chain } from '../blockchain/index.ts'
+import type { Config } from '../config.ts'
 import type { AbstractLevel } from 'abstract-level'
 
 const encodingOpts = { keyEncoding: 'view', valueEncoding: 'view' }
 
-/**
- * Number prepended to the db key to avoid collisions
- * when using the meta db for different data.
- *
- * Only append new items to the bottom of the list to
- * remain backward compat.
- */
-export enum DBKey {
-  Receipts,
-  TxHash,
-  SkeletonBlock,
-  SkeletonBlockHashToNumber,
-  SkeletonStatus,
-  SkeletonUnfinalizedBlockByHash,
-  Preimage,
-}
+export type DBKey = (typeof DBKey)[keyof typeof DBKey]
+
+export const DBKey = {
+  Receipts: 0,
+  TxHash: 1,
+  SkeletonBlock: 2,
+  SkeletonBlockHashToNumber: 3,
+  SkeletonStatus: 4,
+  SkeletonUnfinalizedBlockByHash: 5,
+  Preimage: 6,
+} as const
 
 export interface MetaDBManagerOptions {
   /* Chain */
@@ -58,7 +53,11 @@ export class MetaDBManager {
 
   async get(type: DBKey, hash: Uint8Array): Promise<Uint8Array | null> {
     try {
-      return await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
+      const value = await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
+      if (value === null || value === undefined) {
+        return null
+      }
+      return value as Uint8Array
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {
         return null

@@ -2,6 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, getPresetChainConfig } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import {
+  CLRequestType,
   Units,
   bytesToHex,
   createAccount,
@@ -13,9 +14,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { CLRequestType } from '../../../../util/src/request.js'
-import { buildBlock, runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { buildBlock, runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 

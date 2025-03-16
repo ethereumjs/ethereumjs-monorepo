@@ -1,8 +1,8 @@
-import { EOFContainer, validateEOF } from './eof/container.js'
-import { EVM } from './evm.js'
-import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
-import { Message } from './message.js'
-import { getOpcodesForHF } from './opcodes/index.js'
+import { EOFContainer, validateEOF } from './eof/container.ts'
+import { EVM } from './evm.ts'
+import { ERROR as EVMErrorMessage, EvmError } from './exceptions.ts'
+import { Message } from './message.ts'
+import { getOpcodesForHF } from './opcodes/index.ts'
 import {
   MCLBLS,
   NobleBLS,
@@ -10,10 +10,10 @@ import {
   type PrecompileInput,
   RustBN254,
   getActivePrecompiles,
-} from './precompiles/index.js'
-import { EVMMockBlockchain } from './types.js'
+} from './precompiles/index.ts'
+import { EVMMockBlockchain } from './types.ts'
 
-import type { InterpreterStep } from './interpreter.js'
+import type { InterpreterStep } from './interpreter.ts'
 import type {
   EVMBLSInterface,
   EVMBN254Interface,
@@ -25,8 +25,8 @@ import type {
   EVMRunCodeOpts,
   ExecResult,
   Log,
-} from './types.js'
-export * from './logger.js'
+} from './types.ts'
+export * from './logger.ts'
 
 export type {
   EVMBLSInterface,
@@ -59,6 +59,7 @@ export {
   validateEOF,
 }
 
-export * from './constructors.js'
-export * from './params.js'
-export * from './verkleAccessWitness.js'
+export * from './binaryTreeAccessWitness.ts'
+export * from './constructors.ts'
+export * from './params.ts'
+export * from './verkleAccessWitness.ts'

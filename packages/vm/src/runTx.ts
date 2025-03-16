@@ -1,14 +1,19 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
+import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
-import { StatefulVerkleStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  StatefulBinaryTreeStateManager,
+  StatefulVerkleStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MAX_UINT64,
   SECP256K1_ORDER_DIV_2,
@@ -26,8 +31,8 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
 
 import type {
   AfterTxEvent,
@@ -38,10 +43,10 @@ import type {
   RunTxOpts,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
+} from './types.ts'
+import type { VM } from './vm.ts'
 import type { Block } from '@ethereumjs/block'
-import type { Common, VerkleAccessWitnessInterface } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Tx,
@@ -97,14 +102,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
   const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
   if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   // Ensure we start with a clear warmed accounts Map
@@ -135,7 +140,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (opts.tx.supports(Capability.EIP1559FeeMarket) && !vm.common.isActivatedEIP(1559)) {
       await vm.evm.journal.revert()
@@ -145,7 +150,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     const castedTx = <AccessList2930Tx>opts.tx
@@ -194,8 +199,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses: VerkleAccessWitnessInterface | undefined
-  let txAccesses: VerkleAccessWitnessInterface | undefined
+  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
+  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
@@ -205,10 +210,24 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       !(vm.stateManager instanceof StatefulVerkleStateManager) &&
       !(vm.stateManager instanceof StatelessVerkleStateManager)
     ) {
-      throw new Error(`Verkle State Manager needed for execution of verkle blocks`)
+      throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
     txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+  } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.evm.binaryTreeAccessWitness === undefined) {
+      throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
+    }
+
+    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+      throw EthereumJSErrorWithoutCode(
+        `Binary tree State Manager needed for execution of binary tree blocks`,
+      )
+    }
+    stateAccesses = vm.evm.binaryTreeAccessWitness
+    txAccesses = new BinaryTreeAccessWitness({
+      hashFunction: vm.evm.binaryTreeAccessWitness.hashFunction,
+    })
   }
 
   const { tx, block } = opts
@@ -273,7 +292,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       block,
       tx,
     )
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
   gasLimit -= intrinsicGas
   if (vm.DEBUG) {
@@ -295,7 +314,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
   if (enableProfiler) {
@@ -331,7 +350,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           block,
           tx,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -353,7 +372,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -371,7 +390,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     // EIP-4844 spec
     // the signer must be able to afford the transaction
@@ -388,7 +407,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -404,7 +423,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -416,7 +435,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -587,7 +606,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    stateAccesses?.merge(txAccesses!)
+    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+  } else if (vm.common.isActivatedEIP(7864)) {
+    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {

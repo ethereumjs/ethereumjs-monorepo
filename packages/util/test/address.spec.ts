@@ -12,11 +12,11 @@ import {
   equalsBytes,
   hexToBytes,
   toBytes,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { eip1404ExamplesData } from './testdata/eip1014Examples.js'
+import { eip1404ExamplesData } from './testdata/eip1014Examples.ts'
 
-import type { PrefixedHexString } from '../src/index.js'
+import type { PrefixedHexString } from '../src/index.ts'
 
 describe('Address', () => {
   const ZERO_ADDR_S = '0x0000000000000000000000000000000000000000'

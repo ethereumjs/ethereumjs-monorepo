@@ -11,6 +11,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
+  EthereumJSErrorWithoutCode,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToAddressBytes,
@@ -26,13 +27,12 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
-import { accumulateRequests } from './requests.js'
-
-import { runTx } from './index.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 
 import type {
   AfterBlockEvent,
@@ -43,8 +43,8 @@ import type {
   RunBlockResult,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
+} from './types.ts'
+import type { VM } from './vm.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
@@ -133,7 +133,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (vm.common.isActivatedEIP(6800)) {
+  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
     // Initialize the access witness
 
     if (vm.common.customCrypto.verkle === undefined) {
@@ -269,7 +269,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
             )} expected=${bytesToHex(requestsHash!)}`,
           )
         const msg = _errorMsg('invalid requestsHash', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -284,7 +284,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           )
         }
         const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
         if (vm.DEBUG) {
@@ -295,14 +295,14 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           )
         }
         const msg = _errorMsg('invalid bloom', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (result.gasUsed !== block.header.gasUsed) {
         if (vm.DEBUG) {
           debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
         }
         const msg = _errorMsg('invalid gasUsed', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
         if (vm.DEBUG) {
@@ -319,7 +319,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           vm,
           block,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -329,11 +329,29 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
       // If verkle is activated and executing statelessly, only validate the post-state
       if (
-        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+        (await vm['_opts'].stateManager!.verifyVerklePostState!(vm.evm.verkleAccessWitness)) ===
+        false
       ) {
-        throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+        throw EthereumJSErrorWithoutCode(
+          `Verkle post state verification failed on block ${block.header.number}`,
+        )
       }
       debug(`Verkle post state verification succeeded`)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.binaryTreeAccessWitness === undefined) {
+        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // If binary tree is activated and executing statelessly, only validate the post-state
+      if (
+        (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
+          vm.evm.binaryTreeAccessWitness,
+        )) === false
+      ) {
+        throw EthereumJSErrorWithoutCode(
+          `Binary tree post state verification failed on block ${block.header.number}`,
+        )
+      }
+      debug(`Binary tree post state verification succeeded`)
     }
   }
 
@@ -402,7 +420,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
       const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', vm, block)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     } else {
       if (vm.DEBUG) {
         debug(`Validate block`)
@@ -412,7 +430,9 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
         if (typeof (<any>vm.blockchain).validateHeader === 'function') {
           await (<any>vm.blockchain).validateHeader(block.header)
         } else {
-          throw new Error('cannot validate header: blockchain has no `validateHeader` method')
+          throw EthereumJSErrorWithoutCode(
+            'cannot validate header: blockchain has no `validateHeader` method',
+          )
         }
       }
       await block.validateData()
@@ -458,7 +478,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
 
   if (opts.reportPreimages === true) {
     if (vm.evm.stateManager.getAppliedKey === undefined) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true',
       )
     }
@@ -490,7 +510,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
-  // Merge systemVerkleAccessWitness with verkleAccessWitness
+  // Merge system AccessWitness with AccessWitness
   if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
     vm.evm.systemVerkleAccessWitness?.commit()
     if (vm.DEBUG) {
@@ -502,6 +522,16 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 
+  if (vm.common.isActivatedEIP(7864) && vm.evm.systemBinaryTreeAccessWitness !== undefined) {
+    vm.evm.systemBinaryTreeAccessWitness?.commit()
+    if (vm.DEBUG) {
+      debug('Binary tree access witness aggregate costs:')
+      vm.evm.binaryTreeAccessWitness?.debugWitnessCost()
+      debug('System binary tree access witness aggregate costs:')
+      vm.evm.systemBinaryTreeAccessWitness?.debugWitnessCost()
+    }
+    vm.evm.binaryTreeAccessWitness?.merge(vm.evm.systemBinaryTreeAccessWitness)
+  }
   return blockResults
 }
 
@@ -520,7 +550,9 @@ export async function accumulateParentBlockHash(
   parentHash: Uint8Array,
 ) {
   if (!vm.common.isActivatedEIP(2935)) {
-    throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
+    throw EthereumJSErrorWithoutCode(
+      'Cannot call `accumulateParentBlockHash`: EIP 2935 is not active',
+    )
   }
   const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
@@ -545,6 +577,12 @@ export async function accumulateParentBlockHash(
       }
       // Add to system verkle access witness so that it doesn't warm up tx accesses
       vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // Add to system binary tree access witness so that it doesn't warm up tx accesses
+      vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -557,7 +595,9 @@ export async function accumulateParentBlockHash(
 
 export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
   if (!vm.common.isActivatedEIP(4788)) {
-    throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
+    throw EthereumJSErrorWithoutCode(
+      'Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active',
+    )
   }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
   const historicalRootsLength = BigInt(vm.common.param('historicalRootsLength'))
@@ -632,7 +672,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Run the tx through the VM
@@ -757,6 +797,12 @@ export async function rewardAccount(
       }
       evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
+    if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+      if (evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      evm.systemBinaryTreeAccessWitness.writeAccountHeader(address)
+    }
     account = new Account()
   }
   account.balance += reward
@@ -770,13 +816,23 @@ export async function rewardAccount(
     evm.systemVerkleAccessWitness.writeAccountBasicData(address)
     evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
+  if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+    if (evm.systemBinaryTreeAccessWitness === undefined) {
+      throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+    }
+    evm.systemBinaryTreeAccessWitness.writeAccountBasicData(address)
+    evm.systemBinaryTreeAccessWitness.readAccountCodeHash(address)
+  }
   return account
 }
 
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
+export function encodeReceipt(
+  receipt: TxReceipt,
+  txType: (typeof TransactionType)[keyof typeof TransactionType],
+) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
       ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),

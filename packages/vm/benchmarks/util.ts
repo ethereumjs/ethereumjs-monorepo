@@ -2,7 +2,6 @@ import {
   Account,
   Address,
   BIGINT_0,
-  PrefixedHexString,
   equalsBytes,
   hexToBytes,
   isHexString,
@@ -11,8 +10,10 @@ import {
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { RunBlockResult } from '@ethereumjs/vm'
-import { Mockchain } from './mockchain.js'
+import { Mockchain } from './mockchain.ts'
+
+import { type PrefixedHexString } from '@ethereumjs/util'
+import { type RunBlockResult } from '@ethereumjs/vm'
 
 export interface BenchmarkType {
   [key: string]: Function

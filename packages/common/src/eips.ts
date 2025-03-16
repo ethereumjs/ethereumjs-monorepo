@@ -1,6 +1,6 @@
-import { Hardfork } from './enums.js'
+import { Hardfork } from './enums.ts'
 
-import type { EIPsDict } from './types.js'
+import type { EIPsDict } from './types.ts'
 
 export const eipsDict: EIPsDict = {
   /**
@@ -337,7 +337,7 @@ export const eipsDict: EIPsDict = {
   },
   /**
    * Description : Ethereum state using a unified verkle tree (experimental)
-   * URL         : https://github.com/ethereum/EIPs/pull/6800
+   * URL         : https://eips.ethereum.org/EIPS/eip-6800
    * Status      : Draft
    */
   6800: {
@@ -469,5 +469,13 @@ export const eipsDict: EIPsDict = {
   7709: {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
+  },
+  /**
+   * Description : Ethereum state using a unified binary tree (experimental)
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7864
+   * Status      : Draft
+   */
+  7864: {
+    minimumHardfork: Hardfork.London,
   },
 }

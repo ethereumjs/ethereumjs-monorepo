@@ -9,12 +9,12 @@ import {
 } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { createVM } from '../../src/index.js'
+import { createVM } from '../../src/index.ts'
 
-import { LevelDB } from './level.js'
+import { LevelDB } from './level.ts'
 
-import type { VMOpts } from '../../src/types.js'
-import type { VM } from '../../src/vm.js'
+import type { VMOpts } from '../../src/types.ts'
+import type { VM } from '../../src/vm.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -50,7 +50,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
 
 export function getTransaction(
   common: Common,
-  txType = TransactionType.Legacy,
+  txType: TransactionType = TransactionType.Legacy,
   sign = false,
   value = '0x00',
   createContract = false,

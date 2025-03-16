@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   bytesToInt,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -13,13 +14,13 @@ import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
 
-import { DISCONNECT_REASON } from '../types.js'
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
-import { Peer } from './peer.js'
+import { Peer } from './peer.ts'
 
-import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.js'
+import type { DPT } from '../dpt/index.ts'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 
@@ -152,8 +153,9 @@ export class RLPx {
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
     const peerKey = bytesToUnprefixedHex(peer.id)
 
-    if (this._peers.has(peerKey)) throw new Error('Already connected')
-    if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
+    if (this._peers.has(peerKey)) throw EthereumJSErrorWithoutCode('Already connected')
+    if (this._getOpenSlots() === 0)
+      throw EthereumJSErrorWithoutCode('Too many peers already connected')
 
     if (this.DEBUG) {
       this._debug(
@@ -170,7 +172,9 @@ export class RLPx {
     })
 
     socket.once('error', deferred.reject)
-    socket.setTimeout(this._timeout, () => deferred.reject(new Error('Connection timeout')))
+    socket.setTimeout(this._timeout, () =>
+      deferred.reject(EthereumJSErrorWithoutCode('Connection timeout')),
+    )
     socket.connect(peer.tcpPort, peer.address, deferred.resolve)
 
     await deferred.promise
@@ -193,7 +197,7 @@ export class RLPx {
   }
 
   _isAliveCheck() {
-    if (!this._isAlive()) throw new Error('Server already destroyed')
+    if (!this._isAlive()) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
 
   _getOpenSlots() {
@@ -271,7 +275,7 @@ export class RLPx {
       if (disconnectWe === true) {
         if (this.DEBUG) {
           this._debug(
-            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DisconnectReasonNames[reason as DISCONNECT_REASON]}`,
             `disconnect`,
           )
         }

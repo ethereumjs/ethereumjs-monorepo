@@ -16,12 +16,13 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../client/test/testdata/geth-genesis/eip4844.js'
-import { defaultBlock } from '../src/evm.js'
-import { ERROR } from '../src/exceptions.js'
-import { createEVM } from '../src/index.js'
+import { defaultBlock } from '../src/evm.ts'
+import { ERROR } from '../src/exceptions.ts'
+import { createEVM } from '../src/index.ts'
 
-import type { EVMRunCallOpts } from '../src/types.js'
+import { eip4844Data } from './testdata/eip4844.ts'
+
+import type { EVMRunCallOpts } from '../src/types.ts'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {

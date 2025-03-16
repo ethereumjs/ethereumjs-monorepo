@@ -12,14 +12,14 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.js'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
 import {
   dummy,
   getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
-} from '../helpers.js'
+} from '../helpers.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -106,7 +106,7 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+      const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.ts')
 
       const common = createCommonFromGethGenesis(hardfork4844Data, {
         chain: 'customChain',

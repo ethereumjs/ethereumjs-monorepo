@@ -1,8 +1,8 @@
 import { createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
-import { mainnetData } from '../../testdata/blocks/mainnet.js'
-import { createClient, createManager, getRPCClient, startRPC, testSetup } from '../helpers.js'
+import { mainnetData } from '../../testdata/blocks/mainnet.ts'
+import { createClient, createManager, getRPCClient, startRPC, testSetup } from '../helpers.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
 

@@ -1,20 +1,25 @@
-import { equalsBytes, intToBytes, setLengthRight } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  equalsBytes,
+  intToBytes,
+  setLengthRight,
+} from '@ethereumjs/util'
 
-import { BaseVerkleNode } from './baseVerkleNode.js'
-import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
-import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.js'
+import { BaseVerkleNode } from './baseVerkleNode.ts'
+import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.ts'
+import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.ts'
 
-import type { VerkleNodeOptions } from './types.js'
+import type { VerkleNodeOptions } from './types.ts'
 import type { VerkleCrypto } from '@ethereumjs/util'
 
-export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
+export class LeafVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Leaf> {
   public stem: Uint8Array
   public values: (Uint8Array | LeafVerkleNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Leaf]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Leaf]) {
     super(options)
 
     this.stem = options.stem
@@ -104,12 +109,12 @@ export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): LeafVerkleNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
     }
 
     // The length of the rawNode should be the # of values (node width) + 5 for the node type, the stem, the commitment and the 2 commitments
     if (rawNode.length !== NODE_WIDTH + 5) {
-      throw new Error('Invalid node length')
+      throw EthereumJSErrorWithoutCode('Invalid node length')
     }
 
     const stem = rawNode[1]

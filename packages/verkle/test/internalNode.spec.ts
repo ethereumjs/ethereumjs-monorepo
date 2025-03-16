@@ -7,8 +7,8 @@ import {
   VerkleNodeType,
   decodeVerkleNode,
   isInternalVerkleNode,
-} from '../src/node/index.js'
-import { InternalVerkleNode } from '../src/node/internalNode.js'
+} from '../src/node/index.ts'
+import { InternalVerkleNode } from '../src/node/internalNode.ts'
 
 describe('verkle node - internal', () => {
   it('constructor should create an internal node', async () => {

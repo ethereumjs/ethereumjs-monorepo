@@ -1,9 +1,9 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.js'
+import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.ts'
 
-import type { BranchMPTNode } from '../../src/index.js'
+import type { BranchMPTNode } from '../../src/index.ts'
 
 describe('Pruned trie tests', () => {
   it('should default to not prune the trie', async () => {

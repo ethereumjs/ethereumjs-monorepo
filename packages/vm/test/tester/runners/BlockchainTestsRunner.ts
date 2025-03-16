@@ -17,8 +17,8 @@ import {
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { setupPreConditions, verifyPostConditions } from '../../util.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'

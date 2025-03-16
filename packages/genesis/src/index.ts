@@ -1,8 +1,8 @@
 import { Chain } from '@ethereumjs/common'
 
-import { holeskyGenesis } from './genesisStates/holesky.js'
-import { mainnetGenesis } from './genesisStates/mainnet.js'
-import { sepoliaGenesis } from './genesisStates/sepolia.js'
+import { holeskyGenesis } from './genesisStates/holesky.ts'
+import { mainnetGenesis } from './genesisStates/mainnet.ts'
+import { sepoliaGenesis } from './genesisStates/sepolia.ts'
 
 import type { GenesisState } from '@ethereumjs/util'
 

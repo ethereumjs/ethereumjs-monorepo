@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToHex,
   computeVersionedHash,
@@ -6,15 +7,14 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
+import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { ERROR, EvmError } from '../exceptions.ts'
 
-import { gasLimitCheck } from './util.js'
+import { getPrecompileName } from './index.ts'
+import { gasLimitCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
-
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513',
@@ -25,7 +25,7 @@ const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0a')
   if (opts.common.customCrypto?.kzg === undefined) {
-    throw new Error('kzg not initialized')
+    throw EthereumJSErrorWithoutCode('kzg not initialized')
   }
   const gasUsed = opts.common.param('kzgPointEvaluationPrecompileGas')
   if (!gasLimitCheck(opts, gasUsed, pName)) {

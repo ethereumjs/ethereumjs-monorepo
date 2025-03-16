@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.js'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.ts'
 
-import { testnetData } from './data/testnet.js'
+import { testnetData } from './data/testnet.ts'
 
 import type { ChainConfig } from '../src/index.js'
 

@@ -1,9 +1,9 @@
-import { PrioritizedTaskExecutor } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, PrioritizedTaskExecutor } from '@ethereumjs/util'
 
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.ts'
 
-import type { MerklePatriciaTrie } from '../mpt.js'
-import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.js'
+import type { MerklePatriciaTrie } from '../mpt.ts'
+import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.ts'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -119,11 +119,11 @@ export class WalkController {
    */
   onlyBranchIndex(node: BranchMPTNode, key: Nibbles = [], childIndex: number, priority?: number) {
     if (!(node instanceof BranchMPTNode)) {
-      throw new Error('Expected branch node')
+      throw EthereumJSErrorWithoutCode('Expected branch node')
     }
     const childRef = node.getBranch(childIndex)
     if (!childRef) {
-      throw new Error('Could not get branch of childIndex')
+      throw EthereumJSErrorWithoutCode('Could not get branch of childIndex')
     }
     const childKey = key.slice() // This copies the key to a new array.
     childKey.push(childIndex)

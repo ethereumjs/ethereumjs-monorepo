@@ -1,7 +1,7 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts"],
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types"]
-  }
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

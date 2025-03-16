@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
 import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'

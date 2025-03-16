@@ -1,16 +1,18 @@
-import { UNKNOWN_PAYLOAD } from '../../error-code.js'
+import { UNKNOWN_PAYLOAD } from '../../error-code.ts'
 
-import type { Skeleton } from '../../../service/index.js'
+import type { Skeleton } from '../../../service/index.ts'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-export enum Status {
-  ACCEPTED = 'ACCEPTED',
-  INVALID = 'INVALID',
-  INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
-  SYNCING = 'SYNCING',
-  VALID = 'VALID',
-}
+export type Status = (typeof Status)[keyof typeof Status]
+
+export const Status = {
+  ACCEPTED: 'ACCEPTED',
+  INVALID: 'INVALID',
+  INVALID_BLOCK_HASH: 'INVALID_BLOCK_HASH',
+  SYNCING: 'SYNCING',
+  VALID: 'VALID',
+} as const
 
 export type Bytes8 = PrefixedHexString
 export type Bytes20 = PrefixedHexString

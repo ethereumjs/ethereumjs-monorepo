@@ -5,6 +5,7 @@ import {
   BIGINT_1,
   BIGINT_100,
   BIGINT_2EXP256,
+  EthereumJSErrorWithoutCode,
   Lock,
   bigIntToBytes,
   bytesToBigInt,
@@ -15,21 +16,23 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { INVALID_FORKCHOICE_STATE } from '../rpc/error-code.js'
-import { short, timeDuration } from '../util/index.js'
-import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
+import { INVALID_FORKCHOICE_STATE } from '../rpc/error-code.ts'
+import { short, timeDuration } from '../util/index.ts'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.ts'
 
-import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.js'
-import type { MetaDBManagerOptions } from '../util/metaDBManager.js'
+import type { SnapFetcherDoneFlags } from '../sync/fetcher/types.ts'
+import type { MetaDBManagerOptions } from '../util/metaDBManager.ts'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
 
-export enum PutStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-}
+export type PutStatus = (typeof PutStatus)[keyof typeof PutStatus]
+
+export const PutStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+} as const
 
 type FillStatus = {
   status: PutStatus
@@ -74,20 +77,20 @@ type SkeletonSubchainRLP = [head: Uint8Array, tail: Uint8Array, next: Uint8Array
  * the current sync cycle was (partially) reorged, thus the skeleton syncer
  * should abort and restart with the new state.
  */
-export const errSyncReorged = new Error('sync reorged')
+export const errSyncReorged = EthereumJSErrorWithoutCode('sync reorged')
 
 /**
  * errReorgDenied is returned if an attempt is made to extend the beacon chain
  * with a new header, but it does not link up to the existing sync.
  */
-export const errReorgDenied = new Error('non-forced head reorg denied')
+export const errReorgDenied = EthereumJSErrorWithoutCode('non-forced head reorg denied')
 
 /**
  * errSyncMerged is an internal helper error to signal that the current sync
  * cycle merged with a previously aborted subchain, thus the skeleton syncer
  * should abort and restart with the new state.
  */
-export const errSyncMerged = new Error('sync merged')
+export const errSyncMerged = EthereumJSErrorWithoutCode('sync merged')
 
 const zeroBlockHash = new Uint8Array(32)
 /**

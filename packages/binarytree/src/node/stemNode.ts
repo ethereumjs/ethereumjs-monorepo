@@ -1,8 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import { BinaryNodeType, NODE_WIDTH } from './types.js'
+import { BinaryNodeType, NODE_WIDTH } from './types.ts'
 
-import type { BinaryNodeOptions } from './types.js'
+import type { BinaryNodeOptions } from './types.ts'
 
 export class StemBinaryNode {
   public stem: Uint8Array
@@ -10,7 +11,7 @@ export class StemBinaryNode {
 
   public type = BinaryNodeType.Stem
 
-  constructor(options: BinaryNodeOptions[BinaryNodeType.Stem]) {
+  constructor(options: BinaryNodeOptions[typeof BinaryNodeType.Stem]) {
     this.stem = options.stem
     this.values = options.values ?? new Array(256).fill(null)
   }
@@ -18,12 +19,12 @@ export class StemBinaryNode {
   static fromRawNode(rawNode: Uint8Array[]): StemBinaryNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== BinaryNodeType.Stem) {
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
     }
 
     // The length of the rawNode should be the # of values (node width) + 2 for the node type and the stem
     if (rawNode.length !== NODE_WIDTH + 2) {
-      throw new Error('Invalid node length')
+      throw EthereumJSErrorWithoutCode('Invalid node length')
     }
 
     const stem = rawNode[1]

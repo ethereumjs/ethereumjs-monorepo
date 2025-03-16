@@ -1,8 +1,8 @@
-import { hexToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, hexToBytes } from '@ethereumjs/util'
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import { URL } from 'url'
 
-import type { MultiaddrLike } from '../types.js'
+import type { MultiaddrLike } from '../types.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // From: https://community.fortra.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4
@@ -64,10 +64,10 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       if (ip && port) {
         return multiaddr(`/ip4/${ip}/tcp/${port}`)
       }
-      throw new Error(`Unable to parse bootnode URL: ${s}`)
+      throw EthereumJSErrorWithoutCode(`Unable to parse bootnode URL: ${s}`)
     })
   } catch (e: any) {
-    throw new Error(`Invalid bootnode URLs: ${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Invalid bootnode URLs: ${e.message}`)
   }
 }
 

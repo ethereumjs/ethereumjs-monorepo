@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
-import { setLengthRight } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, setLengthRight } from '@ethereumjs/util'
 
-import { InternalVerkleNode } from './internalNode.js'
-import { LeafVerkleNode } from './leafNode.js'
-import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
+import { InternalVerkleNode } from './internalNode.ts'
+import { LeafVerkleNode } from './leafNode.ts'
+import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.ts'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -15,14 +15,14 @@ export function decodeRawVerkleNode(raw: Uint8Array[], verkleCrypto: VerkleCrypt
     case VerkleNodeType.Leaf:
       return LeafVerkleNode.fromRawNode(raw, verkleCrypto)
     default:
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
   }
 }
 
 export function decodeVerkleNode(raw: Uint8Array, verkleCrypto: VerkleCrypto) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
-    throw new Error('Invalid node')
+    throw EthereumJSErrorWithoutCode('Invalid node')
   }
   return decodeRawVerkleNode(decoded, verkleCrypto)
 }
@@ -41,7 +41,8 @@ export function isInternalVerkleNode(node: VerkleNode): node is InternalVerkleNo
 
 export const createZeroesLeafValue = () => new Uint8Array(32)
 
-export const createDefaultLeafVerkleValues: () => number[] = () => new Array(256).fill(0)
+export const createDefaultLeafVerkleValues = () =>
+  new Array(256).fill(LeafVerkleNodeValue.Untouched)
 
 /***
  * Converts 128 32byte values of a leaf node into an array of 256 32 byte values representing
@@ -54,7 +55,9 @@ export const createDefaultLeafVerkleValues: () => number[] = () => new Array(256
  */
 export const createCValues = (values: (Uint8Array | LeafVerkleNodeValue)[]) => {
   if (values.length !== 128)
-    throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
+    throw EthereumJSErrorWithoutCode(
+      `got wrong number of values, expected 128, got ${values.length}`,
+    )
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
     const retrievedValue = values[x]

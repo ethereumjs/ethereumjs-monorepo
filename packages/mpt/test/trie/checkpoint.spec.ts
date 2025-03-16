@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.js'
+import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
 
 describe('testing checkpoints', () => {
   let trie: MerklePatriciaTrie

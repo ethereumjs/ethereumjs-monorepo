@@ -19,12 +19,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
-import { createBlockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.ts'
+import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
+import { Goerli } from './testdata/goerliCommon.ts'
 
-import type { Blockchain, ConsensusDict } from '../src/index.js'
+import type { Blockchain, ConsensusDict } from '../src/index.ts'
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 

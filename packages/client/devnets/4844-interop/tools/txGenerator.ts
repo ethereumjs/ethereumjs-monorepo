@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 
 import { randomBytes } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 const kzg = new microEthKZG(trustedSetup)
@@ -42,7 +42,7 @@ async function run(data: any) {
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = createAddressFromPrivateKey(randomBytes(32))
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: common.chainId(),
@@ -62,7 +62,7 @@ async function run(data: any) {
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
-  const blobTx = createTx<TransactionType.BlobEIP4844>(txData, { common }).sign(pkey)
+  const blobTx = createTx<typeof TransactionType.BlobEIP4844>(txData, { common }).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 

@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from './node/index.js'
-import type { WalkController } from './util/walkController.js'
+import type { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from './node/index.ts'
+import type { WalkController } from './util/walkController.ts'
 import type { DB, ValueEncoding } from '@ethereumjs/util'
 
 export type MPTNode = BranchMPTNode | ExtensionMPTNode | LeafMPTNode

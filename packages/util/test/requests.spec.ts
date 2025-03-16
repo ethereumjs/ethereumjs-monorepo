@@ -1,9 +1,9 @@
 import { assert, describe, it } from 'vitest'
 
-import { concatBytes, randomBytes } from '../src/bytes.js'
-import { CLRequestType, createCLRequest } from '../src/request.js'
+import { concatBytes, randomBytes } from '../src/bytes.ts'
+import { CLRequestType, createCLRequest } from '../src/request.ts'
 
-import type { CLRequest } from '../src/request.js'
+import type { CLRequest } from '../src/request.ts'
 
 describe('Requests', () => {
   const testCases: [string, { [key: string]: Uint8Array }, CLRequestType][] = [

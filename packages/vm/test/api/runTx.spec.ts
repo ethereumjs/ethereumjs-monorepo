@@ -27,12 +27,12 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../src/index.js'
+import { createVM, runTx } from '../../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
-import { createAccountWithDefaults, getTransaction, setBalance } from './utils.js'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { createAccountWithDefaults, getTransaction, setBalance } from './utils.ts'
 
-import type { VM } from '../../src/vm.js'
+import type { VM } from '../../src/vm.ts'
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
 
 const TRANSACTION_TYPES = [
@@ -861,7 +861,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 describe('EIP 4844 transaction tests', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should work', async () => {
-    const { hardfork4844Data } = await import('../../../block/test/testdata/4844-hardfork.js')
+    const { hardfork4844Data } = await import('./testdata/4844-hardfork.ts')
     const common = createCommonFromGethGenesis(hardfork4844Data, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

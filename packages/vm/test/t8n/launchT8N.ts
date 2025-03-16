@@ -1,4 +1,4 @@
-import { getArguments } from './helpers.js'
-import { TransitionTool } from './t8ntool.js'
+import { getArguments } from './helpers.ts'
+import { TransitionTool } from './t8ntool.ts'
 
 await TransitionTool.run(getArguments())

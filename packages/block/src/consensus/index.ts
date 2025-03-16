@@ -8,5 +8,5 @@ export {
   cliqueSigHash,
   cliqueSigner,
   cliqueVerifySignature,
-} from './clique.js'
-export * from './ethash.js'
+} from './clique.ts'
+export * from './ethash.ts'

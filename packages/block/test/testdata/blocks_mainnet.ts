@@ -1,4 +1,4 @@
-import type { BlockData } from '../../src/index.js'
+import type { BlockData } from '../../src/index.ts'
 
 export const blocksMainnetData: BlockData[] = [
   {

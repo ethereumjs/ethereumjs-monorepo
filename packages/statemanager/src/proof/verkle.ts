@@ -1,7 +1,7 @@
-import { verifyVerkleProof } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, verifyVerkleProof } from '@ethereumjs/util'
 
-import type { Proof } from '../index.js'
-import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.js'
+import type { Proof } from '../index.ts'
+import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.ts'
 import type { Address } from '@ethereumjs/util'
 
 export function getVerkleStateProof(
@@ -9,7 +9,7 @@ export function getVerkleStateProof(
   _: Address,
   __: Uint8Array[] = [],
 ): Promise<Proof> {
-  throw new Error('Not implemented yet')
+  throw EthereumJSErrorWithoutCode('Not implemented yet')
 }
 /**
  * Verifies whether the execution witness matches the stateRoot

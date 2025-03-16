@@ -2,12 +2,12 @@ import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import * as devp2p from '../../src/index.js'
-import { ETH } from '../../src/index.js'
+import * as devp2p from '../../src/index.ts'
+import { ETH, EthMessageCodes } from '../../src/index.ts'
 
-import * as util from './util.js'
+import * as util from './util.ts'
 
-import type { Peer } from '../../src/index.js'
+import type { Peer } from '../../src/index.ts'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = hexToBytes(
@@ -34,7 +34,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               assert.ok(true, 'should receive initial status message')
               protocol.sendStatus(status)
               util.destroyRLPXs(rlpxs)
@@ -61,7 +61,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS: // (-> 1)
+            case EthMessageCodes.STATUS: // (-> 1)
               try {
                 protocol.sendStatus(status)
                 assert.fail('should have thrown')
@@ -91,7 +91,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS: // (-> 1)
+            case EthMessageCodes.STATUS: // (-> 1)
               try {
                 protocol.sendStatus(status1)
                 assert.fail('should have thrown')
@@ -119,7 +119,7 @@ describe('ETH simulator tests', () => {
         protocol.sendStatus(status)
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               assert.equal(protocol.getVersion(), 68)
               util.destroyRLPXs(rlpxs)
               resolve(undefined)
@@ -130,7 +130,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               protocol.sendStatus(status)
           }
         })
@@ -171,14 +171,14 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               protocol.sendStatus(status)
               assert.throws(
-                () => protocol.sendMessage(ETH.MESSAGE_CODES.GET_NODE_DATA, []),
+                () => protocol.sendMessage(EthMessageCodes.GET_NODE_DATA, []),
                 /Code 13 not allowed with version 68/,
               )
               assert.throws(
-                () => protocol.sendMessage(ETH.MESSAGE_CODES.NODE_DATA, []),
+                () => protocol.sendMessage(EthMessageCodes.NODE_DATA, []),
                 /Code 14 not allowed with version 68/,
               )
               util.destroyRLPXs(rlpxs)
@@ -229,7 +229,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.on('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               protocol.sendStatus(status)
               assert.throws(() => protocol.sendMessage(<any>0x55, []), /Unknown code 85/)
               util.destroyRLPXs(rlpxs)
@@ -250,7 +250,7 @@ describe('ETH simulator tests', () => {
       rlpxs[0].events.once('peer:added', (peer: Peer) => {
         const protocol = peer.getProtocols()[0] as ETH
         assert.throws(
-          () => protocol.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, []),
+          () => protocol.sendMessage(devp2p.EthMessageCodes.STATUS, []),
           /Please send status message through .sendStatus/,
         )
         util.destroyRLPXs(rlpxs)
@@ -285,7 +285,7 @@ describe('ETH simulator tests', () => {
         const protocol = peer.getProtocols()[0] as ETH
         protocol.events.once('message', (code) => {
           switch (code) {
-            case ETH.MESSAGE_CODES.STATUS:
+            case EthMessageCodes.STATUS:
               assert.fail('should not have been able to process status message')
               break
           }

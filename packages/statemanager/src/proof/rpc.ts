@@ -1,6 +1,6 @@
 import { bytesToHex, fetchFromProvider } from '@ethereumjs/util'
 
-import type { Proof, RPCStateManager } from '../index.js'
+import type { Proof, RPCStateManager } from '../index.ts'
 import type { Address } from '@ethereumjs/util'
 
 /**

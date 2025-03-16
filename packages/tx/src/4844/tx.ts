@@ -1,6 +1,7 @@
 import {
   BIGINT_0,
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   TypeOutput,
   bigIntToHex,
@@ -11,15 +12,15 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists, validateNotArray } from '../util.ts'
 
-import { createBlob4844Tx } from './constructors.js'
+import { createBlob4844Tx } from './constructors.ts'
 
 import type {
   AccessList,
@@ -31,12 +32,12 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -44,8 +45,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4844> {
-  public type: number = TransactionType.BlobEIP4844 // 4844 tx type
+export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
+  public type = TransactionType.BlobEIP4844 // 4844 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -98,18 +99,18 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-1559 not enabled on Common')
     }
 
     if (!this.common.isActivatedEIP(4844)) {
-      throw new Error('EIP-4844 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-4844 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
@@ -135,7 +136,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
         this,
         'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
@@ -143,7 +144,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
         this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     this.maxFeePerBlobGas = bytesToBigInt(
@@ -160,7 +161,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
       if (hash.length !== 66) {
         // 66 is the length of a 32 byte hash as a PrefixedHexString
         const msg = Legacy.errorMsg(this, 'versioned hash is invalid length')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (BigInt(parseInt(hash.slice(2, 4))) !== this.common.param('blobCommitmentVersionKzg')) {
         // We check the first "byte" of the hash (starts at position 2 since hash is a PrefixedHexString)
@@ -168,7 +169,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
           this,
           'versioned hash does not start with KZG commitment version',
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -176,10 +177,10 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
       this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
     if (this.blobVersionedHashes.length > limitBlobsPerTx) {
       const msg = Legacy.errorMsg(this, `tx can contain at most ${limitBlobsPerTx} blobs`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     } else if (this.blobVersionedHashes.length === 0) {
       const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.to === undefined) {
@@ -187,7 +188,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
         this,
         `tx should have a "to" field and cannot be used to create contracts`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
@@ -318,7 +319,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
       this.kzgCommitments === undefined ||
       this.kzgProofs === undefined
     ) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
       )
     }
@@ -438,7 +439,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): Blob4844Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return <Blob4844Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

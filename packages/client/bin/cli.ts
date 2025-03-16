@@ -4,23 +4,23 @@ import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, short } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, short } from '@ethereumjs/util'
 import { mkdirSync, readFileSync } from 'fs'
 import { Level } from 'level'
 
-import { EthereumClient } from '../src/client.js'
-import { DataDirectory } from '../src/config.js'
-import { LevelDB } from '../src/execution/level.js'
-import { generateVKTStateRoot } from '../src/util/vkt.js'
+import { EthereumClient } from '../src/client.ts'
+import { DataDirectory } from '../src/config.ts'
+import { LevelDB } from '../src/execution/level.ts'
+import { generateVKTStateRoot } from '../src/util/vkt.ts'
 
-import { helpRPC, startRPCServers } from './startRPC.js'
-import { generateClientConfig, getArgs } from './utils.js'
+import { helpRPC, startRPCServers } from './startRPC.ts'
+import { generateClientConfig, getArgs } from './utils.ts'
 
-import type { Config } from '../src/config.js'
-import type { Logger } from '../src/logging.js'
-import type { FullEthereumService } from '../src/service/index.js'
-import type { ClientOpts } from '../src/types.js'
-import type { RPCArgs } from './startRPC.js'
+import type { Config } from '../src/config.ts'
+import type { Logger } from '../src/logging.ts'
+import type { FullEthereumService } from '../src/service/index.ts'
+import type { ClientOpts } from '../src/types.ts'
+import type { RPCArgs } from './startRPC.ts'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
@@ -45,21 +45,30 @@ function initDBs(config: Config): {
   mkdirSync(chainDataDir, {
     recursive: true,
   })
-  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
+    chainDataDir,
+    // `Level` and `AbstractLevel` somehow have a few property differences even though
+    // `Level` extends `AbstractLevel`.  We don't use any of the missing properties so
+    // just ignore this error
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   mkdirSync(stateDataDir, {
     recursive: true,
   })
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
+    stateDataDir,
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
   mkdirSync(metaDataDir, {
     recursive: true,
   })
-  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
+    metaDataDir,
+  ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   return { chainDB, stateDB, metaDB }
 }
@@ -84,15 +93,15 @@ async function executeBlocks(client: EthereumClient) {
     txHashes = blockRange[0][1] as string[]
 
     if ((blockRange[0][1] as string[]).length > 0 && blockRange.length === 2) {
-      throw new Error('wrong input')
+      throw EthereumJSErrorWithoutCode('wrong input')
     }
   } catch (e: any) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)',
     )
   }
   const { execution } = client.service
-  if (execution === undefined) throw new Error('executeBlocks requires execution')
+  if (execution === undefined) throw EthereumJSErrorWithoutCode('executeBlocks requires execution')
   await execution.executeBlocks(first, last, txHashes)
 }
 
@@ -105,13 +114,13 @@ async function startBlock(client: EthereumClient) {
   const startBlock = BigInt(args.startBlock)
   const height = client.chain.headers.height
   if (height < startBlock) {
-    throw new Error(`Cannot start chain higher than current height ${height}`)
+    throw EthereumJSErrorWithoutCode(`Cannot start chain higher than current height ${height}`)
   }
   try {
     await client.chain.resetCanonicalHead(startBlock)
     client.config.logger.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
-    throw new Error(`Error setting back chain in startBlock: ${err}`)
+    throw EthereumJSErrorWithoutCode(`Error setting back chain in startBlock: ${err}`)
   }
 }
 
@@ -121,7 +130,9 @@ async function startExecutionFrom(client: EthereumClient) {
 
   const height = client.chain.headers.height
   if (height < startExecutionFrom) {
-    throw new Error(`Cannot start merkle chain higher than current height ${height}`)
+    throw EthereumJSErrorWithoutCode(
+      `Cannot start merkle chain higher than current height ${height}`,
+    )
   }
 
   const startExecutionBlock = await client.chain.getBlock(startExecutionFrom)
@@ -143,7 +154,9 @@ async function startExecutionFrom(client: EthereumClient) {
           `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
         )
       } catch (err: any) {
-        throw new Error(`Error setting vmHead for starting stateless execution: ${err}`)
+        throw EthereumJSErrorWithoutCode(
+          `Error setting vmHead for starting stateless execution: ${err}`,
+        )
       }
     } else if (client.config.statefulVerkle) {
       try {
@@ -153,11 +166,13 @@ async function startExecutionFrom(client: EthereumClient) {
           `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
         )
       } catch (err: any) {
-        throw new Error(`Error setting vmHead for starting stateful execution: ${err}`)
+        throw EthereumJSErrorWithoutCode(
+          `Error setting vmHead for starting stateful execution: ${err}`,
+        )
       }
     } else {
       // we need parent state availability to set the vmHead to the parent
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`,
       )
     }
@@ -187,7 +202,7 @@ async function startClient(
     let stateRoot
     if (config.statefulVerkle) {
       if (genesisMeta.genesisState === undefined) {
-        throw new Error('genesisState is required to compute stateRoot')
+        throw EthereumJSErrorWithoutCode('genesisState is required to compute stateRoot')
       }
       stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
     }

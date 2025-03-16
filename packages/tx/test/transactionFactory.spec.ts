@@ -13,7 +13,7 @@ import {
   createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 const common = new Common({
   chain: Mainnet,

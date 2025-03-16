@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { Common, Hardfork, Mainnet } from '../src/index.js'
+import { Common, Hardfork, Mainnet } from '../src/index.ts'
 
-import { paramsTest } from './data/paramsTest.js'
+import { paramsTest } from './data/paramsTest.ts'
 
 describe('[Common]: Parameter instantiation / params option / Updates', () => {
   it('Param option', () => {

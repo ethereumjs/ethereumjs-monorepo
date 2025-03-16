@@ -5,9 +5,11 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_0,
   BIGINT_1,
   bigIntToBytes,
   bigIntToHex,
+  bytesToBigInt,
   bytesToHex,
   createAddressFromPublicKey,
   createAddressFromString,
@@ -20,11 +22,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes.js'
-import { BIGINT_0 } from '../../../../util/src/constants.js'
-import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.js'
+import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
+import type { VM } from '../../../src/index.ts'
 import type { Block } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
 import type { LegacyTxData } from '@ethereumjs/tx'

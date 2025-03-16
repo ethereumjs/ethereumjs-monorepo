@@ -18,6 +18,7 @@ import {
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
 } from './constants.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { assertIsBytes } from './helpers.js'
 
 import type { PrefixedHexString } from './types.js'
@@ -39,22 +40,24 @@ export interface ECSignOpts {
  * If {@link ECSignOpts.chainId} is provided assume an EIP-155-style signature and calculate the `v` value
  * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
  *
- * {@link ECSignOpts.extraEntropy} defaults to `true`. This will create a "hedged signature" which is
- * non-deterministic and provides additional protections against private key extraction attack vectors,
+ * {@link ECSignOpts.extraEntropy} defaults to `false`. If set to `true`, this will create a "hedged signature"
+ * which is non-deterministic and provides additional protections against private key extraction attack vectors,
  * as described in https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801. It will yield a
  * different, random signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
  * In particular: each time a transaction is signed, this will thus yield a different, random
- * transaction hash. If this is not desired, set `extraEntropy` to `false`.
- * Additionally, a `Uint8Array` can be passed to `extraEntropy` to provide custom entropy.
+ * transaction hash.
+ * Additionally, a `Uint8Array` can be passed to `extraEntropy` to provide custom entropy, which
+ * will then still create a
+ * To use this feature, pass `true` or a `Uint8Array` to `extraEntropy`.
  * For more information, see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801
  */
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
-  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = { extraEntropy: true },
+  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = { extraEntropy: false },
 ): ECDSASignature {
   const { chainId, extraEntropy } = ecSignOpts
-  const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? true })
+  const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? false })
   const buf = sig.toCompactRawBytes()
   const r = buf.slice(0, 32)
   const s = buf.slice(32, 64)
@@ -64,7 +67,9 @@ export function ecsign(
     /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates 
        of the curve point for which r is the x-value; this value is in the range of [0, 3], 
        however we declare the upper two possibilities, representing infinite values, invalid. */
-    throw new Error(`Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`)
+    throw EthereumJSErrorWithoutCode(
+      `Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`,
+    )
   }
 
   const v =
@@ -103,7 +108,7 @@ export const ecrecover = function (
   const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
@@ -124,7 +129,7 @@ export const toRPCSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
@@ -145,7 +150,7 @@ export const toCompactSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const ss = Uint8Array.from([...s])
@@ -181,7 +186,7 @@ export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
     v = BigInt(bytesToInt(bytes.subarray(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
-    throw new Error('Invalid signature length')
+    throw EthereumJSErrorWithoutCode('Invalid signature length')
   }
 
   // support both versions of `eth_sign` responses

@@ -7,11 +7,11 @@ import {
   Hardfork,
   Mainnet,
   getPresetChainConfig,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { Goerli } from './data/goerliCommon.js'
+import { Goerli } from './data/goerliCommon.ts'
 
-import type { ChainConfig } from '../src/index.js'
+import type { ChainConfig } from '../src/index.ts'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {

@@ -18,12 +18,12 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
-import type { Chain } from '../../../src/blockchain/index.js'
-import type { VMExecution } from '../../../src/execution/index.js'
+import type { Chain } from '../../../src/blockchain/index.ts'
+import type { VMExecution } from '../../../src/execution/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_feeHistory'

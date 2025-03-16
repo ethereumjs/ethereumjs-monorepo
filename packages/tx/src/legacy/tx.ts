@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
   BIGINT_8,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -11,12 +12,12 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
-import { Capability, TransactionType } from '../types.js'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { paramsTx } from '../index.ts'
+import { Capability, TransactionType } from '../types.ts'
 
-import { createLegacyTx } from './constructors.js'
+import { createLegacyTx } from './constructors.ts'
 
 import type {
   TxData as AllTypesTxData,
@@ -25,12 +26,12 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.Legacy]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
+export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -49,7 +50,7 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
     // v is 1. not matching the EIP-155 chainId included case and...
     // v is 2. not matching the classic v=27 or v=28 case
     if (v < 37 && v !== 27 && v !== 28) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Legacy txs need either v = 27/28 or v >= 37 (EIP-155 replay protection), got v = ${v}`,
       )
     }
@@ -58,7 +59,7 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
   // No unsigned tx and EIP-155 activated and chain ID included
   if (v !== undefined && v !== 0 && common.gteHardfork('spuriousDragon') && v !== 27 && v !== 28) {
     if (!meetsEIP155(BigInt(v), common.chainId())) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
       )
     }
@@ -78,9 +79,9 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
+export class LegacyTx implements TransactionInterface<typeof TransactionType.Legacy> {
   /* Tx public data fields */
-  public type: number = TransactionType.Legacy // Legacy tx type
+  public type = TransactionType.Legacy // Legacy tx type
 
   // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
@@ -130,7 +131,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
 
     const chainId = validateVAndExtractChainID(this.common, this.v)
     if (chainId !== undefined && chainId !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
@@ -138,7 +139,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
-      throw new Error('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
+      throw EthereumJSErrorWithoutCode('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
     }
 
     if (this.common.gteHardfork('spuriousDragon')) {
@@ -319,7 +320,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
       const msg = Legacy.errorMsg(this, 'This transaction is not signed')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     return this.getHashedMessageToSign()
   }
@@ -389,7 +390,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): LegacyTx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
     return <LegacyTx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

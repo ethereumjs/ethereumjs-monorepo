@@ -1,14 +1,14 @@
 import { randomBytes } from '@ethereumjs/util'
 import WebSocket from 'isomorphic-ws'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { jwt } from '../../src/ext/jwt-simple.js'
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
+import { jwt } from '../../src/ext/jwt-simple.ts'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.ts'
 
-import { startRPC } from './helpers.js'
+import { startRPC } from './helpers.ts'
 
-import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.ts'
 
 const jwtSecret = randomBytes(32)
 const { encode } = jwt

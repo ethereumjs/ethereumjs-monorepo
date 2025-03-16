@@ -16,7 +16,6 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { hardfork4844Data } from '../../block/test/testdata/4844-hardfork.js'
 import {
   blobTxNetworkWrapperToJSON,
   createBlob4844Tx,
@@ -25,11 +24,12 @@ import {
   createMinimal4844TxFromNetworkWrapper,
   createTx,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { serialized4844TxData } from './testData/serialized4844tx.js'
+import { hardfork4844Data } from './testData/4844-hardfork.ts'
+import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
-import type { BlobEIP4844TxData } from '../src/index.js'
+import type { BlobEIP4844TxData } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const pk = randomBytes(32)
@@ -67,9 +67,9 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
+    const { v, r, s } = ecsign(msgHash, privKey)
 
-    const signedTx = tx.sign(privKey, false)
+    const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(v, r, s, true)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
@@ -131,9 +131,9 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(tx.sign(pk).hash())
+      const hash = bytesToHex(tx.sign(pk, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }

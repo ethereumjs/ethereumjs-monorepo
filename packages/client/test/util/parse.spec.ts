@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { assert, describe, it } from 'vitest'
 
-import { parseMultiaddrs } from '../../src/util/parse.js'
+import { parseMultiaddrs } from '../../src/util/parse.ts'
 
 describe('[Util/Parse]', () => {
   it('should parse multiaddrs', () => {

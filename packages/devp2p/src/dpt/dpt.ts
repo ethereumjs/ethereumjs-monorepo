@@ -1,16 +1,21 @@
-import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToInt,
+  bytesToUnprefixedHex,
+  randomBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 
-import { DNS } from '../dns/index.js'
-import { devp2pDebug, pk2id } from '../util.js'
+import { DNS } from '../dns/index.ts'
+import { devp2pDebug, pk2id } from '../util.ts'
 
-import { BanList } from './ban-list.js'
-import { KBucket } from './kbucket.js'
-import { Server as DPTServer } from './server.js'
+import { BanList } from './ban-list.ts'
+import { KBucket } from './kbucket.ts'
+import { Server as DPTServer } from './server.ts'
 
-import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
@@ -150,7 +155,7 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this._banlist.has(obj)) throw new Error('Peer is banned')
+    if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
     if (this.DEBUG) {
       this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
     }

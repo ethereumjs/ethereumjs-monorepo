@@ -1,14 +1,14 @@
 import process from 'process'
 import repl from 'repl'
 
-import { createInlineClient } from '../src/util/index.js'
+import { createInlineClient } from '../src/util/index.ts'
 
-import { startRPCServers } from './startRPC.js'
-import { generateClientConfig, getArgs } from './utils.js'
+import { startRPCServers } from './startRPC.ts'
+import { generateClientConfig, getArgs } from './utils.ts'
 
-import type { Config } from '../src/config.js'
-import type { EthereumClient } from '../src/index.js'
-import type { ClientOpts } from '../src/types.js'
+import type { Config } from '../src/config.ts'
+import type { EthereumClient } from '../src/index.ts'
+import type { ClientOpts } from '../src/types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 

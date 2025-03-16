@@ -7,9 +7,9 @@ import {
   Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { shanghaiTimeData } from './data/shanghai-time.js'
+import { shanghaiTimeData } from './data/shanghai-time.ts'
 
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {

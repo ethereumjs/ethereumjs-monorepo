@@ -1,10 +1,10 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { createEVM } from '../src/index.ts'
 
-import type { RunState } from '../src/interpreter.js'
-import type { AddOpcode } from '../src/types.js'
+import type { RunState } from '../src/interpreter.ts'
+import type { AddOpcode } from '../src/types.ts'
 
 describe('VM: custom opcodes', () => {
   const fee = 333

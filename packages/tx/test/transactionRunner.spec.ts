@@ -3,11 +3,11 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
-import { createTxFromRLP } from '../src/transactionFactory.js'
+import { createTxFromRLP } from '../src/transactionFactory.ts'
 
-import { getTests } from './testLoader.js'
+import { getTests } from './testLoader.ts'
 
-import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const argv = minimist(process.argv.slice(2))

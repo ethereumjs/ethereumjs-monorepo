@@ -18,6 +18,7 @@ import {
 import {
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   Lock,
   ValueEncoding,
   bytesToHex,
@@ -29,25 +30,27 @@ import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { Event } from '../types.js'
-import { debugCodeReplayBlock } from '../util/debug.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { debugCodeReplayBlock } from '../util/debug.ts'
+import { short } from '../util/index.ts'
 
-import { Execution } from './execution.js'
-import { LevelDB } from './level.js'
-import { PreimagesManager } from './preimage.js'
-import { ReceiptsManager } from './receipt.js'
+import { Execution } from './execution.ts'
+import { LevelDB } from './level.ts'
+import { PreimagesManager } from './preimage.ts'
+import { ReceiptsManager } from './receipt.ts'
 
-import type { ExecutionOptions } from './execution.js'
+import type { ExecutionOptions } from './execution.ts'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
 
-export enum ExecStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-  IGNORE_INVALID = 'IGNORE_INVALID',
-}
+export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
+
+export const ExecStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  IGNORE_INVALID: 'IGNORE_INVALID',
+} as const
 
 type ChainStatus = {
   height: bigint
@@ -209,7 +212,8 @@ export class VMExecution extends Execution {
     } else if (this.config.statefulVerkle) {
       this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
-    } else throw new Error('EIP-6800 active and no verkle execution mode specified')
+    } else
+      throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
@@ -270,7 +274,9 @@ export class VMExecution extends Execution {
 
       const blockchain = this.chain.blockchain
       if (typeof blockchain.getIteratorHead !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+        throw EthereumJSErrorWithoutCode(
+          'cannot get iterator head: blockchain has no getIteratorHead function',
+        )
       }
       const headBlock = await blockchain.getIteratorHead()
       const { number, timestamp, stateRoot } = headBlock.header
@@ -282,7 +288,9 @@ export class VMExecution extends Execution {
       }
 
       if (typeof blockchain.getTotalDifficulty !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+        throw EthereumJSErrorWithoutCode(
+          'cannot get iterator head: blockchain has no getTotalDifficulty function',
+        )
       }
       this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
@@ -305,7 +313,7 @@ export class VMExecution extends Execution {
           !genesisState &&
           (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
         ) {
-          throw new Error('genesisState not available')
+          throw EthereumJSErrorWithoutCode('genesisState not available')
         } else {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }

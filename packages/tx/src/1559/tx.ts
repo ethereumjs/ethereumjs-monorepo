@@ -1,6 +1,7 @@
 import {
   BIGINT_0,
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -8,15 +9,15 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists } from '../util.ts'
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.ts'
 
 import type {
   AccessList,
@@ -28,12 +29,12 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -41,9 +42,11 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarket1559Tx implements TransactionInterface<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx
+  implements TransactionInterface<typeof TransactionType.FeeMarketEIP1559>
+{
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
+  public type = TransactionType.FeeMarketEIP1559 // 1559 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -90,14 +93,14 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-1559 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
@@ -121,7 +124,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
         this,
         'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
@@ -129,7 +132,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
         this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     EIP2718.validateYParity(this)
@@ -357,7 +360,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): FeeMarket1559Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return <FeeMarket1559Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

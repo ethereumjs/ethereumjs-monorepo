@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
@@ -23,11 +24,11 @@ import {
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { TxReceiptWithType } from '../../execution/receipt.js'
-import type { Message, ProtocolOptions } from './protocol.js'
+import type { Chain } from '../../blockchain/index.ts'
+import type { TxReceiptWithType } from '../../execution/receipt.ts'
+import type { Message, ProtocolOptions } from './protocol.ts'
 import type {
   Block,
   BlockBodyBytes,
@@ -91,7 +92,7 @@ export interface EthProtocolMethods {
 }
 
 function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
-  throw new Error(errorMsg)
+  throw EthereumJSErrorWithoutCode(errorMsg)
 }
 
 /**

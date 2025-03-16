@@ -4,7 +4,7 @@ import { bytesToBigInt, concatBytes, intToBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { Level } from 'level'
 
-import { formatEra1 } from './era1.js'
+import { formatEra1 } from './era1.ts'
 
 import type { BlockBodyBytes } from '@ethereumjs/block'
 
@@ -13,16 +13,20 @@ type DatabaseKey = {
   blockHash?: Uint8Array
 }
 
-enum DBTarget {
-  NumberToHash = 4,
-  TotalDifficulty = 5,
-  Body = 6,
-  Header = 7,
-}
+export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 
-export enum DBKey {
-  Receipts = 0,
-}
+export const DBTarget = {
+  NumberToHash: 4,
+  TotalDifficulty: 5,
+  Body: 6,
+  Header: 7,
+} as const
+
+export type DBKey = (typeof DBKey)[keyof typeof DBKey]
+
+export const DBKey = {
+  Receipts: 0,
+} as const
 
 type BlockDB = Level<string | Uint8Array, string | Uint8Array>
 

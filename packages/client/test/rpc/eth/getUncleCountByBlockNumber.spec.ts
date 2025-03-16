@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 function createChain() {
   const block = {

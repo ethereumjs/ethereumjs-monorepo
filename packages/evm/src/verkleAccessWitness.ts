@@ -1,6 +1,7 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   VERKLE_BASIC_DATA_LEAF_KEY,
   VERKLE_CODE_HASH_LEAF_KEY,
   VERKLE_CODE_OFFSET,
@@ -18,8 +19,8 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { ChunkCache } from './chunkCache.js'
-import { StemCache } from './stemCache.js'
+import { ChunkCache } from './chunkCache.ts'
+import { StemCache } from './stemCache.ts'
 
 import type {
   AccessEventFlags,
@@ -104,7 +105,7 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
     chunks?: Map<PrefixedHexString, ChunkAccessEvent>
   }) {
     if (opts.verkleCrypto === undefined) {
-      throw new Error('verkle crypto required')
+      throw EthereumJSErrorWithoutCode('verkle crypto required')
     }
     this.verkleCrypto = opts.verkleCrypto
     this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent & StemMeta>()

@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import {
@@ -9,9 +9,9 @@ import {
   DBSetTD,
   genGenesisStateRoot,
   getGenesisStateRoot,
-} from './index.js'
+} from './index.ts'
 
-import type { BlockchainOptions, DBOp } from './index.js'
+import type { BlockchainOptions, DBOp } from './index.ts'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
 
@@ -46,7 +46,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
   // If the DB has a genesis block, then verify that the genesis block in the
   // DB is indeed the Genesis block generated or assigned.
   if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'The genesis block in the DB has a different hash than the provided genesis block.',
     )
   }

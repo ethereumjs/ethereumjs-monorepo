@@ -1,14 +1,14 @@
 import { ETH as Devp2pETH, RLPx as Devp2pRLPx, SNAP as Devp2pSNAP } from '@ethereumjs/devp2p'
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types.js'
-import { RlpxSender } from '../protocol/index.js'
+import { Event } from '../../types.ts'
+import { RlpxSender } from '../protocol/index.ts'
 
-import { Peer } from './peer.js'
+import { Peer } from './peer.ts'
 
-import type { Protocol } from '../protocol/index.js'
-import type { RlpxServer } from '../server/index.js'
-import type { PeerOptions } from './peer.js'
+import type { Protocol } from '../protocol/index.ts'
+import type { RlpxServer } from '../server/index.ts'
+import type { PeerOptions } from './peer.ts'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,

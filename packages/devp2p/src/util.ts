@@ -1,10 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  concatBytes,
+  equalsBytes,
+} from '@ethereumjs/util'
 import debug from 'debug'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import type { ETH } from './protocol/eth.js'
+import type { EthStatusMsg } from './protocol/eth.ts'
 
 export const devp2pDebug = debug('devp2p:#')
 
@@ -38,7 +44,7 @@ export function xor(a: Uint8Array, b: any): Uint8Array {
   return bytes
 }
 
-type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | number | null
+type assertInput = Uint8Array | Uint8Array[] | EthStatusMsg | number | null
 
 export function assertEq(
   expected: assertInput,
@@ -58,7 +64,7 @@ export function assertEq(
     } else {
       debug(debugMsg)
     }
-    throw new Error(fullMsg)
+    throw EthereumJSErrorWithoutCode(fullMsg)
   }
 
   if (expected === actual) return
@@ -68,7 +74,7 @@ export function assertEq(
   } else {
     debug(fullMsg)
   }
-  throw new Error(fullMsg)
+  throw EthereumJSErrorWithoutCode(fullMsg)
 }
 
 export function formatLogId(id: string, verbose: boolean): string {

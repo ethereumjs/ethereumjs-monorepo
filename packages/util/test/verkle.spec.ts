@@ -1,7 +1,6 @@
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { verkleKaustinen6Block72Data } from '../../statemanager/test/testdata/verkleKaustinen6Block72.js'
 import {
   Account,
   VERKLE_CODE_CHUNK_SIZE,
@@ -20,7 +19,9 @@ import {
   intToBytes,
   randomBytes,
   verifyVerkleProof,
-} from '../src/index.js'
+} from '../src/index.ts'
+
+import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.ts'
 
 describe('Verkle cryptographic helpers', () => {
   it('getVerkleStem(): returns the expected stems', () => {

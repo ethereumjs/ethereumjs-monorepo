@@ -20,14 +20,14 @@ import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 import qs from 'qs'
 
-import { RPCManager } from '../../src/rpc/index.js'
-import { Event } from '../../src/types.js'
+import { RPCManager } from '../../src/rpc/index.ts'
+import { Event } from '../../src/types.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { EthereumClient } from '../../src/client.ts'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise'
+import type { Client } from 'jayson/promise/index.js'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -36,7 +36,7 @@ export async function getEventSource(): Promise<typeof EventSource> {
   if (globalThis.EventSource !== undefined) {
     return EventSource
   } else {
-    return (await import('eventsource')).default as unknown as typeof EventSource
+    return (await import('eventsource')).EventSource
   }
 }
 
@@ -321,7 +321,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = createAddressFromPrivateKey(pkey)
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',

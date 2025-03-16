@@ -1,12 +1,15 @@
-import type { EOFContainer } from './eof/container.js'
-import type { EvmError } from './exceptions.js'
-import type { InterpreterStep, RunState } from './interpreter.js'
-import type { Message } from './message.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler } from './opcodes/index.js'
-import type { CustomPrecompile } from './precompiles/index.js'
-import type { PrecompileFunc } from './precompiles/types.js'
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
+import type { EOFContainer } from './eof/container.ts'
+import type { EvmError } from './exceptions.ts'
+import type { InterpreterStep, RunState } from './interpreter.ts'
+import type { Message } from './message.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
+import type { OpHandler } from './opcodes/index.ts'
+import type { CustomPrecompile } from './precompiles/index.ts'
+import type { PrecompileFunc } from './precompiles/types.ts'
+import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 import type {
+  BinaryTreeAccessWitnessInterface,
   Common,
   ParamsDict,
   StateManagerInterface,
@@ -128,7 +131,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -166,8 +169,10 @@ export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
-  verkleAccessWitness?: VerkleAccessWitnessInterface
-  systemVerkleAccessWitness?: VerkleAccessWitnessInterface
+  verkleAccessWitness?: VerkleAccessWitness
+  systemVerkleAccessWitness?: VerkleAccessWitness
+  binaryTreeAccessWitness?: BinaryTreeAccessWitness
+  systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
 }
 
 export type EVMProfilerOpts = {

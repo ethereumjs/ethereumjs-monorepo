@@ -3,10 +3,10 @@ import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
 import { assert, it } from 'vitest'
 
-import { ECIES } from '../src/rlpx/ecies.js'
-import * as util from '../src/util.js'
+import { ECIES } from '../src/rlpx/ecies.ts'
+import * as util from '../src/util.ts'
 
-import { testData } from './testdata.js'
+import { testData } from './testdata.ts'
 
 export interface EciesTestContext {
   context: {

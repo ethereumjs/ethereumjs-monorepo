@@ -1,7 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
 describe('Precompiles: BN254MUL', () => {
   it('BN254MUL', async () => {

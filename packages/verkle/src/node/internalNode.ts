@@ -1,16 +1,16 @@
-import { type VerkleCrypto } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, type VerkleCrypto } from '@ethereumjs/util'
 
-import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types.js'
+import { BaseVerkleNode } from './baseVerkleNode.ts'
+import { NODE_WIDTH, VerkleNodeType } from './types.ts'
 
-import type { ChildNode, VerkleNodeOptions } from './types.js'
+import type { ChildNode, VerkleNodeOptions } from './types.ts'
 
-export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> {
+export class InternalVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
   public children: Array<ChildNode | null>
   public type = VerkleNodeType.Internal
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Internal]) {
     super(options)
     this.children = options.children ?? new Array(256).fill(null)
   }
@@ -42,12 +42,12 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
   static fromRawNode(rawNode: Uint8Array[], verkleCrypto: VerkleCrypto): InternalVerkleNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
     }
 
     // The length of the rawNode should be the # of children * 2 (for commitments and paths) + 2 for the node type and the commitment
     if (rawNode.length !== NODE_WIDTH * 2 + 2) {
-      throw new Error('Invalid node length')
+      throw EthereumJSErrorWithoutCode('Invalid node length')
     }
 
     const commitment = rawNode[rawNode.length - 1]

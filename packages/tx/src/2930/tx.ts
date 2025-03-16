@@ -1,5 +1,6 @@
 import {
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -7,14 +8,14 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists } from '../util.ts'
 
-import { createAccessList2930Tx } from './constructors.js'
+import { createAccessList2930Tx } from './constructors.ts'
 
 import type {
   AccessList,
@@ -26,12 +27,12 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
-export type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
+export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]
 
 /**
  * Typed transaction with optional access lists
@@ -39,8 +40,10 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessList2930Tx implements TransactionInterface<TransactionType.AccessListEIP2930> {
-  public type: number = TransactionType.AccessListEIP2930 // 2930 tx type
+export class AccessList2930Tx
+  implements TransactionInterface<typeof TransactionType.AccessListEIP2930>
+{
+  public type = TransactionType.AccessListEIP2930 // 2930 tx type
 
   // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
@@ -86,7 +89,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     const { chainId, accessList, gasPrice } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
@@ -94,7 +97,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
-      throw new Error('EIP-2930 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-2930 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
@@ -111,7 +114,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     EIP2718.validateYParity(this)
@@ -331,7 +334,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): AccessList2930Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): AccessList2930Tx {
     return <AccessList2930Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

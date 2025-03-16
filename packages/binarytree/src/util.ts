@@ -1,11 +1,11 @@
 import { type PrefixedHexString, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
-import { InternalBinaryNode } from './node/internalNode.js'
-import { StemBinaryNode } from './node/stemNode.js'
-import { decodeBinaryNode } from './node/util.js'
+import { InternalBinaryNode } from './node/internalNode.ts'
+import { StemBinaryNode } from './node/stemNode.ts'
+import { decodeBinaryNode } from './node/util.ts'
 
-import type { BinaryTree } from './binaryTree.js'
-import type { ChildBinaryNode } from './node/types.js'
+import type { BinaryTree } from './binaryTree.ts'
+import type { ChildBinaryNode } from './node/types.ts'
 
 /**
  * Recursively walks down the tree from a given starting node and returns all the leaf values

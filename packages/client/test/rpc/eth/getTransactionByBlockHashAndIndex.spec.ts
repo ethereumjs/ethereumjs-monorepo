@@ -1,9 +1,9 @@
 import { createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.ts'
 
 const method = 'eth_getTransactionByBlockHashAndIndex'
 
@@ -19,11 +19,11 @@ async function setUp() {
         to: '0x0000000000000000000000000000000000000000',
       },
       { common },
-    ).sign(dummy.privKey, false),
+    ).sign(dummy.privKey),
     createLegacyTx(
       { gasLimit: 21000, gasPrice: 50, nonce: 1, to: '0x0000000000000000000000000000000000000000' },
       { common },
-    ).sign(dummy.privKey, false),
+    ).sign(dummy.privKey),
   ]
 
   await runBlockWithTxs(chain, execution, txs)

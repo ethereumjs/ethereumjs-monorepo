@@ -13,10 +13,10 @@ import {
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import type { Config } from '../config.js'
-import type { TxPool } from '../service/txpool.js'
+import type { Config } from '../config.ts'
+import type { TxPool } from '../service/txpool.ts'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
@@ -49,13 +49,15 @@ export interface BlobsBundle {
 // Max two payload to be cached
 const MAX_PAYLOAD_CACHE = 2
 
-enum AddTxResult {
-  Success,
-  BlockFull,
-  SkippedByGasLimit,
-  SkippedByErrors,
-  RemovedByErrors,
-}
+type AddTxResult = (typeof AddTxResult)[keyof typeof AddTxResult]
+
+const AddTxResult = {
+  Success: 'Success',
+  BlockFull: 'BlockFull',
+  SkippedByGasLimit: 'SkippedByGasLimit',
+  SkippedByErrors: 'SkippedByErrors',
+  RemovedByErrors: 'RemovedByErrors',
+} as const
 
 export class PendingBlock {
   config: Config

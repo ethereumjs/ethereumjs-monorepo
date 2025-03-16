@@ -1,13 +1,13 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { default as testData } from '../../../ethereum-tests/EOFTests/EIP5450/validInvalid.json' assert {
+import { default as testData } from '../../../ethereum-tests/EOFTests/EIP5450/validInvalid.json' with {
   type: 'json',
 }
-import { validateEOF } from '../../src/eof/container.js'
-import { createEVM } from '../../src/index.js'
+import { validateEOF } from '../../src/eof/container.ts'
+import { createEVM } from '../../src/index.ts'
 
-import { getCommon } from './eof-utils.js'
+import { getCommon } from './eof-utils.ts'
 
 async function getEVM() {
   const common = getCommon()

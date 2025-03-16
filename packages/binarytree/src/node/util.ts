@@ -1,8 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import { InternalBinaryNode } from './internalNode.js'
-import { StemBinaryNode } from './stemNode.js'
-import { type BinaryNode, BinaryNodeType } from './types.js'
+import { InternalBinaryNode } from './internalNode.ts'
+import { StemBinaryNode } from './stemNode.ts'
+import { type BinaryNode, BinaryNodeType } from './types.ts'
 
 export function decodeRawBinaryNode(raw: Uint8Array[]): BinaryNode {
   const nodeType = raw[0][0]
@@ -12,14 +13,14 @@ export function decodeRawBinaryNode(raw: Uint8Array[]): BinaryNode {
     case BinaryNodeType.Stem:
       return StemBinaryNode.fromRawNode(raw)
     default:
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
   }
 }
 
 export function decodeBinaryNode(raw: Uint8Array) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
-    throw new Error('Invalid node')
+    throw EthereumJSErrorWithoutCode('Invalid node')
   }
   return decodeRawBinaryNode(decoded)
 }

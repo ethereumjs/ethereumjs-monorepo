@@ -3,11 +3,11 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { INVALID_FORKCHOICE_STATE, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_FORKCHOICE_STATE, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { blockToExecutionPayload } from '../../../src/rpc/modules/index.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 

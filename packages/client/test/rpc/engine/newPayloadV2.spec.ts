@@ -7,10 +7,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV2'
 
@@ -183,7 +183,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
         gasLimit: 53_000,
       },
       { common },
-    ).sign(accountPk, false)
+    ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,

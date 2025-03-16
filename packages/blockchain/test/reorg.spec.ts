@@ -3,13 +3,13 @@ import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/commo
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.js'
-import { createBlockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.ts'
+import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
-import { generateConsecutiveBlock } from './util.js'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { generateConsecutiveBlock } from './util.ts'
 
-import type { ConsensusDict } from '../src/index.js'
+import type { ConsensusDict } from '../src/index.ts'
 import type { Block } from '@ethereumjs/block'
 
 describe('reorg tests', () => {

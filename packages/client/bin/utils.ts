@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/common'
 import {
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -30,8 +31,8 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
@@ -45,14 +46,14 @@ import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { Config, SyncMode } from '../src/config.js'
-import { getLogger } from '../src/logging.js'
-import { Event } from '../src/types.js'
-import { parseMultiaddrs } from '../src/util/index.js'
-import { setupMetrics } from '../src/util/metrics.js'
+import { Config, SyncMode } from '../src/config.ts'
+import { getLogger } from '../src/logging.ts'
+import { Event } from '../src/types.ts'
+import { parseMultiaddrs } from '../src/util/index.ts'
+import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { Logger } from '../src/logging.js'
-import type { ClientOpts } from '../src/types.js'
+import type { Logger } from '../src/logging.ts'
+import type { ClientOpts } from '../src/types.ts'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
@@ -76,7 +77,7 @@ export function getArgs(): ClientOpts {
       .option('chainId', {
         describe: 'Chain ID',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
@@ -86,7 +87,7 @@ export function getArgs(): ClientOpts {
         deprecated: true,
         deprecate: 'use --chainId instead',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
@@ -473,7 +474,7 @@ export function getArgs(): ClientOpts {
         if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
         if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
-        if (collision) throw new Error('cannot reuse ports between RPC instances')
+        if (collision) throw EthereumJSErrorWithoutCode('cannot reuse ports between RPC instances')
         return true
       })
       .parseSync()
@@ -585,7 +586,7 @@ async function inputAccounts(args: ClientOpts) {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
-          throw new Error(
+          throw EthereumJSErrorWithoutCode(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
         }
@@ -597,7 +598,7 @@ async function inputAccounts(args: ClientOpts) {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
-    throw new Error(`Encountered error unlocking account:\n${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Encountered error unlocking account:\n${e.message}`)
   }
   rl.close()
   return accounts
@@ -654,7 +655,7 @@ export async function generateClientConfig(args: ClientOpts) {
     ) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw new Error('message length must be 32 bytes or greater')
+        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
       const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
@@ -719,7 +720,7 @@ export async function generateClientConfig(args: ClientOpts) {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      throw new Error(`invalid chain parameters: ${err.message}`)
+      throw EthereumJSErrorWithoutCode(`invalid chain parameters: ${err.message}`)
     }
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
@@ -733,7 +734,7 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   if (args.mine === true && accounts.length === 0) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
   }

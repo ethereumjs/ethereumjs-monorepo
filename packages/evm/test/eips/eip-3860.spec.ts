@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.ts'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = new Address(privateToAddress(pkey))

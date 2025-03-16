@@ -3,6 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  CLRequestType,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -14,9 +15,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLRequestType } from '../../../../util/src/request.js'
-import { runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { Block } from '@ethereumjs/block'
 

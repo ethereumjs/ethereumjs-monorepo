@@ -6,8 +6,8 @@ import { bigIntToHex, bytesToHex, createAddressFromString } from '@ethereumjs/ut
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'

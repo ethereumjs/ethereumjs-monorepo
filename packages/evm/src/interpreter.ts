@@ -4,6 +4,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -13,20 +14,20 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
-import { EOFContainerMode, validateEOF } from './eof/container.js'
-import { setupEOF } from './eof/setup.js'
-import { ContainerSectionType } from './eof/verify.js'
-import { ERROR, EvmError } from './exceptions.js'
-import { type EVMPerformanceLogger, type Timer } from './logger.js'
-import { Memory } from './memory.js'
-import { Message } from './message.js'
-import { trap } from './opcodes/index.js'
-import { Stack } from './stack.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
+import { EOFContainerMode, validateEOF } from './eof/container.ts'
+import { setupEOF } from './eof/setup.ts'
+import { ContainerSectionType } from './eof/verify.ts'
+import { ERROR, EvmError } from './exceptions.ts'
+import { type EVMPerformanceLogger, type Timer } from './logger.ts'
+import { Memory } from './memory.ts'
+import { Message } from './message.ts'
+import { trap } from './opcodes/index.ts'
+import { Stack } from './stack.ts'
 
-import type { EVM } from './evm.js'
-import type { Journal } from './journal.js'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
+import type { EVM } from './evm.ts'
+import type { Journal } from './journal.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -34,8 +35,9 @@ import type {
   EVMProfilerOpts,
   EVMResult,
   Log,
-} from './types.js'
+} from './types.ts'
 import type {
+  BinaryTreeAccessWitnessInterface,
   Common,
   StateManagerInterface,
   VerkleAccessWitnessInterface,
@@ -83,7 +85,7 @@ export interface Env {
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: VerkleAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
@@ -174,7 +176,7 @@ export class Interpreter {
       this.common.consensusType() === 'poa' &&
       this._evm['_optsCached'].cliqueSigner === undefined
     )
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'Must include cliqueSigner function if clique/poa is being used for consensus type',
       )
 
@@ -263,7 +265,7 @@ export class Interpreter {
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
     if (pc !== 0 && (pc < 0 || pc >= this._runState.code.length)) {
-      throw new Error('Internal error: program counter not in range')
+      throw EthereumJSErrorWithoutCode('Internal error: program counter not in range')
     }
 
     let err
@@ -304,7 +306,7 @@ export class Interpreter {
       // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
-        this.common.isActivatedEIP(6800) &&
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
         // is this a code loaded from state using witnesses
         this._runState.env.chargeCodeAccesses === true
       ) {
@@ -385,7 +387,10 @@ export class Interpreter {
         await this._runStepHook(gas, this.getGasLeft())
       }
 
-      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+      if (
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
+        this._env.chargeCodeAccesses === true
+      ) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas = this._runState.env.accessWitness!.readAccountCodeChunks(
           contract,
@@ -633,7 +638,7 @@ export class Interpreter {
     await this._stateManager.putStorage(this._env.address, key, value)
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
-      throw new Error('could not read account while persisting memory')
+      throw EthereumJSErrorWithoutCode('could not read account while persisting memory')
     }
     this._env.contract = account
   }
@@ -852,7 +857,7 @@ export class Interpreter {
     const baseFee = this._env.block.header.baseFeePerGas
     if (baseFee === undefined) {
       // Sanity check
-      throw new Error('Block has no Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Base Fee')
     }
     return baseFee
   }
@@ -864,7 +869,7 @@ export class Interpreter {
     const blobBaseFee = this._env.block.header.getBlobGasPrice()
     if (blobBaseFee === undefined) {
       // Sanity check
-      throw new Error('Block has no Blob Base Fee')
+      throw EthereumJSErrorWithoutCode('Block has no Blob Base Fee')
     }
     return blobBaseFee
   }
@@ -1029,7 +1034,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw new Error('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
@@ -1133,7 +1138,7 @@ export class Interpreter {
       // update stateRoot on current contract
       const account = await this._stateManager.getAccount(this._env.address)
       if (!account) {
-        throw new Error('could not read contract account')
+        throw EthereumJSErrorWithoutCode('could not read contract account')
       }
       this._env.contract = account
       this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0

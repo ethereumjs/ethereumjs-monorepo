@@ -1,4 +1,4 @@
-import type { ChunkAccessEvent } from './verkleAccessWitness.js'
+import type { ChunkAccessEvent } from './verkleAccessWitness.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 export class ChunkCache {
   cache: Map<PrefixedHexString, ChunkAccessEvent>

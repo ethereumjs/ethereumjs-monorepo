@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { Event } from '../../src/types.js'
+import { Event } from '../../src/types.ts'
 
-import { destroy, setup, wait } from './util.js'
+import { destroy, setup, wait } from './util.ts'
 
 describe('should sync blocks', async () => {
   const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20 })

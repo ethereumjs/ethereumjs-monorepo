@@ -1,10 +1,10 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INTERNAL_ERROR } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullSynchronizer } from '../../../src/sync/index.js'
+import type { FullSynchronizer } from '../../../src/sync/index.ts'
 
 const method = 'eth_syncing'
 

@@ -1,4 +1,4 @@
-import type { BeaconPayloadJSON } from '../../src/index.js'
+import type { BeaconPayloadJSON } from '../../src/index.ts'
 
 export const payloadSlot87335Data: BeaconPayloadJSON = {
   parent_hash: '0xe8609e4e6ea2c555294006574d88c24110c674c205222d6216ca78ada4a8a8c7',

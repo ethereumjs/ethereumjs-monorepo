@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.js'
+import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.ts'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 

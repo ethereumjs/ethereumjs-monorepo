@@ -1,6 +1,8 @@
-import { INVALID_PARAMS } from './error-code.js'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import type { RPCMethod } from './types.js'
+import { INVALID_PARAMS } from './error-code.ts'
+
+import type { RPCMethod } from './types.ts'
 
 /**
  * middleware for parameters validation
@@ -75,7 +77,7 @@ function bytes(bytes: number, params: any[], index: number) {
 function uint(uint: number, params: any[], index: number) {
   if (uint % 8 !== 0) {
     // Sanity check
-    throw new Error(`Uint should be a multiple of 8, got: ${uint}`)
+    throw EthereumJSErrorWithoutCode(`Uint should be a multiple of 8, got: ${uint}`)
   }
   if (typeof params[index] !== 'string') {
     return {

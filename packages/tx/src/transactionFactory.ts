@@ -1,14 +1,14 @@
-import { fetchFromProvider, getProvider } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.js'
-import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.js'
-import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.js'
-import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.js'
+import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.ts'
+import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.ts'
+import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.ts'
+import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.ts'
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
-} from './legacy/constructors.js'
+} from './legacy/constructors.ts'
 import {
   TransactionType,
   isAccessList2930TxData,
@@ -16,10 +16,10 @@ import {
   isEOACode7702TxData,
   isFeeMarket1559TxData,
   isLegacyTxData,
-} from './types.js'
-import { normalizeTxParams } from './util.js'
+} from './types.ts'
+import { normalizeTxParams } from './util.ts'
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'
 import type { EthersProvider } from '@ethereumjs/util'
 /**
  * Create a transaction from a `txData` object
@@ -46,7 +46,9 @@ export function createTx<T extends TransactionType>(
     } else if (isEOACode7702TxData(txData)) {
       return createEOACode7702Tx(txData, txOptions) as Transaction[T]
     } else {
-      throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
+      throw EthereumJSErrorWithoutCode(
+        `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
+      )
     }
   }
 }
@@ -73,7 +75,7 @@ export function createTxFromRLP<T extends TransactionType>(
       case TransactionType.EOACodeEIP7702:
         return createEOACode7702TxFromRLP(data, txOptions) as Transaction[T]
       default:
-        throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
+        throw EthereumJSErrorWithoutCode(`TypedTransaction with ID ${data[0]} unknown`)
     }
   } else {
     return createLegacyTxFromRLP(data, txOptions) as Transaction[T]
@@ -99,7 +101,7 @@ export function createTxFromBlockBodyData(
     // It is a legacy transaction
     return createLegacyTxFromBytesArray(data, txOptions)
   } else {
-    throw new Error('Cannot decode transaction: unknown type input')
+    throw EthereumJSErrorWithoutCode('Cannot decode transaction: unknown type input')
   }
 }
 
@@ -135,7 +137,7 @@ export async function createTxFromJSONRPCProvider(
     params: [txHash],
   })
   if (txData === null) {
-    throw new Error('No data returned from provider')
+    throw EthereumJSErrorWithoutCode('No data returned from provider')
   }
   return createTxFromRPC(txData, txOptions)
 }
