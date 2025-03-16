@@ -1,7 +1,7 @@
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from 'eslint-plugin-import'
-
+import eslintNodePlugin from 'eslint-plugin-n'
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -34,6 +34,15 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   importPlugin.flatConfigs.recommended,
+  {
+    plugins: {
+      n: eslintNodePlugin,
+    },
+    rules: {
+      'n/no-extraneous-import': 'error',
+    },
+  },
+
   {
     rules: {
       'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
