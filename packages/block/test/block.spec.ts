@@ -56,11 +56,11 @@ describe('[Block]: block functions', () => {
 
     const rlpBlock = block.serialize()
     block = createBlockFromRLP(rlpBlock)
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromRLP(rlpBlock, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
+    assert.isFalse(
+      Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
     )
 
@@ -82,11 +82,11 @@ describe('[Block]: block functions', () => {
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = createBlockFromBytesArray(valuesArray, { common })
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
+    assert.isFalse(
+      Object.isFrozen(block),
       'block should not be frozen when freeze deactivated in options',
     )
   })
@@ -147,7 +147,7 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
     try {
       createBlockFromRLP(blockRlp, { common })
-      assert.ok(true, 'should pass')
+      assert.isTrue(true, 'should pass')
     } catch {
       assert.fail('should not throw')
     }
@@ -165,8 +165,8 @@ describe('[Block]: block functions', () => {
   })
 
   async function testTransactionValidation(block: Block) {
-    assert.ok(block.transactionsAreValid())
-    assert.ok(block.getTransactionsValidationErrors().length === 0)
+    assert.isTrue(block.transactionsAreValid())
+    assert.isTrue(block.getTransactionsValidationErrors().length === 0)
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
@@ -179,7 +179,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid transaction trie'))
+      assert.isTrue((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -200,7 +200,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('unsigned'))
+      assert.isTrue((error.message as string).includes('unsigned'))
     }
   })
 

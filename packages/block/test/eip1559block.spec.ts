@@ -74,8 +74,8 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw when baseFeePerGas is not set to initial base fee')
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
-      assert.ok(
-        e.message.includes(expectedError) === true,
+      assert.isTrue(
+        e.message.includes(expectedError),
         'should throw if base fee is not set to initial value',
       )
     }
@@ -98,8 +98,8 @@ describe('EIP1559 tests', () => {
       await (header as any)._genericFormatValidation()
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
-      assert.ok(
-        e.message.includes(expectedError) === true,
+      assert.isTrue(
+        e.message.includes(expectedError),
         'should throw with no base fee field when EIP1559 is activated',
       )
     }
@@ -379,8 +379,8 @@ describe('EIP1559 tests', () => {
       header.validateGasLimit(genesis.header)
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(
-        e.message.includes('gas limit decreased too much') === true,
+      assert.isTrue(
+        e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (HF transition block)',
       )
     }

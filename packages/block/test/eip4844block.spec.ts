@@ -254,7 +254,7 @@ describe('transaction validation tests', () => {
       'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee',
     )
 
-    assert.ok(
+    assert.isTrue(
       blockWithTooManyBlobs
         .getTransactionsValidationErrors()
         .join(' ')

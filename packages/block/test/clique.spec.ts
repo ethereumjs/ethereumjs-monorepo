@@ -30,13 +30,13 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
 
     header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
-    assert.ok(
+    assert.isTrue(
       cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block',
     )
 
     header = createBlockHeader({ number: 1, extraData: new Uint8Array(97) }, { common })
-    assert.notOk(
+    assert.isFalse(
       cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should correctly identify a non-epoch block',
     )
