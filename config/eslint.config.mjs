@@ -127,17 +127,14 @@ export default [
     }
   },
   {
-
     files: ['**/test/**/*.ts',],
     rules: {
-      'import/no-extraneous-dependencies': 'off',
       'no-restricted-syntax': 'off',
     },
   },
   {
     files: ['**/examples/**/*.ts', '**/examples/**/*.js', '**/examples/**/*.cjs', '**/benchmarks/*.ts'],
     rules: {
-      'import/no-extraneous-dependencies': 'off',
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-restricted-syntax': 'off'
