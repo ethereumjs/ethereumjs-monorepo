@@ -64,7 +64,7 @@
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "peerDependencies": {
-    "@vitest/browser": "^3.0.5",
+    "@vitest/browser": "^3.0.8",
     "webdriverio": "^9.8.0"
   },
   "peerDependenciesMeta": {
