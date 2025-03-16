@@ -346,7 +346,7 @@ describe('should init rlpx', async () => {
     }),
   )
   server.rlpx!.events.emit('peer:added', rlpxPeer)
-  // @ts-expect-error -- Setting a minimal peer for testing
+  //@ts-expect-error -- Setting a minimal peer for testing
   server['peers'].set('01', { id: '01' })
   server.rlpx!.events.emit('peer:removed', rlpxPeer, '', true)
   server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
