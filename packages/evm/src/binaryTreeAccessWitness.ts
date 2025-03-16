@@ -1,11 +1,11 @@
 import type {
-  type AccessEventFlags,
-  type BinaryTreeAccessWitnessInterface,
+  AccessEventFlags,
+  BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedState,
-  BinaryTreeAccessedStateType,
-  type BinaryTreeAccessedStateWithAddress,
+  BinaryTreeAccessedStateWithAddress,
   RawBinaryTreeAccessedState,
 } from '@ethereumjs/common'
+import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BINARY_TREE_BASIC_DATA_LEAF_KEY,

@@ -1,19 +1,21 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import type {
-  Account,
-  type Address,
-  EthereumJSErrorWithoutCode,
+  Address,
   GenesisState,
-  KECCAK256_NULL,
-  MapDB,
   PrefixedHexString,
   StoragePair,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
+import {
+  Account,
+  EthereumJSErrorWithoutCode,
+  KECCAK256_NULL,
+  MapDB,
   VERKLE_CODE_CHUNK_SIZE,
   VERKLE_CODE_OFFSET,
   VERKLE_NODE_WIDTH,
-  VerkleCrypto,
-  VerkleExecutionWitness,
   VerkleLeafType,
   bigIntToBytes,
   bytesToBigInt,
@@ -272,7 +274,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
-    //@ts-ignore
     await modifyAccountFields(this, address, accountFields)
   }
   putCode = async (address: Address, value: Uint8Array): Promise<void> => {

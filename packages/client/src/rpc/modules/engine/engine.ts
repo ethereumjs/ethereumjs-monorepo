@@ -24,22 +24,22 @@ import { callWithStackTrace } from '../../helpers.ts'
 import { middleware, validators } from '../../validation.ts'
 
 import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
-import type {
-  BlobAndProofV1,
-  Bytes8,
-  Bytes32,
+import {
+  type BlobAndProofV1,
+  type Bytes8,
+  type Bytes32,
   type ChainCache,
   EngineError,
-  ExecutionPayloadBodyV1,
-  ExecutionPayloadV1,
-  ExecutionPayloadV2,
-  ExecutionPayloadV3,
-  ForkchoiceResponseV1,
-  ForkchoiceStateV1,
-  PayloadAttributes,
-  PayloadAttributesV1,
-  PayloadAttributesV2,
-  PayloadAttributesV3,
+  type ExecutionPayloadBodyV1,
+  type ExecutionPayloadV1,
+  type ExecutionPayloadV2,
+  type ExecutionPayloadV3,
+  type ForkchoiceResponseV1,
+  type ForkchoiceStateV1,
+  type PayloadAttributes,
+  type PayloadAttributesV1,
+  type PayloadAttributesV2,
+  type PayloadAttributesV3,
   type PayloadStatusV1,
   Status,
 } from './types.ts'

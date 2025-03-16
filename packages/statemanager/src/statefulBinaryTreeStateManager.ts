@@ -2,19 +2,21 @@ import { BinaryTree } from '@ethereumjs/binarytree'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import type {
+  Address,
+  BinaryTreeExecutionWitness,
+  GenesisState,
+  PrefixedHexString,
+  StoragePair,
+} from '@ethereumjs/util'
+import {
   Account,
-  type Address,
   BINARY_TREE_CODE_CHUNK_SIZE,
   BINARY_TREE_CODE_OFFSET,
   BINARY_TREE_NODE_WIDTH,
-  BinaryTreeExecutionWitness,
   BinaryTreeLeafType,
   EthereumJSErrorWithoutCode,
-  GenesisState,
   KECCAK256_NULL,
   MapDB,
-  PrefixedHexString,
-  StoragePair,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
