@@ -916,7 +916,7 @@ export class Engine {
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
-    } catch (error) {
+    } catch {
       this.config.logger.debug(
         `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )

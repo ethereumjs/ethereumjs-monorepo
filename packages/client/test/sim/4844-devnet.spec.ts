@@ -217,7 +217,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
     try {
       await teardownCallBack()
       assert.isTrue(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

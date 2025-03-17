@@ -366,7 +366,7 @@ export class Debug {
     try {
       // Validator already verified that `blockHash` is properly formatted.
       block = await this.chain.getBlock(hexToBytes(blockHash))
-    } catch (err: any) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
         message: 'Could not get requested block hash.',
@@ -483,7 +483,7 @@ export class Debug {
     try {
       await this.service.skeleton?.setHead(block, true)
       await this.service.execution.setHead([block])
-    } catch (e) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
       }

@@ -65,7 +65,7 @@ export const validExecutedChainBlock = async (
 
     // if the block was canonical and executed we would have returned by now
     return null
-  } catch (error: any) {
+  } catch {
     return null
   }
 }

@@ -174,7 +174,7 @@ describe('simple mainnet test run', async () => {
           )
           await ejsClient.stop()
           assert.isTrue(true, 'completed beacon sync')
-        } catch (e) {
+        } catch {
           console.log()
           assert.fail('could not complete beacon sync in 8 minutes')
         }
@@ -190,7 +190,7 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.isTrue(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60000)

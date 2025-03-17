@@ -423,7 +423,7 @@ describe('[Skeleton] / setHead', async () => {
     ;(chain.blockchain['_validateBlocks'] as any) = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    } catch (e) {
+    } catch {
       assert.isTrue(true, `Skeleton init should error if merge not set`)
     }
   })
