@@ -31,7 +31,7 @@ describe('[CLI] RPC', () => {
       const message: string = data.toString()
 
       if (message.includes('transport=libp2p')) {
-        assert.ok(true, 'libp2p server started')
+        assert.isTrue(true, 'libp2p server started')
         const bootnodeAddressArray = message.split(' ')
         const bootnodeAddressIndex = bootnodeAddressArray.findIndex((chunk: string) =>
           chunk.startsWith('url='),
@@ -53,7 +53,7 @@ describe('[CLI] RPC', () => {
         child2.stdout.on('data', async (data) => {
           const message: string = data.toString()
           if (message.includes('Peer added')) {
-            assert.ok(true, 'connected to peer over libp2p')
+            assert.isTrue(true, 'connected to peer over libp2p')
             child2.kill('SIGINT')
             child2.stdout.removeAllListeners()
             end(child, false)

@@ -45,6 +45,9 @@ import { Goerli } from './testdata/goerliCommon.ts'
 import { testnetData } from './testdata/testnet.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
+import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
@@ -52,9 +55,6 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
 } from '../../src/types.ts'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
@@ -239,7 +239,9 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       skipHardForkValidation: true,
     })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
+      .catch((e) =>
+        assert.isTrue(e.message.includes("sender doesn't have enough funds to send tx")),
+      )
   })
 
   it('should fail when block gas limit higher than 2^63-1', async () => {
@@ -252,7 +254,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     })
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('Invalid block')))
+      .catch((e) => assert.isTrue(e.message.includes('Invalid block')))
   })
 
   it('should fail when block validation fails', async () => {
@@ -265,7 +267,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('not found in DB'),
           'block failed validation due to no parent header',
         )
@@ -305,7 +307,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     await runBlock(vm, { block, skipBlockValidation: true })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('higher gas limit')))
+      .catch((e) => assert.isTrue(e.message.includes('higher gas limit')))
   })
 })
 
@@ -502,11 +504,11 @@ describe('runBlock() -> tx types', async () => {
     const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
 
-    //@ts-ignore read-only property
+    //@ts-expect-error read-only property
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @ts-ignore read-only property
+      //@ts-expect-error read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 
@@ -697,7 +699,7 @@ describe('runBlock() -> tx types', async () => {
 
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
     const storage = await vm.stateManager.getStorage(defaultAuthAddr, new Uint8Array(32))
-    assert.ok(equalsBytes(storage, new Uint8Array([2])))
+    assert.isTrue(equalsBytes(storage, new Uint8Array([2])))
   })
 })
 

@@ -28,9 +28,9 @@ import {
   updateSstoreGas,
 } from './util.ts'
 
-import type { RunState } from '../interpreter.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 

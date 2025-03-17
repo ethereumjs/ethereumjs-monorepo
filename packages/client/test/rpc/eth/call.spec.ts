@@ -146,7 +146,7 @@ describe(method, () => {
       'pending',
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with invalid hex params', async () => {
@@ -170,6 +170,6 @@ describe(method, () => {
       'latest',
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
   })
 })

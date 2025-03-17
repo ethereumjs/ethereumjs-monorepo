@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
+import { randomBytes } from 'node:crypto'
+
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise/index.js'
-import { randomBytes } from 'node:crypto'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -43,7 +43,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
   })
 
   if (result.includes('EthereumJS') === true) {
-    assert.ok(true, 'connected to client')
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -51,7 +51,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -216,8 +216,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

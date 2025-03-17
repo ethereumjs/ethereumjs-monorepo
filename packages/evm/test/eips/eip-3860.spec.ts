@@ -42,7 +42,7 @@ describe('EIP 3860 tests', () => {
       ),
     }
     const result = await evm.runCall(runCallArgs)
-    assert.ok(
+    assert.isTrue(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
       'initcode exceeds max size',
     )
@@ -86,7 +86,7 @@ describe('EIP 3860 tests', () => {
     }
     const res = await evm.runCall(runCallArgs)
     const res2 = await evmWithout3860.runCall(runCallArgs)
-    assert.ok(
+    assert.isTrue(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
       'execution gas used is higher with EIP 3860 active',
     )
@@ -130,7 +130,7 @@ describe('EIP 3860 tests', () => {
     }
     const res = await evm.runCall(runCallArgs)
     const res2 = await evmWithout3860.runCall(runCallArgs)
-    assert.ok(
+    assert.isTrue(
       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
       'execution gas used is higher with EIP 3860 active',
     )
@@ -162,7 +162,7 @@ describe('EIP 3860 tests', () => {
       ),
     }
     const result = await evm.runCall(runCallArgs)
-    assert.ok(
+    assert.isTrue(
       result.execResult.exceptionError === undefined,
       'successfully created a contract with data size > MAX_INITCODE_SIZE and allowUnlimitedInitCodeSize active',
     )
@@ -214,11 +214,11 @@ describe('EIP 3860 tests', () => {
       const storageActive = await evm.stateManager.getStorage(contractFactory, key0)
       const storageInactive = await evmDisabled.stateManager.getStorage(contractFactory, key0)
 
-      assert.ok(
+      assert.isTrue(
         !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true',
       )
-      assert.ok(
+      assert.isTrue(
         equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false',
       )
@@ -238,7 +238,7 @@ describe('EIP 3860 tests', () => {
       // Verify that the gas cost on the prior one is higher than the first one
       const res2 = await evmDisabled.runCall(runCallArgs2)
 
-      assert.ok(
+      assert.isTrue(
         res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
         'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false',
       )

@@ -43,7 +43,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
+    assert.isTrue(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   // TODO: Turn back on once we have kaustinen7 data

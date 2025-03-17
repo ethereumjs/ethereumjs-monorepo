@@ -15,6 +15,7 @@ import { eipsDict } from './eips.ts'
 import { Hardfork } from './enums.ts'
 import { hardforksDict } from './hardforks.ts'
 
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 import type { ConsensusAlgorithm, ConsensusType } from './enums.ts'
 import type {
   BootstrapNodeConfig,
@@ -32,7 +33,6 @@ import type {
   ParamsConfig,
   ParamsDict,
 } from './types.ts'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Common class to access chain and hardfork parameters and to provide

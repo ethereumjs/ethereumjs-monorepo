@@ -15,8 +15,8 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import type { BlockHeader } from '../index.ts'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BlockHeader } from '../index.ts'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32

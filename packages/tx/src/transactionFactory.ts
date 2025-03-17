@@ -19,8 +19,8 @@ import {
 } from './types.ts'
 import { normalizeTxParams } from './util.ts'
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'
 import type { EthersProvider } from '@ethereumjs/util'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'
 /**
  * Create a transaction from a `txData` object
  *

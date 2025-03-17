@@ -98,7 +98,7 @@ describe('[Utils/Parse]', () => {
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
     const genesisJSON = postMergeData
-    // @ts-expect-error we want shanghaiTime to exist
+    //@ts-expect-error we want shanghaiTime to exist
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
@@ -108,9 +108,9 @@ describe('[Utils/Parse]', () => {
   })
   it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
     const genesisJSON = postMergeData
-    // @ts-expect-error we don't want shanghaiTime to exist
+    //@ts-expect-error we don't want shanghaiTime to exist
     delete genesisJSON.config.shanghaiTime
-    // @ts-expect-error we don't want terminalTotalDifficultyPassed to exist
+    //@ts-expect-error we don't want terminalTotalDifficultyPassed to exist
     delete genesisJSON.config.terminalTotalDifficultyPassed
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(

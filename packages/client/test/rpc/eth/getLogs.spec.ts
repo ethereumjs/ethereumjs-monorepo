@@ -114,7 +114,7 @@ describe(method, async () => {
       res.result.length === 10 &&
       res.result.every((r: any) => r.address === contractAddr1.toString()) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by single address)')
+      assert.isTrue(true, 'should return the correct logs (filter by single address)')
     } else {
       assert.fail('should return the correct logs (filter by single address)')
     }
@@ -127,7 +127,7 @@ describe(method, async () => {
       res.result.length === 20 &&
       res.result.every((r: any) => addresses.includes(r.address)) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by multiple addresses)')
+      assert.isTrue(true, 'should return the correct logs (filter by multiple addresses)')
     } else {
       assert.fail('should return the correct logs (filter by multiple addresses)')
     }
@@ -210,19 +210,19 @@ describe(method, async () => {
     // fromBlock greater than current height
     let res = await rpc.request(method, [{ fromBlock: '0x1234' }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `fromBlock` greater than current height'))
+    assert.isTrue(res.error.message.includes('specified `fromBlock` greater than current height'))
 
     // toBlock greater than current height
     res = await rpc.request(method, [{ toBlock: '0x1234' }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `toBlock` greater than current height'))
+    assert.isTrue(res.error.message.includes('specified `toBlock` greater than current height'))
 
     // unknown blockHash
     res = await rpc.request(method, [
       { blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001' },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('unknown blockHash'))
+    assert.isTrue(res.error.message.includes('unknown blockHash'))
 
     // specifying fromBlock or toBlock with blockHash
     res = await rpc.request(method, [
@@ -232,7 +232,7 @@ describe(method, async () => {
       },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),
@@ -245,7 +245,7 @@ describe(method, async () => {
       },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),

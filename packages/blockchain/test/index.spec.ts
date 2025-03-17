@@ -79,7 +79,7 @@ describe('blockchain test', () => {
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.ok(chain instanceof Blockchain, 'should not throw')
-    } catch (error) {
+    } catch {
       assert.fail('show not have thrown')
     }
   })
@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.ok(error, 'returned with error')
+      assert.exists(error, 'returned with error')
     }
   })
 
@@ -223,7 +223,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(5)
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-number request`,
       )
@@ -233,7 +233,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-hash request`,
       )
@@ -262,7 +262,10 @@ describe('blockchain test', () => {
       await blockchain.getBlock(22)
       assert.fail('canonical references should have been deleted')
     } catch (err: any) {
-      assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
+      assert.isTrue(
+        err.message.includes('not found in DB'),
+        'canonical references correctly deleted',
+      )
     }
 
     try {
@@ -462,7 +465,7 @@ describe('blockchain test', () => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      //eslint-disable-next-line
+
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = createBlockHeader(headerData, {
@@ -574,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.ok(error, 'should not validate an invalid block')
+      assert.exists(error, 'should not validate an invalid block')
     }
   })
 
@@ -757,7 +760,7 @@ describe('blockchain test', () => {
         error = err
       }
       if (i === 2) {
-        assert.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.include(error.message, 'Chain mismatch', 'should return chain mismatch error')
       } else {
         assert.isUndefined(error, 'should not return mismatch error')
       }

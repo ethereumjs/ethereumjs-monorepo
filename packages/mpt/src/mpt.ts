@@ -34,6 +34,8 @@ import { _walkTrie } from './util/asyncWalk.ts'
 import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.ts'
 import { WalkController } from './util/walkController.ts'
 
+import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 import type {
   BranchMPTNodeBranchValue,
   FoundNodeFunction,
@@ -46,8 +48,6 @@ import type {
   TrieShallowCopyOpts,
 } from './types.ts'
 import type { OnFound } from './util/asyncWalk.ts'
-import type { BatchDBOp, DB } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.

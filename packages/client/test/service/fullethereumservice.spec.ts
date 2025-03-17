@@ -9,8 +9,8 @@ import { RlpxServer } from '../../src/net/server/index.ts'
 import { Event } from '../../src/types.ts'
 import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
-import type { BeaconSynchronizer } from '../../src/sync/index.ts'
 import type { Log } from '@ethereumjs/evm'
+import type { BeaconSynchronizer } from '../../src/sync/index.ts'
 
 vi.mock('../../src/net/peerpool.ts', () => {
   const PeerPool = vi.fn()
@@ -211,7 +211,7 @@ describe('should ban peer for sending NewBlock/NewBlockHashes after merge', asyn
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
     it('should ban peer', () => {
-      assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
+      assert.isTrue(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     })
   }
 
@@ -319,7 +319,10 @@ describe('should handle GetPooledTransactions', async () => {
       eth: {
         send: (_: string, data: any): any => {
           it('should handle getPooledTransactions', () => {
-            assert.ok(equalsBytes(data.txs[0].hash(), tx.hash()), 'handled getPooledTransactions')
+            assert.isTrue(
+              equalsBytes(data.txs[0].hash(), tx.hash()),
+              'handled getPooledTransactions',
+            )
           })
         },
       } as any,
@@ -369,7 +372,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
           versions: [67, 68],
           request: (data: any): any => {
             it('should handle', () => {
-              assert.ok(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
+              assert.isTrue(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
             })
           },
         },

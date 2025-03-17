@@ -1,8 +1,8 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { BIGINT_0, EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import type { Consensus } from '../types.ts'
 import type { BlockHeader } from '@ethereumjs/block'
+import type { Consensus } from '../types.ts'
 
 /**
  * This class encapsulates Casper-related consensus functionality when used with the Blockchain class.

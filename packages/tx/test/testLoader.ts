@@ -1,6 +1,6 @@
+import * as path from 'path'
 import { bytesToHex } from '@ethereumjs/util'
 import * as dir from 'node-dir'
-import * as path from 'path'
 
 const falsePredicate = () => false
 

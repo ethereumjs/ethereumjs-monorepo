@@ -35,7 +35,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
           { common },
         )
         block.validateBlobTransactions(parentHeader)
-        assert.ok(true, `successfully constructed block=${block.header.number}`)
+        assert.isTrue(true, `successfully constructed block=${block.header.number}`)
       } catch (e) {
         assert.fail(`failed to construct block, error: ${e}`)
       }
@@ -54,7 +54,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
       )
       assert.fail(`should have failed constructing the block`)
     } catch (e) {
-      assert.ok(true, `correctly failed constructing block, error: ${e}`)
+      assert.isTrue(true, `correctly failed constructing block, error: ${e}`)
       assert.ok(`${e}`.includes('Invalid blockHash'), 'failed with correct error')
     }
   })
@@ -73,7 +73,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
       block.validateBlobTransactions(parentHeader)
       assert.fail(`should have failed constructing the block`)
     } catch (e) {
-      assert.ok(true, `correctly failed constructing block, error: ${e}`)
+      assert.isTrue(true, `correctly failed constructing block, error: ${e}`)
       assert.ok(`${e}`.includes('block excessBlobGas mismatch'), 'failed with correct error')
     }
   })

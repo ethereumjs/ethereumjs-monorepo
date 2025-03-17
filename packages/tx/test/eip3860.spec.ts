@@ -27,7 +27,7 @@ describe('[EIP3860 tests]', () => {
       try {
         createTx({ data, type: txType }, { common })
         assert.ok('Instantiated create tx with MAX_INITCODE_SIZE data')
-      } catch (e) {
+      } catch {
         assert.fail('Did not instantiate create tx with MAX_INITCODE_SIZE')
       }
     }
@@ -39,7 +39,7 @@ describe('[EIP3860 tests]', () => {
       try {
         createTx({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE')
-      } catch (e) {
+      } catch {
         assert.fail('Did not instantiated tx with MAX_INITCODE_SIZE')
       }
     }
@@ -51,7 +51,7 @@ describe('[EIP3860 tests]', () => {
       try {
         createTx({ data, type: txType }, { common })
         assert.fail('Instantiated create tx with MAX_INITCODE_SIZE+1')
-      } catch (e) {
+      } catch {
         assert.ok('Did not instantiate create tx with MAX_INITCODE_SIZE+1')
       }
     }
@@ -63,7 +63,7 @@ describe('[EIP3860 tests]', () => {
       try {
         createTx({ data, type: txType, to: addressZero }, { common })
         assert.ok('Instantiated tx with MAX_INITCODE_SIZE+1')
-      } catch (e) {
+      } catch {
         assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
       }
     }
@@ -76,7 +76,7 @@ describe('[EIP3860 tests]', () => {
         try {
           createTx({ data, type: txType }, { common, allowUnlimitedInitCodeSize: true })
           assert.ok('Instantiated create tx with MAX_INITCODE_SIZE+1')
-        } catch (e) {
+        } catch {
           assert.fail('Did not instantiate tx with MAX_INITCODE_SIZE+1')
         }
       }
@@ -95,7 +95,7 @@ describe('[EIP3860 tests]', () => {
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: false },
         )
-        assert.ok(
+        assert.isTrue(
           eip3860ActiveTx.getDataGas() === eip3860DeactivatedTx.getDataGas(),
           'charged initcode analysis gas',
         )

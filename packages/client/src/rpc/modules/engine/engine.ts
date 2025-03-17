@@ -24,7 +24,25 @@ import { callWithStackTrace } from '../../helpers.ts'
 import { middleware, validators } from '../../validation.ts'
 
 import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.ts'
+import {
+  type BlobAndProofV1,
+  type Bytes8,
+  type Bytes32,
+  type ChainCache,
+  EngineError,
+  type ExecutionPayloadBodyV1,
+  type ExecutionPayloadV1,
+  type ExecutionPayloadV2,
+  type ExecutionPayloadV3,
+  type ForkchoiceResponseV1,
+  type ForkchoiceStateV1,
+  type PayloadAttributes,
+  type PayloadAttributesV1,
+  type PayloadAttributesV2,
+  type PayloadAttributesV3,
+  type PayloadStatusV1,
+  Status,
+} from './types.ts'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -45,29 +63,14 @@ import {
   payloadAttributesFieldValidatorsV3,
 } from './validators.ts'
 
+import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 import type { Chain } from '../../../blockchain/index.ts'
 import type { EthereumClient } from '../../../client.ts'
 import type { Config } from '../../../config.ts'
 import type { VMExecution } from '../../../execution/index.ts'
 import type { FullEthereumService, Skeleton } from '../../../service/index.ts'
-import type {
-  BlobAndProofV1,
-  Bytes32,
-  Bytes8,
-  ExecutionPayloadBodyV1,
-  ExecutionPayloadV1,
-  ExecutionPayloadV2,
-  ExecutionPayloadV3,
-  ForkchoiceResponseV1,
-  ForkchoiceStateV1,
-  PayloadAttributes,
-  PayloadAttributesV1,
-  PayloadAttributesV2,
-  PayloadAttributesV3,
-} from './types.ts'
-import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = new Uint8Array(32)
 
@@ -92,9 +95,9 @@ export class Engine {
   private lastNewPayloadHF: string = ''
   private lastForkchoiceUpdatedHF: string = ''
 
-  private remoteBlocks: Map<String, Block>
-  private executedBlocks: Map<String, Block>
-  private invalidBlocks: Map<String, Error>
+  private remoteBlocks: Map<string, Block>
+  private executedBlocks: Map<string, Block>
+  private invalidBlocks: Map<string, Error>
   private chainCache: ChainCache
 
   private lastAnnouncementTime = Date.now()
@@ -424,7 +427,7 @@ export class Engine {
       if (headBlock.common.isActivatedEIP(4844)) {
         try {
           headBlock.validateBlobTransactions(parent.header)
-        } catch (error: any) {
+        } catch {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
             hexToBytes(parentHash as PrefixedHexString),
@@ -449,7 +452,7 @@ export class Engine {
           `Parent block not yet executed number=${parent.header.number}`,
         )
       }
-    } catch (error: any) {
+    } catch {
       // Stash the block for a potential forced forkchoice update to it later.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
@@ -600,7 +603,7 @@ export class Engine {
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
       blocks = await recursivelyFindParents(vmHead.hash(), headBlock.header.parentHash, this.chain)
-    } catch (error) {
+    } catch {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
     }
@@ -913,7 +916,7 @@ export class Engine {
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
-    } catch (error) {
+    } catch {
       this.config.logger.debug(
         `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )
@@ -1051,7 +1054,7 @@ export class Engine {
             headBlock.header.parentHash,
             this.chain,
           )
-        } catch (error) {
+        } catch {
           const payloadStatus = {
             status: Status.SYNCING,
             latestValidHash: null,

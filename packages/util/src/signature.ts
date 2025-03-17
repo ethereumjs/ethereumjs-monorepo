@@ -9,7 +9,7 @@ import {
   setLengthLeft,
   toBytes,
   utf8ToBytes,
-} from './bytes.js'
+} from './bytes.ts'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -17,9 +17,9 @@ import {
   BIGINT_27,
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
-} from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsBytes } from './helpers.js'
+} from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsBytes } from './helpers.ts'
 
 import type { PrefixedHexString } from './types.js'
 
@@ -64,8 +64,8 @@ export function ecsign(
 
   if ([2, 3].includes(sig.recovery)) {
     // From the yellow paper:
-    /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates 
-       of the curve point for which r is the x-value; this value is in the range of [0, 3], 
+    /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates
+       of the curve point for which r is the x-value; this value is in the range of [0, 3],
        however we declare the upper two possibilities, representing infinite values, invalid. */
     throw EthereumJSErrorWithoutCode(
       `Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`,

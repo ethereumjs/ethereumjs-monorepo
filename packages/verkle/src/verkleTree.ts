@@ -15,10 +15,10 @@ import { LeafVerkleNodeValue, type VerkleNode } from './node/types.ts'
 import { createZeroesLeafValue, decodeVerkleNode, isLeafVerkleNode } from './node/util.ts'
 import { type Proof, ROOT_DB_KEY, type VerkleTreeOpts } from './types.ts'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { createVerkleTree } from './constructors.ts' // Imported so intellisense can display docs
 import type { PutBatch, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { createVerkleTree } from './constructors.ts' // Imported so intellisense can display docs
 interface Path {
   node: VerkleNode | null
   remaining: Uint8Array

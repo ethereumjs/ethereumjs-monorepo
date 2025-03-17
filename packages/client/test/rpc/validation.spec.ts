@@ -35,7 +35,7 @@ describe(prefix, () => {
     assert.equal(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
   })
 
-  const validatorResult = (result: Object | undefined) => {
+  const validatorResult = (result: object | undefined) => {
     // result is valid if validator returns undefined
     // result is invalid if validator returns object
     return result === undefined ? true : false

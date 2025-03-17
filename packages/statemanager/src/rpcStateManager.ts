@@ -19,10 +19,10 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Caches, OriginalStorageCache } from './cache/index.ts'
 import { modifyAccountFields } from './util.ts'
 
-import type { RPCStateManagerOpts } from './index.ts'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { RPCStateManagerOpts } from './index.ts'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 

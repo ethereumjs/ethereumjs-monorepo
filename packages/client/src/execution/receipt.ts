@@ -219,6 +219,7 @@ export class ReceiptsManager extends MetaDBManager {
         //  * [null, B] - anything in first position AND B in second position (and anything after)
         //  * [A, B] - A in first position AND B in second position (and anything after)
         //  * [[A, B], [A, B]] - (A OR B) in first position AND (A OR B) in second position (and anything after)
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         logs = logs.filter((l) => {
           for (const [i, topic] of topics.entries()) {
             if (Array.isArray(topic)) {

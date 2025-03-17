@@ -29,7 +29,7 @@ describe('Istanbul: EIP-1344', () => {
         if (testCase.err !== undefined) {
           assert.equal(res.exceptionError?.error, testCase.err)
         } else {
-          assert.ok(res.exceptionError === undefined)
+          assert.isTrue(res.exceptionError === undefined)
           assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {

@@ -1,3 +1,4 @@
+import * as crypto from 'crypto'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
@@ -6,7 +7,6 @@ import {
   hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
-import * as crypto from 'crypto'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
@@ -237,7 +237,7 @@ export class ECIES {
     data: Uint8Array,
     sharedMacData: Uint8Array | null = null,
   ): Uint8Array | undefined {
-    const prefix = sharedMacData !== null ? sharedMacData : new Uint8Array()
+    const prefix = sharedMacData ?? new Uint8Array()
     this._remoteInitMsg = concatBytes(prefix, data)
     const decrypted = this._decryptMessage(data, sharedMacData)
 

@@ -25,8 +25,7 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --format codeframe --config ./config/eslint.cjs . \\ "
-dim "\t --ext .js,.ts \\ "
+dim "> eslint --config ./config/eslint.config.mjs ."
 
 blue "[Lint]${NOCOLOR} checking..."
 
@@ -35,7 +34,7 @@ if [ -z "$FILESCHANGED" ]; then
     exit
 fi
 
-eslint --format codeframe --config ./config/eslint.cjs $FILESCHANGED
+eslint --config ./config/eslint.config.mjs $FILESCHANGED
 
 RETURN_CODE=$?
 

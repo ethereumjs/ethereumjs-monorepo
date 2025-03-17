@@ -34,7 +34,7 @@ describe(method, () => {
     const res = await rpc.request(method, [])
 
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('no peer available for synchronization'))
+    assert.isTrue(res.error.message.includes('no peer available for synchronization'))
   })
 
   it('should return highest block header unavailable error', async () => {
@@ -56,7 +56,7 @@ describe(method, () => {
     const res = await rpc.request(method, [])
 
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('highest block header unavailable'))
+    assert.isTrue(res.error.message.includes('highest block header unavailable'))
   })
 
   it('should return syncing status object when unsynced', async () => {
@@ -85,7 +85,7 @@ describe(method, () => {
       res.result.currentBlock === '0x0' &&
       res.result.highestBlock === '0x2'
     ) {
-      assert.ok(true, 'should return syncing status object')
+      assert.isTrue(true, 'should return syncing status object')
     } else {
       assert.fail('should return syncing status object')
     }

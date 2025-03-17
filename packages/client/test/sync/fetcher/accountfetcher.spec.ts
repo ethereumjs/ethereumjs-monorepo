@@ -51,14 +51,14 @@ describe('[AccountFetcher]', async () => {
       count: BigInt(10),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 1, 'added 1 tasks')
+    assert.equal(fetcher['in'].length, 1, 'added 1 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
+    assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should update highest known hash', () => {
@@ -151,11 +151,11 @@ describe('[AccountFetcher]', async () => {
     ]
     accountDataResponse.completed = false
     const task = { count: BigInt(3), first: BigInt(1) }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, accountDataResponse)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
     assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     assert.equal(results, undefined, 'Process should not return full results yet')
 
@@ -362,18 +362,15 @@ describe('[AccountFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.ok(results !== undefined, 'Proof verification is completed without errors')
-    assert.ok(
-      fetcher.process(job as any, results!) !== undefined,
-      'Response should be processed properly',
-    )
+    assert.exists(results, 'Proof verification is completed without errors')
+    assert.exists(fetcher.process(job as any, results!), 'Response should be processed properly')
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
     fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()
     fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = vi.fn()
     try {
       await fetcher.store(results!)
-      assert.ok(true, 'fetcher stored results successfully')
+      assert.isTrue(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
@@ -390,8 +387,8 @@ describe('[AccountFetcher]', async () => {
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])
-      assert.ok(true, 'completed snap sync')
-    } catch (e) {
+      assert.isTrue(true, 'completed snap sync')
+    } catch {
       assert.fail('could not complete snap sync in 40 seconds')
     }
 

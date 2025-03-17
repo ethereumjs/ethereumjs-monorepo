@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
@@ -314,5 +313,3 @@ export const utils = {
 }
 
 export const RLP = { encode, decode }
-
-/* eslint-enable @typescript-eslint/no-use-before-define */

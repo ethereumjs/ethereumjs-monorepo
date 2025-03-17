@@ -62,7 +62,6 @@ describe('RLPx simulator tests', () => {
     void rlpxs[0]['_dpt']!.addPeer(peer)
     await new Promise((resolve) => {
       rlpxs[0].events.on('peer:added', async (peer) => {
-        //@ts-ignore
         if ((peer['_socket'] as any)._peername.port === basePort + 1) {
           assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           const peer2 = {

@@ -112,7 +112,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [txData])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('insufficient balance'))
+    assert.isTrue(res.error.message.includes('insufficient balance'))
 
     // Restore setStateRoot
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
@@ -128,7 +128,7 @@ describe(method, () => {
     const res = await rpc.request(method, [txData])
 
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'client is not aware of the current chain height yet (give sync some more time)',
       ),
@@ -145,7 +145,7 @@ describe(method, () => {
     const res = await rpc.request(method, [txData])
 
     assert.equal(res.error.code, PARSE_ERROR)
-    assert.ok(res.error.message.includes('serialized tx data could not be parsed'))
+    assert.isTrue(res.error.message.includes('serialized tx data could not be parsed'))
   })
 
   it('call with unsigned tx', async () => {
@@ -167,7 +167,7 @@ describe(method, () => {
     const res = await rpc.request(method, [txHex])
 
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('tx needs to be signed'))
+    assert.isTrue(res.error.message.includes('tx needs to be signed'))
   })
 
   it('call with no peers', async () => {
@@ -203,7 +203,7 @@ describe(method, () => {
     const res = await rpc.request(method, [txData])
 
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('no peer connection available'))
+    assert.isTrue(res.error.message.includes('no peer connection available'))
 
     // Restore setStateRoot
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
@@ -285,7 +285,7 @@ describe(method, () => {
     assert.equal(res.error, undefined, 'initial blob transaction accepted')
 
     assert.equal(res2.error.code, INVALID_PARAMS)
-    assert.ok(res2.error.message.includes('replacement blob gas too low'))
+    assert.include(res2.error.message, 'replacement blob gas too low')
 
     // Restore stubbed out functionality
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot

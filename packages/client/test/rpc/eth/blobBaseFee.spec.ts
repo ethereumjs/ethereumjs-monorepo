@@ -18,9 +18,9 @@ import { assert, describe, it } from 'vitest'
 import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../../src/blockchain/chain.ts'
 import type { VMExecution } from '../../../src/execution/vmexecution.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_blobBaseFee'
 const kzg = new microEthKZG(trustedSetup)

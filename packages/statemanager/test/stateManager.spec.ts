@@ -27,16 +27,16 @@ export const isBrowser = new Function('try {return this===window;}catch(e){ retu
 function verifyAccount(
   account: Account,
   state: {
-    balance: BigInt
+    balance: bigint
     codeHash: Uint8Array
-    nonce: BigInt
+    nonce: bigint
     storageRoot: Uint8Array
   },
 ) {
   assert.equal(account.balance, state.balance)
   assert.equal(account.nonce, state.nonce)
-  assert.ok(equalsBytes(account.codeHash, state.codeHash))
-  assert.ok(equalsBytes(account.storageRoot, state.storageRoot))
+  assert.isTrue(equalsBytes(account.codeHash, state.codeHash))
+  assert.isTrue(equalsBytes(account.storageRoot, state.storageRoot))
 }
 
 describe('StateManager -> General', () => {
@@ -53,7 +53,7 @@ describe('StateManager -> General', () => {
 
     try {
       const storage = await sm.getStorage(createZeroAddress(), new Uint8Array(32))
-      assert.ok(equalsBytes(storage, new Uint8Array()))
+      assert.isTrue(equalsBytes(storage, new Uint8Array()))
     } catch {
       assert.fail('should not throw')
     }
@@ -242,13 +242,13 @@ describe('StateManager -> General', () => {
     await addMerkleStateProofData(partialStateManager, stProof)
 
     let stSlot1_0 = await partialStateManager.getStorage(address1, state1.keys[0])
-    assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+    assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
 
     let stSlot1_1 = await partialStateManager.getStorage(address1, state1.keys[1])
-    assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+    assert.isTrue(equalsBytes(stSlot1_1, state1.values[1]))
 
     let stSlot1_2 = await partialStateManager.getStorage(address1, state1.keys[2])
-    assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+    assert.isTrue(equalsBytes(stSlot1_2, new Uint8Array()))
 
     // Check Array support as input
     const newPartialStateManager = await fromMerkleStateProof([proof2, stProof])
@@ -264,13 +264,13 @@ describe('StateManager -> General', () => {
       assert.ok(account3 === undefined)
 
       stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
-      assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+      assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
 
       stSlot1_1 = await sm.getStorage(address1, state1.keys[1])
-      assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+      assert.isTrue(equalsBytes(stSlot1_1, state1.values[1]))
 
       stSlot1_2 = await sm.getStorage(address1, state1.keys[2])
-      assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+      assert.isTrue(equalsBytes(stSlot1_2, new Uint8Array()))
     }
 
     await postVerify(newPartialStateManager)
@@ -282,7 +282,7 @@ describe('StateManager -> General', () => {
       await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
     }
 
     await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
@@ -297,7 +297,7 @@ describe('StateManager -> General', () => {
       await fromMerkleStateProof([proof1, zeroAddressProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
     }
 
     await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)

@@ -1,7 +1,7 @@
 import { bytesToHex, fetchFromProvider } from '@ethereumjs/util'
 
-import type { Proof, RPCStateManager } from '../index.ts'
 import type { Address } from '@ethereumjs/util'
+import type { Proof, RPCStateManager } from '../index.ts'
 
 /**
  * Get an EIP-1186 proof from the provider

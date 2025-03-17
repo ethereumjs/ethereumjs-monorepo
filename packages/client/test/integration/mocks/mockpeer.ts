@@ -8,10 +8,10 @@ import { Event } from '../../../src/types.ts'
 import { MockSender } from './mocksender.ts'
 import { createStream } from './network.ts'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { PeerOptions } from '../../../src/net/peer/index.ts'
 import type { MockServer } from './mockserver.ts'
 import type { RemoteStream } from './network.ts'
-import type { BlockHeader } from '@ethereumjs/block'
 
 interface MockPeerOptions extends PeerOptions {
   location: string

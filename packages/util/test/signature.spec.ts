@@ -213,7 +213,7 @@ describe('hashPersonalMessage', () => {
     try {
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
     } catch (err: any) {
-      assert.ok(err.message.includes('This method only supports Uint8Array'))
+      assert.isTrue(err.message.includes('This method only supports Uint8Array'))
     }
   })
 })

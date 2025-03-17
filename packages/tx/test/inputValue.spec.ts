@@ -11,8 +11,8 @@ import {
   createTx,
 } from '../src/index.ts'
 
-import type { TxValuesArray } from '../src/index.ts'
 import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
+import type { TxValuesArray } from '../src/index.ts'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: PrefixedHexString): AddressLike[] {
@@ -226,8 +226,8 @@ describe('[Invalid Access Lists]', () => {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
-          } catch (e: any) {
-            assert.ok(true, 'failed ok on decoding in `fromTxData`')
+          } catch {
+            assert.isTrue(true, 'failed ok on decoding in `fromTxData`')
             tx = createTx({ type: txType })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))

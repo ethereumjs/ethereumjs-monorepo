@@ -33,7 +33,7 @@ describe('EIP-7685 runBlock tests', () => {
     assert.equal(res.gasUsed, 0n)
     // Verify that if the requests are empty, the byte-types are not appended to the to-be-hashed flat array
     // I.e. the flat array to-be-hashed is not `0x 00 01 02`, but is now the empty bytes array, `0x`
-    assert.ok(equalsBytes(res.requestsHash!, sha256(new Uint8Array())))
+    assert.isTrue(equalsBytes(res.requestsHash!, sha256(new Uint8Array())))
   })
   it('should error when an invalid requestsHash is provided', async () => {
     const vm = await setupVM({ common })

@@ -616,7 +616,7 @@ export class Wallet {
     return {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
-      // @ts-ignore - the official V3 keystore spec omits the address key
+      //@ts-expect-error - the official V3 keystore spec omits the address key
       address: bytesToUnprefixedHex(this.getAddress()),
       crypto: {
         ciphertext: bytesToUnprefixedHex(ciphertext),

@@ -57,7 +57,7 @@ describe('[FullSynchronizer]', async () => {
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -256,7 +256,7 @@ describe('[FullSynchronizer]', async () => {
     assert.equal(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
-    assert.ok(true, 'did not send NewBlock to Peer 3')
+    assert.isTrue(true, 'did not send NewBlock to Peer 3')
     ;(sync as any).chain._blocks = {
       latest: chainTip,
     }

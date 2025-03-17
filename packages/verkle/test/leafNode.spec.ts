@@ -33,9 +33,9 @@ describe('verkle node - leaf', () => {
       equalsBytes(node.commitment as unknown as Uint8Array, commitment),
       'commitment should be set',
     )
-    assert.ok(equalsBytes(node.c1 as unknown as Uint8Array, c1), 'c1 should be set')
-    assert.ok(equalsBytes(node.c2 as unknown as Uint8Array, c2), 'c2 should be set')
-    assert.ok(equalsBytes(node.stem, stem), 'stem should be set')
+    assert.isTrue(equalsBytes(node.c1 as unknown as Uint8Array, c1), 'c1 should be set')
+    assert.isTrue(equalsBytes(node.c2 as unknown as Uint8Array, c2), 'c2 should be set')
+    assert.isTrue(equalsBytes(node.stem, stem), 'stem should be set')
     assert.ok(
       values.every((value, index) => equalsBytes(value, node.values[index] as Uint8Array)),
       'values should be set',

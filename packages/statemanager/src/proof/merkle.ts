@@ -23,9 +23,9 @@ import {
 
 import { MerkleStateManager } from '../merkleStateManager.ts'
 
-import type { MerkleStateManagerOpts } from '../index.ts'
 import type { Proof, StorageProof } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { MerkleStateManagerOpts } from '../index.ts'
 
 /**
  * Get an EIP-1186 proof

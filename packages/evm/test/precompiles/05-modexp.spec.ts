@@ -6,9 +6,9 @@ import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
 import { testData } from './modexp-testdata.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {

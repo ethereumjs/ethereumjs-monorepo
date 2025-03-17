@@ -22,9 +22,9 @@ import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
 import { powData } from '../../testdata/geth-genesis/pow.ts'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../../src/blockchain/index.ts'
 import type { VMExecution } from '../../../src/execution/index.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_feeHistory'
 

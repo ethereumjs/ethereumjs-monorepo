@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Block, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -173,7 +172,7 @@ export function dumpState(state: any, cb: Function) {
       })
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
   readAccounts(state).then(async function (accounts: any) {
     const results: any = []
     for (let key = 0; key < accounts.length; key++) {

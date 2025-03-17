@@ -102,7 +102,7 @@ describe('RunCall tests', () => {
       }
     }
 
-    assert.ok(true, 'CREATE2 creates (empty) contracts at the expected address')
+    assert.isTrue(true, 'CREATE2 creates (empty) contracts at the expected address')
   })
 
   it('Byzantium cannot access Constantinople opcodes', async () => {
@@ -137,13 +137,12 @@ describe('RunCall tests', () => {
     const byzantiumResult = await evmByzantium.runCall(runCallArgs)
     const constantinopleResult = await evmConstantinople.runCall(runCallArgs)
 
-    assert.ok(
-      byzantiumResult.execResult.exceptionError &&
-        byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+    assert.isTrue(
+      byzantiumResult.execResult.exceptionError?.error === 'invalid opcode',
       'byzantium cannot accept constantinople opcodes (SHL)',
     )
-    assert.ok(
-      !constantinopleResult.execResult.exceptionError,
+    assert.isUndefined(
+      constantinopleResult.execResult.exceptionError,
       'constantinople can access the SHL opcode',
     )
   })
@@ -470,7 +469,7 @@ describe('RunCall tests', () => {
       await evm.runCall(runCallArgs)
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',
       )
@@ -501,7 +500,7 @@ describe('RunCall tests', () => {
     for (const balance of [undefined, BigInt(5)]) {
       await evm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
       const res = await evm.runCall(runCallArgs)
-      assert.ok(true, 'runCall should not throw with no balance and skipBalance')
+      assert.isTrue(true, 'runCall should not throw with no balance and skipBalance')
       const senderBalance = (await evm.stateManager.getAccount(sender))!.balance
       assert.equal(
         senderBalance,
@@ -512,8 +511,9 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
-    assert.ok(
-      res2.execResult.exceptionError?.error.match('insufficient balance'),
+    assert.include(
+      res2.execResult.exceptionError?.error,
+      'insufficient balance',
       'runCall reverts when insufficient sender balance and skipBalance is false',
     )
   })
@@ -629,7 +629,7 @@ describe('RunCall tests', () => {
     let verifyMemoryExpanded = false
 
     evm.events.on('step', (e) => {
-      assert.ok(e.memory.length <= 96)
+      assert.isTrue(e.memory.length <= 96)
       if (e.memory.length > 0) {
         verifyMemoryExpanded = true
       }
@@ -649,7 +649,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESIZE_EXCEEDS_MAXIMUM)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -658,7 +658,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
   })
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
@@ -672,7 +672,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESTORE_OUT_OF_GAS)
+    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESTORE_OUT_OF_GAS)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -681,7 +681,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
   })
 
   it('ensure call and callcode handle gas stipend correctly', async () => {

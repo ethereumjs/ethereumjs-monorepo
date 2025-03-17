@@ -4,6 +4,10 @@
     "../packages/**/*.ts",
     "../packages/**/*.js",
     "../packages/ethereum-tests/**/*.js",
+    "../packages/**/*.cjs",
+    "../packages/**/*.cts",
+    "../packages/**/*.mjs",
+    "../packages/**/*.mts"
   ],
   "exclude": ["../packages/client/devnets", "../packages/client/archive", "**/ethereum-tests/**/*", "package.json"],
   "compilerOptions": {

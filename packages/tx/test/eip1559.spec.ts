@@ -111,7 +111,7 @@ describe('[FeeMarket1559Tx]', () => {
       const txn = createFeeMarket1559Tx(data, { common })
       const signed = txn.sign(pkey, false)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
-      assert.ok(
+      assert.isTrue(
         equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
         'Should sign txs correctly',
       )

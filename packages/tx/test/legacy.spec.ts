@@ -21,8 +21,8 @@ import { Goerli } from './testData/goerliCommon.ts'
 import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.ts'
 import { txsData } from './testData/txs.ts'
 
-import type { TransactionType, TxData, TypedTransaction } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { TransactionType, TxData, TypedTransaction } from '../src/index.ts'
 
 describe('[Transaction]', () => {
   const transactions: TypedTransaction[] = []
@@ -61,7 +61,7 @@ describe('[Transaction]', () => {
 
   it('Initialization', () => {
     const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    assert.ok(
+    assert.exists(
       createLegacyTx({}, { common: nonEIP2930Common }),
       'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
@@ -69,15 +69,17 @@ describe('[Transaction]', () => {
     const txData = txsData[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
     txData[6] = intToBytes(45) // v with 0-parity and chain ID 5
     let tx = createLegacyTxFromBytesArray(txData, { common })
-    assert.ok(
-      tx.common.chainId() === BigInt(5),
+    assert.equal(
+      tx.common.chainId(),
+      BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 0-parity)',
     )
 
     txData[6] = intToBytes(46) // v with 1-parity and chain ID 5
     tx = createLegacyTxFromBytesArray(txData, { common })
-    assert.ok(
-      tx.common.chainId() === BigInt(5),
+    assert.equal(
+      tx.common.chainId(),
+      BigInt(5),
       'should initialize Common with chain ID (supported) derived from v value (v with 1-parity)',
     )
 
@@ -159,7 +161,7 @@ describe('[Transaction]', () => {
     const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!, false)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
-    assert.ok(addSignatureTx.v! > BigInt(28))
+    assert.isTrue(addSignatureTx.v! > BigInt(28))
   })
 
   it('addSignature() -> throws when adding the wrong v value', () => {
@@ -256,7 +258,7 @@ describe('[Transaction]', () => {
     for (const [i, tx] of transactions.entries()) {
       const s1 = tx.serialize()
       const s2 = RLP.encode(txsData[i].raw)
-      assert.ok(equalsBytes(s1, s2))
+      assert.isTrue(equalsBytes(s1, s2))
     }
   })
 
@@ -267,7 +269,7 @@ describe('[Transaction]', () => {
     const tx2 = createLegacyTxFromRLP(s1)
     const s2 = tx2.serialize()
 
-    assert.ok(equalsBytes(s1, s2))
+    assert.isTrue(equalsBytes(s1, s2))
   })
 
   it('hash() / getHashedMessageToSign() / getMessageToSign()', () => {
@@ -524,10 +526,10 @@ describe('[Transaction]', () => {
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const tx = createLegacyTx({}, { freeze: false })
-    assert.notOk(Object.isFrozen(tx), 'tx object is not frozen')
+    assert.isFalse(Object.isFrozen(tx), 'tx object is not frozen')
     const privKey = hexToBytes(`0x${txsData[0].privateKey}`)
     const signedTxn = tx.sign(privKey)
-    assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
+    assert.isFalse(Object.isFrozen(signedTxn), 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
@@ -550,7 +552,7 @@ describe('[Transaction]', () => {
 
   it('isSigned() -> returns correct values', () => {
     let tx = createLegacyTx({})
-    assert.notOk(tx.isSigned())
+    assert.isFalse(tx.isSigned())
 
     const txData: TxData[typeof TransactionType.Legacy] = {
       data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
@@ -564,28 +566,28 @@ describe('[Transaction]', () => {
       '0x4646464646464646464646464646464646464646464646464646464646464646',
     )
     tx = createLegacyTx(txData)
-    assert.notOk(tx.isSigned())
+    assert.isFalse(tx.isSigned())
     tx = tx.sign(privateKey)
-    assert.ok(tx.isSigned())
+    assert.isTrue(tx.isSigned())
 
     tx = createLegacyTx(txData)
-    assert.notOk(tx.isSigned())
+    assert.isFalse(tx.isSigned())
     const rawUnsigned = tx.serialize()
     tx = tx.sign(privateKey)
     const rawSigned = tx.serialize()
-    assert.ok(tx.isSigned())
+    assert.isTrue(tx.isSigned())
 
     tx = createLegacyTxFromRLP(rawUnsigned)
-    assert.notOk(tx.isSigned())
+    assert.isFalse(tx.isSigned())
     tx = tx.sign(privateKey)
-    assert.ok(tx.isSigned())
+    assert.isTrue(tx.isSigned())
     tx = createLegacyTxFromRLP(rawSigned)
-    assert.ok(tx.isSigned())
+    assert.isTrue(tx.isSigned())
 
     const signedValues = RLP.decode(Uint8Array.from(rawSigned)) as Uint8Array[]
     tx = createLegacyTxFromBytesArray(signedValues)
-    assert.ok(tx.isSigned())
+    assert.isTrue(tx.isSigned())
     tx = createLegacyTxFromBytesArray(signedValues.slice(0, 6))
-    assert.notOk(tx.isSigned())
+    assert.isFalse(tx.isSigned())
   })
 })

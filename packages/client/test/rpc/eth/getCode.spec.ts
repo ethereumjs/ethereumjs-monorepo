@@ -107,6 +107,6 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

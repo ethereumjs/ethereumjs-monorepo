@@ -57,7 +57,7 @@ describe('[SnapSynchronizer]', async () => {
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 

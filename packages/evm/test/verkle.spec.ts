@@ -179,7 +179,7 @@ describe('generate an execution witness', () => {
       preStateRoot,
     )
     const stem = bytesToHex(getVerkleStem(verkle, createAddressFromString(tx.sender)))
-    assert.ok(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
+    assert.isTrue(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
     const stemDiff =
       executionWitness.stateDiff[executionWitness.stateDiff.findIndex((diff) => diff.stem === stem)]
     const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)

@@ -45,17 +45,17 @@ import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from 
 import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.ts'
 import { middleware, validators } from '../validation.ts'
 
+import type { Block, JSONRPCBlock } from '@ethereumjs/block'
+import type { Log } from '@ethereumjs/evm'
+import type { Proof } from '@ethereumjs/statemanager'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.ts'
 import type { ReceiptsManager } from '../../execution/receipt.ts'
 import type { EthereumClient } from '../../index.ts'
 import type { EthProtocol } from '../../net/protocol/index.ts'
 import type { FullEthereumService, Service } from '../../service/index.ts'
 import type { RPCTx } from '../types.ts'
-import type { Block, JSONRPCBlock } from '@ethereumjs/block'
-import type { Log } from '@ethereumjs/evm'
-import type { Proof } from '@ethereumjs/statemanager'
-import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -673,7 +673,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await toJSONRPCBlock(block, this._chain, includeTransactions)
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -710,7 +710,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
-    } catch (error) {
+    } catch {
       throw {
         code: INVALID_PARAMS,
         message: 'Unknown block',
@@ -1055,7 +1055,7 @@ export class Eth {
     if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error: any) {
+      } catch {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',

@@ -18,9 +18,9 @@ import { StemBinaryNode } from './node/stemNode.ts'
 import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.ts'
 import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.ts'
 
-import type { BinaryNode } from './node/types.ts'
 import type { PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { BinaryNode } from './node/types.ts'
 
 interface Path {
   node: BinaryNode | null

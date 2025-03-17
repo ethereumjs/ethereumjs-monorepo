@@ -1,3 +1,6 @@
+import { Block } from '@ethereumjs/block'
+import { Common } from '@ethereumjs/common'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -7,9 +10,6 @@ import {
   isHexString,
   toBytes,
 } from '@ethereumjs/util'
-import { Common } from '@ethereumjs/common'
-import { Block } from '@ethereumjs/block'
-import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { Mockchain } from './mockchain.ts'
 
 import { type PrefixedHexString } from '@ethereumjs/util'

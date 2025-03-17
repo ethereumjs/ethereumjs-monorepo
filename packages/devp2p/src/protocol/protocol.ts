@@ -4,9 +4,9 @@ import { EventEmitter } from 'eventemitter3'
 import { DISCONNECT_REASON, ProtocolType } from '../types.ts'
 import { devp2pDebug } from '../util.ts'
 
+import type { Debugger } from 'debug'
 import type { Peer } from '../rlpx/peer.ts'
 import type { ProtocolEvent, SendMethod } from '../types.ts'
-import type { Debugger } from 'debug'
 
 type MessageCodes = { [key: number | string]: number | string }
 

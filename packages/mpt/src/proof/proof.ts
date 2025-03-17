@@ -23,7 +23,7 @@ export async function verifyMerkleProof(
     const proofTrie = await createMPTFromProof(proof, opts)
     const value = await proofTrie.get(key, true)
     return value
-  } catch (err: any) {
+  } catch {
     throw EthereumJSErrorWithoutCode('Invalid proof provided')
   }
 }
@@ -114,7 +114,7 @@ export async function verifyMPTWithMerkleProof(
   })
   try {
     await updateMPTFromMerkleProof(proofTrie, proof, true)
-  } catch (e: any) {
+  } catch {
     throw EthereumJSErrorWithoutCode('Invalid proof nodes given')
   }
   try {

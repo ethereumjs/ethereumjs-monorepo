@@ -53,7 +53,7 @@ describe('[BeaconSynchronizer]', async () => {
     ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -155,13 +155,13 @@ describe('[BeaconSynchronizer]', async () => {
     }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
+        assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=1 count=1'))
-        assert.ok(true, 'should sync block 1 and target chain start')
+        assert.isTrue(true, 'should sync block 1 and target chain start')
     })
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     await sync.sync()
@@ -170,7 +170,7 @@ describe('[BeaconSynchronizer]', async () => {
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=1'))
-        assert.ok(true, 'should sync block 5 with count 1')
+        assert.isTrue(true, 'should sync block 5 with count 1')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()
@@ -206,7 +206,7 @@ describe('[BeaconSynchronizer]', async () => {
     }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
+        assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()

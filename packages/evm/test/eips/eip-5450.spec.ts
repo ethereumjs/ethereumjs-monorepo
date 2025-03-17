@@ -21,12 +21,10 @@ describe('EIP 5450 tests', async () => {
   const evm = await getEVM()
   for (const key in testData.validInvalid.vectors) {
     it(`Container validation tests ${key}`, () => {
-      //@ts-ignore
-      const input = testData.validInvalid.vectors[key]
+      const input = testData.validInvalid.vectors[key as keyof typeof testData.validInvalid.vectors]
       const code = hexToBytes(input.code)
 
       const expected = input.results.Osaka.result
-      const _exception = input.results.Osaka.exception
 
       if (expected === true) {
         validateEOF(code, evm)
