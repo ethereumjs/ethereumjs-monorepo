@@ -1364,7 +1364,7 @@ export class Engine {
         BigInt(executionPayload.executionPayload.timestamp),
       )
       return executionPayload
-    } catch (error) {
+    } catch (error: any) {
       if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,
