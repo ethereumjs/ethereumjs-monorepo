@@ -46,7 +46,7 @@ export class RlpxSender extends Sender {
    */
   sendMessage(code: number, data: any) {
     try {
-      //@ts-ignore "type number is not assignable to type never"
+      //@ts-expect-error "type number is not assignable to type never"
       this.sender.sendMessage(code, data)
     } catch (err: any) {
       this.emit('error', err)

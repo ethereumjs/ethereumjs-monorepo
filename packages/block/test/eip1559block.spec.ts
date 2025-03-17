@@ -122,7 +122,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'Valid initial EIP1559 header should be valid')
+    assert.isTrue(true, 'Valid initial EIP1559 header should be valid')
   })
 
   it('Header -> validate()', async () => {
@@ -142,7 +142,7 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
+      assert.isTrue(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
   })
 
@@ -177,7 +177,7 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    assert.ok(true, 'should correctly validate subsequent EIP-1559 blocks')
+    assert.isTrue(truetrue, 'should correctly validate subsequent EIP-1559 blocks')
   })
 
   it('Header -> validate() -> gas usage', async () => {
@@ -200,7 +200,10 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
+      assert.isTrue(
+        e.message.includes('too much gas used'),
+        'should throw when elasticity is exceeded',
+      )
     }
   })
 
@@ -220,7 +223,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw when elasticity is exactly matched')
+    assert.isTrue(truetrue, 'should not throw when elasticity is exactly matched')
   })
 
   const block1 = createBlock(
@@ -255,7 +258,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
+    assert.isTrue(truetrue, 'should not throw if gas limit is between bounds (HF transition block)')
 
     createBlockHeader(
       {
@@ -271,7 +274,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
+    assert.isTrue(truetrue, 'should not throw if gas limit is between bounds (HF transition block)')
 
     parentGasLimit = block1.header.gasLimit
     createBlockHeader(
@@ -288,7 +291,10 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
+    assert.isTrue(
+      truetrue,
+      'should not throw if gas limit is between bounds (post-HF transition block)',
+    )
 
     createBlockHeader(
       {
@@ -304,7 +310,10 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
+    assert.isTrue(
+      truetrue,
+      'should not throw if gas limit is between bounds (post-HF transition block)',
+    )
   })
 
   it('Header -> validateGasLimit() -> error cases', async () => {

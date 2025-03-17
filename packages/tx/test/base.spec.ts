@@ -122,7 +122,7 @@ describe('[BaseTransaction]', () => {
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: Mainnet,
@@ -165,7 +165,7 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.rlp(rlpData, { common, freeze: false })
       assert.ok(
@@ -174,7 +174,7 @@ describe('[BaseTransaction]', () => {
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
       assert.ok(
@@ -448,7 +448,10 @@ describe('[BaseTransaction]', () => {
     try {
       valueBoundaryCheck({ a: MAX_INTEGER + BigInt(1) }, 256, false)
     } catch (err: any) {
-      assert.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
+      assert.isTrue(
+        err.message.includes('exceed MAX_INTEGER'),
+        'throws when value exceeds MAX_INTEGER',
+      )
     }
     try {
       valueBoundaryCheck({ a: BigInt(0) }, 100, false)
@@ -461,7 +464,7 @@ describe('[BaseTransaction]', () => {
     try {
       valueBoundaryCheck({ a: MAX_UINT64 + BigInt(1) }, 64, false)
     } catch (err: any) {
-      assert.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
+      assert.isTrue(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }
     try {
       valueBoundaryCheck({ a: MAX_UINT64 }, 64, true)

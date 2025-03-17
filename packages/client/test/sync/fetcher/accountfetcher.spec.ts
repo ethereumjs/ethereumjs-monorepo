@@ -373,7 +373,7 @@ describe('[AccountFetcher]', async () => {
     fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = vi.fn()
     try {
       await fetcher.store(results!)
-      assert.ok(true, 'fetcher stored results successfully')
+      assert.isTrue(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
@@ -390,7 +390,7 @@ describe('[AccountFetcher]', async () => {
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])
-      assert.ok(true, 'completed snap sync')
+      assert.isTrue(true, 'completed snap sync')
     } catch (e) {
       assert.fail('could not complete snap sync in 40 seconds')
     }

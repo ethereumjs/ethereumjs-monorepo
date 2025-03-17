@@ -111,7 +111,7 @@ describe('simple mainnet test run', async () => {
   })
 
   if (result.includes('Geth') === true) {
-    assert.ok(true, 'connected to Geth')
+    assert.isTrue(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -122,7 +122,7 @@ describe('simple mainnet test run', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'geth<>lodestar started successfully')
+    assert.isTrue(truetrue, 'geth<>lodestar started successfully')
   } catch (e) {
     assert.fail('geth<>lodestar failed to start')
     throw e
@@ -190,7 +190,7 @@ describe('simple mainnet test run', async () => {
       ejsClient = ejsInlineClient
       beaconSyncRelayer = relayer
       snapCompleted = snapSyncCompletedPromise
-      assert.ok(ejsClient !== null, 'ethereumjs client started')
+      assert.isTrue(ejsClient !== null, 'ethereumjs client started')
 
       const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
@@ -199,7 +199,7 @@ describe('simple mainnet test run', async () => {
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
-        assert.ok(true, 'connected to geth peer')
+        assert.isTrue(truetrue, 'connected to geth peer')
       } catch (e) {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
@@ -230,7 +230,7 @@ describe('simple mainnet test run', async () => {
           ])
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
-          assert.ok(true, 'completed snap sync')
+          assert.isTrue(truetrue, 'completed snap sync')
         } catch (e) {
           assert.fail('could not complete snap sync in 8 minutes')
         }
@@ -274,7 +274,7 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer?.close()
       await ejsClient?.stop()
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
+      assert.isTrue(truetrue, 'network cleaned')
     } catch (e) {
       assert.fail('network not cleaned properly')
     }

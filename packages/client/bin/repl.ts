@@ -105,7 +105,7 @@ const setupRepl = async (args: ClientOpts) => {
     common,
     args,
   )
-  //@ts-ignore  the `_methods` function is not documented in the jayson types
+  //@ts-expect-error  the `_methods` function is not documented in the jayson types
   const allRPCMethods = { ...executionRPC._methods, ...engineRPC._methods }
 
   const replServer = repl.start({

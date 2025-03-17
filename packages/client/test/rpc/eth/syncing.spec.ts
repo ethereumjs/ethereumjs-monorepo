@@ -85,7 +85,7 @@ describe(method, () => {
       res.result.currentBlock === '0x0' &&
       res.result.highestBlock === '0x2'
     ) {
-      assert.ok(true, 'should return syncing status object')
+      assert.isTrue(true, 'should return syncing status object')
     } else {
       assert.fail('should return syncing status object')
     }

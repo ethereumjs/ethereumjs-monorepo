@@ -54,7 +54,7 @@ describe(
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
     it('handled getBlockHeaders', async () => {
       assert.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
-      assert.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
+      assert.isTrue(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
     })
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
     it('handled getBlockBodies', async () => {
@@ -66,13 +66,13 @@ describe(
       switch (msg.name) {
         case 'NewBlockHashes': {
           it('should handle newBlockHashes', () => {
-            assert.ok(true, 'handled NewBlockHashes')
+            assert.isTrue(true, 'handled NewBlockHashes')
           })
           break
         }
         case 'NewBlock': {
           it('should handle NewBlock', () => {
-            assert.ok(true, 'handled NewBlock')
+            assert.isTrue(true, 'handled NewBlock')
           })
           await destroy(server, service)
           break
@@ -106,7 +106,7 @@ describe(
     )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     it('should handle GetPooledTransactions', async () => {
-      assert.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
+      assert.isTrue(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
     })
 
     peer.eth!.send('Transactions', [tx])

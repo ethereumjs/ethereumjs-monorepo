@@ -64,7 +64,7 @@ describe('Pruned trie tests', () => {
     await trie.put(key, value)
     await trie.put(key, value)
     const reported = await trie.get(key)
-    assert.ok(equalsBytes(reported!, value), 'value matches expected value')
+    assert.isTrue(equalsBytes(reported!, value), 'value matches expected value')
   })
 
   it('should not throw if a key is either non-existent or deleted twice', async () => {
@@ -87,7 +87,7 @@ describe('Pruned trie tests', () => {
     const reported = await trie.get(key)
     assert.ok(reported === null, 'value is null')
     const reported2 = await trie.get(key2)
-    assert.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    assert.isTrue(equalsBytes(reported2!, value2), 'value matches expected value')
   })
 
   it('should prune when keys are updated or deleted', async () => {
@@ -143,7 +143,7 @@ describe('Pruned trie tests', () => {
       }
 
       assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
+      assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
@@ -180,7 +180,10 @@ describe('Pruned trie tests', () => {
     // Delete the branch node
     await trie.del(utf8ToBytes('key2'))
 
-    assert.ok(equalsBytes(trie.root(), initialRoot), 'Root should be the same as the initial root')
+    assert.isTrue(
+      equalsBytes(trie.root(), initialRoot),
+      'Root should be the same as the initial root',
+    )
   })
 
   it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async () => {
@@ -256,7 +259,7 @@ describe('Pruned trie tests', () => {
       }
 
       assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
+      assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {

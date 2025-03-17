@@ -114,7 +114,7 @@ describe(method, async () => {
       res.result.length === 10 &&
       res.result.every((r: any) => r.address === contractAddr1.toString()) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by single address)')
+      assert.isTrue(true, 'should return the correct logs (filter by single address)')
     } else {
       assert.fail('should return the correct logs (filter by single address)')
     }
@@ -127,7 +127,7 @@ describe(method, async () => {
       res.result.length === 20 &&
       res.result.every((r: any) => addresses.includes(r.address)) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by multiple addresses)')
+      assert.isTrue(true, 'should return the correct logs (filter by multiple addresses)')
     } else {
       assert.fail('should return the correct logs (filter by multiple addresses)')
     }

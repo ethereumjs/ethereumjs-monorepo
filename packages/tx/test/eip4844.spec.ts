@@ -179,7 +179,7 @@ describe('fromTxData using from a json', () => {
     })
     try {
       const tx = createBlob4844Tx(txData as BlobEIP4844TxData, { common: c })
-      assert.ok(true, 'Should be able to parse a json data and hash it')
+      assert.isTrue(true, 'Should be able to parse a json data and hash it')
 
       assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
       assert.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')

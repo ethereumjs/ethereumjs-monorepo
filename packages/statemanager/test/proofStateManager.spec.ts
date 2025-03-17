@@ -241,7 +241,7 @@ describe('ProofStateManager', () => {
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
       } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) = original
       }
@@ -255,7 +255,7 @@ describe('ProofStateManager', () => {
         await verifyMerkleStateProof(stateManager, testData)
         assert.fail('should throw')
       } catch {
-        assert.ok(true, 'threw on invalid proof')
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         slot.value = original
       }
@@ -299,7 +299,7 @@ describe('ProofStateManager', () => {
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
       } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         // restore original valid proof
         testdata[tamper] = original

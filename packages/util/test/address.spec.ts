@@ -131,7 +131,7 @@ describe('Address', () => {
     const address1 = createAddressFromString(str)
     const address2 = new Address(hexToBytes(str))
     assert.ok(address1.equals(address2))
-    assert.ok(equalsBytes(address1.bytes, address2.bytes))
+    assert.isTrue(equalsBytes(address1.bytes, address2.bytes))
 
     const str2 = '0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06'
     const address3 = createAddressFromString(str2)

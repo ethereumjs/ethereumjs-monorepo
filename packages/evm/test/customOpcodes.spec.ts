@@ -81,7 +81,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(equalsBytes(result.returnValue, hexToBytes('0x05')))
+    assert.isTrue(equalsBytes(result.returnValue, hexToBytes('0x05')))
   })
 
   it('should override opcodes in the EVM', async () => {

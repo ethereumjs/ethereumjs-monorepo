@@ -38,7 +38,7 @@ describe('simple mainnet test run', async () => {
   })
 
   if (result.includes('EthereumJS') === true) {
-    assert.ok(true, 'connected to client')
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -46,7 +46,7 @@ describe('simple mainnet test run', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -92,7 +92,7 @@ describe('simple mainnet test run', async () => {
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
+      assert.isTrue(true, 'network cleaned')
     } catch (e) {
       assert.fail('network not cleaned properly')
     }

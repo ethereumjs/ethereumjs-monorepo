@@ -87,7 +87,7 @@ describe('BlockBuilder', () => {
           'tx has a higher gas limit than the remaining gas in the block',
         )
       ) {
-        assert.ok(true, 'correct error thrown')
+        assert.isTrue(true, 'correct error thrown')
       } else {
         assert.fail('wrong error thrown')
       }

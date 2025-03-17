@@ -101,7 +101,7 @@ async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Ar
 
   const slot = hexToBytes(`0x${'00'.repeat(31)}01`)
   const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
-  assert.ok(equalsBytes(unpadBytes(expect), value))
+  assert.isTrue(equalsBytes(unpadBytes(expect), value))
 }
 
 describe('EIP 7702: set code to EOA accounts', () => {
@@ -307,7 +307,7 @@ describe('test EIP-7702 opcodes', () => {
       await runTx(vm, { tx: authTx })
 
       const result = await vm.stateManager.getStorage(deploymentAddress, new Uint8Array(32))
-      assert.ok(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
+      assert.isTrue(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
     }
 
     for (const test of tests) {

@@ -104,7 +104,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address, account)
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(code, codeRetrieved))
+        assert.isTrue(equalsBytes(code, codeRetrieved))
       })
 
       it(`should not get code if is not contract`, async () => {
@@ -119,7 +119,7 @@ describe('StateManager -> Code', () => {
         const account = createAccount(raw)
         await stateManager.putAccount(address, account)
         const code = await stateManager.getCode(address)
-        assert.ok(equalsBytes(code, new Uint8Array(0)))
+        assert.isTrue(equalsBytes(code, new Uint8Array(0)))
       })
 
       it(`should set empty code`, async () => {
@@ -136,7 +136,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address, account)
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
+        assert.isTrue(equalsBytes(codeRetrieved, new Uint8Array(0)))
       })
 
       it(`should prefix codehashes by default`, async () => {
@@ -147,7 +147,7 @@ describe('StateManager -> Code', () => {
         const code = hexToBytes('0x80')
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(codeRetrieved, code))
+        assert.isTrue(equalsBytes(codeRetrieved, code))
       })
 
       it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
@@ -161,7 +161,7 @@ describe('StateManager -> Code', () => {
           await stateManager.putCode(address, code)
           assert.fail('should throw')
         } catch (e) {
-          assert.ok(true, 'successfully threw')
+          assert.isTrue(true, 'successfully threw')
         }
       })
 

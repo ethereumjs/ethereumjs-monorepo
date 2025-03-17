@@ -11,7 +11,7 @@ describe('StateManager -> General/Account', () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
-      assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -26,7 +26,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(KECCAK256_RLP)
 
       const res = await stateManager.getStateRoot()
-      assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     })
 
     it(`should clear the cache when the state root is set`, async () => {
@@ -70,7 +70,7 @@ describe('StateManager -> General/Account', () => {
       try {
         await stateManager.getStorage(address, key)
       } catch (e) {
-        assert.ok(true, 'should throw if getStorage() is called on non existing address')
+        assert.isTrue(true, 'should throw if getStorage() is called on non existing address')
       }
     })
 
@@ -92,7 +92,7 @@ describe('StateManager -> General/Account', () => {
 
       const res2 = await stateManager.getAccount(address)
 
-      assert.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+      assert.isTrue(equalsBytes(res1!.serialize(), res2!.serialize()))
     })
 
     it(`should return undefined for a non-existent account`, async () => {

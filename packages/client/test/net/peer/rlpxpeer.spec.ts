@@ -89,7 +89,7 @@ describe('[RlpxPeer]', async () => {
     })
     await peer.connect()
     config.events.on(Event.PEER_ERROR, (error) => {
-      if (error.message === 'err0') assert.ok(true, 'got err0')
+      if (error.message === 'err0') assert.isTrue(true, 'got err0')
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
@@ -110,8 +110,8 @@ describe('[RlpxPeer]', async () => {
     await peer.connect()
 
     peer.config.events.on(Event.PEER_ERROR, (err) => {
-      if (err.message === 'err1') assert.ok(true, 'got err1')
-      if (err.message === 'err2') assert.ok(true, 'got err2')
+      if (err.message === 'err1') assert.isTrue(true, 'got err1')
+      if (err.message === 'err2') assert.isTrue(true, 'got err2')
     })
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
     peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)

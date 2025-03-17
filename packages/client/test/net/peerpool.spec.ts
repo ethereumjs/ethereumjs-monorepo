@@ -22,10 +22,10 @@ describe('should initialize', () => {
     })
     await pool.open()
     config.events.on(Event.PEER_CONNECTED, (peer) => {
-      if (pool.contains(peer.id)) assert.ok(true, 'peer connected')
+      if (pool.contains(peer.id)) assert.isTrue(true, 'peer connected')
     })
     config.events.on(Event.POOL_PEER_REMOVED, () => {
-      if (!pool.contains('peer')) assert.ok(true, 'peer disconnected')
+      if (!pool.contains('peer')) assert.isTrue(true, 'peer disconnected')
     })
     pool.add(peer)
     pool.remove(peer)

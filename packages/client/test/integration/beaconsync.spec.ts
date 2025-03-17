@@ -91,7 +91,7 @@ describe('should sync with best peer', async () => {
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync with best peer', async () => {
       if (localService.chain.blocks.height === BigInt(10)) {
-        assert.ok(true, 'synced with best peer')
+        assert.isTrue(true, 'synced with best peer')
       }
     })
     await destroy(localServer, localService)

@@ -93,7 +93,7 @@ describe('Istanbul: EIP-152', () => {
     const vm = await createVM({ common })
 
     for (const testCase of failingTestCases) {
-      assert.ok(true, testCase.name)
+      assert.isTrue(true, testCase.name)
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(20),
@@ -104,7 +104,7 @@ describe('Istanbul: EIP-152', () => {
     }
 
     for (const testCase of testCases) {
-      assert.ok(true, testCase.name)
+      assert.isTrue(true, testCase.name)
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(10000000),

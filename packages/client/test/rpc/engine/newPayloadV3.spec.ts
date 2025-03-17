@@ -97,11 +97,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('call with executionPayloadV2', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV2
   })
   it('call with executionPayloadV3', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV3
   })
 })

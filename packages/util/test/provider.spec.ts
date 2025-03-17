@@ -60,7 +60,7 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
+      assert.isTrue(err.message.includes('fetch'), 'tried to fetch and failed')
     }
   })
 
@@ -80,8 +80,8 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
-      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+      assert.isTrue(err.message.includes('ERROR'), 'received a formatted RPC error')
+      assert.isTrue(err.message.includes('eth_getBalance'), 'error is for correct method')
     }
     vi.unstubAllGlobals()
   })
@@ -102,8 +102,8 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('Could not parse error'), 'received a formatted RPC error')
-      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+      assert.isTrue(err.message.includes('Could not parse error'), 'received a formatted RPC error')
+      assert.isTrue(err.message.includes('eth_getBalance'), 'error is for correct method')
     }
     vi.unstubAllGlobals()
   })

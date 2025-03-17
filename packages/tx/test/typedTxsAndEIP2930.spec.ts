@@ -166,7 +166,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         txType.create.rlp(new Uint8Array([99]), {})
       } catch (e: any) {
         assert.ok(
-          e.message.includes('wrong tx type'),
+          e.message.includes('wrong tx type') === true,
           `should throw on wrong tx type (${txType.name})`,
         )
       }
@@ -177,7 +177,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         txType.create.rlp(serialized, {})
       } catch (e: any) {
         assert.ok(
-          e.message.includes('must be array'),
+          e.message.includes('must be array') === true,
           `should throw when RLP payload not an array (${txType.name})`,
         )
       }
@@ -188,7 +188,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         txType.create.rlp(serialized, {})
       } catch (e: any) {
         assert.ok(
-          e.message.includes('values (for unsigned tx)'),
+          e.message.includes('values (for unsigned tx) === true'),
           `should throw with invalid number of values (${txType.name})`,
         )
       }
@@ -216,8 +216,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       const bytes = txn.accessList
       const JSON = txn.AccessListJSON
 
-      assert.ok(equalsBytes(bytes[0][0], validAddress))
-      assert.ok(equalsBytes(bytes[0][1][0], validSlot))
+      assert.isTrue(equalsBytes(bytes[0][0], validAddress))
+      assert.isTrue(equalsBytes(bytes[0][1][0], validSlot))
 
       assert.deepEqual(JSON, access, `should allow json-typed access lists (${txType.name})`)
 
@@ -463,7 +463,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       )
     } catch (err: any) {
       assert.ok(
-        err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
+        err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER') === true,
         'throws when gasLimit * gasPrice exceeds MAX_INTEGER',
       )
     }
@@ -663,8 +663,11 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
     assert.ok(v === signed.v!, 'v correct')
     assert.ok(r === signed.r!, 'r correct')
     assert.ok(s === signed.s!, 's correct')
-    assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
-    assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
+    assert.isTrue(
+      equalsBytes(expectedSigned, signed.serialize()),
+      'serialized signed message correct',
+    )
+    assert.isTrue(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
     const expectedJSON: JSONTx = {
       type: '0x1',

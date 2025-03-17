@@ -44,7 +44,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
         continue
       }
 
-      assert.ok(true, `[${testName}]: Call produced the expected results`)
+      assert.isTrue(true, `[${testName}]: Call produced the expected results`)
     }
   })
 })

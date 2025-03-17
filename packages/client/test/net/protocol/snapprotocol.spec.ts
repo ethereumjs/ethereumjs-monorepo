@@ -149,8 +149,8 @@ describe('[SnapProtocol]', () => {
     const { accounts: accountsFull } = fullData
     assert.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
     const accountFull = accountsFull[0].body
-    assert.ok(equalsBytes(accountFull[2], KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
-    assert.ok(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
+    assert.isTrue(equalsBytes(accountFull[2], KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
+    assert.isTrue(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
 
     // Lets encode fullData as it should be encoded in slim format and upon decoding
     // we should get slim format
@@ -281,7 +281,7 @@ describe('[SnapProtocol]', () => {
       bytesToHex(hash) === '0x60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
       'Slot 3 key',
     )
-    assert.ok(bytesToHex(body) === '0x8462b66ae7', 'Slot 3 value')
+    assert.exists(bytesToHex(body) === '0x8462b66ae7', 'Slot 3 value')
 
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'StorageRanges')[0], {
@@ -419,7 +419,10 @@ describe('[SnapProtocol]', () => {
       codesRes,
     )
     const code = codes[0]
-    assert.ok(equalsBytes(keccak256(code), codeHash), 'Code should match the requested codeHash')
+    assert.isTrue(
+      equalsBytes(keccak256(code), codeHash),
+      'Code should match the requested codeHash',
+    )
   })
 
   it('GetTrieNodes should encode/decode correctly', async () => {

@@ -33,7 +33,7 @@ describe('should not sync with stale peers', async () => {
   await destroy(localServer, localService)
   await destroy(remoteServer, remoteService)
   it('should exit without syncing', () => {
-    assert.ok(true, 'did not sync')
+    assert.isTrue(true, 'did not sync')
   })
 }, 60000)
 
@@ -52,7 +52,7 @@ describe('should sync with best peer', async () => {
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     if (localService.chain.blocks.height === BigInt(10)) {
       it('should sync with best peer', () => {
-        assert.ok(true, 'synced with best peer')
+        assert.isTrue(true, 'synced with best peer')
       })
       await destroy(localServer, localService)
       await destroy(remoteServer1, remoteService1)

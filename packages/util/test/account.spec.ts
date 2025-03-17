@@ -136,7 +136,7 @@ describe('Account', () => {
     const account = createAccount(raw)
     const accountRlp = RLP.encode([raw.nonce, raw.balance, raw.storageRoot, raw.codeHash] as Input)
 
-    assert.ok(equalsBytes(account.serialize(), accountRlp), 'should serialize correctly')
+    assert.isTrue(equalsBytes(account.serialize(), accountRlp), 'should serialize correctly')
   })
 
   it('isContract', () => {
@@ -468,7 +468,10 @@ describe('Utility Functions', () => {
         err.message.includes('This method only supports Uint8Array'),
         'should throw if private key is not Uint8Array',
       )
-      assert.ok(err.message.includes(privateKey), 'should throw if private key is not Uint8Array')
+      assert.isTrue(
+        err.message.includes(privateKey),
+        'should throw if private key is not Uint8Array',
+      )
     }
   })
 

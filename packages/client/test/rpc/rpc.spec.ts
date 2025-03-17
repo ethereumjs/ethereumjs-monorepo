@@ -106,7 +106,7 @@ describe('JSON-RPC call', () => {
       assert.fail('should have thrown an error')
     } catch (err: any) {
       assert.equal(err.code, 401, 'errored with valid but stale token')
-      assert.ok(err.message.includes('Stale jwt'), 'valid but stale token')
+      assert.isTrue(err.message.includes('Stale jwt') === true, 'valid but stale token')
     }
   })
 
@@ -143,7 +143,7 @@ describe('JSON-RPC call', () => {
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.equal(err.code, 401, 'errored with unauthorized')
-      assert.ok(err.message.includes('Missing auth header'), 'no auth token provided')
+      assert.isTrue(err.message.includes('Missing auth header') === true, 'no auth token provided')
     }
   })
 

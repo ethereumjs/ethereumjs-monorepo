@@ -71,14 +71,14 @@ describe('[Chain]', () => {
       await chain.putHeaders([block.header])
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.putBlocks([block])
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     assert.notOk(chain.opened, 'chain should close')
@@ -86,34 +86,34 @@ describe('[Chain]', () => {
       await chain.getBlocks(block.hash())
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getBlock(block.hash())
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     try {
       await chain.getCanonicalHeadHeader()
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getCanonicalHeadBlock()
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getTd(block.hash(), block.header.number)
       assert.fail('should error if chain is closed')
     } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.open()
     assert.equal(await chain.open(), false, 'skip open if already opened')

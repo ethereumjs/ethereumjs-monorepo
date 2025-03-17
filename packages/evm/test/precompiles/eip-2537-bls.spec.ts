@@ -134,6 +134,6 @@ describe('EIP-2537 BLS precompile availability tests', () => {
       }
     }
 
-    assert.ok(true, 'BLS precompiles unreachable if EIP not activated')
+    assert.isTrue(true, 'BLS precompiles unreachable if EIP not activated')
   })
 })

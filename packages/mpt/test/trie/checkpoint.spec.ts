@@ -29,7 +29,7 @@ describe('testing checkpoints', () => {
     trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), preRoot)
     const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
   })
 
   it('should deactivate cache on copy()', async () => {
@@ -55,9 +55,9 @@ describe('testing checkpoints', () => {
     assert.equal(trieCopy['_db'].checkpoints.length, 1)
     assert.ok(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
     const res2 = await trieCopy.get(utf8ToBytes('love'))
-    assert.ok(equalsBytes(utf8ToBytes('emotion'), res2!))
+    assert.isTrue(equalsBytes(utf8ToBytes('emotion'), res2!))
   })
 
   it('should copy trie and use the correct hash function', async () => {

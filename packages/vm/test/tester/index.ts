@@ -1,5 +1,5 @@
 import * as path from 'path'
-/* eslint-disable no-console */
+
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
@@ -227,7 +227,7 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
-    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
+    //@ts-expect-error tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
@@ -239,7 +239,7 @@ async function runTests() {
       })
     })
   } else {
-    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
+    //@ts-expect-error tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}

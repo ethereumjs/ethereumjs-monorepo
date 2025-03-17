@@ -58,7 +58,7 @@ describe('invalid RLPs', () => {
           assert.deepEqual(e.message, msg)
         } else {
           // FIXME: check for exception name
-          assert.ok(true)
+          assert.isTrue(true)
         }
       }
     })

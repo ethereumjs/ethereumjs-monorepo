@@ -96,7 +96,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     await vm.stateManager.putAccount(caller, acc)
     const block = createBlock({}, { common: vm.common.copy() })
     await runTx(vm, { tx, block })
-    assert.ok(true, 'matched hardfork should run without throwing')
+    assert.isTrue(true, 'matched hardfork should run without throwing')
   })
 
   it('test hardfork mismatch', async () => {
@@ -121,7 +121,7 @@ describe('runTx() -> successful API parameter usage', async () => {
         true,
         'block has a different hardfork than the vm',
       )
-      assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
+      assert.isTrue(true, 'vm/tx mismatched hardfork correctly failed')
     }
 
     tx.common.setHardfork(Hardfork.London)
@@ -135,11 +135,11 @@ describe('runTx() -> successful API parameter usage', async () => {
         true,
         'block has a different hardfork than the vm',
       )
-      assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
+      assert.isTrue(true, 'vm/tx mismatched hardfork correctly failed')
     }
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
-    assert.ok(true, 'runTx should not fail with mismatching hardforks if validation skipped')
+    assert.isTrue(true, 'runTx should not fail with mismatching hardforks if validation skipped')
   })
 
   it('should use passed in blockGasUsed to generate tx receipt', async () => {
@@ -387,7 +387,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(true, 'successfully threw on insufficient balance for transaction')
+      assert.isTrue(true, 'successfully threw on insufficient balance for transaction')
     }
   })
 
@@ -404,7 +404,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(true, 'successfully threw on wrong nonces')
+      assert.isTrue(true, 'successfully threw on wrong nonces')
     }
   })
 
@@ -752,7 +752,7 @@ it('runTx() -> skipBalance behavior', async () => {
     }).sign(senderKey)
 
     const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
-    assert.ok(true, 'runTx should not throw with no balance and skipBalance')
+    assert.isTrue(true, 'runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
     assert.equal(
       afterTxBalance,
@@ -879,7 +879,7 @@ describe('EIP 4844 transaction tests', () => {
             {
               excessBlobGas: 0n,
               number: 1,
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
               parentHash: blockchain.genesisBlock.hash(),
             },
             {

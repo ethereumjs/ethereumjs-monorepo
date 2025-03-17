@@ -125,7 +125,7 @@ describe('RPC State Manager API tests', () => {
       UniswapERC20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
-    assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+    assert.isTrue(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
     const dumpedStorage = await state.dumpStorage(UniswapERC20ContractAddress)
     assert.deepEqual(dumpedStorage, {
@@ -161,7 +161,7 @@ describe('RPC State Manager API tests', () => {
     try {
       await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
     } catch {
-      assert.ok(true, 'calls getAccountFromProvider for non-cached account')
+      assert.isTrue(true, 'calls getAccountFromProvider for non-cached account')
     }
 
     const deletedSlot = await state.getStorage(

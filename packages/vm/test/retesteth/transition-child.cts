@@ -7,10 +7,10 @@ import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ether
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { VM } from '../../dist/cjs'
-import { BlockBuilder } from '../../dist/cjs/buildBlock'
-import { getCommon } from '../tester/config'
-import { makeBlockFromEnv, setupPreConditions } from '../util'
+import { VM } from '../../dist/cjs.js'
+import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
+import { getCommon } from '../tester/config.ts'
+import { makeBlockFromEnv, setupPreConditions } from '../util.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'

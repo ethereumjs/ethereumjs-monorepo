@@ -64,7 +64,7 @@ describe('generateClientConfig', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {

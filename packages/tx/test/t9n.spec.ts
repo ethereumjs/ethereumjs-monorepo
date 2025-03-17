@@ -101,7 +101,7 @@ function runTests(filePath: string) {
               if (result.exception === undefined) {
                 assert.fail('RLP is valid, but decoding failed')
               } else {
-                assert.ok(true, 'RLP decoding successfully failed')
+                assert.isTrue(true, 'RLP decoding successfully failed')
               }
             }
           }, 20_000)

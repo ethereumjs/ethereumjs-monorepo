@@ -102,7 +102,7 @@ describe('RunCall tests', () => {
       }
     }
 
-    assert.ok(true, 'CREATE2 creates (empty) contracts at the expected address')
+    assert.isTrue(true, 'CREATE2 creates (empty) contracts at the expected address')
   })
 
   it('Byzantium cannot access Constantinople opcodes', async () => {
@@ -501,7 +501,7 @@ describe('RunCall tests', () => {
     for (const balance of [undefined, BigInt(5)]) {
       await evm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
       const res = await evm.runCall(runCallArgs)
-      assert.ok(true, 'runCall should not throw with no balance and skipBalance')
+      assert.isTrue(true, 'runCall should not throw with no balance and skipBalance')
       const senderBalance = (await evm.stateManager.getAccount(sender))!.balance
       assert.equal(
         senderBalance,
@@ -629,7 +629,7 @@ describe('RunCall tests', () => {
     let verifyMemoryExpanded = false
 
     evm.events.on('step', (e) => {
-      assert.ok(e.memory.length <= 96)
+      assert.isTrue(e.memory.length <= 96)
       if (e.memory.length > 0) {
         verifyMemoryExpanded = true
       }

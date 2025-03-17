@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.ok(error, 'returned with error')
+      assert.isTrue(error, 'returned with error')
     }
   })
 
@@ -262,7 +262,10 @@ describe('blockchain test', () => {
       await blockchain.getBlock(22)
       assert.fail('canonical references should have been deleted')
     } catch (err: any) {
-      assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
+      assert.isTrue(
+        err.message.includes('not found in DB'),
+        'canonical references correctly deleted',
+      )
     }
 
     try {
@@ -574,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.ok(error, 'should not validate an invalid block')
+      assert.isTrue(error, 'should not validate an invalid block')
     }
   })
 
@@ -757,7 +760,7 @@ describe('blockchain test', () => {
         error = err
       }
       if (i === 2) {
-        assert.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.isTrue(error.message.match('Chain mismatch'), 'should return chain mismatch error')
       } else {
         assert.isUndefined(error, 'should not return mismatch error')
       }

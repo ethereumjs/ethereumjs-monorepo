@@ -126,7 +126,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('cannot reuse')) {
-        assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
+        assert.isTrue(true, 'cannot reuse ports between HTTP and WS RPCs')
       }
       child.kill()
       resolve(undefined)
@@ -150,7 +150,7 @@ describe('[CLI]', () => {
           await client.request('engine_exchangeCapabilities', [], 2.0)
         } catch (e: any) {
           assert(
-            e.message.includes('Unauthorized: Error: Missing auth header'),
+            e.message.includes('Unauthorized: Error: Missing auth header') === true,
             'authentication failure shows that auth is defaulting to active',
           )
         }
@@ -348,7 +348,7 @@ describe('[CLI]', () => {
           await clientNoConnection.request('web3_clientVersion', [], 2.0)
           assert.fail('should have thrown on invalid client address')
         } catch (e: any) {
-          assert.ok(e !== undefined, 'failed to connect to RPC on invalid address')
+          assert.isTrue(e !== undefined, 'failed to connect to RPC on invalid address')
           child.kill()
           resolve(undefined)
         }
@@ -707,7 +707,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(truetrue, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -723,7 +723,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(truetrue, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -785,7 +785,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Unknown argument: datadir')) {
-        assert.ok(true, 'correctly errors on unknown arguments')
+        assert.isTrue(truetrue, 'correctly errors on unknown arguments')
       }
       child.kill()
       resolve(undefined)
@@ -800,7 +800,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
-        assert.ok(true, 'correctly errors on conflicting arguments')
+        assert.isTrue(truetrue, 'correctly errors on conflicting arguments')
       }
       child.kill()
       resolve(undefined)
@@ -815,7 +815,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
-        assert.ok(true, 'correctly errors on conflicting arguments')
+        assert.isTrue(truetrue, 'correctly errors on conflicting arguments')
       }
       child.kill()
       resolve(undefined)
@@ -864,7 +864,7 @@ describe('verkle execution', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(truetrue, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -885,7 +885,7 @@ describe('verkle execution', () => {
       resolve: Function,
     ) => {
       if (message.includes('Setting up verkleVM for stateful verkle execution')) {
-        assert.ok(true, 'Client started with verkle execution')
+        assert.isTrue(truetrue, 'Client started with verkle execution')
         child.kill()
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)

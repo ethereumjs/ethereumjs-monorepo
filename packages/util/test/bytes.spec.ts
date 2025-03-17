@@ -216,17 +216,17 @@ describe('short', () => {
 describe('toBytes', () => {
   it('should work', () => {
     // Uint8Array
-    assert.ok(equalsBytes(toBytes(new Uint8Array(0)), new Uint8Array()))
+    assert.isTrue(equalsBytes(toBytes(new Uint8Array(0)), new Uint8Array()))
     // Array
-    assert.ok(equalsBytes(toBytes([]), new Uint8Array()))
+    assert.isTrue(equalsBytes(toBytes([]), new Uint8Array()))
     // String
-    assert.ok(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
+    assert.isTrue(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
     assert.equal(bytesToHex(toBytes('0x1234')), '0x1234')
-    assert.ok(equalsBytes(toBytes('0x'), Uint8Array.from([])))
+    assert.isTrue(equalsBytes(toBytes('0x'), Uint8Array.from([])))
     // Number
-    assert.ok(equalsBytes(toBytes(1), Uint8Array.from([1])))
+    assert.isTrue(equalsBytes(toBytes(1), Uint8Array.from([1])))
     // null
-    assert.ok(equalsBytes(toBytes(null), new Uint8Array(0)))
+    assert.isTrue(equalsBytes(toBytes(null), new Uint8Array(0)))
     // undefined
     assert.deepEqual(toBytes(undefined), new Uint8Array(0))
     // BigInt

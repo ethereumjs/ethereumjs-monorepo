@@ -236,7 +236,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with executionPayloadV2', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV2
   })
 })

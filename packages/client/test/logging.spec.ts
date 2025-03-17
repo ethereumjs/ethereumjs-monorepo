@@ -35,7 +35,7 @@ describe('[Logging]', () => {
 
   it('should colorize key=value pairs', () => {
     if (process.env.GITHUB_ACTION !== undefined) {
-      assert.ok(true, 'no color functionality in ci')
+      assert.isTrue(true, 'no color functionality in ci')
       return
     }
     const { message } = format.transform({

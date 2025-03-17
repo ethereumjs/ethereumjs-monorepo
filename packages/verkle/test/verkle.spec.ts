@@ -108,7 +108,7 @@ describe('Verkle tree', () => {
       if (retrievedValue === undefined) {
         assert.fail('Value not found')
       }
-      assert.ok(equalsBytes(retrievedValue[0]!, values[i]))
+      assert.isTrue(equalsBytes(retrievedValue[0]!, values[i]))
     }
 
     // Verify that findPath returns a path that demonstrates the nonexistence of a key

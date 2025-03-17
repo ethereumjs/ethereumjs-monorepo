@@ -20,7 +20,7 @@ describe('EIP-3607 tests', () => {
       assert.fail('runTx should have thrown')
     } catch (error: any) {
       if ((error.message as string).includes('EIP-3607')) {
-        assert.ok(true, 'threw correct error')
+        assert.isTrue(true, 'threw correct error')
       } else {
         assert.fail('did not throw correct error')
       }

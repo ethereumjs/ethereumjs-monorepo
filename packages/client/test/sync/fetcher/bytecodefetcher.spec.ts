@@ -148,7 +148,7 @@ describe('[ByteCodeFetcher]', async () => {
 
     try {
       await fetcher.store(results! as any)
-      assert.ok(true, 'fetcher stored results successfully')
+      assert.isTrue(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }

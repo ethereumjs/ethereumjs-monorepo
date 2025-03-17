@@ -77,7 +77,7 @@ describe('Miner', () => {
     const blockMiner = e.getMiner(block)
     const blockSolution = <Block>await blockMiner.mine(-1)
 
-    assert.ok(e.verifyPOW(blockSolution))
+    assert.isTrue(e.verifyPOW(blockSolution))
   }, 60000)
 
   it('Check if it is possible to stop the miner', async () => {

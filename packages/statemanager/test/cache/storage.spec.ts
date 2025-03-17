@@ -23,13 +23,13 @@ describe('Storage Cache: put and get account', () => {
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should put storage value`, async () => {
       cache.put(addr, key, value)
       const elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
     it(`should flush`, async () => {
@@ -41,7 +41,7 @@ describe('Storage Cache: put and get account', () => {
       cache.del(addr, key)
 
       const elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, hexToBytes('0x80')))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, hexToBytes('0x80')))
     })
   }
 })
@@ -61,12 +61,12 @@ describe('Storage Cache: checkpointing', () => {
       cache.put(addr, key, updatedValue)
 
       let elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, updatedValue))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, updatedValue))
 
       cache.revert()
 
       elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
     it(`should use outer revert`, async () => {
@@ -80,7 +80,7 @@ describe('Storage Cache: checkpointing', () => {
       cache.revert()
 
       const elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should revert to unknown if nonexistent in cache before`, async () => {
@@ -90,12 +90,12 @@ describe('Storage Cache: checkpointing', () => {
       cache.put(addr, key, value)
 
       let elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
 
       cache.revert()
 
       elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`cache clearing`, async () => {

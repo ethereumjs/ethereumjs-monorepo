@@ -29,7 +29,7 @@ describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
-    assert.ok(bytesToHex(genesis.hash()), 'block should initialize')
+    assert.exists(bytesToHex(genesis.hash()), 'block should initialize')
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
@@ -41,12 +41,12 @@ describe('[Block]: block functions', () => {
     )
 
     const emptyBlock = createEmptyBlock({}, { common })
-    assert.ok(bytesToHex(emptyBlock.hash()), 'block should initialize')
+    assert.exists(bytesToHex(emptyBlock.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
     block = createBlock({})
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlock({}, { freeze: false })
     assert.ok(
@@ -56,7 +56,7 @@ describe('[Block]: block functions', () => {
 
     const rlpBlock = block.serialize()
     block = createBlockFromRLP(rlpBlock)
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromRLP(rlpBlock, { freeze: false })
     assert.ok(
@@ -82,7 +82,7 @@ describe('[Block]: block functions', () => {
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = createBlockFromBytesArray(valuesArray, { common })
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
 
     block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
     assert.ok(
@@ -147,7 +147,7 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
     try {
       createBlockFromRLP(blockRlp, { common })
-      assert.ok(true, 'should pass')
+      assert.isTrue(true, 'should pass')
     } catch {
       assert.fail('should not throw')
     }
@@ -158,7 +158,7 @@ describe('[Block]: block functions', () => {
 
     try {
       createBlockFromRPC(testdataFromRPCGoerliData, [], { common })
-      assert.ok(true, 'does not throw')
+      assert.isTrue(true, 'does not throw')
     } catch {
       assert.fail('error thrown')
     }
@@ -179,7 +179,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid transaction trie'))
+      assert.isTrue((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -200,7 +200,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('unsigned'))
+      assert.isTrue((error.message as string).includes('unsigned'))
     }
   })
 
@@ -232,7 +232,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid uncle hash'))
+      assert.isTrue((error.message as string).includes('invalid uncle hash'))
     }
   })
 
@@ -255,7 +255,7 @@ describe('[Block]: block functions', () => {
         await fn
         assert.fail('should throw')
       } catch (e: any) {
-        assert.ok((e.message as string).includes(errorMsg))
+        assert.isTrue((e.message as string).includes(errorMsg))
       }
     }
 
@@ -316,7 +316,7 @@ describe('[Block]: block functions', () => {
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
     const block = createBlockFromRLP(rlp, { common })
-    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+    assert.isTrue(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
 
   it('should test hash() method (mainnet default)', () => {
@@ -324,7 +324,7 @@ describe('[Block]: block functions', () => {
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
     let block = createBlockFromRLP(rlp, { common })
-    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+    assert.isTrue(equalsBytes(block.hash(), hash), 'genesis hash match')
 
     common = new Common({
       chain: Mainnet,
@@ -367,7 +367,7 @@ describe('[Block]: block functions', () => {
       },
     )
     const createBlockFromRaw = createBlockFromBytesArray(block.raw(), { common })
-    assert.ok(equalsBytes(block.hash(), createBlockFromRaw.hash()))
+    assert.isTrue(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
   it('should test toJSON', () => {

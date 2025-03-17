@@ -18,13 +18,13 @@ const common = new Common({
 })
 
 function validateMergeHeader(header: BlockHeader) {
-  assert.ok(equalsBytes(header.parentHash, new Uint8Array(32)), 'parentHash')
-  assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
+  assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)), 'parentHash')
+  assert.isTrue(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
   assert.ok(header.coinbase.equals(createZeroAddress()), 'coinbase')
-  assert.ok(equalsBytes(header.stateRoot, new Uint8Array(32)), 'stateRoot')
-  assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
-  assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
-  assert.ok(equalsBytes(header.logsBloom, new Uint8Array(256)), 'logsBloom')
+  assert.isTrue(equalsBytes(header.stateRoot, new Uint8Array(32)), 'stateRoot')
+  assert.isTrue(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
+  assert.isTrue(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
+  assert.isTrue(equalsBytes(header.logsBloom, new Uint8Array(256)), 'logsBloom')
   assert.equal(header.difficulty, BigInt(0), 'difficulty')
   assert.equal(header.number, BigInt(0), 'number')
   assert.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
@@ -32,7 +32,7 @@ function validateMergeHeader(header: BlockHeader) {
   assert.equal(header.timestamp, BigInt(0), 'timestamp')
   assert.ok(header.extraData.length <= 32, 'extraData')
   assert.equal(header.mixHash.length, 32, 'mixHash')
-  assert.ok(equalsBytes(header.nonce, new Uint8Array(8)), 'nonce')
+  assert.isTrue(equalsBytes(header.nonce, new Uint8Array(8)), 'nonce')
 }
 
 describe('[Header]: Casper PoS / The Merge Functionality', () => {
@@ -53,7 +53,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch {
-      assert.ok(true, 'should throw on wrong uncleHash')
+      assert.isTrue(true, 'should throw on wrong uncleHash')
     }
 
     try {
@@ -64,7 +64,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch {
-      assert.ok(true, 'should throw on wrong difficulty')
+      assert.isTrue(true, 'should throw on wrong difficulty')
     }
 
     try {
@@ -75,7 +75,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch {
-      assert.ok(true, 'should throw on invalid extraData length')
+      assert.isTrue(true, 'should throw on invalid extraData length')
     }
 
     try {
@@ -85,7 +85,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch {
-      assert.ok(true, 'should throw on invalid mixHash length')
+      assert.isTrue(true, 'should throw on invalid mixHash length')
     }
 
     try {
@@ -96,7 +96,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       createBlockHeader(headerData, { common })
       assert.fail('should throw')
     } catch {
-      assert.ok(true, 'should throw on wrong nonce')
+      assert.isTrue(true, 'should throw on wrong nonce')
     }
   })
 
@@ -107,7 +107,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       })
       assert.fail('should have thrown')
     } catch {
-      assert.ok(true, 'should throw')
+      assert.isTrue(true, 'should throw')
     }
   })
 
@@ -126,7 +126,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       block.header.prevRandao
       assert.fail('should have thrown')
     } catch {
-      assert.ok(true, 'prevRandao should throw if EIP-4399 is not activated')
+      assert.isTrue(true, 'prevRandao should throw if EIP-4399 is not activated')
     }
   })
 })

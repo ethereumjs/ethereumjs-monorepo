@@ -37,7 +37,7 @@ describe('[fromRPC]: block #2924874', () => {
   it('should create a block header with the correct hash', () => {
     const block = createBlockHeaderFromRPC(testdataFromRPCData, { common })
     const hash = hexToBytes(testdataFromRPCData.hash)
-    assert.ok(equalsBytes(block.hash(), hash))
+    assert.isTrue(equalsBytes(block.hash(), hash))
   })
 })
 
@@ -175,7 +175,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
     const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893Data, { common }) // cspell:disable-line
     const hash = hexToBytes(infuraGoerliBlock10536893Data.hash)
-    assert.ok(equalsBytes(block.hash(), hash))
+    assert.isTrue(equalsBytes(block.hash(), hash))
   })
 })
 

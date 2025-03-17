@@ -256,7 +256,7 @@ describe('[Transaction]', () => {
     for (const [i, tx] of transactions.entries()) {
       const s1 = tx.serialize()
       const s2 = RLP.encode(txsData[i].raw)
-      assert.ok(equalsBytes(s1, s2))
+      assert.isTrue(equalsBytes(s1, s2))
     }
   })
 
@@ -267,7 +267,7 @@ describe('[Transaction]', () => {
     const tx2 = createLegacyTxFromRLP(s1)
     const s2 = tx2.serialize()
 
-    assert.ok(equalsBytes(s1, s2))
+    assert.isTrue(equalsBytes(s1, s2))
   })
 
   it('hash() / getHashedMessageToSign() / getMessageToSign()', () => {

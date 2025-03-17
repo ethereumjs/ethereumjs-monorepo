@@ -50,7 +50,7 @@ describe('VM.runCode: initial program counter', () => {
         err = false
       }
 
-      assert.ok(err === false || err === undefined)
+      assert.isTrue(err === false || err === undefined)
     }
   })
 })
@@ -98,7 +98,7 @@ describe('VM.runCode: interpreter', () => {
       await evm.runCode!(runCodeArgs)
       assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(e.toString().includes('Test'), 'error thrown')
+      assert.isTrue(e.toString().includes('Test'), 'error thrown')
     }
   })
 })

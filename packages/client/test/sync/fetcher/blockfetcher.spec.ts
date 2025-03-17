@@ -262,7 +262,7 @@ describe('store()', async () => {
   chain.putBlocks = vi.fn().mockResolvedValueOnce(1)
   config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
     it('should emit fetched blocks event', () => {
-      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
+      assert.isTrue(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
     }),
   )
   await fetcher.store([])

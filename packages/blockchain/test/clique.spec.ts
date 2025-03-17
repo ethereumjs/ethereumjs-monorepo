@@ -294,7 +294,7 @@ describe('Clique: Initialization', () => {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
-      assert.ok(error.message.includes('invalid clique difficulty'), 'correct error')
+      assert.isTrue(error.message.includes('invalid clique difficulty'), 'correct error')
     }
   })
 
@@ -680,7 +680,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 
@@ -709,7 +709,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 
