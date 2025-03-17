@@ -15,7 +15,7 @@ export async function modifyAccountFields(
   account.storageRoot = accountFields.storageRoot ?? account.storageRoot
   account.codeHash = accountFields.codeHash ?? account.codeHash
   account.codeSize = accountFields.codeSize ?? account.codeSize
-  // @ts-ignore
+  //@ts-expect-error
   if (stateManager['_debug'] !== undefined) {
     for (const [field, value] of Object.entries(accountFields)) {
       //@ts-ignore

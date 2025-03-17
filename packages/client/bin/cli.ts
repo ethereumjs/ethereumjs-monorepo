@@ -325,7 +325,7 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      // @ts-expect-error jayson.Server type doesn't play well with ESM for some reason
+      //@ts-expect-error jayson.Server type doesn't play well with ESM for some reason
       s['http'] !== undefined ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()

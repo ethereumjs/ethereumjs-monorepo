@@ -239,7 +239,6 @@ async function runTests() {
       })
     })
   } else {
-    //@ts-expect-error tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}

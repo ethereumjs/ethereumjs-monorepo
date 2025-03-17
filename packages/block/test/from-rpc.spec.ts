@@ -109,13 +109,13 @@ describe('[fromRPC]:', () => {
         common,
       },
     )
-    assert.ok(block.uncleHashIsValid())
+    assert.isTrue(block.uncleHashIsValid())
   })
 
   it('should create a block with EIP-4896 withdrawals', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlockFromRPC(testdataFromRPCWithWithdrawalsData, [], { common })
-    assert.ok(block.withdrawalsTrieIsValid())
+    assert.isTrue(block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
@@ -225,12 +225,12 @@ describe('[fromJSONRPCProvider]', () => {
       await createBlockFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('No block data returned from provider'),
         'returned correct error message',
       )
     }
-    // @ts-expect-error -- Typescript doesn't like us to replace global values
+    //@ts-expect-error -- Typescript doesn't like us to replace global values
     fetch = realFetch
   })
 })

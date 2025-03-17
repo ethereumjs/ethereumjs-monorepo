@@ -99,7 +99,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['pending'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with non-string block number', async () => {
@@ -107,7 +107,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, [10])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a string'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
   it('call with invalid block number', async () => {

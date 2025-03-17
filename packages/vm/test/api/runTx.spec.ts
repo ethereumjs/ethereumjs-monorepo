@@ -272,7 +272,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       // TODO uncomment:
       // assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('(EIP-2718) not activated'),
         `should fail for ${TRANSACTION_TYPES[1].name}`,
       )
@@ -322,7 +322,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx })
         assert.fail('should throw error')
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('not signed') === true ||
             e.message.includes('Invalid Signature') === true,
           `should fail for ${txType.name}`,
@@ -338,7 +338,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       try {
         await runTx(vm, { tx })
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.toLowerCase().includes('enough funds'),
           `should fail for ${txType.name}`,
         )
@@ -360,7 +360,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       await runTx(vm, { tx })
       assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.toLowerCase().includes('max cost'),
         `should fail if max cost exceeds balance`,
       )
@@ -419,7 +419,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',
         )
@@ -714,7 +714,7 @@ describe('runTx() -> RunTxOptions', () => {
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, false)
       tx.getSenderAddress = () => createZeroAddress()
-      // @ts-ignore overwrite read-only property
+      //@ts-expect-error overwrite read-only property
       tx.value -= BigInt(1)
 
       for (const skipBalance of [true, false]) {
@@ -919,7 +919,7 @@ describe('EIP 4844 transaction tests', () => {
       { common, skipConsensusFormatValidation: true },
     )
     const res = await runTx(vm, { tx, block, skipBalance: true })
-    assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+    assert.isTrue(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
     assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
     Blockchain.prototype.getBlock = oldGetBlockFunction
   })

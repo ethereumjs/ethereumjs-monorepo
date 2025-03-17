@@ -95,7 +95,7 @@ describe('[EIP3860 tests]', () => {
           { data, type: txType },
           { common, allowUnlimitedInitCodeSize: false },
         )
-        assert.ok(
+        assert.isTrue(
           eip3860ActiveTx.getDataGas() === eip3860DeactivatedTx.getDataGas(),
           'charged initcode analysis gas',
         )

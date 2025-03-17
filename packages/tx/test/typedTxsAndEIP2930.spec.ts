@@ -68,7 +68,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
   it('Initialization / Getter -> fromTxData()', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
-      assert.ok(tx, `should initialize correctly (${txType.name})`)
+      assert.exists(tx, `should initialize correctly (${txType.name})`)
 
       tx = txType.create.txData(
         {
@@ -76,8 +76,9 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         },
         { common: new Common({ chain: Goerli }) },
       )
-      assert.ok(
-        tx.common.chainId() === BigInt(5),
+      assert.equal(
+        tx.common.chainId(),
+        BigInt(5),
         'should initialize Common with chain ID provided (supported chain ID)',
       )
 
@@ -165,7 +166,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       try {
         txType.create.rlp(new Uint8Array([99]), {})
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('wrong tx type') === true,
           `should throw on wrong tx type (${txType.name})`,
         )
@@ -176,7 +177,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
         txType.create.rlp(serialized, {})
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('must be array') === true,
           `should throw when RLP payload not an array (${txType.name})`,
         )
@@ -187,8 +188,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
         txType.create.rlp(serialized, {})
       } catch (e: any) {
-        assert.ok(
-          e.message.includes('values (for unsigned tx) === true'),
+        assert.isTrue(
+          e.message.includes('values (for unsigned tx)'),
           `should throw with invalid number of values (${txType.name})`,
         )
       }
@@ -332,7 +333,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       )
       let signed = tx.sign(pKey)
       const signedAddress = signed.getSenderAddress()
-      assert.ok(
+      assert.isTrue(
         equalsBytes(signedAddress.bytes, address),
         `should sign a transaction (${txType.name})`,
       )
@@ -441,7 +442,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
 describe('[AccessList2930Tx] -> Class Specific Tests', () => {
   it(`Initialization`, () => {
     const tx = createAccessList2930Tx({}, { common })
-    assert.ok(
+    assert.exists(
       createAccessList2930Tx(tx, { common }),
       'should initialize correctly from its own data',
     )
@@ -462,7 +463,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
         { common },
       )
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER') === true,
         'throws when gasLimit * gasPrice exceeds MAX_INTEGER',
       )

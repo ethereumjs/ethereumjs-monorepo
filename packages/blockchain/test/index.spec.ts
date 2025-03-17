@@ -223,7 +223,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(5)
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-number request`,
       )
@@ -233,7 +233,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-hash request`,
       )

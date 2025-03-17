@@ -37,7 +37,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x21'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    assert.isTrue(res.executionGasUsed === totalFee, 'successfully charged correct gas')
     assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
     assert.ok(correctOpcodeName, 'successfully set opcode name')
   })
@@ -51,7 +51,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.isTrue(res.executionGasUsed === gas, 'successfully deleted opcode')
   })
 
   it('should not override default opcodes', async () => {
@@ -65,7 +65,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x01'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.isTrue(res.executionGasUsed === gas, 'successfully deleted opcode')
 
     const evmDefault = await createEVM()
 
@@ -92,7 +92,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    assert.isTrue(res.executionGasUsed === totalFee, 'successfully charged correct gas')
     assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
   })
 

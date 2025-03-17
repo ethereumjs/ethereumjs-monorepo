@@ -137,13 +137,12 @@ describe('RunCall tests', () => {
     const byzantiumResult = await evmByzantium.runCall(runCallArgs)
     const constantinopleResult = await evmConstantinople.runCall(runCallArgs)
 
-    assert.ok(
-      byzantiumResult.execResult.exceptionError &&
-        byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+    assert.isTrue(
+      byzantiumResult.execResult.exceptionError?.error === 'invalid opcode',
       'byzantium cannot accept constantinople opcodes (SHL)',
     )
-    assert.ok(
-      !constantinopleResult.execResult.exceptionError,
+    assert.isUndefined(
+      constantinopleResult.execResult.exceptionError,
       'constantinople can access the SHL opcode',
     )
   })
@@ -470,7 +469,7 @@ describe('RunCall tests', () => {
       await evm.runCall(runCallArgs)
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',
       )
@@ -649,7 +648,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESIZE_EXCEEDS_MAXIMUM)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -658,7 +657,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
   })
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
@@ -672,7 +671,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESTORE_OUT_OF_GAS)
+    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESTORE_OUT_OF_GAS)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -681,7 +680,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
   })
 
   it('ensure call and callcode handle gas stipend correctly', async () => {

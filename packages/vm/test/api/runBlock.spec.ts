@@ -267,7 +267,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('not found in DB'),
           'block failed validation due to no parent header',
         )
@@ -508,7 +508,7 @@ describe('runBlock() -> tx types', async () => {
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @ts-ignore read-only property
+      //@ts-expect-error read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 

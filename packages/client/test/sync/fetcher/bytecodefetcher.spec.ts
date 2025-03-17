@@ -143,7 +143,7 @@ describe('[ByteCodeFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.ok(results?.completed === true, 'response processed and matched properly')
+    assert.isTrue(results?.completed === true, 'response processed and matched properly')
     assert.equal((results![0] as any).size, 5, 'matched code in the response')
 
     try {

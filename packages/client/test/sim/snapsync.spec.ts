@@ -122,7 +122,7 @@ describe('simple mainnet test run', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.isTrue(truetrue, 'geth<>lodestar started successfully')
+    assert.isTrue(true, 'geth<>lodestar started successfully')
   } catch (e) {
     assert.fail('geth<>lodestar failed to start')
     throw e
@@ -199,7 +199,7 @@ describe('simple mainnet test run', async () => {
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
-        assert.isTrue(truetrue, 'connected to geth peer')
+        assert.isTrue(true, 'connected to geth peer')
       } catch (e) {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
@@ -230,7 +230,7 @@ describe('simple mainnet test run', async () => {
           ])
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
-          assert.isTrue(truetrue, 'completed snap sync')
+          assert.isTrue(true, 'completed snap sync')
         } catch (e) {
           assert.fail('could not complete snap sync in 8 minutes')
         }
@@ -274,7 +274,7 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer?.close()
       await ejsClient?.stop()
       await teardownCallBack()
-      assert.isTrue(truetrue, 'network cleaned')
+      assert.isTrue(true, 'network cleaned')
     } catch (e) {
       assert.fail('network not cleaned properly')
     }

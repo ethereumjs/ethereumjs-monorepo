@@ -231,7 +231,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
     const res = await runTx(vm, { tx })
-    assert.ok(res.execResult.executionGasUsed === BigInt(2715))
+    assert.isTrue(res.execResult.executionGasUsed === BigInt(2715))
   })
 })
 

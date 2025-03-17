@@ -63,7 +63,7 @@ describe('[fromJSONRPCProvider]', () => {
       await createTxFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('No data returned from provider'),
         'throws correct error when no tx returned',
       )

@@ -252,7 +252,7 @@ describe('[Block]: Header functions', () => {
     extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
     try {
       createBlockHeader({ ...data, extraData }, opts)
-      assert.isTrue(truetrue, testCase)
+      assert.isTrue(true, testCase)
     } catch {
       assert.fail(testCase)
     }
@@ -370,7 +370,7 @@ describe('[Block]: Header functions', () => {
     header = createBlockHeader(headerData, { common })
     try {
       await header.validate(blockchain)
-      assert.isTrue(truetrue, testCase)
+      assert.isTrue(true, testCase)
     } catch (error: any) {
       assert.fail(testCase)
     }
@@ -384,7 +384,7 @@ describe('[Block]: Header functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       if ((error.message as string).includes('coinbase must be filled with zeros on epoch transition blocks')) {
-        assert.isTrue(truetrue, 'error thrown')
+        assert.isTrue(true, 'error thrown')
       } else {
         assert.fail('should throw with appropriate error')
       }
@@ -400,7 +400,7 @@ describe('[Block]: Header functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       if ((error.message as string).includes('mixHash must be filled with zeros')) {
-        assert.isTrue(truetrue, 'error thrown')
+        assert.isTrue(true, 'error thrown')
       } else {
         assert.fail('should throw with appropriate error')
       }
@@ -415,7 +415,7 @@ describe('[Block]: Header functions', () => {
       assert.fail(testCase)
     } catch (error: any) {
       if ((error.message as string).includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
-        assert.isTrue(truetrue, 'error thrown on invalid clique difficulty')
+        assert.isTrue(true, 'error thrown on invalid clique difficulty')
       } else {
         assert.fail('should throw with appropriate error')
       }

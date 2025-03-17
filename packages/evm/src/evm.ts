@@ -60,6 +60,69 @@ const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
 const debugPrecompiles = debugDefault('evm:precompiles')
 
+export function OOGResult(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
+  }
+}
+// CodeDeposit OOG Result
+export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsedCreateCode,
+    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
+  }
+}
+
+export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
+  }
+}
+
+export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsed,
+    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
+  }
+}
+
+export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsed,
+    exceptionError: error,
+  }
+}
+
+export function defaultBlock(): Block {
+  return {
+    header: {
+      number: BIGINT_0,
+      coinbase: createZeroAddress(),
+      timestamp: BIGINT_0,
+      difficulty: BIGINT_0,
+      prevRandao: new Uint8Array(32),
+      gasLimit: BIGINT_0,
+      baseFeePerGas: undefined,
+      getBlobGasPrice: () => undefined,
+    },
+  }
+}
+
 /**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
@@ -1150,68 +1213,5 @@ export class EVM implements EVMInterface {
 
   public clearPerformanceLogs() {
     this.performanceLogger.clear()
-  }
-}
-
-export function OOGResult(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
-  }
-}
-// CodeDeposit OOG Result
-export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsedCreateCode,
-    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
-  }
-}
-
-export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
-  }
-}
-
-export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-  }
-}
-
-export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsed,
-    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
-  }
-}
-
-export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsed,
-    exceptionError: error,
-  }
-}
-
-export function defaultBlock(): Block {
-  return {
-    header: {
-      number: BIGINT_0,
-      coinbase: createZeroAddress(),
-      timestamp: BIGINT_0,
-      difficulty: BIGINT_0,
-      prevRandao: new Uint8Array(32),
-      gasLimit: BIGINT_0,
-      baseFeePerGas: undefined,
-      getBlobGasPrice: () => undefined,
-    },
   }
 }

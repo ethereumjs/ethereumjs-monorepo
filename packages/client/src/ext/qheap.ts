@@ -60,7 +60,7 @@ export class Heap {
 
     this._isBefore = opts.compar
       ? function (a: any, b: any) {
-          // @ts-ignore
+          //@ts-expect-error
           return opts!.compar!(a, b) < 0
         }
       : (opts.comparBefore ??

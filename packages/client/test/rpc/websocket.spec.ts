@@ -50,7 +50,7 @@ describe('JSON-RPC call', () => {
         resolve(undefined)
       }
       Client.websocket({
-        // @ts-ignore -- see above test
+        //@ts-expect-error -- see above test
         ws: socket,
       })
     })

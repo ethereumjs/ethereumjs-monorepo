@@ -24,7 +24,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', '0x55'])
     assert.equal(res.error.code, TOO_LARGE_REQUEST)
-    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
+    assert.isTrue(res.error.message.includes('More than 32 execution payload bodies requested'))
   })
 
   it('call with invalid parameters', async () => {
@@ -32,7 +32,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x0', '0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('Start and Count parameters cannot be less than 1'))
+    assert.isTrue(res.error.message.includes('Start and Count parameters cannot be less than 1'))
   })
 
   it('call with valid parameters', async () => {

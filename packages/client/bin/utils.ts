@@ -544,10 +544,10 @@ async function inputAccounts(args: ClientOpts) {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
-    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
+    //@ts-expect-error Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
     // TODO: See whether package needs to be updated or not
     input: process.stdin,
-    // @ts-ignore
+    //@ts-expect-error
     output: process.stdout,
   })
 

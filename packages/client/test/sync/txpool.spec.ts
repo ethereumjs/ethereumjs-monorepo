@@ -423,7 +423,7 @@ describe('[TxPool]', async () => {
       assert.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('replacement gas too low'),
+        e.message.includes('replacement gas too low') === true,
         'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))

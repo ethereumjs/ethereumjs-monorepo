@@ -9,7 +9,7 @@ import {
   setLengthLeft,
   toBytes,
   utf8ToBytes,
-} from './bytes.js'
+} from './bytes.ts'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -17,9 +17,9 @@ import {
   BIGINT_27,
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
-} from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsBytes } from './helpers.js'
+} from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsBytes } from './helpers.ts'
 
 import type { PrefixedHexString } from './types.js'
 

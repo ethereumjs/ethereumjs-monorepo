@@ -707,7 +707,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.isTrue(truetrue, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -723,7 +723,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.isTrue(truetrue, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -785,7 +785,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Unknown argument: datadir')) {
-        assert.isTrue(truetrue, 'correctly errors on unknown arguments')
+        assert.isTrue(true, 'correctly errors on unknown arguments')
       }
       child.kill()
       resolve(undefined)
@@ -800,7 +800,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
-        assert.isTrue(truetrue, 'correctly errors on conflicting arguments')
+        assert.isTrue(true, 'correctly errors on conflicting arguments')
       }
       child.kill()
       resolve(undefined)
@@ -815,7 +815,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
-        assert.isTrue(truetrue, 'correctly errors on conflicting arguments')
+        assert.isTrue(true, 'correctly errors on conflicting arguments')
       }
       child.kill()
       resolve(undefined)
@@ -864,7 +864,7 @@ describe('verkle execution', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.isTrue(truetrue, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -885,7 +885,7 @@ describe('verkle execution', () => {
       resolve: Function,
     ) => {
       if (message.includes('Setting up verkleVM for stateful verkle execution')) {
-        assert.isTrue(truetrue, 'Client started with verkle execution')
+        assert.isTrue(true, 'Client started with verkle execution')
         child.kill()
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)

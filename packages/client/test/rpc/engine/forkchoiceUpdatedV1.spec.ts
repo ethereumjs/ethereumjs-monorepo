@@ -184,7 +184,7 @@ describe(method, () => {
       },
     ])
     assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
-    assert.ok(res.error.message.includes('finalized block not available in canonical chain'))
+    assert.isTrue(res.error.message.includes('finalized block not available in canonical chain'))
   })
 
   it('invalid safe block hash', async () => {
@@ -197,7 +197,7 @@ describe(method, () => {
       },
     ])
     assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
-    assert.ok(res.error.message.includes('safe block not available'))
+    assert.isTrue(res.error.message.includes('safe block not available'))
   })
 
   it('latest block after reorg', async () => {
@@ -278,8 +278,8 @@ describe(method, () => {
     ])
 
     assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
-    assert.ok(res.error.message.includes('safe'))
-    assert.ok(res.error.message.includes('canonical'))
+    assert.isTrue(res.error.message.includes('safe'))
+    assert.isTrue(res.error.message.includes('canonical'))
   })
 
   it('validate finalizedBlockHash is part of canonical chain', async () => {
@@ -318,7 +318,7 @@ describe(method, () => {
     ])
 
     assert.equal(res.error.code, INVALID_FORKCHOICE_STATE)
-    assert.ok(res.error.message.includes('finalized'))
-    assert.ok(res.error.message.includes('canonical'))
+    assert.isTrue(res.error.message.includes('finalized'))
+    assert.isTrue(res.error.message.includes('canonical'))
   })
 })

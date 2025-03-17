@@ -420,7 +420,7 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 export const isValidAddress = function (hexAddress: string): hexAddress is PrefixedHexString {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch {
     return false
   }
 
@@ -546,7 +546,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
     try {
       secp256k1.ProjectivePoint.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   }
@@ -558,7 +558,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
   try {
     secp256k1.ProjectivePoint.fromHex(publicKey)
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -624,7 +624,7 @@ export const zeroAddress = function (): PrefixedHexString {
 export const isZeroAddress = function (hexAddress: string): boolean {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch {
     return false
   }
 

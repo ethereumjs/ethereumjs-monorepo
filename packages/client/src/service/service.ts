@@ -90,7 +90,7 @@ export class Service {
       }
     })
 
-    // @ts-ignore TODO replace with async create constructor
+    //@ts-expect-error TODO replace with async create constructor
     this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval ?? 8000
     this.timeout = options.timeout ?? 6000

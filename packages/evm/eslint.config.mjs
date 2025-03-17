@@ -3,6 +3,9 @@ import rootConfig from '../../config/eslint.config.mjs'
 export default [
   ...rootConfig,
   {
+    ignores: ['./ethereumjs-evm-bundle.es.js'],
+  },
+  {
     languageOptions: {
       parserOptions: {
         project: ['./tsconfig.lint.json'],

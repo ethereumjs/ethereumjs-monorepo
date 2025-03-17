@@ -367,14 +367,14 @@ describe('[Skeleton] / setHead', async () => {
         if (testCase.err) {
           assert.fail(`test ${testCaseIndex}: should have failed`)
         } else {
-          assert.isTrue(truetrue, `test ${testCaseIndex}: successfully passed`)
+          assert.isTrue(true, `test ${testCaseIndex}: successfully passed`)
         }
       } catch (error: any) {
         if (
           typeof testCase.err?.message === 'string' &&
           (error.message as string).includes(testCase.err.message)
         ) {
-          assert.isTrue(truetrue, `test ${testCaseIndex}: passed with correct error`)
+          assert.isTrue(true, `test ${testCaseIndex}: passed with correct error`)
         } else {
           assert.fail(
             `test ${testCaseIndex}: received wrong error expected=${testCase.err?.message} actual=${error.message}`,
@@ -398,7 +398,7 @@ describe('[Skeleton] / setHead', async () => {
             `test ${testCaseIndex}: subchain tail mismatch: have ${subchain.tail}, want ${testCase.newState[i].tail}`,
           )
         } else {
-          assert.isTrue(truetrue, `test ${testCaseIndex}: subchain[${i}] matched`)
+          assert.isTrue(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
     })
@@ -424,7 +424,7 @@ describe('[Skeleton] / setHead', async () => {
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     } catch (e) {
-      assert.isTrue(truetrue, `Skeleton init should error if merge not set`)
+      assert.isTrue(true, `Skeleton init should error if merge not set`)
     }
   })
 
@@ -476,7 +476,7 @@ describe('[Skeleton] / setHead', async () => {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
     } catch (_e) {
-      assert.isTrue(truetrue, 'should not allow putBlocks since no subchain set')
+      assert.isTrue(true, 'should not allow putBlocks since no subchain set')
     }
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
 

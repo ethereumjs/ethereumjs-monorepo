@@ -1,5 +1,5 @@
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-// @ts-ignore - package has no types...
+//@ts-expect-error - package has no types...
 import { logMem, mark, run } from 'micro-bmark' // cspell:disable-line
 
 import { MerklePatriciaTrie } from '../dist/cjs/index.js'

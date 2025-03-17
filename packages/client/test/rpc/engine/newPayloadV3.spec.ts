@@ -63,7 +63,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
       assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes(expectedError))
+      assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])

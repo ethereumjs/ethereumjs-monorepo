@@ -65,7 +65,9 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataNoneHashes)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument blobVersionedHashes'))
+    assert.isTrue(
+      res.error.message.includes('missing value for required argument blobVersionedHashes'),
+    )
 
     const blockDataMissingParentBeaconRoot = [
       {

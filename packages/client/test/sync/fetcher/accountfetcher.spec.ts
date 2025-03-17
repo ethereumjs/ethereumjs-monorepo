@@ -362,11 +362,8 @@ describe('[AccountFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.ok(results !== undefined, 'Proof verification is completed without errors')
-    assert.ok(
-      fetcher.process(job as any, results!) !== undefined,
-      'Response should be processed properly',
-    )
+    assert.exists(results, 'Proof verification is completed without errors')
+    assert.exists(fetcher.process(job as any, results!), 'Response should be processed properly')
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
     fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()

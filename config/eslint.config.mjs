@@ -89,7 +89,7 @@ export default [
       'prefer-const': 'error',
       'import/default': 'off',
       'import/export': 'error',
-      'import/exports-last': 'off', 
+      'import/exports-last': 'off',
       'import/extensions': ['error','ignorePackages'],
       'import/first': 'error',
       'import/group-exports': 'off',
@@ -97,7 +97,7 @@ export default [
       'import/namespace': 'off',
       'import/no-absolute-path': 'error',
       'import/no-anonymous-default-export': 'error',
-      'import/no-cycle': 'error', 
+      'import/no-cycle': 'error',
       'import/no-default-export': ['error'],
       'import/no-deprecated': 'off', // TODO: set to `warn` for fixing and then `error`
       'import/no-duplicates': 'error',

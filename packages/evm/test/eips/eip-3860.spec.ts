@@ -218,7 +218,7 @@ describe('EIP 3860 tests', () => {
         !equalsBytes(storageActive, new Uint8Array()),
         'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true',
       )
-      assert.ok(
+      assert.isTrue(
         equalsBytes(storageInactive, new Uint8Array()),
         'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false',
       )

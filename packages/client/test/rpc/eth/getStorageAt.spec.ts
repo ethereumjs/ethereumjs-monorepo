@@ -79,6 +79,6 @@ describe(method, async () => {
     // call with unsupported block argument
     res = await rpc.request(method, [address.toString(), '0x0', 'pending'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

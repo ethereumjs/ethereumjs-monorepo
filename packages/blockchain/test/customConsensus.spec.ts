@@ -108,7 +108,7 @@ describe('Custom consensus validation rules', () => {
       await blockchain.putBlock(blockWithBadDifficulty)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('invalid difficulty'),
         'failed to put block with invalid difficulty',
       )
@@ -131,7 +131,7 @@ describe('Custom consensus validation rules', () => {
       await blockchain.putBlock(blockWithBadExtraData)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message ===
           'header contains invalid extradata - must match first 6 elements of fibonacci sequence',
         'failed to put block with invalid extraData',

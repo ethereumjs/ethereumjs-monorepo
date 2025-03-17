@@ -188,7 +188,7 @@ describe('callWithStackTrace', () => {
     })
     const res = await rpc.request(method, ['0x678', false])
 
-    assert.ok(res.error.trace !== undefined)
+    assert.isTrue(res.error.trace !== undefined)
   })
 
   it('call with stack trace and gets an error without a stack trace', async () => {
@@ -209,6 +209,6 @@ describe('callWithStackTrace', () => {
 
     const res = await rpc.request(method, ['0xavc', false])
 
-    assert.ok(res.error.trace === undefined)
+    assert.isTrue(res.error.trace === undefined)
   })
 })
