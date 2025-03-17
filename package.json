@@ -1,7 +1,9 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -34,8 +36,9 @@
     "@types/estree": "^1.0.1",
     "@types/node": "22.13.10",
     "@types/tape": "5.8.1",
-    "@typescript-eslint/eslint-plugin": "^8.26.1",
-    "@typescript-eslint/parser": "^8.26.1",
+    "@typescript-eslint/eslint-plugin": "5.33.1",
+    "@typescript-eslint/parser": "5.33.1",
+    "@vitest/coverage-istanbul": "^3.0.8",
     "@vitest/coverage-v8": "^3.0.8",
     "@vitest/ui": "^3.0.8",
     "cspell": "^8.17.5",
