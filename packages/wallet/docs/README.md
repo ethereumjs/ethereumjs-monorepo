@@ -1,14 +1,14 @@
-@ethereumjs/wallet
+**@ethereumjs/wallet**
+
+***
 
 # @ethereumjs/wallet
 
-## Table of contents
+## Namespaces
 
-### Namespaces
+- [hdkey](namespaces/hdkey/README.md)
+- [thirdparty](namespaces/thirdparty/README.md)
 
-- [hdkey](modules/hdkey.md)
-- [thirdparty](modules/thirdparty.md)
-
-### Classes
+## Classes
 
 - [Wallet](classes/Wallet.md)

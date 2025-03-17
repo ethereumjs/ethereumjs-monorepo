@@ -110,11 +110,12 @@ const main = async () => {
 
   // Add more transactions
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
 void main()
+
 ```
 
 ### WASM Crypto Support
@@ -213,10 +214,11 @@ The following is a simple example for a block run on `Goerli`:
 // ./examples/runGoerliBlock.ts
 
 import { createBlockFromRPC } from '@ethereumjs/block'
-import { Common, Goerli } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
 import { createVM, runBlock } from '../src/index.js'
+import { Goerli } from '../test/api/testdata/goerliCommon.js'
 
 import goerliBlock2 from './testData/goerliBlock2.json'
 
@@ -230,6 +232,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 ### Hardfork Support

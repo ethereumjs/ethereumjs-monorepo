@@ -1,97 +1,299 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / Account
 
 # Class: Account
 
-## Table of contents
+Defined in: [packages/util/src/account.ts:51](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L51)
 
-### Constructors
+Account class to load and maintain the  basic account objects.
+Supports partial loading and access required for verkle with null
+as the placeholder.
 
-- [constructor](Account.md#constructor)
-
-### Properties
-
-- [balance](Account.md#balance)
-- [codeHash](Account.md#codehash)
-- [nonce](Account.md#nonce)
-- [storageRoot](Account.md#storageroot)
-
-### Methods
-
-- [isContract](Account.md#iscontract)
-- [isEmpty](Account.md#isempty)
-- [raw](Account.md#raw)
-- [serialize](Account.md#serialize)
-- [fromAccountData](Account.md#fromaccountdata)
-- [fromRlpSerializedAccount](Account.md#fromrlpserializedaccount)
-- [fromValuesArray](Account.md#fromvaluesarray)
+Note: passing undefined in constructor is different from null
+While undefined leads to default assignment, null is retained
+to track the information not available/loaded because of partial
+witness access
 
 ## Constructors
 
-### constructor
+### new Account()
 
-• **new Account**(`nonce?`, `balance?`, `storageRoot?`, `codeHash?`)
+> **new Account**(`nonce`, `balance`, `storageRoot`, `codeHash`, `codeSize`, `version`): [`Account`](Account.md)
+
+Defined in: [packages/util/src/account.ts:131](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L131)
 
 This constructor assigns and validates the values.
 Use the static factory methods to assist in creating an Account from varying data types.
+undefined get assigned with the defaults present, but null args are retained as is
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `nonce` | `bigint` | `BIGINT_0` |
-| `balance` | `bigint` | `BIGINT_0` |
-| `storageRoot` | `Uint8Array` | `KECCAK256_RLP` |
-| `codeHash` | `Uint8Array` | `KECCAK256_NULL` |
+##### nonce
 
-#### Defined in
+`null` | `bigint`
 
-[packages/util/src/account.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L68)
+##### balance
+
+`null` | `bigint`
+
+##### storageRoot
+
+`null` | `Uint8Array`
+
+##### codeHash
+
+`null` | `Uint8Array`
+
+##### codeSize
+
+`null` | `number`
+
+##### version
+
+`null` | `number`
+
+#### Returns
+
+[`Account`](Account.md)
 
 ## Properties
 
+### \_balance
+
+> **\_balance**: `null` \| `bigint` = `null`
+
+Defined in: [packages/util/src/account.ts:53](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L53)
+
+***
+
+### \_codeHash
+
+> **\_codeHash**: `null` \| `Uint8Array` = `null`
+
+Defined in: [packages/util/src/account.ts:55](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L55)
+
+***
+
+### \_codeSize
+
+> **\_codeSize**: `null` \| `number` = `null`
+
+Defined in: [packages/util/src/account.ts:57](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L57)
+
+***
+
+### \_nonce
+
+> **\_nonce**: `null` \| `bigint` = `null`
+
+Defined in: [packages/util/src/account.ts:52](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L52)
+
+***
+
+### \_storageRoot
+
+> **\_storageRoot**: `null` \| `Uint8Array` = `null`
+
+Defined in: [packages/util/src/account.ts:54](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L54)
+
+***
+
+### \_version
+
+> **\_version**: `null` \| `number` = `null`
+
+Defined in: [packages/util/src/account.ts:58](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L58)
+
+## Accessors
+
 ### balance
 
-• **balance**: `bigint`
+#### Get Signature
 
-#### Defined in
+> **get** **balance**(): `bigint`
 
-[packages/util/src/account.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L33)
+Defined in: [packages/util/src/account.ts:82](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L82)
 
-___
+##### Returns
+
+`bigint`
+
+#### Set Signature
+
+> **set** **balance**(`_balance`): `void`
+
+Defined in: [packages/util/src/account.ts:89](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L89)
+
+##### Parameters
+
+###### \_balance
+
+`bigint`
+
+##### Returns
+
+`void`
+
+***
 
 ### codeHash
 
-• **codeHash**: `Uint8Array`
+#### Get Signature
 
-#### Defined in
+> **get** **codeHash**(): `Uint8Array`
 
-[packages/util/src/account.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L35)
+Defined in: [packages/util/src/account.ts:104](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L104)
 
-___
+##### Returns
+
+`Uint8Array`
+
+#### Set Signature
+
+> **set** **codeHash**(`_codeHash`): `void`
+
+Defined in: [packages/util/src/account.ts:111](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L111)
+
+##### Parameters
+
+###### \_codeHash
+
+`Uint8Array`
+
+##### Returns
+
+`void`
+
+***
+
+### codeSize
+
+#### Get Signature
+
+> **get** **codeSize**(): `number`
+
+Defined in: [packages/util/src/account.ts:115](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L115)
+
+##### Returns
+
+`number`
+
+#### Set Signature
+
+> **set** **codeSize**(`_codeSize`): `void`
+
+Defined in: [packages/util/src/account.ts:122](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L122)
+
+##### Parameters
+
+###### \_codeSize
+
+`number`
+
+##### Returns
+
+`void`
+
+***
 
 ### nonce
 
-• **nonce**: `bigint`
+#### Get Signature
 
-#### Defined in
+> **get** **nonce**(): `bigint`
 
-[packages/util/src/account.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L32)
+Defined in: [packages/util/src/account.ts:71](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L71)
 
-___
+##### Returns
+
+`bigint`
+
+#### Set Signature
+
+> **set** **nonce**(`_nonce`): `void`
+
+Defined in: [packages/util/src/account.ts:78](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L78)
+
+##### Parameters
+
+###### \_nonce
+
+`bigint`
+
+##### Returns
+
+`void`
+
+***
 
 ### storageRoot
 
-• **storageRoot**: `Uint8Array`
+#### Get Signature
 
-#### Defined in
+> **get** **storageRoot**(): `Uint8Array`
 
-[packages/util/src/account.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L34)
+Defined in: [packages/util/src/account.ts:93](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L93)
+
+##### Returns
+
+`Uint8Array`
+
+#### Set Signature
+
+> **set** **storageRoot**(`_storageRoot`): `void`
+
+Defined in: [packages/util/src/account.ts:100](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L100)
+
+##### Parameters
+
+###### \_storageRoot
+
+`Uint8Array`
+
+##### Returns
+
+`void`
+
+***
+
+### version
+
+#### Get Signature
+
+> **get** **version**(): `number`
+
+Defined in: [packages/util/src/account.ts:60](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L60)
+
+##### Returns
+
+`number`
+
+#### Set Signature
+
+> **set** **version**(`_version`): `void`
+
+Defined in: [packages/util/src/account.ts:67](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L67)
+
+##### Parameters
+
+###### \_version
+
+`number`
+
+##### Returns
+
+`void`
 
 ## Methods
 
-### isContract
+### isContract()
 
-▸ **isContract**(): `boolean`
+> **isContract**(): `boolean`
+
+Defined in: [packages/util/src/account.ts:237](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L237)
 
 Returns a `Boolean` determining if the account is a contract.
 
@@ -99,15 +301,13 @@ Returns a `Boolean` determining if the account is a contract.
 
 `boolean`
 
-#### Defined in
+***
 
-[packages/util/src/account.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L119)
+### isEmpty()
 
-___
+> **isEmpty**(): `boolean`
 
-### isEmpty
-
-▸ **isEmpty**(): `boolean`
+Defined in: [packages/util/src/account.ts:252](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L252)
 
 Returns a `Boolean` determining if the account is empty complying to the definition of
 account emptiness in [EIP-161](https://eips.ethereum.org/EIPS/eip-161):
@@ -117,15 +317,13 @@ account emptiness in [EIP-161](https://eips.ethereum.org/EIPS/eip-161):
 
 `boolean`
 
-#### Defined in
+***
 
-[packages/util/src/account.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L128)
+### raw()
 
-___
+> **raw**(): `Uint8Array`[]
 
-### raw
-
-▸ **raw**(): `Uint8Array`[]
+Defined in: [packages/util/src/account.ts:174](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L174)
 
 Returns an array of Uint8Arrays of the raw bytes for the account, in order.
 
@@ -133,15 +331,13 @@ Returns an array of Uint8Arrays of the raw bytes for the account, in order.
 
 `Uint8Array`[]
 
-#### Defined in
+***
 
-[packages/util/src/account.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L100)
+### serialize()
 
-___
+> **serialize**(): `Uint8Array`
 
-### serialize
-
-▸ **serialize**(): `Uint8Array`
+Defined in: [packages/util/src/account.ts:186](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L186)
 
 Returns the RLP serialization of the account as a `Uint8Array`.
 
@@ -149,66 +345,14 @@ Returns the RLP serialization of the account as a `Uint8Array`.
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[packages/util/src/account.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L112)
+### serializeWithPartialInfo()
 
-___
+> **serializeWithPartialInfo**(): `Uint8Array`
 
-### fromAccountData
-
-▸ `Static` **fromAccountData**(`accountData`): [`Account`](Account.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `accountData` | [`AccountData`](../interfaces/AccountData.md) |
+Defined in: [packages/util/src/account.ts:190](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L190)
 
 #### Returns
 
-[`Account`](Account.md)
-
-#### Defined in
-
-[packages/util/src/account.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L37)
-
-___
-
-### fromRlpSerializedAccount
-
-▸ `Static` **fromRlpSerializedAccount**(`serialized`): [`Account`](Account.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `serialized` | `Uint8Array` |
-
-#### Returns
-
-[`Account`](Account.md)
-
-#### Defined in
-
-[packages/util/src/account.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L48)
-
-___
-
-### fromValuesArray
-
-▸ `Static` **fromValuesArray**(`values`): [`Account`](Account.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `values` | `Uint8Array`[] |
-
-#### Returns
-
-[`Account`](Account.md)
-
-#### Defined in
-
-[packages/util/src/account.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L58)
+`Uint8Array`

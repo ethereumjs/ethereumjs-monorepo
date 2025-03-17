@@ -1,41 +1,33 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / ECDSASignature
 
 # Interface: ECDSASignature
 
-## Table of contents
-
-### Properties
-
-- [r](ECDSASignature.md#r)
-- [s](ECDSASignature.md#s)
-- [v](ECDSASignature.md#v)
+Defined in: [packages/util/src/signature.ts:25](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L25)
 
 ## Properties
 
 ### r
 
-• **r**: `Uint8Array`
+> **r**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/util/src/signature.ts:27](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L27)
 
-[packages/util/src/signature.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L25)
-
-___
+***
 
 ### s
 
-• **s**: `Uint8Array`
+> **s**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/util/src/signature.ts:28](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L28)
 
-[packages/util/src/signature.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L26)
-
-___
+***
 
 ### v
 
-• **v**: `bigint`
+> **v**: `bigint`
 
-#### Defined in
-
-[packages/util/src/signature.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L24)
+Defined in: [packages/util/src/signature.ts:26](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L26)

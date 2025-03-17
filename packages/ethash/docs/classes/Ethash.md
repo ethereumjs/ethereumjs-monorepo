@@ -1,189 +1,153 @@
+[**@ethereumjs/ethash**](../README.md)
+
+***
+
 [@ethereumjs/ethash](../README.md) / Ethash
 
 # Class: Ethash
 
-## Table of contents
-
-### Constructors
-
-- [constructor](Ethash.md#constructor)
-
-### Properties
-
-- [cache](Ethash.md#cache)
-- [cacheDB](Ethash.md#cachedb)
-- [cacheSize](Ethash.md#cachesize)
-- [dbOpts](Ethash.md#dbopts)
-- [epoc](Ethash.md#epoc)
-- [fullSize](Ethash.md#fullsize)
-- [seed](Ethash.md#seed)
-
-### Methods
-
-- [\_verifyPOW](Ethash.md#_verifypow)
-- [cacheHash](Ethash.md#cachehash)
-- [calcDatasetItem](Ethash.md#calcdatasetitem)
-- [getMiner](Ethash.md#getminer)
-- [headerHash](Ethash.md#headerhash)
-- [loadEpoc](Ethash.md#loadepoc)
-- [mkcache](Ethash.md#mkcache)
-- [run](Ethash.md#run)
-- [verifyPOW](Ethash.md#verifypow)
+Defined in: [index.ts:159](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L159)
 
 ## Constructors
 
-### constructor
+### new Ethash()
 
-• **new Ethash**(`cacheDB?`)
+> **new Ethash**(`cacheDB`?): [`Ethash`](Ethash.md)
+
+Defined in: [index.ts:168](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L168)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `cacheDB?` | `DB`<`number`, `DBObject`\> |
+##### cacheDB?
 
-#### Defined in
+`DB`\<`number`, `DBObject`\>
 
-[index.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L169)
+#### Returns
+
+[`Ethash`](Ethash.md)
 
 ## Properties
 
 ### cache
 
-• **cache**: `Uint8Array`[]
+> **cache**: `Uint8Array`[]
 
-#### Defined in
+Defined in: [index.ts:162](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
 
-[index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
+***
 
-___
+### cacheDB?
 
-### cacheDB
+> `optional` **cacheDB**: `DB`\<`number`, `DBObject`\>
 
-• `Optional` **cacheDB**: `DB`<`number`, `DBObject`\>
+Defined in: [index.ts:161](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
 
-#### Defined in
+***
 
-[index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
+### cacheSize?
 
-___
+> `optional` **cacheSize**: `number`
 
-### cacheSize
+Defined in: [index.ts:165](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
 
-• `Optional` **cacheSize**: `number`
-
-#### Defined in
-
-[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
-
-___
+***
 
 ### dbOpts
 
-• **dbOpts**: `Object`
+> **dbOpts**: `Object`
 
-#### Defined in
+Defined in: [index.ts:160](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L160)
 
-[index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
+***
 
-___
+### epoc?
 
-### epoc
+> `optional` **epoc**: `number`
 
-• `Optional` **epoc**: `number`
+Defined in: [index.ts:163](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
 
-#### Defined in
+***
 
-[index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
+### fullSize?
 
-___
+> `optional` **fullSize**: `number`
 
-### fullSize
+Defined in: [index.ts:164](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
 
-• `Optional` **fullSize**: `number`
+***
 
-#### Defined in
+### seed?
 
-[index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
+> `optional` **seed**: `Uint8Array`
 
-___
-
-### seed
-
-• `Optional` **seed**: `Uint8Array`
-
-#### Defined in
-
-[index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L167)
+Defined in: [index.ts:166](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
 
 ## Methods
 
-### \_verifyPOW
+### \_verifyPOW()
 
-▸ **_verifyPOW**(`header`): `Promise`<`boolean`\>
+> **\_verifyPOW**(`header`): `Promise`\<`boolean`\>
+
+Defined in: [index.ts:368](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L368)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `header` | `BlockHeader` |
+##### header
+
+`BlockHeader`
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`\<`boolean`\>
 
-#### Defined in
+***
 
-[index.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L369)
+### cacheHash()
 
-___
+> **cacheHash**(): `Uint8Array`
 
-### cacheHash
-
-▸ **cacheHash**(): `Uint8Array`
+Defined in: [index.ts:256](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L256)
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[index.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L257)
+### calcDatasetItem()
 
-___
+> **calcDatasetItem**(`i`): `Uint8Array`
 
-### calcDatasetItem
-
-▸ **calcDatasetItem**(`i`): `Uint8Array`
+Defined in: [index.ts:196](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L196)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `i` | `number` |
+##### i
+
+`number`
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[index.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L197)
+### getMiner()
 
-___
+> **getMiner**(`mineObject`): [`Miner`](Miner.md)
 
-### getMiner
-
-▸ **getMiner**(`mineObject`): [`Miner`](Miner.md)
+Defined in: [index.ts:364](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L364)
 
 Returns a `Miner` object
 To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(block).mine(-1)`
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `mineObject` | `BlockHeader` \| `Block` | Object to mine on, either a `BlockHeader` or a `Block` |
+##### mineObject
+
+Object to mine on, either a `BlockHeader` or a `Block`
+
+`BlockHeader` | `Block`
 
 #### Returns
 
@@ -191,116 +155,114 @@ To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(blo
 
 - A miner object
 
-#### Defined in
+***
 
-[index.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L365)
+### headerHash()
 
-___
+> **headerHash**(`rawHeader`): `Uint8Array`
 
-### headerHash
-
-▸ **headerHash**(`rawHeader`): `Uint8Array`
+Defined in: [index.ts:271](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L271)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `rawHeader` | `Uint8Array`[] |
+##### rawHeader
+
+`Uint8Array`[]
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[index.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L272)
+### loadEpoc()
 
-___
+> **loadEpoc**(`number`): `Promise`\<`void`\>
 
-### loadEpoc
-
-▸ **loadEpoc**(`number`): `Promise`<`void`\>
+Defined in: [index.ts:278](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L278)
 
 Loads the seed and cache given a block number.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `number` | `bigint` |
+##### number
+
+`bigint`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[index.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L279)
+### mkcache()
 
-___
+> **mkcache**(`cacheSize`, `seed`): `Uint8Array`[]
 
-### mkcache
-
-▸ **mkcache**(`cacheSize`, `seed`): `Uint8Array`[]
+Defined in: [index.ts:176](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L176)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `cacheSize` | `number` |
-| `seed` | `Uint8Array` |
+##### cacheSize
+
+`number`
+
+##### seed
+
+`Uint8Array`
 
 #### Returns
 
 `Uint8Array`[]
 
-#### Defined in
+***
 
-[index.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L177)
+### run()
 
-___
+> **run**(`val`, `nonce`, `fullSize`?): `object`
 
-### run
-
-▸ **run**(`val`, `nonce`, `fullSize?`): `Object`
+Defined in: [index.ts:210](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L210)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `val` | `Uint8Array` |
-| `nonce` | `Uint8Array` |
-| `fullSize?` | `number` |
+##### val
+
+`Uint8Array`
+
+##### nonce
+
+`Uint8Array`
+
+##### fullSize?
+
+`number`
 
 #### Returns
 
-`Object`
+`object`
 
-| Name | Type |
-| :------ | :------ |
-| `hash` | `Uint8Array` |
-| `mix` | `Uint8Array` |
+##### hash
 
-#### Defined in
+> **hash**: `Uint8Array`
 
-[index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L211)
+##### mix
 
-___
+> **mix**: `Uint8Array` = `cmix`
 
-### verifyPOW
+***
 
-▸ **verifyPOW**(`block`): `Promise`<`boolean`\>
+### verifyPOW()
+
+> **verifyPOW**(`block`): `Promise`\<`boolean`\>
+
+Defined in: [index.ts:378](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L378)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `block` | `Block` |
+##### block
+
+`Block`
 
 #### Returns
 
-`Promise`<`boolean`\>
-
-#### Defined in
-
-[index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L379)
+`Promise`\<`boolean`\>

@@ -1,95 +1,69 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / Deferred
 
-# Class: Deferred<T\>
+# Class: Deferred\<T\>
 
-## Type parameters
+Defined in: [packages/devp2p/src/util.ts:92](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L92)
 
-| Name |
-| :------ |
-| `T` |
+## Type Parameters
 
-## Table of contents
-
-### Constructors
-
-- [constructor](Deferred.md#constructor)
-
-### Properties
-
-- [promise](Deferred.md#promise)
-- [reject](Deferred.md#reject)
-- [resolve](Deferred.md#resolve)
+• **T**
 
 ## Constructors
 
-### constructor
+### new Deferred()
 
-• **new Deferred**<`T`\>()
+> **new Deferred**\<`T`\>(): [`Deferred`](Deferred.md)\<`T`\>
 
-#### Type parameters
+Defined in: [packages/devp2p/src/util.ts:96](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L96)
 
-| Name |
-| :------ |
-| `T` |
+#### Returns
 
-#### Defined in
-
-[packages/devp2p/src/util.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L104)
+[`Deferred`](Deferred.md)\<`T`\>
 
 ## Properties
 
 ### promise
 
-• **promise**: `Promise`<`T`\>
+> **promise**: `Promise`\<`T`\>
 
-#### Defined in
+Defined in: [packages/devp2p/src/util.ts:93](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L93)
 
-[packages/devp2p/src/util.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L101)
+***
 
-___
+### reject()
 
-### reject
+> **reject**: (...`args`) => `any`
 
-• **reject**: (...`args`: `any`[]) => `any`
+Defined in: [packages/devp2p/src/util.ts:95](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L95)
 
-#### Type declaration
+#### Parameters
 
-▸ (...`args`): `any`
+##### args
 
-##### Parameters
+...`any`[]
 
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
-
-##### Returns
+#### Returns
 
 `any`
 
-#### Defined in
+***
 
-[packages/devp2p/src/util.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L103)
+### resolve()
 
-___
+> **resolve**: (...`args`) => `any`
 
-### resolve
+Defined in: [packages/devp2p/src/util.ts:94](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L94)
 
-• **resolve**: (...`args`: `any`[]) => `any`
+#### Parameters
 
-#### Type declaration
+##### args
 
-▸ (...`args`): `any`
+...`any`[]
 
-##### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
-
-##### Returns
+#### Returns
 
 `any`
-
-#### Defined in
-
-[packages/devp2p/src/util.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L102)

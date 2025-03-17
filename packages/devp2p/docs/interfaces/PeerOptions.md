@@ -1,129 +1,97 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / PeerOptions
 
 # Interface: PeerOptions
 
-## Table of contents
-
-### Properties
-
-- [EIP8](PeerOptions.md#eip8)
-- [capabilities](PeerOptions.md#capabilities)
-- [clientId](PeerOptions.md#clientid)
-- [common](PeerOptions.md#common)
-- [id](PeerOptions.md#id)
-- [port](PeerOptions.md#port)
-- [privateKey](PeerOptions.md#privatekey)
-- [remoteClientIdFilter](PeerOptions.md#remoteclientidfilter)
-- [remoteId](PeerOptions.md#remoteid)
-- [socket](PeerOptions.md#socket)
-- [timeout](PeerOptions.md#timeout)
+Defined in: [packages/devp2p/src/types.ts:263](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L263)
 
 ## Properties
 
-### EIP8
+### capabilities?
 
-• `Optional` **EIP8**: `boolean` \| `Uint8Array`
+> `optional` **capabilities**: [`Capabilities`](Capabilities.md)[]
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:265](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L265)
 
-[packages/devp2p/src/types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L193)
-
-___
-
-### capabilities
-
-• `Optional` **capabilities**: [`Capabilities`](Capabilities.md)[]
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L187)
-
-___
+***
 
 ### clientId
 
-• **clientId**: `Uint8Array`
+> **clientId**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:264](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L264)
 
-[packages/devp2p/src/types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L186)
-
-___
+***
 
 ### common
 
-• **common**: `Common`
+> **common**: `Common`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:266](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L266)
 
-[packages/devp2p/src/types.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L188)
+***
 
-___
+### EIP8?
+
+> `optional` **EIP8**: `boolean` \| `Uint8Array`
+
+Defined in: [packages/devp2p/src/types.ts:271](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L271)
+
+***
 
 ### id
 
-• **id**: `Uint8Array`
+> **id**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:268](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L268)
 
-[packages/devp2p/src/types.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L190)
-
-___
+***
 
 ### port
 
-• **port**: `number`
+> **port**: `number`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:267](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L267)
 
-[packages/devp2p/src/types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L189)
-
-___
+***
 
 ### privateKey
 
-• **privateKey**: `Uint8Array`
+> **privateKey**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:272](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L272)
 
-[packages/devp2p/src/types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L194)
+***
 
-___
+### remoteClientIdFilter?
 
-### remoteClientIdFilter
+> `optional` **remoteClientIdFilter**: `string`[]
 
-• `Optional` **remoteClientIdFilter**: `string`[]
+Defined in: [packages/devp2p/src/types.ts:269](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L269)
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L191)
-
-___
+***
 
 ### remoteId
 
-• **remoteId**: `Uint8Array`
+> **remoteId**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:270](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L270)
 
-[packages/devp2p/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L192)
-
-___
+***
 
 ### socket
 
-• **socket**: `Socket`
+> **socket**: `Socket`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:273](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L273)
 
-[packages/devp2p/src/types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L195)
-
-___
+***
 
 ### timeout
 
-• **timeout**: `number`
+> **timeout**: `number`
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L196)
+Defined in: [packages/devp2p/src/types.ts:274](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L274)

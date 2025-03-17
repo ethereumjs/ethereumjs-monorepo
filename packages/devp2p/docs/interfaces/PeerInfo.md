@@ -1,69 +1,53 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / PeerInfo
 
 # Interface: PeerInfo
 
-## Hierarchy
+Defined in: [packages/devp2p/src/types.ts:250](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L250)
 
-- **`PeerInfo`**
+## Extended by
 
-  ↳ [`Contact`](Contact.md)
-
-## Table of contents
-
-### Properties
-
-- [address](PeerInfo.md#address)
-- [id](PeerInfo.md#id)
-- [tcpPort](PeerInfo.md#tcpport)
-- [udpPort](PeerInfo.md#udpport)
-- [vectorClock](PeerInfo.md#vectorclock)
+- [`Contact`](Contact.md)
 
 ## Properties
 
-### address
+### address?
 
-• `Optional` **address**: `string`
+> `optional` **address**: `string`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:252](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L252)
 
-[packages/devp2p/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L174)
+***
 
-___
+### id?
 
-### id
+> `optional` **id**: `Uint8Array`
 
-• `Optional` **id**: `Uint8Array`
+Defined in: [packages/devp2p/src/types.ts:251](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L251)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L173)
+### tcpPort?
 
-___
+> `optional` **tcpPort**: `null` \| `number`
 
-### tcpPort
+Defined in: [packages/devp2p/src/types.ts:254](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L254)
 
-• `Optional` **tcpPort**: ``null`` \| `number`
+***
 
-#### Defined in
+### udpPort?
 
-[packages/devp2p/src/types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L176)
+> `optional` **udpPort**: `null` \| `number`
 
-___
+Defined in: [packages/devp2p/src/types.ts:253](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L253)
 
-### udpPort
+***
 
-• `Optional` **udpPort**: ``null`` \| `number`
+### vectorClock?
 
-#### Defined in
+> `optional` **vectorClock**: `number`
 
-[packages/devp2p/src/types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L175)
-
-___
-
-### vectorClock
-
-• `Optional` **vectorClock**: `number`
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L177)
+Defined in: [packages/devp2p/src/types.ts:255](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L255)

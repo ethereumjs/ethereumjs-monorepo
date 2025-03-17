@@ -83,5 +83,8 @@
   "engines": {
     "node": ">=18",
     "npm": ">=7"
+  },
+  "dependencies": {
+    "@vercel/edge-config": "^1.4.0"
   }
 }

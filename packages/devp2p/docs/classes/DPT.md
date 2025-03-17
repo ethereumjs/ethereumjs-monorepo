@@ -1,311 +1,308 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / DPT
 
 # Class: DPT
 
-## Table of contents
-
-### Constructors
-
-- [constructor](DPT.md#constructor)
-
-### Properties
-
-- [events](DPT.md#events)
-- [id](DPT.md#id)
-
-### Methods
-
-- [\_addPeerBatch](DPT.md#_addpeerbatch)
-- [\_onKBucketPing](DPT.md#_onkbucketping)
-- [addPeer](DPT.md#addpeer)
-- [banPeer](DPT.md#banpeer)
-- [bind](DPT.md#bind)
-- [bootstrap](DPT.md#bootstrap)
-- [destroy](DPT.md#destroy)
-- [getClosestPeers](DPT.md#getclosestpeers)
-- [getDnsPeers](DPT.md#getdnspeers)
-- [getPeer](DPT.md#getpeer)
-- [getPeers](DPT.md#getpeers)
-- [refresh](DPT.md#refresh)
-- [removePeer](DPT.md#removepeer)
+Defined in: [packages/devp2p/src/dpt/dpt.ts:18](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L18)
 
 ## Constructors
 
-### constructor
+### new DPT()
 
-• **new DPT**(`privateKey`, `options`)
+> **new DPT**(`privateKey`, `options`): [`DPT`](DPT.md)
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:43](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L43)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
-| `options` | [`DPTOptions`](../interfaces/DPTOptions.md) |
+##### privateKey
 
-#### Defined in
+`Uint8Array`
 
-[packages/devp2p/src/dpt/dpt.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L35)
+##### options
+
+[`DPTOptions`](../interfaces/DPTOptions.md)
+
+#### Returns
+
+[`DPT`](DPT.md)
 
 ## Properties
 
 ### events
 
-• **events**: `EventEmitter`
+> **events**: `EventEmitter`\<[`DPTEvent`](../interfaces/DPTEvent.md)\>
 
-#### Defined in
+Defined in: [packages/devp2p/src/dpt/dpt.ts:19](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L19)
 
-[packages/devp2p/src/dpt/dpt.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L18)
-
-___
+***
 
 ### id
 
-• `Readonly` **id**: `undefined` \| `Uint8Array`
+> `readonly` **id**: `undefined` \| `Uint8Array`
 
-#### Defined in
-
-[packages/devp2p/src/dpt/dpt.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L24)
+Defined in: [packages/devp2p/src/dpt/dpt.ts:25](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L25)
 
 ## Methods
 
-### \_addPeerBatch
+### \_addPeerBatch()
 
-▸ **_addPeerBatch**(`peers`): `void`
+> **\_addPeerBatch**(`peers`): `void`
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:123](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L123)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peers` | [`PeerInfo`](../interfaces/PeerInfo.md)[] |
+##### peers
+
+[`PeerInfo`](../interfaces/PeerInfo.md)[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L105)
+### \_onKBucketPing()
 
-___
+> **\_onKBucketPing**(`oldPeers`, `newPeer`): `void`
 
-### \_onKBucketPing
-
-▸ **_onKBucketPing**(`oldPeers`, `newPeer`): `void`
+Defined in: [packages/devp2p/src/dpt/dpt.ts:101](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L101)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `oldPeers` | [`PeerInfo`](../interfaces/PeerInfo.md)[] |
-| `newPeer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### oldPeers
+
+[`PeerInfo`](../interfaces/PeerInfo.md)[]
+
+##### newPeer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L84)
+### addPeer()
 
-___
+> **addPeer**(`obj`): `Promise`\<[`PeerInfo`](../interfaces/PeerInfo.md)\>
 
-### addPeer
-
-▸ **addPeer**(`obj`): `Promise`<[`PeerInfo`](../interfaces/PeerInfo.md)\>
+Defined in: [packages/devp2p/src/dpt/dpt.ts:152](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L152)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
-`Promise`<[`PeerInfo`](../interfaces/PeerInfo.md)\>
+`Promise`\<[`PeerInfo`](../interfaces/PeerInfo.md)\>
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L131)
+### banPeer()
 
-___
+> **banPeer**(`obj`, `maxAge`?): `void`
 
-### banPeer
-
-▸ **banPeer**(`obj`, `maxAge?`): `void`
+Defined in: [packages/devp2p/src/dpt/dpt.ts:218](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L218)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
-| `maxAge?` | `number` |
+##### obj
 
-#### Returns
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`
 
-`void`
+##### maxAge?
 
-#### Defined in
-
-[packages/devp2p/src/dpt/dpt.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L167)
-
-___
-
-### bind
-
-▸ **bind**(...`args`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+`number`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L75)
+### bind()
 
-___
+> **bind**(...`args`): `void`
 
-### bootstrap
-
-▸ **bootstrap**(`peer`): `Promise`<`void`\>
+Defined in: [packages/devp2p/src/dpt/dpt.ts:92](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L92)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### args
 
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[packages/devp2p/src/dpt/dpt.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L118)
-
-___
-
-### destroy
-
-▸ **destroy**(...`args`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+...`any`[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L79)
+### bootstrap()
 
-___
+> **bootstrap**(`peer`): `Promise`\<`void`\>
 
-### getClosestPeers
-
-▸ **getClosestPeers**(`id`): [`PeerInfo`](../interfaces/PeerInfo.md)[]
+Defined in: [packages/devp2p/src/dpt/dpt.ts:136](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L136)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `id` | `Uint8Array` |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### confirmPeer()
+
+> **confirmPeer**(`id`): `void`
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:182](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L182)
+
+Add peer to a confirmed list of peers (peers meeting some
+level of quality, e.g. being on the same network) to allow
+for a more selective findNeighbours request and sending
+(with activated `onlyConfirmed` setting)
+
+#### Parameters
+
+##### id
+
+`string`
+
+Unprefixed hex id
+
+#### Returns
+
+`void`
+
+***
+
+### destroy()
+
+> **destroy**(...`args`): `void`
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:96](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L96)
+
+#### Parameters
+
+##### args
+
+...`any`[]
+
+#### Returns
+
+`void`
+
+***
+
+### getClosestPeers()
+
+> **getClosestPeers**(`id`): [`PeerInfo`](../interfaces/PeerInfo.md)[]
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:200](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L200)
+
+#### Parameters
+
+##### id
+
+`Uint8Array`
 
 #### Returns
 
 [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L159)
+### getDnsPeers()
 
-___
+> **getDnsPeers**(): `Promise`\<[`PeerInfo`](../interfaces/PeerInfo.md)[]\>
 
-### getDnsPeers
-
-▸ **getDnsPeers**(): `Promise`<[`PeerInfo`](../interfaces/PeerInfo.md)[]\>
+Defined in: [packages/devp2p/src/dpt/dpt.ts:223](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L223)
 
 #### Returns
 
-`Promise`<[`PeerInfo`](../interfaces/PeerInfo.md)[]\>
+`Promise`\<[`PeerInfo`](../interfaces/PeerInfo.md)[]\>
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L172)
+### getPeer()
 
-___
+> **getPeer**(`obj`): `null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
-### getPeer
-
-▸ **getPeer**(`obj`): ``null`` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+Defined in: [packages/devp2p/src/dpt/dpt.ts:188](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L188)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`
 
 #### Returns
 
-``null`` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+`null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L151)
+### getPeers()
 
-___
+> **getPeers**(): [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-### getPeers
-
-▸ **getPeers**(): [`PeerInfo`](../interfaces/PeerInfo.md)[]
+Defined in: [packages/devp2p/src/dpt/dpt.ts:192](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L192)
 
 #### Returns
 
 [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L155)
+### numPeers()
 
-___
+> **numPeers**(): `number`
 
-### refresh
-
-▸ **refresh**(): `Promise`<`void`\>
+Defined in: [packages/devp2p/src/dpt/dpt.ts:196](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L196)
 
 #### Returns
 
-`Promise`<`void`\>
+`number`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/dpt.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L176)
+### refresh()
 
-___
+> **refresh**(): `Promise`\<`void`\>
 
-### removePeer
+Defined in: [packages/devp2p/src/dpt/dpt.ts:227](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L227)
 
-▸ **removePeer**(`obj`): `void`
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### removePeer()
+
+> **removePeer**(`obj`): `void`
+
+Defined in: [packages/devp2p/src/dpt/dpt.ts:210](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L210)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`
 
 #### Returns
 
 `void`
-
-#### Defined in
-
-[packages/devp2p/src/dpt/dpt.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L163)

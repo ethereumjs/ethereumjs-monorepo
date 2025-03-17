@@ -1,78 +1,65 @@
+[**@ethereumjs/statemanager**](../README.md)
+
+***
+
 [@ethereumjs/statemanager](../README.md) / RPCBlockChain
 
 # Class: RPCBlockChain
 
-## Table of contents
-
-### Constructors
-
-- [constructor](RPCBlockChain.md#constructor)
-
-### Properties
-
-- [provider](RPCBlockChain.md#provider)
-
-### Methods
-
-- [getBlock](RPCBlockChain.md#getblock)
-- [shallowCopy](RPCBlockChain.md#shallowcopy)
+Defined in: [rpcStateManager.ts:361](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L361)
 
 ## Constructors
 
-### constructor
+### new RPCBlockChain()
 
-• **new RPCBlockChain**(`provider`)
+> **new RPCBlockChain**(`provider`): [`RPCBlockChain`](RPCBlockChain.md)
 
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `provider` | `string` |
-
-#### Defined in
-
-[rpcStateManager.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L445)
-
-## Properties
-
-### provider
-
-• `Readonly` **provider**: `string`
-
-#### Defined in
-
-[rpcStateManager.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L444)
-
-## Methods
-
-### getBlock
-
-▸ **getBlock**(`blockId`): `Promise`<{ `hash`: () => `Uint8Array`  }\>
+Defined in: [rpcStateManager.ts:363](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L363)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `blockId` | `number` |
+##### provider
 
-#### Returns
-
-`Promise`<{ `hash`: () => `Uint8Array`  }\>
-
-#### Defined in
-
-[rpcStateManager.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L449)
-
-___
-
-### shallowCopy
-
-▸ **shallowCopy**(): [`RPCBlockChain`](RPCBlockChain.md)
+`string`
 
 #### Returns
 
 [`RPCBlockChain`](RPCBlockChain.md)
 
-#### Defined in
+## Properties
 
-[rpcStateManager.ts:459](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L459)
+### provider
+
+> `readonly` **provider**: `string`
+
+Defined in: [rpcStateManager.ts:362](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L362)
+
+## Methods
+
+### getBlock()
+
+> **getBlock**(`blockId`): `Promise`\<\{ `hash`: () => `Uint8Array`; \}\>
+
+Defined in: [rpcStateManager.ts:367](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L367)
+
+#### Parameters
+
+##### blockId
+
+`number`
+
+#### Returns
+
+`Promise`\<\{ `hash`: () => `Uint8Array`; \}\>
+
+***
+
+### shallowCopy()
+
+> **shallowCopy**(): [`RPCBlockChain`](RPCBlockChain.md)
+
+Defined in: [rpcStateManager.ts:377](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L377)
+
+#### Returns
+
+[`RPCBlockChain`](RPCBlockChain.md)

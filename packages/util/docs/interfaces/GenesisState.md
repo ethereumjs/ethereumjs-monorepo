@@ -1,6 +1,12 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / GenesisState
 
 # Interface: GenesisState
+
+Defined in: [packages/util/src/genesis.ts:39](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/util/src/genesis.ts#L39)
 
 If you are using a custom chain Common, pass the genesis state.
 
@@ -13,7 +19,7 @@ Pattern 1 (with genesis state see [GenesisState](GenesisState.md) for format):
 ```
 
 Pattern 2 (with complex genesis state, containing contract accounts and storage).
-Note that in [AccountState](../README.md#accountstate) there are two
+Note that in [AccountState](../type-aliases/AccountState.md) there are two
 accepted types. This allows to easily insert accounts in the genesis state:
 
 A complex genesis state with Contract and EoA states would have the following format:
@@ -27,4 +33,4 @@ A complex genesis state with Contract and EoA states would have the following fo
 
 ## Indexable
 
-▪ [key: [`PrefixedHexString`](../README.md#prefixedhexstring)]: [`PrefixedHexString`](../README.md#prefixedhexstring) \| [`AccountState`](../README.md#accountstate)
+\[`key`: `string`\]: `` `0x${string}` `` \| [`AccountState`](../type-aliases/AccountState.md)

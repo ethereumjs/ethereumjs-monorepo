@@ -1,96 +1,73 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / RLPxOptions
 
 # Interface: RLPxOptions
 
-## Table of contents
-
-### Properties
-
-- [capabilities](RLPxOptions.md#capabilities)
-- [clientId](RLPxOptions.md#clientid)
-- [common](RLPxOptions.md#common)
-- [dpt](RLPxOptions.md#dpt)
-- [listenPort](RLPxOptions.md#listenport)
-- [maxPeers](RLPxOptions.md#maxpeers)
-- [remoteClientIdFilter](RLPxOptions.md#remoteclientidfilter)
-- [timeout](RLPxOptions.md#timeout)
+Defined in: [packages/devp2p/src/types.ts:277](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L277)
 
 ## Properties
 
 ### capabilities
 
-• **capabilities**: [`Capabilities`](Capabilities.md)[]
+> **capabilities**: [`Capabilities`](Capabilities.md)[]
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:285](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L285)
 
-[packages/devp2p/src/types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L207)
+***
 
-___
+### clientId?
 
-### clientId
+> `optional` **clientId**: `Uint8Array`
 
-• `Optional` **clientId**: `Uint8Array`
+Defined in: [packages/devp2p/src/types.ts:278](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L278)
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L200)
-
-___
+***
 
 ### common
 
-• **common**: `Common`
+> **common**: `Common`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:286](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L286)
 
-[packages/devp2p/src/types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L208)
+***
 
-___
+### dpt?
 
-### dpt
+> `optional` **dpt**: `null` \| [`DPT`](../classes/DPT.md)
 
-• `Optional` **dpt**: ``null`` \| [`DPT`](../classes/DPT.md)
+Defined in: [packages/devp2p/src/types.ts:281](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L281)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L203)
+### listenPort?
 
-___
+> `optional` **listenPort**: `null` \| `number`
 
-### listenPort
+Defined in: [packages/devp2p/src/types.ts:287](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L287)
 
-• `Optional` **listenPort**: ``null`` \| `number`
+***
 
-#### Defined in
+### maxPeers?
 
-[packages/devp2p/src/types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L209)
+> `optional` **maxPeers**: `number`
 
-___
+Defined in: [packages/devp2p/src/types.ts:283](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L283)
 
-### maxPeers
+***
 
-• `Optional` **maxPeers**: `number`
+### remoteClientIdFilter?
 
-#### Defined in
+> `optional` **remoteClientIdFilter**: `string`[]
 
-[packages/devp2p/src/types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L205)
+Defined in: [packages/devp2p/src/types.ts:284](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L284)
 
-___
+***
 
-### remoteClientIdFilter
+### timeout?
 
-• `Optional` **remoteClientIdFilter**: `string`[]
+> `optional` **timeout**: `number`
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L206)
-
-___
-
-### timeout
-
-• `Optional` **timeout**: `number`
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L202)
+Defined in: [packages/devp2p/src/types.ts:280](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L280)

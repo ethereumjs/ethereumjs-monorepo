@@ -1,189 +1,179 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / Server
 
 # Class: Server
 
-## Table of contents
-
-### Constructors
-
-- [constructor](Server.md#constructor)
-
-### Properties
-
-- [events](Server.md#events)
-
-### Methods
-
-- [\_handler](Server.md#_handler)
-- [\_isAliveCheck](Server.md#_isalivecheck)
-- [\_send](Server.md#_send)
-- [bind](Server.md#bind)
-- [destroy](Server.md#destroy)
-- [findneighbours](Server.md#findneighbours)
-- [ping](Server.md#ping)
+Defined in: [packages/devp2p/src/dpt/server.ts:22](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L22)
 
 ## Constructors
 
-### constructor
+### new Server()
 
-• **new Server**(`dpt`, `privateKey`, `options`)
+> **new Server**(`dpt`, `privateKey`, `options`): [`Server`](Server.md)
+
+Defined in: [packages/devp2p/src/dpt/server.ts:37](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L37)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `dpt` | [`DPT`](DPT.md) |
-| `privateKey` | `Uint8Array` |
-| `options` | [`DPTServerOptions`](../interfaces/DPTServerOptions.md) |
+##### dpt
 
-#### Defined in
+[`DPT`](DPT.md)
 
-[packages/devp2p/src/dpt/server.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L35)
+##### privateKey
+
+`Uint8Array`
+
+##### options
+
+[`DPTServerOptions`](../interfaces/DPTServerOptions.md)
+
+#### Returns
+
+[`Server`](Server.md)
 
 ## Properties
 
 ### events
 
-• **events**: `EventEmitter`
+> **events**: `EventEmitter`\<[`ServerEvent`](../interfaces/ServerEvent.md)\>
 
-#### Defined in
-
-[packages/devp2p/src/dpt/server.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L25)
+Defined in: [packages/devp2p/src/dpt/server.ts:23](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L23)
 
 ## Methods
 
-### \_handler
+### \_handler()
 
-▸ **_handler**(`msg`, `rinfo`): `void`
+> **\_handler**(`msg`, `rinfo`): `void`
+
+Defined in: [packages/devp2p/src/dpt/server.ts:154](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L154)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msg` | `Uint8Array` |
-| `rinfo` | `RemoteInfo` |
+##### msg
+
+`Uint8Array`
+
+##### rinfo
+
+`RemoteInfo`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L139)
+### \_isAliveCheck()
 
-___
+> **\_isAliveCheck**(): `void`
 
-### \_isAliveCheck
-
-▸ **_isAliveCheck**(): `void`
+Defined in: [packages/devp2p/src/dpt/server.ts:133](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L133)
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L120)
+### \_send()
 
-___
+> **\_send**(`peer`, `typename`, `data`): `Uint8Array`
 
-### \_send
-
-▸ **_send**(`peer`, `typename`, `data`): `Uint8Array`
+Defined in: [packages/devp2p/src/dpt/server.ts:137](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L137)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
-| `typename` | `string` |
-| `data` | `any` |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
+
+##### typename
+
+`string`
+
+##### data
+
+`any`
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L124)
+### bind()
 
-___
+> **bind**(...`args`): `void`
 
-### bind
-
-▸ **bind**(...`args`): `void`
+Defined in: [packages/devp2p/src/dpt/server.ts:69](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L69)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+##### args
+
+...`any`[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L62)
+### destroy()
 
-___
+> **destroy**(...`args`): `void`
 
-### destroy
-
-▸ **destroy**(...`args`): `void`
+Defined in: [packages/devp2p/src/dpt/server.ts:78](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L78)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+##### args
+
+...`any`[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L69)
+### findneighbours()
 
-___
+> **findneighbours**(`peer`, `id`): `void`
 
-### findneighbours
-
-▸ **findneighbours**(`peer`, `id`): `void`
+Defined in: [packages/devp2p/src/dpt/server.ts:128](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L128)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
-| `id` | `Uint8Array` |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
+
+##### id
+
+`Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/server.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L115)
+### ping()
 
-___
+> **ping**(`peer`): `Promise`\<`any`\>
 
-### ping
-
-▸ **ping**(`peer`): `Promise`<`any`\>
+Defined in: [packages/devp2p/src/dpt/server.ts:90](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L90)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
-`Promise`<`any`\>
-
-#### Defined in
-
-[packages/devp2p/src/dpt/server.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L79)
+`Promise`\<`any`\>

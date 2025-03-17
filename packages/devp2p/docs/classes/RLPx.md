@@ -1,282 +1,239 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / RLPx
 
 # Class: RLPx
 
-## Table of contents
-
-### Constructors
-
-- [constructor](RLPx.md#constructor)
-
-### Properties
-
-- [clientId](RLPx.md#clientid)
-- [events](RLPx.md#events)
-- [id](RLPx.md#id)
-
-### Methods
-
-- [\_connectToPeer](RLPx.md#_connecttopeer)
-- [\_getOpenQueueSlots](RLPx.md#_getopenqueueslots)
-- [\_getOpenSlots](RLPx.md#_getopenslots)
-- [\_isAlive](RLPx.md#_isalive)
-- [\_isAliveCheck](RLPx.md#_isalivecheck)
-- [\_onConnect](RLPx.md#_onconnect)
-- [\_refillConnections](RLPx.md#_refillconnections)
-- [connect](RLPx.md#connect)
-- [destroy](RLPx.md#destroy)
-- [disconnect](RLPx.md#disconnect)
-- [getPeers](RLPx.md#getpeers)
-- [listen](RLPx.md#listen)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:31](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L31)
 
 ## Constructors
 
-### constructor
+### new RLPx()
 
-• **new RLPx**(`privateKey`, `options`)
+> **new RLPx**(`privateKey`, `options`): [`RLPx`](RLPx.md)
+
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:57](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L57)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
-| `options` | [`RLPxOptions`](../interfaces/RLPxOptions.md) |
+##### privateKey
 
-#### Defined in
+`Uint8Array`
 
-[packages/devp2p/src/rlpx/rlpx.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L55)
+##### options
+
+[`RLPxOptions`](../interfaces/RLPxOptions.md)
+
+#### Returns
+
+[`RLPx`](RLPx.md)
 
 ## Properties
 
 ### clientId
 
-• `Readonly` **clientId**: `Uint8Array`
+> `readonly` **clientId**: `Uint8Array`
 
-#### Defined in
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:38](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L38)
 
-[packages/devp2p/src/rlpx/rlpx.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L40)
-
-___
+***
 
 ### events
 
-• **events**: `EventEmitter`
+> **events**: `EventEmitter`\<[`RLPxEvent`](../interfaces/RLPxEvent.md)\>
 
-#### Defined in
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:32](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L32)
 
-[packages/devp2p/src/rlpx/rlpx.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L34)
-
-___
+***
 
 ### id
 
-• `Readonly` **id**: `Uint8Array`
+> `readonly` **id**: `Uint8Array`
 
-#### Defined in
-
-[packages/devp2p/src/rlpx/rlpx.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L36)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:34](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L34)
 
 ## Methods
 
-### \_connectToPeer
+### \_connectToPeer()
 
-▸ **_connectToPeer**(`peer`): `void`
+> **\_connectToPeer**(`peer`): `void`
+
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:207](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L207)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L192)
+### \_getOpenQueueSlots()
 
-___
+> **\_getOpenQueueSlots**(): `number`
 
-### \_getOpenQueueSlots
-
-▸ **_getOpenQueueSlots**(): `number`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:203](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L203)
 
 #### Returns
 
 `number`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L188)
+### \_getOpenSlots()
 
-___
+> **\_getOpenSlots**(): `number`
 
-### \_getOpenSlots
-
-▸ **_getOpenSlots**(): `number`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:199](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L199)
 
 #### Returns
 
 `number`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L184)
+### \_isAlive()
 
-___
+> **\_isAlive**(): `boolean`
 
-### \_isAlive
-
-▸ **_isAlive**(): `boolean`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:191](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L191)
 
 #### Returns
 
 `boolean`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L176)
+### \_isAliveCheck()
 
-___
+> **\_isAliveCheck**(): `void`
 
-### \_isAliveCheck
-
-▸ **_isAliveCheck**(): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:195](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L195)
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L180)
+### \_onConnect()
 
-___
+> **\_onConnect**(`socket`, `peerId`): `void`
 
-### \_onConnect
-
-▸ **_onConnect**(`socket`, `peerId`): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:216](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L216)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `socket` | `Socket` |
-| `peerId` | ``null`` \| `Uint8Array` |
+##### socket
+
+`Socket`
+
+##### peerId
+
+`null` | `Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L201)
+### \_refillConnections()
 
-___
+> **\_refillConnections**(): `void`
 
-### \_refillConnections
-
-▸ **_refillConnections**(): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:303](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L303)
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L286)
+### connect()
 
-___
+> **connect**(`peer`): `Promise`\<`void`\>
 
-### connect
-
-▸ **connect**(`peer`): `Promise`<`void`\>
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:148](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L148)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L137)
+### destroy()
 
-___
+> **destroy**(...`args`): `void`
 
-### destroy
-
-▸ **destroy**(...`args`): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:134](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L134)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+##### args
+
+...`any`[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L125)
+### disconnect()
 
-___
+> **disconnect**(`id`): `void`
 
-### disconnect
-
-▸ **disconnect**(`id`): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:184](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L184)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `id` | `Uint8Array` |
+##### id
+
+`Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L169)
+### getPeers()
 
-___
+> **getPeers**(): ([`Peer`](Peer.md) \| `Socket`)[]
 
-### getPeers
-
-▸ **getPeers**(): (`Socket` \| [`Peer`](Peer.md))[]
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:180](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L180)
 
 #### Returns
 
-(`Socket` \| [`Peer`](Peer.md))[]
+([`Peer`](Peer.md) \| `Socket`)[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/rlpx.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L165)
+### listen()
 
-___
+> **listen**(...`args`): `void`
 
-### listen
-
-▸ **listen**(...`args`): `void`
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:125](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L125)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `...args` | `any`[] |
+##### args
+
+...`any`[]
 
 #### Returns
 
 `void`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/rlpx.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L118)

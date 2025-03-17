@@ -1,52 +1,49 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / TxValuesArray
 
 # Interface: TxValuesArray
 
-## Table of contents
-
-### Properties
-
-- [0](TxValuesArray.md#0)
-- [1](TxValuesArray.md#1)
-- [2](TxValuesArray.md#2)
-- [3](TxValuesArray.md#3)
+Defined in: [types.ts:430](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L430)
 
 ## Properties
 
 ### 0
 
-• **0**: `LegacyTxValuesArray`
+> **0**: `LegacyTxValuesArray`
 
-#### Defined in
+Defined in: [types.ts:431](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L431)
 
-[tx/src/types.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L356)
-
-___
+***
 
 ### 1
 
-• **1**: `AccessListEIP2930TxValuesArray`
+> **1**: `AccessList2930TxValuesArray`
 
-#### Defined in
+Defined in: [types.ts:432](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L432)
 
-[tx/src/types.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L357)
-
-___
+***
 
 ### 2
 
-• **2**: `FeeMarketEIP1559TxValuesArray`
+> **2**: `FeeMarketEIP1559TxValuesArray`
 
-#### Defined in
+Defined in: [types.ts:433](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L433)
 
-[tx/src/types.ts:358](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L358)
-
-___
+***
 
 ### 3
 
-• **3**: `BlobEIP4844TxValuesArray`
+> **3**: `BlobEIP4844TxValuesArray`
 
-#### Defined in
+Defined in: [types.ts:434](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L434)
 
-[tx/src/types.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L359)
+***
+
+### 4
+
+> **4**: `EOACode7702TxValuesArray`
+
+Defined in: [types.ts:435](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L435)

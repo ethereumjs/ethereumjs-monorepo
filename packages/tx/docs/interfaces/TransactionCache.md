@@ -1,48 +1,41 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / TransactionCache
 
 # Interface: TransactionCache
 
-## Table of contents
-
-### Properties
-
-- [dataFee](TransactionCache.md#datafee)
-- [hash](TransactionCache.md#hash)
-- [senderPubKey](TransactionCache.md#senderpubkey)
+Defined in: [types.ts:138](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L138)
 
 ## Properties
 
-### dataFee
+### dataFee?
 
-• `Optional` **dataFee**: `Object`
+> `optional` **dataFee**: `object`
 
-#### Type declaration
+Defined in: [types.ts:140](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L140)
 
-| Name | Type |
-| :------ | :------ |
-| `hardfork` | `string` |
-| `value` | `bigint` |
+#### hardfork
 
-#### Defined in
+> **hardfork**: `string`
 
-[tx/src/types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L98)
+#### value
 
-___
+> **value**: `bigint`
 
-### hash
+***
 
-• `Optional` **hash**: `Uint8Array`
+### hash?
 
-#### Defined in
+> `optional` **hash**: `Uint8Array`
 
-[tx/src/types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L97)
+Defined in: [types.ts:139](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L139)
 
-___
+***
 
-### senderPubKey
+### senderPubKey?
 
-• `Optional` **senderPubKey**: `Uint8Array`
+> `optional` **senderPubKey**: `Uint8Array`
 
-#### Defined in
-
-[tx/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L102)
+Defined in: [types.ts:144](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L144)

@@ -1,326 +1,305 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / ECIES
 
 # Class: ECIES
 
-## Table of contents
-
-### Constructors
-
-- [constructor](ECIES.md#constructor)
-
-### Methods
-
-- [\_decryptMessage](ECIES.md#_decryptmessage)
-- [\_encryptMessage](ECIES.md#_encryptmessage)
-- [\_setupFrame](ECIES.md#_setupframe)
-- [createAckEIP8](ECIES.md#createackeip8)
-- [createAckOld](ECIES.md#createackold)
-- [createAuthEIP8](ECIES.md#createautheip8)
-- [createAuthNonEIP8](ECIES.md#createauthnoneip8)
-- [createBody](ECIES.md#createbody)
-- [createHeader](ECIES.md#createheader)
-- [parseAckEIP8](ECIES.md#parseackeip8)
-- [parseAckPlain](ECIES.md#parseackplain)
-- [parseAuthEIP8](ECIES.md#parseautheip8)
-- [parseAuthPlain](ECIES.md#parseauthplain)
-- [parseBody](ECIES.md#parsebody)
-- [parseHeader](ECIES.md#parseheader)
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:53](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L53)
 
 ## Constructors
 
-### constructor
+### new ECIES()
 
-• **new ECIES**(`privateKey`, `id`, `remoteId`)
+> **new ECIES**(`privateKey`, `id`, `remoteId`, `common`?): [`ECIES`](ECIES.md)
+
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:88](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L88)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
-| `id` | `Uint8Array` |
-| `remoteId` | `Uint8Array` |
+##### privateKey
 
-#### Defined in
+`Uint8Array`
 
-[packages/devp2p/src/rlpx/ecies.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L80)
+##### id
+
+`Uint8Array`
+
+##### remoteId
+
+`Uint8Array`
+
+##### common?
+
+`Common`
+
+#### Returns
+
+[`ECIES`](ECIES.md)
 
 ## Methods
 
-### \_decryptMessage
+### \_decryptMessage()
 
-▸ **_decryptMessage**(`data`, `sharedMacData?`): `Uint8Array`
+> **\_decryptMessage**(`data`, `sharedMacData`): `Uint8Array`
+
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:131](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L131)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `data` | `Uint8Array` | `undefined` |
-| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
+##### data
+
+`Uint8Array`
+
+##### sharedMacData
+
+`null` | `Uint8Array`
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L119)
+### \_encryptMessage()
 
-___
+> **\_encryptMessage**(`data`, `sharedMacData`): `undefined` \| `Uint8Array`
 
-### \_encryptMessage
-
-▸ **_encryptMessage**(`data`, `sharedMacData?`): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:102](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L102)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `data` | `Uint8Array` | `undefined` |
-| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
+##### data
+
+`Uint8Array`
+
+##### sharedMacData
+
+`null` | `Uint8Array`
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L90)
+### \_setupFrame()
 
-___
+> **\_setupFrame**(`remoteData`, `incoming`): `void`
 
-### \_setupFrame
-
-▸ **_setupFrame**(`remoteData`, `incoming`): `void`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:166](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L166)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `remoteData` | `Uint8Array` |
-| `incoming` | `boolean` |
+##### remoteData
+
+`Uint8Array`
+
+##### incoming
+
+`boolean`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L154)
+### createAckEIP8()
 
-___
+> **createAckEIP8**(): `undefined` \| `Uint8Array`
 
-### createAckEIP8
-
-▸ **createAckEIP8**(): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:296](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L296)
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L284)
+### createAckOld()
 
-___
+> **createAckOld**(): `undefined` \| `Uint8Array`
 
-### createAckOld
-
-▸ **createAckOld**(): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:313](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L313)
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L301)
+### createAuthEIP8()
 
-___
+> **createAuthEIP8**(): `undefined` \| `Uint8Array`
 
-### createAuthEIP8
-
-▸ **createAuthEIP8**(): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:190](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L190)
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L178)
+### createAuthNonEIP8()
 
-___
+> **createAuthNonEIP8**(): `undefined` \| `Uint8Array`
 
-### createAuthNonEIP8
-
-▸ **createAuthNonEIP8**(): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:213](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L213)
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L201)
+### createBlockHeader()
 
-___
+> **createBlockHeader**(`size`): `undefined` \| `Uint8Array`
 
-### createBody
-
-▸ **createBody**(`data`): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:359](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L359)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `Uint8Array` |
+##### size
+
+`number`
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L378)
+### createBody()
 
-___
+> **createBody**(`data`): `undefined` \| `Uint8Array`
 
-### createHeader
-
-▸ **createHeader**(`size`): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:390](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L390)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `size` | `number` |
+##### data
+
+`Uint8Array`
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L347)
+### parseAckEIP8()
 
-___
+> **parseAckEIP8**(`data`): `void`
 
-### parseAckEIP8
-
-▸ **parseAckEIP8**(`data`): `void`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:353](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L353)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `Uint8Array` |
+##### data
+
+`Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L341)
+### parseAckPlain()
 
-___
+> **parseAckPlain**(`data`, `sharedMacData`): `void`
 
-### parseAckPlain
-
-▸ **parseAckPlain**(`data`, `sharedMacData?`): `void`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:323](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L323)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `data` | `Uint8Array` | `undefined` |
-| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
+##### data
+
+`Uint8Array`
+
+##### sharedMacData
+
+`null` | `Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L311)
+### parseAuthEIP8()
 
-___
+> **parseAuthEIP8**(`data`): `void`
 
-### parseAuthEIP8
-
-▸ **parseAuthEIP8**(`data`): `void`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:290](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L290)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `Uint8Array` |
+##### data
+
+`Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L278)
+### parseAuthPlain()
 
-___
+> **parseAuthPlain**(`data`, `sharedMacData`): `undefined` \| `Uint8Array`
 
-### parseAuthPlain
-
-▸ **parseAuthPlain**(`data`, `sharedMacData?`): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:230](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L230)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `data` | `Uint8Array` | `undefined` |
-| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
+##### data
+
+`Uint8Array`
+
+##### sharedMacData
+
+`null` | `Uint8Array`
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L218)
+### parseBody()
 
-___
+> **parseBody**(`data`): `undefined` \| `Uint8Array`
 
-### parseBody
-
-▸ **parseBody**(`data`): `undefined` \| `Uint8Array`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:401](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L401)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `Uint8Array` |
+##### data
+
+`Uint8Array`
 
 #### Returns
 
 `undefined` \| `Uint8Array`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/ecies.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L389)
+### parseHeader()
 
-___
+> **parseHeader**(`data`): `undefined` \| `number`
 
-### parseHeader
-
-▸ **parseHeader**(`data`): `undefined` \| `number`
+Defined in: [packages/devp2p/src/rlpx/ecies.ts:374](https://github.com/Dargon789/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L374)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `Uint8Array` |
+##### data
+
+`Uint8Array`
 
 #### Returns
 
 `undefined` \| `number`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L362)
