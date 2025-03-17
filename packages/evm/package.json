@@ -63,7 +63,6 @@
     "@types/core-js": "^2.5.8",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "@types/rollup-plugin-visualizer": "^5.0.3",
     "benchmark": "^2.1.4",
     "level": "^9.0.0",
     "mcl-wasm": "^1.8.0",
