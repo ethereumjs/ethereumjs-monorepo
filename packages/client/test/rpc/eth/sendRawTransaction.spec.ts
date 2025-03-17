@@ -285,7 +285,7 @@ describe(method, () => {
     assert.equal(res.error, undefined, 'initial blob transaction accepted')
 
     assert.equal(res2.error.code, INVALID_PARAMS)
-    assert.ok(res2.error.message.includes('replacement blob gas too low'))
+    assert.include(res2.error.message, 'replacement blob gas too low')
 
     // Restore stubbed out functionality
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot

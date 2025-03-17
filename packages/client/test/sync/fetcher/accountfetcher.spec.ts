@@ -51,14 +51,14 @@ describe('[AccountFetcher]', async () => {
       count: BigInt(10),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 1, 'added 1 tasks')
+    assert.equal(fetcher['in'].length, 1, 'added 1 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
+    assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should update highest known hash', () => {
@@ -151,11 +151,11 @@ describe('[AccountFetcher]', async () => {
     ]
     accountDataResponse.completed = false
     const task = { count: BigInt(3), first: BigInt(1) }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, accountDataResponse)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
     assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     assert.equal(results, undefined, 'Process should not return full results yet')
 

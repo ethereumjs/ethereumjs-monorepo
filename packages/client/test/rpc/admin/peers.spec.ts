@@ -10,7 +10,7 @@ describe(method, () => {
     const manager = createManager(await createClient({ opened: true, noPeers: true }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    //@ts-ignore
+    //@ts-expect-error -- Assigning to a read-only property
     manager['_client'].service.pool.peers = [
       {
         id: 'abcd',

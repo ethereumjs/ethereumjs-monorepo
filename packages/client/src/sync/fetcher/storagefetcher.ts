@@ -162,8 +162,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       if (partialResult) {
         const lastSlotArray = partialResult[partialResult.length - 1]
         const lastSlot = lastSlotArray[lastSlotArray.length - 1]
-        //@ts-expect-error
-        origin = bigIntToBytes(bytesToBigInt(lastSlot[lastSlot.length - 1].hash) + BIGINT_1)
+        const lastSlotHash = lastSlot.hash
+        origin = bigIntToBytes(bytesToBigInt(lastSlotHash) + BIGINT_1)
       } else {
         origin = bigIntToBytes(first + BIGINT_1)
       }

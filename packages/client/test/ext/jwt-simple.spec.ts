@@ -44,7 +44,7 @@ describe('decode', function () {
   })
 
   it('throw an error when no token is provided', function () {
-    //@ts-expect-error
+    //@ts-expect-error -- Testing error case
     const fn = jwt.decode.bind(null, null, key)
     expect(fn).toThrowError(/No token supplied/)
   })

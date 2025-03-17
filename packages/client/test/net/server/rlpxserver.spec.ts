@@ -212,7 +212,7 @@ describe('should return rlpx server info with ip6', async () => {
   } as any
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  //@ts-expect-error
+  //@ts-expect-error -- Assigning to read-only property
   server.rlpx!.id = hexToBytes(`0x${mockId}`)
 
   config.events.on(Event.SERVER_ERROR, (err) => {

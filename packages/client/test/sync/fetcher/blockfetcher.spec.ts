@@ -30,14 +30,14 @@ describe('[BlockFetcher]', async () => {
       timeout: 5,
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 2, 'added 2 tasks')
+    assert.equal(fetcher['in'].length, 2, 'added 2 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
+    assert.ok(fetcher['running'], 'started')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('enqueueByNumberList()', async () => {
@@ -53,7 +53,7 @@ describe('[BlockFetcher]', async () => {
       timeout: 5,
     })
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 2, 'added 2 tasks')
+    assert.equal(fetcher['in'].length, 2, 'added 2 tasks')
     await wait(100)
 
     let blockNumberList = [BigInt(11), BigInt(12)]
@@ -61,13 +61,13 @@ describe('[BlockFetcher]', async () => {
     let max = BigInt(12)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
 
-    assert.equal((fetcher as any).in.length, 3, '1 new task for two subsequent block numbers')
+    assert.equal(fetcher['in'].length, 3, '1 new task for two subsequent block numbers')
 
     blockNumberList = [BigInt(13), BigInt(15)]
     min = BigInt(13)
     max = BigInt(15)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
-    assert.equal((fetcher as any).in.length, 3, 'no new task added only the height changed')
+    assert.equal(fetcher['in'].length, 3, 'no new task added only the height changed')
     assert.equal(
       fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
       true,
@@ -81,7 +81,7 @@ describe('[BlockFetcher]', async () => {
     max = BigInt(51)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
     assert.equal(
-      (fetcher as any).in.length,
+      fetcher['in'].length,
       11,
       '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)',
     )
@@ -121,11 +121,11 @@ describe('[BlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
     const task = { count: 3, first: BigInt(1) }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, blocks)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
     assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     assert.equal(results, undefined, 'Process should not return full results yet')
 
