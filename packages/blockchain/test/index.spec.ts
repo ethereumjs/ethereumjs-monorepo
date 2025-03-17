@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.isTrue(error, 'returned with error')
+      assert.exists(error, 'returned with error')
     }
   })
 
@@ -577,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.isTrue(error, 'should not validate an invalid block')
+      assert.exists(error, 'should not validate an invalid block')
     }
   })
 
@@ -760,7 +760,7 @@ describe('blockchain test', () => {
         error = err
       }
       if (i === 2) {
-        assert.isTrue(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.include(error.message, 'Chain mismatch', 'should return chain mismatch error')
       } else {
         assert.isUndefined(error, 'should not return mismatch error')
       }
