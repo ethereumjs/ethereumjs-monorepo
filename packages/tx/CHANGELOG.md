@@ -22,6 +22,12 @@ As a start we bump all major release versions to version 10, these `RC` releases
 - Support for EIP-7691 Blob Throughput Increase, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
 - EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
 
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
 ### Other Changes
 
 - Removal of `BaseTransaction` parent class to allow for more independent custom tx type implementations, PR [#3744](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3744)

@@ -55,6 +55,12 @@ evm.events.on('afterMessage', (event, resolve) => {
 - More EIP-7702 updates (devnet-5), PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
 - Fix requests contract address (devnet-5), PR [#3818](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3818)
 
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
 ### Verkle Updates (experimental)
 
 - Verkle execution witness support, PR [#3731](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3731)

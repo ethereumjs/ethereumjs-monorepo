@@ -22,6 +22,12 @@ Note: the `@ethereumjs/util` package happens to already be on the v10 line, so n
 
 - Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
 
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
 ## 10.0.0-alpha.1 - 2024-10-17
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.

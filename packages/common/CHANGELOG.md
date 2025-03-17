@@ -37,10 +37,17 @@ All this might affect you if you listen to events emitted by the `common.events`
 - Add `requestsHash` to genesis block/configuration, PR [#3771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3771)
 - Allow specifying eip-7840 blobSchedule via geth genesis, PR [#3835](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3835)
 
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
 ### Other Changes
 
 - Remove Goerli support, PR [#3851](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3851)
 - Fix TTD related failed Geth genesis parsing, PR [#3847](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3847)
+- Fix deposit address for sepolia and holesky, PR [#3882](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3882)
 
 ## 5.0.0-alpha.1 - 2024-10-17
 
