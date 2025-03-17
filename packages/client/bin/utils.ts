@@ -544,7 +544,10 @@ async function inputAccounts(args: ClientOpts) {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
+    // @dev: should not be removed as it causes a build error
+    // @ts-ignore node/types has a mismatch and readline is typed incorrectly
     input: process.stdin,
+    // @ts-ignore node/types has a mismatch and readline is typed incorrectly
     output: process.stdout,
   })
 
