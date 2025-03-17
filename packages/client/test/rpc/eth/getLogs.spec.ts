@@ -232,7 +232,7 @@ describe(method, async () => {
       },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),
@@ -245,7 +245,7 @@ describe(method, async () => {
       },
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),

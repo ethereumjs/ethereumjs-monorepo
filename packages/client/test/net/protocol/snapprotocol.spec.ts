@@ -74,7 +74,7 @@ describe('[SnapProtocol]', () => {
       JSON.stringify(payload[4]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes',
     )
-    assert.ok(payload)
+    assert.exists(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
@@ -89,7 +89,7 @@ describe('[SnapProtocol]', () => {
     assert.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     assert.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
     assert.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
-    assert.ok(res)
+    assert.exists(res)
   })
 
   it('AccountRange should encode/decode correctly', async () => {
@@ -242,7 +242,7 @@ describe('[SnapProtocol]', () => {
       JSON.stringify(payload[5]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes',
     )
-    assert.ok(payload)
+    assert.exists(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetStorageRanges')[0],
@@ -260,7 +260,7 @@ describe('[SnapProtocol]', () => {
     assert.ok(JSON.stringify(res.origin) === JSON.stringify(origin), 'correctly decoded origin')
     assert.ok(JSON.stringify(res.limit) === JSON.stringify(limit), 'correctly decoded limit')
     assert.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
-    assert.ok(payload)
+    assert.exists(payload)
   })
 
   it('StorageRanges should encode/decode correctly', async () => {
@@ -274,14 +274,15 @@ describe('[SnapProtocol]', () => {
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       data,
     )
-    assert.ok(reqId === BigInt(1), 'correctly decoded reqId')
+    assert.equal(reqId, BigInt(1), 'correctly decoded reqId')
     assert.ok(slots.length === 1 && slots[0].length === 3, 'correctly decoded slots')
     const { hash, body } = slots[0][2]
-    assert.ok(
-      bytesToHex(hash) === '0x60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
+    assert.equal(
+      bytesToHex(hash),
+      '0x60264186ee63f748d340388f07b244d96d007fff5cbc397bbd69f8747c421f79',
       'Slot 3 key',
     )
-    assert.exists(bytesToHex(body) === '0x8462b66ae7', 'Slot 3 value')
+    assert.equal(bytesToHex(body), '0x8462b66ae7', 'Slot 3 value')
 
     const payload = RLP.encode(
       p.encode(p.messages.filter((message) => message.name === 'StorageRanges')[0], {
@@ -290,8 +291,9 @@ describe('[SnapProtocol]', () => {
         proof,
       }),
     )
-    assert.ok(
-      storageRangesRLP === bytesToHex(payload),
+    assert.equal(
+      storageRangesRLP,
+      bytesToHex(payload),
       'Re-encoded payload should match with original',
     )
   })
@@ -365,7 +367,7 @@ describe('[SnapProtocol]', () => {
       JSON.stringify(payload[2]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes',
     )
-    assert.ok(payload)
+    assert.exists(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],
@@ -375,7 +377,7 @@ describe('[SnapProtocol]', () => {
     assert.ok(JSON.stringify(res.reqId) === JSON.stringify(reqId), 'correctly decoded reqId')
     assert.ok(JSON.stringify(res.hashes) === JSON.stringify(hashes), 'correctly decoded hashes')
     assert.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
-    assert.ok(res)
+    assert.exists(res)
   })
 
   it('ByteCodes should encode/decode correctly', async () => {
@@ -452,7 +454,7 @@ describe('[SnapProtocol]', () => {
       JSON.stringify(payload[3]) === JSON.stringify(bigIntToBytes(bytes)),
       'correctly encoded bytes',
     )
-    assert.ok(payload)
+    assert.exists(payload)
 
     const res = p.decode(
       p.messages.filter((message) => message.name === 'GetTrieNodes')[0],
@@ -463,7 +465,7 @@ describe('[SnapProtocol]', () => {
     assert.ok(JSON.stringify(res.root) === JSON.stringify(root), 'correctly decoded root')
     assert.ok(JSON.stringify(res.paths) === JSON.stringify(paths), 'correctly decoded paths')
     assert.ok(JSON.stringify(res.bytes) === JSON.stringify(bytes), 'correctly decoded bytes')
-    assert.ok(res)
+    assert.exists(res)
   })
 
   it('TrieNodes should encode/decode correctly with real sample', async () => {
@@ -477,14 +479,14 @@ describe('[SnapProtocol]', () => {
       nodesRes,
     )
 
-    assert.ok(reqId === BigInt(1), 'reqId should be 1')
+    assert.equal(reqId, BigInt(1), 'reqId should be 1')
     assert.ok(nodes.length > 0, 'nodes should be present in response')
 
     // check that raw node data that exists is valid
     for (let i = 0; i < nodes.length; i++) {
       const node: Uint8Array = nodes[i]
       if (node !== null) {
-        assert.ok(decodeMPTNode(node), 'raw node data should decode without error')
+        assert.exists(decodeMPTNode(node), 'raw node data should decode without error')
       }
     }
 
@@ -494,7 +496,7 @@ describe('[SnapProtocol]', () => {
         nodes,
       }),
     )
-    assert.ok(trieNodesRLP === bytesToHex(payload), 'Re-encoded payload should match with original')
+    assert.equal(trieNodesRLP, bytesToHex(payload), 'Re-encoded payload should match with original')
   })
 })
 

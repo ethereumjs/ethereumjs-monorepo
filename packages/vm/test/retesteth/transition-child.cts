@@ -7,8 +7,8 @@ import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ether
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { VM } from '../../dist/cjs.js'
 import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
+import { VM } from '../../dist/cjs/index.js'
 import { getCommon } from '../tester/config.ts'
 import { makeBlockFromEnv, setupPreConditions } from '../util.ts'
 

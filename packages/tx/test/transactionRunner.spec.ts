@@ -87,16 +87,16 @@ describe('TransactionTests', async () => {
 
             const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
             if (shouldBeInvalid) {
-              assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
+              assert.isFalse(txIsValid, `Transaction should be invalid on ${forkName}`)
             } else {
-              assert.ok(
+              assert.isTrue(
                 hashAndSenderAreCorrect && txIsValid,
                 `Transaction should be valid on ${forkName}`,
               )
             }
-          } catch (e: any) {
+          } catch {
             if (shouldBeInvalid) {
-              assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+              assert.isTrue(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
             } else {
               assert.fail(`Transaction should be valid on ${forkName}`)
             }

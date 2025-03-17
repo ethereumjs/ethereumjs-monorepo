@@ -511,7 +511,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
-    assert.ok(
+    assert.isTrue(
       res2.execResult.exceptionError?.error.match('insufficient balance'),
       'runCall reverts when insufficient sender balance and skipBalance is false',
     )

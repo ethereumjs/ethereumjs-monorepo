@@ -105,7 +105,7 @@ export const validHash = async (
         hash = validParent.header.parentHash
       }
     }
-  } catch (_error: any) {
+  } catch {
     // ignore error thrown by the loop and return null below
   }
 

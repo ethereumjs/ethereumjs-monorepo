@@ -398,16 +398,16 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await (miner as any).queueNextAssembly(0)
   it('should save receipt', async () => {
     const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
   })
   it('should save receipt', async () => {
     let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
     receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
 
     receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
 
     await wait(500)
   })

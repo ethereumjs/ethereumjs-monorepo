@@ -240,7 +240,7 @@ describe('ProofStateManager', () => {
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
+      } catch {
         assert.isTrue(true, 'threw on invalid proof')
       } finally {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) = original
@@ -298,7 +298,7 @@ describe('ProofStateManager', () => {
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
+      } catch {
         assert.isTrue(true, 'threw on invalid proof')
       } finally {
         // restore original valid proof

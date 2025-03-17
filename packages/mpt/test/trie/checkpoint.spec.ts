@@ -143,8 +143,7 @@ describe('testing checkpoints', () => {
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     // I.e. the trie is pruned.
     assert.deepEqual(
-      //@ts-expect-error
-      [...CommittedState._db.db._database.values()].map((value) => value),
+      [...(CommittedState['_db'].db as any)._database_.values()].map((value) => value),
       [
         hexToBytes('0xd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'),
         hexToBytes('0xe3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32'),

@@ -404,7 +404,7 @@ describe(method, () => {
       100,
     ])
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'txIndex cannot be larger than the number of transactions in the block.',
       ),

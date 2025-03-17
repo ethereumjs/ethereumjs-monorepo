@@ -673,7 +673,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await toJSONRPCBlock(block, this._chain, includeTransactions)
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -710,7 +710,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
-    } catch (error) {
+    } catch {
       throw {
         code: INVALID_PARAMS,
         message: 'Unknown block',

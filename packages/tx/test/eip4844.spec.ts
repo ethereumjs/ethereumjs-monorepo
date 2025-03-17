@@ -203,7 +203,7 @@ describe('fromTxData using from a json', () => {
         txMeta.hash,
         'fromSerializedTx hash should match',
       )
-    } catch (e) {
+    } catch {
       assert.fail('failed to parse json data')
     }
   })

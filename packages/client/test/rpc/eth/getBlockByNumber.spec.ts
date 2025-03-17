@@ -131,7 +131,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
       ),

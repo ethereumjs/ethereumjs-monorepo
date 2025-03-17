@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   bytesToHex,
@@ -200,7 +199,7 @@ describe('simple mainnet test run', async () => {
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
         assert.isTrue(true, 'connected to geth peer')
-      } catch (e) {
+      } catch {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
@@ -231,7 +230,7 @@ describe('simple mainnet test run', async () => {
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
           assert.isTrue(true, 'completed snap sync')
-        } catch (e) {
+        } catch {
           assert.fail('could not complete snap sync in 8 minutes')
         }
 
@@ -275,7 +274,7 @@ describe('simple mainnet test run', async () => {
       await ejsClient?.stop()
       await teardownCallBack()
       assert.isTrue(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

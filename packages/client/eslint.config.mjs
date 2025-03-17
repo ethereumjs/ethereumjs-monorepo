@@ -10,15 +10,10 @@ export default [
     },
   },
   {
+    files: ['test/sim/**.ts', 'examples/**/*.ts'],
     rules: {
-      'no-restricted-syntax': 'off',
-    },
-  },
-  {
-    files: ['test/index.spec.ts', 'examples/**/*'],
-    rules: {
-      'no-prototype-builtins': 'warn',
       'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'warn',
     },
   },
 ]

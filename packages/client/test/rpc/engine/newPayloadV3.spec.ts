@@ -27,7 +27,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
 
     const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
     assert.equal(res.error.code, UNSUPPORTED_FORK)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated'),
     )
   })

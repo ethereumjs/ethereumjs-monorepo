@@ -182,7 +182,10 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
+        assert.isTrue(
+          res.result.length > 0,
+          'engine api is responsive without need for auth header',
+        )
         child.kill()
         resolve(undefined)
       }
@@ -213,7 +216,10 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
+        assert.isTrue(
+          res.result.length > 0,
+          'engine api is responsive without need for auth header',
+        )
         child.kill()
         resolve(undefined)
       }
@@ -245,7 +251,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ hostname: '0.0.0.0', port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
+        assert.isTrue(res.result.length > 0, 'engine api is responsive on custom address')
         child.kill()
         resolve(undefined)
       }
@@ -278,7 +284,7 @@ describe('[CLI]', () => {
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-          assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
+          assert.isTrue(res.result.length > 0, 'read from WS RPC on custom address and port')
           child.kill()
           resolve(undefined)
         })
@@ -308,7 +314,7 @@ describe('[CLI]', () => {
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
-          assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
+          assert.isTrue(res.result.includes('EthereumJS'), 'read from WS RPC')
           child.kill()
           resolve(undefined)
         })
@@ -339,7 +345,7 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
 
         const clientNoConnection = Client.http({
           port: 8563,
@@ -576,7 +582,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -608,7 +614,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -647,7 +653,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -768,7 +774,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)

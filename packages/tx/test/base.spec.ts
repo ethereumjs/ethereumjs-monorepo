@@ -234,11 +234,11 @@ describe('[BaseTransaction]', () => {
   it('serialize()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.ok(
+        assert.exists(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
-        assert.ok(
+        assert.exists(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
@@ -250,7 +250,7 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
-          assert.ok(
+          assert.exists(
             tx.supports(activeCapability),
             `${txType.name}: should recognize all supported capabilities`,
           )
@@ -268,7 +268,7 @@ describe('[BaseTransaction]', () => {
   it('raw()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.ok(
+        assert.exists(
           txType.create.bytesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
         )
@@ -305,7 +305,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.ok(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
+          assert.exists(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(

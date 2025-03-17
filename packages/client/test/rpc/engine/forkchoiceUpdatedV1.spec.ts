@@ -58,7 +58,7 @@ describe(method, () => {
     }
     const res = await rpc.request(method, [invalidForkChoiceState, validPayloadAttributes])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         "invalid argument 0 for key 'headBlockHash': hex string without 0x prefix",
       ),
@@ -74,7 +74,7 @@ describe(method, () => {
     }
     const res = await rpc.request(method, [invalidForkChoiceState, validPayloadAttributes])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         "invalid argument 0 for key 'finalizedBlockHash': invalid block hash",
       ),
@@ -119,7 +119,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, invalidTimestampPayload)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('invalid timestamp in payloadAttributes, got 0, need at least 1'),
     )
   })

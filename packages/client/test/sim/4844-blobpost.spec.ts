@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-/* eslint-disable no-console */
+
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise/index.js'
@@ -109,7 +109,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
     try {
       await teardownCallBack()
       assert.isTrue(true, 'script terminated')
-    } catch (e) {
+    } catch {
       assert.fail('could not terminate properly')
     }
   }, 60_000)

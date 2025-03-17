@@ -160,7 +160,7 @@ describe('StateManager -> Code', () => {
         try {
           await stateManager.putCode(address, code)
           assert.fail('should throw')
-        } catch (e) {
+        } catch {
           assert.isTrue(true, 'successfully threw')
         }
       })

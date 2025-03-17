@@ -26,7 +26,7 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  //@ts-expect-error
+  //@ts-expect-error -- Does not fit interface
   async get(key: Uint8Array): Promise<Uint8Array | string | undefined> {
     let value
     try {
@@ -68,7 +68,7 @@ export class LevelDB implements DB {
    * @inheritDoc
    */
   shallowCopy(): DB {
-    //@ts-expect-error
+    //@ts-expect-error -- Does not fit DB return type
     return new LevelDB(this._leveldb)
   }
 

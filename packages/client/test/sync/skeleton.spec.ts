@@ -475,7 +475,7 @@ describe('[Skeleton] / setHead', async () => {
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
-    } catch (_e) {
+    } catch {
       assert.isTrue(true, 'should not allow putBlocks since no subchain set')
     }
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')

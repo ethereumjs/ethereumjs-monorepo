@@ -68,8 +68,7 @@ describe('[fromJSONRPCProvider]', () => {
         'throws correct error when no tx returned',
       )
     }
-    //@ts-expect-error
-
+    //@ts-expect-error -- Assigning to a global function
     fetch = realFetch
   })
 })

@@ -1,6 +1,6 @@
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
-/* eslint-disable no-console */
+
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { type Common } from '@ethereumjs/common'
 import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'

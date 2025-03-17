@@ -60,7 +60,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putStorage(address, key, value)
 
       const contract0 = await stateManager.getStorage(address, key)
-      assert.ok(
+      assert.isTrue(
         equalsBytes(contract0, value),
         "contract key's value is set in the _storageTries cache",
       )
@@ -69,7 +69,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(initialStateRoot)
       try {
         await stateManager.getStorage(address, key)
-      } catch (e) {
+      } catch {
         assert.isTrue(true, 'should throw if getStorage() is called on non existing address')
       }
     })
@@ -101,9 +101,7 @@ describe('StateManager -> General/Account', () => {
       })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-      const res = (await stateManager.getAccount(address)) === undefined
-
-      assert.ok(res)
+      assert.isUndefined(await stateManager.getAccount(address))
     })
 
     it(`should return undefined for an existent account`, async () => {

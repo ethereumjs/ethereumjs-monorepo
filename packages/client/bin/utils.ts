@@ -544,10 +544,7 @@ async function inputAccounts(args: ClientOpts) {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
-    //@ts-expect-error Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
-    // TODO: See whether package needs to be updated or not
     input: process.stdin,
-    //@ts-expect-error
     output: process.stdout,
   })
 
@@ -784,8 +781,8 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
-  const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
-  const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
+  const mine = args.mine ?? args.dev !== undefined
+  const isSingleNode = args.isSingleNode ?? args.dev !== undefined
 
   let prometheusMetrics = undefined
   let metricsServer: http.Server | undefined

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-/* eslint-disable no-console */
+
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'

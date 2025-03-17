@@ -85,7 +85,7 @@ describe('EIP 7623 calldata cost increase tests', () => {
         skipHardForkValidation: true,
       })
       assert.fail('runTx should throw')
-    } catch (e) {
+    } catch {
       assert.ok('Successfully failed')
     }
   })

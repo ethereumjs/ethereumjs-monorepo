@@ -12,6 +12,7 @@ export default [
   {
     rules: {
       '@typescript-eslint/no-use-before-define': 'off',
+      'no-restricted-syntax': 'off',
     },
   },
   {

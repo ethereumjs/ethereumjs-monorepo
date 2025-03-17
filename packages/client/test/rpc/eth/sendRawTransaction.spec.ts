@@ -128,7 +128,7 @@ describe(method, () => {
     const res = await rpc.request(method, [txData])
 
     assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'client is not aware of the current chain height yet (give sync some more time)',
       ),

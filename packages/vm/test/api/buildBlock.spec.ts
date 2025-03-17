@@ -268,7 +268,7 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
 
@@ -289,7 +289,7 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })

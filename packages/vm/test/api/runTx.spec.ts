@@ -368,7 +368,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // set sufficient balance
     await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
-    assert.ok(res, 'should pass if balance is sufficient')
+    assert.exists(res, 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {
@@ -386,7 +386,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.isTrue(true, 'successfully threw on insufficient balance for transaction')
     }
   })
@@ -403,7 +403,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.isTrue(true, 'successfully threw on wrong nonces')
     }
   })
@@ -725,7 +725,7 @@ describe('runTx() -> RunTxOptions', () => {
           })
           assert.fail('should not accept a negative call value')
         } catch (err: any) {
-          assert.ok(
+          assert.isTrue(
             err.message.includes('value field cannot be negative'),
             'throws on negative call value',
           )

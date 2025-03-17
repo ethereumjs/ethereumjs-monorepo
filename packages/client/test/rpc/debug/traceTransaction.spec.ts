@@ -31,7 +31,7 @@ describe(method, () => {
 
     res = await rpc.request(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('custom tracers and tracer configurations are not implemented'),
     )
 

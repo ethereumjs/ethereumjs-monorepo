@@ -178,8 +178,8 @@ describe('RPC State Manager API tests', () => {
     )
 
     await state.revert()
-    assert.ok(
-      (await state.getAccount(vitalikDotEth)) !== undefined,
+    assert.exists(
+      await state.getAccount(vitalikDotEth),
       'account deleted since last checkpoint should exist after revert called',
     )
 
@@ -208,7 +208,7 @@ describe('RPC State Manager API tests', () => {
       await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
         'threw with correct error when invalid blockTag provided',
       )

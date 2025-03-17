@@ -216,7 +216,7 @@ describe('[Block]: block functions', () => {
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
     const result = block.getTransactionsValidationErrors()
-    assert.ok(
+    assert.isTrue(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
       'should throw when legacy tx is unable to pay base fee',
     )

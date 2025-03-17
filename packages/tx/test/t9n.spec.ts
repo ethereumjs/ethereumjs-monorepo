@@ -97,7 +97,7 @@ function runTests(filePath: string) {
                 )
                 assert.equal(tx.getSenderAddress().toString(), result.sender, 'correct sender')
               }
-            } catch (e: any) {
+            } catch {
               if (result.exception === undefined) {
                 assert.fail('RLP is valid, but decoding failed')
               } else {
@@ -112,7 +112,6 @@ function runTests(filePath: string) {
 }
 
 function recursiveLoad(dir: string) {
-  // eslint-disable-next-line github/array-foreach
   fs.readdirSync(dir).forEach((file) => {
     const fullName = dir + '/' + file
     const stat = fs.statSync(fullName)
