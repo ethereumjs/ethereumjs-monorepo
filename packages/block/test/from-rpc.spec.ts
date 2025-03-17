@@ -112,10 +112,10 @@ describe('[fromRPC]:', () => {
     assert.isTrue(block.uncleHashIsValid())
   })
 
-  it('should create a block with EIP-4896 withdrawals', () => {
+  it('should create a block with EIP-4896 withdrawals', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlockFromRPC(testdataFromRPCWithWithdrawalsData, [], { common })
-    assert.isTrue(block.withdrawalsTrieIsValid())
+    assert.isTrue(await block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
