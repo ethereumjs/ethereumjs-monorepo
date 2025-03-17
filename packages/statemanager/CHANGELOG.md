@@ -43,6 +43,10 @@ We will introduce a set of more specific sub error classes inheriting from this 
 - Fix handling of storage values, PR [#3778](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3778)
 - Verkle SM storage fixes, PR [#3780](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3780)
 
+### Other Changes
+
+- Experimental binary tree state manager, PR [#3885](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3885)
+
 ## 3.0.0-alpha.1 - 2024-10-17
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.

@@ -25,6 +25,7 @@ We will introduce a set of more specific sub error classes inheriting from this 
 ### Other Changes
 
 - Simplify rangeProof handling & flatten mpt file structure, PR [#3740](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3740)
+- Update level dependency to v9, PR [#3904](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3904)
 
 ## 7.0.0-alpha.1 - 2024-10-17
 

@@ -70,6 +70,7 @@ We will introduce a set of more specific sub error classes inheriting from this 
 ### Other Changes
 - Support for `t8ntool` for `execution-spec-tests` test filling, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
 - Block builder adjustments, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Filter EIP-6110 logs based on topic, PR [#3901](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3901)
 
 ## 9.0.0-alpha.1 - 2024-10-17
 
