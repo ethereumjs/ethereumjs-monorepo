@@ -119,15 +119,17 @@ describe('[RlpxPeer]', async () => {
 
   it('should accept peer connection', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const peer: any = new RlpxPeer({
+    const peer = new RlpxPeer({
       config,
       id: 'abcdef0123',
       host: '10.0.0.1',
       port: 1234,
     })
-    peer.bindProtocols = vi.fn().mockResolvedValue(null)
+    peer['bindProtocols'] = vi.fn().mockResolvedValue(null)
 
-    await peer.accept('rlpxpeer' as any, 'server')
+    //@ts-expect-error -- Assigning a simple string as peer for testing
+    await peer.accept('rlpxpeer', 'server')
+    //@ts-expect-error -- Testing that same string
     assert.equal(peer.server, 'server', 'server set')
   })
 
@@ -151,10 +153,10 @@ describe('[RlpxPeer]', async () => {
 
     const rlpxPeer = {
       getProtocols: vi.fn().mockReturnValue([proto0]),
-    } as any
+    }
     peer['addProtocol'] = vi.fn().mockResolvedValue(undefined)
 
-    await peer['bindProtocols'](rlpxPeer)
+    await peer['bindProtocols'](rlpxPeer as any)
     expect(peer.addProtocol).toBeCalled()
     assert.ok(peer.connected, 'connected set to true')
   })
