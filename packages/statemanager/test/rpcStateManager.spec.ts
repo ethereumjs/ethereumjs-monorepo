@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import type { EVMMockBlockchainInterface, type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
+import type { EVMMockBlockchainInterface, EVMRunCallOpts } from '@ethereumjs/evm'
 import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -79,7 +80,7 @@ describe('RPC State Manager API tests', () => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
-      state['_caches'].account?.get(vitalikDotEth)?.accountRLP!,
+      state['_caches'].account!.get(vitalikDotEth)!.accountRLP!,
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
@@ -159,7 +160,7 @@ describe('RPC State Manager API tests', () => {
 
     try {
       await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
-    } catch (err) {
+    } catch {
       assert.ok(true, 'calls getAccountFromProvider for non-cached account')
     }
 
