@@ -116,8 +116,16 @@ export default [
     },
     files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
     rules: {
-      'i/no-extraneous-dependencies': ['error',{ devDependencies: false, optionalDependencies: false, peerDependencies: false }]
+      'i/no-extraneous-dependencies': 'error'
     },
+  },
+  {
+    files: ['packages/client/test/sim/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-console': 'off',
+      'no-undef': 'off',
+    }
   },
   {
     files: ['**/*.js', '**/*.cjs','**/*.cts'],
@@ -125,12 +133,6 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off',
     }
-  },
-  {
-    files: ['**/test/**/*.ts',],
-    rules: {
-      'no-restricted-syntax': 'off',
-    },
   },
   {
     files: ['**/examples/**/*.ts', '**/examples/**/*.js', '**/examples/**/*.cjs', '**/benchmarks/*.ts'],
@@ -155,13 +157,7 @@ export default [
     },
   },
   {
-    files: ['packages/devp2p/src/ext/**'],
-    rules: {
-      'no-restricted-syntax': 'off'
-    },
-  },
-  {
-    files: ['packages/client/src/ext/**'],
+    files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', 'packages/rlp/**', '**/test/**/*.ts',],
     rules: {
       'no-restricted-syntax': 'off'
     },
@@ -174,11 +170,9 @@ export default [
     },
   },
   {
-    files: ['packages/rlp/**'],
+    files: ['packages/vm/test/util.ts', 'packages/vm/test/tester/**/*.ts', 'packages/vm/examples/**/*.ts'],
     rules: {
-      'no-restricted-syntax': 'off'
+      'no-console': 'off',
     },
   },
-
-
 ];
