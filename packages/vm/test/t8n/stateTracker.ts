@@ -30,6 +30,8 @@ export class StateTracker {
     const originalPutStorage = vm.stateManager.putStorage
 
     this.vm = vm
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this
 
     vm.stateManager.putAccount = async function (...args: [Address, Account?]) {
       const address = args[0]
