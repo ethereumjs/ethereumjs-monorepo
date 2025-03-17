@@ -6,8 +6,8 @@ import { txTypeBytes } from '../util.ts'
 
 import { errorMsg } from './legacy.ts'
 
-import type { EIP2718CompatibleTx } from '../types.ts'
 import type { Input } from '@ethereumjs/rlp'
+import type { EIP2718CompatibleTx } from '../types.ts'
 
 export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {
   const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256

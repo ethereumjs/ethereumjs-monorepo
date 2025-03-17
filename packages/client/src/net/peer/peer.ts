@@ -3,10 +3,10 @@ import { EventEmitter } from 'eventemitter3'
 
 import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.ts'
 
+import type { BlockHeader } from '@ethereumjs/block'
 import type { Config } from '../../config.ts'
 import type { BoundProtocol, Protocol, Sender } from '../protocol/index.ts'
 import type { Server } from '../server/index.ts'
-import type { BlockHeader } from '@ethereumjs/block'
 
 export interface PeerOptions {
   /* Config */

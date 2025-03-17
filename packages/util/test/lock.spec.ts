@@ -37,7 +37,7 @@ describe('Lock class: acquire', () => {
     await lock.acquire()
 
     const result = lock.acquire()
-    assert.ok(result instanceof Promise, 'should return a promise')
+    assert.isTrue(result instanceof Promise, 'should return a promise')
   })
 })
 

@@ -1,7 +1,7 @@
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { DBOp } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, concatBytes, intToBytes } from '@ethereumjs/util'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { Level } from 'level'
 
 import { formatEra1 } from './era1.ts'

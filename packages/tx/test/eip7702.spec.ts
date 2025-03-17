@@ -13,9 +13,9 @@ import { assert, describe, it } from 'vitest'
 
 import { createEOACode7702Tx } from '../src/index.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { TxData } from '../src/7702/tx.ts'
 import type { AuthorizationListItem } from '../src/index.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 

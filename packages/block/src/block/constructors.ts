@@ -1,7 +1,7 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
+import type { TxOptions, TypedTransaction } from '@ethereumjs/tx'
 import {
-  type TxOptions,
   createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
@@ -31,6 +31,7 @@ import {
   executionPayloadFromBeaconPayload,
 } from '../index.ts'
 
+import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 import type { BeaconPayloadJSON } from '../from-beacon-payload.ts'
 import type {
   BlockBytes,
@@ -42,8 +43,6 @@ import type {
   JSONRPCBlock,
   WithdrawalsBytes,
 } from '../types.ts'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * Static constructor to create a block from a block data dictionary

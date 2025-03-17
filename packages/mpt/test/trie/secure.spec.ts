@@ -26,20 +26,20 @@ describe('SecureTrie', () => {
   it('put and get value', async () => {
     await trie.put(k, v)
     const res = await trie.get(k)
-    assert.ok(equalsBytes(v, res!))
+    assert.isTrue(equalsBytes(v, res!))
   })
 
   it('copy trie', async () => {
     const t = trie.shallowCopy()
     const res = await t.get(k)
-    assert.ok(equalsBytes(v, res!))
+    assert.isTrue(equalsBytes(v, res!))
     assert.isUndefined(t['_opts']['keyPrefix'])
   })
 
   it('copy trie (new key prefix / default 0 size cache)', async () => {
     const keyPrefix = hexToBytes('0x1234')
     const t = trie.shallowCopy(true, { keyPrefix })
-    assert.ok(equalsBytes(t['_opts']['keyPrefix']!, keyPrefix))
+    assert.isTrue(equalsBytes(t['_opts']['keyPrefix']!, keyPrefix))
     assert.equal(t['_opts']['cacheSize'], 0)
     assert.equal(trie['_opts']['cacheSize'], 0)
   })

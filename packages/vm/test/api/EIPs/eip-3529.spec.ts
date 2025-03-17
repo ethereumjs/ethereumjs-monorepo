@@ -223,7 +223,7 @@ describe('EIP-3529 tests', () => {
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
-    assert.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    assert.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
+    assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
   })
 })

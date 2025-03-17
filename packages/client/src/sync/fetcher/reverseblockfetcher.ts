@@ -5,9 +5,9 @@ import { Event } from '../../types.ts'
 
 import { BlockFetcher } from './blockfetcher.ts'
 
+import type { Block } from '@ethereumjs/block'
 import type { Skeleton } from '../../service/skeleton.ts'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase.ts'
-import type { Block } from '@ethereumjs/block'
 
 interface ReverseBlockFetcherOptions extends BlockFetcherOptions {
   /** Skeleton */

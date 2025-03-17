@@ -14,7 +14,7 @@ describe('DB tests', () => {
   it('Operations: puts and gets value', async () => {
     await db.put(k, v)
     const res = await db.get(k)
-    assert.ok(equalsBytes(v, res!))
+    assert.isTrue(equalsBytes(v, res!))
   })
 
   it('Operations: deletes value', async () => {
@@ -30,6 +30,6 @@ describe('DB tests', () => {
     ] as BatchDBOp[]
     await db.batch(ops)
     const res = await db.get(k2)
-    assert.ok(equalsBytes(v2, res!))
+    assert.isTrue(equalsBytes(v2, res!))
   })
 })

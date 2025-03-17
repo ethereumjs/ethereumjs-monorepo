@@ -68,7 +68,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
   it('Initialization / Getter -> fromTxData()', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
-      assert.ok(tx, `should initialize correctly (${txType.name})`)
+      assert.exists(tx, `should initialize correctly (${txType.name})`)
 
       tx = txType.create.txData(
         {
@@ -76,8 +76,9 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         },
         { common: new Common({ chain: Goerli }) },
       )
-      assert.ok(
-        tx.common.chainId() === BigInt(5),
+      assert.equal(
+        tx.common.chainId(),
+        BigInt(5),
         'should initialize Common with chain ID provided (supported chain ID)',
       )
 
@@ -165,8 +166,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       try {
         txType.create.rlp(new Uint8Array([99]), {})
       } catch (e: any) {
-        assert.ok(
-          e.message.includes('wrong tx type'),
+        assert.isTrue(
+          e.message.includes('wrong tx type') === true,
           `should throw on wrong tx type (${txType.name})`,
         )
       }
@@ -176,8 +177,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
         txType.create.rlp(serialized, {})
       } catch (e: any) {
-        assert.ok(
-          e.message.includes('must be array'),
+        assert.isTrue(
+          e.message.includes('must be array') === true,
           `should throw when RLP payload not an array (${txType.name})`,
         )
       }
@@ -187,7 +188,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
         txType.create.rlp(serialized, {})
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('values (for unsigned tx)'),
           `should throw with invalid number of values (${txType.name})`,
         )
@@ -216,8 +217,8 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       const bytes = txn.accessList
       const JSON = txn.AccessListJSON
 
-      assert.ok(equalsBytes(bytes[0][0], validAddress))
-      assert.ok(equalsBytes(bytes[0][1][0], validSlot))
+      assert.isTrue(equalsBytes(bytes[0][0], validAddress))
+      assert.isTrue(equalsBytes(bytes[0][1][0], validSlot))
 
       assert.deepEqual(JSON, access, `should allow json-typed access lists (${txType.name})`)
 
@@ -332,7 +333,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       )
       let signed = tx.sign(pKey)
       const signedAddress = signed.getSenderAddress()
-      assert.ok(
+      assert.isTrue(
         equalsBytes(signedAddress.bytes, address),
         `should sign a transaction (${txType.name})`,
       )
@@ -441,7 +442,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
 describe('[AccessList2930Tx] -> Class Specific Tests', () => {
   it(`Initialization`, () => {
     const tx = createAccessList2930Tx({}, { common })
-    assert.ok(
+    assert.exists(
       createAccessList2930Tx(tx, { common }),
       'should initialize correctly from its own data',
     )
@@ -462,8 +463,8 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
         { common },
       )
     } catch (err: any) {
-      assert.ok(
-        err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
+      assert.isTrue(
+        err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER') === true,
         'throws when gasLimit * gasPrice exceeds MAX_INTEGER',
       )
     }
@@ -663,8 +664,11 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
     assert.ok(v === signed.v!, 'v correct')
     assert.ok(r === signed.r!, 'r correct')
     assert.ok(s === signed.s!, 's correct')
-    assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
-    assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
+    assert.isTrue(
+      equalsBytes(expectedSigned, signed.serialize()),
+      'serialized signed message correct',
+    )
+    assert.isTrue(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
     const expectedJSON: JSONTx = {
       type: '0x1',

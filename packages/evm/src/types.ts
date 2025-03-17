@@ -1,3 +1,12 @@
+import type {
+  BinaryTreeAccessWitnessInterface,
+  Common,
+  ParamsDict,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
 import type { EOFContainer } from './eof/container.ts'
 import type { EvmError } from './exceptions.ts'
@@ -8,15 +17,6 @@ import type { OpHandler } from './opcodes/index.ts'
 import type { CustomPrecompile } from './precompiles/index.ts'
 import type { PrecompileFunc } from './precompiles/types.ts'
 import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  Common,
-  ParamsDict,
-  StateManagerInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
-import type { EventEmitter } from 'eventemitter3'
 
 export type DeleteOpcode = {
   opcode: number

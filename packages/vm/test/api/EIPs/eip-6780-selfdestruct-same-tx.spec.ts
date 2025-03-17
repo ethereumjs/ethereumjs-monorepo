@@ -100,7 +100,7 @@ describe('EIP 6780 tests', () => {
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
     const storage = await vm.stateManager.getStorage(target, key)
 
-    assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
+    assert.isTrue(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,

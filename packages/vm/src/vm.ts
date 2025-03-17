@@ -4,10 +4,10 @@ import { EventEmitter } from 'eventemitter3'
 import { createVM } from './constructors.ts'
 import { paramsVM } from './params.ts'
 
-import type { VMEvent, VMOpts } from './types.ts'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
+import type { VMEvent, VMOpts } from './types.ts'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -135,7 +135,7 @@ export class VM {
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
     const errorStr = `vm hf=${hf}`

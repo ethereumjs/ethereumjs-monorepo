@@ -3,7 +3,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 import type { DB, VerkleCrypto } from '@ethereumjs/util'
 
 // Field representation of a commitment
-export interface Fr {}
+export type Fr = object
 
 export type Proof = Uint8Array[]
 

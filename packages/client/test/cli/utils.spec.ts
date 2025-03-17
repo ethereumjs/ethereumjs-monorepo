@@ -1,6 +1,6 @@
+import * as fs from 'fs'
 import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import * as fs from 'fs'
 import { assert, describe, it } from 'vitest'
 
 import { generateClientConfig } from '../../bin/utils.ts'
@@ -64,7 +64,7 @@ describe('generateClientConfig', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {

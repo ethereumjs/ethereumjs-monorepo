@@ -115,7 +115,7 @@ export class Admin {
    * e.g. `.admin_addPeer [{"address": "127.0.0.1", "tcpPort": 30303, "udpPort": 30303}]`
    * @param params An object containing an address, tcpPort, and udpPort for target server to connect to
    */
-  async addPeer(params: [Object]) {
+  async addPeer(params: [object]) {
     const service = this._client.service as any as FullEthereumService
     const server = service.pool.config.server as RlpxServer
     const dpt = server.dpt

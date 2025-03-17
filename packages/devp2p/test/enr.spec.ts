@@ -17,7 +17,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootBadPrefix, dns.publicKey)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes("ENR root entry must start with 'enrtree-root:'"),
         'has correct error message',
       )
@@ -28,7 +28,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootBadSig, dns.publicKey)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes('Unable to verify ENR root signature'),
         'has correct error message',
       )
@@ -39,7 +39,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootMalformed, dns.publicKey)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes("Could not parse 'l' value from ENR root entry"),
         'has correct error message',
       )
@@ -58,7 +58,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseTree(dns.enrTreeBadPrefix)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes("ENR tree entry must start with 'enrtree:'"),
         'has correct error message',
       )
@@ -69,7 +69,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseTree(dns.enrTreeMalformed)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes('Could not parse domain from ENR tree entry'),
         'has correct error message',
       )
@@ -94,7 +94,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseBranch(dns.enrBranchBadPrefix)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes("ENR branch entry must start with 'enrtree-branch:'"),
         'has correct error message',
       )
@@ -121,7 +121,7 @@ describe('ENR tests', () => {
     try {
       ENR.parseAndVerifyRecord(dns.enrBadPrefix)
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.toString().includes("String encoded ENR must start with 'enr:'"),
         'has correct error message',
       )

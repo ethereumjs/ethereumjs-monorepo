@@ -5,10 +5,10 @@ import { getClientVersion } from '../../util/index.ts'
 import { callWithStackTrace } from '../helpers.ts'
 import { middleware, validators } from '../validation.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.ts'
 import type { EthereumClient } from '../../index.ts'
 import type { FullEthereumService } from '../../service/index.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * web3_* RPC module

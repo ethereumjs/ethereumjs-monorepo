@@ -1,9 +1,9 @@
 import { parseKey, parseMultiaddrs } from '../../util/parse.ts'
 
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Config } from '../../config.ts'
 import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types.ts'
 import type { Protocol } from '../protocol/protocol.ts'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ServerOptions {
   /* Config */

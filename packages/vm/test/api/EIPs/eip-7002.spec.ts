@@ -139,7 +139,7 @@ describe('EIP-7002 tests', () => {
       amountBytes.reverse(),
     )
     // Ensure the requests are correct
-    assert.ok(equalsBytes(expectedRequestData, withdrawalRequest.data))
+    assert.isTrue(equalsBytes(expectedRequestData, withdrawalRequest.data))
 
     // generated block should be valid
     await runBlock(vm, { block: generatedBlock!, skipHeaderValidation: true, root })
@@ -195,7 +195,7 @@ describe('EIP-7002 tests', () => {
         generate: true,
       })
     } catch (e: any) {
-      assert.ok(e.message.includes('Attempt to accumulate EIP-7002 requests failed'))
+      assert.isTrue(e.message.includes('Attempt to accumulate EIP-7002 requests failed') === true)
     }
   })
 })

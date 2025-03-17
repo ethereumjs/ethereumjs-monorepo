@@ -1,4 +1,3 @@
-import type { BlockHeader } from './index.ts'
 import type { Common, ParamsDict } from '@ethereumjs/common'
 import type { JSONRPCTx, JSONTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
@@ -12,6 +11,7 @@ import type {
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
+import type { BlockHeader } from './index.ts'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified

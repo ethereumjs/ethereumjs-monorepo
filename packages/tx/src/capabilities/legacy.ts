@@ -140,7 +140,7 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
       tx.cache.senderPubKey = sender
     }
     return sender
-  } catch (e: any) {
+  } catch {
     const msg = errorMsg(tx, 'Invalid Signature')
     throw EthereumJSErrorWithoutCode(msg)
   }
@@ -206,7 +206,7 @@ export function verifySignature(tx: LegacyTxInterface): boolean {
     // Main signature verification is done in `getSenderPublicKey()`
     const publicKey = tx.getSenderPublicKey()
     return unpadBytes(publicKey).length !== 0
-  } catch (e: any) {
+  } catch {
     return false
   }
 }
@@ -278,19 +278,19 @@ export function getSharedErrorPostfix(tx: LegacyTxInterface) {
   let hash = ''
   try {
     hash = tx.isSigned() ? bytesToHex(tx.hash()) : 'not available (unsigned)'
-  } catch (e: any) {
+  } catch {
     hash = 'error'
   }
   let isSigned = ''
   try {
     isSigned = tx.isSigned().toString()
-  } catch (e: any) {
+  } catch {
     hash = 'error'
   }
   let hf = ''
   try {
     hf = tx.common.hardfork()
-  } catch (e: any) {
+  } catch {
     hf = 'error'
   }
 

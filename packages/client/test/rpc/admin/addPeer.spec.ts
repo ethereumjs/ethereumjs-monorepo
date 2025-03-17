@@ -27,8 +27,8 @@ describe(method, () => {
     localPeerClient.service.pool = new PeerPool({
       config: new Config({ accountCache: 10000, storageCache: 1000 }),
     })
-    //@ts-ignore
-    ;(localPeerClient.service.pool.config.server.dpt as any) = dpt
+    //@ts-expect-error -- Assigning to a read-only property
+    localPeerClient.service.pool.config.server.dpt = dpt
 
     const remoteConfig = new Config({ accountCache: 10000, storageCache: 1000, port: peerPort })
     const remoteServer = new RlpxServer({

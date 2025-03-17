@@ -19,13 +19,13 @@ import { AccessLists, txTypeBytes, validateNotArray } from '../util.ts'
 
 import { Blob4844Tx } from './tx.ts'
 
+import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
   BlobEIP4844NetworkValuesArray,
   JSONBlobTxNetworkWrapper,
   TxOptions,
 } from '../types.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
-import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: PrefixedHexString[],

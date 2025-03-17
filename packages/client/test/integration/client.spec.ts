@@ -38,6 +38,6 @@ describe('client should start/stop/error', async () => {
   assert.ok(client.service!.synchronizer!.running, 'sync running')
   await client.stop()
   it('should stop', () => {
-    assert.ok(true, 'client stopped')
+    assert.isTrue(true, 'client stopped')
   })
 }, 60000)

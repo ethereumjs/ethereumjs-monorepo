@@ -4,8 +4,8 @@ import { assert } from 'vitest'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.ts'
 import { testData } from '../testdata.ts'
 
-import type { Capabilities } from '../../src/index.ts'
 import type { it } from 'vitest'
+import type { Capabilities } from '../../src/index.ts'
 
 export const delay = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))
@@ -72,7 +72,7 @@ export function getTestRLPXs(
   maxPeers: number = 10,
   basePort: number,
   capabilities?: Capabilities[],
-  common?: Object | Common,
+  common?: object | Common,
 ) {
   const rlpxs = []
   if (typeof capabilities === 'undefined') {
@@ -108,7 +108,7 @@ type TestRLPXs = {
 export function initTwoPeerRLPXSetup(
   maxPeers?: any,
   capabilities?: any,
-  common?: Object | Common,
+  common?: object | Common,
   basePort = 30306,
 ): TestRLPXs {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
@@ -137,7 +137,7 @@ export function twoPeerMsgExchange3(
   t: typeof it,
   opts: any,
   capabilities?: any,
-  common?: Object | Common,
+  common?: object | Common,
   basePort = 30306,
 ) {
   const { rlpxs, peer } = initTwoPeerRLPXSetup(null, capabilities, common, basePort)

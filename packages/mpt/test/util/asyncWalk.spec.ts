@@ -115,7 +115,7 @@ describe('walk a sparse trie', async () => {
     found++
   }
   assert.equal(found, proof.length, `found: ${found} should equal proof length: ${proof.length}`)
-  assert.ok(true, 'Walking sparse trie should not throw error')
+  assert.isTrue(true, 'Walking sparse trie should not throw error')
 
   // Walk the same sparse trie with WalkController
   try {

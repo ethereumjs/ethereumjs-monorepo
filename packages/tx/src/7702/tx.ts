@@ -19,6 +19,8 @@ import { AccessLists, AuthorizationLists, validateNotArray } from '../util.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -32,8 +34,6 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]

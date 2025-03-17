@@ -13,8 +13,8 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
-import type { PeerInfo } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
+import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:server')
 

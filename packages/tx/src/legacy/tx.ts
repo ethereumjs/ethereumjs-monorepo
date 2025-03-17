@@ -19,6 +19,8 @@ import { Capability, TransactionType } from '../types.ts'
 
 import { createLegacyTx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -27,8 +29,6 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
@@ -42,7 +42,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * Validates tx's `v` value and extracts the chain id
  */
-function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undefined {
+function validateVAndExtractChainID(common: Common, _v?: bigint): bigint | undefined {
   let chainIdBigInt
   const v = _v !== undefined ? Number(_v) : undefined
   // Check for valid v values in the scope of a signed legacy tx

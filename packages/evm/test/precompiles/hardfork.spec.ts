@@ -17,7 +17,7 @@ describe('Precompiles: hardfork availability', () => {
     if (!BN254PAIRING) {
       assert.fail('BN254PAIRING is not available in petersburg while it should be available')
     } else {
-      assert.ok(true, 'BN254PAIRING available in petersburg')
+      assert.isTrue(true, 'BN254PAIRING available in petersburg')
     }
 
     let evm = await createEVM({
@@ -38,7 +38,7 @@ describe('Precompiles: hardfork availability', () => {
     if (BN254PAIRING === undefined) {
       assert.fail('BN254PAIRING is not available in petersburg while it should be available')
     } else {
-      assert.ok(true, 'BN254PAIRING available in petersburg')
+      assert.isTrue(true, 'BN254PAIRING available in petersburg')
     }
 
     evm = await createEVM({
@@ -60,7 +60,7 @@ describe('Precompiles: hardfork availability', () => {
     if (BN254PAIRING !== undefined) {
       assert.fail('BN254PAIRING is available in homestead while it should not be available')
     } else {
-      assert.ok(true, 'BN254PAIRING not available in homestead')
+      assert.isTrue(true, 'BN254PAIRING not available in homestead')
     }
 
     evm = await createEVM({

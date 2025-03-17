@@ -7,8 +7,8 @@ import { createTxFromRLP } from '../src/transactionFactory.ts'
 
 import { getTests } from './testLoader.ts'
 
-import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.ts'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
@@ -87,16 +87,16 @@ describe('TransactionTests', async () => {
 
             const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
             if (shouldBeInvalid) {
-              assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
+              assert.isFalse(txIsValid, `Transaction should be invalid on ${forkName}`)
             } else {
-              assert.ok(
+              assert.isTrue(
                 hashAndSenderAreCorrect && txIsValid,
                 `Transaction should be valid on ${forkName}`,
               )
             }
-          } catch (e: any) {
+          } catch {
             if (shouldBeInvalid) {
-              assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+              assert.isTrue(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
             } else {
               assert.fail(`Transaction should be valid on ${forkName}`)
             }

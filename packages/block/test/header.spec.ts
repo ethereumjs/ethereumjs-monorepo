@@ -25,28 +25,28 @@ import { blocksGoerliData } from './testdata/blocks_goerli.ts'
 import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
 import { Goerli } from './testdata/goerliCommon.ts'
 
-import type { BlockHeader } from '../src/index.ts'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlockHeader } from '../src/index.ts'
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
-      assert.ok(equalsBytes(header.parentHash, new Uint8Array(32)))
-      assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
+      assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)))
+      assert.isTrue(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
       assert.ok(header.coinbase.equals(createZeroAddress()))
-      assert.ok(equalsBytes(header.stateRoot, new Uint8Array(32)))
-      assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.logsBloom, new Uint8Array(256)))
+      assert.isTrue(equalsBytes(header.stateRoot, new Uint8Array(32)))
+      assert.isTrue(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
+      assert.isTrue(equalsBytes(header.receiptTrie, KECCAK256_RLP))
+      assert.isTrue(equalsBytes(header.logsBloom, new Uint8Array(256)))
       assert.equal(header.difficulty, BigInt(0))
       assert.equal(header.number, BigInt(0))
       assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
       assert.equal(header.gasUsed, BigInt(0))
       assert.equal(header.timestamp, BigInt(0))
-      assert.ok(equalsBytes(header.extraData, new Uint8Array(0)))
-      assert.ok(equalsBytes(header.mixHash, new Uint8Array(32)))
-      assert.ok(equalsBytes(header.nonce, new Uint8Array(8)))
+      assert.isTrue(equalsBytes(header.extraData, new Uint8Array(0)))
+      assert.isTrue(equalsBytes(header.mixHash, new Uint8Array(32)))
+      assert.isTrue(equalsBytes(header.nonce, new Uint8Array(8)))
     }
 
     const header = createBlockHeader()
@@ -59,7 +59,7 @@ describe('[Block]: Header functions', () => {
   it('Initialization -> fromHeaderData()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(undefined, { common })
-    assert.ok(bytesToHex(header.hash()), 'genesis block should initialize')
+    assert.exists(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
       header.common.hardfork(),
       'chainstart',
@@ -74,12 +74,12 @@ describe('[Block]: Header functions', () => {
     )
 
     header = createBlockHeader({}, { common })
-    assert.ok(bytesToHex(header.hash()), 'default block should initialize')
+    assert.exists(bytesToHex(header.hash()), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
     header = createBlockHeader({})
-    assert.ok(Object.isFrozen(header), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(header), 'block should be frozen by default')
 
     header = createBlockHeader({}, { freeze: false })
     assert.ok(
@@ -96,7 +96,7 @@ describe('[Block]: Header functions', () => {
     header = createBlockHeaderFromRLP(rlpHeader, {
       common,
     })
-    assert.ok(Object.isFrozen(header), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(header), 'block should be frozen by default')
 
     header = createBlockHeaderFromRLP(rlpHeader, {
       common,
@@ -125,7 +125,10 @@ describe('[Block]: Header functions', () => {
       createBlockHeaderFromRLP(RLP.encode('a'))
     } catch (e: any) {
       const expectedError = 'Invalid serialized header input. Must be array'
-      assert.ok(e.message.includes(expectedError), 'should throw with header as rlp encoded string')
+      assert.isTrue(
+        e.message.includes(expectedError),
+        'should throw with header as rlp encoded string',
+      )
     }
   })
 
@@ -147,7 +150,7 @@ describe('[Block]: Header functions', () => {
     headerArray[14] = new Uint8Array(8) // nonce
 
     let header = createBlockHeaderFromBytesArray(headerArray, { common })
-    assert.ok(Object.isFrozen(header), 'block should be frozen by default')
+    assert.isTrue(Object.isFrozen(header), 'block should be frozen by default')
 
     header = createBlockHeaderFromBytesArray(headerArray, { common, freeze: false })
     assert.ok(
@@ -172,21 +175,21 @@ describe('[Block]: Header functions', () => {
       createBlockHeaderFromBytesArray(headerArray)
     } catch (e: any) {
       const expectedError = 'invalid header. More values than expected were received'
-      assert.ok(e.message.includes(expectedError), 'should throw on more values than expected')
+      assert.isTrue(e.message.includes(expectedError), 'should throw on more values than expected')
     }
 
     try {
       createBlockHeaderFromBytesArray(headerArray.slice(0, 5))
     } catch (e: any) {
       const expectedError = 'invalid header. Less values than expected were received'
-      assert.ok(e.message.includes(expectedError), 'should throw on less values than expected')
+      assert.isTrue(e.message.includes(expectedError), 'should throw on less values than expected')
     }
   })
 
   it('Initialization -> Clique Blocks', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
-    assert.ok(bytesToHex(header.hash()), 'default block should initialize')
+    assert.exists(bytesToHex(header.hash()), 'default block should initialize')
   })
 
   it('should validate extraData', async () => {
@@ -207,8 +210,8 @@ describe('[Block]: Header functions', () => {
 
     try {
       createBlockHeader({ ...data, extraData }, opts)
-      assert.ok(true, testCase)
-    } catch (error: any) {
+      assert.isTrue(true, testCase)
+    } catch {
       assert.fail(testCase)
     }
 
@@ -219,7 +222,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -231,7 +234,7 @@ describe('[Block]: Header functions', () => {
       createBlockHeader({ ...data, extraData }, opts)
       assert.fail(testCase)
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid amount of extra data'), testCase)
+      assert.isTrue((error.message as string).includes('invalid amount of extra data'), testCase)
     }
 
     // PoA
@@ -249,8 +252,8 @@ describe('[Block]: Header functions', () => {
     extraData = concatBytes(new Uint8Array(32), new Uint8Array(65))
     try {
       createBlockHeader({ ...data, extraData }, opts)
-      assert.ok(true, testCase)
-    } catch (error: any) {
+      assert.isTrue(true, testCase)
+    } catch {
       assert.fail(testCase)
     }
 
@@ -301,7 +304,7 @@ describe('[Block]: Header functions', () => {
         true,
         'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })
@@ -359,7 +362,7 @@ describe('[Block]: Header functions', () => {
       await header.validate(blockchain)
       assert.fail(testCase)
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid timestamp diff (lower than period)'), testCase)
+      assert.isTrue((error.message as string).includes('invalid timestamp diff (lower than period)'), testCase)
     }
 
     testCase = 'should not throw on timestamp diff equal to period'
@@ -367,7 +370,7 @@ describe('[Block]: Header functions', () => {
     header = createBlockHeader(headerData, { common })
     try {
       await header.validate(blockchain)
-      assert.ok(true, testCase)
+      assert.isTrue(true, testCase)
     } catch (error: any) {
       assert.fail(testCase)
     }
@@ -381,7 +384,7 @@ describe('[Block]: Header functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       if ((error.message as string).includes('coinbase must be filled with zeros on epoch transition blocks')) {
-        assert.ok(true, 'error thrown')
+        assert.isTrue(true, 'error thrown')
       } else {
         assert.fail('should throw with appropriate error')
       }
@@ -397,7 +400,7 @@ describe('[Block]: Header functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       if ((error.message as string).includes('mixHash must be filled with zeros')) {
-        assert.ok(true, 'error thrown')
+        assert.isTrue(true, 'error thrown')
       } else {
         assert.fail('should throw with appropriate error')
       }
@@ -412,7 +415,7 @@ describe('[Block]: Header functions', () => {
       assert.fail(testCase)
     } catch (error: any) {
       if ((error.message as string).includes('difficulty for clique block must be INTURN (2) or NOTURN (1)')) {
-        assert.ok(true, 'error thrown on invalid clique difficulty')
+        assert.isTrue(true, 'error thrown on invalid clique difficulty')
       } else {
         assert.fail('should throw with appropriate error')
       }

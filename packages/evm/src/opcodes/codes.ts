@@ -5,10 +5,10 @@ import { handlers } from './functions.ts'
 import { dynamicGasHandlers } from './gas.ts'
 import { getFullname } from './util.ts'
 
+import type { Common } from '@ethereumjs/common'
 import type { CustomOpcode } from '../types.ts'
 import type { OpHandler } from './functions.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas.ts'
-import type { Common } from '@ethereumjs/common'
 
 export class Opcode {
   readonly code: number

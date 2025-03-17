@@ -58,7 +58,7 @@ describe('invalid RLPs', () => {
           assert.deepEqual(e.message, msg)
         } else {
           // FIXME: check for exception name
-          assert.ok(true)
+          assert.isTrue(true)
         }
       }
     })
@@ -384,7 +384,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(val)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -398,7 +398,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -413,7 +413,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -428,7 +428,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -443,7 +443,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -468,7 +468,7 @@ describe('recursive typings', () => {
     const assertType = <T, U>(isTrue: IsType<T, U>) => {
       return isTrue
     }
-    // tslint:disable-next-line:no-dead-store
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const a = RLP.encode([[[[[0]]]]])
     assert.ok(assertType<typeof a, Uint8Array>(true))
   })

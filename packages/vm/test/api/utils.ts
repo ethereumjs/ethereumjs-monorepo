@@ -13,11 +13,11 @@ import { createVM } from '../../src/index.ts'
 
 import { LevelDB } from './level.ts'
 
-import type { VMOpts } from '../../src/types.ts'
-import type { VM } from '../../src/vm.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VMOpts } from '../../src/types.ts'
+import type { VM } from '../../src/vm.ts'
 
 export function createAccountWithDefaults(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)

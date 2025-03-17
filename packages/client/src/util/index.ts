@@ -1,11 +1,11 @@
-/**
- * @module util
- */
-import { bytesToHex } from '@ethereumjs/util'
 import { existsSync, readFileSync } from 'fs'
 import { platform } from 'os'
 import { dirname, join as joinPath } from 'path'
 import { fileURLToPath } from 'url'
+/**
+ * @module util
+ */
+import { bytesToHex } from '@ethereumjs/util'
 
 export * from './inclineClient.ts'
 export * from './parse.ts'
@@ -29,7 +29,6 @@ export function getPackageJSON() {
   // or we are at the root directory.
   let currentDir = __dirname
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const packageJsonPath = joinPath(currentDir, 'package.json')
     if (existsSync(packageJsonPath)) {

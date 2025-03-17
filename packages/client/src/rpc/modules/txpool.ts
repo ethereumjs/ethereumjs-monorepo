@@ -1,9 +1,9 @@
 import { callWithStackTrace, toJSONRPCTx } from '../helpers.ts'
 
+import type { VM } from '@ethereumjs/vm'
 import type { EthereumClient } from '../../index.ts'
 import type { FullEthereumService } from '../../service/index.ts'
 import type { TxPool as Pool } from '../../service/txpool.ts'
-import type { VM } from '@ethereumjs/vm'
 
 /**
  * web3_* RPC module

@@ -28,7 +28,7 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
 describe('VM -> basic instantiation / boolean switches', () => {
   it('should instantiate without params', async () => {
     const vm = await createVM()
-    assert.ok(vm.stateManager)
+    assert.exists(vm.stateManager)
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
@@ -57,7 +57,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     try {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch {
       assert.ok('correctly thrown')
     }
   })
@@ -125,7 +125,7 @@ describe('VM -> supportedHardforks', () => {
       await createVM({ common })
       assert.fail('should have failed for unsupported hardfork')
     } catch (e: any) {
-      assert.ok(e.message.includes('supportedHardforks'))
+      assert.isTrue(e.message.includes('supportedHardforks') === true)
     }
     // restore supported hardforks
     EVM['supportedHardforks'] = prevSupported
@@ -189,7 +189,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
       vm = await createVM({ common })
       assert.fail('should have failed for invalid chain')
     } catch (e: any) {
-      assert.ok(e.message.includes('not supported'))
+      assert.isTrue(e.message.includes('not supported') === true)
     }
   })
 
@@ -197,8 +197,8 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const common = new Common({ chain: Mainnet, eips: [2537] })
     try {
       await createVM({ common })
-      assert.ok(true, 'did not throw')
-    } catch (error) {
+      assert.isTrue(true, 'did not throw')
+    } catch {
       assert.fail('should not have thrown')
     }
   })

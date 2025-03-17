@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
+import { randomBytes } from 'node:crypto'
+
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise/index.js'
-import { randomBytes } from 'node:crypto'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -52,12 +52,12 @@ describe(`running txes on ${rpcUrl}`, async () => {
     filterOutWords,
     externalRun: 'true',
   })
-  assert.ok(true, `connected to client ${result}`)
+  assert.isTrue(true, `connected to client ${result}`)
 
   console.log(`Checking for network running...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, `${result} confirmed running`)
+    assert.isTrue(true, `${result} confirmed running`)
   } catch (e) {
     assert.fail(`failed to confirm ${result} running`)
     throw e
@@ -72,7 +72,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
         2.0,
       )
       const nonce = Number(nonceFetch.result)
-      assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
+      assert.isTrue(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
 
       const txns = await createBlobTxs(
         numTxs - 1,
@@ -97,10 +97,10 @@ describe(`running txes on ${rpcUrl}`, async () => {
           assert.fail(`Unable to post all txs`)
           break
         }
-        assert.ok(true, `posted tx with hash=${res.result}`)
+        assert.isTrue(true, `posted tx with hash=${res.result}`)
         txHashes.push(res.result)
       }
-      assert.ok(true, `posted txs=${txHashes.length}`)
+      assert.isTrue(true, `posted txs=${txHashes.length}`)
     },
     10 * 60_000,
   )
@@ -108,8 +108,8 @@ describe(`running txes on ${rpcUrl}`, async () => {
   it('cleanup', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'script terminated')
-    } catch (e) {
+      assert.isTrue(true, 'script terminated')
+    } catch {
       assert.fail('could not terminate properly')
     }
   }, 60_000)
