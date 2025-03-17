@@ -122,7 +122,6 @@ describe('simple mainnet test run', async () => {
         ejsInlineClient,
         peerConnectedPromise,
         beaconSyncRelayer: relayer,
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
       } = (await createBeaconSyncClient(
         common,
         customGenesisState,

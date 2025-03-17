@@ -96,7 +96,7 @@ describe('[SnapProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
-    /* eslint-disable @typescript-eslint/no-use-before-define */
+
     const data = RLP.decode(hexToBytes(contractAccountRangeRLP)) as unknown
     const { reqId, accounts, proof } = p.decode(
       p.messages.filter((message) => message.name === 'AccountRange')[0],
@@ -175,7 +175,6 @@ describe('[SnapProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
     const reqData = RLP.decode(hexToBytes(getAccountRangeRLP))
     const { root: stateRoot } = p.decode(
       p.messages.filter((message) => message.name === 'GetAccountRange')[0],
@@ -268,7 +267,6 @@ describe('[SnapProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
     const data = RLP.decode(hexToBytes(storageRangesRLP)) as unknown
     const { reqId, slots, proof } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
@@ -311,7 +309,6 @@ describe('[SnapProtocol]', () => {
     )
     const lastAccount = accounts[accounts.length - 1]
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
     const data = RLP.decode(hexToBytes(storageRangesRLP))
     const { proof, slots } = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
@@ -408,7 +405,6 @@ describe('[SnapProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
 
-    /* eslint-disable @typescript-eslint/no-use-before-define */
     const codesReq = RLP.decode(hexToBytes(getByteCodesRLP))
     const { hashes } = p.decode(
       p.messages.filter((message) => message.name === 'GetByteCodes')[0],

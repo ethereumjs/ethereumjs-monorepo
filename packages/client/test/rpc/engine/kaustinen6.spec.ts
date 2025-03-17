@@ -149,7 +149,6 @@ describe.skip(`valid verkle network setup`, async () => {
   }
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, {
       common,
     })

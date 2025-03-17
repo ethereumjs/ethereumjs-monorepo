@@ -51,7 +51,6 @@ export default [
         }
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/no-use-before-define': 'error',
       '@typescript-eslint/naming-convention': [
         'error',
         {
@@ -68,7 +67,7 @@ export default [
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/return-await': 'error',
       '@typescript-eslint/strict-boolean-expressions': ['error'],
-      '@typescript-eslint/no-use-before-define': 'warn',
+      '@typescript-eslint/no-use-before-define': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
@@ -109,6 +108,7 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
+      
     },
   },
   {
@@ -146,7 +146,6 @@ export default [
   {
     files: ['packages/statemanager/src/**', 'packages/vm/src/**',],
     rules: {
-      '@typescript-eslint/no-use-before-define': 'off',
       'no-invalid-this': 'off',
     },
   },

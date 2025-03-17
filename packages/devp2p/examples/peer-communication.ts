@@ -63,8 +63,6 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
 
 dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
-/* eslint-disable @typescript-eslint/no-use-before-define */
-
 // RLPx
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt,
