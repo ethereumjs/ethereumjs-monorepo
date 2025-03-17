@@ -53,30 +53,32 @@ describe('should connect/disconnect peer', () => {
   assert.notOk((pool as any).pool.get('abc'), 'peer removed')
 })
 
-const Peer = function (this: any, id: string) {
-  this.id = id // eslint-disable-line no-invalid-this
+class Peer {
+  id: string
+  constructor(id: string) {
+    this.id = id
+  }
 }
-vi.doMock('../../src/net/peer/peer', () => Peer)
+
+vi.doMock('../../src/net/peer/peer.ts', () => Peer)
 describe('should check contains', () => {
-  // @ts-ignore
   const peer = new Peer('abc')
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   it('should add peer', () => {
-    pool.add(peer)
+    pool.add(peer as any)
     assert.ok(pool.contains(peer.id), 'found peer')
   })
 })
 
 describe('should get idle peers', () => {
-  // @ts-ignore
-  const peers = [new Peer(1), new Peer(2), new Peer(3)]
+  const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  peers[1].idle = true
+  ;(peers[1] as any).idle = true
   it('should add peers', () => {
     for (const p of peers) {
-      pool.add(p)
+      pool.add(p as any)
     }
     assert.equal(pool.idle(), peers[1], 'correct idle peer')
     assert.equal(
