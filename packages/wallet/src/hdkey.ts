@@ -2,6 +2,7 @@
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 import { Wallet } from './wallet.ts'
 
 export class EthereumHDKey {
@@ -35,7 +36,7 @@ export class EthereumHDKey {
    */
   public privateExtendedKey(): string {
     if (!this._hdkey.privateExtendedKey) {
-      throw new Error('This is a public key only wallet')
+      throw EthereumJSErrorWithoutCode('This is a public key only wallet')
     }
     return this._hdkey.privateExtendedKey
   }
@@ -68,7 +69,7 @@ export class EthereumHDKey {
     if (this._hdkey.privateKey) {
       return Wallet.fromPrivateKey(this._hdkey.privateKey)
     }
-    if (!this._hdkey.publicKey) throw new Error('No hdkey')
+    if (!this._hdkey.publicKey) throw EthereumJSErrorWithoutCode('No hdkey')
     return Wallet.fromPublicKey(this._hdkey.publicKey, true)
   }
 }
