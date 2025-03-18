@@ -6,6 +6,7 @@ export const Chain = {
   Mainnet: 1,
   Sepolia: 11155111,
   Holesky: 17000,
+  Hoodi: 560048,
   Kaustinen6: 69420,
 } as const
 
@@ -48,6 +49,11 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     name: 'holesky',
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
+  },
+  [Chain.Hoodi]: {
+    name: 'hoodi',
+    blockNumber: BIGINT_0,
+    stateRoot: hexToBytes('0xda87d7f5f91c51508791bbcbd4aa5baf04917830b86985eeb9ad3d5bfb657576'),
   },
   [Chain.Kaustinen6]: {
     name: 'kaustinen6',
