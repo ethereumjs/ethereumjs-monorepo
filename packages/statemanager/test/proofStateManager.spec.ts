@@ -14,12 +14,12 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager } from '../src/index.js'
-import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.js'
+import { MerkleStateManager } from '../src/index.ts'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.ts'
 
-import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
-import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
-import { ropstenValidAccountData } from './testdata/ropsten_validAccount.js'
+import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.ts'
+import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.ts'
+import { ropstenValidAccountData } from './testdata/ropsten_validAccount.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -240,8 +240,8 @@ describe('ProofStateManager', () => {
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+      } catch {
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) = original
       }
@@ -255,7 +255,7 @@ describe('ProofStateManager', () => {
         await verifyMerkleStateProof(stateManager, testData)
         assert.fail('should throw')
       } catch {
-        assert.ok(true, 'threw on invalid proof')
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         slot.value = original
       }
@@ -298,8 +298,8 @@ describe('ProofStateManager', () => {
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+      } catch {
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         // restore original valid proof
         testdata[tamper] = original

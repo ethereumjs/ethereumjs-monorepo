@@ -1,4 +1,4 @@
-import type { JSONRPCBlock } from '../../src/index.js'
+import type { JSONRPCBlock } from '../../src/index.ts'
 
 export const alchemy14151203Data: JSONRPCBlock = {
   number: '0xd7ee23',

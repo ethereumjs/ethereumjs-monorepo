@@ -6,8 +6,8 @@ import { bigIntToHex, bytesToHex, createAddressFromString } from '@ethereumjs/ut
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -146,7 +146,7 @@ describe(method, () => {
       'pending',
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with invalid hex params', async () => {
@@ -170,6 +170,6 @@ describe(method, () => {
       'latest',
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
   })
 })

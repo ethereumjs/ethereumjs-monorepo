@@ -8,12 +8,12 @@ import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
+import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.ts'
 
-import { blocksMainnetData } from './testdata/blocks_mainnet.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { preLondonData } from './testdata/testdata_pre-london.js'
-import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
+import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { preLondonData } from './testdata/testdata_pre-london.ts'
+import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.ts'
 
 import type { Block, BlockOptions } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -79,7 +79,7 @@ describe('blockchain test', () => {
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.ok(chain instanceof Blockchain, 'should not throw')
-    } catch (error) {
+    } catch {
       assert.fail('show not have thrown')
     }
   })
@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.ok(error, 'returned with error')
+      assert.exists(error, 'returned with error')
     }
   })
 
@@ -223,7 +223,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(5)
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-number request`,
       )
@@ -233,7 +233,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-hash request`,
       )
@@ -262,7 +262,10 @@ describe('blockchain test', () => {
       await blockchain.getBlock(22)
       assert.fail('canonical references should have been deleted')
     } catch (err: any) {
-      assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
+      assert.isTrue(
+        err.message.includes('not found in DB'),
+        'canonical references correctly deleted',
+      )
     }
 
     try {
@@ -462,7 +465,7 @@ describe('blockchain test', () => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      //eslint-disable-next-line
+
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = createBlockHeader(headerData, {
@@ -574,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.ok(error, 'should not validate an invalid block')
+      assert.exists(error, 'should not validate an invalid block')
     }
   })
 
@@ -757,7 +760,7 @@ describe('blockchain test', () => {
         error = err
       }
       if (i === 2) {
-        assert.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.include(error.message, 'Chain mismatch', 'should return chain mismatch error')
       } else {
         assert.isUndefined(error, 'should not return mismatch error')
       }

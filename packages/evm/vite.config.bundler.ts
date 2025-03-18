@@ -1,7 +1,7 @@
-import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
-import { defineConfig } from 'vitest/config'
 import { visualizer } from 'rollup-plugin-visualizer'
+import topLevelAwait from 'vite-plugin-top-level-await'
+import wasm from 'vite-plugin-wasm'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [wasm(), topLevelAwait(), visualizer({ open: true, gzipSize: true })],

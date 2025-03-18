@@ -1,4 +1,6 @@
-/* eslint-disable no-console */
+import { execSync, spawn } from 'node:child_process'
+import * as net from 'node:net'
+
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { type Common } from '@ethereumjs/common'
 import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
@@ -16,18 +18,16 @@ import {
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-import { execSync, spawn } from 'node:child_process'
-import * as net from 'node:net'
 import qs from 'qs'
 
-import { RPCManager } from '../../src/rpc/index.js'
-import { Event } from '../../src/types.js'
+import { RPCManager } from '../../src/rpc/index.ts'
+import { Event } from '../../src/types.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise'
+import type { Client } from 'jayson/promise/index.js'
+import type { EthereumClient } from '../../src/client.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -36,7 +36,7 @@ export async function getEventSource(): Promise<typeof EventSource> {
   if (globalThis.EventSource !== undefined) {
     return EventSource
   } else {
-    return (await import('eventsource')).default as unknown as typeof EventSource
+    return (await import('eventsource')).EventSource
   }
 }
 
@@ -54,7 +54,7 @@ export async function waitForELOnline(client: Client): Promise<string> {
       console.log('Waiting for EL online...')
       const res = await client.request('web3_clientVersion', [])
       return res.result as string
-    } catch (e) {
+    } catch {
       await sleep(4000)
     }
   }
@@ -321,7 +321,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = createAddressFromPrivateKey(pkey)
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',

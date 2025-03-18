@@ -1,12 +1,11 @@
-/// <reference path="./testdouble.d.ts" />
 import { EventEmitter } from 'eventemitter3'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { BoundProtocol } from '../../../src/net/protocol/index.js'
-import { Sender } from '../../../src/net/protocol/sender.js'
-import { Event } from '../../../src/types.js'
+import { Config } from '../../../src/config.ts'
+import { BoundProtocol } from '../../../src/net/protocol/index.ts'
+import { Sender } from '../../../src/net/protocol/sender.ts'
+import { Event } from '../../../src/types.ts'
 
 describe('[BoundProtocol]', () => {
   const peer = td.object('Peer') as any

@@ -1,11 +1,11 @@
 import { EventEmitter } from 'eventemitter3'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { Event } from '../../src/types.js'
-import { MockPeer } from '../integration/mocks/mockpeer.js'
+import { Config } from '../../src/config.ts'
+import { Event } from '../../src/types.ts'
+import { MockPeer } from '../integration/mocks/mockpeer.ts'
 
-const { PeerPool } = await import('../../src/net/peerpool.js')
+const { PeerPool } = await import('../../src/net/peerpool.ts')
 
 describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -22,10 +22,10 @@ describe('should initialize', () => {
     })
     await pool.open()
     config.events.on(Event.PEER_CONNECTED, (peer) => {
-      if (pool.contains(peer.id)) assert.ok(true, 'peer connected')
+      if (pool.contains(peer.id)) assert.isTrue(true, 'peer connected')
     })
     config.events.on(Event.POOL_PEER_REMOVED, () => {
-      if (!pool.contains('peer')) assert.ok(true, 'peer disconnected')
+      if (!pool.contains('peer')) assert.isTrue(true, 'peer disconnected')
     })
     pool.add(peer)
     pool.remove(peer)
@@ -53,30 +53,32 @@ describe('should connect/disconnect peer', () => {
   assert.notOk((pool as any).pool.get('abc'), 'peer removed')
 })
 
-const Peer = function (this: any, id: string) {
-  this.id = id // eslint-disable-line no-invalid-this
+class Peer {
+  id: string
+  constructor(id: string) {
+    this.id = id
+  }
 }
-vi.doMock('../../src/net/peer/peer', () => Peer)
+
+vi.doMock('../../src/net/peer/peer.ts', () => Peer)
 describe('should check contains', () => {
-  // @ts-ignore
   const peer = new Peer('abc')
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   it('should add peer', () => {
-    pool.add(peer)
+    pool.add(peer as any)
     assert.ok(pool.contains(peer.id), 'found peer')
   })
 })
 
 describe('should get idle peers', () => {
-  // @ts-ignore
-  const peers = [new Peer(1), new Peer(2), new Peer(3)]
+  const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  peers[1].idle = true
+  ;(peers[1] as any).idle = true
   it('should add peers', () => {
     for (const p of peers) {
-      pool.add(p)
+      pool.add(p as any)
     }
     assert.equal(pool.idle(), peers[1], 'correct idle peer')
     assert.equal(

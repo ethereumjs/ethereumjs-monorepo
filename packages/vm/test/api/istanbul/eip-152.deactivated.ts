@@ -8,7 +8,7 @@ import { F, precompile09 } from '@ethereumjs/evm/dist/precompiles/09-blake2f'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM, createVM } from '../../../src/index.js'
+import { VM, createVM } from '../../../src/index.ts'
 
 // Test cases from:
 // https://github.com/keep-network/go-ethereum/blob/1bccafe5ef54ba849e414ce7c90f7b7130634a9a/core/vm/contracts_test.go
@@ -93,7 +93,7 @@ describe('Istanbul: EIP-152', () => {
     const vm = await createVM({ common })
 
     for (const testCase of failingTestCases) {
-      assert.ok(true, testCase.name)
+      assert.isTrue(true, testCase.name)
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(20),
@@ -104,7 +104,7 @@ describe('Istanbul: EIP-152', () => {
     }
 
     for (const testCase of testCases) {
-      assert.ok(true, testCase.name)
+      assert.isTrue(true, testCase.name)
       const res = precompile09({
         data: hexToBytes('0x' + testCase.input),
         gasLimit: BigInt(10000000),

@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
 
-import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
+import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
 
-import type { PrefixedHexString } from './types.js'
+import type { PrefixedHexString } from './types.ts'
 
 /**
  * Returns a boolean on whether or not the the input starts with '0x' and matches the optional length

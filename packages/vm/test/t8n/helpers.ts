@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import type { T8NOptions } from './types.js'
+import type { T8NOptions } from './types.ts'
 
 export function getArguments() {
   const argsParsed = yargs(hideBin(process.argv))

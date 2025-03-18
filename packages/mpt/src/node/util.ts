@@ -1,12 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, type NestedUint8Array } from '@ethereumjs/util'
 
-import { isTerminator } from '../util/hex.js'
-import { bytesToNibbles } from '../util/nibbles.js'
+import { isTerminator } from '../util/hex.ts'
+import { bytesToNibbles } from '../util/nibbles.ts'
 
-import { BranchMPTNode } from './branch.js'
-import { ExtensionMPTNode } from './extension.js'
-import { LeafMPTNode } from './leaf.js'
+import { BranchMPTNode } from './branch.ts'
+import { ExtensionMPTNode } from './extension.ts'
+import { LeafMPTNode } from './leaf.ts'
 
 export function decodeRawMPTNode(raw: Uint8Array[]) {
   if (raw.length === 17) {

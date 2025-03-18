@@ -635,6 +635,7 @@
     "unsnappy",
     "ethportal",
     "bytevector",
-    "blobschedule"
+    "blobschedule",
+    "hoodi"
   ]
 }

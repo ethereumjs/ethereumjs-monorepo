@@ -3,11 +3,11 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
 
-import type { LevelDB } from '../../src/execution/level.js'
 import type { BlockData, HeaderData } from '@ethereumjs/block'
+import type { LevelDB } from '../../src/execution/level.ts'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
@@ -70,50 +70,50 @@ describe('[Chain]', () => {
     try {
       await chain.putHeaders([block.header])
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.putBlocks([block])
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     assert.notOk(chain.opened, 'chain should close')
     try {
       await chain.getBlocks(block.hash())
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getBlock(block.hash())
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     try {
       await chain.getCanonicalHeadHeader()
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getCanonicalHeadBlock()
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.close()
     try {
       await chain.getTd(block.hash(), block.header.number)
       assert.fail('should error if chain is closed')
-    } catch (error) {
-      assert.ok(true, 'threw an error when chain is closed')
+    } catch {
+      assert.isTrue(true, 'threw an error when chain is closed')
     }
     await chain.open()
     assert.equal(await chain.open(), false, 'skip open if already opened')

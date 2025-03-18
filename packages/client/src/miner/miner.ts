@@ -5,16 +5,16 @@ import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereum
 import { type TxReceipt, buildBlock } from '@ethereumjs/vm'
 import { MemoryLevel } from 'memory-level'
 
-import { LevelDB } from '../execution/level.js'
-import { Event } from '../types.js'
+import { LevelDB } from '../execution/level.ts'
+import { Event } from '../types.ts'
 
-import type { Config } from '../config.js'
-import type { VMExecution } from '../execution/index.js'
-import type { FullEthereumService } from '../service/index.js'
-import type { FullSynchronizer } from '../sync/index.js'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
+import type { Config } from '../config.ts'
+import type { VMExecution } from '../execution/index.ts'
+import type { FullEthereumService } from '../service/index.ts'
+import type { FullSynchronizer } from '../sync/index.ts'
 
 export interface MinerOptions {
   /* Config */
@@ -105,7 +105,7 @@ export class Miner {
       const [signerAddress] = this.config.accounts[0]
       const { blockchain } = this.service.chain
       const parentBlock = this.service.chain.blocks.latest!
-      //eslint-disable-next-line
+
       const number = parentBlock.header.number + BIGINT_1
       const inTurn = await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         signerAddress,
@@ -201,7 +201,7 @@ export class Miner {
     this.config.events.once(Event.CHAIN_UPDATED, _boundSetInterruptHandler)
 
     const parentBlock = this.service.chain.blocks.latest!
-    //eslint-disable-next-line
+
     const number = parentBlock.header.number + BIGINT_1
     let { gasLimit } = parentBlock.header
 

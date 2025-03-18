@@ -9,21 +9,21 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-// import { keccak256 } from 'ethereum-cryptography/keccak'
+// import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it, vi } from 'vitest'
 
-// import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Miner } from '../../src/miner/index.js'
-import { FullEthereumService } from '../../src/service/index.js'
+// import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Miner } from '../../src/miner/index.ts'
+import { FullEthereumService } from '../../src/service/index.ts'
 // import { Event } from '../../src/types'
-import { wait } from '../integration/util.js'
-import { Goerli } from '../testdata/common/goerliCommon.js'
+import { wait } from '../integration/util.ts'
+import { Goerli } from '../testdata/common/goerliCommon.ts'
 
-import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import type { FullSynchronizer } from '../../src/sync/index.ts'
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -84,7 +84,7 @@ class FakeChain {
     getTotalDifficulty: () => {
       return 1n
     },
-    // eslint-disable-next-line no-invalid-this
+
     shallowCopy: () => this.blockchain,
     _init: async () => undefined,
     events: {
@@ -398,16 +398,16 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await (miner as any).queueNextAssembly(0)
   it('should save receipt', async () => {
     const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
   })
   it('should save receipt', async () => {
     let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
     receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
 
     receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.ok(receipt, 'receipt should be saved')
+    assert.exists(receipt, 'receipt should be saved')
 
     await wait(500)
   })

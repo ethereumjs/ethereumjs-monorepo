@@ -1,3 +1,5 @@
+import * as http from 'http'
+import * as url from 'url'
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
@@ -11,17 +13,15 @@ import {
   hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
-import * as http from 'http'
 import * as promClient from 'prom-client'
-import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { PeerPool } from '../../src/net/peerpool.js'
-import { TxPool } from '../../src/service/txpool.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { PeerPool } from '../../src/net/peerpool.ts'
+import { TxPool } from '../../src/service/txpool.ts'
 
-import type { PrometheusMetrics } from '../../src/types.js'
+import type { PrometheusMetrics } from '../../src/types.ts'
 
 let prometheusMetrics: PrometheusMetrics | undefined
 
@@ -423,7 +423,7 @@ describe('[TxPool]', async () => {
       assert.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
       assert.ok(
-        e.message.includes('replacement gas too low'),
+        e.message.includes('replacement gas too low') === true,
         'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))

@@ -3,6 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  CLRequestType,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -14,9 +15,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLRequestType } from '../../../../util/src/request.js'
-import { runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -139,7 +139,7 @@ describe('EIP-7002 tests', () => {
       amountBytes.reverse(),
     )
     // Ensure the requests are correct
-    assert.ok(equalsBytes(expectedRequestData, withdrawalRequest.data))
+    assert.isTrue(equalsBytes(expectedRequestData, withdrawalRequest.data))
 
     // generated block should be valid
     await runBlock(vm, { block: generatedBlock!, skipHeaderValidation: true, root })
@@ -195,7 +195,7 @@ describe('EIP-7002 tests', () => {
         generate: true,
       })
     } catch (e: any) {
-      assert.ok(e.message.includes('Attempt to accumulate EIP-7002 requests failed'))
+      assert.isTrue(e.message.includes('Attempt to accumulate EIP-7002 requests failed') === true)
     }
   })
 })

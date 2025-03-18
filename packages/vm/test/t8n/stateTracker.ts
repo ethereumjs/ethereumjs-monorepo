@@ -7,9 +7,9 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 
-import type { VM } from '../../src/vm.js'
-import type { T8NAlloc } from './types.js'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../src/vm.ts'
+import type { T8NAlloc } from './types.ts'
 
 export class StateTracker {
   private allocTracker: {
@@ -30,25 +30,25 @@ export class StateTracker {
     const originalPutStorage = vm.stateManager.putStorage
 
     this.vm = vm
-
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     vm.stateManager.putAccount = async function (...args: [Address, Account?]) {
       const address = args[0]
-      self.addAddress(address.toString())
+      ;(self as any).addAddress(address.toString())
       await originalPutAccount.apply(this, args)
     }
 
     vm.stateManager.putCode = async function (...args: [Address, Uint8Array]) {
       const address = args[0]
-      self.addAddress(address.toString())
+      ;(self as any).addAddress(address.toString())
       return originalPutCode.apply(this, args)
     }
 
     vm.stateManager.putStorage = async function (...args: [Address, Uint8Array, Uint8Array]) {
       const address = args[0]
       const key = args[1]
-      self.addStorage(address.toString(), <PrefixedHexString>bytesToHex(key))
+      ;(self as any).addStorage(address.toString(), <PrefixedHexString>bytesToHex(key))
       return originalPutStorage.apply(this, args)
     }
   }

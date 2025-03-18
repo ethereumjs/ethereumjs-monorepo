@@ -70,18 +70,15 @@ export type AccessEventFlags = {
   chunkFill: boolean
 }
 
-/**
- * Binary tree related
- *
- * Experimental (do not implement)
- */
+export type BinaryTreeAccessedStateType =
+  (typeof BinaryTreeAccessedStateType)[keyof typeof BinaryTreeAccessedStateType]
 
-export enum BinaryTreeAccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
-}
+export const BinaryTreeAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
 
 export type RawBinaryTreeAccessedState = {
   address: Address
@@ -94,11 +91,11 @@ export type BinaryTreeAccessedState =
   | {
       type: Exclude<
         BinaryTreeAccessedStateType,
-        BinaryTreeAccessedStateType.Code | BinaryTreeAccessedStateType.Storage
+        typeof BinaryTreeAccessedStateType.Code | typeof BinaryTreeAccessedStateType.Storage
       >
     }
-  | { type: BinaryTreeAccessedStateType.Code; codeOffset: number }
-  | { type: BinaryTreeAccessedStateType.Storage; slot: bigint }
+  | { type: typeof BinaryTreeAccessedStateType.Code; codeOffset: number }
+  | { type: typeof BinaryTreeAccessedStateType.Storage; slot: bigint }
 
 export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
   address: Address
@@ -123,18 +120,15 @@ export interface BinaryTreeAccessWitnessInterface {
   revert(): void
 }
 
-/**
- * Verkle related
- *
- * Experimental (do not implement)
- */
+export type VerkleAccessedStateType =
+  (typeof VerkleAccessedStateType)[keyof typeof VerkleAccessedStateType]
 
-export enum VerkleAccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
-}
+export const VerkleAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
 
 export type RawVerkleAccessedState = {
   address: Address
@@ -147,11 +141,11 @@ export type VerkleAccessedState =
   | {
       type: Exclude<
         VerkleAccessedStateType,
-        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+        typeof VerkleAccessedStateType.Code | typeof VerkleAccessedStateType.Storage
       >
     }
-  | { type: VerkleAccessedStateType.Code; codeOffset: number }
-  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+  | { type: typeof VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: typeof VerkleAccessedStateType.Storage; slot: bigint }
 
 export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
   address: Address

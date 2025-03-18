@@ -1,10 +1,5 @@
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
-import type { FeeMarket1559Tx } from './1559/tx.js'
-import type { AccessList2930Tx } from './2930/tx.js'
-import type { Blob4844Tx } from './4844/tx.js'
-import type { EOACode7702Tx } from './7702/tx.js'
-import type { LegacyTx } from './legacy/tx.js'
 import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
@@ -13,40 +8,47 @@ import type {
   BytesLike,
   PrefixedHexString,
 } from '@ethereumjs/util'
+import type { FeeMarket1559Tx } from './1559/tx.ts'
+import type { AccessList2930Tx } from './2930/tx.ts'
+import type { Blob4844Tx } from './4844/tx.ts'
+import type { EOACode7702Tx } from './7702/tx.ts'
+import type { LegacyTx } from './legacy/tx.ts'
+export type Capability = (typeof Capability)[keyof typeof Capability]
+
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
  */
-export enum Capability {
+export const Capability = {
   /**
    * Tx supports EIP-155 replay protection
    * See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP
    */
-  EIP155ReplayProtection = 155,
+  EIP155ReplayProtection: 155,
 
   /**
    * Tx supports EIP-1559 gas fee market mechanism
    * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
    */
-  EIP1559FeeMarket = 1559,
+  EIP1559FeeMarket: 1559,
 
   /**
    * Tx is a typed transaction as defined in EIP-2718
    * See: [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
    */
-  EIP2718TypedTransaction = 2718,
+  EIP2718TypedTransaction: 2718,
 
   /**
    * Tx supports access list generation as defined in EIP-2930
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
-  EIP2930AccessLists = 2930,
+  EIP2930AccessLists: 2930,
 
   /**
    * Tx supports setting EOA code
    * See [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
    */
-  EIP7702EOACode = 7702,
+  EIP7702EOACode: 7702,
 }
 
 /**
@@ -144,16 +146,15 @@ export interface TransactionCache {
   senderPubKey?: Uint8Array
 }
 
-/**
- * Encompassing type for all transaction types.
- */
-export enum TransactionType {
-  Legacy = 0,
-  AccessListEIP2930 = 1,
-  FeeMarketEIP1559 = 2,
-  BlobEIP4844 = 3,
-  EOACodeEIP7702 = 4,
-}
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
+
+export const TransactionType = {
+  Legacy: 0,
+  AccessListEIP2930: 1,
+  FeeMarketEIP1559: 2,
+  BlobEIP4844: 3,
+  EOACodeEIP7702: 4,
+} as const
 
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTx

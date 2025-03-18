@@ -9,16 +9,18 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP7702 from '../capabilities/eip7702.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP7702 from '../capabilities/eip7702.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists, AuthorizationLists, validateNotArray } from '../util.ts'
 
-import { createEOACode7702Tx } from './constructors.js'
+import { createEOACode7702Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -31,12 +33,10 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
 
-export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
+export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
  * Typed transaction with the ability to set codes on EOA accounts
@@ -44,8 +44,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACodeEIP7702> {
-  public type: number = TransactionType.EOACodeEIP7702 // 7702 tx type
+export class EOACode7702Tx implements TransactionInterface<typeof TransactionType.EOACodeEIP7702> {
+  public type = TransactionType.EOACodeEIP7702 // 7702 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -383,7 +383,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): EOACode7702Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): EOACode7702Tx {
     return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

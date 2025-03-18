@@ -1,16 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bitsToBytes, bytesToBits } from '@ethereumjs/util'
 
-import { BinaryNodeType } from './types.js'
+import { BinaryNodeType } from './types.ts'
 
-import type { BinaryNodeOptions, ChildBinaryNode } from './types.js'
+import type { BinaryNodeOptions, ChildBinaryNode } from './types.ts'
 
 export class InternalBinaryNode {
   public children: Array<ChildBinaryNode | null>
 
   public type = BinaryNodeType.Internal
 
-  constructor(options: BinaryNodeOptions[BinaryNodeType.Internal]) {
+  constructor(options: BinaryNodeOptions[typeof BinaryNodeType.Internal]) {
     this.children = options.children ?? Array(2).fill(null)
   }
 

@@ -14,7 +14,7 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.js'
+import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.ts'
 
 describe('verkle tests', () => {
   it('should execute bytecode and update the state', async () => {
@@ -179,7 +179,7 @@ describe('generate an execution witness', () => {
       preStateRoot,
     )
     const stem = bytesToHex(getVerkleStem(verkle, createAddressFromString(tx.sender)))
-    assert.ok(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
+    assert.isTrue(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
     const stemDiff =
       executionWitness.stateDiff[executionWitness.stateDiff.findIndex((diff) => diff.stem === stem)]
     const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)

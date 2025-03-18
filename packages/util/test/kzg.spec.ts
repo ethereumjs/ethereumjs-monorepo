@@ -4,9 +4,9 @@ import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { getBlobs } from '../src/blobs.js'
+import { getBlobs } from '../src/blobs.ts'
 
-import type { KZG } from '../src/kzg.js'
+import type { KZG } from '../src/kzg.ts'
 
 export const jsKZG = new microEthKZG(trustedSetup)
 

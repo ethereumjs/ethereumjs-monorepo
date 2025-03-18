@@ -1,19 +1,22 @@
 {
   "compilerOptions": {
-    "sourceMap": true,
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
     "downlevelIteration": true,
+    "esModuleInterop": false,
+    "lib": ["ES2020", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "lib": ["ES2020", "DOM"],
-    "skipLibCheck": true
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
   }
 }

@@ -3,8 +3,8 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { Address, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
-import { createAccountWithDefaults } from '../utils.js'
+import { createVM } from '../../../src/index.ts'
+import { createAccountWithDefaults } from '../utils.ts'
 
 const testCases = [
   { chain: Mainnet, hardfork: Hardfork.Istanbul, selfbalance: '0xf1' },
@@ -37,7 +37,7 @@ describe('Istanbul: EIP-1884', () => {
         if (testCase.err !== undefined) {
           assert.equal(res.exceptionError?.error, testCase.err)
         } else {
-          assert.ok(res.exceptionError === undefined)
+          assert.isTrue(res.exceptionError === undefined)
           assert.ok(BigInt(testCase.selfbalance!) === bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {

@@ -26,11 +26,11 @@ import {
   CLIQUE_EXTRA_SEAL,
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
-} from '../consensus/clique.js'
-import { computeBlobGasPrice } from '../helpers.js'
-import { paramsBlock } from '../params.js'
+} from '../consensus/clique.ts'
+import { computeBlobGasPrice } from '../helpers.ts'
+import { paramsBlock } from '../params.ts'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.ts'
 
 interface HeaderCache {
   hash: Uint8Array | undefined
@@ -803,13 +803,13 @@ export class BlockHeader {
     let hash = ''
     try {
       hash = bytesToHex(this.hash())
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
     let errorStr = `block header number=${this.number} hash=${hash} `

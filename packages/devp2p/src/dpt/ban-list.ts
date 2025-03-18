@@ -1,11 +1,11 @@
 import debugDefault from 'debug'
 import { LRUCache } from 'lru-cache'
 
-import { formatLogId } from '../util.js'
+import { formatLogId } from '../util.ts'
 
-import { KBucket } from './kbucket.js'
+import { KBucket } from './kbucket.ts'
 
-import type { PeerInfo } from '../types.js'
+import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:ban-list')
 const verbose = debugDefault('verbose').enabled

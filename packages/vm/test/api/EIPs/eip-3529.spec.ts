@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -223,7 +223,7 @@ describe('EIP-3529 tests', () => {
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
-    assert.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    assert.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
+    assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
   })
 })

@@ -1,13 +1,3 @@
-import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
-import type { EOFContainer } from './eof/container.js'
-import type { EvmError } from './exceptions.js'
-import type { InterpreterStep, RunState } from './interpreter.js'
-import type { Message } from './message.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler } from './opcodes/index.js'
-import type { CustomPrecompile } from './precompiles/index.js'
-import type { PrecompileFunc } from './precompiles/types.js'
-import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type {
   BinaryTreeAccessWitnessInterface,
   Common,
@@ -17,6 +7,16 @@ import type {
 } from '@ethereumjs/common'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
+import type { EOFContainer } from './eof/container.ts'
+import type { EvmError } from './exceptions.ts'
+import type { InterpreterStep, RunState } from './interpreter.ts'
+import type { Message } from './message.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
+import type { OpHandler } from './opcodes/index.ts'
+import type { CustomPrecompile } from './precompiles/index.ts'
+import type { PrecompileFunc } from './precompiles/types.ts'
+import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number

@@ -2,10 +2,10 @@ import { createBlock } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Event } from '../../src/types.js'
-import { wait } from '../integration/util.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Event } from '../../src/types.ts'
+import { wait } from '../integration/util.ts'
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -27,13 +27,13 @@ describe('[FullSynchronizer]', async () => {
   BlockFetcher.prototype.fetch = vi.fn()
   BlockFetcher.prototype.clear = vi.fn()
   BlockFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher/index.js', () => {
+  vi.doMock('../../src/sync/fetcher/index.ts', () => {
     return {
       default: () => ({ BlockFetcher }),
     }
   })
 
-  const { FullSynchronizer } = await import('../../src/sync/fullsync.js')
+  const { FullSynchronizer } = await import('../../src/sync/fullsync.ts')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -57,7 +57,7 @@ describe('[FullSynchronizer]', async () => {
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -256,7 +256,7 @@ describe('[FullSynchronizer]', async () => {
     assert.equal(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
-    assert.ok(true, 'did not send NewBlock to Peer 3')
+    assert.isTrue(true, 'did not send NewBlock to Peer 3')
     ;(sync as any).chain._blocks = {
       latest: chainTip,
     }

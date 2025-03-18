@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 function createChain() {
   const block = {
@@ -41,6 +41,6 @@ describe(method, () => {
     const res = await rpc.request(method, ['0x5a'])
 
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified block greater than current height'))
+    assert.isTrue(res.error.message.includes('specified block greater than current height'))
   })
 })

@@ -1,14 +1,13 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
+import { OOGResult } from '../evm.ts'
+import { ERROR, EvmError } from '../exceptions.ts'
 
-import { gasLimitCheck } from './util.js'
+import { getPrecompileName } from './index.ts'
+import { gasLimitCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
-
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js

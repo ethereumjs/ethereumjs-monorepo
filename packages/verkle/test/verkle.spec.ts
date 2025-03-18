@@ -9,10 +9,10 @@ import {
   VerkleNodeType,
   createVerkleTree,
   decodeVerkleNode,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import type { VerkleNode } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleNode } from '../src/index.ts'
 
 describe('Verkle tree', () => {
   it('should instantiate with verkle crypto and a MapDB if no options are provided', async () => {
@@ -108,7 +108,7 @@ describe('Verkle tree', () => {
       if (retrievedValue === undefined) {
         assert.fail('Value not found')
       }
-      assert.ok(equalsBytes(retrievedValue[0]!, values[i]))
+      assert.isTrue(equalsBytes(retrievedValue[0]!, values[i]))
     }
 
     // Verify that findPath returns a path that demonstrates the nonexistence of a key

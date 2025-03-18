@@ -17,7 +17,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createMPT } from '../../src/index.js'
+import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createMPT } from '../../src/index.ts'
 
 for (const { constructor, defaults, title } of [
   {
@@ -93,7 +93,7 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      assert.ok(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.isTrue(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 

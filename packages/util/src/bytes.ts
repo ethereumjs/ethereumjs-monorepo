@@ -1,15 +1,15 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-// eslint-disable-next-line no-restricted-imports
+
 import {
   bytesToHex as _bytesToUnprefixedHex,
   hexToBytes as nobleH2B,
 } from 'ethereum-cryptography/utils.js'
 
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
-import { isHexString, padToEven, stripHexPrefix } from './internal.js'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.ts'
+import { isHexString, padToEven, stripHexPrefix } from './internal.ts'
 
-import type { PrefixedHexString, TransformableToBytes } from './types.js'
+import type { PrefixedHexString, TransformableToBytes } from './types.ts'
 
 const BIGINT_0 = BigInt(0)
 
@@ -111,7 +111,6 @@ export const intToBytes = (i: number): Uint8Array => {
  * @returns {Uint8Array}
  */
 export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const bytes = toBytes(`0x${padToEven(num.toString(16))}`)
 
   return littleEndian ? bytes.reverse() : bytes
@@ -490,7 +489,6 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
   return new Uint8Array(buffer)
 }
 
-// eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
 export function hexToBigInt(input: PrefixedHexString): bigint {

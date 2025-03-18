@@ -31,20 +31,9 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
 
-import type {
-  AfterTxEvent,
-  BaseTxReceipt,
-  EIP4844BlobTxReceipt,
-  PostByzantiumTxReceipt,
-  PreByzantiumTxReceipt,
-  RunTxOpts,
-  RunTxResult,
-  TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -56,6 +45,17 @@ import type {
   LegacyTx,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type {
+  AfterTxEvent,
+  BaseTxReceipt,
+  EIP4844BlobTxReceipt,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  RunTxOpts,
+  RunTxResult,
+  TxReceipt,
+} from './types.ts'
+import type { VM } from './vm.ts'
 
 const debug = debugDefault('vm:tx')
 const debugGas = debugDefault('vm:tx:gas')
@@ -516,7 +516,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       let pubKey
       try {
         pubKey = ecrecover(toSign, yParity, r, s)
-      } catch (e) {
+      } catch {
         // Invalid signature, continue
         continue
       }
@@ -819,10 +819,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed =
-    opts.blockGasUsed !== undefined
-      ? opts.blockGasUsed
-      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
+  const gasUsed = opts.blockGasUsed ?? block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,

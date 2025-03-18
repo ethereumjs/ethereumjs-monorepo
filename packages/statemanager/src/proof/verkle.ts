@@ -1,8 +1,8 @@
 import { EthereumJSErrorWithoutCode, verifyVerkleProof } from '@ethereumjs/util'
 
-import type { Proof } from '../index.js'
-import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.js'
 import type { Address } from '@ethereumjs/util'
+import type { Proof } from '../index.ts'
+import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.ts'
 
 export function getVerkleStateProof(
   sm: StatelessVerkleStateManager,

@@ -8,8 +8,8 @@ import { NOISE } from '@chainsafe/libp2p-noise'
 import Libp2p from 'libp2p'
 import Bootstrap from 'libp2p-bootstrap'
 
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const MPLEX = require('libp2p-mplex')
 const Websockets = require('libp2p-websockets')

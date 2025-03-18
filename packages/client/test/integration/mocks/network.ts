@@ -1,16 +1,14 @@
 import { EventEmitter } from 'eventemitter3'
-//@ts-ignore
-import DuplexPair from 'it-pair/duplex'
+import { duplexPair } from 'it-pair/duplex'
 
 const Stream = function (protocols: string[]) {
-  const [local, remote] = DuplexPair()
+  const [local, remote] = duplexPair()
   return {
     local: (remoteId: string) => ({ ...local, remoteId, protocols }),
     remote: (location: string) => ({ ...remote, location, protocols }),
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Stream = ReturnType<typeof Stream>
 export type RemoteStream = ReturnType<Stream['remote']>
 

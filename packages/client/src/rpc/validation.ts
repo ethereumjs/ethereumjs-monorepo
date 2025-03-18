@@ -1,8 +1,8 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import { INVALID_PARAMS } from './error-code.js'
+import { INVALID_PARAMS } from './error-code.ts'
 
-import type { RPCMethod } from './types.js'
+import type { RPCMethod } from './types.ts'
 
 /**
  * middleware for parameters validation

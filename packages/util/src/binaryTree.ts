@@ -8,11 +8,11 @@ import {
   setLengthLeft,
   setLengthRight,
   toBytes,
-} from './bytes.js'
+} from './bytes.ts'
 
-import type { Account } from './account.js'
-import type { Address } from './address.js'
-import type { PrefixedHexString } from './types.js'
+import type { Account } from './account.ts'
+import type { Address } from './address.ts'
+import type { PrefixedHexString } from './types.ts'
 
 /**
  * @dev Returns the 31-bytes binary tree stem for a given address and tree index.
@@ -74,10 +74,12 @@ export interface BinaryTreeExecutionWitness {
   proof: any
 }
 
-export enum BinaryTreeLeafType {
-  BasicData = 0,
-  CodeHash = 1,
-}
+export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]
+
+export const BinaryTreeLeafType = {
+  BasicData: 0,
+  CodeHash: 1,
+} as const
 
 export type BinaryTreeLeafBasicData = {
   version: number

@@ -2,10 +2,10 @@ import { DPT } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/index.js'
-import { PeerPool } from '../../../src/net/peerpool.js'
-import { RlpxServer } from '../../../src/net/server/index.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { Config } from '../../../src/index.ts'
+import { PeerPool } from '../../../src/net/peerpool.ts'
+import { RlpxServer } from '../../../src/net/server/index.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'admin_addPeer'
 const localEndpointInfo = { address: '0.0.0.0', tcpPort: 30303 }
@@ -27,8 +27,8 @@ describe(method, () => {
     localPeerClient.service.pool = new PeerPool({
       config: new Config({ accountCache: 10000, storageCache: 1000 }),
     })
-    //@ts-ignore
-    ;(localPeerClient.service.pool.config.server.dpt as any) = dpt
+    //@ts-expect-error -- Assigning to a read-only property
+    localPeerClient.service.pool.config.server.dpt = dpt
 
     const remoteConfig = new Config({ accountCache: 10000, storageCache: 1000, port: peerPort })
     const remoteServer = new RlpxServer({

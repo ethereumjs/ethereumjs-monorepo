@@ -12,16 +12,18 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
+import { TransactionType } from '../types.ts'
+import { AccessLists, validateNotArray } from '../util.ts'
 
-import { createBlob4844Tx } from './constructors.js'
+import { createBlob4844Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -32,12 +34,10 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+} from '../types.ts'
 
-export type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
+export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -45,8 +45,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4844> {
-  public type: number = TransactionType.BlobEIP4844 // 4844 tx type
+export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
+  public type = TransactionType.BlobEIP4844 // 4844 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -439,7 +439,7 @@ export class Blob4844Tx implements TransactionInterface<TransactionType.BlobEIP4
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): Blob4844Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return <Blob4844Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

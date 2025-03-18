@@ -12,10 +12,10 @@ import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.js'
-import { bytesToNibbles } from '../src/util/nibbles.js'
+import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.ts'
+import { bytesToNibbles } from '../src/util/nibbles.ts'
 
-import type { HashKeysFunction } from '../src/index.js'
+import type { HashKeysFunction } from '../src/index.ts'
 
 for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
   for (const cacheSize of [0, 100]) {

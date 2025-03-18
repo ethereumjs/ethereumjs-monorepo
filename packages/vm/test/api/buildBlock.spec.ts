@@ -24,9 +24,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../src/index.js'
+import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
-import { setBalance } from './utils.js'
+import { setBalance } from './utils.ts'
 
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 
@@ -87,7 +87,7 @@ describe('BlockBuilder', () => {
           'tx has a higher gas limit than the remaining gas in the block',
         )
       ) {
-        assert.ok(true, 'correct error thrown')
+        assert.isTrue(true, 'correct error thrown')
       } else {
         assert.fail('wrong error thrown')
       }
@@ -268,7 +268,7 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
 
@@ -289,7 +289,7 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })

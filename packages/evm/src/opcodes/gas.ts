@@ -11,13 +11,13 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { EOFError } from '../eof/errors.js'
-import { ERROR } from '../exceptions.js'
-import { DELEGATION_7702_FLAG } from '../types.js'
+import { EOFError } from '../eof/errors.ts'
+import { ERROR } from '../exceptions.ts'
+import { DELEGATION_7702_FLAG } from '../types.ts'
 
-import { updateSstoreGasEIP1283 } from './EIP1283.js'
-import { updateSstoreGasEIP2200 } from './EIP2200.js'
-import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.js'
+import { updateSstoreGasEIP1283 } from './EIP1283.ts'
+import { updateSstoreGasEIP2200 } from './EIP2200.ts'
+import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
@@ -26,11 +26,11 @@ import {
   subMemUsage,
   trap,
   updateSstoreGas,
-} from './util.js'
+} from './util.ts'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 

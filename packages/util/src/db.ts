@@ -6,17 +6,21 @@ export type BatchDBOp<
   TValue extends Uint8Array | string | DBObject = Uint8Array,
 > = PutBatch<TKey, TValue> | DelBatch<TKey>
 
-export enum KeyEncoding {
-  String = 'string',
-  Bytes = 'view',
-  Number = 'number',
-}
+export type KeyEncoding = (typeof KeyEncoding)[keyof typeof KeyEncoding]
 
-export enum ValueEncoding {
-  String = 'string',
-  Bytes = 'view',
-  JSON = 'json',
-}
+export const KeyEncoding = {
+  String: 'string',
+  Bytes: 'view',
+  Number: 'number',
+} as const
+
+export type ValueEncoding = (typeof ValueEncoding)[keyof typeof ValueEncoding]
+
+export const ValueEncoding = {
+  String: 'string',
+  Bytes: 'view',
+  JSON: 'json',
+} as const
 
 export type EncodingOpts = {
   keyEncoding?: KeyEncoding

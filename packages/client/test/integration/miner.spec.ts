@@ -8,13 +8,13 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Event } from '../../src/types.js'
-import { createInlineClient } from '../../src/util/index.js'
-import { parseMultiaddrs } from '../../src/util/parse.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { Event } from '../../src/types.ts'
+import { createInlineClient } from '../../src/util/index.ts'
+import { parseMultiaddrs } from '../../src/util/parse.ts'
 
-import type { EthereumClient } from '../../src/index.js'
+import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)

@@ -1,9 +1,9 @@
 import { type Block, type BlockBytes, createBlockFromBytesArray } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 
-import { parseEntry, readEntry } from './e2store.js'
+import { parseEntry, readEntry } from './e2store.ts'
 
-import type { e2StoreEntry } from './types.js'
+import type { e2StoreEntry } from './types.ts'
 
 export async function createBlockTuples(blocks: Block[], blockReceipts: Uint8Array[], td: bigint) {
   const blockTuples: {

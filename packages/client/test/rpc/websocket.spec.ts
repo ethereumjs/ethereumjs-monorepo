@@ -1,14 +1,14 @@
 import { randomBytes } from '@ethereumjs/util'
 import WebSocket from 'isomorphic-ws'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { jwt } from '../../src/ext/jwt-simple.js'
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
+import { jwt } from '../../src/ext/jwt-simple.ts'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.ts'
 
-import { startRPC } from './helpers.js'
+import { startRPC } from './helpers.ts'
 
-import type { TAlgorithm } from '../../src/ext/jwt-simple.js'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.ts'
 
 const jwtSecret = randomBytes(32)
 const { encode } = jwt
@@ -25,7 +25,7 @@ describe('JSON-RPC call', () => {
       },
     })
     const rpc = Client.websocket({
-      //@ts-ignore -- `isomorphic-ws` types aren't perfectly mapped to jayson.WebSocketClient but works fine for this test
+      //@ts-expect-error -- `isomorphic-ws` types aren't perfectly mapped to jayson.WebSocketClient but works fine for this test
       ws: socket,
     })
     while ((rpc as any).ws.readyState !== WebSocket.OPEN) {
@@ -46,11 +46,11 @@ describe('JSON-RPC call', () => {
     await new Promise((resolve) => {
       const socket = new WebSocket('ws://localhost:1236', undefined, {})
       socket.onerror = (err) => {
-        assert.ok(err.message.includes('401'), 'Unauthorized')
+        assert.isTrue(err.message.includes('401') === true, 'Unauthorized')
         resolve(undefined)
       }
       Client.websocket({
-        // @ts-ignore -- see above test
+        //@ts-expect-error -- see above test
         ws: socket,
       })
     })

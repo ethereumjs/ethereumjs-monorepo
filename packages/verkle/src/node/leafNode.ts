@@ -5,21 +5,21 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import { BaseVerkleNode } from './baseVerkleNode.js'
-import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.js'
-import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.js'
+import { BaseVerkleNode } from './baseVerkleNode.ts'
+import { LeafVerkleNodeValue, NODE_WIDTH, VerkleNodeType } from './types.ts'
+import { createCValues, createDefaultLeafVerkleValues, createZeroesLeafValue } from './util.ts'
 
-import type { VerkleNodeOptions } from './types.js'
 import type { VerkleCrypto } from '@ethereumjs/util'
+import type { VerkleNodeOptions } from './types.ts'
 
-export class LeafVerkleNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
+export class LeafVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Leaf> {
   public stem: Uint8Array
   public values: (Uint8Array | LeafVerkleNodeValue)[] // Array of 256 possible values represented as 32 byte Uint8Arrays or 0 if untouched or 1 if deleted
   public c1?: Uint8Array
   public c2?: Uint8Array
   public type = VerkleNodeType.Leaf
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Leaf]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Leaf]) {
     super(options)
 
     this.stem = options.stem

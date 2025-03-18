@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src/index.js'
+import { RLP, utils } from '../src/index.ts'
 
-import { invalidData } from './fixture/invalid.js'
+import { invalidData } from './fixture/invalid.ts'
 
 const { hexToBytes } = utils
 

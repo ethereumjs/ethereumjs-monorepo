@@ -5,7 +5,7 @@ import {
   commitmentsToVersionedHashes,
   computeVersionedHash,
   getBlobs,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 describe('blob helper tests', () => {
   it('getBlobs should return an array of PrefixedHexString blobs', () => {

@@ -1,6 +1,6 @@
+import { Writable } from 'stream'
 import snappyStream from '@chainsafe/snappy-stream'
 import { concatBytes } from '@ethereumjs/util'
-import { Writable } from 'stream'
 /**
  * Compress data using snappy
  * @param uncompressedData

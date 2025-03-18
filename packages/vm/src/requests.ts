@@ -12,8 +12,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import type { RunTxResult } from './types.js'
-import type { VM } from './vm.js'
+import type { RunTxResult } from './types.ts'
+import type { VM } from './vm.ts'
 
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
 
@@ -55,7 +55,7 @@ export const accumulateRequests = async (
 
 const accumulateWithdrawalsRequest = async (
   vm: VM,
-): Promise<CLRequest<CLRequestType.Withdrawal>> => {
+): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('withdrawalRequestPredeployAddress')),
@@ -91,7 +91,7 @@ const accumulateWithdrawalsRequest = async (
 
 const accumulateConsolidationsRequest = async (
   vm: VM,
-): Promise<CLRequest<CLRequestType.Consolidation>> => {
+): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
     bigIntToBytes(vm.common.param('consolidationRequestPredeployAddress')),
@@ -128,7 +128,7 @@ const accumulateConsolidationsRequest = async (
 const accumulateDepositsRequest = (
   depositContractAddress: string,
   txResults: RunTxResult[],
-): CLRequest<CLRequestType.Deposit> => {
+): CLRequest<typeof CLRequestType.Deposit> => {
   let resultsBytes = new Uint8Array(0)
   const depositContractAddressLowerCase = depositContractAddress.toLowerCase()
   for (const [_, tx] of txResults.entries()) {

@@ -1,10 +1,10 @@
 import { bytesToHex, hexToBytes, isHexString, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie } from '../src/index.js'
+import { MerklePatriciaTrie } from '../src/index.ts'
 
-import { trieAnyOrderData } from './fixtures/trieAnyOrder.js'
-import { trieTestData } from './fixtures/trieTest.js'
+import { trieAnyOrderData } from './fixtures/trieAnyOrder.ts'
+import { trieTestData } from './fixtures/trieTest.ts'
 
 describe('official tests', () => {
   it('should work', async () => {

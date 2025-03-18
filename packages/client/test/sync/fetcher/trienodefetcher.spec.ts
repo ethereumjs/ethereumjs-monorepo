@@ -4,10 +4,10 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { wait } from '../../integration/util.ts'
 
 import type { BranchMPTNode } from '@ethereumjs/mpt'
 
@@ -28,7 +28,7 @@ describe('[TrieNodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.js')
+  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -39,21 +39,17 @@ describe('[TrieNodeFetcher]', async () => {
       root: new Uint8Array(0),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
-    assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    assert.equal(
-      (fetcher as any).pathToNodeRequestData.length,
-      1,
-      'one node request has been added',
-    )
+    assert.notOk(fetcher['running'], 'not started')
+    assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.equal(fetcher['pathToNodeRequestData'].length, 1, 'one node request has been added')
 
     void fetcher.fetch()
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.isFalse(fetcher.write(), 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should process', async () => {
@@ -71,11 +67,11 @@ describe('[TrieNodeFetcher]', async () => {
       pathStrings: ['0', '1'],
       paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
     }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     assert.deepEqual(
-      (fetcher.process(job, NodeDataResponse) as any)[0],
+      (fetcher.process(job!, NodeDataResponse) as any)[0],
       fullResult[0],
       'got results',
     )

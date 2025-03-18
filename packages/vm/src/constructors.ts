@@ -9,9 +9,9 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { VM } from './vm.js'
+import { VM } from './vm.ts'
 
-import type { VMOpts } from './types.js'
+import type { VMOpts } from './types.ts'
 
 /**
  * VM async constructor. Creates engine instance and initializes it.

@@ -12,15 +12,15 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { CheckpointDB } from './db/index.js'
-import { InternalBinaryNode } from './node/internalNode.js'
-import { StemBinaryNode } from './node/stemNode.js'
-import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.js'
-import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.js'
+import { CheckpointDB } from './db/index.ts'
+import { InternalBinaryNode } from './node/internalNode.ts'
+import { StemBinaryNode } from './node/stemNode.ts'
+import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.ts'
+import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.ts'
 
-import type { BinaryNode } from './node/types.js'
 import type { PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { BinaryNode } from './node/types.ts'
 
 interface Path {
   node: BinaryNode | null

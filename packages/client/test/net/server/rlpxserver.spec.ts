@@ -3,8 +3,10 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { EventEmitter } from 'eventemitter3'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { Event } from '../../../src/types.js'
+import { Config } from '../../../src/config.ts'
+import { Event } from '../../../src/types.ts'
+
+import type { Peer } from '@ethereumjs/devp2p'
 
 class RlpxPeer extends EventEmitter {
   accept(_: any, _2: any) {}
@@ -13,6 +15,9 @@ class RlpxPeer extends EventEmitter {
   }
   getDisconnectPrefix(_: any) {
     return 'MockedReason'
+  }
+  getProtocols() {
+    return []
   }
   static capabilities(_: any) {
     return []
@@ -46,7 +51,7 @@ vi.doMock('@ethereumjs/devp2p', () => {
   }
 })
 
-const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
+const { RlpxServer } = await import('../../../src/net/server/rlpxserver.ts')
 describe('[RlpxServer]', async () => {
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -56,7 +61,7 @@ describe('[RlpxServer]', async () => {
       key: 'abcd',
     })
     assert.equal(server.name, 'rlpx', 'get name')
-    assert.ok(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
+    assert.isTrue(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
     assert.deepEqual(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
@@ -69,31 +74,31 @@ describe('[RlpxServer]', async () => {
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
-    }) as any
-    ;(server as any).initDpt = vi.fn()
-    ;(server as any).initRlpx = vi.fn()
+    })
+    server['initDpt'] = vi.fn()
+    server['initRlpx'] = vi.fn()
     server.dpt = {
       destroy: vi.fn(),
-      bootstrap: vi.fn((input) => {
+      bootstrap: vi.fn(async (input) => {
         if (
           JSON.stringify(input) ===
           JSON.stringify({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
         )
-          return undefined
+          return
         if (
           JSON.stringify(input) ===
           JSON.stringify({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
         )
           throw new Error('err0')
       }),
-    }
-    server.rlpx = { destroy: vi.fn() }
+    } as any
+    server.rlpx = { destroy: vi.fn() } as any
     server.config.events.on(Event.PEER_ERROR, (err: any) =>
       assert.equal(err.message, 'err0', 'got error'),
     )
     await server.start()
-    expect((server as any).initDpt).toHaveBeenCalled()
-    expect((server as any).initRlpx).toHaveBeenCalled()
+    expect(server['initDpt']).toHaveBeenCalled()
+    expect(server['initRlpx']).toHaveBeenCalled()
     assert.ok(server.running, 'started')
     assert.notOk(await server.start(), 'already started')
     await server.stop()
@@ -113,10 +118,10 @@ describe('[RlpxServer]', async () => {
     const server = new RlpxServer({
       config,
       dnsNetworks: ['enrtree:A'],
-    }) as any
-    ;(server as any).initDpt = vi.fn()
-    ;(server as any).initRlpx = vi.fn()
-    server.rlpx = { destroy: vi.fn() }
+    })
+    server['initDpt'] = vi.fn()
+    server['initRlpx'] = vi.fn()
+    server.rlpx = { destroy: vi.fn() } as any
     server.dpt = {
       destroy: vi.fn(),
       getDnsPeers: vi.fn(() => [dnsPeerInfo]),
@@ -124,7 +129,7 @@ describe('[RlpxServer]', async () => {
         if (JSON.stringify(input) !== JSON.stringify(dnsPeerInfo))
           throw new Error('expected input check has failed')
       }),
-    }
+    } as any
     await server.start()
     await server.bootstrap()
     await server.stop()
@@ -138,8 +143,8 @@ describe('should return rlpx server info with ip4 as default', async () => {
     bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
   }) as any
   const _nodeInfo = server.getRlpxInfo()
-  ;(server as any).initDpt = vi.fn()
-  ;(server as any).initRlpx = vi.fn()
+  server['initDpt'] = vi.fn()
+  server['initRlpx'] = vi.fn()
   server.dpt = {
     destroy: vi.fn(),
     getDnsPeers: vi.fn(),
@@ -156,7 +161,7 @@ describe('should return rlpx server info with ip4 as default', async () => {
         throw new Error('err0')
     }),
   }
-  ;(server as any).rlpx = { destroy: vi.fn() }
+  server.rlpx = { destroy: vi.fn() }
 
   server.rlpx!.id = hexToBytes(`0x${mockId}`)
   await server.start()
@@ -207,7 +212,7 @@ describe('should return rlpx server info with ip6', async () => {
   } as any
   ;(server as any).rlpx = { destroy: vi.fn() }
 
-  //@ts-expect-error
+  //@ts-expect-error -- Assigning to read-only property
   server.rlpx!.id = hexToBytes(`0x${mockId}`)
 
   config.events.on(Event.SERVER_ERROR, (err) => {
@@ -239,8 +244,8 @@ describe('should handle errors', () => {
   server.config.events.on(Event.SERVER_ERROR, (err) => {
     count = count + 1
     it('should handle rlpx error', async () => {
-      if (err.message === 'err0') assert.ok(true, 'got server error - err0')
-      if (err.message === 'err1') assert.ok(true, 'got peer error - err1')
+      if (err.message === 'err0') assert.isTrue(true, 'got server error - err0')
+      if (err.message === 'err1') assert.isTrue(true, 'got peer error - err1')
     })
   })
   server['error'](new Error('EPIPE'))
@@ -272,7 +277,7 @@ describe('should ban peer', async () => {
 describe('should init dpt', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
-  ;(server as any).initDpt().catch((error: Error) => {
+  server['initDpt']().catch((error: Error) => {
     throw error
   })
   config.events.on(Event.SERVER_ERROR, (err) =>
@@ -307,7 +312,7 @@ describe('should handles errors from id-less peers', async () => {
 describe('should init rlpx', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
-  const rlpxPeer = new RlpxPeer() as any
+  const rlpxPeer = new RlpxPeer() as unknown as Peer
 
   rlpxPeer.getId = vi.fn().mockReturnValue(new Uint8Array([1]))
   RlpxPeer.prototype.accept = vi.fn((input) => {
@@ -317,12 +322,12 @@ describe('should init rlpx', async () => {
       throw new Error('expected input check has failed')
     }
   })
-  ;(server as any).initRlpx().catch((error: Error) => {
+  server['initRlpx']().catch((error: Error) => {
     throw error
   })
   config.events.on(Event.PEER_CONNECTED, (peer) =>
     it('should connect', async () => {
-      assert.ok(peer instanceof RlpxPeer, 'connected')
+      assert.isTrue((peer as any).connected, 'connected')
     }),
   )
   config.events.on(Event.PEER_DISCONNECTED, (peer) =>
@@ -341,7 +346,8 @@ describe('should init rlpx', async () => {
     }),
   )
   server.rlpx!.events.emit('peer:added', rlpxPeer)
-  server['peers'].set('01', { id: '01' } as any)
+  //@ts-expect-error -- Setting a minimal peer for testing
+  server['peers'].set('01', { id: '01' })
   server.rlpx!.events.emit('peer:removed', rlpxPeer, '', true)
   server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   ;(server.rlpx!.id as any) = hexToBytes('0xff')

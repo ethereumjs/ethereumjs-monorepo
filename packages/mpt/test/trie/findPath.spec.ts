@@ -1,7 +1,7 @@
 import { randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie } from '../../src/index.js'
+import { MerklePatriciaTrie } from '../../src/index.ts'
 
 describe('TRIE > findPath', async () => {
   const keys = Array.from({ length: 200 }, () => randomBytes(8))

@@ -2,8 +2,8 @@ import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createBinaryTree } from '../src/index.js'
-import { dumpLeafValues, dumpNodeHashes } from '../src/util.js'
+import { createBinaryTree } from '../src/index.ts'
+import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
 describe('insert', () => {
   it('should not destroy a previous root', async () => {

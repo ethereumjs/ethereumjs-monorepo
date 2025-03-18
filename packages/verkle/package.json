@@ -36,11 +36,12 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- verkle",
     "examples:build": "npx embedme README.md",
-    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:node": "npx vitest run",
@@ -50,8 +51,8 @@
   "dependencies": {
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
-    "debug": "^4.3.4",
-    "lru-cache": "10.1.0",
+    "debug": "^4.4.0",
+    "lru-cache": "11.0.2",
     "micro-eth-signer": "0.14.0"
   },
   "engines": {

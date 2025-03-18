@@ -9,16 +9,16 @@ import {
 } from '@ethereumjs/util'
 import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.ts'
+import { callWithStackTrace, getBlockByOption } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../index.js'
-import type { FullEthereumService } from '../../service/index.js'
-import type { RPCTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../blockchain/index.ts'
+import type { EthereumClient } from '../../index.ts'
+import type { FullEthereumService } from '../../service/index.ts'
+import type { RPCTx } from '../types.ts'
 
 export interface tracerOpts {
   disableStack?: boolean
@@ -366,7 +366,7 @@ export class Debug {
     try {
       // Validator already verified that `blockHash` is properly formatted.
       block = await this.chain.getBlock(hexToBytes(blockHash))
-    } catch (err: any) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
         message: 'Could not get requested block hash.',
@@ -483,7 +483,7 @@ export class Debug {
     try {
       await this.service.skeleton?.setHead(block, true)
       await this.service.execution.setHead([block])
-    } catch (e) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
       }

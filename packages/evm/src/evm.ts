@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Hardfork } from '@ethereumjs/common'
 import {
   Account,
@@ -9,6 +8,7 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   MAX_INTEGER,
+  type PrefixedHexString,
   bigIntToBytes,
   bytesToUnprefixedHex,
   createZeroAddress,
@@ -20,17 +20,17 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
-import { FORMAT } from './eof/constants.js'
-import { isEOF } from './eof/util.js'
-import { ERROR, EvmError } from './exceptions.js'
-import { Interpreter } from './interpreter.js'
-import { Journal } from './journal.js'
-import { EVMPerformanceLogger } from './logger.js'
-import { Message } from './message.js'
-import { getOpcodesForHF } from './opcodes/index.js'
-import { paramsEVM } from './params.js'
-import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
-import { TransientStorage } from './transientStorage.js'
+import { FORMAT } from './eof/constants.ts'
+import { isEOF } from './eof/util.ts'
+import { ERROR, EvmError } from './exceptions.ts'
+import { Interpreter } from './interpreter.ts'
+import { Journal } from './journal.ts'
+import { EVMPerformanceLogger } from './logger.ts'
+import { Message } from './message.ts'
+import { getOpcodesForHF } from './opcodes/index.ts'
+import { paramsEVM } from './params.ts'
+import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.ts'
+import { TransientStorage } from './transientStorage.ts'
 import {
   type Block,
   type CustomOpcode,
@@ -45,22 +45,84 @@ import {
   type EVMRunCallOpts,
   type EVMRunCodeOpts,
   type ExecResult,
-} from './types.js'
+} from './types.ts'
 
-import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.js'
-import type { InterpreterOpts } from './interpreter.js'
-import type { Timer } from './logger.js'
-import type { MessageWithTo } from './message.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
-import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
-import type { VerkleAccessWitness } from './verkleAccessWitness.js'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
+import type { InterpreterOpts } from './interpreter.ts'
+import type { Timer } from './logger.ts'
+import type { MessageWithTo } from './message.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
+import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.ts'
+import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.ts'
+import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
 const debugPrecompiles = debugDefault('evm:precompiles')
+
+export function OOGResult(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
+  }
+}
+// CodeDeposit OOG Result
+export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsedCreateCode,
+    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
+  }
+}
+
+export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
+  }
+}
+
+export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasLimit,
+    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
+  }
+}
+
+export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsed,
+    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
+  }
+}
+
+export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
+  return {
+    returnValue: new Uint8Array(0),
+    executionGasUsed: gasUsed,
+    exceptionError: error,
+  }
+}
+
+export function defaultBlock(): Block {
+  return {
+    header: {
+      number: BIGINT_0,
+      coinbase: createZeroAddress(),
+      timestamp: BIGINT_0,
+      difficulty: BIGINT_0,
+      prevRandao: new Uint8Array(32),
+      gasLimit: BIGINT_0,
+      baseFeePerGas: undefined,
+      getBlobGasPrice: () => undefined,
+    },
+  }
+}
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -841,7 +903,7 @@ export class EVM implements EVMInterface {
       gas: interpreterRes.runState?.gasLeft,
       executionGasUsed: gasUsed,
       gasRefund: interpreterRes.runState!.gasRefund,
-      returnValue: result.returnValue ? result.returnValue : new Uint8Array(0),
+      returnValue: result.returnValue ?? new Uint8Array(0),
     }
   }
 
@@ -896,10 +958,7 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness:
-          this.verkleAccessWitness !== undefined
-            ? this.verkleAccessWitness
-            : this.binaryAccessWitness,
+        accessWitness: this.verkleAccessWitness ?? this.binaryAccessWitness,
       })
     }
 
@@ -1161,67 +1220,3 @@ export class EVM implements EVMInterface {
     this.performanceLogger.clear()
   }
 }
-
-export function OOGResult(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.OUT_OF_GAS),
-  }
-}
-// CodeDeposit OOG Result
-export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsedCreateCode,
-    exceptionError: new EvmError(ERROR.CODESTORE_OUT_OF_GAS),
-  }
-}
-
-export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_BYTECODE_RESULT),
-  }
-}
-
-export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT),
-  }
-}
-
-export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsed,
-    exceptionError: new EvmError(ERROR.CODESIZE_EXCEEDS_MAXIMUM),
-  }
-}
-
-export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasUsed,
-    exceptionError: error,
-  }
-}
-
-export function defaultBlock(): Block {
-  return {
-    header: {
-      number: BIGINT_0,
-      coinbase: createZeroAddress(),
-      timestamp: BIGINT_0,
-      difficulty: BIGINT_0,
-      prevRandao: new Uint8Array(32),
-      gasLimit: BIGINT_0,
-      baseFeePerGas: undefined,
-      getBlobGasPrice: () => undefined,
-    },
-  }
-}
-/* eslint-enable @typescript-eslint/no-use-before-define */

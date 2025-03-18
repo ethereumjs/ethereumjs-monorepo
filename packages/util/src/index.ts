@@ -1,59 +1,59 @@
 /**
  * Constants
  */
-export * from './constants.js'
+export * from './constants.ts'
 
 /**
  * Errors
  */
-export * from './errors.js'
+export * from './errors.ts'
 
 /**
  * Units helpers
  */
-export * from './units.js'
+export * from './units.ts'
 
 /**
  * Account class and helper functions
  */
-export * from './account.js'
+export * from './account.ts'
 
 /**
  * Address type
  */
-export * from './address.js'
+export * from './address.ts'
 
 /**
  * DB type
  */
-export * from './db.js'
+export * from './db.ts'
 
 /**
  * Withdrawal type
  */
-export * from './withdrawal.js'
+export * from './withdrawal.ts'
 
 /**
  * ECDSA signature
  */
-export * from './signature.js'
+export * from './signature.ts'
 
 /**
  * Utilities for manipulating bytes, Uint8Arrays, etc.
  */
-export * from './bytes.js'
+export * from './bytes.ts'
 
 /**
  * Helpful TypeScript types
  */
-export * from './types.js'
+export * from './types.ts'
 
 /**
  * Export ethjs-util methods
  */
-export * from './binaryTree.js'
-export * from './blobs.js'
-export * from './genesis.js'
+export * from './binaryTree.ts'
+export * from './blobs.ts'
+export * from './genesis.ts'
 export {
   arrayContainsArray,
   fromAscii,
@@ -64,11 +64,11 @@ export {
   padToEven,
   stripHexPrefix,
   toAscii,
-} from './internal.js'
-export * from './kzg.js'
-export * from './lock.js'
-export * from './mapDB.js'
-export * from './provider.js'
-export * from './request.js'
-export * from './tasks.js'
-export * from './verkle.js'
+} from './internal.ts'
+export * from './kzg.ts'
+export * from './lock.ts'
+export * from './mapDB.ts'
+export * from './provider.ts'
+export * from './request.ts'
+export * from './tasks.ts'
+export * from './verkle.ts'
