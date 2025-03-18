@@ -7,6 +7,7 @@ import {
   ConsensusType,
   Hardfork,
   Holesky,
+  Hoodi,
   Mainnet,
   Sepolia,
   createCommonFromGethGenesis,
@@ -220,6 +221,7 @@ describe('[Common]: Hardfork logic', () => {
       [Goerli, hexToBytes('0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a')],
       [Sepolia, hexToBytes('0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9')],
       [Holesky, hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4')],
+      [Hoodi, hexToBytes('0xbbe312868b376a3001692a646dd2d7d1e4406380dfd86b98aa8a34d1557c971b')],
     ]
 
     let c = new Common({ chain: Mainnet })
