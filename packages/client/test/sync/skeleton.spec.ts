@@ -11,7 +11,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
+import { getLogger } from '../../src/logging/winstonlogger.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'

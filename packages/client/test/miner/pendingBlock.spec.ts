@@ -22,7 +22,7 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
+import { getLogger } from '../../src/logging/winstonlogger.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 import { mockBlockchain } from '../rpc/mockBlockchain.ts'

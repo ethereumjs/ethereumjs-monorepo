@@ -1,4 +1,4 @@
-import type { Logger } from '../../src/types.ts'
+import type { Logger } from '../types.ts'
 
 export class ConsoleLogger implements Logger {
   info(message: string, ...meta: any[]) {

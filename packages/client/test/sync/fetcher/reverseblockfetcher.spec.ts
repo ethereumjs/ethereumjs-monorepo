@@ -4,7 +4,7 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain.ts'
 import { Config } from '../../../src/config.ts'
-import { getLogger } from '../../../src/logging.ts'
+import { getLogger } from '../../../src/logging/winstonlogger.ts'
 import { Skeleton } from '../../../src/service/skeleton.ts'
 import { Event } from '../../../src/types.ts'
 import { wait } from '../../integration/util.ts'

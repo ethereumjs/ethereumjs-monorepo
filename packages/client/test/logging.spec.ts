@@ -1,9 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../src/logging.ts'
+import { getLogger } from '../src/logging/winstonlogger.ts'
 
 describe('[Logging]', () => {
-  const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
+  const logger = getLogger({
+    logLevel: 'info',
+    logFile: 'ethereumjs.log',
+    logLevelFile: 'info',
+  }).logger
   const format = logger.transports.find((t: any) => t.name === 'console')!.format!
 
   it('should have correct transports', () => {
