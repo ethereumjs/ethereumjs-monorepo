@@ -1,6 +1,6 @@
 import { EthereumJSErrorWithoutCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
+import { Holesky, Hoodi, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
 import { Hardfork } from './enums.ts'
 import { hardforksDict } from './hardforks.ts'
 
@@ -319,6 +319,9 @@ export const getPresetChainConfig = (chain: string | number) => {
     case 'holesky':
     case 17000:
       return Holesky
+    case 'hoodi':
+    case 560048:
+      return Hoodi
     case 'kaustinen6':
     case 69420:
       return Kaustinen6
