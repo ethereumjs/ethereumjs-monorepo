@@ -9,8 +9,8 @@ import { jwt } from '../ext/jwt-simple.ts'
 
 import type { IncomingMessage } from 'connect'
 import type { TAlgorithm } from '../ext/jwt-simple.ts'
-import type { Logger } from '../logging.ts'
 import type { RPCManager } from '../rpc/index.ts'
+import type { Logger } from '../types.ts'
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 

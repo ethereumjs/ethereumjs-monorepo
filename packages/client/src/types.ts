@@ -156,3 +156,11 @@ export type PrometheusMetrics = {
   feeMarketEIP1559TxGauge: promClient.Gauge<string>
   blobEIP4844TxGauge: promClient.Gauge<string>
 }
+
+export interface Logger {
+  [logger: string]: any
+  info(message: string, ...meta: any[]): void
+  warn(message: string, ...meta: any[]): void
+  error(message: string, ...meta: any[]): void
+  debug(message: string, ...meta: any[]): void
+}

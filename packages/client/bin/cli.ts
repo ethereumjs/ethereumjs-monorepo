@@ -23,8 +23,8 @@ import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.ts'
-import type { Logger } from '../src/logging.ts'
 import type { FullEthereumService } from '../src/service/index.ts'
+import type { Logger } from '../src/types.ts'
 import type { ClientOpts } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
 
@@ -186,6 +186,7 @@ async function startClient(
   config: Config,
   genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {},
 ) {
+  // TODO make sure all logger usage is preservable through newly created logger interface
   config.logger.info(`Data directory: ${config.datadir}`)
 
   const dbs = initDBs(config)
@@ -389,7 +390,7 @@ async function run() {
     // Handles uncaught exceptions that are thrown in async events/functions and aren't caught in
     // main client process
     config.logger.error(`Uncaught error: ${err.message}`)
-    config.logger.error(err)
+    config.logger.error(err.stack ?? err.message)
 
     void stopClient(config, clientStartPromise)
   })

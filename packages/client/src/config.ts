@@ -4,7 +4,7 @@ import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereu
 import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging.ts'
+import { getLogger } from '../bin/logging/winstonlogger.ts' // for now defaulting to winston if no logger is provided
 import { RlpxServer } from './net/server/index.ts'
 import { Event } from './types.ts'
 import { isBrowser, short } from './util/index.ts'
@@ -12,7 +12,7 @@ import { isBrowser, short } from './util/index.ts'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Logger } from './logging.ts'
+import type { Logger } from './types.ts'
 import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
@@ -566,7 +566,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
+    this.logger = options.logger ?? getLogger({ logLevel: 'error' }) // logger is being instantiated here too, so two places so far getLogger is called
 
     this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {

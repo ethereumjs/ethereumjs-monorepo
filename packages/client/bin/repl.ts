@@ -79,11 +79,13 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
     })
   }
 
+  // TODO this assumes hardcoded winston logger is being changed, so check if not winston, don't allow logLevel as a command
   replServer.defineCommand('logLevel', {
     help: `Sets the log level.  Example usage: .logLevel info`,
     action(params) {
       const level = params
       if (['debug', 'info', 'warn', 'error'].includes(level)) {
+        // TODO type this out better so we don't have to cast to type
         for (const transport of (replServer.context.client as EthereumClient).config.logger
           .transports) {
           transport.level = level

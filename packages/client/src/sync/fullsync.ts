@@ -304,13 +304,13 @@ export class FullSynchronizer extends Synchronizer {
     }
     try {
       await this.chain.blockchain.validateHeader(block.header)
-    } catch (err) {
+    } catch (err: any) {
       this.config.logger.debug(
         `Error processing new block from peer ${
           peer ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
         } hash=${short(block.hash())}`,
       )
-      this.config.logger.debug(err)
+      this.config.logger.debug(err.stack ?? err.msg)
       return
     }
     // Send NEW_BLOCK to square root of total number of peers in pool

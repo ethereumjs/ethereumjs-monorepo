@@ -47,14 +47,14 @@ import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { Config, SyncMode } from '../src/config.ts'
-import { getLogger } from '../src/logging.ts'
 import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
+import { getLogger } from './logging/winstonlogger.ts'
 
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
-import type { Logger } from '../src/logging.ts'
+import type { Logger } from '../src/types.ts'
 import type { ClientOpts } from '../src/types.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
@@ -757,6 +757,7 @@ export async function generateClientConfig(args: ClientOpts) {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
 
+  // logger is initilized through here
   const logger: Logger = getLogger(args)
   let bootnodes
   if (args.bootnodes !== undefined) {
