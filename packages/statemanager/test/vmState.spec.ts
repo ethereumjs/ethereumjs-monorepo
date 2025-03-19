@@ -36,10 +36,13 @@ describe('stateManager', () => {
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
-      // TODO: add Holesky
       [
         Chain.Sepolia,
         hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),
+      ],
+      [
+        Chain.Hoodi,
+        hexToBytes('0xda87d7f5f91c51508791bbcbd4aa5baf04917830b86985eeb9ad3d5bfb657576'),
       ],
     ]
 

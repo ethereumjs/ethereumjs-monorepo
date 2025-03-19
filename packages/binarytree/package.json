@@ -36,6 +36,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",

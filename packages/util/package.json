@@ -74,6 +74,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- util",
     "examples:build": "npx embedme README.md",

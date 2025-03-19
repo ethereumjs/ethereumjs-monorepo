@@ -34,6 +34,7 @@
     "client:start:dev1": "npm run client:start -- --discDns=false --discV4=false --bootnodes",
     "client:start:dev2": "npm run client:start -- --discDns=false --discV4=false --port=30304 --dataDir=datadir-dev2",
     "coverage": "DEBUG=ethjs npx vitest run -c ./vitest.config.coverage.ts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ./vitest.config.coverage.istanbul.ts",
     "docs:build": "typedoc --options typedoc.cjs --tsconfig tsconfig.prod.cjs.json",
     "examples": "tsx ../../scripts/examples-runner.ts -- client",
     "lint": "npm run biome && eslint --config ./eslint.config.mjs .",

@@ -166,7 +166,6 @@ export default [
     files: ['packages/wallet/**'],
     rules: {
       'no-prototype-builtins': 'warn',
-      'no-restricted-syntax': 'off'
     },
   },
   {
