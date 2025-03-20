@@ -398,7 +398,7 @@ describe('should start on beacon sync when past merge', async () => {
   const chain = await Chain.create({ config })
   it('should be available', () => {
     const service = new FullEthereumService({ config, chain })
-    assert.isTrue(service.beaconSync, 'beacon sync should be available')
+    assert.isDefined(service.beaconSync, 'beacon sync should be available')
   })
   it('should not be available', () => {
     const configDisableBeaconSync = new Config({ common, syncmode: SyncMode.None })

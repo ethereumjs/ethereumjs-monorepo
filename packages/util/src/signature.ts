@@ -21,7 +21,7 @@ import {
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsBytes } from './helpers.ts'
 
-import type { PrefixedHexString } from './types.js'
+import type { PrefixedHexString } from './types.ts'
 
 export interface ECDSASignature {
   v: bigint
