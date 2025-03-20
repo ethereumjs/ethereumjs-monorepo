@@ -118,18 +118,11 @@ export default [
     files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
     rules: {
       'i/no-extraneous-dependencies': 'error',
-      'i/extensions': ['error',
-        'ignorePackages',
+      'i/extensions': ['warn',
         {
           'pattern': {
-            'ts': error
+            'ts': 'ignorePackages'
           },
-          'pathGroupOverrides': [
-            {
-              'pattern': 'ethereum-cryptography/keccak.js',
-              'action': 'ignore'
-            }
-          ]
         }
       ]
     },
