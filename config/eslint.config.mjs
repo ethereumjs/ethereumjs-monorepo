@@ -50,6 +50,19 @@ export default [
           "message": "The use of Buffer is not allowed."
         }
       ],
+        "no-restricted-properties": [
+          "warn",
+          {
+            "object": "assert",
+            "property": "ok",
+            "message": "Usage of assert.ok is discouraged because it relies on truthiness."
+          },
+          {
+            "object": "assert",
+            "property": "notOk",
+            "message": "Usage of assert.notOk is discouraged because it relies on falsiness."
+          }
+        ],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/naming-convention': [
         'error',
@@ -108,7 +121,7 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
-      
+
     },
   },
   {
