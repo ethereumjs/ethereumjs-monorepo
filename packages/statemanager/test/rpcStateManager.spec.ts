@@ -338,7 +338,7 @@ describe('blockchain', () =>
     const res = await evm.runCall(runCallArgs)
     assert.equal(
       bytesToHex(res.execResult.returnValue),
-      '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d8',
+      '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d84',
     )
   }))
 
