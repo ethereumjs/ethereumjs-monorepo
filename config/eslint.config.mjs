@@ -170,7 +170,7 @@ export default [
     },
   },
   {
-    files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', 'packages/rlp/**', '**/test/**/*.ts',],
+    files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', '**/test/**/*.ts',],
     rules: {
       'no-restricted-syntax': 'off'
     },
