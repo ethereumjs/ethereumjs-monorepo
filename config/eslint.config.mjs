@@ -50,19 +50,6 @@ export default [
           "message": "The use of Buffer is not allowed."
         }
       ],
-        "no-restricted-properties": [
-          "error",
-          {
-            "object": "assert",
-            "property": "ok",
-            "message": "Usage of assert.ok is discouraged because it relies on truthiness."
-          },
-          {
-            "object": "assert",
-            "property": "notOk",
-            "message": "Usage of assert.notOk is discouraged because it relies on falsiness."
-          }
-        ],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/naming-convention': [
         'error',
@@ -121,7 +108,7 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
-
+      
     },
   },
   {
@@ -130,7 +117,21 @@ export default [
     },
     files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
     rules: {
-      'i/no-extraneous-dependencies': 'error'
+      'i/no-extraneous-dependencies': 'error',
+      'i/extensions': ['error',
+        'ignorePackages',
+        {
+          'pattern': {
+            'ts': error
+          },
+          'pathGroupOverrides': [
+            {
+              'pattern': 'ethereum-cryptography/keccak.js',
+              'action': 'ignore'
+            }
+          ]
+        }
+      ]
     },
   },
   {
@@ -172,7 +173,20 @@ export default [
   {
     files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', '**/test/**/*.ts',],
     rules: {
-      'no-restricted-syntax': 'off'
+      'no-restricted-syntax': 'off',
+      "no-restricted-properties": [
+        "warn",
+        {
+          "object": "assert",
+          "property": "ok",
+          "message": "Usage of assert.ok is discouraged because it relies on truthiness."
+        },
+        {
+          "object": "assert",
+          "property": "notOk",
+          "message": "Usage of assert.notOk is discouraged because it relies on falsiness."
+        }
+      ],
     },
   },
   {
