@@ -368,7 +368,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   txPool.start()
   miner.start()
   it('should initialize receiptsManager', () => {
-    assert.exists(receiptsManager, 'receiptsManager should be initialized')
+    assert.isDefined(receiptsManager, 'receiptsManager should be initialized')
   })
 
   await setBalance(vm, A.address, BigInt('400000000000001'))
@@ -398,16 +398,16 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await (miner as any).queueNextAssembly(0)
   it('should save receipt', async () => {
     const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
   })
   it('should save receipt', async () => {
     let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
     receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
 
     receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
 
     await wait(500)
   })
@@ -582,7 +582,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   assert.isTrue((miner as any).assembling, 'miner should be assembling')
   config.events.emit(Event.CHAIN_UPDATED)
   await wait(25)
-  assert.notOk((miner as any).assembling, 'miner should have stopped assembling')
+  assert.isFalse((miner as any).assembling, 'miner should have stopped assembling')
   miner.stop()
   txPool.stop()
 })

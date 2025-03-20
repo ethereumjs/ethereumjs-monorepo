@@ -171,7 +171,7 @@ describe('DNS: (integration)', () => {
 
       const seen: string[] = []
       for (const peer of peers) {
-        assert.exists(peer.address)
+        assert.isDefined(peer.address)
         assert.match(peer.address, ipTestRegex, 'address is a valid ip')
         assert.notInclude(seen, peer.address, 'peer is not duplicate')
         seen.push(peer.address)

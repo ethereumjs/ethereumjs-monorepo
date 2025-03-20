@@ -25,7 +25,7 @@ describe('[Types]', () => {
       Required<BlockData>,
       'withdrawals' | 'executionWitness'
     >
-    assert.exists(block, 'block')
+    assert.isDefined(block, 'block')
 
     // Transactions
     type OptionalTxFields = 'to' | 'r' | 's' | 'v'
@@ -35,11 +35,11 @@ describe('[Types]', () => {
       TxData[typeof TransactionType.Legacy],
       OptionalTxFields
     > = createLegacyTx({}, { common })
-    assert.exists(legacyTx, 'legacy tx')
+    assert.isDefined(legacyTx, 'legacy tx')
 
     // Access List tx
     const accessListTx: RequiredExceptOptionals<AccessList2930TxData, OptionalTxFields> =
       createAccessList2930Tx({}, { common })
-    assert.exists(accessListTx, 'accessList tx')
+    assert.isDefined(accessListTx, 'accessList tx')
   })
 })

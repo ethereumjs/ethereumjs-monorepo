@@ -311,7 +311,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
 
     const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
 
-    assert.ok(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
+    assert.isTrue(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
   })
 
   it('run without signature', async () => {
@@ -368,7 +368,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // set sufficient balance
     await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
-    assert.exists(res, 'should pass if balance is sufficient')
+    assert.isDefined(res, 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {

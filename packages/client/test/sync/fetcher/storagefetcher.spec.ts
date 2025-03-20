@@ -451,11 +451,11 @@ describe('[StorageFetcher]', async () => {
     }
     const job = { peer, partialResult, task }
     let results = await fetcher.request(job as any)
-    assert.exists(results, 'Proof verification is completed without errors')
+    assert.isDefined(results, 'Proof verification is completed without errors')
 
     results!.completed = true
     results = fetcher.process(job as any, results!)
-    assert.exists(results, 'Response should be processed correctly')
+    assert.isDefined(results, 'Response should be processed correctly')
     assert.equal(results![0].length, 3, '3 results should be there with dummy partials')
     // remove out the dummy partials
     results![0].splice(0, 2)

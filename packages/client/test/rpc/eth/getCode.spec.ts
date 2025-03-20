@@ -88,7 +88,7 @@ describe(method, () => {
     await vm.blockchain.putBlock(ranBlock!)
 
     const expectedContractAddress = createContractAddress(address, BigInt(0))
-    assert.ok(
+    assert.isTrue(
       createdAddress!.equals(expectedContractAddress),
       'should match the expected contract address',
     )

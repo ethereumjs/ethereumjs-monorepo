@@ -28,7 +28,7 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
 describe('VM -> basic instantiation / boolean switches', () => {
   it('should instantiate without params', async () => {
     const vm = await createVM()
-    assert.exists(vm.stateManager)
+    assert.isDefined(vm.stateManager)
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,

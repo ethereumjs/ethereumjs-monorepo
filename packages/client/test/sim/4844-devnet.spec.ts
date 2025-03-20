@@ -24,7 +24,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const shardingJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 
@@ -201,7 +201,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
       await sleep(1000)
     }
-    assert.exists(
+    assert.isDefined(
       receipt.result.contractAddress,
       'successfully deployed contract that calls precompile',
     )

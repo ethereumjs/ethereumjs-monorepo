@@ -173,7 +173,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putCode(address, new Uint8Array([1]))
         await stateManager.putCode(address, new Uint8Array())
         const account = await stateManager.getAccount(address)
-        assert.exists(account)
+        assert.isDefined(account)
         assert.isTrue(account?.isEmpty())
       })
     }

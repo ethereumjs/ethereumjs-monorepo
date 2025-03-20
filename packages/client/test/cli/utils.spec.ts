@@ -108,7 +108,7 @@ describe('generateClientConfig', () => {
       prometheusPort: 9090,
     }
     const { metricsServer } = await generateClientConfig(opts)
-    assert.exists(
+    assert.isDefined(
       metricsServer,
       'Prometheus should be enabled and metrics server should be started',
     )

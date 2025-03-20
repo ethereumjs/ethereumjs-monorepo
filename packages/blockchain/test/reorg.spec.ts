@@ -186,7 +186,7 @@ describe('reorg tests', () => {
     )
 
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
-    assert.exists(
+    assert.isDefined(
       signerStates.find(
         (s: any): boolean =>
           s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
@@ -198,7 +198,7 @@ describe('reorg tests', () => {
     assert.equal(signerVotes.length, 0, 'votes should be empty')
 
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.exists(
+    assert.isDefined(
       blockSigners.find(
         (s: any): boolean => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),

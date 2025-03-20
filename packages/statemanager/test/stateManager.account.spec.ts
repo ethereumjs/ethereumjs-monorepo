@@ -20,7 +20,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putAccount(address, account)
       await stateManager.commit()
       await stateManager.flush()
-      assert.ok(!equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has a new root')
+      assert.isFalse(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has a new root')
 
       // set state root to empty trie root
       await stateManager.setStateRoot(KECCAK256_RLP)
@@ -113,9 +113,7 @@ describe('StateManager -> General/Account', () => {
 
       await stateManager.putAccount(address, account)
 
-      const res = (await stateManager.getAccount(address)) === undefined
-
-      assert.notOk(res)
+      assert.isUndefined(await stateManager.getAccount(address))
     })
 
     it(`should modify account fields correctly`, async () => {

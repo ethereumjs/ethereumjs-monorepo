@@ -29,7 +29,7 @@ describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
-    assert.exists(bytesToHex(genesis.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(genesis.hash()), 'block should initialize')
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
@@ -41,7 +41,7 @@ describe('[Block]: block functions', () => {
     )
 
     const emptyBlock = createEmptyBlock({}, { common })
-    assert.exists(bytesToHex(emptyBlock.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(emptyBlock.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor

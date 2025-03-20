@@ -108,7 +108,7 @@ describe('verkle tests', () => {
     const writtenChunks = Array.from(evm.verkleAccessWitness.chunks.entries()).filter(
       ([_, chunk]) => chunk.write !== undefined,
     )
-    assert.ok(writtenChunks.length === 1)
+    assert.equal(writtenChunks.length, 1)
     assert.equal(res.execResult.exceptionError?.error, undefined)
   })
 })
@@ -183,7 +183,7 @@ describe('generate an execution witness', () => {
     const stemDiff =
       executionWitness.stateDiff[executionWitness.stateDiff.findIndex((diff) => diff.stem === stem)]
     const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)
-    assert.ok(suffixDiff?.newValue !== undefined)
+    assert.isDefined(suffixDiff?.newValue)
     // Ensure sender account nonce is 1 in execution witness
     assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
   })

@@ -170,7 +170,7 @@ export default [
     rules: {
       'no-restricted-syntax': 'off',
       "no-restricted-properties": [
-        "warn",
+        "error",
         {
           "object": "assert",
           "property": "ok",

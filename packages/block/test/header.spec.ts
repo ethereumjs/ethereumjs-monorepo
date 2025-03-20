@@ -59,7 +59,7 @@ describe('[Block]: Header functions', () => {
   it('Initialization -> fromHeaderData()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(undefined, { common })
-    assert.exists(bytesToHex(header.hash()), 'genesis block should initialize')
+    assert.isDefined(bytesToHex(header.hash()), 'genesis block should initialize')
     assert.equal(
       header.common.hardfork(),
       'chainstart',
@@ -74,7 +74,7 @@ describe('[Block]: Header functions', () => {
     )
 
     header = createBlockHeader({}, { common })
-    assert.exists(bytesToHex(header.hash()), 'default block should initialize')
+    assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
@@ -179,7 +179,7 @@ describe('[Block]: Header functions', () => {
   it('Initialization -> Clique Blocks', () => {
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
     const header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
-    assert.exists(bytesToHex(header.hash()), 'default block should initialize')
+    assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
   })
 
   it('should validate extraData', async () => {

@@ -316,7 +316,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x0', 'latest', []])
-    assert.exists(req.error, undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should throw error if block count is above 1024`, async () => {
@@ -325,7 +325,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
-    assert.exists(req.error, undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should generate reward percentiles with 0s`, async () => {

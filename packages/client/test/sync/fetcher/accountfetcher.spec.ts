@@ -340,7 +340,7 @@ describe('[AccountFetcher]', async () => {
         hexToBytes('0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9'),
       ),
     })
-    assert.exists(fetcher.storageFetcher, 'storageFetcher should be created')
+    assert.isDefined(fetcher.storageFetcher, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
     const resData = RLP.decode(hexToBytes(_accountRangeRLP))
@@ -363,8 +363,8 @@ describe('[AccountFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.exists(results, 'Proof verification is completed without errors')
-    assert.exists(fetcher.process(job as any, results!), 'Response should be processed properly')
+    assert.isDefined(results, 'Proof verification is completed without errors')
+    assert.isDefined(fetcher.process(job as any, results!), 'Response should be processed properly')
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
     fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()

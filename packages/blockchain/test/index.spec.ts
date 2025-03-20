@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.exists(error, 'returned with error')
+      assert.isDefined(error, 'returned with error')
     }
   })
 
@@ -577,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.exists(error, 'should not validate an invalid block')
+      assert.isDefined(error, 'should not validate an invalid block')
     }
   })
 
