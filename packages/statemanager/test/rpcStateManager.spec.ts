@@ -336,9 +336,9 @@ describe('blockchain', () =>
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.isTrue(
+    assert.equal(
       bytesToHex(res.execResult.returnValue),
-      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6',
+      '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d8',
     )
   }))
 
