@@ -26,7 +26,6 @@
     "biome:fix": "npx @biomejs/biome check --write",
     "build": "npm run build:common && mkdir -p ./src/trustedSetup/ && cp -Rf ./src/trustedSetups ./dist/src/",
     "build:common": "./scripts/ts-build.sh && ./scripts/postBuildFixes.sh",
-    "bundle": "webpack",
     "clean": "../../config/cli/clean-package.sh",
     "client:start:ts": "tsx bin/cli.ts",
     "client:start:js": "npm run build && node dist/esm/bin/cli.js",
