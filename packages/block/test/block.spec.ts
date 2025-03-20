@@ -432,13 +432,14 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
-      blockWithDifficultyCalculation.header.difficulty > BigInt(0),
+    assert.notEqual(
+      blockWithDifficultyCalculation.header.difficulty,
+      BigInt(0),
       'header difficulty should be set if difficulty header is given',
     )
-    assert.ok(
-      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header) ===
-        blockWithDifficultyCalculation.header.difficulty,
+    assert.equal(
+      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header),
+      blockWithDifficultyCalculation.header.difficulty,
       'header difficulty is canonical difficulty if difficulty header is given',
     )
 
@@ -458,8 +459,9 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
-      block_farAhead.header.difficulty > BigInt(0),
+    assert.notEqual(
+      block_farAhead.header.difficulty,
+      BigInt(0),
       'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header',
     )
   })
