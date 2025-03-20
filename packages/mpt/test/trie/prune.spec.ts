@@ -149,7 +149,7 @@ describe('Pruned trie tests', () => {
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
-      assert.isEmpty(dbKeys, 'db is empty')
+      assert.equal(dbKeys, 0, 'db is empty')
     }
   })
 
@@ -175,7 +175,7 @@ describe('Pruned trie tests', () => {
     assert.isTrue(isRawMPTNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
     assert.isTrue(isRawMPTNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
 
-    assert.isTrue(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
+    assert.isFalse(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
 
     // Delete the branch node
     await trie.del(utf8ToBytes('key2'))
