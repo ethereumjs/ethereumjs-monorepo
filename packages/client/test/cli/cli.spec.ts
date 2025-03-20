@@ -34,8 +34,9 @@ describe('[CLI]', () => {
     const cliArgs = ['--network=sepolia', '--chainId=11155111']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=sepolia chainId=11155111'),
+        assert.include(
+          message,
+          'network=sepolia chainId=11155111',
           'client is using custom inputs for network and network ID',
         )
         child.kill()
@@ -48,8 +49,9 @@ describe('[CLI]', () => {
     const cliArgs = ['--network=Mainnet']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=mainnet'),
+        assert.include(
+          message,
+          'network=mainnet',
           'client is using custom inputs for network and network ID',
         )
         child.kill()
@@ -83,14 +85,15 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('eth_coinbase', [], 2.0)
-        assert.ok(
-          res.result === '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+        assert.equal(
+          res.result,
+          '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
           'correct coinbase address set',
         )
         count -= 1
       }
       if (message.includes('Client started successfully')) {
-        assert.ok(message, 'Client started successfully with custom inputs for PoA network')
+        assert.isTrue(true, 'Client started successfully with custom inputs for PoA network')
         count -= 1
       }
       if (count === 0) {
@@ -108,7 +111,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Invalid values')) {
-        assert.ok(
+        assert.isTrue(
           true,
           'client correctly throws error when "dev" option is passed in without a value',
         )
@@ -143,7 +146,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
-        assert.ok(message.includes('engine'), 'engine rpc started')
+        assert.include(message, 'engine', 'engine rpc started')
         try {
           await wait(600)
           const client = Client.http({ port: 7777 })
@@ -174,11 +177,8 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
@@ -207,12 +207,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(message.includes(customPort), 'custom port is being used')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, customPort, 'custom port is being used')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
@@ -242,12 +239,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(message.includes('0.0.0.0'), 'custom address is being used')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, '0.0.0.0', 'custom address is being used')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ hostname: '0.0.0.0', port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
@@ -275,11 +269,12 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('ws://') && message.includes('engine')) {
-        assert.ok(
-          message.includes('0.0.0.0:' + customPort),
+        assert.include(
+          message,
+          '0.0.0.0:' + customPort,
           'client logs show correct custom address and port being used',
         )
-        assert.ok(message.includes('engine'), 'engine ws started')
+        assert.include(message, 'engine', 'engine ws started')
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
         ;(client as any).ws.on('open', async function () {
@@ -377,7 +372,7 @@ describe('[CLI]', () => {
         assert.fail('ws endpoint should not be enabled')
       }
       if (message.includes('Miner: Assembling block')) {
-        assert.ok('miner started and no rpc endpoints started')
+        assert.isTrue(true, 'miner started and no rpc endpoints started')
         resolve(undefined)
       }
     }
@@ -392,7 +387,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('JSON-RPC: Supported Methods')) {
-        assert.ok(message, 'logged out supported RPC methods')
+        assert.isTrue(true, 'logged out supported RPC methods')
         child.kill()
         resolve(undefined)
       }
@@ -420,7 +415,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('DEBUG')) {
-        assert.ok(message, 'debug logging is enabled')
+        assert.isTrue(true, 'debug logging is enabled')
         child.kill()
         resolve(undefined)
       }
@@ -436,7 +431,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('account cache')) {
-        assert.ok(message.includes('2000'), 'account cache option works')
+        assert.include(message, '2000', 'account cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -451,7 +446,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('storage cache')) {
-        assert.ok(message.includes('2000'), 'storage cache option works')
+        assert.include(message, '2000', 'storage cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -467,7 +462,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('code cache')) {
-        assert.ok(message.includes('2000'), 'code cache option works')
+        assert.include(message, '2000', 'code cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -482,7 +477,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('trie cache')) {
-        assert.ok(message.includes('2000'), 'trie cache option works')
+        assert.include(message, '2000', 'trie cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -497,7 +492,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Reading bootnodes')) {
-        assert.ok(message.includes('num=2'), 'passing bootnode.txt URL for bootnodes option works')
+        assert.include(message, 'num=2', 'passing bootnode.txt URL for bootnodes option works')
         child.kill()
         resolve(undefined)
       }
@@ -513,8 +508,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients started with experimental feature options',
         )
         child.kill()
@@ -543,8 +539,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients starts with client execution limits',
         )
         child.kill()
@@ -575,8 +572,8 @@ describe('[CLI]', () => {
           .at(-1)
           ?.split(':')
           .map((e) => e.trim()) as string[]
-        assert.ok(ip === '0.0.0.0', 'custom input for address is being used')
-        assert.ok(port === '65000', 'custom input for port is being used')
+        assert.equal(ip, '0.0.0.0', 'custom input for address is being used')
+        assert.equal(port, '65000', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
         await wait(600)
@@ -607,8 +604,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients starts with custom network options',
         )
         await wait(600)
@@ -637,17 +635,19 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Serving light peer requests')) {
-        assert.ok(
-          message.includes('Serving light peer requests'),
+        assert.include(
+          message,
+          'Serving light peer requests',
           'client respects custom light-mode option',
         )
       }
       if (message.includes('Starting FullEthereumService')) {
-        assert.ok(message.includes('with no syncing'), 'client respects custom sync mode option')
+        assert.include(message, 'with no syncing', 'client respects custom sync mode option')
       }
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Client starts with custom sync options',
         )
         await wait(600)
@@ -756,17 +756,19 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Reading custom genesis state')) {
-        assert.ok(
-          message.includes('Reading custom genesis state'),
+        assert.include(
+          message,
+          'Reading custom genesis state',
           'client respects custom genesis state file option',
         )
       }
       if (message.includes('Data directory')) {
-        assert.ok(message.includes(dir), 'client respects custom data directory option')
+        assert.include(message, dir, 'client respects custom data directory option')
       }
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=customChain'),
+        assert.include(
+          message,
+          'network=customChain',
           'Client respects custom chain parameters JSON file option',
         )
       }

@@ -126,7 +126,7 @@ describe('[AccountFetcher]', async () => {
     accountDataResponse.completed = true
 
     assert.deepEqual(fetcher.process({} as any, accountDataResponse), fullResult, 'got results')
-    assert.notOk(fetcher.process({} as any, []), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, []), 'bad results')
   })
 
   it('should adopt correctly', () => {
@@ -202,8 +202,9 @@ describe('[AccountFetcher]', async () => {
     ]
     const job = { peer, partialResult, task }
     const result = (await fetcher.request(job as any)) as any
-    assert.ok(
-      JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
+    assert.equal(
+      JSON.stringify(result[0]),
+      JSON.stringify({ skipped: true }),
       'skipped fetching task with limit lower than highest known key hash',
     )
   })
@@ -278,8 +279,8 @@ describe('[AccountFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === true,
+    assert.isTrue(
+      ret?.completed,
       'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right',
     )
   })
@@ -317,8 +318,8 @@ describe('[AccountFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === undefined,
+    assert.isUndefined(
+      ret?.completed,
       'proof verification should fail if elements still remain to the right of the proof',
     )
   })
@@ -339,7 +340,7 @@ describe('[AccountFetcher]', async () => {
         hexToBytes('0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9'),
       ),
     })
-    assert.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
+    assert.exists(fetcher.storageFetcher, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
     const resData = RLP.decode(hexToBytes(_accountRangeRLP))

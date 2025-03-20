@@ -9,7 +9,7 @@ const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean) => {
   child.stdout.removeAllListeners()
   child.stderr.removeAllListeners()
   const res = child.kill('SIGINT')
-  assert.ok(res, 'client shut down successfully')
+  assert.isTrue(res, 'client shut down successfully')
 }
 
 describe('[CLI] RPC', () => {

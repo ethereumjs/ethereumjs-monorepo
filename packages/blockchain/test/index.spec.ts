@@ -78,7 +78,7 @@ describe('blockchain test', () => {
       common = new Common({ chain: Goerli })
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
-      assert.ok(chain instanceof Blockchain, 'should not throw')
+      assert.instanceOf(chain, Blockchain, 'should not throw')
     } catch {
       assert.fail('show not have thrown')
     }
@@ -247,7 +247,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(blocks[0].header.number, getBlocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
 
     const canonicalHeaderOriginal = await blockchain.getCanonicalHeadHeader()
     assert.equal(canonicalHeaderOriginal.number, BigInt(24), 'block 24 should be canonical header')
@@ -301,7 +301,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 1, false)
     assert.equal(getBlocks!.length, 5, 'should get 5 blocks')
     assert.equal(getBlocks![1].header.number, blocks[2].header.number, 'should skip second block')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 4 blocks, skipping 2 apart, starting from genesis hash', async () => {
@@ -315,7 +315,7 @@ describe('blockchain test', () => {
       blocks[3].header.number,
       'should skip two blocks apart',
     )
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 10 consecutive blocks, starting from genesis hash', async () => {
@@ -325,7 +325,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 17, 0, false)
     assert.equal(getBlocks!.length, 15)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 0', async () => {
@@ -335,7 +335,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 blocks, skipping 1 apart, starting from block 1', async () => {
@@ -345,7 +345,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(1, 5, 1, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip one block')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 5 blocks, skipping 2 apart, starting from block 0', async () => {
@@ -355,7 +355,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 5, 2, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip two blocks')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 15 consecutive blocks, starting from block 0', async () => {
@@ -365,7 +365,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 17, 0, false)
     assert.equal(getBlocks!.length, 15)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 1', async () => {
@@ -375,7 +375,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(1, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[1].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 5', async () => {
@@ -385,7 +385,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 5, reversed', async () => {
@@ -395,7 +395,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 5, 0, true)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
   it('should get 6 consecutive blocks, starting from block 5, reversed', async () => {
@@ -405,7 +405,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 15, 0, true)
     assert.equal(getBlocks!.length, 6)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
   it('should get 6 blocks, starting from block 10, reversed, skipping 1 apart', async () => {
@@ -415,7 +415,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(10, 10, 1, true)
     assert.equal(getBlocks!.length, 6)
     assert.equal(getBlocks![1].header.number, blocks[8].header.number, 'should skip one block')
-    assert.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
   })
 
   it('should find needed hashes', async () => {

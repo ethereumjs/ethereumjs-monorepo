@@ -41,7 +41,7 @@ describe('[Chain]', () => {
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis',
     )
-    assert.ok(
+    assert.isTrue(
       equalsBytes(chain.genesis.hash(), chain.blocks.latest!.hash()),
       'get chain.block.latest',
     )

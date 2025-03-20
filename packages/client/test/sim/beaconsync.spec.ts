@@ -25,6 +25,7 @@ import type { RlpxServer } from '../../src/net/server/index.ts'
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const networkJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(networkJSON, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJSON)
@@ -68,7 +69,7 @@ describe('simple mainnet test run', async () => {
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
   it('should fetch enode', () => {
-    assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+    assert.exists(nodeInfo.enode, 'fetched enode for peering')
   })
 
   console.log(`Waiting for network to start...`)
@@ -105,10 +106,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer 2x')
 
       balance = await client.request('eth_getBalance', [sender, 'latest'])
-      assert.ok(
-        balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee',
-      )
+      assert.exists(balance.result, 'remaining sender balance after transfers and gas fee')
     },
     2 * 60_000,
   )

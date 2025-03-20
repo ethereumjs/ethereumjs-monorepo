@@ -18,6 +18,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'eof'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const eofJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(eofJSON, { chain: network })
 
@@ -67,7 +68,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   it(' EIP 3670 tests', async () => {
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(data)
-    assert.ok(res.contractAddress !== undefined, 'created contract')
+    assert.exists(res.contractAddress, 'created contract')
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
     assert.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
   })
@@ -103,7 +104,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   it('EIP 3855 tests', async () => {
     const push1res = await runTx('0x6000')
     const push0res = await runTx('0x5F')
-    assert.ok(
+    assert.isTrue(
       BigInt(push1res.gasUsed) > BigInt(push0res.gasUsed),
       'PUSH1 transaction costs higher gas than PUSH0',
     )
@@ -138,7 +139,7 @@ describe('EOF ephemeral hardfork tests', async () => {
       '0x5caba0a40000000000000000000000004242424242424242424242424242424242424242',
       contractAddress,
     )
-    assert.ok(
+    assert.isTrue(
       BigInt(readCold.gasUsed) > BigInt(readWarmCoinbase.gasUsed),
       'read cold storage tx should have higher cumulative gas than than read coinbase tx',
     )
