@@ -119,10 +119,10 @@ describe('should start/stop', async () => {
     await service.start()
 
     expect(service.synchronizer!.start).toBeCalled()
-    assert.notOk(await service.start(), 'already started')
+    assert.isFalse(await service.start(), 'already started')
     await service.stop()
     expect(service.synchronizer!.stop).toBeCalled()
-    assert.notOk(await service.stop(), 'already stopped')
+    assert.isFalse(await service.stop(), 'already stopped')
   })
 })
 
@@ -143,7 +143,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
       eth: {
         send: (title: string, msg: any) => {
           it('should send empty headers', () => {
-            assert.ok(
+            assert.isTrue(
               title === 'BlockHeaders' && msg.headers.length === 0,
               'sent empty headers when block height is too high',
             )

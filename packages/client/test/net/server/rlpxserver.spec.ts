@@ -99,13 +99,13 @@ describe('[RlpxServer]', async () => {
     await server.start()
     expect(server['initDpt']).toHaveBeenCalled()
     expect(server['initRlpx']).toHaveBeenCalled()
-    assert.ok(server.running, 'started')
-    assert.notOk(await server.start(), 'already started')
+    assert.isTrue(server.running, 'started')
+    assert.isFalse(await server.start(), 'already started')
     await server.stop()
     expect(server.dpt!.destroy).toHaveBeenCalled()
     expect(server.rlpx!.destroy).toHaveBeenCalled()
-    assert.notOk(server.running, 'stopped')
-    assert.notOk(await server.stop(), 'already stopped')
+    assert.isFalse(server.running, 'stopped')
+    assert.isFalse(await server.stop(), 'already stopped')
   })
 
   it('should bootstrap with dns acquired peers', async () => {
@@ -258,7 +258,7 @@ describe('should handle errors', () => {
 describe('should ban peer', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
-  assert.notOk(server.ban('123'), 'not started')
+  assert.isFalse(server.ban('123'), 'not started')
   server.started = true
   server.dpt = {
     destroy: vi.fn(),

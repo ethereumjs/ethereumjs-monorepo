@@ -139,15 +139,15 @@ describe('[Libp2pServer]', async () => {
     )
     config.events.once(Event.PEER_CONNECTED, (p) => assert.equal(p, peer, 'peer connected'))
     config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got err0'))
-    assert.notOk(server.ban('peer'), 'unbannable')
-    assert.notOk(await server.stop(), 'not started')
+    assert.isFalse(server.ban('peer'), 'unbannable')
+    assert.isFalse(await server.stop(), 'not started')
     await server.start()
     ;(server as any).node.emit('error', new Error('err0'))
-    assert.notOk(server.addProtocols([]), 'cannot add protocols after start')
+    assert.isFalse(server.addProtocols([]), 'cannot add protocols after start')
     server.ban('peer0', 10)
     assert.ok(server.isBanned('peer0'), 'banned')
     await wait(100)
-    assert.notOk(server.isBanned('peer0'), 'ban expired')
+    assert.isFalse(server.isBanned('peer0'), 'ban expired')
     const { node } = server as any
     assert.equal(node.constructor.name, 'Libp2pNode', 'libp2p node created')
     node.emit('peer:discovery', peerId)
@@ -159,7 +159,7 @@ describe('[Libp2pServer]', async () => {
     td.verify(server.createPeer(peerId3, ['ma1'] as any, td.matchers.anything()))
     assert.ok((await server.start()) === false, 'server already started')
     await server.stop()
-    assert.notOk(server.running, 'stopped')
+    assert.isFalse(server.running, 'stopped')
   })
 
   it('should reset td', () => {

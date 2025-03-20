@@ -50,20 +50,20 @@ describe('StateManager -> Code', () => {
         let codeSlot1 = await codeStateManager.getStorage(address1, key1)
         let codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
-        assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
-        assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
+        assert.isEmpty(codeSlot1, 'slot 0 is empty')
+        assert.isEmpty(codeSlot2, 'slot 1 is empty')
 
         const code = await codeStateManager.getCode(address1)
-        assert.ok(code.length > 0, 'code deposited correctly')
+        assert.isAbove(code.length, 0, 'code deposited correctly')
 
         const slot1 = await stateManager.getStorage(address1, key1)
         const slot2 = await stateManager.getStorage(address1, key2)
 
-        assert.ok(slot1.length > 0, 'storage key0 deposited correctly')
-        assert.ok(slot2.length > 0, 'storage key1 deposited correctly')
+        assert.isAbove(slot1.length, 0, 'storage key0 deposited correctly')
+        assert.isAbove(slot2.length, 0, 'storage key1 deposited correctly')
 
         let slotCode = await stateManager.getCode(address1)
-        assert.ok(slotCode.length === 0, 'code cannot be loaded')
+        assert.isEmpty(slotCode, 'code cannot be loaded')
 
         // Checks by either setting state root to codeHash, or codeHash to stateRoot
         // The knowledge of the tries should not change
@@ -73,7 +73,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address1, account1!)
 
         slotCode = await stateManager.getCode(address1)
-        assert.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
+        assert.isEmpty(slotCode, 'code cannot be loaded') // This test fails if no code prefix is used
 
         account1 = await codeStateManager.getAccount(address1)
         account1!.storageRoot = root
@@ -83,8 +83,8 @@ describe('StateManager -> Code', () => {
         codeSlot1 = await codeStateManager.getStorage(address1, key1)
         codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
-        assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
-        assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
+        assert.isEmpty(codeSlot1, 'slot 0 is empty')
+        assert.isEmpty(codeSlot2, 'slot 1 is empty')
       })
 
       it(`should set and get code`, async () => {
@@ -173,8 +173,8 @@ describe('StateManager -> Code', () => {
         await stateManager.putCode(address, new Uint8Array([1]))
         await stateManager.putCode(address, new Uint8Array())
         const account = await stateManager.getAccount(address)
-        assert.ok(account !== undefined)
-        assert.ok(account?.isEmpty())
+        assert.exists(account)
+        assert.isTrue(account?.isEmpty())
       })
     }
   }

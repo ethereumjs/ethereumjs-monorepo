@@ -75,7 +75,7 @@ describe('verkle tests', () => {
     const writtenChunks = Array.from(evm.verkleAccessWitness.chunks.entries()).filter(
       ([_, chunk]) => chunk.write !== undefined,
     )
-    assert.ok(writtenChunks.length === 0)
+    assert.isEmpty(writtenChunks)
     assert.equal(res.execResult.exceptionError?.error, 'out of gas')
   })
 

@@ -46,23 +46,17 @@ describe('[Block]: block functions', () => {
     // test default freeze values
     // also test if the options are carried over to the constructor
     block = createBlock({})
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlock({}, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const rlpBlock = block.serialize()
     block = createBlockFromRLP(rlpBlock)
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromRLP(rlpBlock, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const zero = new Uint8Array(0)
     const headerArray: Uint8Array[] = []
@@ -82,13 +76,10 @@ describe('[Block]: block functions', () => {
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = createBlockFromBytesArray(valuesArray, { common })
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
   })
 
   it('initialization -> setHardfork option', () => {
@@ -165,8 +156,8 @@ describe('[Block]: block functions', () => {
   })
 
   async function testTransactionValidation(block: Block) {
-    assert.ok(block.transactionsAreValid())
-    assert.ok(block.getTransactionsValidationErrors().length === 0)
+    assert.isTrue(block.transactionsAreValid())
+    assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
   it('should test transaction validation - invalid tx trie', async () => {

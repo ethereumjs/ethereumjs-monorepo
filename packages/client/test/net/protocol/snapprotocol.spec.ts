@@ -102,23 +102,23 @@ describe('[SnapProtocol]', () => {
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       data,
     )
-    assert.ok(reqId === BigInt(1), 'reqId should be 1')
-    assert.ok(accounts.length === 2, 'accounts should be 2')
-    assert.ok(proof.length === 7, 'proof nodes should be 7')
+    assert.equal(reqId, BigInt(1), 'reqId should be 1')
+    assert.equal(accounts.length, 2, 'accounts should be 2')
+    assert.equal(proof.length, 7, 'proof nodes should be 7')
 
     const firstAccount = accounts[0].body
     const secondAccount = accounts[1].body
 
-    assert.ok(firstAccount[2].length === 0, 'Slim format storageRoot for first account')
-    assert.ok(firstAccount[3].length === 0, 'Slim format codehash for first account')
-    assert.ok(
-      bytesToHex(secondAccount[2]) ===
-        '0x3dc6d3cfdc6210b8591ea852961d880821298c7891dea399e02d87550af9d40e',
+    assert.isEmpty(firstAccount[2], 'Slim format storageRoot for first account')
+    assert.isEmpty(firstAccount[3], 'Slim format codehash for first account')
+    assert.equal(
+      bytesToHex(secondAccount[2]),
+      '0x3dc6d3cfdc6210b8591ea852961d880821298c7891dea399e02d87550af9d40e',
       'storageHash of the second account',
     )
-    assert.ok(
-      bytesToHex(secondAccount[3]) ===
-        '0xe68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66',
+    assert.equal(
+      bytesToHex(secondAccount[3]),
+      '0xe68fe0bb7c4a483affd0f19cc2b989105242bd6b256c6de3afd738f8acd80c66',
       'codeHash of the second account',
     )
     const payload = RLP.encode(
@@ -128,8 +128,9 @@ describe('[SnapProtocol]', () => {
         proof,
       }),
     )
-    assert.ok(
-      contractAccountRangeRLP === bytesToHex(payload),
+    assert.equal(
+      contractAccountRangeRLP,
+      bytesToHex(payload),
       'Re-encoded payload should match with original',
     )
   })
@@ -147,7 +148,7 @@ describe('[SnapProtocol]', () => {
       resData,
     )
     const { accounts: accountsFull } = fullData
-    assert.ok(accountsFull.length === 3, '3 accounts should be decoded in accountsFull')
+    assert.equal(accountsFull.length, 3, '3 accounts should be decoded in accountsFull')
     const accountFull = accountsFull[0].body
     assert.isTrue(equalsBytes(accountFull[2], KECCAK256_RLP), 'storageRoot should be KECCAK256_RLP')
     assert.isTrue(equalsBytes(accountFull[3], KECCAK256_NULL), 'codeHash should be KECCAK256_NULL')
@@ -164,10 +165,10 @@ describe('[SnapProtocol]', () => {
     )
 
     // 3 accounts are there in accountRangeRLP
-    assert.ok(accountsSlim.length === 3, '3 accounts should be decoded in accountsSlim')
+    assert.equal(accountsSlim.length, 3, '3 accounts should be decoded in accountsSlim')
     const accountSlim = accountsSlim[0].body
-    assert.ok(accountSlim[2].length === 0, 'storageRoot should be decoded in slim')
-    assert.ok(accountSlim[3].length === 0, 'codeHash should be decoded in slim')
+    assert.isEmpty(accountSlim[2], 'storageRoot should be decoded in slim')
+    assert.isEmpty(accountSlim[3], 'codeHash should be decoded in slim')
   })
 
   it('AccountRange should verify a real sample', async () => {
@@ -194,7 +195,7 @@ describe('[SnapProtocol]', () => {
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
-    assert.ok(
+    assert.isTrue(
       equalsBytes(keccak256(proof[0]), stateRoot),
       'Proof should link to the requested stateRoot',
     )

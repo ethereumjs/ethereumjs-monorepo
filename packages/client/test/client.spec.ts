@@ -66,7 +66,7 @@ describe('[EthereumClient]', async () => {
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')
     await client.stop()
-    assert.notOk(client.started, 'stopped')
+    assert.isFalse(client.started, 'stopped')
     assert.equal(await client.stop(), false, 'already stopped')
   }, 30000)
 })

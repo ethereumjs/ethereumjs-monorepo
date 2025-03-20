@@ -122,7 +122,7 @@ describe('[BaseTransaction]', () => {
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: Mainnet,
@@ -165,7 +165,7 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.rlp(rlpData, { common, freeze: false })
       assert.ok(
@@ -174,7 +174,7 @@ describe('[BaseTransaction]', () => {
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
       assert.ok(
