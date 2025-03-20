@@ -13,9 +13,9 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import { paramsTx } from '../params.js'
-import { TransactionType } from '../types.js'
-import { getAccessListJSON, txTypeBytes, validateNotArray } from '../util.js'
+import { paramsTx } from '../params.ts'
+import { TransactionType } from '../types.ts'
+import { getAccessListJSON, txTypeBytes, validateNotArray } from '../util.ts'
 
 import { Blob4844Tx } from './tx.ts'
 

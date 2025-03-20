@@ -1,4 +1,4 @@
-import { getAccessListDataGasEIP2930 } from '../util.js'
+import { getAccessListDataGasEIP2930 } from '../util.ts'
 
 import * as Legacy from './legacy.ts'
 
