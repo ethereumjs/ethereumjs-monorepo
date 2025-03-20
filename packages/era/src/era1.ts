@@ -7,9 +7,9 @@ import {
 } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.js'
-import { formatEntry, readEntry } from './e2store.js'
-import { EpochAccumulator, Era1Types, VERSION } from './types.js'
+import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.ts'
+import { formatEntry, readEntry } from './e2store.ts'
+import { EpochAccumulator, Era1Types, VERSION } from './types.ts'
 
 /**
  * Format era1 from epoch of history data

@@ -7,12 +7,12 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
-import { MerklePatriciaTrie } from '../trie.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../dist/esm/node/index.ts'
+import { MerklePatriciaTrie } from '../dist/esm/mpt.ts'
 
-import { _walkTrie } from './asyncWalk.js'
+import { _walkTrie } from '../dist/esm/util/asyncWalk.ts'
 
-import type { MPTNode } from '../types.js'
+import type { MPTNode } from '../dist/esm/types.ts'
 import type { Debugger } from 'debug'
 
 const debug = _debug('trieview') // cspell:disable-line
@@ -58,15 +58,15 @@ function getNodeType(node: MPTNode): TNode {
 function logNode(trie: MerklePatriciaTrie, node: MPTNode, currentKey: number[]): void {
   delimiter(3)
   const type = getNodeType(node)
-  if (equalsBytes(trie.hash(node.serialize()), trie.root())) {
+  if (equalsBytes(trie['hash'](node.serialize()), trie.root())) {
     debugN('rt').extend(type)(
-      `{ 0x${bytesToHex(trie.hash(node.serialize())).slice(
+      `{ 0x${bytesToHex(trie['hash'](node.serialize())).slice(
         0,
         12,
       )}... } ---- \uD83D\uDCA5  \u211B \u2134 \u2134 \u0164  \u0147 \u2134 \u0221 \u2211  \u2737`,
     )
   } else {
-    debugN(type)(`{ 0x${bytesToHex(trie.hash(node.serialize())).slice(0, 12)}... } ----`)
+    debugN(type)(`{ 0x${bytesToHex(trie['hash'](node.serialize())).slice(0, 12)}... } ----`)
   }
   debugT.extend('Walking')(`from [${currentKey}]`)
   if ('_nibbles' in node) {

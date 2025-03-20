@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Lock } from '../src/index.js'
+import { Lock } from '../src/index.ts'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -37,7 +37,7 @@ describe('Lock class: acquire', () => {
     await lock.acquire()
 
     const result = lock.acquire()
-    assert.ok(result instanceof Promise, 'should return a promise')
+    assert.isTrue(result instanceof Promise, 'should return a promise')
   })
 })
 

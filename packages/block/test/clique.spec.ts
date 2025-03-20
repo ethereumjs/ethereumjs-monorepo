@@ -11,9 +11,9 @@ import {
   cliqueVerifySignature,
   createBlockHeader,
   createSealedCliqueBlockHeader,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
+import { Goerli } from './testdata/goerliCommon.ts'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })

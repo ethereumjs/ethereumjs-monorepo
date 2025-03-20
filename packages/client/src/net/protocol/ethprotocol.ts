@@ -24,11 +24,8 @@ import {
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { TxReceiptWithType } from '../../execution/receipt.js'
-import type { Message, ProtocolOptions } from './protocol.js'
 import type {
   Block,
   BlockBodyBytes,
@@ -40,6 +37,9 @@ import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { Chain } from '../../blockchain/index.ts'
+import type { TxReceiptWithType } from '../../execution/receipt.ts'
+import type { Message, ProtocolOptions } from './protocol.ts'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -103,7 +103,6 @@ export class EthProtocol extends Protocol {
   private chain: Chain
   private nextReqId = BIGINT_0
 
-  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'NewBlockHashes',

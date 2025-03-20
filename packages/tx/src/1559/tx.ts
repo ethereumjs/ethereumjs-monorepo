@@ -17,8 +17,10 @@ import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/
 import { TransactionType } from '../types.js'
 import { getAccessListData, getAccessListJSON, verifyAccessList } from '../util.js'
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   AccessListBytes,
   TxData as AllTypesTxData,
@@ -28,12 +30,10 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -41,9 +41,11 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarket1559Tx implements TransactionInterface<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx
+  implements TransactionInterface<typeof TransactionType.FeeMarketEIP1559>
+{
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
+  public type = TransactionType.FeeMarketEIP1559 // 1559 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -356,7 +358,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): FeeMarket1559Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return <FeeMarket1559Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

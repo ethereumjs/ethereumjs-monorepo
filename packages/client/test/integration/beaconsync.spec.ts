@@ -2,10 +2,10 @@ import { BlockHeader } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Event } from '../../src/types.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Event } from '../../src/types.ts'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
-import { destroy, setup, wait } from './util.js'
+import { destroy, setup, wait } from './util.ts'
 
 const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
 common.setHardforkBy({ blockNumber: BigInt(0) })
@@ -51,7 +51,7 @@ describe('should not sync with stale peers', async () => {
       await localServer.discover('remotePeer', '127.0.0.2')
       await wait(300)
       assert.fail('should not sync')
-    } catch (err: any) {
+    } catch {
       assert.ok('did not sync')
     }
   })
@@ -91,7 +91,7 @@ describe('should sync with best peer', async () => {
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync with best peer', async () => {
       if (localService.chain.blocks.height === BigInt(10)) {
-        assert.ok(true, 'synced with best peer')
+        assert.isTrue(true, 'synced with best peer')
       }
     })
     await destroy(localServer, localService)

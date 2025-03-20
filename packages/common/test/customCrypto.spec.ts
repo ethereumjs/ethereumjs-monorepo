@@ -1,7 +1,7 @@
 import { concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Common, Mainnet, createCustomCommon } from '../src/index.js'
+import { Common, Mainnet, createCustomCommon } from '../src/index.ts'
 
 import type { ECDSASignature } from '@ethereumjs/util'
 

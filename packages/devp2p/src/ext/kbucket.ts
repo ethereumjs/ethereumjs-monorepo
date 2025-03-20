@@ -35,7 +35,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'eventemitter3'
 
-import type { Contact, KBucketEvent, KBucketOptions, PeerInfo } from '../types.js'
+import type { Contact, KBucketEvent, KBucketOptions, PeerInfo } from '../types.ts'
 
 function createNode() {
   return { contacts: [], noSplit: false, left: null, right: null }

@@ -1,7 +1,7 @@
 import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, beforeEach, describe, it } from 'vitest'
 
-import { CheckpointDB } from '../../src/index.js'
+import { CheckpointDB } from '../../src/index.ts'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 

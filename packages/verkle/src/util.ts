@@ -5,11 +5,11 @@ import {
   LeafVerkleNode,
   LeafVerkleNodeValue,
   decodeVerkleNode,
-} from './node/index.js'
+} from './node/index.ts'
 
-import type { ChildNode } from './node/index.js'
-import type { VerkleTree } from './verkleTree.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ChildNode } from './node/index.ts'
+import type { VerkleTree } from './verkleTree.ts'
 
 /**
  * Recursively walks down the tree from a given starting node and returns all the leaf values

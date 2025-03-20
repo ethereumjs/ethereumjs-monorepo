@@ -3,10 +3,10 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Ethash } from '../src/index.js'
-import { getCacheSize, getEpoc, getFullSize } from '../src/util.js'
+import { Ethash } from '../src/index.ts'
+import { getCacheSize, getEpoc, getFullSize } from '../src/util.ts'
 
-import { ethashTests } from './ethash_tests.js'
+import { ethashTests } from './ethash_tests.ts'
 
 const ethash = new Ethash()
 const tests = Object.keys(ethashTests) as (keyof typeof ethashTests)[]

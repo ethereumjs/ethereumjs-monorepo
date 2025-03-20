@@ -2,8 +2,8 @@ import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createBinaryTree } from '../src/index.js'
-import { dumpLeafValues, dumpNodeHashes } from '../src/util.js'
+import { createBinaryTree } from '../src/index.ts'
+import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
 describe('insert', () => {
   it('should not destroy a previous root', async () => {
@@ -432,21 +432,30 @@ describe('insert', () => {
       'Tree roots should match regardless of insertion order',
     )
 
+    // Ensure that updates on existing stem/index pairs are reflected in the root and result in consistent trees
+    const preUpdateRoot = tree1.root()
+
     // Insert a new value on an existing stem and verify the roots match
-    await tree1.put(
-      keyValuePairs[0].originalKey.slice(0, 31),
-      [6],
-      [hexToBytes(`0x${'06'.repeat(32)}`)],
-    )
-    await tree2.put(
-      keyValuePairs[0].originalKey.slice(0, 31),
-      [6],
-      [hexToBytes(`0x${'06'.repeat(32)}`)],
-    )
+    const stemToUpdate = keyValuePairs[0].hashedKey.slice(0, 31)
+    const indexToUpdate = 6
+    const updatedValue = hexToBytes(`0x${'06'.repeat(32)}`)
+    await tree1.put(stemToUpdate, [indexToUpdate], [updatedValue])
+    await tree2.put(stemToUpdate, [indexToUpdate], [updatedValue])
     assert.deepEqual(tree1.root(), tree2.root())
+
+    const postUpdateRoot = tree1.root()
+    assert.isFalse(equalsBytes(preUpdateRoot, postUpdateRoot), 'The tree root should have updated')
+
+    // Ensure that we can retrieve the updated value
+    const [retrievedValue] = await tree1.get(stemToUpdate, [indexToUpdate])
+    assert.exists(retrievedValue, 'Updated value should exist')
+    assert.isTrue(
+      equalsBytes(retrievedValue!, updatedValue),
+      'Retrieved value should match the updated value',
+    )
   })
   it('should dump leaf values and node hashes', async () => {
-    const tree1 = await createBinaryTree()
+    const tree = await createBinaryTree()
 
     // Create an array of 100 random key/value pairs by hashing keys.
     const keyValuePairs = []
@@ -468,10 +477,10 @@ describe('insert', () => {
     for (const { hashedKey, value } of keyValuePairs) {
       const stem = hashedKey.slice(0, 31)
       const index = hashedKey[31]
-      await tree1.put(stem, [index], [value])
+      await tree.put(stem, [index], [value])
     }
 
-    const leafValues = await dumpLeafValues(tree1, tree1.root())
+    const leafValues = await dumpLeafValues(tree, tree.root())
     assert.exists(leafValues)
     assert.equal(leafValues!.length, 100)
 
@@ -483,10 +492,10 @@ describe('insert', () => {
     const actualKeys = leafValues!.map(([key]) => key).sort()
     assert.deepEqual(actualKeys, expectedKeys)
 
-    const nodeHashes = await dumpNodeHashes(tree1, tree1.root())
+    const nodeHashes = await dumpNodeHashes(tree, tree.root())
     assert.exists(nodeHashes)
     expect(nodeHashes!.length).toBeGreaterThan(100)
-    assert.equal(nodeHashes![0][1], bytesToHex(tree1.root()))
+    assert.equal(nodeHashes![0][1], bytesToHex(tree.root()))
   })
 
   it('should update value when inserting a duplicate key', async () => {

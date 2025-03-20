@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { MerklePatriciaTrie } from '../mpt.js'
+import { MerklePatriciaTrie } from '../mpt.ts'
 
 import type { AccountState, GenesisState } from '@ethereumjs/util'
 

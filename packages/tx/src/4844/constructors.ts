@@ -17,15 +17,15 @@ import { paramsTx } from '../params.js'
 import { TransactionType } from '../types.js'
 import { getAccessListJSON, txTypeBytes, validateNotArray } from '../util.js'
 
-import { Blob4844Tx } from './tx.js'
+import { Blob4844Tx } from './tx.ts'
 
+import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
   BlobEIP4844NetworkValuesArray,
   JSONBlobTxNetworkWrapper,
   TxOptions,
-} from '../types.js'
-import type { TxData, TxValuesArray } from './tx.js'
-import type { KZG, PrefixedHexString } from '@ethereumjs/util'
+} from '../types.ts'
+import type { TxData, TxValuesArray } from './tx.ts'
 
 const validateBlobTransactionNetworkWrapper = (
   blobVersionedHashes: PrefixedHexString[],

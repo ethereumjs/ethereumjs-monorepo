@@ -1,9 +1,9 @@
 import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
-import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.js'
+import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './util.ts'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -159,8 +159,7 @@ describe('blockchain test', () => {
         throw new Error('iterator func error')
       })
     } catch (error: any) {
-      assert.ok(error)
-      assert.equal(error.message, 'iterator func error', 'should return correct error')
+      assert.equal(error?.message, 'iterator func error', 'should return correct error')
     }
   })
 

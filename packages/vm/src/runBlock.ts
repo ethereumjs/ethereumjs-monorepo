@@ -27,14 +27,16 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
-import { accumulateRequests } from './requests.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 
-import { runTx } from './index.js'
-
+import type { Block } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -44,11 +46,8 @@ import type {
   RunBlockResult,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
-import type { Block } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+} from './types.ts'
+import type { VM } from './vm.ts'
 
 const debug = debugDefault('vm:block')
 
@@ -134,7 +133,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (vm.common.isActivatedEIP(6800)) {
+  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
     // Initialize the access witness
 
     if (vm.common.customCrypto.verkle === undefined) {
@@ -330,13 +329,29 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
       // If verkle is activated and executing statelessly, only validate the post-state
       if (
-        (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
+        (await vm['_opts'].stateManager!.verifyVerklePostState!(vm.evm.verkleAccessWitness)) ===
+        false
       ) {
         throw EthereumJSErrorWithoutCode(
           `Verkle post state verification failed on block ${block.header.number}`,
         )
       }
       debug(`Verkle post state verification succeeded`)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.binaryTreeAccessWitness === undefined) {
+        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // If binary tree is activated and executing statelessly, only validate the post-state
+      if (
+        (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
+          vm.evm.binaryTreeAccessWitness,
+        )) === false
+      ) {
+        throw EthereumJSErrorWithoutCode(
+          `Binary tree post state verification failed on block ${block.header.number}`,
+        )
+      }
+      debug(`Binary tree post state verification succeeded`)
     }
   }
 
@@ -495,7 +510,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
-  // Merge systemVerkleAccessWitness with verkleAccessWitness
+  // Merge system AccessWitness with AccessWitness
   if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
     vm.evm.systemVerkleAccessWitness?.commit()
     if (vm.DEBUG) {
@@ -507,6 +522,16 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
   }
 
+  if (vm.common.isActivatedEIP(7864) && vm.evm.systemBinaryTreeAccessWitness !== undefined) {
+    vm.evm.systemBinaryTreeAccessWitness?.commit()
+    if (vm.DEBUG) {
+      debug('Binary tree access witness aggregate costs:')
+      vm.evm.binaryTreeAccessWitness?.debugWitnessCost()
+      debug('System binary tree access witness aggregate costs:')
+      vm.evm.systemBinaryTreeAccessWitness?.debugWitnessCost()
+    }
+    vm.evm.binaryTreeAccessWitness?.merge(vm.evm.systemBinaryTreeAccessWitness)
+  }
   return blockResults
 }
 
@@ -552,6 +577,12 @@ export async function accumulateParentBlockHash(
       }
       // Add to system verkle access witness so that it doesn't warm up tx accesses
       vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
+    } else if (vm.common.isActivatedEIP(7864)) {
+      if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      // Add to system binary tree access witness so that it doesn't warm up tx accesses
+      vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -766,6 +797,12 @@ export async function rewardAccount(
       }
       evm.systemVerkleAccessWitness.writeAccountHeader(address)
     }
+    if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+      if (evm.systemBinaryTreeAccessWitness === undefined) {
+        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      }
+      evm.systemBinaryTreeAccessWitness.writeAccountHeader(address)
+    }
     account = new Account()
   }
   account.balance += reward
@@ -779,13 +816,23 @@ export async function rewardAccount(
     evm.systemVerkleAccessWitness.writeAccountBasicData(address)
     evm.systemVerkleAccessWitness.readAccountCodeHash(address)
   }
+  if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
+    if (evm.systemBinaryTreeAccessWitness === undefined) {
+      throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+    }
+    evm.systemBinaryTreeAccessWitness.writeAccountBasicData(address)
+    evm.systemBinaryTreeAccessWitness.readAccountCodeHash(address)
+  }
   return account
 }
 
 /**
  * Returns the encoded tx receipt.
  */
-export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
+export function encodeReceipt(
+  receipt: TxReceipt,
+  txType: (typeof TransactionType)[keyof typeof TransactionType],
+) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
       ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),

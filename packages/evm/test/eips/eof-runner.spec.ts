@@ -1,9 +1,9 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../../src/index.js'
+import { createEVM } from '../../src/index.ts'
 
-import { getCommon } from './eof-utils.js'
+import { getCommon } from './eof-utils.ts'
 
 async function getEVM() {
   const common = getCommon()
@@ -36,6 +36,6 @@ describe('EOF: should run a simple contract', async () => {
 
     // The code which is being ran should run ADDRESS POP STOP
     // This costs 4 gas
-    assert.ok(result.execResult.executionGasUsed === BigInt(4))
+    assert.equal(result.execResult.executionGasUsed, BigInt(4))
   })
 })

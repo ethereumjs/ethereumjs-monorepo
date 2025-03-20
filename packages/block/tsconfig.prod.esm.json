@@ -3,8 +3,7 @@
   "compilerOptions": {
     "lib": ["dom"],
     "rootDir": "src",
-    "outDir": "dist/esm",
-    "composite": true
+    "outDir": "dist/esm"
   },
   "include": ["src/**/*.ts"],
   "references": [

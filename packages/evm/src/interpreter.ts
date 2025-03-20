@@ -14,20 +14,27 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
-import { EOFContainerMode, validateEOF } from './eof/container.js'
-import { setupEOF } from './eof/setup.js'
-import { ContainerSectionType } from './eof/verify.js'
-import { ERROR, EvmError } from './exceptions.js'
-import { type EVMPerformanceLogger, type Timer } from './logger.js'
-import { Memory } from './memory.js'
-import { Message } from './message.js'
-import { trap } from './opcodes/index.js'
-import { Stack } from './stack.js'
+import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
+import { EOFContainerMode, validateEOF } from './eof/container.ts'
+import { setupEOF } from './eof/setup.ts'
+import { ContainerSectionType } from './eof/verify.ts'
+import { ERROR, EvmError } from './exceptions.ts'
+import { type EVMPerformanceLogger, type Timer } from './logger.ts'
+import { Memory } from './memory.ts'
+import { Message } from './message.ts'
+import { trap } from './opcodes/index.ts'
+import { Stack } from './stack.ts'
 
-import type { EVM } from './evm.js'
-import type { Journal } from './journal.js'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
+import type {
+  BinaryTreeAccessWitnessInterface,
+  Common,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EVM } from './evm.ts'
+import type { Journal } from './journal.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -35,13 +42,7 @@ import type {
   EVMProfilerOpts,
   EVMResult,
   Log,
-} from './types.js'
-import type {
-  Common,
-  StateManagerInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+} from './types.ts'
 
 const debugGas = debugDefault('evm:gas')
 
@@ -84,7 +85,7 @@ export interface Env {
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: VerkleAccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
@@ -235,7 +236,7 @@ export class Interpreter {
 
       try {
         setupEOF(this._runState, eofMode)
-      } catch (e) {
+      } catch {
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
@@ -251,7 +252,7 @@ export class Interpreter {
             ContainerSectionType.InitCode,
             EOFContainerMode.TxInitmode,
           )
-        } catch (e) {
+        } catch {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,
@@ -305,7 +306,7 @@ export class Interpreter {
       // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
-        this.common.isActivatedEIP(6800) &&
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
         // is this a code loaded from state using witnesses
         this._runState.env.chargeCodeAccesses === true
       ) {
@@ -386,7 +387,10 @@ export class Interpreter {
         await this._runStepHook(gas, this.getGasLeft())
       }
 
-      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+      if (
+        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
+        this._env.chargeCodeAccesses === true
+      ) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas = this._runState.env.accessWitness!.readAccountCodeChunks(
           contract,

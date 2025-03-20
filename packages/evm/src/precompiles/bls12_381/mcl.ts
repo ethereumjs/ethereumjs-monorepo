@@ -7,7 +7,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { ERROR, EvmError } from '../../exceptions.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -17,9 +17,9 @@ import {
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
-} from './constants.js'
+} from './constants.ts'
 
-import type { EVMBLSInterface } from '../../types.js'
+import type { EVMBLSInterface } from '../../types.ts'
 
 /**
  * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve

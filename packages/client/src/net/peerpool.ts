@@ -1,10 +1,10 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../types.js'
+import { Event } from '../types.ts'
 
-import { type Peer, RlpxPeer } from './peer/index.js'
+import { type Peer, RlpxPeer } from './peer/index.ts'
 
-import type { Config } from '../config.js'
+import type { Config } from '../config.ts'
 
 export interface PeerPoolOptions {
   /* Config */
@@ -89,13 +89,11 @@ export class PeerPool {
       return false
     }
     this._statusCheckInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._statusCheck.bind(this),
       this.DEFAULT_STATUS_CHECK_INTERVAL,
     )
 
     this._peerBestHeaderUpdateInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._peerBestHeaderUpdate.bind(this),
       this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL,
     )

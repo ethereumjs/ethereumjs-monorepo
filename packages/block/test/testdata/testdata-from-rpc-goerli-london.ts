@@ -1,4 +1,4 @@
-import type { JSONRPCBlock } from '../../src/index.js'
+import type { JSONRPCBlock } from '../../src/index.ts'
 
 export const testdataFromRPCGoerliLondonData: JSONRPCBlock = {
   baseFeePerGas: '0x7',

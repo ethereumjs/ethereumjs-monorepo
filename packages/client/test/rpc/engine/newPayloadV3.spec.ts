@@ -1,10 +1,10 @@
 import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { batchBlocks, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV3'
 const [blockData] = beaconData
@@ -27,7 +27,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
 
     const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
     assert.equal(res.error.code, UNSUPPORTED_FORK)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated'),
     )
   })
@@ -63,7 +63,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
       assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes(expectedError))
+      assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
@@ -97,11 +97,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('call with executionPayloadV2', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV2
   })
   it('call with executionPayloadV3', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV3
   })
 })

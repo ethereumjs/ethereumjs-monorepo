@@ -1,7 +1,7 @@
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, CodeCache } from '../../src/cache/index.js'
+import { CacheType, CodeCache } from '../../src/cache/index.ts'
 
 describe('Code Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
@@ -22,13 +22,13 @@ describe('Code Cache: put and get code', () => {
 
     it('should return undefined for code if not present in the cache', async () => {
       const elem = cache.get(addr)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should put code`, async () => {
       cache.put(addr, code)
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.code && equalsBytes(elem.code, code))
+      assert.isTrue(elem !== undefined && elem.code && equalsBytes(elem.code, code))
     })
 
     it(`should flush`, async () => {
@@ -40,7 +40,7 @@ describe('Code Cache: put and get code', () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.code === undefined)
+      assert.isTrue(elem !== undefined && elem.code === undefined)
     })
   }
 })
@@ -59,12 +59,12 @@ describe('Code Cache: checkpointing', () => {
       cache.put(addr, code2)
 
       let elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.code && equalsBytes(elem.code, code2))
+      assert.isTrue(elem !== undefined && elem.code && equalsBytes(elem.code, code2))
 
       cache.revert()
 
       elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.code && equalsBytes(elem.code, code1))
+      assert.isTrue(elem !== undefined && elem.code && equalsBytes(elem.code, code1))
     })
 
     it(`cache clearing`, async () => {

@@ -313,8 +313,7 @@ See this [example script](./examples/transactions.ts) or the following code exam
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const txParams = {
   nonce: '0x0',
@@ -334,6 +333,7 @@ const signedTx = tx.sign(privateKey)
 
 const _serializedTx = signedTx.serialize()
 console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
+
 ```
 
 ### Transaction Factory

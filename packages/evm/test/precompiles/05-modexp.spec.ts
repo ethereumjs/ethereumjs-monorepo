@@ -2,13 +2,13 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-import { testData } from './modexp-testdata.js'
+import { testData } from './modexp-testdata.ts'
 
-import type { EVM } from '../../src/index.js'
-import type { PrecompileFunc } from '../../src/precompiles/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EVM } from '../../src/index.ts'
+import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {

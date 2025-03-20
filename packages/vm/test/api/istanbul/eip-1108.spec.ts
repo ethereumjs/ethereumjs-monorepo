@@ -3,9 +3,9 @@ import { getActivePrecompiles } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
+import type { VM } from '../../../src/index.ts'
 
 describe('Istanbul: EIP-1108 tests', () => {
   let vm: VM

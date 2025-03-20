@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { Peer as AbstractPeer } from '../../../src/net/peer/index.js'
+import { Config } from '../../../src/config.ts'
+import { Peer as AbstractPeer } from '../../../src/net/peer/index.ts'
 
 // Mock peer class (can't directly use the imported Peer class  as it's abstract)
 class Peer extends AbstractPeer {

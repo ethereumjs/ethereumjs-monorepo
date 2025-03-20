@@ -7,10 +7,10 @@ import {
   createMPTFromProof,
   createMerkleProof,
   verifyMerkleProof,
-} from '../../src/index.js'
-import { _walkTrie } from '../../src/util/asyncWalk.js'
-import { bytesToNibbles } from '../../src/util/nibbles.js'
-import { trieTestData } from '../fixtures/trieTest.js'
+} from '../../src/index.ts'
+import { _walkTrie } from '../../src/util/asyncWalk.ts'
+import { bytesToNibbles } from '../../src/util/nibbles.ts'
+import { trieTestData } from '../fixtures/trieTest.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -115,7 +115,7 @@ describe('walk a sparse trie', async () => {
     found++
   }
   assert.equal(found, proof.length, `found: ${found} should equal proof length: ${proof.length}`)
-  assert.ok(true, 'Walking sparse trie should not throw error')
+  assert.isTrue(true, 'Walking sparse trie should not throw error')
 
   // Walk the same sparse trie with WalkController
   try {

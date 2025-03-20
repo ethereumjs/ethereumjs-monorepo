@@ -1,7 +1,9 @@
-export enum CacheType {
-  LRU = 'lru',
-  ORDERED_MAP = 'ordered_map',
-}
+export type CacheType = (typeof CacheType)[keyof typeof CacheType]
+
+export const CacheType = {
+  LRU: 'lru',
+  ORDERED_MAP: 'ordered_map',
+} as const
 
 export interface CacheOpts {
   /**

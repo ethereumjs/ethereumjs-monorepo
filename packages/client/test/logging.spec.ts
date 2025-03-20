@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../src/logging.js'
+import { getLogger } from '../src/logging.ts'
 
 describe('[Logging]', () => {
   const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
@@ -35,7 +35,7 @@ describe('[Logging]', () => {
 
   it('should colorize key=value pairs', () => {
     if (process.env.GITHUB_ACTION !== undefined) {
-      assert.ok(true, 'no color functionality in ci')
+      assert.isTrue(true, 'no color functionality in ci')
       return
     }
     const { message } = format.transform({

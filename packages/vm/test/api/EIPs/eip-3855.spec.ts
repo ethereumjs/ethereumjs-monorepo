@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
 describe('EIP 3855 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })

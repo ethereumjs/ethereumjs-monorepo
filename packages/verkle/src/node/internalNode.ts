@@ -1,16 +1,16 @@
 import { EthereumJSErrorWithoutCode, type VerkleCrypto } from '@ethereumjs/util'
 
-import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types.js'
+import { BaseVerkleNode } from './baseVerkleNode.ts'
+import { NODE_WIDTH, VerkleNodeType } from './types.ts'
 
-import type { ChildNode, VerkleNodeOptions } from './types.js'
+import type { ChildNode, VerkleNodeOptions } from './types.ts'
 
-export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> {
+export class InternalVerkleNode extends BaseVerkleNode<typeof VerkleNodeType.Internal> {
   // Array of tuples of uncompressed commitments (i.e. 64 byte Uint8Arrays) to child nodes along with the path to that child (i.e. the partial stem)
   public children: Array<ChildNode | null>
   public type = VerkleNodeType.Internal
 
-  constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
+  constructor(options: VerkleNodeOptions[typeof VerkleNodeType.Internal]) {
     super(options)
     this.children = options.children ?? new Array(256).fill(null)
   }
@@ -18,13 +18,10 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
   // Updates the commitment value for a child node at the corresponding index
   setChild(childIndex: number, child: ChildNode | null) {
     // Get previous child commitment at `index`
-    const oldChildReference =
-      this.children[childIndex] !== null
-        ? this.children[childIndex]
-        : {
-            commitment: this.verkleCrypto.zeroCommitment,
-            path: new Uint8Array(),
-          }
+    const oldChildReference = this.children[childIndex] ?? {
+      commitment: this.verkleCrypto.zeroCommitment,
+      path: new Uint8Array(),
+    }
     // Updates the commitment to the child node at `index`
     this.children[childIndex] = child !== null ? { ...child } : null
     // Updates the overall node commitment based on the update to this child
@@ -33,9 +30,7 @@ export class InternalVerkleNode extends BaseVerkleNode<VerkleNodeType.Internal> 
       childIndex,
       // The hashed child commitments are used when updating the internal node commitment
       this.verkleCrypto.hashCommitment(oldChildReference!.commitment),
-      this.verkleCrypto.hashCommitment(
-        child !== null ? child.commitment : this.verkleCrypto.zeroCommitment,
-      ),
+      this.verkleCrypto.hashCommitment(child?.commitment ?? this.verkleCrypto.zeroCommitment),
     )
   }
 

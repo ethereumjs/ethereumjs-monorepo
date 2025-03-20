@@ -7,10 +7,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV1'
 
@@ -29,7 +29,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, blockDataWithInvalidParentHash)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         "invalid argument 0 for key 'parentHash': hex string without 0x prefix",
       ),
@@ -42,7 +42,7 @@ describe(method, () => {
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
     )
   })
@@ -125,7 +125,7 @@ describe(method, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(res.result.latestValidHash, blockData.parentHash)
     const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
-    assert.ok(
+    assert.isTrue(
       res.result.validationError.includes(expectedError),
       `should error with - ${expectedError}`,
     )
@@ -186,7 +186,7 @@ describe(method, () => {
         gasLimit: 53_000,
       },
       { common },
-    ).sign(accountPk, false)
+    ).sign(accountPk)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
@@ -230,7 +230,7 @@ describe(method, () => {
           gasLimit: 53_000,
         },
         { common },
-      ).sign(accountPk, false)
+      ).sign(accountPk)
 
       return bytesToHex(tx.serialize())
     })

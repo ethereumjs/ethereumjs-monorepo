@@ -8,7 +8,7 @@ import {
   createMerkleProof,
   updateMPTFromMerkleProof,
   verifyMerkleProof,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 describe('simple merkle proofs generation and verification', () => {
   it('create a merkle proof and verify it', async () => {
@@ -170,15 +170,15 @@ describe('simple merkle proofs generation and verification', () => {
     const newTrie = await createMPTFromProof(proof, { useKeyHashing: true })
     const trieValue = await newTrie.get(key)
 
-    assert.ok(equalsBytes(trieValue!, encodedValue), 'trie value successfully copied')
-    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+    assert.isTrue(equalsBytes(trieValue!, encodedValue), 'trie value successfully copied')
+    assert.isTrue(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const proof2 = await createMerkleProof(trie, key2)
     await updateMPTFromMerkleProof(newTrie, proof2)
     const trieValue2 = await newTrie.get(key2)
 
-    assert.ok(equalsBytes(trieValue2!, encodedValue2), 'trie value successfully updated')
-    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+    assert.isTrue(equalsBytes(trieValue2!, encodedValue2), 'trie value successfully updated')
+    assert.isTrue(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const trieValue3 = await newTrie.get(key3)
     assert.equal(trieValue3, null, 'cannot reach the third key')
@@ -193,12 +193,12 @@ describe('simple merkle proofs generation and verification', () => {
     try {
       await updateMPTFromMerkleProof(newTrie, safeProof, true)
       assert.fail('cannot reach this')
-    } catch (e) {
-      assert.ok(true, 'throws on unmatching proof')
+    } catch {
+      assert.isTrue(true, 'throws on unmatching proof')
     }
 
     await updateMPTFromMerkleProof(newTrie, safeProof)
-    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+    assert.isTrue(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const newSafeValue = await newTrie.get(safeKey)
 

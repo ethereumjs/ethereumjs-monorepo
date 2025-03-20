@@ -9,14 +9,14 @@ import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
-import { short } from '../../src/util/index.js'
-import { wait } from '../integration/util.js'
-import { mergeTestnetData } from '../testdata/common/mergeTestnet.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
+import { short } from '../../src/util/index.ts'
+import { wait } from '../integration/util.ts'
+import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -57,7 +57,10 @@ describe('[Skeleton]/ startup scenarios ', () => {
       await skeleton.reset()
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
+      assert.isTrue(
+        err.message.includes('skeleton reset') === true,
+        'throws when skeleton sync not started',
+      )
     }
     await skeleton.open()
     assert.equal(skeleton['status'].linked, false)
@@ -263,7 +266,7 @@ describe('[Skeleton] / initSync', async () => {
             `test ${testCaseIndex}: subchain tail mismatch: have ${subchain.tail}, want ${testCase.newState[i].tail}`,
           )
         } else {
-          assert.ok(true, `test ${testCaseIndex}: subchain[${i}] matched`)
+          assert.isTrue(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
     })
@@ -364,14 +367,14 @@ describe('[Skeleton] / setHead', async () => {
         if (testCase.err) {
           assert.fail(`test ${testCaseIndex}: should have failed`)
         } else {
-          assert.ok(true, `test ${testCaseIndex}: successfully passed`)
+          assert.isTrue(true, `test ${testCaseIndex}: successfully passed`)
         }
       } catch (error: any) {
         if (
           typeof testCase.err?.message === 'string' &&
           (error.message as string).includes(testCase.err.message)
         ) {
-          assert.ok(true, `test ${testCaseIndex}: passed with correct error`)
+          assert.isTrue(true, `test ${testCaseIndex}: passed with correct error`)
         } else {
           assert.fail(
             `test ${testCaseIndex}: received wrong error expected=${testCase.err?.message} actual=${error.message}`,
@@ -395,7 +398,7 @@ describe('[Skeleton] / setHead', async () => {
             `test ${testCaseIndex}: subchain tail mismatch: have ${subchain.tail}, want ${testCase.newState[i].tail}`,
           )
         } else {
-          assert.ok(true, `test ${testCaseIndex}: subchain[${i}] matched`)
+          assert.isTrue(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
     })
@@ -420,8 +423,8 @@ describe('[Skeleton] / setHead', async () => {
     ;(chain.blockchain['_validateBlocks'] as any) = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    } catch (e) {
-      assert.ok(true, `Skeleton init should error if merge not set`)
+    } catch {
+      assert.isTrue(true, `Skeleton init should error if merge not set`)
     }
   })
 
@@ -472,8 +475,8 @@ describe('[Skeleton] / setHead', async () => {
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
-    } catch (_e) {
-      assert.ok(true, 'should not allow putBlocks since no subchain set')
+    } catch {
+      assert.isTrue(true, 'should not allow putBlocks since no subchain set')
     }
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
 

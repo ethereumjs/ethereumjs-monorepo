@@ -14,16 +14,16 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASON } from '../types.js'
-import { devp2pDebug, formatLogData } from '../util.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { devp2pDebug, formatLogData } from '../util.ts'
 
-import { ECIES } from './ecies.js'
+import { ECIES } from './ecies.ts'
 
-import type { Protocol } from '../protocol/protocol.js'
-import type { Capabilities, PeerOptions } from '../types.js'
+import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type { Socket } from 'net'
+import type { Protocol } from '../protocol/protocol.ts'
+import type { Capabilities, PeerOptions } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = debugDefault('verbose').enabled
@@ -33,12 +33,23 @@ const BASE_PROTOCOL_LENGTH = 16
 
 const PING_INTERVAL = 15000 // 15 sec * 1000
 
-enum PREFIXES {
-  HELLO = 0x00,
-  DISCONNECT = 0x01,
-  PING = 0x02,
-  PONG = 0x03,
-}
+export type PREFIXES = (typeof PREFIXES)[keyof typeof PREFIXES]
+
+export const PREFIXES = {
+  HELLO: 0x00,
+  DISCONNECT: 0x01,
+  PING: 0x02,
+  PONG: 0x03,
+} as const
+
+// Reverse mapping: numeric value -> key name
+export const PrefixesNames: { [key in PREFIXES]: string } = Object.entries(PREFIXES).reduce(
+  (acc, [key, value]) => {
+    acc[value as PREFIXES] = key
+    return acc
+  },
+  {} as { [key in PREFIXES]: string },
+)
 
 type HelloMsg = {
   0: Uint8Array
@@ -453,17 +464,18 @@ export class Peer {
   _handleDisconnect(payload: any) {
     this._closed = true
     // When `payload` is from rlpx it is `Uint8Array` and when from subprotocol it is `[Uint8Array]`
-    this._disconnectReason =
+    this._disconnectReason = (
       payload instanceof Uint8Array
         ? bytesToInt(payload)
         : bytesToInt(payload[0] ?? Uint8Array.from([0]))
+    ) as DISCONNECT_REASON
     if (this.DEBUG) {
       this.debug(
         'DISCONNECT',
-        `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
+        `DISCONNECT reason: ${DisconnectReasonNames[this._disconnectReason!]} ${
           this._socket.remoteAddress
         }:${this._socket.remotePort}`,
-        DISCONNECT_REASON[this._disconnectReason as number],
+        DisconnectReasonNames[this._disconnectReason!],
       )
     }
     this._disconnectWe = false
@@ -559,7 +571,7 @@ export class Peer {
     const protocolObj = this._getProtocol(code)
     if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR)
 
-    const msgCode = code - protocolObj.offset
+    const msgCode = (code - protocolObj.offset) as PREFIXES
     const protocolName = protocolObj.protocol.constructor.name
 
     const postAdd = `(code: ${code} - ${protocolObj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
@@ -688,11 +700,11 @@ export class Peer {
   }
 
   getMsgPrefix(code: PREFIXES): string {
-    return PREFIXES[code]
+    return PrefixesNames[code]
   }
 
   getDisconnectPrefix(code: DISCONNECT_REASON): string {
-    return DISCONNECT_REASON[code]
+    return DisconnectReasonNames[code]
   }
 
   disconnect(reason: DISCONNECT_REASON = DISCONNECT_REASON.DISCONNECT_REQUESTED) {

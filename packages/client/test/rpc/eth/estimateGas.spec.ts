@@ -7,8 +7,8 @@ import { Units, bigIntToHex, createAddressFromString } from '@ethereumjs/util'
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -18,7 +18,7 @@ const method = 'eth_estimateGas'
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Use custom genesis so we can test EIP1559 txs more easily
-    const { RPCTestnetData } = await import('../../testdata/geth-genesis/rpctestnet.js')
+    const { RPCTestnetData } = await import('../../testdata/geth-genesis/rpctestnet.ts')
     const common = createCommonFromGethGenesis(RPCTestnetData, {
       chain: 'testnet',
       hardfork: 'berlin',
@@ -208,6 +208,6 @@ describe(method, () => {
       'pending',
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

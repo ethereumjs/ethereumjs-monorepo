@@ -12,15 +12,15 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { CheckpointDB } from './db/index.js'
-import { InternalBinaryNode } from './node/internalNode.js'
-import { StemBinaryNode } from './node/stemNode.js'
-import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.js'
-import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.js'
+import { CheckpointDB } from './db/index.ts'
+import { InternalBinaryNode } from './node/internalNode.ts'
+import { StemBinaryNode } from './node/stemNode.ts'
+import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.ts'
+import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.ts'
 
-import type { BinaryNode } from './node/types.js'
 import type { PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { BinaryNode } from './node/types.ts'
 
 interface Path {
   node: BinaryNode | null
@@ -186,7 +186,6 @@ export class BinaryTree {
 
     // Step 1) Create or update the stem node
     let stemNode: StemBinaryNode
-    let newStem = false
     // If we found a stem node with the same stem, we'll update it.
     if (
       foundPath.node &&
@@ -196,12 +195,11 @@ export class BinaryTree {
       stemNode = foundPath.node
     } else {
       // Otherwise, we'll create a new stem node.
-      newStem = true
       stemNode = StemBinaryNode.create(stem)
       this.DEBUG && this.debug(`Creating new stem node for stem: ${bytesToHex(stem)}`, ['put'])
     }
 
-    // Update the values in the stem node.
+    // Update the values in the stem node
     for (let i = 0; i < suffixes.length; i++) {
       const suffix = suffixes[i]
       const value = values[i]
@@ -232,7 +230,8 @@ export class BinaryTree {
     let lastUpdatedParentPath: number[] = []
 
     // Step 2: Add any needed new internal nodes if inserting a new stem.
-    if (foundPath.stack.length > 1 && newStem) {
+    //         If updating an existing stem, just update the parent internal node reference
+    if (foundPath.stack.length > 1) {
       // Pop the nearest node on the path.
       const [nearestNode, nearestNodePath] = foundPath.stack.pop()!
       const parentPath = foundPath.stack[foundPath.stack.length - 1]?.[1] ?? []
@@ -253,7 +252,7 @@ export class BinaryTree {
     while (foundPath.stack.length > 1) {
       const [node, path] = foundPath.stack.pop()!
       if (isInternalBinaryNode(node)) {
-        // Set child pointer to the last internal node  in the putStack (last updated internal node)
+        // Set child pointer to the last internal node in the putStack (last updated internal node)
         node.setChild(lastUpdatedParentPath[lastUpdatedParentPath.length - 1], {
           hash: putStack[putStack.length - 1][0], // Reuse hash already computed above
           path: lastUpdatedParentPath,
@@ -445,11 +444,6 @@ export class BinaryTree {
     // The root is an internal node. Determine the branch to follow using the first bit of the key
     let childNode = rootNode.getChild(keyInBits[0])
 
-    // If no child exists on that branch, return what we have.
-    if (childNode === null) {
-      this.DEBUG && this.debug(`Partial Path ${keyInBits[0]} - found no child.`, ['find_path'])
-      return result
-    }
     let finished = false
     while (!finished) {
       if (childNode === null) break
@@ -474,6 +468,7 @@ export class BinaryTree {
           matchingKeyLength === keyInBits.length &&
           equalsBits(keyInBits, childNode.path) === true
         ) {
+          // We found the sought node
           this.DEBUG &&
             this.debug(
               `Path ${bytesToHex(keyInBytes)} - found full path to node ${bytesToHex(
@@ -485,7 +480,7 @@ export class BinaryTree {
           result.remaining = []
           return result
         }
-        // Otherwise, record the unmatched tail of the key.
+        // We didn't find the sought node so record the unmatched tail of the key.
         result.remaining = keyInBits.slice(matchingKeyLength)
         result.stack.push([decodedNode, childNode.path])
         return result
@@ -581,11 +576,20 @@ export class BinaryTree {
 
   /**
    * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
-   * @param key
+   * @param key a 32 byte binary tree key (31 byte stem + 1 byte suffix)
    */
   async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {
-    const { stack } = await this.findPath(key)
-    return stack.map(([node, _]) => node.serialize())
+    this.DEBUG && this.debug(`creating proof for ${bytesToHex(key)}`, ['create_proof'])
+    // We only use the stem (i.e. the first 31 bytes) to find the path to the node
+
+    const { node, stack } = await this.findPath(key.slice(0, 31))
+    const proof = stack.map(([node, _]) => node.serialize())
+    if (node !== null) {
+      // If node is found, add node to proof
+      proof.push(node.serialize())
+    }
+
+    return proof
   }
 
   /**

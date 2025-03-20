@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import { Event } from '../types.js'
-import { wait } from '../util/wait.js'
+import { Event } from '../types.ts'
+import { wait } from '../util/wait.ts'
 
-import type { Chain } from '../blockchain/index.js'
-import type { Config } from '../config.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { PeerPool } from '../net/peerpool.js'
-import type { AccountFetcher, BlockFetcher, ReverseBlockFetcher } from './fetcher/index.js'
+import type { Chain } from '../blockchain/index.ts'
+import type { Config } from '../config.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { PeerPool } from '../net/peerpool.ts'
+import type { AccountFetcher, BlockFetcher, ReverseBlockFetcher } from './fetcher/index.ts'
 
 export interface SynchronizerOptions {
   /* Config */

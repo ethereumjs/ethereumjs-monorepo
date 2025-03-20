@@ -1,9 +1,9 @@
 import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.ts'
 
-import { createAccountWithDefaults } from './util.js'
+import { createAccountWithDefaults } from './util.ts'
 
 describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
@@ -11,7 +11,7 @@ describe('StateManager -> General/Account', () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
-      assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -26,7 +26,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(KECCAK256_RLP)
 
       const res = await stateManager.getStateRoot()
-      assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     })
 
     it(`should clear the cache when the state root is set`, async () => {
@@ -60,7 +60,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putStorage(address, key, value)
 
       const contract0 = await stateManager.getStorage(address, key)
-      assert.ok(
+      assert.isTrue(
         equalsBytes(contract0, value),
         "contract key's value is set in the _storageTries cache",
       )
@@ -69,8 +69,8 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(initialStateRoot)
       try {
         await stateManager.getStorage(address, key)
-      } catch (e) {
-        assert.ok(true, 'should throw if getStorage() is called on non existing address')
+      } catch {
+        assert.isTrue(true, 'should throw if getStorage() is called on non existing address')
       }
     })
 
@@ -92,7 +92,7 @@ describe('StateManager -> General/Account', () => {
 
       const res2 = await stateManager.getAccount(address)
 
-      assert.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+      assert.isTrue(equalsBytes(res1!.serialize(), res2!.serialize()))
     })
 
     it(`should return undefined for a non-existent account`, async () => {
@@ -101,9 +101,7 @@ describe('StateManager -> General/Account', () => {
       })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-      const res = (await stateManager.getAccount(address)) === undefined
-
-      assert.ok(res)
+      assert.isUndefined(await stateManager.getAccount(address))
     })
 
     it(`should return undefined for an existent account`, async () => {

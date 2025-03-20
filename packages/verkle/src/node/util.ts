@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, setLengthRight } from '@ethereumjs/util'
 
-import { InternalVerkleNode } from './internalNode.js'
-import { LeafVerkleNode } from './leafNode.js'
-import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.js'
+import { InternalVerkleNode } from './internalNode.ts'
+import { LeafVerkleNode } from './leafNode.ts'
+import { LeafVerkleNodeValue, type VerkleNode, VerkleNodeType } from './types.ts'
 
 import type { VerkleCrypto } from '@ethereumjs/util'
 
@@ -41,7 +41,8 @@ export function isInternalVerkleNode(node: VerkleNode): node is InternalVerkleNo
 
 export const createZeroesLeafValue = () => new Uint8Array(32)
 
-export const createDefaultLeafVerkleValues: () => number[] = () => new Array(256).fill(0)
+export const createDefaultLeafVerkleValues = () =>
+  new Array(256).fill(LeafVerkleNodeValue.Untouched)
 
 /***
  * Converts 128 32byte values of a leaf node into an array of 256 32 byte values representing

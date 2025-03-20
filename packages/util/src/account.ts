@@ -13,13 +13,13 @@ import {
   intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
-} from './bytes.js'
-import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
-import { stripHexPrefix } from './internal.js'
+} from './bytes.ts'
+import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.ts'
+import { stripHexPrefix } from './internal.ts'
 
-import type { BigIntLike, BytesLike, PrefixedHexString } from './types.js'
+import type { BigIntLike, BytesLike, PrefixedHexString } from './types.ts'
 
 export interface AccountData {
   nonce?: BigIntLike
@@ -420,7 +420,7 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 export const isValidAddress = function (hexAddress: string): hexAddress is PrefixedHexString {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch {
     return false
   }
 
@@ -546,7 +546,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
     try {
       secp256k1.ProjectivePoint.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   }
@@ -558,7 +558,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
   try {
     secp256k1.ProjectivePoint.fromHex(publicKey)
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -624,7 +624,7 @@ export const zeroAddress = function (): PrefixedHexString {
 export const isZeroAddress = function (hexAddress: string): boolean {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch {
     return false
   }
 

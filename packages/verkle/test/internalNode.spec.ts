@@ -7,8 +7,8 @@ import {
   VerkleNodeType,
   decodeVerkleNode,
   isInternalVerkleNode,
-} from '../src/node/index.js'
-import { InternalVerkleNode } from '../src/node/internalNode.js'
+} from '../src/node/index.ts'
+import { InternalVerkleNode } from '../src/node/internalNode.ts'
 
 describe('verkle node - internal', () => {
   it('constructor should create an internal node', async () => {
@@ -17,7 +17,7 @@ describe('verkle node - internal', () => {
 
     assert.ok(isInternalVerkleNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
-    assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
+    assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')

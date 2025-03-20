@@ -7,14 +7,14 @@ import {
   createTx,
   createTxFromJSONRPCProvider,
   createTxFromRPC,
-} from '../src/index.js'
-import { normalizeTxParams } from '../src/util.js'
+} from '../src/index.ts'
+import { normalizeTxParams } from '../src/util.ts'
 
-import { optimismTxData } from './testData/optimismTx.js'
-import { rpcTxData } from './testData/rpcTx.js'
-import { v0txData } from './testData/v0tx.js'
+import { optimismTxData } from './testData/optimismTx.ts'
+import { rpcTxData } from './testData/rpcTx.ts'
+import { v0txData } from './testData/v0tx.ts'
 
-import type { TypedTxData } from '../src/index.js'
+import type { TypedTxData } from '../src/index.ts'
 
 const txTypes = [
   TransactionType.Legacy,
@@ -29,7 +29,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const realFetch = fetch
     //@ts-expect-error -- Typescript doesn't like us to replace global values
-    // eslint-disable-next-line no-global-assign
+
     fetch = async (_url: string, req: any) => {
       const json = JSON.parse(req.body)
       if (json.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0') {
@@ -63,13 +63,12 @@ describe('[fromJSONRPCProvider]', () => {
       await createTxFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('No data returned from provider'),
         'throws correct error when no tx returned',
       )
     }
-    //@ts-expect-error
-    // eslint-disable-next-line no-global-assign
+    //@ts-expect-error -- Assigning to a global function
     fetch = realFetch
   })
 })

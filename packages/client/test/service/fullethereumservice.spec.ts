@@ -3,16 +3,16 @@ import { TransactionType, createTx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config, SyncMode } from '../../src/config.js'
-import { RlpxServer } from '../../src/net/server/index.js'
-import { Event } from '../../src/types.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config, SyncMode } from '../../src/config.ts'
+import { RlpxServer } from '../../src/net/server/index.ts'
+import { Event } from '../../src/types.ts'
+import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
-import type { BeaconSynchronizer } from '../../src/sync/index.js'
 import type { Log } from '@ethereumjs/evm'
+import type { BeaconSynchronizer } from '../../src/sync/index.ts'
 
-vi.mock('../../src/net/peerpool.js', () => {
+vi.mock('../../src/net/peerpool.ts', () => {
   const PeerPool = vi.fn()
   PeerPool.prototype.open = vi.fn()
   PeerPool.prototype.close = vi.fn()
@@ -21,13 +21,13 @@ vi.mock('../../src/net/peerpool.js', () => {
   return { PeerPool }
 })
 
-vi.mock('../../src/net/protocol/ethprotocol.js', () => {
+vi.mock('../../src/net/protocol/ethprotocol.ts', () => {
   const EthProtocol = vi.fn()
   EthProtocol.prototype.name = 'eth'
   return { EthProtocol }
 })
 
-vi.mock('../../src/sync/fullsync.js', () => {
+vi.mock('../../src/sync/fullsync.ts', () => {
   const FullSynchronizer = vi.fn()
   FullSynchronizer.prototype.start = vi.fn()
   FullSynchronizer.prototype.stop = vi.fn()
@@ -39,7 +39,7 @@ vi.mock('../../src/sync/fullsync.js', () => {
 
   return { FullSynchronizer }
 })
-vi.mock('../../src/sync/beaconsync.js', () => {
+vi.mock('../../src/sync/beaconsync.ts', () => {
   const BeaconSynchronizer = vi.fn()
   BeaconSynchronizer.prototype.start = vi.fn()
   BeaconSynchronizer.prototype.stop = vi.fn()
@@ -51,9 +51,9 @@ vi.mock('../../src/sync/beaconsync.js', () => {
   }
 })
 
-vi.mock('../../src/net/server/index.js')
-vi.mock('../../src/execution/index.js')
-const { FullEthereumService } = await import('../../src/service/fullethereumservice.js')
+vi.mock('../../src/net/server/index.ts')
+vi.mock('../../src/execution/index.ts')
+const { FullEthereumService } = await import('../../src/service/fullethereumservice.ts')
 
 describe('initialize', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -129,7 +129,7 @@ describe('should start/stop', async () => {
 describe('should correctly handle GetBlockHeaders', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   vi.unmock('../../src/blockchain')
-  await import('../../src/blockchain/index.js')
+  await import('../../src/blockchain/index.ts')
   const chain = await Chain.create({ config })
   chain.getHeaders = () => [{ number: 1n }] as any
   const service = new FullEthereumService({ config, chain })
@@ -211,7 +211,7 @@ describe('should ban peer for sending NewBlock/NewBlockHashes after merge', asyn
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
     it('should ban peer', () => {
-      assert.ok(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
+      assert.isTrue(true, 'banned peer when NewBlock/NewBlockHashes announced after Merge')
     })
   }
 
@@ -319,7 +319,10 @@ describe('should handle GetPooledTransactions', async () => {
       eth: {
         send: (_: string, data: any): any => {
           it('should handle getPooledTransactions', () => {
-            assert.ok(equalsBytes(data.txs[0].hash(), tx.hash()), 'handled getPooledTransactions')
+            assert.isTrue(
+              equalsBytes(data.txs[0].hash(), tx.hash()),
+              'handled getPooledTransactions',
+            )
           })
         },
       } as any,
@@ -369,7 +372,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
           versions: [67, 68],
           request: (data: any): any => {
             it('should handle', () => {
-              assert.ok(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
+              assert.isTrue(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
             })
           },
         },

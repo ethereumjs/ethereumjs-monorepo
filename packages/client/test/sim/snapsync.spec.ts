@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   bytesToHex,
@@ -8,13 +7,13 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Event } from '../../src/types.js'
-import { createInlineClient } from '../../src/util/index.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { Event } from '../../src/types.ts'
+import { createInlineClient } from '../../src/util/index.ts'
 
 import {
   filterKeywords,
@@ -23,11 +22,11 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
-import type { EthereumClient } from '../../src/client.js'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EthereumClient } from '../../src/client.ts'
 
 const client = Client.http({ port: 8545 })
 
@@ -111,7 +110,7 @@ describe('simple mainnet test run', async () => {
   })
 
   if (result.includes('Geth') === true) {
-    assert.ok(true, 'connected to Geth')
+    assert.isTrue(true, 'connected to Geth')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -122,7 +121,7 @@ describe('simple mainnet test run', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'geth<>lodestar started successfully')
+    assert.isTrue(true, 'geth<>lodestar started successfully')
   } catch (e) {
     assert.fail('geth<>lodestar failed to start')
     throw e
@@ -173,7 +172,6 @@ describe('simple mainnet test run', async () => {
         snapSyncCompletedPromise,
         beaconSyncRelayer: relayer,
       } = (await createSnapClient(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         common,
         customGenesisState,
         [nodeInfo.enode],
@@ -191,7 +189,7 @@ describe('simple mainnet test run', async () => {
       ejsClient = ejsInlineClient
       beaconSyncRelayer = relayer
       snapCompleted = snapSyncCompletedPromise
-      assert.ok(ejsClient !== null, 'ethereumjs client started')
+      assert.isTrue(ejsClient !== null, 'ethereumjs client started')
 
       const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
@@ -200,8 +198,8 @@ describe('simple mainnet test run', async () => {
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
-        assert.ok(true, 'connected to geth peer')
-      } catch (e) {
+        assert.isTrue(true, 'connected to geth peer')
+      } catch {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
@@ -231,8 +229,8 @@ describe('simple mainnet test run', async () => {
           ])
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
-          assert.ok(true, 'completed snap sync')
-        } catch (e) {
+          assert.isTrue(true, 'completed snap sync')
+        } catch {
           assert.fail('could not complete snap sync in 8 minutes')
         }
 
@@ -275,8 +273,8 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer?.close()
       await ejsClient?.stop()
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

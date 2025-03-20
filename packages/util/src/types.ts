@@ -1,9 +1,9 @@
-import { bytesToBigInt, bytesToHex, toBytes } from './bytes.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { isHexString } from './internal.js'
+import { bytesToBigInt, bytesToHex, toBytes } from './bytes.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { isHexString } from './internal.ts'
 
-import type { Address } from './address.js'
-import type { ToBytesInputTypes } from './bytes.js'
+import type { Address } from './address.ts'
+import type { ToBytesInputTypes } from './bytes.ts'
 
 /*
  * A type that represents an input that can be converted to a BigInt.
@@ -58,15 +58,14 @@ export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
   return true
 }
 
-/**
- * Type output options
- */
-export enum TypeOutput {
-  Number,
-  BigInt,
-  Uint8Array,
-  PrefixedHexString,
-}
+export type TypeOutput = (typeof TypeOutput)[keyof typeof TypeOutput]
+
+export const TypeOutput = {
+  Number: 0,
+  BigInt: 1,
+  Uint8Array: 2,
+  PrefixedHexString: 3,
+} as const
 
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number

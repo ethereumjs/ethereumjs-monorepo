@@ -1,7 +1,7 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import type { Config } from '../../config.js'
-import type { Sender } from './sender.js'
+import type { Config } from '../../config.ts'
+import type { Sender } from './sender.ts'
 
 export interface ProtocolOptions {
   config: Config
@@ -117,7 +117,7 @@ export class Protocol {
    * by subclass.
    * @param _status status message payload
    */
-  decodeStatus(_status: any): Object {
+  decodeStatus(_status: any): object {
     throw EthereumJSErrorWithoutCode('Unimplemented')
   }
 

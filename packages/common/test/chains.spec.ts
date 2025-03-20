@@ -7,18 +7,18 @@ import {
   Hardfork,
   Mainnet,
   getPresetChainConfig,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { Goerli } from './data/goerliCommon.js'
+import { Goerli } from './data/goerliCommon.ts'
 
-import type { ChainConfig } from '../src/index.js'
+import type { ChainConfig } from '../src/index.ts'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
   it('Should initialize with chain provided', () => {
     const c = new Common({ chain: Mainnet })
     assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Cancun, 'should set hardfork to current default hardfork')
+    assert.equal(c.hardfork(), Hardfork.Prague, 'should set hardfork to current default hardfork')
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
@@ -73,7 +73,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
     const msg = 'should throw an exception on non-existing hardfork'
-    assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new
+    assert.throws(f, /not supported$/, undefined, msg)
   })
 
   it('Should provide correct access to chain parameters', () => {

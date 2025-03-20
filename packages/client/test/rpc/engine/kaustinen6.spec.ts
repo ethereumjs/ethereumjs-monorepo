@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs'
 import {
   BlockHeader,
   createBlockFromExecutionPayload,
@@ -5,20 +6,19 @@ import {
   executionPayloadFromBeaconPayload,
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
-import { readFileSync } from 'fs'
 import * as verkle from 'micro-eth-signer'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.js'
-import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.ts'
+import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
-import type { Chain } from '../../../src/blockchain/index.js'
 import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VerkleExecutionWitness } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise/index.js'
+import type { Chain } from '../../../src/blockchain/index.ts'
 const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
 const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11fbe35c7032fab5b9a8a'
 
@@ -47,7 +47,7 @@ async function fetchExecutionPayload(
     const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
     beaconPayload = beaconBlock.data.message.body.execution_payload
     // eslint-disable-next-line no-empty
-  } catch (_e) {}
+  } catch {}
 
   return beaconPayload
 }
@@ -149,7 +149,6 @@ describe.skip(`valid verkle network setup`, async () => {
   }
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, {
       common,
     })

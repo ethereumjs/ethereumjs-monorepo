@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
+import type { EVMMockBlockchainInterface, EVMRunCallOpts } from '@ethereumjs/evm'
 import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -18,15 +19,13 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { MerkleStateManager } from '../src/merkleStateManager.js'
-import { getRPCStateProof } from '../src/proof/index.js'
-import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
+import { MerkleStateManager } from '../src/merkleStateManager.ts'
+import { getRPCStateProof } from '../src/proof/index.ts'
+import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.ts'
 
-import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
-import { getValues } from './testdata/providerData/mockProvider.js'
-import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
-
-import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
+import { block as blockData } from './testdata/providerData/blocks/block0x7a120.ts'
+import { getValues } from './testdata/providerData/mockProvider.ts'
+import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.ts'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -81,7 +80,7 @@ describe('RPC State Manager API tests', () => {
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
-      state['_caches'].account?.get(vitalikDotEth)?.accountRLP!,
+      state['_caches'].account!.get(vitalikDotEth)!.accountRLP!,
     )
 
     assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
@@ -126,7 +125,7 @@ describe('RPC State Manager API tests', () => {
       UniswapERC20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
-    assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+    assert.isTrue(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
     const dumpedStorage = await state.dumpStorage(UniswapERC20ContractAddress)
     assert.deepEqual(dumpedStorage, {
@@ -161,8 +160,8 @@ describe('RPC State Manager API tests', () => {
 
     try {
       await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
-    } catch (err) {
-      assert.ok(true, 'calls getAccountFromProvider for non-cached account')
+    } catch {
+      assert.isTrue(true, 'calls getAccountFromProvider for non-cached account')
     }
 
     const deletedSlot = await state.getStorage(
@@ -179,8 +178,8 @@ describe('RPC State Manager API tests', () => {
     )
 
     await state.revert()
-    assert.ok(
-      (await state.getAccount(vitalikDotEth)) !== undefined,
+    assert.exists(
+      await state.getAccount(vitalikDotEth),
       'account deleted since last checkpoint should exist after revert called',
     )
 
@@ -209,7 +208,7 @@ describe('RPC State Manager API tests', () => {
       await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
         'threw with correct error when invalid blockTag provided',
       )

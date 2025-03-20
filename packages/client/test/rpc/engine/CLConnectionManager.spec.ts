@@ -2,12 +2,12 @@ import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Config } from '../../../src/index.js'
-import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.js'
-import { Event } from '../../../src/types.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
+import { Config } from '../../../src/index.ts'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.ts'
+import { Event } from '../../../src/types.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 
-import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.js'
+import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.ts'
 
 const payload: NewPayload = {
   payload: {
@@ -92,10 +92,10 @@ describe('Status updates', async () => {
   config.logger.on('data', (chunk) => {
     it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
-        assert.ok(true, 'received last fork choice message')
+        assert.isTrue(true, 'received last fork choice message')
       }
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
-        assert.ok(true, 'received last payload message')
+        assert.isTrue(true, 'received last payload message')
         manager.stop()
         config.logger.removeAllListeners()
       }
@@ -118,7 +118,7 @@ describe('updates stats when a new block is processed', () => {
     })
     config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
-        assert.ok(true, 'received last payload stats message')
+        assert.isTrue(true, 'received last payload stats message')
         manager.stop()
         config.logger.removeAllListeners()
       }

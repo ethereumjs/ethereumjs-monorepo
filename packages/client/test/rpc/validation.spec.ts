@@ -1,11 +1,11 @@
 import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../src/rpc/error-code.js'
-import { middleware, validators } from '../../src/rpc/validation.js'
+import { INVALID_PARAMS } from '../../src/rpc/error-code.ts'
+import { middleware, validators } from '../../src/rpc/validation.ts'
 
-import { startRPC } from './helpers.js'
+import { startRPC } from './helpers.ts'
 
 import type { AddressInfo } from 'node:net'
 
@@ -35,7 +35,7 @@ describe(prefix, () => {
     assert.equal(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
   })
 
-  const validatorResult = (result: Object | undefined) => {
+  const validatorResult = (result: object | undefined) => {
     // result is valid if validator returns undefined
     // result is invalid if validator returns object
     return result === undefined ? true : false

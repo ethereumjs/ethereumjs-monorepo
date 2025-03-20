@@ -1,8 +1,8 @@
-import { INTERNAL_ERROR } from './error-code.js'
-import * as modules from './modules/index.js'
+import { INTERNAL_ERROR } from './error-code.ts'
+import * as modules from './modules/index.ts'
 
-import type { EthereumClient } from '../client.js'
-import type { Config } from '../config.js'
+import type { EthereumClient } from '../client.ts'
+import type { Config } from '../config.ts'
 
 export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTransactionByHash']
 
@@ -62,7 +62,7 @@ export class RPCManager {
   /**
    * Returns all methods in a module
    */
-  static getMethodNames(mod: Object): string[] {
+  static getMethodNames(mod: object): string[] {
     const methodNames = Object.getOwnPropertyNames((mod as any).prototype).filter(
       (methodName: string) => methodName !== 'constructor',
     )

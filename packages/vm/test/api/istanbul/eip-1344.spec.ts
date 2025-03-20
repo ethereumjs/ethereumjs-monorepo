@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
 const testCases = [
   { chain: Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },
@@ -29,7 +29,7 @@ describe('Istanbul: EIP-1344', () => {
         if (testCase.err !== undefined) {
           assert.equal(res.exceptionError?.error, testCase.err)
         } else {
-          assert.ok(res.exceptionError === undefined)
+          assert.isTrue(res.exceptionError === undefined)
           assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {

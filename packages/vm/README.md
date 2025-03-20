@@ -110,11 +110,12 @@ const main = async () => {
 
   // Add more transactions
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
 void main()
+
 ```
 
 ### WASM Crypto Support
@@ -213,10 +214,11 @@ The following is a simple example for a block run on `Goerli`:
 // ./examples/runGoerliBlock.ts
 
 import { createBlockFromRPC } from '@ethereumjs/block'
-import { Common, Goerli } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
-import { createVM, runBlock } from '../src/index.js'
+import { createVM, runBlock } from '../src/index.ts'
+import { Goerli } from '../test/api/testdata/goerliCommon.ts'
 
 import goerliBlock2 from './testData/goerliBlock2.json'
 
@@ -230,6 +232,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 ### Hardfork Support
@@ -353,7 +356,7 @@ To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-import { createVM } from '../src/index.js'
+import { createVM } from '../src/index.ts'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -362,6 +365,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.

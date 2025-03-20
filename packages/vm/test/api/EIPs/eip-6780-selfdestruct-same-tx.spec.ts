@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
@@ -100,7 +100,7 @@ describe('EIP 6780 tests', () => {
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
     const storage = await vm.stateManager.getStorage(target, key)
 
-    assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
+    assert.isTrue(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,

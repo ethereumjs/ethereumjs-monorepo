@@ -1,10 +1,10 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Synchronizer } from '../../src/sync/sync.js'
-import { Event } from '../../src/types.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Synchronizer } from '../../src/sync/sync.ts'
+import { Event } from '../../src/types.ts'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {

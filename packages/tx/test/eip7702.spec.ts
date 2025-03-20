@@ -11,11 +11,11 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEOACode7702Tx } from '../src/index.js'
+import { createEOACode7702Tx } from '../src/index.ts'
 
-import type { TxData } from '../src/7702/tx.js'
-import type { AuthorizationListItem } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { TxData } from '../src/7702/tx.ts'
+import type { AuthorizationListItem } from '../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
@@ -69,9 +69,9 @@ describe('[EOACode7702Transaction]', () => {
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(txn.sign(pkey).hash())
+      const hash = bytesToHex(txn.sign(pkey, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }

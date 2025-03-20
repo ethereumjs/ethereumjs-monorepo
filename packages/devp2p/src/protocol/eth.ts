@@ -13,18 +13,63 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolType } from '../types.js'
-import { assertEq, formatLogData, formatLogId } from '../util.js'
+import { ProtocolType } from '../types.ts'
+import { assertEq, formatLogData, formatLogId } from '../util.ts'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
 import type { Input } from '@ethereumjs/rlp'
+import type { Peer } from '../rlpx/peer.ts'
+import type { SendMethod } from '../types.ts'
+
+export interface EthStatusMsg extends Array<Uint8Array | Uint8Array[]> {}
+
+export type EthStatusOpts = {
+  td: Uint8Array
+  bestHash: Uint8Array
+  latestBlock?: Uint8Array
+  genesisHash: Uint8Array
+}
+
+export const EthMessageCodes = {
+  // eth62
+  STATUS: 0x00,
+  NEW_BLOCK_HASHES: 0x01,
+  TX: 0x02,
+  GET_BLOCK_HEADERS: 0x03,
+  BLOCK_HEADERS: 0x04,
+  GET_BLOCK_BODIES: 0x05,
+  BLOCK_BODIES: 0x06,
+  NEW_BLOCK: 0x07,
+
+  // eth63
+  GET_NODE_DATA: 0x0d,
+  NODE_DATA: 0x0e,
+  GET_RECEIPTS: 0x0f,
+  RECEIPTS: 0x10,
+
+  // eth65
+  NEW_POOLED_TRANSACTION_HASHES: 0x08,
+  GET_POOLED_TRANSACTIONS: 0x09,
+  POOLED_TRANSACTIONS: 0x0a,
+} as const
+
+export type EthMessageCodes = (typeof EthMessageCodes)[keyof typeof EthMessageCodes]
+
+// Create a reverse mapping: from numeric value back to the key name
+export const EthMessageCodeNames: { [key in EthMessageCodes]: string } = Object.entries(
+  EthMessageCodes,
+).reduce(
+  (acc, [key, value]) => {
+    acc[value] = key
+    return acc
+  },
+  {} as { [key in EthMessageCodes]: string },
+)
 
 export class ETH extends Protocol {
-  protected _status: ETH.StatusMsg | null = null
-  protected _peerStatus: ETH.StatusMsg | null = null
+  protected _status: EthStatusMsg | null = null
+  protected _peerStatus: EthStatusMsg | null = null
   private DEBUG: boolean = false
 
   // Eth64
@@ -34,7 +79,7 @@ export class ETH extends Protocol {
   protected _nextForkBlock = BIGINT_0
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
+    super(peer, send, ProtocolType.ETH, version, EthMessageCodes)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
@@ -60,10 +105,10 @@ export class ETH extends Protocol {
   static eth67 = { name: 'eth', version: 67, length: 17, constructor: ETH }
   static eth68 = { name: 'eth', version: 68, length: 17, constructor: ETH }
 
-  _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
+  _handleMessage(code: EthMessageCodes, data: Uint8Array) {
     const payload = RLP.decode(data)
 
-    if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
+    if (code !== EthMessageCodes.STATUS && this.DEBUG) {
       const debugMsg = this.DEBUG
         ? `Received ${this.getMsgPrefix(code)} message from ${
             this._peer['_socket'].remoteAddress
@@ -73,7 +118,7 @@ export class ETH extends Protocol {
       this.debug(this.getMsgPrefix(code), `${debugMsg}: ${logData}`)
     }
     switch (code) {
-      case ETH.MESSAGE_CODES.STATUS: {
+      case EthMessageCodes.STATUS: {
         assertEq(
           this._peerStatus,
           null,
@@ -81,7 +126,7 @@ export class ETH extends Protocol {
           this.debug.bind(this),
           'STATUS',
         )
-        this._peerStatus = payload as ETH.StatusMsg
+        this._peerStatus = payload as EthStatusMsg
         const peerStatusMsg = `${
           this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
         }`
@@ -97,29 +142,29 @@ export class ETH extends Protocol {
         break
       }
 
-      case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
-      case ETH.MESSAGE_CODES.TX:
-      case ETH.MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case ETH.MESSAGE_CODES.BLOCK_HEADERS:
-      case ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
-      case ETH.MESSAGE_CODES.BLOCK_BODIES:
-      case ETH.MESSAGE_CODES.NEW_BLOCK:
+      case EthMessageCodes.NEW_BLOCK_HASHES:
+      case EthMessageCodes.TX:
+      case EthMessageCodes.GET_BLOCK_HEADERS:
+      case EthMessageCodes.BLOCK_HEADERS:
+      case EthMessageCodes.GET_BLOCK_BODIES:
+      case EthMessageCodes.BLOCK_BODIES:
+      case EthMessageCodes.NEW_BLOCK:
         if (this._version >= ETH.eth62.version) break
         return
 
-      case ETH.MESSAGE_CODES.GET_RECEIPTS:
-      case ETH.MESSAGE_CODES.RECEIPTS:
+      case EthMessageCodes.GET_RECEIPTS:
+      case EthMessageCodes.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
         return
 
-      case ETH.MESSAGE_CODES.NEW_POOLED_TRANSACTION_HASHES:
-      case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
-      case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
+      case EthMessageCodes.NEW_POOLED_TRANSACTION_HASHES:
+      case EthMessageCodes.GET_POOLED_TRANSACTIONS:
+      case EthMessageCodes.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
         return
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
+      case EthMessageCodes.GET_NODE_DATA:
+      case EthMessageCodes.NODE_DATA:
         if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
         return
 
@@ -248,7 +293,7 @@ export class ETH extends Protocol {
     return bytesToInt(forkId)
   }
 
-  _getStatusString(status: ETH.StatusMsg) {
+  _getStatusString(status: EthStatusMsg) {
     let sStr = `[V:${bytesToInt(status[0] as Uint8Array)}, NID:${bytesToInt(
       status[1] as Uint8Array,
     )}, TD:${status[2].length === 0 ? 0 : bytesToBigInt(status[2] as Uint8Array).toString()}`
@@ -268,7 +313,7 @@ export class ETH extends Protocol {
     return sStr
   }
 
-  sendStatus(status: ETH.StatusOpts) {
+  sendStatus(status: EthStatusOpts) {
     if (this._status !== null) return
     this._status = [
       intToBytes(this._version),
@@ -314,11 +359,11 @@ export class ETH extends Protocol {
       payload = snappy.compress(payload)
     }
 
-    this._send(ETH.MESSAGE_CODES.STATUS, payload)
+    this._send(EthMessageCodes.STATUS, payload)
     this._handleStatus()
   }
 
-  sendMessage(code: ETH.MESSAGE_CODES, payload: Input) {
+  sendMessage(code: EthMessageCodes, payload: Input) {
     if (this.DEBUG) {
       const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
@@ -328,32 +373,32 @@ export class ETH extends Protocol {
     }
 
     switch (code) {
-      case ETH.MESSAGE_CODES.STATUS:
+      case EthMessageCodes.STATUS:
         throw EthereumJSErrorWithoutCode('Please send status message through .sendStatus')
 
-      case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
-      case ETH.MESSAGE_CODES.TX:
-      case ETH.MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case ETH.MESSAGE_CODES.BLOCK_HEADERS:
-      case ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
-      case ETH.MESSAGE_CODES.BLOCK_BODIES:
-      case ETH.MESSAGE_CODES.NEW_BLOCK:
+      case EthMessageCodes.NEW_BLOCK_HASHES:
+      case EthMessageCodes.TX:
+      case EthMessageCodes.GET_BLOCK_HEADERS:
+      case EthMessageCodes.BLOCK_HEADERS:
+      case EthMessageCodes.GET_BLOCK_BODIES:
+      case EthMessageCodes.BLOCK_BODIES:
+      case EthMessageCodes.NEW_BLOCK:
         if (this._version >= ETH.eth62.version) break
         throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.GET_RECEIPTS:
-      case ETH.MESSAGE_CODES.RECEIPTS:
+      case EthMessageCodes.GET_RECEIPTS:
+      case EthMessageCodes.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
         throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.NEW_POOLED_TRANSACTION_HASHES:
-      case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
-      case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
+      case EthMessageCodes.NEW_POOLED_TRANSACTION_HASHES:
+      case EthMessageCodes.GET_POOLED_TRANSACTIONS:
+      case EthMessageCodes.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
         throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
+      case EthMessageCodes.GET_NODE_DATA:
+      case EthMessageCodes.NODE_DATA:
         if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
         throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
@@ -371,41 +416,7 @@ export class ETH extends Protocol {
     this._send(code, payload)
   }
 
-  getMsgPrefix(msgCode: ETH.MESSAGE_CODES): string {
-    return ETH.MESSAGE_CODES[msgCode]
-  }
-}
-
-export namespace ETH {
-  export interface StatusMsg extends Array<Uint8Array | Uint8Array[]> {}
-
-  export type StatusOpts = {
-    td: Uint8Array
-    bestHash: Uint8Array
-    latestBlock?: Uint8Array
-    genesisHash: Uint8Array
-  }
-
-  export enum MESSAGE_CODES {
-    // eth62
-    STATUS = 0x00,
-    NEW_BLOCK_HASHES = 0x01,
-    TX = 0x02,
-    GET_BLOCK_HEADERS = 0x03,
-    BLOCK_HEADERS = 0x04,
-    GET_BLOCK_BODIES = 0x05,
-    BLOCK_BODIES = 0x06,
-    NEW_BLOCK = 0x07,
-
-    // eth63
-    GET_NODE_DATA = 0x0d,
-    NODE_DATA = 0x0e,
-    GET_RECEIPTS = 0x0f,
-    RECEIPTS = 0x10,
-
-    // eth65
-    NEW_POOLED_TRANSACTION_HASHES = 0x08,
-    GET_POOLED_TRANSACTIONS = 0x09,
-    POOLED_TRANSACTIONS = 0x0a,
+  getMsgPrefix(msgCode: EthMessageCodes): string {
+    return EthMessageCodeNames[msgCode]
   }
 }

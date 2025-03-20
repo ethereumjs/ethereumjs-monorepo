@@ -2,14 +2,14 @@ import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.js'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
 import {
   dummy,
   getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
-} from '../helpers.js'
+} from '../helpers.ts'
 
 const method = 'debug_getRawTransaction'
 

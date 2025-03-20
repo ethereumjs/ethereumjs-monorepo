@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie } from '../src/index.js'
+import { MerklePatriciaTrie } from '../src/index.ts'
 
 const key = new Uint8Array([11])
 const value = new Uint8Array([255, 255])
