@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import { homedir } from 'os'
@@ -544,7 +545,6 @@ async function inputAccounts(args: ClientOpts) {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
-    // @dev: should not be removed as it causes a build error
     // @ts-ignore node/types has a mismatch and readline is typed incorrectly
     input: process.stdin,
     // @ts-ignore node/types has a mismatch and readline is typed incorrectly

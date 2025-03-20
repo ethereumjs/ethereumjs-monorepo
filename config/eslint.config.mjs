@@ -20,7 +20,6 @@ export default [
       '**/vitest.config.*',
       '**/vite.*.ts',
       '**/ethereum-tests/**',
-      '**/archive/**',
       '**/devnets/**',
       '**/eslint/**',
       '**/lint-staged.config.js',
@@ -41,7 +40,7 @@ export default [
         {
           selector: "ThrowStatement > NewExpression[callee.name='Error']",
           message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
-        }
+        },
       ],
       "no-restricted-globals": [
         "error",
@@ -71,7 +70,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_'}],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/ban-ts-comment': 'warn',  // TODO: We should clean up ts comments and replace with ts-expect-error
       '@typescript-eslint/no-empty-object-type': ['error', {
         allowInterfaces: 'with-single-extends',
@@ -89,7 +88,6 @@ export default [
       'import/default': 'off',
       'import/export': 'error',
       'import/exports-last': 'off',
-      'import/extensions': ['error','ignorePackages'],
       'import/first': 'error',
       'import/group-exports': 'off',
       'import/named': 'off',
@@ -108,8 +106,19 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
-      
+
     },
+  },
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        "patterns": [{
+          "group": ["../**/*.js", "./**/*.js"],
+          "message": "use .ts extensions in relative imports"
+        }]
+      }],
+    }
   },
   {
     plugins: {
@@ -118,13 +127,6 @@ export default [
     files: ['**/src/**/*.ts', '**/bin/**/*.ts'],
     rules: {
       'i/no-extraneous-dependencies': 'error',
-      'i/extensions': ['warn',
-        {
-          'pattern': {
-            'ts': 'ignorePackages'
-          },
-        }
-      ]
     },
   },
   {
@@ -136,7 +138,7 @@ export default [
     }
   },
   {
-    files: ['**/*.js', '**/*.cjs','**/*.cts'],
+    files: ['**/*.js', '**/*.cjs', '**/*.cts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off',
