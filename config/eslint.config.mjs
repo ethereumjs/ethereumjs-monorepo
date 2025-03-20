@@ -111,6 +111,7 @@ export default [
   },
   {
     files: ["**/*.ts"],
+    ignores: ["**/examples/*.ts"],
     rules: {
       "no-restricted-imports": ["error", {
         "patterns": [{

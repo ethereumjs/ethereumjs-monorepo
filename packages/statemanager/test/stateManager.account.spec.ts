@@ -1,5 +1,4 @@
 import {
-  Address,
   KECCAK256_RLP,
   bytesToHex,
   createAddressFromString,
