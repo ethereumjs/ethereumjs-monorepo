@@ -4,7 +4,7 @@ import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.ts'
 
 import { testnetData } from './data/testnet.ts'
 
-import type { ChainConfig } from '../src/index.js'
+import type { ChainConfig } from '../src/index.ts'
 
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {

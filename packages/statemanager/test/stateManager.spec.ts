@@ -221,15 +221,13 @@ describe('StateManager -> General', () => {
     const proof1 = await getMerkleStateProof(stateManager, address1)
 
     const partialStateManager = await fromMerkleStateProof(proof1)
-    let account1 = await partialStateManager.getAccount(address1)!
 
-    verifyAccount(account1!, state1)
+    verifyAccount((await partialStateManager.getAccount(address1))!, state1)
 
     const proof2 = await getMerkleStateProof(stateManager, address2)
     await addMerkleStateProofData(partialStateManager, proof2)
 
-    let account2 = await partialStateManager.getAccount(address2)
-    verifyAccount(account2!, state2)
+    verifyAccount((await partialStateManager.getAccount(address2))!, state2)
 
     assert.isUndefined(await partialStateManager.getAccount(address3))
 

@@ -58,7 +58,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
     } catch {
-      assert.ok('correctly thrown')
+      assert.isTrue(true, 'correctly thrown')
     }
   })
 
