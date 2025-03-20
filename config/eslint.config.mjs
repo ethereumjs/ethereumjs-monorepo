@@ -51,7 +51,7 @@ export default [
         }
       ],
         "no-restricted-properties": [
-          "warn",
+          "error",
           {
             "object": "assert",
             "property": "ok",
