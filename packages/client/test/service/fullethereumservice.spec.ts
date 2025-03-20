@@ -99,7 +99,7 @@ describe('should open', async () => {
   expect(server.addProtocols).toBeCalled()
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
     it('should synchronize', () => {
-      assert.isTrue('synchronized')
+      assert.isTrue(true, 'synchronized')
     })
   })
   service.config.events.on(Event.SYNC_ERROR, (err) => {
@@ -204,11 +204,12 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
   // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
   it('should switch to beacon sync', async () => {
     await service.switchToBeaconSync()
-    assert.isTrue(
-      (service.synchronizer as BeaconSynchronizer).type === 'beacon',
+    assert.equal(
+      (service.synchronizer as BeaconSynchronizer).type,
+      'beacon',
       'switched to BeaconSynchronizer',
     )
-    assert.isTrue(service.beaconSync, 'can access BeaconSynchronizer')
+    assert.isDefined(service.beaconSync, 'can access BeaconSynchronizer')
   })
 })
 
