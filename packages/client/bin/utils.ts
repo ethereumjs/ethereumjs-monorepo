@@ -54,8 +54,7 @@ import { getLogger } from './logging/winstonlogger.ts'
 
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
-import type { Logger } from '../src/types.ts'
-import type { ClientOpts } from '../src/types.ts'
+import type { ClientOpts, Logger } from '../src/types.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 
@@ -757,7 +756,7 @@ export async function generateClientConfig(args: ClientOpts) {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
 
-  // logger is initilized through here
+  // logger is initialized through here
   const logger: Logger = getLogger(args)
   let bootnodes
   if (args.bootnodes !== undefined) {

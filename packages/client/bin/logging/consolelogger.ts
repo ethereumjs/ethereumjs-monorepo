@@ -21,7 +21,7 @@ export class ConsoleLogger implements Logger {
     return true
   }
 
-  configure(args: { [key: string]: any }) {
+  configure(_: { [key: string]: any }) {
     // TODO
   }
 
@@ -30,7 +30,7 @@ export class ConsoleLogger implements Logger {
   }
 }
 
-export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
+export function getLogger(_: { [key: string]: any } = { logLevel: 'info' }) {
   const logger = new ConsoleLogger()
   return logger as Logger
 }

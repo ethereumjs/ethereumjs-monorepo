@@ -24,8 +24,7 @@ import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.ts'
 import type { FullEthereumService } from '../src/service/index.ts'
-import type { Logger } from '../src/types.ts'
-import type { ClientOpts } from '../src/types.ts'
+import type { ClientOpts, Logger } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
 
 let logger: Logger

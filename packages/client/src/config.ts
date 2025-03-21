@@ -12,8 +12,7 @@ import { isBrowser, short } from './util/index.ts'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Logger } from './types.ts'
-import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
+import type { EventParams, Logger, MultiaddrLike, PrometheusMetrics } from './types.ts'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
