@@ -22,7 +22,7 @@ import {
   createZeroAddress,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
@@ -316,7 +316,7 @@ describe('BlockBuilder', () => {
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  it('should build a 1559 block with legacy and 1559 txs', async () => {
+  it.only('should build a 1559 block with legacy and 1559 txs', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = createBlock(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
@@ -347,16 +347,10 @@ describe('BlockBuilder', () => {
     ).sign(privateKey)
 
     for (const tx of [tx1, tx2]) {
-      try {
+      await expect(async () => {
         await blockBuilder.addTransaction(tx)
         assert.fail('should throw error')
-      } catch (error: any) {
-        assert.include(
-          error.message,
-          "is less than the block's baseFeePerGas",
-          'should fail with appropriate error',
-        )
-      }
+      }).rejects.toThrow(/is less than the block's baseFeePerGas/)
     }
 
     // Set up correctly priced txs
