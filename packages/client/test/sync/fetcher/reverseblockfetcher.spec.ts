@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { getLogger } from '../../../bin/logging/winstonlogger.ts'
+import { getLogger } from '../../../bin/logging/winston.ts'
 import { Chain } from '../../../src/blockchain/chain.ts'
 import { Config } from '../../../src/config.ts'
 import { Skeleton } from '../../../src/service/skeleton.ts'

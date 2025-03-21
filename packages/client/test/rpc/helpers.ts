@@ -21,7 +21,7 @@ import { Client, Server as RPCServer } from 'jayson/promise/index.js'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
-import { getLogger } from '../../bin/logging/winstonlogger.ts'
+import { getLogger } from '../../bin/logging/winston.ts'
 import { Chain } from '../../src/blockchain/chain.ts'
 import { Config } from '../../src/config.ts'
 import { VMExecution } from '../../src/execution/index.ts'

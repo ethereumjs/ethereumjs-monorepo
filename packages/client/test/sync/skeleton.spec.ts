@@ -9,7 +9,7 @@ import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../../bin/logging/winstonlogger.ts'
+import { getLogger } from '../../bin/logging/winston.ts'
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'

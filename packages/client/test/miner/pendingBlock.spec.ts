@@ -21,7 +21,7 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
-import { getLogger } from '../../bin/logging/winstonlogger.ts'
+import { getLogger } from '../../bin/logging/winston.ts'
 import { Config } from '../../src/config.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'

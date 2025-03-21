@@ -50,7 +50,7 @@ import { Config, SyncMode } from '../src/config.ts'
 import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
-import { getLogger } from './logging/winstonlogger.ts'
+import { getLogger } from './logging/winston.ts'
 
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
