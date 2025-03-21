@@ -145,11 +145,7 @@ describe('Pruned trie tests', () => {
       assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
       assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
-      let dbKeys = 0
-      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
-        dbKeys++
-      }
-      assert.equal(dbKeys, 0, 'db is empty')
+      assert.isEmpty((<any>trie)._db.db._database.keys(), 'db should be empty')
     }
   })
 
