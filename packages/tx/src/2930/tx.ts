@@ -12,15 +12,13 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
-import { TransactionType } from '../types.ts'
-import { AccessLists } from '../util.ts'
+import { TransactionType, isAccessList } from '../types.ts'
 
 import { createAccessList2930Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -62,8 +60,6 @@ export class AccessList2930Tx
 
   // End of Tx data part
 
-  public readonly AccessListJSON: AccessList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -102,11 +98,14 @@ export class AccessList2930Tx
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    const accessListNormalized = accessList ?? []
+    if (isAccessList(accessListNormalized)) {
+      this.accessList = EIP2930.accessListJSONToBytes(accessListNormalized)
+    } else {
+      this.accessList = accessListNormalized
+    }
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    EIP2930.verifyAccessList(this.accessList)
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
@@ -307,7 +306,7 @@ export class AccessList2930Tx
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = EIP2930.accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
