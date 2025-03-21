@@ -107,9 +107,6 @@ export class AccessList2930Tx
     // Verify the access list format.
     EIP2930.verifyAccessList(this.accessList)
 
-    // Verify the access list format.
-    EIP2930.verifyAccessList(this.accessList)
-
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
     valueBoundaryCheck({ gasPrice: this.gasPrice })
