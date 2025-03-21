@@ -1,0 +1,187 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "biome": {
+      "dependsOn": ["^biome"],
+      "cache": true
+    },
+    "biome:fix": {
+      "dependsOn": ["^biome:fix"],
+      "cache": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "clean": {
+      "dependsOn": ["^clean"],
+      "cache": true
+    },
+    "coverage": {
+      "dependsOn": ["^coverage"],
+      "cache": true
+    },
+    "docs:build": {
+      "dependsOn": ["^docs:build"],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "cache": true
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "cache": true
+    },
+    "prepublishOnly": {
+      "dependsOn": ["^prepublishOnly"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "cache": true
+    },
+    "test:browser": {
+      "dependsOn": ["^test:browser"],
+      "cache": true
+    },
+    "test:node": {
+      "dependsOn": ["^test:node"],
+      "cache": true
+    },
+    "tsc": {
+      "dependsOn": ["^tsc"],
+      "cache": true
+    },
+    "examples": {
+      "dependsOn": ["^examples"],
+      "cache": true
+    },
+    "examples:build": {
+      "dependsOn": ["^examples:build"],
+      "cache": true
+    },
+    "binWorkaround": {
+      "dependsOn": ["^binWorkaround"],
+      "cache": true
+    },
+    "build:common": {
+      "dependsOn": ["^build:common"],
+      "cache": true
+    },
+    "bundle": {
+      "dependsOn": ["^bundle"],
+      "cache": true
+    },
+    "client:start": {
+      "dependsOn": ["^client:start"],
+      "cache": true
+    },
+    "client:start:dev1": {
+      "dependsOn": ["^client:start:dev1"],
+      "cache": true
+    },
+    "client:start:dev2": {
+      "dependsOn": ["^client:start:dev2"],
+      "cache": true
+    },
+    "client:start:js": {
+      "dependsOn": ["^client:start:js"],
+      "cache": true
+    },
+    "client:start:ts": {
+      "dependsOn": ["^client:start:ts"],
+      "cache": true
+    },
+    "preinstall": {
+      "dependsOn": ["^preinstall"],
+      "cache": true
+    },
+    "repl": {
+      "dependsOn": ["^repl"],
+      "cache": true
+    },
+    "test:cli": {
+      "dependsOn": ["^test:cli"],
+      "cache": true
+    },
+    "test:integration": {
+      "dependsOn": ["^test:integration"],
+      "cache": true
+    },
+    "test:unit": {
+      "dependsOn": ["^test:unit"],
+      "cache": true
+    },
+    "formatTest": {
+      "dependsOn": ["^formatTest"],
+      "cache": true
+    },
+    "profiling": {
+      "dependsOn": ["^profiling"],
+      "cache": true
+    },
+    "visualize:bundle": {
+      "dependsOn": ["^visualize:bundle"],
+      "cache": true
+    },
+    "benchmarks": {
+      "dependsOn": ["^benchmarks"],
+      "cache": true
+    },
+    "build:benchmarks": {
+      "dependsOn": ["^build:benchmarks"],
+      "cache": true
+    },
+    "test:API": {
+      "dependsOn": ["^test:API"],
+      "cache": true
+    },
+    "test:blockchain": {
+      "dependsOn": ["^test:blockchain"],
+      "cache": true
+    },
+    "test:blockchain:allForks": {
+      "dependsOn": ["^test:blockchain:allForks"],
+      "cache": true
+    },
+    "test:blockchain:transitionForks": {
+      "dependsOn": ["^test:blockchain:transitionForks"],
+      "cache": true
+    },
+    "test:buildIntegrity": {
+      "dependsOn": ["^test:buildIntegrity"],
+      "cache": true
+    },
+    "test:state": {
+      "dependsOn": ["^test:state"],
+      "cache": true
+    },
+    "test:state:allForks": {
+      "dependsOn": ["^test:state:allForks"],
+      "cache": true
+    },
+    "test:state:selectedForks": {
+      "dependsOn": ["^test:state:selectedForks"],
+      "cache": true
+    },
+    "test:state:slow": {
+      "dependsOn": ["^test:state:slow"],
+      "cache": true
+    },
+    "tester": {
+      "dependsOn": ["^tester"],
+      "cache": true
+    },
+    "parse": {
+      "dependsOn": ["^parse"],
+      "cache": true
+    },
+    "trunk": {
+      "dependsOn": ["^trunk"],
+      "cache": true
+    }
+  },
+  "defaultBase": "master",
+  "nxCloudId": "67d8ebc8357f496de5f89bd3"
+}

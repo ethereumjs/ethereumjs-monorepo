@@ -1,7 +1,15 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { default as testData } from '../../../ethereum-tests/EOFTests/EIP4200/validInvalid.json'
+import testData from '../../../ethereum-tests/EOFTests/EIP4200/validInvalid.json'
+// Add a declaration for the JSON module
+declare module '../../../ethereum-tests/EOFTests/EIP4200/validInvalid.json' {
+  const value: any
+  export default value
+}
+import testData from '../../../ethereum-tests/EOFTests/EIP4200/validInvalid.json' with {
+  type: 'json',
+}
 import { validateEOF } from '../../src/eof/container.js'
 import { createEVM } from '../../src/index.js'
 

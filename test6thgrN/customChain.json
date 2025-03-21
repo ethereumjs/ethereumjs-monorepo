@@ -1,0 +1,43 @@
+{
+  "name": "customChain",
+  "chainId": 11155111,
+  "defaultHardfork": "shanghai",
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash",
+    "ethash": {}
+  },
+  "comment": "PoW test network to replace Ropsten",
+  "url": "https://github.com/ethereum/go-ethereum/pull/23730",
+  "genesis": {
+    "timestamp": "0x6159af19",
+    "gasLimit": 30000000,
+    "difficulty": 131072,
+    "nonce": "0x0000000000000000",
+    "extraData": "0x5365706f6c69612c20417468656e732c204174746963612c2047726565636521"
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0,
+      "forkHash": "0xfe3366e7"
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "forkHash": "0xfe3366e7"
+    }
+  ],
+  "bootstrapNodes": [
+    {
+      "ip": "18.168.182.86",
+      "port": 30303,
+      "id": "9246d00bc8fd1742e5ad2428b80fc4dc45d786283e05ef6edbd9002cbc335d40998444732fbe921cb88e1d2c73d1b1de53bae6a2237996e9bfe14f871baf7066",
+      "location": "",
+      "comment": "geth"
+    }
+  ],
+  "dnsNetworks": [
+    "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.sepolia.ethdisco.net"
+  ]
+}

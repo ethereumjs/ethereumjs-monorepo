@@ -1,0 +1,22 @@
+[03-17|17:56:54] INFO Sync Mode full
+[03-17|17:56:54] INFO Reading custom genesis state accounts=1
+[03-17|17:56:54] INFO Data directory: /home/dargon789/Library/Ethereum/ethereumjs
+[03-17|17:56:54] INFO Full sync mode
+[03-17|17:56:54] INFO Initializing Ethereumjs client version=v0.10.3 network=devnet chainId=123456
+[03-17|17:56:54] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[03-17|17:56:54] DEBUG Read SYNCING linked=false subchains= reset=false el=0 hash=0x7977…d704
+[03-17|17:56:54] INFO Latest local block number=0 td=1 hash=0x7977…d704 hardfork=london
+[03-17|17:56:54] INFO Initializing VM merkle statemanager genesis hardfork=london
+[03-17|17:56:54] INFO Setting up merkleVM
+[03-17|17:56:54] INFO Initializing account cache size=400000
+[03-17|17:56:54] INFO Initializing storage cache size=200000
+[03-17|17:56:54] INFO Initializing code cache size=200000
+[03-17|17:56:54] INFO Initializing trie cache size=200000
+[03-17|17:56:55] INFO Caught interrupt signal. Obtaining client handle for clean shutdown...
+[03-17|17:56:55] INFO (This might take a little longer if client not yet fully started)
+[03-17|17:56:55] INFO Setup EVM execution.
+[03-17|17:56:55] INFO ---------------
+[03-17|17:56:55] INFO TxPool started.
+[03-17|17:56:55] INFO ---------------
+[03-17|17:56:55] DEBUG Client synchronized=true height=0 syncTargetHeight=0 lastSyncDate=109889734.18 secs ago
+[03-17|17:56:55] INFO Preparing for block execution (debug mode, no services started)...

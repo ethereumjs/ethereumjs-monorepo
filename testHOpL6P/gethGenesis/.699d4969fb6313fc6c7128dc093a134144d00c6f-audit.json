@@ -1,0 +1,15 @@
+{
+  "keep": {
+    "days": false,
+    "amount": 5
+  },
+  "auditLog": "testHOpL6P/gethGenesis/.699d4969fb6313fc6c7128dc093a134144d00c6f-audit.json",
+  "files": [
+    {
+      "date": 1742209382460,
+      "name": "testHOpL6P/gethGenesis/ethereumjs.2025-03-17.log",
+      "hash": "934160c2882a5293a0a2aaa3c49ce8d1fbf3f2d1658308490b0e591e454c8506"
+    }
+  ],
+  "hashType": "sha256"
+}

@@ -21,24 +21,24 @@
     "Holger Drewes <Holger.Drewes@gmail.com>",
     "Paul Miller <pkg@paulmillr.com>"
   ],
-  "type": "module",
   "sideEffects": false,
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     }
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "bin": {
     "rlp": "bin/rlp.cjs"
   },
   "files": ["dist", "bin", "src"],
   "scripts": {
+    "benchmarks": "node ./benchmarks/index.js",
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
-    "benchmarks": "node ./benchmarks/index.js",
     "build": "../../config/cli/ts-build.sh node",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
     "clean": "../../config/cli/clean-package.sh",
@@ -53,10 +53,10 @@
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
-  "engines": {
-    "node": ">=18"
-  },
   "devDependencies": {
     "benchmark": "^2.1.4"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

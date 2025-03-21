@@ -14,16 +14,16 @@
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
   "contributors": ["Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"],
-  "type": "module",
   "sideEffects": false,
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     }
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "files": ["dist", "src"],
   "scripts": {
     "benchmarks": "node -r tsx/register --max-old-space-size=8024 benchmarks",
@@ -48,8 +48,8 @@
     "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "debug": "^4.3.4",
-    "lru-cache": "10.1.0",
-    "ethereum-cryptography": "^3.1.0"
+    "ethereum-cryptography": "^3.1.0",
+    "lru-cache": "10.1.0"
   },
   "devDependencies": {
     "@ethereumjs/genesis": "^0.3.0-alpha.1",
