@@ -459,9 +459,8 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.isAbove(
-      block_farAhead.header.difficulty,
-      BigInt(0),
+    assert.isTrue(
+      block_farAhead.header.difficulty > BigInt(0),
       'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header',
     )
   })
