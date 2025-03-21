@@ -144,8 +144,9 @@ export interface TransactionCache {
     hardfork: string | Hardfork
   }
   senderPubKey?: Uint8Array
-  accessListJSON?: AccessList
-  authorityListJSON?: AuthorizationList
+  // TEMP: fixme
+  //accessListJSON?: AccessList
+  //authorityListJSON?: AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]

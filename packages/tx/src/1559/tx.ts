@@ -14,8 +14,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
-import { TransactionType } from '../types.ts'
-import { getAccessListData, getAccessListJSON, verifyAccessList } from '../util.ts'
+import { TransactionType, isAccessList } from '../types.ts'
 
 import { createFeeMarket1559Tx } from './constructors.ts'
 
@@ -102,12 +101,14 @@ export class FeeMarket1559Tx
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = getAccessListData(accessList ?? [], true)
-    this.accessList = accessListData.accessList
-    this.cache.accessListJSON = accessListData.accessListJSON
+    const accessListNormalized = accessList ?? []
+    if (isAccessList(accessListNormalized)) {
+      this.accessList = EIP2930.accessListJSONToBytes(accessListNormalized)
+    } else {
+      this.accessList = accessListNormalized
+    }
     // Verify the access list format.
-    verifyAccessList(this.accessList)
-
+    EIP2930.verifyAccessList(this.accessList)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
@@ -329,8 +330,7 @@ export class FeeMarket1559Tx
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = this.cache.accessListJSON ?? getAccessListJSON(this.accessList)
-    this.cache.accessListJSON = accessListJSON
+    const accessListJSON = EIP2930.accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
