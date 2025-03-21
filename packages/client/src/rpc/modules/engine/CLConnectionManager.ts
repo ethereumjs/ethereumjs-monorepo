@@ -4,7 +4,6 @@ import { Event, type Logger } from '../../../types.ts'
 import { short, timeDiff } from '../../../util/index.ts'
 
 import type { Block } from '@ethereumjs/block'
-import type winston from 'winston'
 import type { Config } from '../../../config.ts'
 import type {
   ExecutionPayloadV1,
