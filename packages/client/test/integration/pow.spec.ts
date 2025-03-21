@@ -82,7 +82,7 @@ describe('PoW client test', async () => {
     assert.ok(started, 'client started successfully')
   }, 60000)
   const message: string = await new Promise((resolve) => {
-    client.config.logger.on('data', (data: any) => {
+    client.config.logger['logger'].on('data', (data: any) => {
       if (data.message.includes('Miner: Found PoW solution') === true) {
         resolve(data.message)
       }
