@@ -20,7 +20,6 @@ export default [
       '**/vitest.config.*',
       '**/vite.*.ts',
       '**/ethereum-tests/**',
-      '**/archive/**',
       '**/devnets/**',
       '**/eslint/**',
       '**/lint-staged.config.js',
@@ -108,7 +107,7 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
-      
+
     },
   },
   {
