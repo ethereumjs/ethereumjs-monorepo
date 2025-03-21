@@ -1,7 +1,7 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'
 
@@ -43,25 +43,20 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
   })
 
   it('should validate block hash', async () => {
-    try {
-      // construct a payload with differing block hash
-      await createBlockFromBeaconPayloadJSON(
+    await expect(
+      createBlockFromBeaconPayloadJSON(
         {
           ...payloadSlot87335Data,
           block_hash: payloadSlot87475Data.block_hash,
         },
         { common },
-      )
-      assert.fail(`should have failed constructing the block`)
-    } catch (e) {
-      assert.isTrue(true, `correctly failed constructing block, error: ${e}`)
-      assert.ok(`${e}`.includes('Invalid blockHash'), 'failed with correct error')
-    }
+      ),
+      'should have failed constructing the block',
+    ).rejects.toThrow('Invalid blockHash')
   })
 
   it('should validate excess blob gas', async () => {
-    try {
-      // construct a payload with a different excess blob gas but matching hash
+    await expect(async () => {
       const block = await createBlockFromBeaconPayloadJSON(
         {
           ...payloadSlot87475Data,
@@ -71,11 +66,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
       )
       const parentHeader = createBlockHeader({ excessBlobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
-      assert.fail(`should have failed constructing the block`)
-    } catch (e) {
-      assert.isTrue(true, `correctly failed constructing block, error: ${e}`)
-      assert.ok(`${e}`.includes('block excessBlobGas mismatch'), 'failed with correct error')
-    }
+    }, 'should fail constructing the block').rejects.toThrow('block excessBlobGas mismatch')
   })
 })
 
@@ -88,7 +79,7 @@ describe('[fromExecutionPayloadJSON]: kaustinen', () => {
     eips: [6800],
   })
   it('reconstruct kaustinen block', async () => {
-    assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
+    assert.isTrue(common.isActivatedEIP(6800), 'verkle eip should be activated')
     const block = await createBlockFromBeaconPayloadJSON(payloadKaustinenData, {
       common,
     })

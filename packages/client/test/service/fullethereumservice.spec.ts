@@ -69,11 +69,20 @@ describe('initialize', async () => {
     let config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
-    assert.notOk(service.protocols.filter((p) => p.name === 'les').length > 0, 'no light protocol')
+    assert.isNotEmpty(
+      service.protocols.filter((p) => p.name === 'eth'),
+      'full protocol',
+    )
+    assert.isEmpty(
+      service.protocols.filter((p) => p.name === 'les'),
+      'no light protocol',
+    )
     config = new Config({})
     service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
+    assert.isNotEmpty(
+      service.protocols.filter((p) => p.name === 'eth'),
+      'full protocol',
+    )
   })
 })
 
@@ -90,7 +99,7 @@ describe('should open', async () => {
   expect(server.addProtocols).toBeCalled()
   service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
     it('should synchronize', () => {
-      assert.ok('synchronized')
+      assert.isTrue(true, 'synchronized')
     })
   })
   service.config.events.on(Event.SYNC_ERROR, (err) => {
@@ -119,10 +128,10 @@ describe('should start/stop', async () => {
     await service.start()
 
     expect(service.synchronizer!.start).toBeCalled()
-    assert.notOk(await service.start(), 'already started')
+    assert.isFalse(await service.start(), 'already started')
     await service.stop()
     expect(service.synchronizer!.stop).toBeCalled()
-    assert.notOk(await service.stop(), 'already stopped')
+    assert.isFalse(await service.stop(), 'already stopped')
   })
 })
 
@@ -143,7 +152,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
       eth: {
         send: (title: string, msg: any) => {
           it('should send empty headers', () => {
-            assert.ok(
+            assert.isTrue(
               title === 'BlockHeaders' && msg.headers.length === 0,
               'sent empty headers when block height is too high',
             )
@@ -168,7 +177,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
       eth: {
         send: (title: string, msg: any) => {
           it('should send 1 header', () => {
-            assert.ok(
+            assert.isTrue(
               title === 'BlockHeaders' && msg.headers.length === 1,
               'sent 1 header when requested',
             )
@@ -195,11 +204,12 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
   // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
   it('should switch to beacon sync', async () => {
     await service.switchToBeaconSync()
-    assert.ok(
-      (service.synchronizer as BeaconSynchronizer).type === 'beacon',
+    assert.equal(
+      (service.synchronizer as BeaconSynchronizer).type,
+      'beacon',
       'switched to BeaconSynchronizer',
     )
-    assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
+    assert.isDefined(service.beaconSync, 'can access BeaconSynchronizer')
   })
 })
 
@@ -388,11 +398,11 @@ describe('should start on beacon sync when past merge', async () => {
   const chain = await Chain.create({ config })
   it('should be available', () => {
     const service = new FullEthereumService({ config, chain })
-    assert.ok(service.beaconSync, 'beacon sync should be available')
+    assert.isDefined(service.beaconSync, 'beacon sync should be available')
   })
   it('should not be available', () => {
     const configDisableBeaconSync = new Config({ common, syncmode: SyncMode.None })
     const service = new FullEthereumService({ config: configDisableBeaconSync, chain })
-    assert.notOk(service.beaconSync, 'beacon sync should not be available')
+    assert.isUndefined(service.beaconSync, 'beacon sync should not be available')
   })
 })

@@ -14,7 +14,7 @@ describe('async events', () => {
     evm.events.on('step', async (event, next) => {
       const startTime = Date.now()
       setTimeout(() => {
-        assert.ok(Date.now() > startTime + 999, 'evm paused on step function for one second')
+        assert.isTrue(Date.now() > startTime + 999, 'evm paused on step function for one second')
         next?.()
       }, 1000)
     })

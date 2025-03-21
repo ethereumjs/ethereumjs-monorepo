@@ -26,7 +26,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10),
     })
 
-    assert.ok(stack!.length === 1)
+    assert.equal(stack!.length, 1)
     assert.equal(stack![0], BigInt(0))
     assert.equal(result.executionGasUsed, common.param('push0Gas'))
   })
@@ -46,7 +46,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.ok(stack.length === depth)
+    assert.equal(stack.length, depth)
     for (const elem of stack) {
       if (elem !== BigInt(0)) {
         assert.fail('stack element is not 0')

@@ -207,7 +207,7 @@ describe('simple merkle proofs generation and verification', () => {
     newTrie.root(safeTrie.root())
 
     const updatedNewSafeValue = await newTrie.get(safeKey)
-    assert.ok(
+    assert.isTrue(
       equalsBytes(updatedNewSafeValue!, safeValue),
       'successfully set the trie to the new root and got the correct value',
     )

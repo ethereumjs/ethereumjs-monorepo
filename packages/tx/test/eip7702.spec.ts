@@ -62,7 +62,7 @@ describe('[EOACode7702Transaction]', () => {
       { common },
     )
     const signed = txn.sign(pkey)
-    assert.ok(signed.getSenderAddress().equals(addr))
+    assert.isTrue(signed.getSenderAddress().equals(addr))
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
 

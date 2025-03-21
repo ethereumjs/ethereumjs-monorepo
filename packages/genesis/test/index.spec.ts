@@ -13,10 +13,7 @@ describe('genesis test', () => {
       const { name } = ChainGenesis[chainId as unknown as Chain]
 
       const genesisState = getGenesis(Number(chainId))
-      assert.ok(
-        genesisState !== undefined,
-        `network=${name} chainId=${chainId} genesis should be found`,
-      )
+      assert.isDefined(genesisState, `network=${name} chainId=${chainId} genesis should be found`)
     }
   })
 })

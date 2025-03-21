@@ -20,7 +20,7 @@ describe('DB tests', () => {
   it('Operations: deletes value', async () => {
     await db.del(k)
     const res = await db.get(k)
-    assert.notOk(res)
+    assert.isUndefined(res)
   })
 
   it('Operations: batch ops', async () => {

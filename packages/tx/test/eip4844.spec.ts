@@ -336,8 +336,8 @@ describe('Network wrapper tests', () => {
       'decoded sender address correctly',
     )
     const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, { common })
-    assert.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
-    assert.ok(
+    assert.isUndefined(minimalTx.blobs, 'minimal representation contains no blobs')
+    assert.isTrue(
       equalsBytes(minimalTx.hash(), deserializedTx.hash()),
       'has the same hash as the network wrapper version',
     )
@@ -572,7 +572,7 @@ describe('hash() and signature verification', () => {
       '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
       'was able to recover sender address',
     )
-    assert.ok(signedTx.verifySignature(), 'signature is valid')
+    assert.isTrue(signedTx.verifySignature(), 'signature is valid')
   })
 })
 

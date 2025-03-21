@@ -80,7 +80,7 @@ describe('trie: checkpointing', () => {
       await trie.put(key, kv.v1)
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
     it('CP -> V1 -> Commit -> Flush() (-> V1)', async () => {
       const trie = new MerklePatriciaTrie()
@@ -90,7 +90,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
 
     it('CP -> V1 -> Revert -> Flush() (-> Undefined)', async () => {
@@ -101,7 +101,7 @@ describe('trie: checkpointing', () => {
       await trie.revert()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, null))
+      assert.isTrue(await trieEval(trie, null))
     })
 
     it('V1 -> CP -> Commit -> Flush() (-> V1)', async () => {
@@ -112,7 +112,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
 
     it('V1 -> CP -> Revert -> Flush() (-> V1)', async () => {
@@ -123,7 +123,7 @@ describe('trie: checkpointing', () => {
       await trie.revert()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
 
     it('V1 -> CP -> V2 -> Commit -> Flush() (-> V2)', async () => {
@@ -135,7 +135,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v2))
+      assert.isTrue(await trieEval(trie, kv.v2))
     })
 
     it('V1 -> CP -> V2 -> Commit -> V3 -> Flush() (-> V3)', async () => {
@@ -148,7 +148,7 @@ describe('trie: checkpointing', () => {
       await trie.put(key, kv.v3)
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v3))
+      assert.isTrue(await trieEval(trie, kv.v3))
     })
 
     it('V1 -> CP -> V2 -> V3 -> Commit -> Flush() (-> V3)', async () => {
@@ -161,7 +161,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v3))
+      assert.isTrue(await trieEval(trie, kv.v3))
     })
 
     it('CP -> V1 -> V2 -> Commit -> Flush() (-> V2)', async () => {
@@ -173,7 +173,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v2))
+      assert.isTrue(await trieEval(trie, kv.v2))
     })
 
     it('CP -> V1 -> V2 -> Revert -> Flush() (-> Undefined)', async () => {
@@ -186,7 +186,7 @@ describe('trie: checkpointing', () => {
       await trie.revert()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, null))
+      assert.isTrue(await trieEval(trie, null))
     })
 
     it('V1 -> CP -> V2 -> Revert -> Flush() (-> V1)', async () => {
@@ -198,7 +198,7 @@ describe('trie: checkpointing', () => {
       await trie.revert()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Commit -> Commit -> Flush() (-> V3)', async () => {
@@ -213,7 +213,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v3))
+      assert.isTrue(await trieEval(trie, kv.v3))
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Commit -> Revert -> Flush() (-> V1)', async () => {
@@ -228,7 +228,7 @@ describe('trie: checkpointing', () => {
       await trie.revert()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v1))
+      assert.isTrue(await trieEval(trie, kv.v1))
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> Commit -> Flush() (-> V2)', async () => {
@@ -243,7 +243,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v2))
+      assert.isTrue(await trieEval(trie, kv.v2))
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> V4 -> Commit -> Flush() (-> V4)', async () => {
@@ -259,7 +259,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v4))
+      assert.isTrue(await trieEval(trie, kv.v4))
     })
 
     it('V1 -> CP -> V2 -> CP -> V3 -> Revert -> V4 -> CP -> V5 -> Commit -> Commit -> Flush() (-> V5)', async () => {
@@ -278,7 +278,7 @@ describe('trie: checkpointing', () => {
       await trie.commit()
       trie.flushCheckpoints()
 
-      assert.ok(await trieEval(trie, kv.v5))
+      assert.isTrue(await trieEval(trie, kv.v5))
     })
   }
 })

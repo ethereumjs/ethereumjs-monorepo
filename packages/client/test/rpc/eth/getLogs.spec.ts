@@ -92,7 +92,7 @@ describe(method, async () => {
       res.result[0].topics[3] ===
         '0x0000000000000000000000000000000000000000000000000000000000000003'
     ) {
-      assert.ok(
+      assert.isTrue(
         true,
         `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`,
       )

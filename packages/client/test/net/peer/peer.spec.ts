@@ -19,9 +19,9 @@ describe('[Peer]', () => {
   })
 
   it('should get/set idle state', () => {
-    assert.ok(peer.idle, 'is initially idle')
+    assert.isTrue(peer.idle, 'is initially idle')
     peer.idle = false
-    assert.notOk(peer.idle, 'idle set to false')
+    assert.isFalse(peer.idle, 'idle set to false')
   })
 
   it('should convert to string', () => {

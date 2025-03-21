@@ -40,19 +40,19 @@ describe('StemBinaryNode', () => {
     assert.equal(recovered.values.length, 256, 'Values array should have 256 elements')
 
     // Check that the non-null values round-trip.
-    assert.exists(recovered.values[3], 'Value at index 3 should exist')
+    assert.isDefined(recovered.values[3], 'Value at index 3 should exist')
     assert.isTrue(
       equalsBytes(recovered.values[3]!, value3),
       'Value at index 3 should round-trip correctly',
     )
 
-    assert.exists(recovered.values[100], 'Value at index 100 should exist')
+    assert.isDefined(recovered.values[100], 'Value at index 100 should exist')
     assert.isTrue(
       equalsBytes(recovered.values[100]!, value100),
       'Value at index 100 should round-trip correctly',
     )
 
-    assert.exists(recovered.values[255], 'Value at index 255 should exist')
+    assert.isDefined(recovered.values[255], 'Value at index 255 should exist')
     assert.isTrue(
       equalsBytes(recovered.values[255]!, value255),
       'Value at index 255 should round-trip correctly',

@@ -87,7 +87,7 @@ describe('[ReverseBlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 2 } }, { header: { number: 1 } }]
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
-    assert.notOk(
+    assert.isUndefined(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
       'bad results',
     )

@@ -316,8 +316,8 @@ describe('intToHex', () => {
     )
   })
   it('should pass on correct input', () => {
-    assert.ok(intToHex(0) === '0x0', 'correctly converts 0 to a hex string')
-    assert.ok(intToHex(1) === '0x1', 'correctly converts 1 to a hex string')
+    assert.equal(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
+    assert.equal(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
   })
 })
 

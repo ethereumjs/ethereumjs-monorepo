@@ -717,19 +717,19 @@ describe('Clique: Initialization', () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     // block 1: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -737,19 +737,19 @@ describe('Clique: Initialization', () => {
     )
     // block 2: C, next signer: A
     await addNextBlock(blockchain, blocks, C)
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -757,19 +757,19 @@ describe('Clique: Initialization', () => {
     )
     // block 3: A, next signer: B
     await addNextBlock(blockchain, blocks, A)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -777,19 +777,19 @@ describe('Clique: Initialization', () => {
     )
     // block 4: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,

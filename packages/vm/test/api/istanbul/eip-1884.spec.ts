@@ -38,7 +38,7 @@ describe('Istanbul: EIP-1884', () => {
           assert.equal(res.exceptionError?.error, testCase.err)
         } else {
           assert.isTrue(res.exceptionError === undefined)
-          assert.ok(BigInt(testCase.selfbalance!) === bytesToBigInt(res.returnValue))
+          assert.equal(BigInt(testCase.selfbalance!), bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         assert.fail(e.message)

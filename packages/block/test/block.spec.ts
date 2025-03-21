@@ -29,7 +29,7 @@ describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
-    assert.exists(bytesToHex(genesis.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(genesis.hash()), 'block should initialize')
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
@@ -41,28 +41,22 @@ describe('[Block]: block functions', () => {
     )
 
     const emptyBlock = createEmptyBlock({}, { common })
-    assert.exists(bytesToHex(emptyBlock.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(emptyBlock.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
     block = createBlock({})
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlock({}, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const rlpBlock = block.serialize()
     block = createBlockFromRLP(rlpBlock)
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromRLP(rlpBlock, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const zero = new Uint8Array(0)
     const headerArray: Uint8Array[] = []
@@ -82,13 +76,10 @@ describe('[Block]: block functions', () => {
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = createBlockFromBytesArray(valuesArray, { common })
-    assert.isTrue(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
   })
 
   it('initialization -> setHardfork option', () => {
@@ -165,8 +156,8 @@ describe('[Block]: block functions', () => {
   })
 
   async function testTransactionValidation(block: Block) {
-    assert.ok(block.transactionsAreValid())
-    assert.ok(block.getTransactionsValidationErrors().length === 0)
+    assert.isTrue(block.transactionsAreValid())
+    assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
@@ -441,13 +432,14 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
-      blockWithDifficultyCalculation.header.difficulty > BigInt(0),
+    assert.notEqual(
+      blockWithDifficultyCalculation.header.difficulty,
+      BigInt(0),
       'header difficulty should be set if difficulty header is given',
     )
-    assert.ok(
-      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header) ===
-        blockWithDifficultyCalculation.header.difficulty,
+    assert.equal(
+      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header),
+      blockWithDifficultyCalculation.header.difficulty,
       'header difficulty is canonical difficulty if difficulty header is given',
     )
 
@@ -467,7 +459,7 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
+    assert.isTrue(
       block_farAhead.header.difficulty > BigInt(0),
       'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header',
     )

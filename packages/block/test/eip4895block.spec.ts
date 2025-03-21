@@ -135,7 +135,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.notOk(
+    assert.isFalse(
       await block.withdrawalsTrieIsValid(),
       'should invalidate the empty withdrawals root',
     )
@@ -154,7 +154,10 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(await validBlock.withdrawalsTrieIsValid(), 'should validate empty withdrawals root')
+    assert.isTrue(
+      await validBlock.withdrawalsTrieIsValid(),
+      'should validate empty withdrawals root',
+    )
 
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
@@ -176,7 +179,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(
+    assert.isTrue(
       await validBlockWithWithdrawal.withdrawalsTrieIsValid(),
       'should validate withdrawals root',
     )
@@ -201,7 +204,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(
+    assert.isTrue(
       await validBlockWithWithdrawal2.withdrawalsTrieIsValid(),
       'should validate withdrawals root',
     )
@@ -235,7 +238,7 @@ describe('EIP4895 tests', () => {
     const block = createBlock({}, { common })
     // Set invalid withdrawalsRoot in cache
     block['cache'].withdrawalsTrieRoot = randomBytes(32)
-    assert.ok(
+    assert.isTrue(
       await block.withdrawalsTrieIsValid(),
       'correctly executed code path where withdrawals length is 0',
     )

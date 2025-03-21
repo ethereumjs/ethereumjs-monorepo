@@ -463,16 +463,16 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
     assert.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
     assert.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
     assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    assert.ok(pendingBlob !== undefined && pendingBlob === blobs[0])
+    assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
-    assert.ok(blobProof !== undefined && blobProof === proofs[0])
+    assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
   })
 
   it('should exclude missingBlobTx', async () => {
@@ -520,7 +520,7 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
   })
 })

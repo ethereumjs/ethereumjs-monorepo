@@ -43,8 +43,9 @@ describe('EIP 1153: transient storage', () => {
 
       if (i > 0) {
         const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-        assert.ok(
-          gasUsed === expectedGasUsed,
+        assert.equal(
+          gasUsed,
+          expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
           }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,

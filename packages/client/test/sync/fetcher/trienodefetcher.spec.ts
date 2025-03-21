@@ -2,7 +2,7 @@ import { decodeMPTNode } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.ts'
 import { Config } from '../../../src/config.ts'
@@ -39,7 +39,7 @@ describe('[TrieNodeFetcher]', async () => {
       root: new Uint8Array(0),
     })
     fetcher.next = () => false
-    assert.notOk(fetcher['running'], 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
     assert.equal(fetcher['pathToNodeRequestData'].length, 1, 'one node request has been added')
 
@@ -75,7 +75,7 @@ describe('[TrieNodeFetcher]', async () => {
       fullResult[0],
       'got results',
     )
-    assert.notOk(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
   })
 
   it('should request correctly', async () => {
@@ -177,12 +177,8 @@ describe('[TrieNodeFetcher]', async () => {
       pool,
       root: new Uint8Array(),
     })
-    try {
-      await fetcher.store(undefined as any)
-      assert.ok('should run without error')
-    } catch (err: any) {
-      assert.fail(err.message)
-    }
+
+    await expect(fetcher.store(undefined as any)).resolves.toBeUndefined()
   })
 
   it('should find a fetchable peer', async () => {

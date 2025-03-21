@@ -10,7 +10,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.ok(res.result.length > 0, 'got more than 1 engine capability')
+    assert.isNotEmpty(res.result, 'got more than 1 engine capability')
     assert.equal(
       res.result.findIndex((el: string) => el === 'engine_exchangeCapabilities'),
       -1,

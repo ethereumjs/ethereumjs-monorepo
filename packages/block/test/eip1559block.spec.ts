@@ -452,8 +452,9 @@ describe('EIP1559 tests', () => {
     )
 
     const errs = block.getTransactionsValidationErrors()
-    assert.ok(
-      errs[0].includes('unable to pay base fee'),
+    assert.include(
+      errs[0],
+      'unable to pay base fee',
       'should throw if transaction is unable to pay base fee',
     )
   })

@@ -13,18 +13,15 @@ describe('VM Copy Test', () => {
     const address = createAddressFromString(`0x` + '1234'.repeat(10))
     await vm.stateManager.putAccount(address, account)
 
-    assert.ok(
-      (await vm.stateManager.getAccount(address)) !== undefined,
-      'account exists before copy',
-    )
+    assert.isDefined(await vm.stateManager.getAccount(address), 'account exists before copy')
 
     await vm.stateManager.checkpoint()
     await vm.stateManager.commit()
 
     const vmCopy2 = await vm.shallowCopy()
 
-    assert.ok(
-      (await vmCopy2.stateManager.getAccount(address)) !== undefined,
+    assert.isDefined(
+      await vmCopy2.stateManager.getAccount(address),
       'committed checkpoints will be copied',
     )
   })

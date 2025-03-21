@@ -31,7 +31,7 @@ describe('[RlpxPeer]', async () => {
       port: 1234,
     })
     assert.equal(peer.address, '10.0.0.1:1234', 'address correct')
-    assert.notOk(peer.connected, 'not connected')
+    assert.isFalse(peer.connected, 'not connected')
   })
 
   it('should compute capabilities', async () => {
@@ -66,7 +66,7 @@ describe('[RlpxPeer]', async () => {
     })
     proto0.open = vi.fn().mockResolvedValue(null)
     await peer.connect()
-    assert.ok('connected successfully')
+    assert.isTrue(true, 'connected successfully')
     expect(peer.rlpx!.connect).toBeCalled()
   })
 
@@ -158,6 +158,6 @@ describe('[RlpxPeer]', async () => {
 
     await peer['bindProtocols'](rlpxPeer as any)
     expect(peer.addProtocol).toBeCalled()
-    assert.ok(peer.connected, 'connected set to true')
+    assert.isTrue(peer.connected, 'connected set to true')
   })
 })

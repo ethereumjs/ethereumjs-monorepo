@@ -61,7 +61,7 @@ describe('[Transaction]', () => {
 
   it('Initialization', () => {
     const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    assert.exists(
+    assert.isDefined(
       createLegacyTx({}, { common: nonEIP2930Common }),
       'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
@@ -544,8 +544,9 @@ describe('[Transaction]', () => {
       },
     })
     const signedTxn = txn.sign(pkey)
-    assert.ok(
-      signedTxn.common.hardfork() === Hardfork.Paris,
+    assert.equal(
+      signedTxn.common.hardfork(),
+      Hardfork.Paris,
       'signed tx common is taken from tx.common',
     )
   })

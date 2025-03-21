@@ -258,11 +258,7 @@ describe('[Blockchain]: Block validation tests', () => {
       const block2 = createBlock({ header }, { common })
       await blockchain.putBlock(block2)
     } catch (e: any) {
-      const expectedError = 'Invalid block: base fee not correct'
-      assert.ok(
-        (e.message as string).includes(expectedError),
-        'should throw when base fee is not correct',
-      )
+      assert.include(e.message, 'Invalid block: base fee not correct')
     }
   })
 

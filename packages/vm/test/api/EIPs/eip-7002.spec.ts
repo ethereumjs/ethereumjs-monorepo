@@ -118,7 +118,7 @@ describe('EIP-7002 tests', () => {
     })
 
     // Ensure the request is generated
-    assert.ok(runBlockResults.requests!.length === 1)
+    assert.equal(runBlockResults.requests!.length, 1)
     assert.equal(
       generatedBlock!.transactions.length,
       1,
@@ -169,7 +169,7 @@ describe('EIP-7002 tests', () => {
 
     // Note: generatedBlock is now overridden with the new generated block (this is thus block number 3)
     // Ensure there are 2 requests
-    assert.ok(runBlockResults.requests!.length === 1)
+    assert.equal(runBlockResults.requests!.length, 1)
     assert.equal(
       generatedBlock!.transactions.length,
       2,

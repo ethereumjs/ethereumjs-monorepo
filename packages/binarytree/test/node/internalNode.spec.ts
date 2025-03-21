@@ -22,8 +22,8 @@ describe('InternalBinaryNode', () => {
     // Verify the type
     assert.equal(decoded.type, BinaryNodeType.Internal)
     const [leftRecoveredChild, rightRecoveredChild] = (decoded as InternalBinaryNode).children
-    assert.exists(leftRecoveredChild, 'Left child should exist')
-    assert.exists(rightRecoveredChild, 'Right child should exist')
+    assert.isDefined(leftRecoveredChild, 'Left child should exist')
+    assert.isDefined(rightRecoveredChild, 'Right child should exist')
     assert.isTrue(
       equalsBytes(leftRecoveredChild!.hash, leftCanonicalChild.hash),
       'Left child hash should round-trip',

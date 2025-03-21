@@ -204,19 +204,19 @@ describe('should initialize correctly', () => {
   })
   it('should start/stop', async () => {
     const miner = new Miner({ config: customConfig, service })
-    assert.notOk(miner.running)
+    assert.isFalse(miner.running)
     miner.start()
-    assert.ok(miner.running)
+    assert.isTrue(miner.running)
     await wait(100)
     miner.stop()
-    assert.notOk(miner.running)
+    assert.isFalse(miner.running)
   })
 
   it('Should not start when config.mine=false', () => {
     const configMineFalse = new Config({ accounts, mine: false })
     const miner = new Miner({ config: configMineFalse, service })
     miner.start()
-    assert.notOk(miner.running, 'miner should not start when config.mine=false')
+    assert.isFalse(miner.running, 'miner should not start when config.mine=false')
   })
 })
 
@@ -334,7 +334,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
         const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        assert.isTrue(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
     })
     miner.stop()
@@ -368,7 +368,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   txPool.start()
   miner.start()
   it('should initialize receiptsManager', () => {
-    assert.ok(receiptsManager, 'receiptsManager should be initialized')
+    assert.isDefined(receiptsManager, 'receiptsManager should be initialized')
   })
 
   await setBalance(vm, A.address, BigInt('400000000000001'))
@@ -389,7 +389,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
         const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        assert.isTrue(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
     })
     miner.stop()
@@ -398,16 +398,16 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await (miner as any).queueNextAssembly(0)
   it('should save receipt', async () => {
     const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
   })
   it('should save receipt', async () => {
     let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
     receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
 
     receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.exists(receipt, 'receipt should be saved')
+    assert.isDefined(receipt, 'receipt should be saved')
 
     await wait(500)
   })
@@ -579,10 +579,10 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   }
   await (miner as any).queueNextAssembly(5)
   await wait(5)
-  assert.ok((miner as any).assembling, 'miner should be assembling')
+  assert.isTrue((miner as any).assembling, 'miner should be assembling')
   config.events.emit(Event.CHAIN_UPDATED)
   await wait(25)
-  assert.notOk((miner as any).assembling, 'miner should have stopped assembling')
+  assert.isFalse((miner as any).assembling, 'miner should have stopped assembling')
   miner.stop()
   txPool.stop()
 })
@@ -662,7 +662,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
     blockHeader3.calcNextBaseFee(),
     'baseFee should be as calculated'
   )
-  assert.ok((await chain.getCanonicalHeadHeader()).number === BigInt(4))
+  assert.isTrue((await chain.getCanonicalHeadHeader()).number === BigInt(4))
   miner.stop()
   await chain.close()
 })

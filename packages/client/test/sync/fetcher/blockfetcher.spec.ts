@@ -34,7 +34,7 @@ describe('[BlockFetcher]', async () => {
     void fetcher.fetch()
     assert.equal(fetcher['in'].length, 2, 'added 2 tasks')
     await wait(100)
-    assert.ok(fetcher['running'], 'started')
+    assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
     await wait(100)
     assert.isFalse(fetcher['running'], 'stopped')
@@ -102,7 +102,7 @@ describe('[BlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 1 } }, { header: { number: 2 } }]
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
-    assert.notOk(
+    assert.isUndefined(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
       'bad results',
     )

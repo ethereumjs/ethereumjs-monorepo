@@ -138,7 +138,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()
-      assert.ok(Array.isArray(dnsNetworks), 'is an array')
+      assert.isArray(dnsNetworks, 'is an array')
       assert.equal(typeof dnsNetworks[0], 'string', 'returns the DNS ENR url as a string')
     }
   })

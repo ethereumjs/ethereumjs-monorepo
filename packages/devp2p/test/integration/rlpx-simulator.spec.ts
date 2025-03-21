@@ -40,12 +40,12 @@ describe('RLPx simulator tests', () => {
           udpPort: 30308,
           tcpPort: null,
         }
-        assert.notOk(
+        assert.isFalse(
           rlpxs[0]['_dpt']!['_banlist'].has(peer),
           'should not be in ban list before bad peer discovered',
         )
         rlpxs[0]['_dpt']!.events.emit('peer:new', peer)
-        assert.ok(
+        assert.isTrue(
           rlpxs[0]['_dpt']!['_banlist'].has(peer),
           'should be in ban list after bad peer discovered',
         )

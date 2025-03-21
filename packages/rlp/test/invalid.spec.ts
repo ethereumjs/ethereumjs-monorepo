@@ -30,8 +30,8 @@ describe('invalid tests', () => {
       'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss', // cspell:disable-line
     )
     // sanity checks
-    assert.ok(longBufferTest[0] > 0xb7)
-    assert.ok(longBufferTest[0] <= 0xbf)
+    assert.isTrue(longBufferTest[0] > 0xb7)
+    assert.isTrue(longBufferTest[0] <= 0xbf)
 
     // try to decode the partial buffer
     assert.throws(

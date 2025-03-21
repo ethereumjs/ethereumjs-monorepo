@@ -144,7 +144,7 @@ describe('Account', () => {
       '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
     let account = createAccountFromRLP(accountRlp)
-    assert.notOk(account.isContract(), 'should return false for a non-contract account')
+    assert.isFalse(account.isContract(), 'should return false for a non-contract account')
 
     const raw: AccountData = {
       nonce: '0x01',
@@ -153,12 +153,12 @@ describe('Account', () => {
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     account = createAccount(raw)
-    assert.ok(account.isContract(), 'should return true for a contract account')
+    assert.isTrue(account.isContract(), 'should return true for a contract account')
   })
 
   it('isEmpty', () => {
     let account = new Account()
-    assert.ok(account.isEmpty(), 'should return true for an empty account')
+    assert.isTrue(account.isEmpty(), 'should return true for an empty account')
 
     const raw: AccountData = {
       nonce: '0x01',
@@ -167,7 +167,7 @@ describe('Account', () => {
       codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
     }
     account = createAccount(raw)
-    assert.notOk(account.isEmpty(), 'should return false for a non-empty account')
+    assert.isFalse(account.isEmpty(), 'should return false for a non-empty account')
   })
 
   it('validation', () => {
@@ -223,9 +223,9 @@ describe('Utility Functions', () => {
   it('isValidPrivate', () => {
     const SECP256K1_N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141')
 
-    assert.notOk(isValidPrivate(hexToBytes('0x0011223344')), 'should fail on short input')
+    assert.isFalse(isValidPrivate(hexToBytes('0x0011223344')), 'should fail on short input')
 
-    assert.notOk(
+    assert.isFalse(
       isValidPrivate(
         hexToBytes(
           '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
@@ -234,29 +234,29 @@ describe('Utility Functions', () => {
       'should fail on too big input',
     )
 
-    assert.notOk(
+    assert.isFalse(
       isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Uint8Array),
       'should fail on wrong input type',
     )
 
-    assert.notOk(
+    assert.isFalse(
       isValidPrivate(
         hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
       ),
       'should fail on invalid curve (zero)',
     )
 
-    assert.notOk(
+    assert.isFalse(
       isValidPrivate(hexToBytes(`0x${SECP256K1_N.toString(16)}`)),
       'should fail on invalid curve (== N)',
     )
 
-    assert.notOk(
+    assert.isFalse(
       isValidPrivate(hexToBytes(`0x${(SECP256K1_N + BigInt(1)).toString(16)}`)),
       'should fail on invalid curve (>= N)',
     )
 
-    assert.ok(
+    assert.isTrue(
       isValidPrivate(hexToBytes(`0x${(SECP256K1_N - BigInt(1)).toString(16)}`)),
       'should work otherwise (< N)',
     )
@@ -266,22 +266,22 @@ describe('Utility Functions', () => {
     let pubKey = hexToBytes(
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail on too short input')
+    assert.isFalse(isValidPublic(pubKey), 'should fail on too short input')
 
     pubKey = hexToBytes(
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail on too big input')
+    assert.isFalse(isValidPublic(pubKey), 'should fail on too big input')
 
     pubKey = hexToBytes(
       '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail on SEC1 key')
+    assert.isFalse(isValidPublic(pubKey), 'should fail on SEC1 key')
 
     pubKey = hexToBytes(
       '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.ok(
+    assert.isTrue(
       isValidPublic(pubKey, true),
       "shouldn't fail on SEC1 key wt.testh sant.testize enabled", // cspell:disable-line
     )
@@ -289,23 +289,23 @@ describe('Utility Functions', () => {
     pubKey = hexToBytes(
       '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key') // cspell:disable-line
+    assert.isFalse(isValidPublic(pubKey), 'should fail wt.testh an invalid SEC1 public key') // cspell:disable-line
 
     pubKey = hexToBytes('0x03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f')
-    assert.notOk(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
+    assert.isFalse(isValidPublic(pubKey), 'should fail an invalid 33-byte public key')
 
     pubKey = hexToBytes(
       '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
     )
-    assert.notOk(isValidPublic(pubKey), 'should fail an invalid 64-byte public key')
+    assert.isFalse(isValidPublic(pubKey), 'should fail an invalid 64-byte public key')
 
     pubKey = hexToBytes(
       '0x04fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f0000000000000000000000000000000000000000000000000000000000000001',
     )
-    assert.notOk(isValidPublic(pubKey, true), 'should fail an invalid 65-byte public key')
+    assert.isFalse(isValidPublic(pubKey, true), 'should fail an invalid 65-byte public key')
 
     pubKey = hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a')
-    assert.ok(
+    assert.isTrue(
       isValidPublic(pubKey, true),
       'should work wt.testh compressed keys wt.testh sant.testize enabled', // cspell:disable-line
     )
@@ -313,12 +313,12 @@ describe('Utility Functions', () => {
     pubKey = hexToBytes(
       '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.ok(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled') // cspell:disable-line
+    assert.isTrue(isValidPublic(pubKey, true), 'should work wt.testh sant.testize enabled') // cspell:disable-line
 
     pubKey = hexToBytes(
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
-    assert.ok(isValidPublic(pubKey), 'should work otherwise')
+    assert.isTrue(isValidPublic(pubKey), 'should work otherwise')
 
     pubKey =
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
@@ -717,19 +717,19 @@ describe('Utility Functions', () => {
   describe('isValidChecksumAddress()', () => {
     it('EIP55', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
-        assert.ok(isValidChecksumAddress(eip55ChecksumAddresses[i]))
+        assert.isTrue(isValidChecksumAddress(eip55ChecksumAddresses[i]))
       }
-      assert.notOk(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      assert.isFalse(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
     })
 
     describe('EIP1191', () => {
       it('Should return true for the example addresses', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
-            assert.ok(isValidChecksumAddress(addr, Number(chainId)))
-            assert.ok(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
-            assert.ok(isValidChecksumAddress(addr, BigInt(chainId)))
-            assert.ok(
+            assert.isTrue(isValidChecksumAddress(addr, Number(chainId)))
+            assert.isTrue(isValidChecksumAddress(addr, intToBytes(parseInt(chainId))))
+            assert.isTrue(isValidChecksumAddress(addr, BigInt(chainId)))
+            assert.isTrue(
               isValidChecksumAddress(addr, `0x${padToEven(intToHex(parseInt(chainId)).slice(2))}`),
             )
           }
@@ -739,37 +739,37 @@ describe('Utility Functions', () => {
       it('Should return false for invalid cases', () => {
         // If we set the chain id, an EIP55 encoded address should be invalid
         for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
-          assert.notOk(isValidChecksumAddress(eip55ChecksumAddresses[i], 1))
+          assert.isFalse(isValidChecksumAddress(eip55ChecksumAddresses[i], 1))
         }
 
-        assert.notOk(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a', 1))
+        assert.isFalse(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a', 1))
       })
 
       it('Should return false if the wrong chain id is used', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
-            assert.notOk(isValidChecksumAddress(addr, Number(chainId) + 1))
+            assert.isFalse(isValidChecksumAddress(addr, Number(chainId) + 1))
           }
         }
       })
 
       it('Should return false if input is not hex-prefixed', () => {
-        assert.notOk(isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+        assert.isFalse(isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
       })
     })
   })
 
   describe('isValidAddress()', () => {
     it('should return true', () => {
-      assert.ok(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
-      assert.ok(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'))
+      assert.isTrue(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      assert.isTrue(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'))
     })
     it('should return false', () => {
-      assert.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'))
-      assert.notOk(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'))
-      assert.notOk(isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
-      assert.notOk(isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
-      assert.notOk(isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7'))
+      assert.isFalse(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'))
+      assert.isFalse(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'))
+      assert.isFalse(isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      assert.isFalse(isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
+      assert.isFalse(isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7'))
     })
   })
 

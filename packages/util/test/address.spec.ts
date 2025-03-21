@@ -39,20 +39,20 @@ describe('Address', () => {
   it('should instantiate address from zero address string', () => {
     const addr = createAddressFromString(ZERO_ADDR_S)
     assert.deepEqual(addr.toString(), ZERO_ADDR_S)
-    assert.ok(addr.isZero())
+    assert.isTrue(addr.isZero())
   })
 
   it('should detect non-zero address', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const addr = createAddressFromString(str)
-    assert.notOk(addr.isZero())
+    assert.isFalse(addr.isZero())
   })
 
   it('should create an address from a bigint', () => {
     const addr = createAddressFromBigInt(BigInt(0))
-    assert.ok(addr.isZero())
+    assert.isTrue(addr.isZero())
     const addr2 = createAddressFromBigInt(BigInt(1))
-    assert.notOk(addr2.isZero())
+    assert.isFalse(addr2.isZero())
   })
 
   it('should throw if bigint is too long', () => {
@@ -130,17 +130,17 @@ describe('Address', () => {
     const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     const address1 = createAddressFromString(str)
     const address2 = new Address(hexToBytes(str))
-    assert.ok(address1.equals(address2))
+    assert.isTrue(address1.equals(address2))
     assert.isTrue(equalsBytes(address1.bytes, address2.bytes))
 
     const str2 = '0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06'
     const address3 = createAddressFromString(str2)
-    assert.ok(!address1.equals(address3))
+    assert.isFalse(address1.equals(address3))
 
     const address3LowerCase = createAddressFromString(str2.toLowerCase())
-    assert.ok(address3.equals(address3LowerCase))
+    assert.isTrue(address3.equals(address3LowerCase))
 
     const address4 = createZeroAddress()
-    assert.ok(!address1.equals(address4))
+    assert.isFalse(address1.equals(address4))
   })
 })

@@ -147,7 +147,7 @@ describe('consensus transition checks', () => {
 
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)
-      assert.ok('checkAndTransitionHardForkByNumber does not throw with custom consensus')
+      assert.isTrue(true, 'checkAndTransitionHardForkByNumber does not throw with custom consensus')
     } catch (err: any) {
       assert.fail(
         `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`,

@@ -45,7 +45,7 @@ describe('ProofStateManager', () => {
     await stateManager.putStorage(address, key, new Uint8Array([10]))
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
+    assert.isFalse(equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
@@ -98,7 +98,7 @@ describe('ProofStateManager', () => {
     await stateManager.flush()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.ok(await verifyMerkleStateProof(stateManager, proof))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, proof))
     const nonExistenceProof = await getMerkleStateProof(
       stateManager,
       createAddressFromPrivateKey(randomBytes(32)),
@@ -131,7 +131,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
     const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenValidAccountData, proof)
-    assert.ok(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -155,7 +155,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
     const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenNonexistentAccountData, proof)
-    assert.ok(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {

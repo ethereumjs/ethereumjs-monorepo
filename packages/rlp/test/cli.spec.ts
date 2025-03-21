@@ -34,7 +34,7 @@ describe('rlp CLI', async () => {
   it('correctly encodes RLP from the CLI', async () => {
     const cliArgs = ['encode', '5']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
-      assert.ok(message.includes('0x05'), 'cli correctly encoded 5')
+      assert.include(message, '0x05', 'cli correctly encoded 5')
       child.kill(9)
       resolve(undefined)
     }
@@ -48,7 +48,7 @@ describe('rlp CLI', async () => {
         child: ChildProcessWithoutNullStreams,
         resolve: Function,
       ) => {
-        assert.ok(message.includes('0x05'), 'cli correctly encoded 5')
+        assert.include(message, '0x05', 'cli correctly encoded 5')
         child.kill(9)
         resolve(undefined)
       }

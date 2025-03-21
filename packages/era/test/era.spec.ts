@@ -26,7 +26,7 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
   it('read blocks from an era file', async () => {
     let count = 0
     for await (const block of readBlocksFromEra(data)) {
-      assert.exists(block.message.slot)
+      assert.isDefined(block.message.slot)
       count++
       if (count > 10) break
     }
