@@ -21,7 +21,7 @@ import type { SimpleStateManagerOpts } from './index.ts'
  * cases and the state manager is used as default there.
  *
  * For a more full fledged and MPT-backed state manager implementation
- * have a look at the `@ethereumjs/statemanager` package.
+ * have a look at the [`@ethereumjs/statemanager` package docs](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/docs/README.md).
  */
 export class SimpleStateManager implements StateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
