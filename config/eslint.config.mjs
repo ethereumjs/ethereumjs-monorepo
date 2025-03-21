@@ -180,7 +180,7 @@ export default [
         {
           "object": "assert",
           "property": "notOk",
-          "message": "Usage of assert.notOk is discouraged because it relies on falsiness."
+          "message": "Usage of assert.notOk is forbidden because it relies on falsiness."
         }
       ],
     },
