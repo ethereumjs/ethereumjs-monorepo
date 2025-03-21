@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../src/logging/winstonlogger.ts'
+import { getLogger } from '../bin/logging/winstonlogger.ts'
 
 describe('[Logging]', () => {
   const logger = getLogger({

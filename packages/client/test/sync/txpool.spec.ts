@@ -16,8 +16,8 @@ import {
 import * as promClient from 'prom-client'
 import { assert, describe, it } from 'vitest'
 
+import { getLogger } from '../../bin/logging/winstonlogger.ts'
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging/winstonlogger.ts'
 import { PeerPool } from '../../src/net/peerpool.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 
