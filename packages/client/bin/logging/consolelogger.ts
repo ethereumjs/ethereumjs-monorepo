@@ -20,6 +20,14 @@ export class ConsoleLogger implements Logger {
   isInfoEnabled() {
     return true
   }
+
+  configure(args: { [key: string]: any }) {
+    // TODO
+  }
+
+  getLevel() {
+    // TODO
+  }
 }
 
 export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {

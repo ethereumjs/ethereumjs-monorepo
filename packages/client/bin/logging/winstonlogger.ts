@@ -159,6 +159,14 @@ export class WinstonLogger implements Logger {
   isInfoEnabled() {
     return this.logger.isInfoEnabled()
   }
+
+  configure(args: { [key: string]: any }) {
+    this.logger.configure(args)
+  }
+
+  getLevel() {
+    return this.logger.level
+  }
 }
 
 /**
