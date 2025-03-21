@@ -153,27 +153,27 @@ describe('[BeaconSynchronizer]', async () => {
     ;(sync as any).chain = {
       blocks: { height: BigInt(0) },
     }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger['logger'].addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
         assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger['logger'].removeAllListeners()
+    sync.config.logger['logger'].addListener('data', (data: any) => {
       if ((data.message as string).includes('first=1 count=1'))
         assert.isTrue(true, 'should sync block 1 and target chain start')
     })
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger['logger'].removeAllListeners()
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger['logger'].addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=1'))
         assert.isTrue(true, 'should sync block 5 with count 1')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger['logger'].removeAllListeners()
   })
 
   it('should not sync pre-genesis', async () => {
@@ -204,12 +204,12 @@ describe('[BeaconSynchronizer]', async () => {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
       blocks: { height: BigInt(100) },
     }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger['logger'].addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
         assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger['logger'].removeAllListeners()
   })
 
   it('should extend and set with a valid head', async () => {
