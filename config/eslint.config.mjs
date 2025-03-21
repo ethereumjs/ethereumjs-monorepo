@@ -175,12 +175,12 @@ export default [
         {
           "object": "assert",
           "property": "ok",
-          "message": "Usage of assert.ok is discouraged because it relies on truthiness."
+          "message": "Usage of assert.ok is forbidden because it relies on truthiness."
         },
         {
           "object": "assert",
           "property": "notOk",
-          "message": "Usage of assert.notOk is forbidden because it relies on falsiness."
+          "message": "Usage of assert.notOk is forbidden because it relies on falseness."
         }
       ],
     },
