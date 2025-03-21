@@ -47,10 +47,10 @@ import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { Config, SyncMode } from '../src/config.ts'
-import { getLogger } from '../src/logging/winstonlogger.ts'
 import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
+import { getLogger } from './logging/winstonlogger.ts'
 
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'

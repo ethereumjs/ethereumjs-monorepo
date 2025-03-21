@@ -3,7 +3,7 @@ import * as winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 
 import type { Logger as WinstonLoggerType } from 'winston'
-import type { Logger } from '../types.ts'
+import type { Logger } from '../../src/types.ts'
 
 const { createLogger, format, transports: wTransports } = winston
 

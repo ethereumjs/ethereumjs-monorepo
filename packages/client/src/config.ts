@@ -4,7 +4,7 @@ import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereu
 import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging/winstonlogger.ts' // for now defaulting to winston if no logger is provided
+import { getLogger } from '../bin/logging/winstonlogger.ts' // for now defaulting to winston if no logger is provided
 import { RlpxServer } from './net/server/index.ts'
 import { Event } from './types.ts'
 import { isBrowser, short } from './util/index.ts'
