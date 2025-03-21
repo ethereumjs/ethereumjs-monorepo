@@ -4,8 +4,8 @@ import debug from 'debug'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
+import { getLogger } from '../../bin/logging/winstonlogger.ts'
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging/winstonlogger.ts'
 import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
