@@ -16,6 +16,10 @@ export class ConsoleLogger implements Logger {
   debug(message: string, ...meta: any[]) {
     if (process.env.DEBUG !== undefined) console.debug(`[DEBUG] ${message}`, ...meta)
   }
+
+  isInfoEnabled() {
+    return true
+  }
 }
 
 export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {

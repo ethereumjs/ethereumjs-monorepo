@@ -132,9 +132,6 @@ export class WinstonLogger implements Logger {
   public logger
 
   constructor(logger: WinstonLoggerType) {
-    if (!logger) {
-      throw new Error('WinstonLogger received an undefined logger instance')
-    }
     this.logger = logger
 
     // Bind methods for logger instance
@@ -157,6 +154,10 @@ export class WinstonLogger implements Logger {
 
   debug(message: string, ...meta: any[]) {
     this.logger.debug(`[DEBUG] ${message}`, ...meta)
+  }
+
+  isInfoEnabled() {
+    return this.logger.isInfoEnabled()
   }
 }
 

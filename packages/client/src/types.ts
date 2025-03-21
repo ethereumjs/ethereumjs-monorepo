@@ -163,4 +163,5 @@ export interface Logger {
   warn(message: string, ...meta: any[]): void
   error(message: string, ...meta: any[]): void
   debug(message: string, ...meta: any[]): void
+  isInfoEnabled(): void
 }
