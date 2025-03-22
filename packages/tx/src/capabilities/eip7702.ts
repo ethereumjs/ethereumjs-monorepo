@@ -13,7 +13,7 @@ import {
 import type {
   AuthorizationList,
   AuthorizationListBytes,
-  AuthorizationListItem,
+  AuthorizationListBytesItem,
   EIP7702CompatibleTx,
 } from '../types.ts'
 
@@ -29,6 +29,44 @@ export function getDataGas(tx: EIP7702CompatibleTx): bigint {
 }
 
 /**
+ * Validates a single authorization list item
+ */
+function validateAuthorizationListItem(item: AuthorizationListBytesItem) {
+  const [chainId, address, nonce, yParity, r, s] = item
+
+  validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
+
+  if (address.length !== 20) {
+    throw EthereumJSErrorWithoutCode(
+      'Invalid EIP-7702 transaction: address length should be 20 bytes',
+    )
+  }
+
+  if (bytesToBigInt(chainId) > MAX_INTEGER) {
+    throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
+  }
+
+  if (bytesToBigInt(nonce) > MAX_UINT64) {
+    throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
+  }
+
+  const yParityBigInt = bytesToBigInt(yParity)
+  if (yParityBigInt >= BigInt(2 ** 8)) {
+    throw EthereumJSErrorWithoutCode(
+      'Invalid EIP-7702 transaction: yParity should be fit within 1 byte (0 - 255)',
+    )
+  }
+
+  if (bytesToBigInt(r) > MAX_INTEGER) {
+    throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
+  }
+
+  if (bytesToBigInt(s) > MAX_INTEGER) {
+    throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: s exceeds 2^256 - 1')
+  }
+}
+
+/**
  * Checks if the authorization list is valid. Throws if invalid.
  * @param authorizationList
  */
@@ -36,38 +74,9 @@ export function verifyAuthorizationList(authorizationList: AuthorizationListByte
   if (authorizationList.length === 0) {
     throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: authorization list is empty')
   }
-  for (let key = 0; key < authorizationList.length; key++) {
-    const authorizationListItem = authorizationList[key]
-    const chainId = authorizationListItem[0]
-    const address = authorizationListItem[1]
-    const nonce = authorizationListItem[2]
-    const yParity = authorizationListItem[3]
-    const r = authorizationListItem[4]
-    const s = authorizationListItem[5]
-    validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
-    if (address.length !== 20) {
-      throw EthereumJSErrorWithoutCode(
-        'Invalid EIP-7702 transaction: address length should be 20 bytes',
-      )
-    }
-    if (bytesToBigInt(chainId) > MAX_INTEGER) {
-      throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
-    }
-    if (bytesToBigInt(nonce) > MAX_UINT64) {
-      throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
-    }
-    const yParityBigInt = bytesToBigInt(yParity)
-    if (yParityBigInt >= BigInt(2 ** 8)) {
-      throw EthereumJSErrorWithoutCode(
-        'Invalid EIP-7702 transaction: yParity should be fit within 1 byte (0 - 255)',
-      )
-    }
-    if (bytesToBigInt(r) > MAX_INTEGER) {
-      throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
-    }
-    if (bytesToBigInt(s) > MAX_INTEGER) {
-      throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: s exceeds 2^256 - 1')
-    }
+
+  for (const item of authorizationList) {
+    validateAuthorizationListItem(item)
   }
 }
 
@@ -81,26 +90,14 @@ export function verifyAuthorizationList(authorizationList: AuthorizationListByte
 export function authorizationListBytesToJSON(
   authorizationList: AuthorizationListBytes,
 ): AuthorizationList {
-  const json: AuthorizationList = []
-  for (let i = 0; i < authorizationList.length; i++) {
-    const data = authorizationList[i]
-    const chainId = bytesToHex(data[0])
-    const address = bytesToHex(data[1])
-    const nonce = bytesToHex(data[2])
-    const yParity = bytesToHex(data[3])
-    const r = bytesToHex(data[4])
-    const s = bytesToHex(data[5])
-    const jsonItem: AuthorizationListItem = {
-      chainId,
-      address,
-      nonce,
-      yParity,
-      r,
-      s,
-    }
-    json.push(jsonItem)
-  }
-  return json
+  return authorizationList.map(([chainId, address, nonce, yParity, r, s]) => ({
+    chainId: bytesToHex(chainId),
+    address: bytesToHex(address),
+    nonce: bytesToHex(nonce),
+    yParity: bytesToHex(yParity),
+    r: bytesToHex(r),
+    s: bytesToHex(s),
+  }))
 }
 
 /**
@@ -111,25 +108,25 @@ export function authorizationListBytesToJSON(
 export function authorizationListJSONToBytes(
   authorizationList: AuthorizationList,
 ): AuthorizationListBytes {
-  const authorizationListBytes: AuthorizationListBytes = []
-  const jsonItems = ['chainId', 'address', 'nonce', 'yParity', 'r', 's']
-  for (let i = 0; i < authorizationList.length; i++) {
-    const item: AuthorizationListItem = authorizationList[i]
-    for (const key of jsonItems) {
-      if (item[key as keyof typeof item] === undefined) {
+  const requiredFields = ['chainId', 'address', 'nonce', 'yParity', 'r', 's'] as const
+
+  return authorizationList.map((item) => {
+    // Validate all required fields are present
+    for (const field of requiredFields) {
+      if (item[field] === undefined) {
         throw EthereumJSErrorWithoutCode(
-          `EIP-7702 authorization list invalid: ${key} is not defined`,
+          `EIP-7702 authorization list invalid: ${field} is not defined`,
         )
       }
     }
-    const chainId = hexToBytes(item.chainId)
-    const addressBytes = hexToBytes(item.address)
-    const nonce = hexToBytes(item.nonce)
-    const yParity = hexToBytes(item.yParity)
-    const r = hexToBytes(item.r)
-    const s = hexToBytes(item.s)
 
-    authorizationListBytes.push([chainId, addressBytes, nonce, yParity, r, s])
-  }
-  return authorizationListBytes
+    return [
+      hexToBytes(item.chainId),
+      hexToBytes(item.address),
+      hexToBytes(item.nonce),
+      hexToBytes(item.yParity),
+      hexToBytes(item.r),
+      hexToBytes(item.s),
+    ]
+  })
 }
