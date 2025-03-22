@@ -316,7 +316,7 @@ describe('BlockBuilder', () => {
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  it.only('should build a 1559 block with legacy and 1559 txs', async () => {
+  it('should build a 1559 block with legacy and 1559 txs', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = createBlock(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
