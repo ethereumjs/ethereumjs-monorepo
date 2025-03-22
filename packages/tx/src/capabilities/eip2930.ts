@@ -41,9 +41,9 @@ export function verifyAccessList(accessList: AccessListBytes) {
     const accessListItem = accessList[key]
     const address = accessListItem[0]
     const storageSlots = accessListItem[1]
-    if ((<any>accessListItem)[2] !== undefined) {
+    if (accessListItem.length > 2) {
       throw EthereumJSErrorWithoutCode(
-        'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.',
+        'Access list item cannot have more than 2 elements. It can only have an address, and an array of storage slots.',
       )
     }
     if (address.length !== 20) {
@@ -69,14 +69,14 @@ export function verifyAccessList(accessList: AccessListBytes) {
  * @returns JSON format of the access list
  */
 export function accessListBytesToJSON(accessList: AccessListBytes): AccessList {
-  const accessListJSON = []
+  const accessListJSON: AccessList = []
   for (let index = 0; index < accessList.length; index++) {
-    const item: any = accessList[index]
-    const JSONItem: any = {
+    const item = accessList[index]
+    const JSONItem: AccessListItem = {
       address: bytesToHex(setLengthLeft(item[0], 20)),
       storageKeys: [],
     }
-    const storageSlots: Uint8Array[] = item[1]
+    const storageSlots = item[1]
     for (let slot = 0; slot < storageSlots.length; slot++) {
       const storageSlot = storageSlots[slot]
       JSONItem.storageKeys.push(bytesToHex(setLengthLeft(storageSlot, 32)))
