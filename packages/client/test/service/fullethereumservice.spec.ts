@@ -97,24 +97,48 @@ describe('should open', async () => {
   await service.open()
   expect(service.synchronizer!.open).toBeCalled()
   expect(server.addProtocols).toBeCalled()
-  service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should synchronize', () => {
-      assert.isTrue(true, 'synchronized')
-    })
+
+  it('should synchronize', async () => {
+    assert.isTrue(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
+          resolve(true)
+        })
+        service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
+        resolve(false)
+      }),
+      'synchronized',
+    )
   })
-  service.config.events.on(Event.SYNC_ERROR, (err) => {
-    it('should get error', () => {
-      assert.equal(err.message, 'error0', 'got error 1')
-    })
+
+  it('should get sync error', async () => {
+    assert.equal(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SYNC_ERROR, (err) => {
+          resolve(err.message)
+        })
+        service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
+        resolve(false)
+      }),
+      'error0',
+      'sync error received',
+    )
   })
-  service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
-  service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
-  service.config.events.on(Event.SERVER_ERROR, (err) => {
-    it('should get error', () => {
-      assert.equal(err.message, 'error1')
-    })
+
+  it('should get server error', async () => {
+    assert.equal(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SERVER_ERROR, (err) => {
+          resolve(err.message)
+        })
+        service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+        resolve(false)
+      }),
+      'error1',
+      'server error received',
+    )
   })
-  service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+
   await service.close()
 })
 
@@ -158,7 +182,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
             )
           })
         },
-      } as any,
+      },
     } as any,
   )
   ;(service.chain as any)._headers = {
@@ -183,7 +207,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
             )
           })
         },
-      } as any,
+      },
     } as any,
   )
 })
