@@ -150,7 +150,7 @@ describe('[Block]: Header functions', () => {
     assert.isNotFrozen(header, 'block should not be frozen when freeze deactivated in options')
   })
 
-  it('Initialization -> createWithdrawalFromBytesArray() -> error cases', async () => {
+  it('Initialization -> createWithdrawalFromBytesArray() -> error cases', () => {
     const headerArray = Array(22).fill(new Uint8Array(0))
 
     // mock header data (if set to new Uint8Array() header throws)
@@ -182,7 +182,7 @@ describe('[Block]: Header functions', () => {
     assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
   })
 
-  it('should validate extraData', async () => {
+  it('should validate extraData', () => {
     // PoW
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = createBlock({}, { common })
@@ -316,7 +316,7 @@ describe('[Block]: Header functions', () => {
   })
   /*
   TODO: Decide if we need to move these tests to blockchain
-  it('header validation -> poa checks', async () => {
+  it('header validation -> poa checks',  () => {
     const headerData = testDataPreLondon.blocks[0].blockHeader
 
     const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
