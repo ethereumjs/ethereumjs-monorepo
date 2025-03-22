@@ -181,8 +181,9 @@ describe('[StorageFetcher]', async () => {
     job!.task.storageRequests[0]['first'] = BigInt(3)
     job!.task.storageRequests[0]['count'] = BigInt(4)
     const result = await fetcher.request(job!)
-    assert.ok(
-      JSON.stringify(result?.[0]) === JSON.stringify({ skipped: true }),
+    assert.equal(
+      JSON.stringify(result?.[0]),
+      JSON.stringify({ skipped: true }),
       'should skip fetching task with limit lower than highest known key hash',
     )
 
@@ -307,7 +308,7 @@ describe('[StorageFetcher]', async () => {
       proof,
     })
     let ret = await fetcher.request(job as any)
-    assert.notOk(ret, "Reject the response if the hash sets and slot sets don't match")
+    assert.isUndefined(ret, "Reject the response if the hash sets and slot sets don't match")
 
     peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
       reqId,
@@ -315,7 +316,7 @@ describe('[StorageFetcher]', async () => {
       proof: [],
     })
     ret = await fetcher.request(job as any)
-    assert.notOk(ret, 'Should stop requesting from peer that rejected storage request')
+    assert.isUndefined(ret, 'Should stop requesting from peer that rejected storage request')
   })
 
   it('should verify zero-element proof correctly', async () => {
@@ -350,8 +351,8 @@ describe('[StorageFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === true,
+    assert.isTrue(
+      ret?.completed,
       'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right',
     )
   })
@@ -394,8 +395,8 @@ describe('[StorageFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === undefined,
+    assert.isUndefined(
+      ret?.completed,
       'proof verification should fail if elements still remain to the right of the proof',
     )
   })
@@ -450,11 +451,11 @@ describe('[StorageFetcher]', async () => {
     }
     const job = { peer, partialResult, task }
     let results = await fetcher.request(job as any)
-    assert.exists(results, 'Proof verification is completed without errors')
+    assert.isDefined(results, 'Proof verification is completed without errors')
 
     results!.completed = true
     results = fetcher.process(job as any, results!)
-    assert.exists(results, 'Response should be processed correctly')
+    assert.isDefined(results, 'Response should be processed correctly')
     assert.equal(results![0].length, 3, '3 results should be there with dummy partials')
     // remove out the dummy partials
     results![0].splice(0, 2)
@@ -494,12 +495,12 @@ describe('[StorageFetcher]', async () => {
 
     fetcher['destroyWhenDone'] = false
     await fetcher.store([Object.create(null)] as any)
-    assert.ok(
-      fetcher['destroyWhenDone'] === false,
+    assert.isFalse(
+      fetcher['destroyWhenDone'],
       'should still be open to enqueue and process new requests',
     )
     fetcher.setDestroyWhenDone()
-    assert.ok((fetcher['destroyWhenDone'] as boolean) === true, 'should mark to close on finished')
+    assert.isTrue(fetcher['destroyWhenDone'], 'should mark to close on finished')
   })
 
   it('should find a fetchable peer', async () => {

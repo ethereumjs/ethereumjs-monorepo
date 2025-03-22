@@ -4,7 +4,7 @@ import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { EthashConsensus, createBlockchain } from '../src/index.ts'
 
@@ -29,15 +29,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    try {
-      await blockchain.putBlock(block3)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.isTrue(
-        e.message.includes('uncle is already included'),
-        'block throws if uncle is already included',
-      )
-    }
+    await expect(blockchain.putBlock(block3)).rejects.toThrow('uncle is already included')
   })
 
   it('should throw if the uncle parent block is not part of the canonical chain', async () => {
@@ -55,16 +47,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    try {
-      await blockchain.putBlock(block3)
-
-      assert.fail('cannot reach this')
-    } catch (err: any) {
-      assert.isTrue(
-        err.message.includes('not found in DB'),
-        'block throws if uncle parent hash is not part of the canonical chain',
-      )
-    }
+    await expect(blockchain.putBlock(block3)).rejects.toThrow('not found in DB')
   })
 
   it('should throw if the uncle is too old', async () => {
@@ -89,15 +72,9 @@ describe('[Blockchain]: Block validation tests', () => {
       common,
     )
 
-    try {
-      await blockchain.putBlock(blockWithUnclesTooOld)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.isTrue(
-        e.message.includes('uncle block has a parent that is too old'),
-        'block throws uncle is too old',
-      )
-    }
+    await expect(blockchain.putBlock(blockWithUnclesTooOld)).rejects.toThrow(
+      'uncle block has a parent that is too old',
+    )
   })
 
   it('should throw if uncle is too young', async () => {
@@ -111,15 +88,9 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(uncleBlock)
 
-    try {
-      await blockchain.putBlock(block1)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.isTrue(
-        e.message.includes('uncle block has a parent that is too old or too young'),
-        'block throws uncle is too young',
-      )
-    }
+    await expect(blockchain.putBlock(block1)).rejects.toThrow(
+      'uncle block has a parent that is too old or too young',
+    )
   })
 
   it('should throw if the uncle header is invalid', async () => {
@@ -147,15 +118,9 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    try {
-      await blockchain.putBlock(block2)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.isTrue(
-        e.message.includes('invalid difficulty block header number=1 '),
-        'block throws when uncle header is invalid',
-      )
-    }
+    await expect(blockchain.putBlock(block2)).rejects.toThrow(
+      'invalid difficulty block header number=1',
+    )
   })
 
   it('throws if uncle is a canonical block', async () => {
@@ -169,16 +134,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    try {
-      await blockchain.putBlock(block2)
-
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.isTrue(
-        e.message.includes('The uncle is a canonical block'),
-        'block throws if an uncle is a canonical block',
-      )
-    }
+    await expect(blockchain.putBlock(block2)).rejects.toThrow('The uncle is a canonical block')
   })
 
   it('successfully validates uncles', async () => {
@@ -258,11 +214,7 @@ describe('[Blockchain]: Block validation tests', () => {
       const block2 = createBlock({ header }, { common })
       await blockchain.putBlock(block2)
     } catch (e: any) {
-      const expectedError = 'Invalid block: base fee not correct'
-      assert.ok(
-        (e.message as string).includes(expectedError),
-        'should throw when base fee is not correct',
-      )
+      assert.include(e.message, 'Invalid block: base fee not correct')
     }
   })
 

@@ -75,7 +75,7 @@ describe('[BeaconSynchronizer]', async () => {
     const headers = [{ number: BigInt(5) }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
     const latest = await peer.latest()
-    assert.ok(latest!.number === BigInt(5), 'got height')
+    assert.equal(latest?.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
   })
@@ -230,13 +230,13 @@ describe('[BeaconSynchronizer]', async () => {
     const block = createBlock({
       header: { number: BigInt(16), parentHash: head.hash() },
     })
-    assert.ok(await sync.extendChain(block), 'should extend chain successfully')
-    assert.ok(await sync.setHead(block), 'should set head successfully')
+    assert.isTrue(await sync.extendChain(block), 'should extend chain successfully')
+    assert.isTrue(await sync.setHead(block), 'should set head successfully')
     assert.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
 
     const gapBlock = createBlock({ header: { number: BigInt(18) } })
-    assert.notOk(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
-    assert.ok(
+    assert.isFalse(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
+    assert.isTrue(
       await sync.setHead(gapBlock),
       'should be able to set and update head with gapped block',
     )

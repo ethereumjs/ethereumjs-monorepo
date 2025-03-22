@@ -48,6 +48,6 @@ describe('Precompiles: MODEXP', () => {
       common,
       _EVM: evm,
     })
-    assert.ok(result.executionGasUsed === gas)
+    assert.equal(result.executionGasUsed, gas)
   })
 })

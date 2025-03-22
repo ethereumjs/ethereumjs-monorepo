@@ -34,7 +34,7 @@ describe('EIP-3607 tests', () => {
     tx.getSenderAddress = () => precompileAddr
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
-      assert.ok('runTx successfully ran')
+      assert.isTrue(true, 'runTx successfully ran')
     } catch {
       assert.fail('threw an unexpected error')
     }

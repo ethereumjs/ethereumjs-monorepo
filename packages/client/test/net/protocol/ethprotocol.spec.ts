@@ -22,9 +22,9 @@ describe('[EthProtocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    assert.ok(typeof p.name === 'string', 'get name')
-    assert.ok(Array.isArray(p.versions), 'get versions')
-    assert.ok(Array.isArray(p.messages), 'get messages')
+    assert.isString(p.name, 'get name')
+    assert.isArray(p.versions, 'get versions')
+    assert.isArray(p.messages, 'get messages')
   })
 
   it('should open correctly', async () => {
@@ -32,8 +32,8 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
-    assert.ok(p.opened, 'opened is true')
-    assert.notOk(await p.open(), 'repeat open')
+    assert.isTrue(p.opened, 'opened is true')
+    assert.isFalse(await p.open(), 'repeat open')
   })
 
   it('should encode/decode status', async () => {
@@ -75,7 +75,7 @@ describe('[EthProtocol]', () => {
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
-    assert.ok(
+    assert.isTrue(
       status.chainId === BigInt(1) &&
         status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&

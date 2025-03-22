@@ -74,7 +74,7 @@ describe('[ByteCodeFetcher]', async () => {
       fullResult[0],
       'got results',
     )
-    assert.notOk(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
   })
 
   it('should adopt correctly', () => {

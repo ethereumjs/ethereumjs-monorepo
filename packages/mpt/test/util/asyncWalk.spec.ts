@@ -88,7 +88,7 @@ describe('walk a sparse trie', async () => {
   const rawProofKey = inputs[0][0] as string
   const proofKey = isHexString(rawProofKey) ? hexToBytes(rawProofKey) : utf8ToBytes(rawProofKey)
   const proof = await createMerkleProof(trie, proofKey)
-  assert.ok(await verifyMerkleProof(proofKey, proof))
+  assert.isNotNull(await verifyMerkleProof(proofKey, proof))
 
   // Build a sparse trie from the proof
   const fromProof = await createMPTFromProof(proof, { root: trie.root() })

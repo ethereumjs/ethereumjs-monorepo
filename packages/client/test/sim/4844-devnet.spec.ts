@@ -24,6 +24,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
+
 const shardingJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 
@@ -152,7 +153,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
         }
         await sleep(2000)
       }
-      assert.ok(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
+      assert.isTrue(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
     },
     10 * 60_000,
   )
@@ -200,8 +201,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
       receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
       await sleep(1000)
     }
-    assert.ok(
-      receipt.result.contractAddress !== undefined,
+    assert.isDefined(
+      receipt.result.contractAddress,
       'successfully deployed contract that calls precompile',
     )
   }, 60_000)
