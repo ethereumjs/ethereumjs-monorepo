@@ -310,8 +310,11 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
 
     const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
-
-    assert.isTrue(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
+    assert.isDefined(retrievedPreimage, 'preimage should be defined')
+    assert.isTrue(
+      equalsBytes(retrievedPreimage, caller.bytes),
+      'preimage should be the caller address',
+    )
   })
 
   it('run without signature', async () => {
