@@ -86,7 +86,8 @@ export class FeeMarket1559Tx
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const { chainId, accessList: rawAccessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -101,12 +102,10 @@ export class FeeMarket1559Tx
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListNormalized = accessList ?? []
-    if (isAccessList(accessListNormalized)) {
-      this.accessList = EIP2930.accessListJSONToBytes(accessListNormalized)
-    } else {
-      this.accessList = accessListNormalized
-    }
+    this.accessList = isAccessList(accessList)
+      ? EIP2930.accessListJSONToBytes(accessList)
+      : accessList
+
     // Verify the access list format.
     EIP2930.verifyAccessList(this.accessList)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))

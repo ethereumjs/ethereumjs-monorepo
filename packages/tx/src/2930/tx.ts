@@ -82,7 +82,8 @@ export class AccessList2930Tx
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.AccessListEIP2930 }, opts)
-    const { chainId, accessList, gasPrice } = txData
+    const { chainId, accessList: rawAccessList, gasPrice } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -98,12 +99,9 @@ export class AccessList2930Tx
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
-    const accessListNormalized = accessList ?? []
-    if (isAccessList(accessListNormalized)) {
-      this.accessList = EIP2930.accessListJSONToBytes(accessListNormalized)
-    } else {
-      this.accessList = accessListNormalized
-    }
+    this.accessList = isAccessList(accessList)
+      ? EIP2930.accessListJSONToBytes(accessList)
+      : accessList
     // Verify the access list format.
     EIP2930.verifyAccessList(this.accessList)
 
