@@ -144,7 +144,8 @@ export interface TransactionCache {
     hardfork: string | Hardfork
   }
   senderPubKey?: Uint8Array
-  // TEMP: fixme
+  // TODO: re-add these cache items for the JSON
+  // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3932
   //accessListJSON?: AccessList
   //authorityListJSON?: AuthorizationList
 }
