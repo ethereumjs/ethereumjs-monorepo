@@ -30,6 +30,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
@@ -102,12 +103,10 @@ export class FeeMarket1559Tx
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    this.accessList = isAccessList(accessList)
-      ? EIP2930.accessListJSONToBytes(accessList)
-      : accessList
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
 
     // Verify the access list format.
-    EIP2930.verifyAccessList(this.accessList)
+    EIP2930.verifyAccessList(this)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
@@ -329,7 +328,7 @@ export class FeeMarket1559Tx
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = EIP2930.accessListBytesToJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {

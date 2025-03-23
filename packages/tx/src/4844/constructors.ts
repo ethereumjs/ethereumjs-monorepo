@@ -13,10 +13,9 @@ import {
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
-import * as EIP2930 from '../capabilities/eip2930.ts'
 import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
-import { txTypeBytes, validateNotArray } from '../util.ts'
+import { accessListBytesToJSON, txTypeBytes, validateNotArray } from '../util.ts'
 
 import { Blob4844Tx } from './tx.ts'
 
@@ -332,7 +331,7 @@ export function blobTxNetworkWrapperToJSON(
 ): JSONBlobTxNetworkWrapper {
   const tx = createBlob4844TxFromSerializedNetworkWrapper(serialized, opts)
 
-  const accessListJSON = EIP2930.accessListBytesToJSON(tx.accessList)
+  const accessListJSON = accessListBytesToJSON(tx.accessList)
   const baseJSON = tx.toJSON()
 
   return {

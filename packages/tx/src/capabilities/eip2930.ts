@@ -1,8 +1,8 @@
 import * as Legacy from './legacy.ts'
 
 import type { Common } from '@ethereumjs/common'
-import { EthereumJSErrorWithoutCode, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
-import type { AccessList, AccessListBytes, EIP2930CompatibleTx } from '../types.ts'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
+import type { AccessListBytes, EIP2930CompatibleTx } from '../types.ts'
 
 /**
  * The amount of gas paid for the data in this tx
@@ -17,7 +17,7 @@ export function getDataGas(tx: EIP2930CompatibleTx): bigint {
  * @param common
  * @returns
  */
-export function getAccessListDataGas(accessList: AccessListBytes, common: Common): number {
+function getAccessListDataGas(accessList: AccessListBytes, common: Common): number {
   const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
   const accessListAddressCost = common.param('accessListAddressGas')
 
@@ -31,7 +31,8 @@ export function getAccessListDataGas(accessList: AccessListBytes, common: Common
  * Verifies an access list. Throws if invalid.
  * @param accessList
  */
-export function verifyAccessList(accessList: AccessListBytes) {
+export function verifyAccessList(tx: EIP2930CompatibleTx) {
+  const accessList = tx.accessList
   for (const accessListItem of accessList) {
     if (accessListItem.length !== 2) {
       throw EthereumJSErrorWithoutCode(
@@ -52,30 +53,4 @@ export function verifyAccessList(accessList: AccessListBytes) {
       }
     }
   }
-}
-
-// Utility helpers to convert access lists from the byte format and JSON format and vice versa
-
-/**
- * Converts an access list in bytes to a JSON format
- * @param accessList
- * @returns JSON format of the access list
- */
-export function accessListBytesToJSON(accessList: AccessListBytes): AccessList {
-  return accessList.map(([address, storageSlots]) => ({
-    address: bytesToHex(setLengthLeft(address, 20)),
-    storageKeys: storageSlots.map((slot) => bytesToHex(setLengthLeft(slot, 32))),
-  }))
-}
-
-/**
- * Converts an access list in JSON to a bytes format
- * @param accessList
- * @returns bytes format of the access list
- */
-export function accessListJSONToBytes(accessList: AccessList): AccessListBytes {
-  return accessList.map((item) => [
-    hexToBytes(item.address),
-    item.storageKeys.map((key) => hexToBytes(key)),
-  ])
 }

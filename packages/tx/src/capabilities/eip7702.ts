@@ -21,7 +21,7 @@ import type {
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP7702CompatibleTx): bigint {
-  const eip2930Cost = BigInt(EIP2930.getAccessListDataGas(tx.accessList, tx.common))
+  const eip2930Cost = BigInt(EIP2930.getDataGas(tx))
   const eip7702Cost = BigInt(
     tx.authorizationList.length * Number(tx.common.param('perEmptyAccountCost')),
   )
