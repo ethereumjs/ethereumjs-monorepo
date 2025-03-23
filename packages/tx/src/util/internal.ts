@@ -11,12 +11,23 @@ import {
 } from '@ethereumjs/util'
 
 import { paramsTx } from '../params.ts'
-import { checkMaxInitCodeSize, validateNotArray } from './general.ts'
+import { validateNotArray } from './general.ts'
 
 import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.ts'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
+}
+
+function checkMaxInitCodeSize(common: Common, length: number) {
+  const maxInitCodeSize = common.param('maxInitCodeSize')
+  if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
+    throw EthereumJSErrorWithoutCode(
+      `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
+        'maxInitCodeSize',
+      )}`,
+    )
+  }
 }
 
 /**

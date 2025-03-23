@@ -7,19 +7,7 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TypedTxData } from '../types.ts'
-
-export function checkMaxInitCodeSize(common: Common, length: number) {
-  const maxInitCodeSize = common.param('maxInitCodeSize')
-  if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
-    throw EthereumJSErrorWithoutCode(
-      `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
-        'maxInitCodeSize',
-      )}`,
-    )
-  }
-}
 
 export function txTypeBytes(txType: TransactionType): Uint8Array {
   return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
