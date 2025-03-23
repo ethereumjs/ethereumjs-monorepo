@@ -6,11 +6,11 @@ import { short } from '../util/index.ts'
 import { ReverseBlockFetcher } from './fetcher/index.ts'
 import { Synchronizer } from './sync.ts'
 
+import type { Block } from '@ethereumjs/block'
 import type { VMExecution } from '../execution/index.ts'
 import type { Peer } from '../net/peer/peer.ts'
 import type { Skeleton } from '../service/skeleton.ts'
 import type { SynchronizerOptions } from './sync.ts'
-import type { Block } from '@ethereumjs/block'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */

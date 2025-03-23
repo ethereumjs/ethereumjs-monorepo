@@ -40,11 +40,11 @@ describe('starts and stops connection manager', () => {
   const manager = new CLConnectionManager({ config })
   it('should start', () => {
     manager.start()
-    assert.ok(manager.running, 'should start')
+    assert.isTrue(manager.running, 'should start')
   })
   it('should stop', () => {
     manager.stop()
-    assert.notOk(manager.running, 'should stop')
+    assert.isFalse(manager.running, 'should stop')
   })
 })
 
@@ -56,7 +56,7 @@ describe('hardfork MergeForkBlock', () => {
   const config = new Config({ common })
   it('instantiates with config', () => {
     const manager = new CLConnectionManager({ config })
-    assert.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
+    assert.isTrue(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
     manager.stop()
   })
 })
@@ -73,14 +73,14 @@ describe('postmerge hardfork', () => {
     const manager = new CLConnectionManager({ config })
 
     config.events.on(Event.CHAIN_UPDATED, () => {
-      assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
+      assert.isTrue(manager.running, 'connection manager started on chain update on mergeBlock')
       config.events.emit(Event.CLIENT_SHUTDOWN)
     })
 
     config.events.emit(Event.CHAIN_UPDATED)
     config.events.on(Event.CLIENT_SHUTDOWN, () => {
       it('stops on client shutdown', () => {
-        assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+        assert.isFalse(manager.running, 'connection manager stopped on client shutdown')
       })
     })
   })
@@ -92,10 +92,10 @@ describe('Status updates', async () => {
   config.logger.on('data', (chunk) => {
     it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
-        assert.ok(true, 'received last fork choice message')
+        assert.isTrue(true, 'received last fork choice message')
       }
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
-        assert.ok(true, 'received last payload message')
+        assert.isTrue(true, 'received last payload message')
         manager.stop()
         config.logger.removeAllListeners()
       }
@@ -118,7 +118,7 @@ describe('updates stats when a new block is processed', () => {
     })
     config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
-        assert.ok(true, 'received last payload stats message')
+        assert.isTrue(true, 'received last payload stats message')
         manager.stop()
         config.logger.removeAllListeners()
       }
@@ -133,7 +133,7 @@ describe('updates status correctly', async () => {
   const manager = new CLConnectionManager({ config })
   manager['updateStatus']()
   it('updates status correctly', () => {
-    assert.ok(manager.running, 'connection manager started when updateStatus called')
+    assert.isTrue(manager.running, 'connection manager started when updateStatus called')
     assert.equal(
       manager['connectionStatus'],
       ConnectionStatus.Connected,

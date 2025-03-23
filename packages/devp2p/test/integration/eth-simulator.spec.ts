@@ -35,7 +35,7 @@ describe('ETH simulator tests', () => {
         protocol.events.on('message', (code) => {
           switch (code) {
             case EthMessageCodes.STATUS:
-              assert.ok(true, 'should receive initial status message')
+              assert.isTrue(true, 'should receive initial status message')
               protocol.sendStatus(status)
               util.destroyRLPXs(rlpxs)
               resolve(undefined)

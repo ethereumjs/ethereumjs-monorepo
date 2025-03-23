@@ -6,8 +6,8 @@ import { jwt } from '../../src/ext/jwt-simple.ts'
 
 import { createClient, createManager, getRPCClient, startRPC } from './helpers.ts'
 
-import type { TAlgorithm } from '../../src/ext/jwt-simple.ts'
 import type { AddressInfo } from 'net'
+import type { TAlgorithm } from '../../src/ext/jwt-simple.ts'
 
 const { encode } = jwt
 const jwtSecret = randomBytes(32)
@@ -106,7 +106,7 @@ describe('JSON-RPC call', () => {
       assert.fail('should have thrown an error')
     } catch (err: any) {
       assert.equal(err.code, 401, 'errored with valid but stale token')
-      assert.ok(err.message.includes('Stale jwt'), 'valid but stale token')
+      assert.isTrue(err.message.includes('Stale jwt') === true, 'valid but stale token')
     }
   })
 
@@ -143,7 +143,7 @@ describe('JSON-RPC call', () => {
       assert.fail('should have thrown')
     } catch (err: any) {
       assert.equal(err.code, 401, 'errored with unauthorized')
-      assert.ok(err.message.includes('Missing auth header'), 'no auth token provided')
+      assert.isTrue(err.message.includes('Missing auth header') === true, 'no auth token provided')
     }
   })
 
@@ -188,7 +188,7 @@ describe('callWithStackTrace', () => {
     })
     const res = await rpc.request(method, ['0x678', false])
 
-    assert.ok(res.error.trace !== undefined)
+    assert.isTrue(res.error.trace !== undefined)
   })
 
   it('call with stack trace and gets an error without a stack trace', async () => {
@@ -209,6 +209,6 @@ describe('callWithStackTrace', () => {
 
     const res = await rpc.request(method, ['0xavc', false])
 
-    assert.ok(res.error.trace === undefined)
+    assert.isTrue(res.error.trace === undefined)
   })
 })

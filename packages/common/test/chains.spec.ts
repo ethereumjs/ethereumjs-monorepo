@@ -18,7 +18,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     const c = new Common({ chain: Mainnet })
     assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Cancun, 'should set hardfork to current default hardfork')
+    assert.equal(c.hardfork(), Hardfork.Prague, 'should set hardfork to current default hardfork')
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
@@ -73,7 +73,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
       new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
     const msg = 'should throw an exception on non-existing hardfork'
-    assert.throws(f, /not supported$/, undefined, msg) // eslint-disable-line no-new
+    assert.throws(f, /not supported$/, undefined, msg)
   })
 
   it('Should provide correct access to chain parameters', () => {
@@ -138,7 +138,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()
-      assert.ok(Array.isArray(dnsNetworks), 'is an array')
+      assert.isArray(dnsNetworks, 'is an array')
       assert.equal(typeof dnsNetworks[0], 'string', 'returns the DNS ENR url as a string')
     }
   })

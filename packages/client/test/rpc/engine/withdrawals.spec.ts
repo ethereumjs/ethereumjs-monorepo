@@ -119,7 +119,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       validPayloadAttributes,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated'),
     )
 

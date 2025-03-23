@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, parseGethGenesisState, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
@@ -19,13 +18,14 @@ import {
   waitForELStart,
 } from './simutils.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EthereumClient } from '../../src/client.ts'
 import type { RlpxServer } from '../../src/net/server/index.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
+
 const networkJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(networkJSON, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJSON)
@@ -61,7 +61,7 @@ describe('simple mainnet test run', async () => {
   })
   it.skip('should connect to Geth', () => {
     if (result.includes('Geth') === true) {
-      assert.ok(true, 'connected to Geth')
+      assert.isTrue(true, 'connected to Geth')
     } else {
       assert.fail('connected to wrong client: ' + result)
     }
@@ -69,14 +69,14 @@ describe('simple mainnet test run', async () => {
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
   it('should fetch enode', () => {
-    assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+    assert.isDefined(nodeInfo.enode, 'fetched enode for peering')
   })
 
   console.log(`Waiting for network to start...`)
   it('should start network', async () => {
     try {
       await waitForELStart(client)
-      assert.ok(true, 'geth<>lodestar started successfully')
+      assert.isTrue(true, 'geth<>lodestar started successfully')
     } catch (e: any) {
       assert.fail(e.message + ': geth<>lodestar failed to start')
     }
@@ -106,10 +106,7 @@ describe('simple mainnet test run', async () => {
       assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer 2x')
 
       balance = await client.request('eth_getBalance', [sender, 'latest'])
-      assert.ok(
-        balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee',
-      )
+      assert.isDefined(balance.result, 'remaining sender balance after transfers and gas fee')
     },
     2 * 60_000,
   )
@@ -123,7 +120,6 @@ describe('simple mainnet test run', async () => {
         ejsInlineClient,
         peerConnectedPromise,
         beaconSyncRelayer: relayer,
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
       } = (await createBeaconSyncClient(
         common,
         customGenesisState,
@@ -138,7 +134,7 @@ describe('simple mainnet test run', async () => {
       }
       ejsClient = ejsInlineClient
       beaconSyncRelayer = relayer
-      assert.ok(ejsClient !== null, 'ethereumjs client started')
+      assert.isTrue(ejsClient !== null, 'ethereumjs client started')
 
       const enode = (ejsClient!.server() as RlpxServer)!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
@@ -147,7 +143,7 @@ describe('simple mainnet test run', async () => {
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
-        assert.ok(true, 'connected to geth peer')
+        assert.isTrue(true, 'connected to geth peer')
       } catch (e) {
         console.log(e)
         assert.fail('could not connect to geth peer in 10 seconds')
@@ -174,8 +170,8 @@ describe('simple mainnet test run', async () => {
             'beaconSyncRelayer should have synced client',
           )
           await ejsClient.stop()
-          assert.ok(true, 'completed beacon sync')
-        } catch (e) {
+          assert.isTrue(true, 'completed beacon sync')
+        } catch {
           console.log()
           assert.fail('could not complete beacon sync in 8 minutes')
         }
@@ -190,8 +186,8 @@ describe('simple mainnet test run', async () => {
     try {
       beaconSyncRelayer?.close()
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60000)

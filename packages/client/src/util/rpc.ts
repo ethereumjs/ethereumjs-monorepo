@@ -1,16 +1,16 @@
+import { createServer } from 'http'
+import { inspect } from 'util'
 import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
-import { createServer } from 'http'
 import jayson from 'jayson/promise/index.js'
-import { inspect } from 'util'
 
 import { jwt } from '../ext/jwt-simple.ts'
 
+import type { IncomingMessage } from 'connect'
 import type { TAlgorithm } from '../ext/jwt-simple.ts'
 import type { Logger } from '../logging.ts'
 import type { RPCManager } from '../rpc/index.ts'
-import type { IncomingMessage } from 'connect'
 const { json: JSONParser } = bodyParser
 const { decode } = jwt
 
@@ -231,7 +231,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.Http
       const { jwtSecret } = withEngineMiddleware
       try {
         checkHeaderAuth(req, jwtSecret)
-      } catch (error) {
+      } catch {
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
         socket.destroy()
       }

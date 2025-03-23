@@ -117,7 +117,7 @@ export class Protocol {
    * by subclass.
    * @param _status status message payload
    */
-  decodeStatus(_status: any): Object {
+  decodeStatus(_status: any): object {
     throw EthereumJSErrorWithoutCode('Unimplemented')
   }
 

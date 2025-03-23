@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -26,7 +27,6 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
@@ -39,10 +39,10 @@ import { LevelDB } from './level.ts'
 import { PreimagesManager } from './preimage.ts'
 import { ReceiptsManager } from './receipt.ts'
 
-import type { ExecutionOptions } from './execution.ts'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
+import type { ExecutionOptions } from './execution.ts'
 
 export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
 
@@ -897,11 +897,7 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
-    this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
 
     if (this.running || !this.started) {
       return false

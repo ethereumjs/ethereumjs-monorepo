@@ -1,5 +1,6 @@
 // cspell:ignore uuidv kdfparams dklen xprv xpub
 import {
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -82,14 +83,18 @@ function validateHexString(paramName: string, str: string, length?: number) {
     return str
   }
   if ((length as number) % 2) {
-    throw new Error(`Invalid length argument, must be an even number`)
+    throw EthereumJSErrorWithoutCode(`Invalid length argument, must be an even number`)
   }
   if (typeof length === 'number' && str.length !== length) {
-    throw new Error(`Invalid ${paramName}, string must be ${length} hex characters`)
+    throw EthereumJSErrorWithoutCode(
+      `Invalid ${paramName}, string must be ${length} hex characters`,
+    )
   }
   if (!/^([0-9a-f]{2})+$/i.test(str)) {
     const howMany = typeof length === 'number' ? length : 'empty or a non-zero even number of'
-    throw new Error(`Invalid ${paramName}, string must be ${howMany} hex characters`)
+    throw EthereumJSErrorWithoutCode(
+      `Invalid ${paramName}, string must be ${howMany} hex characters`,
+    )
   }
   return str
 }
@@ -99,12 +104,12 @@ function validateBytes(paramName: string, bytes: Uint8Array, length?: number) {
     const howManyHex =
       typeof length === 'number' ? `${length * 2}` : 'empty or a non-zero even number of'
     const howManyBytes = typeof length === 'number' ? ` (${length} bytes)` : ''
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `Invalid ${paramName}, must be a string (${howManyHex} hex characters) or Uint8Array${howManyBytes}`,
     )
   }
   if (typeof length === 'number' && bytes.length !== length) {
-    throw new Error(`Invalid ${paramName}, Uint8Array must be ${length} bytes`)
+    throw EthereumJSErrorWithoutCode(`Invalid ${paramName}, Uint8Array must be ${length} bytes`)
   }
   return bytes
 }
@@ -273,15 +278,19 @@ export class Wallet {
     this.privateKey = privateKey
     this.publicKey = publicKey
     if (privateKey && publicKey) {
-      throw new Error('Cannot supply both a private and a public key to the constructor')
+      throw EthereumJSErrorWithoutCode(
+        'Cannot supply both a private and a public key to the constructor',
+      )
     }
 
     if (privateKey && !isValidPrivate(privateKey)) {
-      throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
+      throw EthereumJSErrorWithoutCode(
+        'Private key does not satisfy the curve requirements (ie. it is invalid)',
+      )
     }
 
     if (publicKey && !isValidPublic(publicKey)) {
-      throw new Error('Invalid public key')
+      throw EthereumJSErrorWithoutCode('Invalid public key')
     }
   }
 
@@ -342,7 +351,7 @@ export class Wallet {
    */
   public static fromExtendedPublicKey(extendedPublicKey: string): Wallet {
     if (extendedPublicKey.slice(0, 4) !== 'xpub') {
-      throw new Error('Not an extended public key')
+      throw EthereumJSErrorWithoutCode('Not an extended public key')
     }
     const publicKey: Uint8Array = bs58check.decode(extendedPublicKey).subarray(45)
     // Convert to an Ethereum public key
@@ -361,11 +370,11 @@ export class Wallet {
    */
   public static fromExtendedPrivateKey(extendedPrivateKey: string): Wallet {
     if (extendedPrivateKey.slice(0, 4) !== 'xprv') {
-      throw new Error('Not an extended private key')
+      throw EthereumJSErrorWithoutCode('Not an extended private key')
     }
     const tmp: Uint8Array = bs58check.decode(extendedPrivateKey)
     if (tmp[45] !== 0) {
-      throw new Error('Invalid extended private key')
+      throw EthereumJSErrorWithoutCode('Invalid extended private key')
     }
     return Wallet.fromPrivateKey(tmp.subarray(46))
   }
@@ -379,10 +388,10 @@ export class Wallet {
   public static async fromV1(input: string | V1Keystore, password: string): Promise<Wallet> {
     const json: V1Keystore = typeof input === 'object' ? input : JSON.parse(input)
     if (json.Version !== '1') {
-      throw new Error('Not a V1 Wallet')
+      throw EthereumJSErrorWithoutCode('Not a V1 Wallet')
     }
     if (json.Crypto.KeyHeader.Kdf !== 'scrypt') {
-      throw new Error('Unsupported key derivation scheme')
+      throw EthereumJSErrorWithoutCode('Unsupported key derivation scheme')
     }
 
     const kdfparams = json.Crypto.KeyHeader.KdfParams
@@ -391,7 +400,7 @@ export class Wallet {
     const ciphertext = unprefixedHexToBytes(json.Crypto.CipherText)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
     if (bytesToUnprefixedHex(mac) !== json.Crypto.MAC) {
-      throw new Error('Key derivation failed - possibly wrong passphrase')
+      throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
 
     const seed = aes.decrypt(
@@ -418,7 +427,7 @@ export class Wallet {
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
     if (json.version !== 3) {
-      throw new Error('Not a V3 wallet')
+      throw EthereumJSErrorWithoutCode('Not a V3 wallet')
     }
 
     let derivedKey: Uint8Array, kdfparams: any
@@ -430,7 +439,7 @@ export class Wallet {
       kdfparams = json.crypto.kdfparams
 
       if (kdfparams.prf !== 'hmac-sha256') {
-        throw new Error('Unsupported parameters to PBKDF2')
+        throw EthereumJSErrorWithoutCode('Unsupported parameters to PBKDF2')
       }
 
       derivedKey = await pbkdf2(
@@ -441,13 +450,13 @@ export class Wallet {
         'sha256',
       )
     } else {
-      throw new Error('Unsupported key derivation scheme')
+      throw EthereumJSErrorWithoutCode('Unsupported key derivation scheme')
     }
 
     const ciphertext = unprefixedHexToBytes(json.crypto.ciphertext)
     const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
     if (bytesToUnprefixedHex(mac) !== json.crypto.mac) {
-      throw new Error('Key derivation failed - possibly wrong passphrase')
+      throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
 
     const seed = aes.decrypt(
@@ -492,7 +501,7 @@ export class Wallet {
 
     const wallet = new Wallet(keccak256(seed))
     if (bytesToUnprefixedHex(wallet.getAddress()) !== json.ethaddr) {
-      throw new Error('Decoded key mismatch - possibly wrong passphrase')
+      throw EthereumJSErrorWithoutCode('Decoded key mismatch - possibly wrong passphrase')
     }
     return wallet
   }
@@ -514,7 +523,7 @@ export class Wallet {
    */
   private get privKey(): Uint8Array {
     if (this.privateKey === undefined || this.privateKey === null) {
-      throw new Error('This is a public key only wallet')
+      throw EthereumJSErrorWithoutCode('This is a public key only wallet')
     }
     return this.privateKey
   }
@@ -577,7 +586,7 @@ export class Wallet {
    */
   public async toV3(password: string, opts?: Partial<V3Params>): Promise<V3Keystore> {
     if (this.privateKey === undefined || this.privateKey === null) {
-      throw new Error('This is a public key only wallet')
+      throw EthereumJSErrorWithoutCode('This is a public key only wallet')
     }
 
     const v3Params: V3ParamsStrict = mergeToV3ParamsWithDefaults(opts)
@@ -601,7 +610,7 @@ export class Wallet {
         derivedKey = await scryptV3(password, kdfParams)
         break
       default:
-        throw new Error('Unsupported kdf')
+        throw EthereumJSErrorWithoutCode('Unsupported kdf')
     }
 
     const ciphertext = aes.encrypt(
@@ -616,7 +625,7 @@ export class Wallet {
     return {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
-      // @ts-ignore - the official V3 keystore spec omits the address key
+      //@ts-expect-error - the official V3 keystore spec omits the address key
       address: bytesToUnprefixedHex(this.getAddress()),
       crypto: {
         ciphertext: bytesToUnprefixedHex(ciphertext),

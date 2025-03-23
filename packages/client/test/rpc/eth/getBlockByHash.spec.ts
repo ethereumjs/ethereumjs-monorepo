@@ -42,7 +42,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
   })
 
   it('call with invalid hex string as block hash', async () => {
@@ -50,7 +50,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0xWRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: invalid block hash'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: invalid block hash'))
   })
 
   it('call without second parameter', async () => {
@@ -58,7 +58,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument 1'))
+    assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
   it('call with invalid second parameter', async () => {

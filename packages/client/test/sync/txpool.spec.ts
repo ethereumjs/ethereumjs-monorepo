@@ -1,3 +1,6 @@
+import * as http from 'http'
+import * as url from 'url'
+import type { BlockHeader } from '@ethereumjs/block'
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
@@ -11,9 +14,7 @@ import {
   hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
-import * as http from 'http'
 import * as promClient from 'prom-client'
-import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
@@ -191,15 +192,15 @@ describe('[TxPool]', async () => {
   it('should initialize correctly', () => {
     const { pool } = setup()
     assert.equal(pool.pool.size, 0, 'pool empty')
-    assert.notOk(pool['opened'], 'pool not opened yet')
+    assert.isFalse(pool['opened'], 'pool not opened yet')
     pool.open()
-    assert.ok(pool['opened'], 'pool opened')
+    assert.isTrue(pool['opened'], 'pool opened')
     pool.start()
-    assert.ok(pool['running'], 'pool running')
+    assert.isTrue(pool['running'], 'pool running')
     pool.stop()
-    assert.notOk(pool['running'], 'pool not running anymore')
+    assert.isFalse(pool['running'], 'pool not running anymore')
     pool.close()
-    assert.notOk(pool['opened'], 'pool not opened anymore')
+    assert.isFalse(pool['opened'], 'pool not opened anymore')
   })
 
   it('should open/close', async () => {
@@ -207,11 +208,11 @@ describe('[TxPool]', async () => {
 
     pool.open()
     pool.start()
-    assert.ok(pool['opened'], 'pool opened')
+    assert.isTrue(pool['opened'], 'pool opened')
     assert.equal(pool.open(), false, 'already opened')
     pool.stop()
     pool.close()
-    assert.notOk(pool['opened'], 'closed')
+    assert.isFalse(pool['opened'], 'closed')
   })
 
   it('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async () => {
@@ -422,8 +423,8 @@ describe('[TxPool]', async () => {
       await pool.add(txA02_Underpriced)
       assert.fail('should fail adding underpriced txn to txpool')
     } catch (e: any) {
-      assert.ok(
-        e.message.includes('replacement gas too low'),
+      assert.isTrue(
+        e.message.includes('replacement gas too low') === true,
         'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
@@ -502,7 +503,7 @@ describe('[TxPool]', async () => {
         break
       }
     }
-    assert.notOk(await handleTxs(txs, 'pool is full'), 'successfully rejected too many txs')
+    assert.isFalse(await handleTxs(txs, 'pool is full'), 'successfully rejected too many txs')
   })
 
   it('announcedTxHashes() -> reject if account tries to send more than 100 txs', async () => {
@@ -514,7 +515,7 @@ describe('[TxPool]', async () => {
       txs.push(txn)
     }
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'already have max amount of txs for this account'),
       'successfully rejected too many txs from same account',
     )
@@ -530,7 +531,7 @@ describe('[TxPool]', async () => {
       }),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'Cannot call hash method if transaction is not signed'),
       'successfully rejected unsigned tx',
     )
@@ -547,7 +548,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'tx nonce too low', {
         getAccount: () => new Account(BigInt(1), BigInt('50000000000000000000')),
       } as any),
@@ -571,7 +572,7 @@ describe('[TxPool]', async () => {
       ).sign(A.privateKey),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'exceeds the max data size', {
         getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000000')),
       } as any),
@@ -591,7 +592,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'insufficient balance', {
         getAccount: () => new Account(BigInt(0), BigInt('0')),
       } as any),
@@ -611,11 +612,12 @@ describe('[TxPool]', async () => {
     )
 
     const { pool } = setup()
-    ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
-      baseFeePerGas: BigInt(3000000000),
-    })
+    pool['service'].chain.getCanonicalHeadHeader = async () =>
+      ({
+        baseFeePerGas: BigInt(3000000000),
+      }) as BlockHeader
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'not within 50% range of current basefee', undefined, pool),
       'successfully rejected tx with too low gas price',
     )
@@ -634,11 +636,12 @@ describe('[TxPool]', async () => {
     )
 
     const { pool } = setup()
-    ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
-      gasLimit: BigInt(5000),
-    })
+    pool['service'].chain.getCanonicalHeadHeader = async () =>
+      ({
+        gasLimit: BigInt(5000),
+      }) as BlockHeader
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'exceeds last block gas limit', undefined, pool),
       'successfully rejected tx which has gas limit higher than block gas limit',
     )
@@ -658,7 +661,7 @@ describe('[TxPool]', async () => {
 
     const { pool } = setup()
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
       'successfully rejected tx which is already in pool',
     )
@@ -675,7 +678,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
       'successfully rejected tx with too low gas price',
     )
@@ -691,7 +694,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    assert.notOk(
+    assert.isFalse(
       await handleTxs(txs, 'does not pay the minimum gas price of'),
       'successfully rejected tx with too low gas price',
     )
@@ -714,7 +717,7 @@ describe('[TxPool]', async () => {
 
     txs.push(tx)
 
-    assert.notOk(await handleTxs(txs, ''), 'successfully rejected tx with invalid tx type')
+    assert.isFalse(await handleTxs(txs, ''), 'successfully rejected tx with invalid tx type')
   })
 
   it('announcedTxs()', async () => {

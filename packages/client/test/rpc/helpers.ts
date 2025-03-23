@@ -34,13 +34,13 @@ import { createRPCServerListener, createWsRPCServerListener } from '../../src/ut
 
 import { mockBlockchain } from './mockBlockchain.ts'
 
-import type { EthereumClient } from '../../src/client.ts'
+import type { AddressInfo } from 'node:net'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
-import type { AddressInfo } from 'node:net'
+import type { EthereumClient } from '../../src/client.ts'
 
 const config: any = {}
 config.logger = getLogger(config)

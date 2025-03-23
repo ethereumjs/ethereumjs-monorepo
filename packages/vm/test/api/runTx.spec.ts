@@ -32,8 +32,8 @@ import { createVM, runTx } from '../../src/index.ts'
 import { Goerli } from './testdata/goerliCommon.ts'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.ts'
 
-import type { VM } from '../../src/vm.ts'
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
+import type { VM } from '../../src/vm.ts'
 
 const TRANSACTION_TYPES = [
   {
@@ -96,7 +96,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     await vm.stateManager.putAccount(caller, acc)
     const block = createBlock({}, { common: vm.common.copy() })
     await runTx(vm, { tx, block })
-    assert.ok(true, 'matched hardfork should run without throwing')
+    assert.isTrue(true, 'matched hardfork should run without throwing')
   })
 
   it('test hardfork mismatch', async () => {
@@ -121,7 +121,7 @@ describe('runTx() -> successful API parameter usage', async () => {
         true,
         'block has a different hardfork than the vm',
       )
-      assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
+      assert.isTrue(true, 'vm/tx mismatched hardfork correctly failed')
     }
 
     tx.common.setHardfork(Hardfork.London)
@@ -135,11 +135,11 @@ describe('runTx() -> successful API parameter usage', async () => {
         true,
         'block has a different hardfork than the vm',
       )
-      assert.ok(true, 'vm/tx mismatched hardfork correctly failed')
+      assert.isTrue(true, 'vm/tx mismatched hardfork correctly failed')
     }
 
     await runTx(vm, { tx, block, skipHardForkValidation: true })
-    assert.ok(true, 'runTx should not fail with mismatching hardforks if validation skipped')
+    assert.isTrue(true, 'runTx should not fail with mismatching hardforks if validation skipped')
   })
 
   it('should use passed in blockGasUsed to generate tx receipt', async () => {
@@ -272,7 +272,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       // TODO uncomment:
       // assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('(EIP-2718) not activated'),
         `should fail for ${TRANSACTION_TYPES[1].name}`,
       )
@@ -310,8 +310,11 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
 
     const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
-
-    assert.ok(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
+    assert.isDefined(retrievedPreimage, 'preimage should be defined')
+    assert.isTrue(
+      equalsBytes(retrievedPreimage, caller.bytes),
+      'preimage should be the caller address',
+    )
   })
 
   it('run without signature', async () => {
@@ -322,7 +325,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx })
         assert.fail('should throw error')
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('not signed') === true ||
             e.message.includes('Invalid Signature') === true,
           `should fail for ${txType.name}`,
@@ -338,7 +341,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       try {
         await runTx(vm, { tx })
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.toLowerCase().includes('enough funds'),
           `should fail for ${txType.name}`,
         )
@@ -360,7 +363,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
       await runTx(vm, { tx })
       assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.toLowerCase().includes('max cost'),
         `should fail if max cost exceeds balance`,
       )
@@ -368,7 +371,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // set sufficient balance
     await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
-    assert.ok(res, 'should pass if balance is sufficient')
+    assert.isDefined(res, 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {
@@ -386,8 +389,8 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(true, 'successfully threw on insufficient balance for transaction')
+    } catch {
+      assert.isTrue(true, 'successfully threw on insufficient balance for transaction')
     }
   })
 
@@ -403,8 +406,8 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(true, 'successfully threw on wrong nonces')
+    } catch {
+      assert.isTrue(true, 'successfully threw on wrong nonces')
     }
   })
 
@@ -419,7 +422,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
       } catch (e: any) {
-        assert.ok(
+        assert.isTrue(
           e.message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',
         )
@@ -714,7 +717,7 @@ describe('runTx() -> RunTxOptions', () => {
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, false)
       tx.getSenderAddress = () => createZeroAddress()
-      // @ts-ignore overwrite read-only property
+      //@ts-expect-error overwrite read-only property
       tx.value -= BigInt(1)
 
       for (const skipBalance of [true, false]) {
@@ -725,7 +728,7 @@ describe('runTx() -> RunTxOptions', () => {
           })
           assert.fail('should not accept a negative call value')
         } catch (err: any) {
-          assert.ok(
+          assert.isTrue(
             err.message.includes('value field cannot be negative'),
             'throws on negative call value',
           )
@@ -752,7 +755,7 @@ it('runTx() -> skipBalance behavior', async () => {
     }).sign(senderKey)
 
     const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
-    assert.ok(true, 'runTx should not throw with no balance and skipBalance')
+    assert.isTrue(true, 'runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
     assert.equal(
       afterTxBalance,
@@ -879,7 +882,7 @@ describe('EIP 4844 transaction tests', () => {
             {
               excessBlobGas: 0n,
               number: 1,
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
               parentHash: blockchain.genesisBlock.hash(),
             },
             {
@@ -919,7 +922,7 @@ describe('EIP 4844 transaction tests', () => {
       { common, skipConsensusFormatValidation: true },
     )
     const res = await runTx(vm, { tx, block, skipBalance: true })
-    assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+    assert.isTrue(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
     assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
     Blockchain.prototype.getBlock = oldGetBlockFunction
   })

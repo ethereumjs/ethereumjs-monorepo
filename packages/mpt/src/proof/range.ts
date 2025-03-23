@@ -124,7 +124,6 @@ async function unsetInternal(
 
   // 1. Find the fork point of `left` and `right`
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
       // record this node on the stack

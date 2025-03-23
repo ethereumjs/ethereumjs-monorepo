@@ -51,7 +51,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
   it('call with unknown payloadId', async () => {
@@ -87,7 +87,10 @@ describe(method, () => {
     await service.execution.vm.stateManager.putAccount(address, account!)
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    assert.isTrue(
+      payloadId !== undefined && payloadId !== null,
+      'valid payloadId should be received',
+    )
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(kzg, txBlobs)
@@ -132,7 +135,7 @@ describe(method, () => {
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
     assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
-    assert.ok(
+    assert.isTrue(
       commitments.length === proofs.length && commitments.length === blobs.length,
       'equal commitments, proofs and blobs',
     )

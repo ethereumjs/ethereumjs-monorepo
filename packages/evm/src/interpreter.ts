@@ -25,6 +25,13 @@ import { Message } from './message.ts'
 import { trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
 
+import type {
+  BinaryTreeAccessWitnessInterface,
+  Common,
+  StateManagerInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
@@ -36,13 +43,6 @@ import type {
   EVMResult,
   Log,
 } from './types.ts'
-import type {
-  BinaryTreeAccessWitnessInterface,
-  Common,
-  StateManagerInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const debugGas = debugDefault('evm:gas')
 
@@ -236,7 +236,7 @@ export class Interpreter {
 
       try {
         setupEOF(this._runState, eofMode)
-      } catch (e) {
+      } catch {
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
@@ -252,7 +252,7 @@ export class Interpreter {
             ContainerSectionType.InitCode,
             EOFContainerMode.TxInitmode,
           )
-        } catch (e) {
+        } catch {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,

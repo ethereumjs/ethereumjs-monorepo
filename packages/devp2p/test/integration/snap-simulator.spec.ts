@@ -15,11 +15,11 @@ describe('Snap sync simulator tests', () => {
     opts.sendMessage = function (rlpxs: any, snap: any) {
       assert.equal(snap.getVersion(), 1, 'should use snap1 as protocol version')
       snap.sendMessage(devp2p.SnapMessageCodes.GET_ACCOUNT_RANGE, [1, [437000, 1, 0, 0]])
-      assert.ok(true, 'should send GET_ACCOUNT_RANGE message')
+      assert.isTrue(true, 'should send GET_ACCOUNT_RANGE message')
     }
     opts.receiveMessage = function (rlpxs: any, snap: any, code: any) {
       if (code === devp2p.SnapMessageCodes.GET_ACCOUNT_RANGE) {
-        assert.ok(true, 'should receive GET_ACCOUNT_RANGE message')
+        assert.isTrue(true, 'should receive GET_ACCOUNT_RANGE message')
         util.destroyRLPXs(rlpxs)
       }
     }

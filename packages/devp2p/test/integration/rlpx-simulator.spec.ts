@@ -40,12 +40,12 @@ describe('RLPx simulator tests', () => {
           udpPort: 30308,
           tcpPort: null,
         }
-        assert.notOk(
+        assert.isFalse(
           rlpxs[0]['_dpt']!['_banlist'].has(peer),
           'should not be in ban list before bad peer discovered',
         )
         rlpxs[0]['_dpt']!.events.emit('peer:new', peer)
-        assert.ok(
+        assert.isTrue(
           rlpxs[0]['_dpt']!['_banlist'].has(peer),
           'should be in ban list after bad peer discovered',
         )
@@ -62,7 +62,6 @@ describe('RLPx simulator tests', () => {
     void rlpxs[0]['_dpt']!.addPeer(peer)
     await new Promise((resolve) => {
       rlpxs[0].events.on('peer:added', async (peer) => {
-        //@ts-ignore
         if ((peer['_socket'] as any)._peername.port === basePort + 1) {
           assert.equal(rlpxs[0]['_peersQueue'].length, 0, 'peers queue should contain no peers')
           const peer2 = {

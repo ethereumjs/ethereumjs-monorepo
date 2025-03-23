@@ -14,7 +14,7 @@ describe('should send status', async () => {
   td.verify(rlpxProtocol.sendStatus(status))
   td.reset()
   it('sent status', () => {
-    assert.ok(true, 'status sent')
+    assert.isTrue(true, 'status sent')
   })
 })
 
@@ -25,7 +25,7 @@ describe('should send message', async () => {
   td.verify(rlpxProtocol.sendMessage(1, 5))
   td.reset()
   it('sent message', () => {
-    assert.ok(true, 'message sent')
+    assert.isTrue(true, 'message sent')
   })
 })
 

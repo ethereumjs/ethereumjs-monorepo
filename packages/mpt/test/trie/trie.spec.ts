@@ -93,7 +93,7 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      assert.ok(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.isTrue(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 

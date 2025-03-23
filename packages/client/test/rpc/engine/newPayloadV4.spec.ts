@@ -175,7 +175,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
       assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes(expectedError))
+      assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
@@ -183,7 +183,10 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    assert.isTrue(
+      payloadId !== undefined && payloadId !== null,
+      'valid payloadId should be received',
+    )
 
     // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
     const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
@@ -200,20 +203,19 @@ describe(`${method}: call with executionPayloadV4`, () => {
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload, executionRequests } = res.result
 
-    assert.ok(
-      executionRequests?.length === 1,
+    assert.equal(
+      executionRequests?.length,
+      1,
       'executionRequests should have the deposit request, and should exclude the other requests (these are empty)',
     )
 
     const depositRequestBytes = hexToBytes(executionRequests[0])
-    assert.ok(
-      depositRequestBytes[0] === 0x00,
+    assert.equal(
+      depositRequestBytes[0],
+      0x00,
       'deposit request byte 0 is the deposit request identifier byte (0x00)',
     )
-    assert.ok(
-      depositRequestBytes.length > 1,
-      'deposit request includes data (and is thus not empty)',
-    )
+    assert.isNotEmpty(depositRequestBytes, 'deposit request includes data (and is thus not empty)')
 
     res = await rpc.request(method, [
       executionPayload,

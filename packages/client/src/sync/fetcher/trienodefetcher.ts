@@ -26,11 +26,11 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'
 
+import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 import type { Peer } from '../../net/peer/index.ts'
 import type { FetcherOptions } from './fetcher.ts'
 import type { Job, SnapFetcherDoneFlags } from './types.ts'
-import type { BatchDBOp, DB } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
@@ -40,7 +40,7 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
-  accountToStorageTrie?: Map<String, MerklePatriciaTrie>
+  accountToStorageTrie?: Map<string, MerklePatriciaTrie>
   stateManager?: MerkleStateManager
 
   /** Destroy fetcher once all tasks are done */
@@ -297,7 +297,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               // look up node in account trie
               await this.accountTrie.lookupNode(childNode.nodeHash as Uint8Array)
             }
-          } catch (e) {
+          } catch {
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(

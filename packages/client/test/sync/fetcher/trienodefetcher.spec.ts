@@ -2,7 +2,7 @@ import { decodeMPTNode } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.ts'
 import { Config } from '../../../src/config.ts'
@@ -39,21 +39,17 @@ describe('[TrieNodeFetcher]', async () => {
       root: new Uint8Array(0),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
-    assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    assert.equal(
-      (fetcher as any).pathToNodeRequestData.length,
-      1,
-      'one node request has been added',
-    )
+    assert.isFalse(fetcher['running'], 'not started')
+    assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.equal(fetcher['pathToNodeRequestData'].length, 1, 'one node request has been added')
 
     void fetcher.fetch()
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.isFalse(fetcher.write(), 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should process', async () => {
@@ -71,15 +67,15 @@ describe('[TrieNodeFetcher]', async () => {
       pathStrings: ['0', '1'],
       paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
     }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     assert.deepEqual(
-      (fetcher.process(job, NodeDataResponse) as any)[0],
+      (fetcher.process(job!, NodeDataResponse) as any)[0],
       fullResult[0],
       'got results',
     )
-    assert.notOk(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
   })
 
   it('should request correctly', async () => {
@@ -181,12 +177,8 @@ describe('[TrieNodeFetcher]', async () => {
       pool,
       root: new Uint8Array(),
     })
-    try {
-      await fetcher.store(undefined as any)
-      assert.ok('should run without error')
-    } catch (err: any) {
-      assert.fail(err.message)
-    }
+
+    await expect(fetcher.store(undefined as any)).resolves.toBeUndefined()
   })
 
   it('should find a fetchable peer', async () => {

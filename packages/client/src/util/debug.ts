@@ -2,8 +2,8 @@ import { bytesToHex } from '@ethereumjs/util'
 
 import { DataDirectory } from '../index.ts'
 
-import type { VMExecution } from '../execution/index.ts'
 import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.ts'
 
 /**
  * Generates a code snippet which can be used to replay an erroneous block

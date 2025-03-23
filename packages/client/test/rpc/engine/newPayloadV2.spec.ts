@@ -29,7 +29,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
 
     const res = await rpc.request(method, blockDataWithInvalidParentHash)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         "invalid argument 0 for key 'parentHash': hex string without 0x prefix",
       ),
@@ -42,7 +42,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
     )
   })
@@ -123,7 +123,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     assert.equal(res.result.status, 'INVALID')
     assert.equal(res.result.latestValidHash, blockData.parentHash)
     const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
-    assert.ok(
+    assert.isTrue(
       res.result.validationError.includes(expectedError),
       `should error with - ${expectedError}`,
     )
@@ -236,7 +236,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with executionPayloadV2', () => {
-    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    assert.isTrue(true, 'TODO: add tests for executionPayloadV2')
     // TODO: add tests for executionPayloadV2
   })
 })

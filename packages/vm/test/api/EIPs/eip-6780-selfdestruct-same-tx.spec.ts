@@ -61,10 +61,11 @@ describe('EIP 6780 tests', () => {
     assert.equal(contract.balance, BigInt(0), 'value sent')
     assert.equal(contract.nonce, BigInt(0), 'contract nonce 0')
 
-    const exists = (await vm.evm.stateManager.getAccount(createdAddress)) !== undefined
-
     // Account does not exist...
-    assert.ok(!exists, 'account does not exist, so storage is cleared')
+    assert.isUndefined(
+      await vm.evm.stateManager.getAccount(createdAddress),
+      'account does not exist, so storage is cleared',
+    )
     assert.equal(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
@@ -100,7 +101,7 @@ describe('EIP 6780 tests', () => {
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
     const storage = await vm.stateManager.getStorage(target, key)
 
-    assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
+    assert.isTrue(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
     assert.equal(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,

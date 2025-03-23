@@ -196,7 +196,6 @@ describe('transaction validation tests', () => {
     )
     const excessBlobGas = parentHeader.calcNextExcessBlobGas(common)
 
-    // eslint-disable-next-line no-inner-declarations
     function getBlock(transactions: TypedTransaction[]) {
       const blobs = getNumBlobs(transactions)
 
@@ -255,11 +254,9 @@ describe('transaction validation tests', () => {
       'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee',
     )
 
-    assert.ok(
-      blockWithTooManyBlobs
-        .getTransactionsValidationErrors()
-        .join(' ')
-        .includes('exceed maximum blob gas per block'),
+    assert.include(
+      blockWithTooManyBlobs.getTransactionsValidationErrors().join(' '),
+      'exceed maximum blob gas per block',
       'tx errors includes correct error message when too many blobs in a block',
     )
   })

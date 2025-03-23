@@ -7,6 +7,7 @@ import {
   ConsensusType,
   Hardfork,
   Holesky,
+  Hoodi,
   Mainnet,
   Sepolia,
   createCommonFromGethGenesis,
@@ -133,8 +134,8 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return correct next HF (mainnet: byzantium -> constantinople)'
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(7280000), msg)
 
-    msg = 'should return null if next HF is not available (mainnet: cancun -> prague)'
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
+    msg = 'should return null if next HF is not available (mainnet: prague -> osaka)'
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Prague), null, msg)
 
     const c2 = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
 
@@ -179,11 +180,11 @@ describe('[Common]: Hardfork logic', () => {
     assert.equal(c.hardforkBlock(Hardfork.Berlin)!, BigInt(12244000), msg)
 
     msg = 'should return null for unscheduled hardfork'
-    // developer note: when Shanghai is set,
+    // developer note: when Osaka is set,
     // update this test to next unscheduled hardfork.
     assert.equal(c.hardforkBlock(Hardfork.Cancun), null, msg)
     assert.equal(c.hardforkBlock(Hardfork.Cancun), null, msg)
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Prague), null, msg)
   })
 
   it('hardforkGteHardfork()', () => {
@@ -220,6 +221,7 @@ describe('[Common]: Hardfork logic', () => {
       [Goerli, hexToBytes('0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a')],
       [Sepolia, hexToBytes('0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9')],
       [Holesky, hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4')],
+      [Hoodi, hexToBytes('0xbbe312868b376a3001692a646dd2d7d1e4406380dfd86b98aa8a34d1557c971b')],
     ]
 
     let c = new Common({ chain: Mainnet })

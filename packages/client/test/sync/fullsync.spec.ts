@@ -57,7 +57,7 @@ describe('[FullSynchronizer]', async () => {
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -156,14 +156,14 @@ describe('[FullSynchronizer]', async () => {
       }
     })
     ;(sync as any).chain = { blocks: { height: BigInt(3) } }
-    assert.notOk(await sync.sync(), 'local height > remote height')
+    assert.isFalse(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = {
       blocks: { height: BigInt(0) },
     }
     setTimeout(() => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
-    assert.ok(await sync.sync(), 'local height < remote height')
+    assert.isTrue(await sync.sync(), 'local height < remote height')
     BlockFetcher.prototype.fetch = vi.fn().mockRejectedValue(new Error('err0'))
     try {
       await sync.sync()
@@ -245,8 +245,9 @@ describe('[FullSynchronizer]', async () => {
     })
     chain.getCanonicalHeadBlock = vi.fn()
     chain.putBlocks = vi.fn((input) => {
-      assert.ok(
-        JSON.stringify(input) === JSON.stringify([newBlock]),
+      assert.equal(
+        JSON.stringify(input),
+        JSON.stringify([newBlock]),
         'putBlocks is called as expected',
       )
     }) as any
@@ -256,7 +257,7 @@ describe('[FullSynchronizer]', async () => {
     assert.equal(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
-    assert.ok(true, 'did not send NewBlock to Peer 3')
+    assert.isTrue(true, 'did not send NewBlock to Peer 3')
     ;(sync as any).chain._blocks = {
       latest: chainTip,
     }
@@ -287,6 +288,6 @@ describe('[FullSynchronizer]', async () => {
     })
 
     sync.running = true
-    assert.ok(await sync.processBlocks([newBlock]), 'should successfully process blocks')
+    assert.isTrue(await sync.processBlocks([newBlock]), 'should successfully process blocks')
   })
 })

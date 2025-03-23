@@ -11,14 +11,14 @@ import {
   decodeVerkleNode,
 } from '../src/index.ts'
 
-import type { VerkleNode } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleNode } from '../src/index.ts'
 
 describe('Verkle tree', () => {
   it('should instantiate with verkle crypto and a MapDB if no options are provided', async () => {
     const tree = await createVerkleTree()
-    assert.ok(tree['_db'].db instanceof MapDB)
-    assert.ok(tree['verkleCrypto'] !== undefined)
+    assert.instanceOf(tree['_db'].db, MapDB)
+    assert.isDefined(tree['verkleCrypto'])
   })
 
   it('should not destroy a previous root', async () => {
@@ -93,7 +93,7 @@ describe('Verkle tree', () => {
 
     const res = await tree.findPath(presentKeys[0])
 
-    assert.ok(res.node === null, 'should not find a node when the key is not present')
+    assert.isNull(res.node, 'should not find a node when the key is not present')
     assert.deepEqual(res.remaining, presentKeys[0])
 
     for (let i = 0; i < presentKeys.length; i++) {
@@ -108,7 +108,7 @@ describe('Verkle tree', () => {
       if (retrievedValue === undefined) {
         assert.fail('Value not found')
       }
-      assert.ok(equalsBytes(retrievedValue[0]!, values[i]))
+      assert.isTrue(equalsBytes(retrievedValue[0]!, values[i]))
     }
 
     // Verify that findPath returns a path that demonstrates the nonexistence of a key
@@ -273,7 +273,7 @@ describe('Verkle tree', () => {
 
     await trie.del(keys[0].slice(0, 31), [keys[0][31]])
     const res = await trie.findPath(keys[0].slice(0, 31))
-    assert.ok(res.node !== null)
+    assert.isNotNull(res.node)
     assert.deepEqual((res.node as LeafVerkleNode).values[keys[0][31]], LeafVerkleNodeValue.Deleted)
   })
   it('should remove null child nodes and roots should match', async () => {

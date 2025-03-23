@@ -36,11 +36,11 @@ import {
   rewardAccount,
 } from './runBlock.ts'
 
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.ts'
-import type { VM } from './vm.ts'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.ts'
+import type { VM } from './vm.ts'
 
 export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
 export const BuildStatus = {

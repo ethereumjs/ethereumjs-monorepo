@@ -1,3 +1,5 @@
+import * as net from 'net'
+import * as os from 'os'
 import {
   EthereumJSErrorWithoutCode,
   bytesToInt,
@@ -11,18 +13,16 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
-import * as net from 'net'
-import * as os from 'os'
 
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
 import { Peer } from './peer.ts'
 
-import type { DPT } from '../dpt/index.ts'
-import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
+import type { DPT } from '../dpt/index.ts'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
 
 // note: relative path only valid in .js file in dist
 
@@ -64,9 +64,8 @@ export class RLPx {
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
-    this.clientId = options.clientId
-      ? options.clientId
-      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
+    this.clientId =
+      options.clientId ?? utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities

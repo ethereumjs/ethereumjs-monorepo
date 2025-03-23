@@ -111,7 +111,7 @@ describe('[FeeMarket1559Tx]', () => {
       const txn = createFeeMarket1559Tx(data, { common })
       const signed = txn.sign(pkey, false)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
-      assert.ok(
+      assert.isTrue(
         equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
         'Should sign txs correctly',
       )
@@ -175,7 +175,7 @@ describe('[FeeMarket1559Tx]', () => {
     const expectedHash = hexToBytes(
       '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446',
     )
-    assert.ok(
+    assert.isTrue(
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when frozen',
     )
@@ -184,7 +184,7 @@ describe('[FeeMarket1559Tx]', () => {
       freeze: false,
     })
     signed = txn.sign(pkey)
-    assert.ok(
+    assert.isTrue(
       equalsBytes(signed.hash(), expectedHash),
       'Should provide the correct hash when not frozen',
     )
@@ -197,9 +197,9 @@ describe('[FeeMarket1559Tx]', () => {
       common,
       freeze: false,
     })
-    assert.notOk(Object.isFrozen(txn), 'tx object is not frozen')
+    assert.isNotFrozen(txn, 'tx object is not frozen')
     const signedTxn = txn.sign(pkey)
-    assert.notOk(Object.isFrozen(signedTxn), 'tx object is not frozen')
+    assert.isNotFrozen(signedTxn, 'tx object is not frozen')
   })
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
@@ -220,8 +220,9 @@ describe('[FeeMarket1559Tx]', () => {
       },
     })
     const signedTxn = txn.sign(pkey)
-    assert.ok(
-      signedTxn.common.hardfork() === Hardfork.Paris,
+    assert.equal(
+      signedTxn.common.hardfork(),
+      Hardfork.Paris,
       'signed tx common is taken from tx.common',
     )
   })

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {

@@ -24,13 +24,13 @@ describe('Account Cache: put and get account', () => {
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should put account`, async () => {
       cache.put(addr, acc)
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
+      assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
     it(`should flush`, async () => {
@@ -42,7 +42,7 @@ describe('Account Cache: put and get account', () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP === undefined)
+      assert.isTrue(elem !== undefined && elem.accountRLP === undefined)
     })
   }
 })
@@ -64,14 +64,14 @@ describe('Account Cache: checkpointing', () => {
       cache.put(addr, updatedAcc)
 
       let elem = cache.get(addr)
-      assert.ok(
+      assert.isTrue(
         elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
       cache.revert()
 
       elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
+      assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
     it(`should use outer revert`, async () => {
@@ -85,7 +85,7 @@ describe('Account Cache: checkpointing', () => {
       cache.commit()
       cache.revert()
       const accCmp = cache.get(addr)
-      assert.ok(accCmp === undefined)
+      assert.isUndefined(accCmp)
     })
 
     it(`cache clearing`, async () => {

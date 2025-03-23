@@ -1,4 +1,3 @@
-import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 import type {
   BigIntLike,
   ECDSASignature,
@@ -6,6 +5,7 @@ import type {
   PrefixedHexString,
   VerkleCrypto,
 } from '@ethereumjs/util'
+import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
 export interface ChainName {
   [chainId: string]: string

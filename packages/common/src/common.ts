@@ -15,6 +15,7 @@ import { eipsDict } from './eips.ts'
 import { Hardfork } from './enums.ts'
 import { hardforksDict } from './hardforks.ts'
 
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 import type { ConsensusAlgorithm, ConsensusType } from './enums.ts'
 import type {
   BootstrapNodeConfig,
@@ -32,7 +33,6 @@ import type {
   ParamsConfig,
   ParamsDict,
 } from './types.ts'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -63,7 +63,7 @@ export class Common {
     this.events = new EventEmitter<CommonEvent>()
 
     this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Prague
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name,

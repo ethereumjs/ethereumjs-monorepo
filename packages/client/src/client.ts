@@ -3,11 +3,11 @@ import { FullEthereumService } from './service/index.ts'
 import { Event } from './types.ts'
 import { getPackageJSON } from './util/index.ts'
 
-import type { Config } from './config.ts'
-import type { MultiaddrLike } from './types.ts'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { Config } from './config.ts'
+import type { MultiaddrLike } from './types.ts'
 
 export interface EthereumClientOptions {
   /** Client configuration */

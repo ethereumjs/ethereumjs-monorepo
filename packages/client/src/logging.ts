@@ -7,7 +7,7 @@ const { createLogger, format, transports: wTransports } = winston
 
 export type Logger = WinstonLogger
 type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
-  logRotate?: Boolean
+  logRotate?: boolean
   logMaxFiles?: number
 }
 

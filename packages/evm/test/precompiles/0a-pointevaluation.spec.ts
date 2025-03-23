@@ -12,8 +12,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-import type { PrecompileInput } from '../../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { PrecompileInput } from '../../src/index.ts'
 const kzg = new microEthKZG(trustedSetup)
 const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513',
@@ -78,6 +78,6 @@ describe('Precompiles: point evaluation', () => {
       common,
     }
     res = await pointEvaluation(optsWithInvalidCommitment)
-    assert.ok(res.exceptionError?.error.match('invalid input length'), 'invalid input length')
+    assert.include(res.exceptionError?.error, 'invalid input length', 'invalid input length')
   })
 })

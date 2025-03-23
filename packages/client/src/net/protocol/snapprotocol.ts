@@ -9,9 +9,9 @@ import {
 
 import { Protocol } from './protocol.ts'
 
+import type { AccountBodyBytes } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.ts'
 import type { Message, ProtocolOptions } from './protocol.ts'
-import type { AccountBodyBytes } from '@ethereumjs/util'
 
 interface SnapProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -102,7 +102,6 @@ export class SnapProtocol extends Protocol {
   private convertSlimBody?: boolean
   private nextReqId = BIGINT_0
 
-  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'GetAccountRange',

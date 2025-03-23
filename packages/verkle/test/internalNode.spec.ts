@@ -15,13 +15,13 @@ describe('verkle node - internal', () => {
     const commitment = randomBytes(32)
     const node = new InternalVerkleNode({ commitment, verkleCrypto: verkle })
 
-    assert.ok(isInternalVerkleNode(node), 'typeguard should return true')
+    assert.isTrue(isInternalVerkleNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
-    assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
+    assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
-    assert.ok(
+    assert.isTrue(
       node.children.every((child) => child === null),
       'every children should be null',
     )
@@ -39,7 +39,7 @@ describe('verkle node - internal', () => {
 
     // Children nodes should all default to null.
     assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
-    assert.ok(
+    assert.isTrue(
       node.children.every((child) => child === null),
       'every children should be null',
     )

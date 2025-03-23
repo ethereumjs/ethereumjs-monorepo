@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
@@ -123,7 +122,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   try {
     tx = makeTx(testData.transaction, { common })
-  } catch (e: any) {
+  } catch {
     execInfo = 'tx instantiation exception'
   }
 

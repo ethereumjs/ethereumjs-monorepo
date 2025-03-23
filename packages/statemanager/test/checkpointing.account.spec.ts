@@ -124,10 +124,10 @@ describe('StateManager -> Account Checkpointing', () => {
 
         await sm.putAccount(address, as.a1[0])
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it(`CP -> A1.1 -> Commit -> Flush() (-> A1.1)`, async () => {
@@ -137,10 +137,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a1[0])
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it(`CP -> A1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
@@ -150,10 +150,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a1[0])
         await sm.revert()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, undefined))
+        assert.isTrue(await accountEval(sm, address, undefined))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, undefined))
+        assert.isTrue(await accountEval(sm, address, undefined))
       })
 
       it(`A1.1 -> CP -> Commit -> Flush() (-> A1.1)`, async () => {
@@ -163,10 +163,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.checkpoint()
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it(`A1.1 -> CP -> Revert -> Flush() (-> A1.1)`, async () => {
@@ -176,10 +176,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.checkpoint()
         await sm.revert()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it(`A1.1 -> CP -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
@@ -190,10 +190,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a2[0])
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
       it(`A1.1 -> CP -> A1.2 -> Commit -> A1.3 -> Flush() (-> A1.3)`, async () => {
@@ -205,10 +205,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.commit()
         await sm.putAccount(address, as.a3[0])
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
       it(`A1.1 -> CP -> A1.2 -> A1.3 -> Commit -> Flush() (-> A1.3)`, async () => {
@@ -220,10 +220,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a3[0])
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
       it(`CP -> A1.1 -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
@@ -234,10 +234,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a2[0])
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
       it(`CP -> A1.1 -> A1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
@@ -249,10 +249,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a2[0])
         await sm.revert()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, undefined))
+        assert.isTrue(await accountEval(sm, address, undefined))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, undefined))
+        assert.isTrue(await accountEval(sm, address, undefined))
       })
 
       it(`A1.1 -> CP -> A1.2 -> Revert -> Flush() (-> A1.1)`, async () => {
@@ -263,10 +263,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a2[0])
         await sm.revert()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Commit -> Flush() (-> A1.3)', async () => {
@@ -280,10 +280,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.commit()
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a3[1]))
+        assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
       it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Revert -> Flush() (-> A1.1)', async () => {
@@ -297,10 +297,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.commit()
         await sm.revert()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a1[1]))
+        assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
       it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> Commit -> Flush() (-> A1.2)', async () => {
@@ -314,10 +314,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.revert()
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a2[1]))
+        assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
       it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> Commit -> Flush() (-> A1.4)', async () => {
@@ -332,10 +332,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.putAccount(address, as.a4[0])
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a4[1]))
+        assert.isTrue(await accountEval(sm, address, as.a4[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a4[1]))
+        assert.isTrue(await accountEval(sm, address, as.a4[1]))
       })
 
       it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> CP -> A1.5 -> Commit -> Commit -> Flush() (-> A1.5)', async () => {
@@ -353,10 +353,10 @@ describe('StateManager -> Account Checkpointing', () => {
         await sm.commit()
         await sm.commit()
         await sm.flush()
-        assert.ok(await accountEval(sm, address, as.a5[1]))
+        assert.isTrue(await accountEval(sm, address, as.a5[1]))
 
         sm.clearCaches()
-        assert.ok(await accountEval(sm, address, as.a5[1]))
+        assert.isTrue(await accountEval(sm, address, as.a5[1]))
       })
     }
   }

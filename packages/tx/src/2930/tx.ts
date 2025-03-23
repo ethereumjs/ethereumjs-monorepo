@@ -17,6 +17,8 @@ import { AccessLists } from '../util.ts'
 
 import { createAccessList2930Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   AccessList,
   AccessListBytes,
@@ -28,8 +30,6 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]

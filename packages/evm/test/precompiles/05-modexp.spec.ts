@@ -6,9 +6,9 @@ import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
 import { testData } from './modexp-testdata.ts'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {
@@ -48,6 +48,6 @@ describe('Precompiles: MODEXP', () => {
       common,
       _EVM: evm,
     })
-    assert.ok(result.executionGasUsed === gas)
+    assert.equal(result.executionGasUsed, gas)
   })
 })

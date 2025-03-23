@@ -1,8 +1,8 @@
+import { readFileSync } from 'fs'
 import { Block, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createVM, runBlock as runBlockVM, VM } from '@ethereumjs/vm'
+import { VM, createVM, runBlock as runBlockVM } from '@ethereumjs/vm'
 import Benchmark from 'benchmark'
-import { readFileSync } from 'fs'
 import { getBlockchain, getPreState, verifyResult } from './util.ts'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'

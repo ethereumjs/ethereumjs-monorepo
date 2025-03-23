@@ -34,12 +34,12 @@ describe(method, async () => {
     for (let i = 0; i < blocks.length; i++) {
       await rpc.request(method, [`0x${i}`])
       assert.deepEqual(
-        await client.service.skeleton?.headHash()!,
+        await client.service.skeleton?.headHash(),
         blocks[i].header.hash(),
         `skeleton chain should return hash of block number ${i} set as head`,
       )
       assert.deepEqual(
-        client.service.execution.chainStatus?.hash!,
+        client.service.execution.chainStatus?.hash,
         blocks[i].header.hash(),
         `vm execution should set hash to new head`,
       )

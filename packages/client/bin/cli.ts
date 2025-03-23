@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { mkdirSync, readFileSync } from 'fs'
 import { createBlockFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToHex, short } from '@ethereumjs/util'
-import { mkdirSync, readFileSync } from 'fs'
 import { Level } from 'level'
 
 import { EthereumClient } from '../src/client.ts'
@@ -16,17 +16,17 @@ import { generateVKTStateRoot } from '../src/util/vkt.ts'
 import { helpRPC, startRPCServers } from './startRPC.ts'
 import { generateClientConfig, getArgs } from './utils.ts'
 
+import type * as http from 'http'
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { ConsensusDict } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.ts'
 import type { Logger } from '../src/logging.ts'
 import type { FullEthereumService } from '../src/service/index.ts'
 import type { ClientOpts } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { ConsensusDict } from '@ethereumjs/blockchain'
-import type { GenesisState } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
-import type * as http from 'http'
-import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 let logger: Logger
 
@@ -95,7 +95,7 @@ async function executeBlocks(client: EthereumClient) {
     if ((blockRange[0][1] as string[]).length > 0 && blockRange.length === 2) {
       throw EthereumJSErrorWithoutCode('wrong input')
     }
-  } catch (e: any) {
+  } catch {
     throw EthereumJSErrorWithoutCode(
       'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)',
     )
@@ -325,7 +325,7 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      // @ts-expect-error jayson.Server type doesn't play well with ESM for some reason
+      //@ts-expect-error jayson.Server type doesn't play well with ESM for some reason
       s['http'] !== undefined ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()

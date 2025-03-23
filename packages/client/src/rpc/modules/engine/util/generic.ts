@@ -4,9 +4,9 @@ import { bytesToHex, bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 import { UNSUPPORTED_FORK } from '../../../error-code.ts'
 import { type ChainCache } from '../types.ts'
 
-import type { Chain } from '../../../../blockchain/index.ts'
 import type { Common, Hardfork } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../../../blockchain/index.ts'
 
 /**
  * Recursively finds parent blocks starting from the parentHash.
@@ -65,7 +65,7 @@ export const validExecutedChainBlock = async (
 
     // if the block was canonical and executed we would have returned by now
     return null
-  } catch (error: any) {
+  } catch {
     return null
   }
 }
@@ -105,7 +105,7 @@ export const validHash = async (
         hash = validParent.header.parentHash
       }
     }
-  } catch (_error: any) {
+  } catch {
     // ignore error thrown by the loop and return null below
   }
 

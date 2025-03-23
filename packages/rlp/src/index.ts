@@ -1,4 +1,7 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+
+export * from './errors.ts'
+
 export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
@@ -14,7 +17,7 @@ export interface Decoded {
  */
 function decodeLength(v: Uint8Array): number {
   if (v[0] === 0) {
-    throw new Error('invalid RLP: extra zeros')
+    throw EthereumJSErrorWithoutCode('invalid RLP: extra zeros')
   }
   return parseHexByte(bytesToHex(v))
 }
@@ -38,7 +41,9 @@ function encodeLength(len: number, offset: number): Uint8Array {
  */
 function safeSlice(input: Uint8Array, start: number, end: number) {
   if (end > input.length) {
-    throw new Error('invalid RLP (safeSlice): end slice of Uint8Array out-of-bounds')
+    throw EthereumJSErrorWithoutCode(
+      'invalid RLP (safeSlice): end slice of Uint8Array out-of-bounds',
+    )
   }
   return input.slice(start, end)
 }
@@ -68,7 +73,9 @@ function _decode(input: Uint8Array): Decoded {
     }
 
     if (length === 2 && data[0] < 0x80) {
-      throw new Error('invalid RLP encoding: invalid prefix, single byte < 0x80 are not prefixed')
+      throw EthereumJSErrorWithoutCode(
+        'invalid RLP encoding: invalid prefix, single byte < 0x80 are not prefixed',
+      )
     }
 
     return {
@@ -80,11 +87,11 @@ function _decode(input: Uint8Array): Decoded {
     // followed by the length, followed by the string
     lLength = firstByte - 0xb6
     if (input.length - 1 < lLength) {
-      throw new Error('invalid RLP: not enough bytes for string length')
+      throw EthereumJSErrorWithoutCode('invalid RLP: not enough bytes for string length')
     }
     length = decodeLength(safeSlice(input, 1, lLength))
     if (length <= 55) {
-      throw new Error('invalid RLP: expected string length to be greater than 55')
+      throw EthereumJSErrorWithoutCode('invalid RLP: expected string length to be greater than 55')
     }
     data = safeSlice(input, lLength, length + lLength)
 
@@ -111,11 +118,11 @@ function _decode(input: Uint8Array): Decoded {
     lLength = firstByte - 0xf6
     length = decodeLength(safeSlice(input, 1, lLength))
     if (length < 56) {
-      throw new Error('invalid RLP: encoded list too short')
+      throw EthereumJSErrorWithoutCode('invalid RLP: encoded list too short')
     }
     const totalLength = lLength + length
     if (totalLength > input.length) {
-      throw new Error('invalid RLP: total length is larger than the data')
+      throw EthereumJSErrorWithoutCode('invalid RLP: total length is larger than the data')
     }
 
     innerRemainder = safeSlice(input, lLength, totalLength)
@@ -145,7 +152,7 @@ function bytesToHex(uint8a: Uint8Array): string {
 
 function parseHexByte(hexByte: string): number {
   const byte = Number.parseInt(hexByte, 16)
-  if (Number.isNaN(byte)) throw new Error('Invalid byte sequence')
+  if (Number.isNaN(byte)) throw EthereumJSErrorWithoutCode('Invalid byte sequence')
   return byte
 }
 
@@ -164,17 +171,21 @@ function asciiToBase16(char: number): number | undefined {
  */
 export function hexToBytes(hex: string): Uint8Array {
   if (hex.slice(0, 2) === '0x') hex = hex.slice(0, 2)
-  if (typeof hex !== 'string') throw new Error('hex string expected, got ' + typeof hex)
+  if (typeof hex !== 'string')
+    throw EthereumJSErrorWithoutCode('hex string expected, got ' + typeof hex)
   const hl = hex.length
   const al = hl / 2
-  if (hl % 2) throw new Error('padded hex string expected, got unpadded hex of length ' + hl)
+  if (hl % 2)
+    throw EthereumJSErrorWithoutCode('padded hex string expected, got unpadded hex of length ' + hl)
   const array = new Uint8Array(al)
   for (let ai = 0, hi = 0; ai < al; ai++, hi += 2) {
     const n1 = asciiToBase16(hex.charCodeAt(hi))
     const n2 = asciiToBase16(hex.charCodeAt(hi + 1))
     if (n1 === undefined || n2 === undefined) {
       const char = hex[hi] + hex[hi + 1]
-      throw new Error('hex string expected, got non-hex character "' + char + '" at index ' + hi)
+      throw EthereumJSErrorWithoutCode(
+        'hex string expected, got non-hex character "' + char + '" at index ' + hi,
+      )
     }
     array[ai] = n1 * 16 + n2
   }
@@ -205,7 +216,7 @@ function utf8ToBytes(utf: string): Uint8Array {
 /** Transform an integer into its hexadecimal value */
 function numberToHex(integer: number | bigint): string {
   if (integer < 0) {
-    throw new Error('Invalid integer as argument, must be unsigned!')
+    throw EthereumJSErrorWithoutCode('Invalid integer as argument, must be unsigned!')
   }
   const hex = integer.toString(16)
   return hex.length % 2 ? `0${hex}` : hex
@@ -249,7 +260,7 @@ function toBytes(v: Input): Uint8Array {
   if (v === null || v === undefined) {
     return Uint8Array.from([])
   }
-  throw new Error('toBytes: received unsupported type ' + typeof v)
+  throw EthereumJSErrorWithoutCode('toBytes: received unsupported type ' + typeof v)
 }
 
 /**
@@ -300,7 +311,7 @@ export function decode(input: Input, stream = false): Uint8Array | NestedUint8Ar
     }
   }
   if (decoded.remainder.length !== 0) {
-    throw new Error('invalid RLP: remainder must be zero')
+    throw EthereumJSErrorWithoutCode('invalid RLP: remainder must be zero')
   }
 
   return decoded.data
@@ -314,5 +325,3 @@ export const utils = {
 }
 
 export const RLP = { encode, decode }
-
-/* eslint-enable @typescript-eslint/no-use-before-define */

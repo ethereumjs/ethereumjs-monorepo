@@ -1,8 +1,8 @@
 import { UNKNOWN_PAYLOAD } from '../../error-code.ts'
 
-import type { Skeleton } from '../../../service/index.ts'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Skeleton } from '../../../service/index.ts'
 
 export type Status = (typeof Status)[keyof typeof Status]
 
@@ -78,9 +78,9 @@ export type BlobAndProofV1 = {
 }
 
 export type ChainCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
+  remoteBlocks: Map<string, Block>
+  executedBlocks: Map<string, Block>
+  invalidBlocks: Map<string, Error>
   skeleton: Skeleton
 }
 

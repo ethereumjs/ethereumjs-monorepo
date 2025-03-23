@@ -15,11 +15,11 @@ import { Service } from './service.ts'
 import { Skeleton } from './skeleton.ts'
 import { TxPool } from './txpool.ts'
 
+import type { Block } from '@ethereumjs/block'
+import type { Blob4844Tx } from '@ethereumjs/tx'
 import type { Peer } from '../net/peer/peer.ts'
 import type { Protocol } from '../net/protocol/index.ts'
 import type { ServiceOptions } from './service.ts'
-import type { Block } from '@ethereumjs/block'
-import type { Blob4844Tx } from '@ethereumjs/tx'
 
 /**
  * Full Ethereum service

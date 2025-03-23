@@ -15,8 +15,8 @@ import { BanList } from './ban-list.ts'
 import { KBucket } from './kbucket.ts'
 import { Server as DPTServer } from './server.ts'
 
-import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 import type { Debugger } from 'debug'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
 

@@ -29,7 +29,7 @@ describe('testing checkpoints', () => {
     trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), preRoot)
     const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
   })
 
   it('should deactivate cache on copy()', async () => {
@@ -40,7 +40,7 @@ describe('testing checkpoints', () => {
 
   it('should create a checkpoint', () => {
     trie.checkpoint()
-    assert.ok(trie.hasCheckpoints())
+    assert.isTrue(trie.hasCheckpoints())
   })
 
   it('should save to the cache', async () => {
@@ -53,11 +53,11 @@ describe('testing checkpoints', () => {
     trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), postRoot)
     assert.equal(trieCopy['_db'].checkpoints.length, 1)
-    assert.ok(trieCopy.hasCheckpoints())
+    assert.isTrue(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.ok(equalsBytes(utf8ToBytes('verb'), res!))
+    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
     const res2 = await trieCopy.get(utf8ToBytes('love'))
-    assert.ok(equalsBytes(utf8ToBytes('emotion'), res2!))
+    assert.isTrue(equalsBytes(utf8ToBytes('emotion'), res2!))
   })
 
   it('should copy trie and use the correct hash function', async () => {
@@ -143,8 +143,7 @@ describe('testing checkpoints', () => {
     // Make sure CommittedState looks like we expect (2 keys, last_block_height=2 + __root__)
     // I.e. the trie is pruned.
     assert.deepEqual(
-      // @ts-expect-error
-      [...CommittedState._db.db._database.values()].map((value) => value),
+      [...(CommittedState['_db'].db as any)._database.values()].map((value) => value),
       [
         hexToBytes('0xd7eba6ee0f011acb031b79554d57001c42fbfabb150eb9fdd3b6d434f7b791eb'),
         hexToBytes('0xe3a1202418cf7414b1e6c2c8d92b4673eecdb4aac88f7f58623e3be903aefb2fd4655c32'),

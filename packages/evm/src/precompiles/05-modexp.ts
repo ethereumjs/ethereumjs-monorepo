@@ -2,10 +2,10 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  BIGINT_32,
-  BIGINT_64,
   BIGINT_7,
   BIGINT_8,
+  BIGINT_32,
+  BIGINT_64,
   BIGINT_96,
   bigIntToBytes,
   bytesToBigInt,
@@ -61,7 +61,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
-  } catch (e: any) {
+  } catch {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
   const expLen = bytesToBigInt(data.subarray(32, 64))

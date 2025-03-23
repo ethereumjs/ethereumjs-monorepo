@@ -104,7 +104,7 @@ describe(method, () => {
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
     if (isBrowser() === true) {
-      assert.ok(true)
+      assert.isTrue(true)
     } else {
       const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.ts')
 

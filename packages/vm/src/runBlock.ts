@@ -34,6 +34,9 @@ import { emitEVMProfile } from './emitEVMProfile.ts'
 import { runTx } from './index.ts'
 import { accumulateRequests } from './requests.ts'
 
+import type { Block } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -45,9 +48,6 @@ import type {
   TxReceipt,
 } from './types.ts'
 import type { VM } from './vm.ts'
-import type { Block } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('vm:block')
 

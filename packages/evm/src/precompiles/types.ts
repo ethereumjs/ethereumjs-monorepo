@@ -1,6 +1,6 @@
-import type { EVMInterface, ExecResult } from '../types.ts'
 import type { Common } from '@ethereumjs/common'
 import type { debug } from 'debug'
+import type { EVMInterface, ExecResult } from '../types.ts'
 
 export interface PrecompileFunc {
   (input: PrecompileInput): Promise<ExecResult> | ExecResult
