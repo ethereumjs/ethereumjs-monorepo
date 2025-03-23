@@ -1,23 +1,20 @@
 import * as Legacy from './legacy.ts'
 
-import type { Common } from '@ethereumjs/common'
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-import type { AccessListBytes, EIP2930CompatibleTx } from '../types.ts'
+import type { EIP2930CompatibleTx } from '../types.ts'
 
 /**
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP2930CompatibleTx): bigint {
-  return Legacy.getDataGas(tx, BigInt(getAccessListDataGas(tx.accessList, tx.common)))
+  return Legacy.getDataGas(tx, BigInt(getAccessListDataGas(tx)))
 }
 
 /**
- * Calculates the intrinsic data gas cost for a given access list
- * @param accessList
- * @param common
- * @returns
+ * Calculates the data gas cost for the access list of a tx
  */
-function getAccessListDataGas(accessList: AccessListBytes, common: Common): number {
+function getAccessListDataGas(tx: EIP2930CompatibleTx): number {
+  const { common, accessList } = tx
   const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
   const accessListAddressCost = common.param('accessListAddressGas')
 
