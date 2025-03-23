@@ -32,6 +32,11 @@ export function getDataGas(tx: EIP7702CompatibleTx): bigint {
  * Validates a single authorization list item
  */
 function validateAuthorizationListItem(item: AuthorizationListBytesItem) {
+  if (item.length !== 6) {
+    throw EthereumJSErrorWithoutCode(
+      'Invalid EIP-7702 transaction: authorization list item should have 6 elements',
+    )
+  }
   const [chainId, address, nonce, yParity, r, s] = item
 
   validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
