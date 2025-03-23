@@ -16,7 +16,13 @@ import * as EIP7702 from '../capabilities/eip7702.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes, validateNotArray } from '../util.ts'
+import {
+  accessListBytesToJSON,
+  accessListJSONToBytes,
+  authorizationListBytesToJSON,
+  authorizationListJSONToBytes,
+  validateNotArray,
+} from '../util.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
 
@@ -116,10 +122,10 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
 
     // Populate the authority list fields
     this.authorizationList = isAuthorizationList(authorizationList)
-      ? EIP7702.authorizationListJSONToBytes(authorizationList)
+      ? authorizationListJSONToBytes(authorizationList)
       : authorizationList
     // Verify the authority list format.
-    EIP7702.verifyAuthorizationList(this.authorizationList)
+    EIP7702.verifyAuthorizationList(this)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -355,7 +361,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
-    const authorizationList = EIP7702.authorizationListBytesToJSON(this.authorizationList)
+    const authorizationList = authorizationListBytesToJSON(this.authorizationList)
 
     const baseJSON = getBaseJSON(this)
 
