@@ -15,7 +15,7 @@ import {
 
 import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
-import { accessListBytesToJSON, txTypeBytes, validateNotArray } from '../util/general.ts'
+import { accessListBytesToJSON } from '../util/access.ts'
 
 import { Blob4844Tx } from './tx.ts'
 
@@ -25,6 +25,7 @@ import type {
   JSONBlobTxNetworkWrapper,
   TxOptions,
 } from '../types.ts'
+import { txTypeBytes, validateNotArray } from '../util/general.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
 
 const validateBlobTransactionNetworkWrapper = (

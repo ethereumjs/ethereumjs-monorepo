@@ -30,7 +30,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util/general.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]

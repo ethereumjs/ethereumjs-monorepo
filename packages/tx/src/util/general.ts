@@ -1,7 +1,6 @@
 import {
   EthereumJSErrorWithoutCode,
   TypeOutput,
-  bytesToHex,
   hexToBytes,
   setLengthLeft,
   toBytes,
@@ -9,14 +8,7 @@ import {
 } from '@ethereumjs/util'
 
 import type { Common } from '@ethereumjs/common'
-import type {
-  AccessList,
-  AccessListBytes,
-  AuthorizationList,
-  AuthorizationListBytes,
-  TransactionType,
-  TypedTxData,
-} from '../types.ts'
+import type { TransactionType, TypedTxData } from '../types.ts'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('maxInitCodeSize')
@@ -95,81 +87,4 @@ export const normalizeTxParams = (txParamsFromRPC: any): TypedTxData => {
   }
 
   return txParams
-}
-
-// Utility helpers to convert access lists from the byte format and JSON format and vice versa
-
-/**
- * Converts an access list in bytes to a JSON format
- * @param accessList
- * @returns JSON format of the access list
- */
-export function accessListBytesToJSON(accessList: AccessListBytes): AccessList {
-  return accessList.map(([address, storageSlots]) => ({
-    address: bytesToHex(setLengthLeft(address, 20)),
-    storageKeys: storageSlots.map((slot) => bytesToHex(setLengthLeft(slot, 32))),
-  }))
-}
-
-/**
- * Converts an access list in JSON to a bytes format
- * @param accessList
- * @returns bytes format of the access list
- */
-export function accessListJSONToBytes(accessList: AccessList): AccessListBytes {
-  return accessList.map((item) => [
-    hexToBytes(item.address),
-    item.storageKeys.map((key) => hexToBytes(key)),
-  ])
-}
-
-// Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
-
-/**
- * Converts an authorization list to a JSON format
- * @param authorizationList
- * @returns authorizationList in JSON format
- */
-export function authorizationListBytesToJSON(
-  authorizationList: AuthorizationListBytes,
-): AuthorizationList {
-  return authorizationList.map(([chainId, address, nonce, yParity, r, s]) => ({
-    chainId: bytesToHex(chainId),
-    address: bytesToHex(address),
-    nonce: bytesToHex(nonce),
-    yParity: bytesToHex(yParity),
-    r: bytesToHex(r),
-    s: bytesToHex(s),
-  }))
-}
-
-/**
- * Converts an authority list in JSON to a bytes format
- * @param authorizationList
- * @returns bytes format of the authority list
- */
-export function authorizationListJSONToBytes(
-  authorizationList: AuthorizationList,
-): AuthorizationListBytes {
-  const requiredFields = ['chainId', 'address', 'nonce', 'yParity', 'r', 's'] as const
-
-  return authorizationList.map((item) => {
-    // Validate all required fields are present
-    for (const field of requiredFields) {
-      if (item[field] === undefined) {
-        throw EthereumJSErrorWithoutCode(
-          `EIP-7702 authorization list invalid: ${field} is not defined`,
-        )
-      }
-    }
-
-    return [
-      hexToBytes(item.chainId),
-      hexToBytes(item.address),
-      hexToBytes(item.nonce),
-      hexToBytes(item.yParity),
-      hexToBytes(item.r),
-      hexToBytes(item.s),
-    ]
-  })
 }

@@ -15,13 +15,7 @@ import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as EIP7702 from '../capabilities/eip7702.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
-import {
-  accessListBytesToJSON,
-  accessListJSONToBytes,
-  authorizationListBytesToJSON,
-  authorizationListJSONToBytes,
-  validateNotArray,
-} from '../util/general.ts'
+import { validateNotArray } from '../util/general.ts'
 import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
@@ -39,6 +33,11 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import {
+  authorizationListBytesToJSON,
+  authorizationListJSONToBytes,
+} from '../util/authorization.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
