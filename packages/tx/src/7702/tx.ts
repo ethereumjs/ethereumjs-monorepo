@@ -90,11 +90,12 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     const {
       chainId,
       accessList: rawAccessList,
-      authorizationList,
+      authorizationList: rawAuthorizationList,
       maxFeePerGas,
       maxPriorityFeePerGas,
     } = txData
     const accessList = rawAccessList ?? []
+    const authorizationList = rawAuthorizationList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -116,12 +117,9 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     EIP2930.verifyAccessList(this.accessList)
 
     // Populate the authority list fields
-    const authorizationListNormalized = authorizationList ?? []
-    if (isAuthorizationList(authorizationListNormalized)) {
-      this.authorizationList = EIP7702.authorizationListJSONToBytes(authorizationListNormalized)
-    } else {
-      this.authorizationList = authorizationListNormalized
-    }
+    this.authorizationList = isAuthorizationList(authorizationList)
+      ? EIP7702.authorizationListJSONToBytes(authorizationList)
+      : authorizationList
     // Verify the authority list format.
     EIP7702.verifyAuthorizationList(this.authorizationList)
 
