@@ -22,13 +22,17 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./holesky": {
+      "import": "./dist/esm/genesisStates/holesky.js",
+      "require": "./dist/cjs/genesisStates/holesky.js"
+    },
+    "./hoodi": {
+      "import": "./dist/esm/genesisStates/hoodi.js",
+      "require": "./dist/cjs/genesisStates/hoodi.js"
+    },
     "./mainnet": {
       "import": "./dist/esm/genesisStates/mainnet.js",
       "require": "./dist/cjs/genesisStates/mainnet.js"
-    },
-    "./goerli": {
-      "import": "./dist/esm/genesisStates/goerli.js",
-      "require": "./dist/cjs/genesisStates/goerli.js"
     },
     "./sepolia": {
       "import": "./dist/esm/genesisStates/sepolia.js",
