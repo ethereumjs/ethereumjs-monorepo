@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 
 import { paramsTx } from '../params.ts'
-import { checkMaxInitCodeSize, validateNotArray } from '../util.ts'
+import { checkMaxInitCodeSize, validateNotArray } from './general.ts'
 
 import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.ts'
 

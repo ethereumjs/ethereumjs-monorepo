@@ -11,8 +11,8 @@ import {
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createAccessList2930Tx } from './constructors.ts'
 
@@ -28,7 +28,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/general.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]

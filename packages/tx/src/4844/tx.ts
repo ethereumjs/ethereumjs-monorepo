@@ -16,9 +16,9 @@ import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { TransactionType, isAccessList } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes, validateNotArray } from '../util.ts'
+import { accessListBytesToJSON, accessListJSONToBytes, validateNotArray } from '../util/general.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createBlob4844Tx } from './constructors.ts'
 

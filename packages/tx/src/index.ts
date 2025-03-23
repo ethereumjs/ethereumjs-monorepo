@@ -20,4 +20,4 @@ export {
 export * from './types.ts'
 
 // Utils
-export * from './util.ts'
+export * from './util/index.ts'

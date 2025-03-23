@@ -15,7 +15,7 @@ import {
 
 import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
-import { accessListBytesToJSON, txTypeBytes, validateNotArray } from '../util.ts'
+import { accessListBytesToJSON, txTypeBytes, validateNotArray } from '../util/general.ts'
 
 import { Blob4844Tx } from './tx.ts'
 

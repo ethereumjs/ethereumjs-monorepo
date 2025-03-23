@@ -16,7 +16,7 @@ import type {
   AuthorizationListBytes,
   TransactionType,
   TypedTxData,
-} from './types.ts'
+} from '../types.ts'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('maxInitCodeSize')

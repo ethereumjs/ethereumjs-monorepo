@@ -14,7 +14,6 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as EIP7702 from '../capabilities/eip7702.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
 import {
   accessListBytesToJSON,
@@ -22,7 +21,8 @@ import {
   authorizationListBytesToJSON,
   authorizationListJSONToBytes,
   validateNotArray,
-} from '../util.ts'
+} from '../util/general.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
 

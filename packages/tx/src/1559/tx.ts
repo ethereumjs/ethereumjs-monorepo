@@ -13,8 +13,8 @@ import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createFeeMarket1559Tx } from './constructors.ts'
 
@@ -30,7 +30,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/general.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
