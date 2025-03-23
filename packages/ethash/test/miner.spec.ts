@@ -49,7 +49,7 @@ describe('Miner', () => {
     )
 
     assert.isTrue(await e.verifyPOW(validBlock), 'successfully mined block')
-    assert.exists(miner.solution, 'cached the solution')
+    assert.isDefined(miner.solution, 'cached the solution')
   }, 200000)
 
   it('Check if it is possible to mine Blocks and BlockHeaders', async () => {

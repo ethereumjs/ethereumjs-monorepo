@@ -17,7 +17,7 @@ const config = new Config({
 })
 
 // attach server to centralized event bus
-;(config.server!.config as any).events = config.events
+;(config.server?.config as any).events = config.events
 const client = await EthereumClient.create({ config })
 
 describe('client should start/stop/error', async () => {
@@ -35,7 +35,7 @@ describe('client should start/stop/error', async () => {
   client.service.interval = 100
   client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.server!)
   await client.start()
-  assert.ok(client.service!.synchronizer!.running, 'sync running')
+  assert.isTrue(client.service?.synchronizer?.running, 'sync running')
   await client.stop()
   it('should stop', () => {
     assert.isTrue(true, 'client stopped')

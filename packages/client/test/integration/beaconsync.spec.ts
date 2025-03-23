@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Event } from '../../src/types.ts'
 import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
@@ -47,13 +47,10 @@ describe('should not sync with stale peers', async () => {
     throw new Error('synced with a stale peer')
   })
   it('should not sync', async () => {
-    try {
+    await expect(async () => {
       await localServer.discover('remotePeer', '127.0.0.2')
       await wait(300)
-      assert.fail('should not sync')
-    } catch {
-      assert.ok('did not sync')
-    }
+    }, 'should not sync with stale peer').rejects.toThrow('There is no server at 127.0.0.2')
   })
   await destroy(localServer, localService)
   await destroy(remoteServer, remoteService)

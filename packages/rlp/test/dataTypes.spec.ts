@@ -113,7 +113,7 @@ describe('RLP encoding (list)', () => {
     const encodedArrayOfStrings = RLP.encode(data)
     const str = bytesToUtf8(encodedArrayOfStrings)
     for (const innerStr of data) {
-      assert.ok(str.includes(innerStr))
+      assert.include(str, innerStr)
     }
     // Verified with Geth's RLPDump
     const expected = hexToBytes(
@@ -470,7 +470,7 @@ describe('recursive typings', () => {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const a = RLP.encode([[[[[0]]]]])
-    assert.ok(assertType<typeof a, Uint8Array>(true))
+    assert.isTrue(assertType<typeof a, Uint8Array>(true))
   })
 })
 

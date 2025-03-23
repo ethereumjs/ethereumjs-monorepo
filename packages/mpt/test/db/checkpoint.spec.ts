@@ -18,12 +18,12 @@ describe('DB tests', () => {
   })
 
   it('should initialize with empty checkpoints', () => {
-    assert(db.checkpoints.length === 0)
+    assert.isEmpty(db.checkpoints)
   })
 
   it('should add a checkpoint', () => {
     db.checkpoint(new Uint8Array())
-    assert(db.checkpoints.length === 1)
+    assert.equal(db.checkpoints.length, 1)
   })
 
   it('should commit the latest checkpoint', async () => {
@@ -35,8 +35,8 @@ describe('DB tests', () => {
     await db.commit()
 
     // Ensure that the checkpoint is removed and the data is committed
-    assert(db.checkpoints.length === 0)
-    assert(db._stats.db.writes === 1)
+    assert.isEmpty(db.checkpoints)
+    assert.equal(db._stats.db.writes, 1)
   })
 
   it('should revert the latest checkpoint', async () => {
@@ -49,7 +49,7 @@ describe('DB tests', () => {
     const actualRoot = await db.revert()
 
     // Ensure that the latest checkpoint is removed and the root is returned
-    assert(db.checkpoints.length === 0)
+    assert.isEmpty(db.checkpoints)
     assert.equal(actualRoot, expectedRoot, 'roots should match')
   })
 
