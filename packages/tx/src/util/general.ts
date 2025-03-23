@@ -1,42 +1,6 @@
-import {
-  EthereumJSErrorWithoutCode,
-  TypeOutput,
-  hexToBytes,
-  setLengthLeft,
-  toBytes,
-  toType,
-} from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
-import type { TransactionType, TypedTxData } from '../types.ts'
-
-export function txTypeBytes(txType: TransactionType): Uint8Array {
-  return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
-}
-
-export function validateNotArray(values: { [key: string]: any }) {
-  const txDataKeys = [
-    'nonce',
-    'gasPrice',
-    'gasLimit',
-    'to',
-    'value',
-    'data',
-    'v',
-    'r',
-    's',
-    'type',
-    'baseFee',
-    'maxFeePerGas',
-    'chainId',
-  ]
-  for (const [key, value] of Object.entries(values)) {
-    if (txDataKeys.includes(key)) {
-      if (Array.isArray(value)) {
-        throw EthereumJSErrorWithoutCode(`${key} cannot be an array`)
-      }
-    }
-  }
-}
+import type { TypedTxData } from '../types.ts'
 
 /**
  * Normalizes values for transactions that are received from an RPC provider to be properly usable within

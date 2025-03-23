@@ -2,7 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0, BIGINT_1, EthereumJSErrorWithoutCode, concatBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { txTypeBytes } from '../util/general.ts'
+import { txTypeBytes } from '../util/internal.ts'
 
 import { errorMsg } from './legacy.ts'
 

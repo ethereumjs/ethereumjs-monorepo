@@ -25,7 +25,7 @@ import type {
   JSONBlobTxNetworkWrapper,
   TxOptions,
 } from '../types.ts'
-import { txTypeBytes, validateNotArray } from '../util/general.ts'
+import { txTypeBytes, validateNotArray } from '../util/internal.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
 
 const validateBlobTransactionNetworkWrapper = (

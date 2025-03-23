@@ -15,8 +15,12 @@ import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as EIP7702 from '../capabilities/eip7702.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
-import { validateNotArray } from '../util/general.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
+import {
+  getBaseJSON,
+  sharedConstructor,
+  validateNotArray,
+  valueBoundaryCheck,
+} from '../util/internal.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
 

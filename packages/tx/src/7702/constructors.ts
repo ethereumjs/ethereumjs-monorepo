@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 
 import { TransactionType } from '../types.ts'
-import { txTypeBytes, validateNotArray } from '../util/general.ts'
+import { txTypeBytes, validateNotArray } from '../util/internal.ts'
 
 import { EOACode7702Tx } from './tx.ts'
 

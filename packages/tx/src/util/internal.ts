@@ -7,16 +7,45 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  hexToBytes,
   toBytes,
 } from '@ethereumjs/util'
 
 import { paramsTx } from '../params.ts'
-import { validateNotArray } from './general.ts'
 
 import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.ts'
 
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
+}
+
+export function txTypeBytes(txType: TransactionType): Uint8Array {
+  return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
+}
+
+export function validateNotArray(values: { [key: string]: any }) {
+  const txDataKeys = [
+    'nonce',
+    'gasPrice',
+    'gasLimit',
+    'to',
+    'value',
+    'data',
+    'v',
+    'r',
+    's',
+    'type',
+    'baseFee',
+    'maxFeePerGas',
+    'chainId',
+  ]
+  for (const [key, value] of Object.entries(values)) {
+    if (txDataKeys.includes(key)) {
+      if (Array.isArray(value)) {
+        throw EthereumJSErrorWithoutCode(`${key} cannot be an array`)
+      }
+    }
+  }
 }
 
 function checkMaxInitCodeSize(common: Common, length: number) {
