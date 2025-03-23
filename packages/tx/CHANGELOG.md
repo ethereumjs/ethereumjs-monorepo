@@ -30,6 +30,7 @@ We will introduce a set of more specific sub error classes inheriting from this 
 
 ### Other Changes
 
+- New `ecSignOpts` input dict (attention, replacing the plain `chainId` parameter!) for `ecsign` in the `signature` module to allow for `chainId` and a new `extraEntropy` input for an optional hedged signatures support, PRs [#3873](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3873) and [#3905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3905)
 - Removal of `BaseTransaction` parent class to allow for more independent custom tx type implementations, PR [#3744](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3744)
 - Optional support for hedged signatures, PR [#3873](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3873) and [#3905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3905)
 - Rename `AccessList2930Transaction` -> `AccessList2930Tx` (same PR)

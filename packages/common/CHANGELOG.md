@@ -20,7 +20,7 @@ As a start we bump all major release versions to version 10, these `RC` releases
 
 We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
 
-The new package is meant to be performant and mostly compatible regarding usage and API.
+The new package is meant to be more performant while remaining almost entirely API compatible with native Node.js event emitters.
 
 If you directly import the Node.js event emitter, you need to switch your imports to:
 
@@ -45,6 +45,7 @@ We will introduce a set of more specific sub error classes inheriting from this 
 
 ### Other Changes
 
+- Add typing for events, PR [#3753](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3753)
 - Remove Goerli support, PR [#3851](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3851)
 - Fix TTD related failed Geth genesis parsing, PR [#3847](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3847)
 - Fix deposit address for sepolia and holesky, PR [#3882](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3882)
