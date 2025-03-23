@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/binarytree",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0-dev-rc.1",
   "description": "Implementation of binary trees as used in Ethereum.",
   "keywords": ["binary", "tree", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",

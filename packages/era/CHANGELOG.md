@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 10.0.0-rc.1 - [ UNPUBLISHED ]
+## 10.0.0-dev-rc.1 - [ UNPUBLISHED ]
 
-Initial release
+Initial development release
 
 Features:
 
