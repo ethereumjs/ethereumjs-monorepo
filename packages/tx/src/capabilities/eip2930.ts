@@ -32,7 +32,13 @@ export function getAccessListDataGas(accessList: AccessListBytes, common: Common
  * @param accessList
  */
 export function verifyAccessList(accessList: AccessListBytes) {
-  for (const [address, storageSlots] of accessList) {
+  for (const accessListItem of accessList) {
+    if (accessListItem.length !== 2) {
+      throw EthereumJSErrorWithoutCode(
+        'Invalid EIP-2930 transaction: access list item should have 2 elements',
+      )
+    }
+    const [address, storageSlots] = accessListItem
     if (address.length !== 20) {
       throw EthereumJSErrorWithoutCode(
         'Invalid EIP-2930 transaction: address length should be 20 bytes',
