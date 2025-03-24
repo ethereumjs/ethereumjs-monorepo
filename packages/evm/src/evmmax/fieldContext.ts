@@ -148,7 +148,7 @@ export class FieldContext {
    * Load 'count' field elements from this.scratchSpace (starting at index 'from')
    * into the provided 'dst' Uint8Array.
    */
-  public Load(dst: Uint8Array, from: number, count: number): void {
+  public load(dst: Uint8Array, from: number, count: number): void {
     const elemSize = this.modulus.length
     let dstIdx = 0
 

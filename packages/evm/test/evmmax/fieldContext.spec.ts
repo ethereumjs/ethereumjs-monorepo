@@ -1,5 +1,5 @@
-import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
+import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FieldContext } from '../../src/index.js'
@@ -47,20 +47,20 @@ function testModulus(mod: bigint) {
   fieldCtx.store(2, 1, yBytes)
 
   fieldCtx.addM(0, 1, 1, 1, 2, 1, 1)
-  fieldCtx.Load(outBytes, 0, 1)
+  fieldCtx.load(outBytes, 0, 1)
   const expectedAdd = (xInt + yInt) % mod
   const actualAdd = bytesToBigInt(outBytes)
   assert.deepEqual(actualAdd, expectedAdd)
 
   fieldCtx.subM(0, 1, 1, 1, 2, 1, 1)
-  fieldCtx.Load(outBytes, 0, 1)
+  fieldCtx.load(outBytes, 0, 1)
   let expectedSub = (xInt - yInt) % mod
   if (expectedSub < 0n) expectedSub += mod
   const actualSub = bytesToBigInt(outBytes)
   assert.deepEqual(actualSub, expectedSub)
 
   fieldCtx.mulM(0, 1, 1, 1, 2, 1, 1)
-  fieldCtx.Load(outBytes, 0, 1)
+  fieldCtx.load(outBytes, 0, 1)
   const expectedMul = (xInt * yInt) % mod
   const actualMul = bytesToBigInt(outBytes)
   assert.deepEqual(actualMul, expectedMul)

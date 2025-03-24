@@ -49,7 +49,8 @@ export class FieldAllocs {
     this.active = fieldContext
   }
 
-  getActive(): FieldContext | null {
+  getActive(): FieldContext {
+    if (this.active == null) throw new Error('Active not set')
     return this.active
   }
 }
