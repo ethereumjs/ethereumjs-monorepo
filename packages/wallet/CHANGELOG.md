@@ -12,7 +12,7 @@ This is the first (and likely the last) round of `RC` releases for the upcoming 
 
 ### New Versioning Scheme
 
-This breaking release round will come with a new versioning scheme (thanks to @paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
+This breaking release round will come with a new versioning scheme (thanks to paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
 
 As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
 
