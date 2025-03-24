@@ -3,6 +3,7 @@ import {
   Address,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
+  MAX_UINT63,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -33,6 +34,18 @@ export function valueBoundaryCheck(
 ) {
   for (const [key, value] of Object.entries(values)) {
     switch (bits) {
+      case 63:
+        if (cannotEqual) {
+          if (value !== undefined && value >= MAX_UINT63) {
+            // TODO: error msgs got raised to a error string handler first, now throws "generic" error
+            throw new Error(`${key} cannot equal or exceed MAX_UINT63 (2^63-1), given ${value}`)
+          }
+        } else {
+          if (value !== undefined && value > MAX_UINT63) {
+            throw new Error(`${key} cannot exceed MAX_UINT63 (2^63-1), given ${value}`)
+          }
+        }
+        break
       case 64:
         if (cannotEqual) {
           if (value !== undefined && value >= MAX_UINT64) {
@@ -117,8 +130,8 @@ export function sharedConstructor(
   // Validate value/r/s
   valueBoundaryCheck({ value: tx.value, r: tx.r, s: tx.s })
 
-  // geth limits gasLimit to 2^64-1
-  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 64)
+  // https://eips.ethereum.org/EIPS/eip-4803
+  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 63, true)
 
   // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
   valueBoundaryCheck({ nonce: tx.nonce }, 64, true)
