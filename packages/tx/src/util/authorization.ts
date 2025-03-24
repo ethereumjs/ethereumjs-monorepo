@@ -126,7 +126,7 @@ export function authorizationHashedMessageToSign(
 export function signAuthorization(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
   privateKey: Uint8Array,
-) {
+): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
   const signed = ecsign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
