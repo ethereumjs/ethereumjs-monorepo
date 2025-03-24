@@ -28,6 +28,20 @@ We have done preparations to allow for handling specific error sub types in the 
 
 We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
 
+### Finalized AccessLists and AuthorizationLists APIs
+
+We reworked the APIs for `AccessLists` and `AutorizationLists` a bit and finalized/aligned the API with the overall tx package structure, see PR [#3890](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3890).
+
+This is coming along with some changes, for `AccessLists`:
+
+- Removed `AccessListJSON` property for `EIP-2930`-compatible txs, use the `accessListBytesToJSON()` helper
+- Other way around: `accessListJSONToBytes()`
+
+For `AutorizationLists`:
+
+- Removed `AuthorizationListJSON` property for `EIP-7702`-compatible txs, use the `authorizationListBytesToJSON()` helper
+- Other way around: `authorizationListJSONToBytes()`
+
 ### Other Changes
 
 - New `ecSignOpts` input dict (attention, replacing the plain `chainId` parameter!) for `ecsign` in the `signature` module to allow for `chainId` and a new `extraEntropy` input for an optional hedged signatures support, PRs [#3873](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3873) and [#3905](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3905)
