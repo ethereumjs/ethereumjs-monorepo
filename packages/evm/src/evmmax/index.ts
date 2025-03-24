@@ -1,5 +1,6 @@
 export * from './addMod.js'
 export * from './binaryArith.js'
+export * from './fieldAllocations.js'
 export * from './fieldContext.js'
 export * from './montMulMod.js'
 export * from './subMulMod.js'

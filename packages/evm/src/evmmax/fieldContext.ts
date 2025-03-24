@@ -113,6 +113,14 @@ export class FieldContext {
     this.isModulusBinary = false
   }
 
+  getAllocatedSize(): number {
+    return this.scratchSpace.length * 8
+  }
+
+  getElemSize(): number {
+    return Number(this.elemSize)
+  }
+
   store(dst: number, count: number, from: Uint8Array) {
     const elemSize = this.modulus.length
 
