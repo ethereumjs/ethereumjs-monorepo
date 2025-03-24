@@ -1,7 +1,29 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
-import { EthereumJSErrorWithoutCode, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import type { AuthorizationList, AuthorizationListBytes } from '../types.ts'
+import { RLP } from '@ethereumjs/rlp'
+import {
+  Address,
+  EthereumJSErrorWithoutCode,
+  bigIntToUnpaddedBytes,
+  bytesToBigInt,
+  bytesToHex,
+  ecrecover,
+  ecsign,
+  hexToBytes,
+  publicToAddress,
+  setLengthLeft,
+  unpadBytes,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
+import type {
+  AuthorizationList,
+  AuthorizationListBytes,
+  AuthorizationListBytesItem,
+  AuthorizationListBytesItemUnsigned,
+  AuthorizationListItem,
+  AuthorizationListItemUnsigned,
+} from '../types.ts'
 
 /**
  * Converts an authorization list to a JSON format
@@ -50,4 +72,82 @@ export function authorizationListJSONToBytes(
       hexToBytes(item.s),
     ]
   })
+}
+
+/** Authorization signing utility methods */
+function unsignedAuthorizationListToBytes(input: AuthorizationListItemUnsigned) {
+  const { chainId: chainIdHex, address: addressHex, nonce: nonceHex } = input
+  const chainId = hexToBytes(chainIdHex)
+  const address = setLengthLeft(hexToBytes(addressHex), 20)
+  const nonce = hexToBytes(nonceHex)
+  return [chainId, address, nonce]
+}
+
+/**
+ * Returns the bytes (RLP-encoded) to sign
+ * @param input Either the bytes or the object format of the authorization list item
+ * @returns
+ */
+export function authorizationMessageToSign(
+  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+) {
+  if (Array.isArray(input)) {
+    // The address is validated, the chainId and nonce will be `unpadBytes` such that these are valid
+    const [chainId, address, nonce] = input
+    if (address.length !== 20) {
+      throw EthereumJSErrorWithoutCode('Cannot sign authority: address length should be 20 bytes')
+    }
+    return RLP.encode([AUTHORITY_SIGNING_MAGIC, unpadBytes(chainId), address, unpadBytes(nonce)])
+  } else {
+    const [chainId, address, nonce] = unsignedAuthorizationListToBytes(input)
+    return RLP.encode([AUTHORITY_SIGNING_MAGIC, chainId, address, nonce])
+  }
+}
+
+/**
+ * Hashes the RLP-encoded message to sign
+ * @param input
+ * @returns
+ */
+export function authorizationHashedMessageToSign(
+  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+) {
+  return keccak256(authorizationMessageToSign(input))
+}
+
+/**
+ * Signs an authorization list item and returns it in `bytes` format.
+ * To get the JSON format, use `authorizationListBytesToJSON([signed])[0] to convert it`
+ * @param input
+ * @param privateKey
+ * @returns
+ */
+export function signAuthorization(
+  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+  privateKey: Uint8Array,
+) {
+  const msgHash = authorizationHashedMessageToSign(input)
+  const signed = ecsign(msgHash, privateKey)
+  const [chainId, address, nonce] = Array.isArray(input)
+    ? input
+    : unsignedAuthorizationListToBytes(input)
+
+  return [
+    chainId,
+    address,
+    nonce,
+    bigIntToUnpaddedBytes(signed.v),
+    unpadBytes(signed.r),
+    unpadBytes(signed.s),
+  ]
+}
+
+export function recoverAuthority(
+  input: AuthorizationListItem | AuthorizationListBytesItem,
+): Address {
+  const inputBytes = Array.isArray(input) ? input : authorizationListJSONToBytes([input])[0]
+  const [chainId, address, nonce, yParity, r, s] = inputBytes
+  const msgHash = authorizationHashedMessageToSign([chainId, address, nonce])
+  const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
+  return new Address(publicToAddress(pubKey))
 }
