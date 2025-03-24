@@ -17,8 +17,6 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
 import type {
-  AuthorizationList,
-  AuthorizationListBytes,
   AuthorizationListBytesItem,
   AuthorizationListBytesItemUnsigned,
   AuthorizationListItem,
@@ -30,17 +28,18 @@ import type {
  * @param authorizationList
  * @returns authorizationList in JSON format
  */
-export function authorizationListBytesToJSON(
-  authorizationList: AuthorizationListBytes,
-): AuthorizationList {
-  return authorizationList.map(([chainId, address, nonce, yParity, r, s]) => ({
+export function authorizationListBytesItemToJSON(
+  authorizationList: AuthorizationListBytesItem,
+): AuthorizationListItem {
+  const [chainId, address, nonce, yParity, r, s] = authorizationList
+  return {
     chainId: bytesToHex(chainId),
     address: bytesToHex(address),
     nonce: bytesToHex(nonce),
     yParity: bytesToHex(yParity),
     r: bytesToHex(r),
     s: bytesToHex(s),
-  }))
+  }
 }
 
 /**
@@ -48,30 +47,28 @@ export function authorizationListBytesToJSON(
  * @param authorizationList
  * @returns bytes format of the authority list
  */
-export function authorizationListJSONToBytes(
-  authorizationList: AuthorizationList,
-): AuthorizationListBytes {
+export function authorizationListJSONItemToBytes(
+  authorizationList: AuthorizationListItem,
+): AuthorizationListBytesItem {
   const requiredFields = ['chainId', 'address', 'nonce', 'yParity', 'r', 's'] as const
 
-  return authorizationList.map((item) => {
-    // Validate all required fields are present
-    for (const field of requiredFields) {
-      if (item[field] === undefined) {
-        throw EthereumJSErrorWithoutCode(
-          `EIP-7702 authorization list invalid: ${field} is not defined`,
-        )
-      }
+  // Validate all required fields are present
+  for (const field of requiredFields) {
+    if (authorizationList[field] === undefined) {
+      throw EthereumJSErrorWithoutCode(
+        `EIP-7702 authorization list invalid: ${field} is not defined`,
+      )
     }
+  }
 
-    return [
-      hexToBytes(item.chainId),
-      hexToBytes(item.address),
-      hexToBytes(item.nonce),
-      hexToBytes(item.yParity),
-      hexToBytes(item.r),
-      hexToBytes(item.s),
-    ]
-  })
+  return [
+    hexToBytes(authorizationList.chainId),
+    hexToBytes(authorizationList.address),
+    hexToBytes(authorizationList.nonce),
+    hexToBytes(authorizationList.yParity),
+    hexToBytes(authorizationList.r),
+    hexToBytes(authorizationList.s),
+  ]
 }
 
 /** Authorization signing utility methods */
@@ -145,7 +142,7 @@ export function signAuthorization(
 export function recoverAuthority(
   input: AuthorizationListItem | AuthorizationListBytesItem,
 ): Address {
-  const inputBytes = Array.isArray(input) ? input : authorizationListJSONToBytes([input])[0]
+  const inputBytes = Array.isArray(input) ? input : authorizationListJSONItemToBytes(input)
   const [chainId, address, nonce, yParity, r, s] = inputBytes
   const msgHash = authorizationHashedMessageToSign([chainId, address, nonce])
   const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
