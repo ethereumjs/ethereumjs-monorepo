@@ -37,7 +37,7 @@ This is coming along with some changes, for `AccessLists`:
 - Removed `AccessListJSON` property for `EIP-2930`-compatible txs, use the `accessListBytesToJSON()` helper
 - Other way around: `accessListJSONToBytes()`
 
-For `AutorizationLists`:
+For `AuthorizationLists`:
 
 - Removed `AuthorizationListJSON` property for `EIP-7702`-compatible txs, use the `authorizationListBytesToJSON()` helper
 - Other way around: `authorizationListJSONToBytes()`
