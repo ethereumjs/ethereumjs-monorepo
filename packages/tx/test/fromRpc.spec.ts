@@ -8,7 +8,7 @@ import {
   createTxFromJSONRPCProvider,
   createTxFromRPC,
 } from '../src/index.ts'
-import { normalizeTxParams } from '../src/util.ts'
+import { normalizeTxParams } from '../src/util/general.ts'
 
 import { optimismTxData } from './testData/optimismTx.ts'
 import { rpcTxData } from './testData/rpcTx.ts'

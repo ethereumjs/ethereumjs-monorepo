@@ -215,7 +215,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
       // Check if everything is converted
 
       const bytes = txn.accessList
-      const JSON = txn.AccessListJSON
+      const JSON = txn.toJSON().accessList
 
       assert.isTrue(equalsBytes(bytes[0][0], validAddress))
       assert.isTrue(equalsBytes(bytes[0][1][0], validSlot))
@@ -232,7 +232,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         { common },
       )
 
-      const JSONRaw = txnRaw.AccessListJSON
+      const JSONRaw = txnRaw.toJSON().accessList
 
       assert.deepEqual(JSONRaw, access, `should allow json-typed access lists (${txType.name})`)
     }

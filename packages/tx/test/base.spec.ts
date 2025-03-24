@@ -12,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { valueBoundaryCheck } from '../src/features/util.ts'
 import {
   AccessList2930Tx,
   Capability,
@@ -30,6 +29,7 @@ import {
   createLegacyTxFromRLP,
   paramsTx,
 } from '../src/index.ts'
+import { valueBoundaryCheck } from '../src/util/internal.ts'
 
 import { eip1559TxsData } from './testData/eip1559txs.ts'
 import { eip2930TxsData } from './testData/eip2930txs.ts'

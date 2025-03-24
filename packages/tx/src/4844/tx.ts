@@ -16,16 +16,20 @@ import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
-import { TransactionType } from '../types.ts'
-import { AccessLists, validateNotArray } from '../util.ts'
+import { TransactionType, isAccessList } from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import {
+  getBaseJSON,
+  sharedConstructor,
+  validateNotArray,
+  valueBoundaryCheck,
+} from '../util/internal.ts'
 
 import { createBlob4844Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -72,8 +76,6 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
 
-  public readonly AccessListJSON: AccessList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -96,7 +98,14 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
+    const {
+      chainId,
+      accessList: rawAccessList,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      maxFeePerBlobGas,
+    } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -115,11 +124,9 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    EIP2930.verifyAccessList(this)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -375,7 +382,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
