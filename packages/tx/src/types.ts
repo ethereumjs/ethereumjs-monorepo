@@ -610,15 +610,17 @@ export type AccessList = AccessListItem[]
  * Authorization list types
  */
 export type AuthorizationListItemUnsigned = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString
+  // Note: these are `PrefixedHexString`s
+  chainId: string
+  address: string
+  nonce: string
 }
 
 export type AuthorizationListItem = {
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
+  // Note: these are `PrefixedHexString`s
+  yParity: string
+  r: string
+  s: string
 } & AuthorizationListItemUnsigned
 
 // Tuple of [chain_id, address, [nonce], y_parity, r, s]
