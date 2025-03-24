@@ -2,10 +2,10 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 const method = 'engine_newPayloadV3'
@@ -65,7 +65,9 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataNoneHashes)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument blobVersionedHashes'))
+    assert.isTrue(
+      res.error.message.includes('missing value for required argument blobVersionedHashes'),
+    )
 
     const blockDataMissingParentBeaconRoot = [
       {
@@ -82,7 +84,7 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataMissingParentBeaconRoot)
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('missing value for required argument parentBeaconBlockRoot'),
     )
 

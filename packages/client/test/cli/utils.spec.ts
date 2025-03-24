@@ -1,11 +1,11 @@
-import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as fs from 'fs'
+import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { generateClientConfig } from '../../bin/utils.js'
+import { generateClientConfig } from '../../bin/utils.ts'
 
-import type { ClientOpts } from '../../src/types.js'
+import type { ClientOpts } from '../../src/types.ts'
 
 describe('generateClientConfig', () => {
   it('should use chainId over networkId and network name', async () => {
@@ -64,7 +64,7 @@ describe('generateClientConfig', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -78,7 +78,7 @@ describe('generateClientConfig', () => {
       bootnodes: [`./${dir}/bootnodes.txt`],
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(Array.isArray(config.bootnodes), 'Bootnodes should be an array')
+    assert.isArray(config.bootnodes, 'Bootnodes should be an array')
   })
 
   it('should require an unlocked account when mining', async () => {
@@ -99,7 +99,7 @@ describe('generateClientConfig', () => {
       dev: true,
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(config.mine, 'Mining should be enabled')
+    assert.isTrue(config.mine, 'Mining should be enabled')
   })
 
   it('should properly configure Prometheus when enabled', async () => {
@@ -108,7 +108,10 @@ describe('generateClientConfig', () => {
       prometheusPort: 9090,
     }
     const { metricsServer } = await generateClientConfig(opts)
-    assert.ok(metricsServer, 'Prometheus should be enabled and metrics server should be started')
+    assert.isDefined(
+      metricsServer,
+      'Prometheus should be enabled and metrics server should be started',
+    )
   })
 
   it('should correctly handle dev mode initialization', async () => {
@@ -117,8 +120,8 @@ describe('generateClientConfig', () => {
       dataDir: './test-data',
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(config.mine, 'Mining should be enabled in dev mode')
-    assert.ok(config.isSingleNode, 'Single node mode should be enabled')
+    assert.isTrue(config.mine, 'Mining should be enabled in dev mode')
+    assert.isTrue(config.isSingleNode, 'Single node mode should be enabled')
   })
 
   it('should properly set logging options', async () => {

@@ -1,11 +1,11 @@
 // Tx constructors
-export * from './1559/index.js'
-export * from './2930/index.js'
-export * from './4844/index.js'
-export * from './7702/index.js'
-export * from './legacy/index.js'
+export * from './1559/index.ts'
+export * from './2930/index.ts'
+export * from './4844/index.ts'
+export * from './7702/index.ts'
+export * from './legacy/index.ts'
 // Parameters
-export * from './params.js'
+export * from './params.ts'
 
 // Transaction factory
 export {
@@ -14,10 +14,12 @@ export {
   createTxFromJSONRPCProvider,
   createTxFromRLP,
   createTxFromRPC,
-} from './transactionFactory.js'
+} from './transactionFactory.ts'
 
 // Types
-export * from './types.js'
+export * from './types.ts'
 
 // Utils
-export * from './util.js'
+export * from './util/general.ts'
+export * from './util/access.ts'
+export * from './util/authorization.ts'

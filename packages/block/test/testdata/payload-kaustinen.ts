@@ -1,4 +1,4 @@
-import type { BeaconPayloadJSON } from '../../src/index.js'
+import type { BeaconPayloadJSON } from '../../src/index.ts'
 
 export const payloadKaustinenData: BeaconPayloadJSON = {
   parent_hash: '0xec63025d318947bb19e62592700bff413774f5f4221fdf5f43483d2d4f7282e2',

@@ -145,12 +145,12 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 
-import gethGenesisJSON from './genesisData/post-merge.json'
+import { postMergeGethGenesis } from './genesisData/post-merge.ts'
 
 const main = async () => {
-  // Load geth genesis json file into lets say `gethGenesisJSON`
-  const common = createCommonFromGethGenesis(gethGenesisJSON, { chain: 'customChain' })
-  const genesisState = parseGethGenesisState(gethGenesisJSON)
+  // Load geth genesis file
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'customChain' })
+  const genesisState = parseGethGenesisState(postMergeGethGenesis)
   const blockchain = await createBlockchain({
     genesisState,
     common,
@@ -163,6 +163,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.

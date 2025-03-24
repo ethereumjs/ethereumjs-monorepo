@@ -3,7 +3,7 @@ import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
+import { createVM } from '../../../src/index.ts'
 
 describe('EIP 3855 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -26,7 +26,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10),
     })
 
-    assert.ok(stack!.length === 1)
+    assert.equal(stack!.length, 1)
     assert.equal(stack![0], BigInt(0))
     assert.equal(result.executionGasUsed, common.param('push0Gas'))
   })
@@ -46,7 +46,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.ok(stack.length === depth)
+    assert.equal(stack.length, depth)
     for (const elem of stack) {
       if (elem !== BigInt(0)) {
         assert.fail('stack element is not 0')

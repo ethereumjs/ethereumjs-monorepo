@@ -1,18 +1,18 @@
+import * as dgram from 'dgram'
 import { EthereumJSErrorWithoutCode, bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import * as dgram from 'dgram'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
-import { decode, encode } from './message.js'
+import { decode, encode } from './message.ts'
 
-import type { DPTServerOptions, PeerInfo, ServerEvent } from '../types.js'
-import type { DPT } from './dpt.js'
+import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import type { DPTServerOptions, PeerInfo, ServerEvent } from '../types.ts'
+import type { DPT } from './dpt.ts'
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = debugDefault('verbose').enabled

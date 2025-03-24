@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.3.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "A module to provide genesis states of well known networks",
   "keywords": ["ethereum", "genesis"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
@@ -22,13 +22,17 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./holesky": {
+      "import": "./dist/esm/genesisStates/holesky.js",
+      "require": "./dist/cjs/genesisStates/holesky.js"
+    },
+    "./hoodi": {
+      "import": "./dist/esm/genesisStates/hoodi.js",
+      "require": "./dist/cjs/genesisStates/hoodi.js"
+    },
     "./mainnet": {
       "import": "./dist/esm/genesisStates/mainnet.js",
       "require": "./dist/cjs/genesisStates/mainnet.js"
-    },
-    "./goerli": {
-      "import": "./dist/esm/genesisStates/goerli.js",
-      "require": "./dist/cjs/genesisStates/goerli.js"
     },
     "./sepolia": {
       "import": "./dist/esm/genesisStates/sepolia.js",
@@ -42,11 +46,12 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
-    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
@@ -54,8 +59,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1"
+    "@ethereumjs/common": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"

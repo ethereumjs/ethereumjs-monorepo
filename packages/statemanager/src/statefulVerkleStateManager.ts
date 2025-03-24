@@ -1,8 +1,15 @@
 import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import type {
+  Address,
+  GenesisState,
+  PrefixedHexString,
+  StoragePair,
+  VerkleCrypto,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import {
   Account,
-  type Address,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MapDB,
@@ -36,11 +43,9 @@ import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { Caches } from './cache/caches.js'
-import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.js'
 import type {
   AccountFields,
   Common,
@@ -50,14 +55,9 @@ import type {
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
 } from '@ethereumjs/common'
-import type {
-  GenesisState,
-  PrefixedHexString,
-  StoragePair,
-  VerkleCrypto,
-  VerkleExecutionWitness,
-} from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { Caches } from './cache/caches.ts'
+import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulVerkleStateManager implements StateManagerInterface {
@@ -274,7 +274,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
-    //@ts-ignore
     await modifyAccountFields(this, address, accountFields)
   }
   putCode = async (address: Address, value: Uint8Array): Promise<void> => {

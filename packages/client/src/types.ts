@@ -1,37 +1,38 @@
-import type { SyncMode } from './index.js'
-import type { Peer } from './net/peer/index.js'
-import type { Server } from './net/server/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type * as promClient from 'prom-client'
+import type { SyncMode } from './index.ts'
+import type { Peer } from './net/peer/index.ts'
+import type { Server } from './net/server/index.ts'
 
+export type Event = (typeof Event)[keyof typeof Event]
 /**
  * Types for the central event bus, emitted
  * by different components of the client.
  */
-export enum Event {
-  CHAIN_UPDATED = 'blockchain:chain:updated',
-  CLIENT_SHUTDOWN = 'client:shutdown',
-  SYNC_EXECUTION_VM_ERROR = 'sync:execution:vm:error',
-  SYNC_FETCHED_BLOCKS = 'sync:fetcher:fetched_blocks',
-  SYNC_FETCHED_HEADERS = 'sync:fetcher:fetched_headers',
-  SYNC_SYNCHRONIZED = 'sync:synchronized',
-  SYNC_ERROR = 'sync:error',
-  SYNC_FETCHER_ERROR = 'sync:fetcher:error',
-  SYNC_SNAPSYNC_COMPLETE = 'sync:snapsync:complete',
-  PEER_CONNECTED = 'peer:connected',
-  PEER_DISCONNECTED = 'peer:disconnected',
-  PEER_ERROR = 'peer:error',
-  SERVER_LISTENING = 'server:listening',
-  SERVER_ERROR = 'server:error',
-  POOL_PEER_ADDED = 'pool:peer:added',
-  POOL_PEER_REMOVED = 'pool:peer:removed',
-  POOL_PEER_BANNED = 'pool:peer:banned',
-  PROTOCOL_ERROR = 'protocol:error',
-  PROTOCOL_MESSAGE = 'protocol:message',
-}
+export const Event = {
+  CHAIN_UPDATED: 'blockchain:chain:updated',
+  CLIENT_SHUTDOWN: 'client:shutdown',
+  SYNC_EXECUTION_VM_ERROR: 'sync:execution:vm:error',
+  SYNC_FETCHED_BLOCKS: 'sync:fetcher:fetched_blocks',
+  SYNC_FETCHED_HEADERS: 'sync:fetcher:fetched_headers',
+  SYNC_SYNCHRONIZED: 'sync:synchronized',
+  SYNC_ERROR: 'sync:error',
+  SYNC_FETCHER_ERROR: 'sync:fetcher:error',
+  SYNC_SNAPSYNC_COMPLETE: 'sync:snapsync:complete',
+  PEER_CONNECTED: 'peer:connected',
+  PEER_DISCONNECTED: 'peer:disconnected',
+  PEER_ERROR: 'peer:error',
+  SERVER_LISTENING: 'server:listening',
+  SERVER_ERROR: 'server:error',
+  POOL_PEER_ADDED: 'pool:peer:added',
+  POOL_PEER_REMOVED: 'pool:peer:removed',
+  POOL_PEER_BANNED: 'pool:peer:banned',
+  PROTOCOL_ERROR: 'protocol:error',
+  PROTOCOL_MESSAGE: 'protocol:message',
+} as const
 export interface EventParams {
   [Event.CHAIN_UPDATED]: []
   [Event.CLIENT_SHUTDOWN]: []

@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Units, formatBigDecimal } from '../src/index.js'
+import { Units, formatBigDecimal } from '../src/index.ts'
 
 describe('formatBigDecimal', function () {
   const testCases: [bigint, bigint, bigint, string][] = [

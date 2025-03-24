@@ -14,7 +14,7 @@ import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.js'
+import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.ts'
 
 describe('verkle tests', () => {
   it('should execute bytecode and update the state', async () => {
@@ -75,7 +75,7 @@ describe('verkle tests', () => {
     const writtenChunks = Array.from(evm.verkleAccessWitness.chunks.entries()).filter(
       ([_, chunk]) => chunk.write !== undefined,
     )
-    assert.ok(writtenChunks.length === 0)
+    assert.isEmpty(writtenChunks)
     assert.equal(res.execResult.exceptionError?.error, 'out of gas')
   })
 
@@ -108,7 +108,7 @@ describe('verkle tests', () => {
     const writtenChunks = Array.from(evm.verkleAccessWitness.chunks.entries()).filter(
       ([_, chunk]) => chunk.write !== undefined,
     )
-    assert.ok(writtenChunks.length === 1)
+    assert.equal(writtenChunks.length, 1)
     assert.equal(res.execResult.exceptionError?.error, undefined)
   })
 })
@@ -179,11 +179,11 @@ describe('generate an execution witness', () => {
       preStateRoot,
     )
     const stem = bytesToHex(getVerkleStem(verkle, createAddressFromString(tx.sender)))
-    assert.ok(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
+    assert.isTrue(executionWitness.stateDiff.findIndex((diff) => diff.stem === stem) !== -1)
     const stemDiff =
       executionWitness.stateDiff[executionWitness.stateDiff.findIndex((diff) => diff.stem === stem)]
     const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)
-    assert.ok(suffixDiff?.newValue !== undefined)
+    assert.isDefined(suffixDiff?.newValue)
     // Ensure sender account nonce is 1 in execution witness
     assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
   })

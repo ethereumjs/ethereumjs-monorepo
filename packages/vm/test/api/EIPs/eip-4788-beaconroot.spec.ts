@@ -22,11 +22,11 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../../src/index.ts'
 
 const common = new Common({
   chain: Mainnet,

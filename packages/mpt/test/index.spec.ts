@@ -12,10 +12,10 @@ import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.js'
-import { bytesToNibbles } from '../src/util/nibbles.js'
+import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.ts'
+import { bytesToNibbles } from '../src/util/nibbles.ts'
 
-import type { HashKeysFunction } from '../src/index.js'
+import type { HashKeysFunction } from '../src/index.ts'
 
 for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
   for (const cacheSize of [0, 100]) {
@@ -249,16 +249,17 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         let path = await trie.findPath(utf8ToBytes('aaa'))
 
-        assert.ok(path.node !== null, 'findPath should find a node')
+        assert.isNotNull(path.node, 'findPath should find a node')
 
         const { stack } = await trie.findPath(utf8ToBytes('aaa'))
         await trie['_db'].del(keccak256(stack[1].serialize())) // delete the BranchMPTNode -> value1 from the DB
 
         path = await trie.findPath(utf8ToBytes('aaa'))
 
-        assert.ok(path.node === null, 'findPath should not return a node now')
-        assert.ok(
-          path.stack.length === 1,
+        assert.isNull(path.node, 'findPath should not return a node now')
+        assert.equal(
+          path.stack.length,
+          1,
           'findPath should find the first extension node which is still in the DB',
         )
       })

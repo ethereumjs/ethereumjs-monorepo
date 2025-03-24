@@ -1,9 +1,7 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 
-import { createMPTFromProof } from '../constructors.js'
-import { MerklePatriciaTrie } from '../index.js'
+import { type MPTOpts, MerklePatriciaTrie, type Proof, createMPTFromProof } from '../index.ts'
 
-import type { MPTOpts, Proof } from '../index.js'
 import type { PutBatch } from '@ethereumjs/util'
 
 /**
@@ -25,7 +23,7 @@ export async function verifyMerkleProof(
     const proofTrie = await createMPTFromProof(proof, opts)
     const value = await proofTrie.get(key, true)
     return value
-  } catch (err: any) {
+  } catch {
     throw EthereumJSErrorWithoutCode('Invalid proof provided')
   }
 }
@@ -116,7 +114,7 @@ export async function verifyMPTWithMerkleProof(
   })
   try {
     await updateMPTFromMerkleProof(proofTrie, proof, true)
-  } catch (e: any) {
+  } catch {
     throw EthereumJSErrorWithoutCode('Invalid proof nodes given')
   }
   try {

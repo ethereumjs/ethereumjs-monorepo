@@ -3,11 +3,11 @@ import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
 import { LRUCache } from 'lru-cache'
 
-import { Cache } from './cache.js'
-import { CacheType } from './types.js'
+import { Cache } from './cache.ts'
+import { CacheType } from './types.ts'
 
-import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
+import type { CacheOpts } from './types.ts'
 
 /**
  * Represents a cached code element.

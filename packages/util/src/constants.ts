@@ -1,7 +1,7 @@
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { hexToBytes } from './bytes.js'
+import { hexToBytes } from './bytes.ts'
 
 /**
  * 2^64-1

@@ -1,11 +1,11 @@
 import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
 
-import { createBinaryTree } from './constructors.js'
-import { decodeBinaryNode } from './node/index.js'
+import { createBinaryTree } from './constructors.ts'
+import { decodeBinaryNode } from './node/index.ts'
 
-import type { BinaryTree } from './binaryTree.js'
-import type { BinaryNode } from './node/index.js'
-import type { StemBinaryNode } from './node/stemNode.js'
+import type { BinaryTree } from './binaryTree.ts'
+import type { BinaryNode } from './node/index.ts'
+import type { StemBinaryNode } from './node/stemNode.ts'
 
 /**
  * Saves the nodes from a proof into the tree.

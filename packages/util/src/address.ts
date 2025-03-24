@@ -4,7 +4,7 @@ import {
   isValidAddress,
   privateToAddress,
   pubToAddress,
-} from './account.js'
+} from './account.ts'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -12,11 +12,11 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-} from './bytes.js'
-import { BIGINT_0 } from './constants.js'
-import { EthereumJSErrorWithoutCode } from './errors.js'
+} from './bytes.ts'
+import { BIGINT_0 } from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
 
-import type { PrefixedHexString } from './types.js'
+import type { PrefixedHexString } from './types.ts'
 
 /**
  * Handling and generating Ethereum addresses

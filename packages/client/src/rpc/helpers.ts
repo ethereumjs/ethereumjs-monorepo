@@ -1,11 +1,11 @@
 import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.js'
+import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code.ts'
 
-import type { Chain } from '../blockchain/index.js'
-import type { RPCMethod } from './types.js'
 import type { Block } from '@ethereumjs/block'
 import type { JSONRPCTx, TypedTransaction } from '@ethereumjs/tx'
+import type { Chain } from '../blockchain/index.ts'
+import type { RPCMethod } from './types.ts'
 
 type RPCError = {
   code: number

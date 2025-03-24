@@ -1,22 +1,9 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import {
-  AltairBeaconState,
-  AltairSignedBeaconBlock,
-  BellatrixBeaconState,
-  BellatrixSignedBeaconBlock,
-  CapellaBeaconState,
-  CapellaSignedBeaconBlock,
-  EraTypes,
-  ForkSlots,
-  Phase0BeaconState,
-  Phase0SignedBeaconBlock,
-  parseEntry,
-  readEntry,
-} from './index.js'
+import { EraTypes, parseEntry, readEntry } from './index.ts'
 
-import type { SlotIndex } from './index.js'
+import type { SlotIndex } from './index.ts'
 
 /**
  * Reads a Slot Index from the end of a bytestring representing an era file
@@ -40,7 +27,8 @@ export const readSlotIndex = (bytes: Uint8Array): SlotIndex => {
 
   for (let i = 0; i < count; i++) {
     const slotEntry = slotIndexEntry.data.subarray((i + 1) * 8, (i + 2) * 8)
-    const slotOffset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
+    let slotOffset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
+    if (slotOffset === -1 * recordStart) slotOffset = 0 // If offset is the same as the block record start, this is a skipped slot
     slotOffsets.push(slotOffset)
   }
   return {
@@ -82,11 +70,15 @@ export const readBeaconState = async (eraData: Uint8Array) => {
     throw EthereumJSErrorWithoutCode(`expected CompressedBeaconState type, got ${stateEntry.type}`)
   }
   const stateSlot = indices.stateSlotIndex.startSlot
-  if (stateSlot < ForkSlots.Altair) return Phase0BeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Bellatrix) return AltairBeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Capella)
-    return BellatrixBeaconState.decode(data.data as Uint8Array)
-  else if (stateSlot < ForkSlots.Deneb) return CapellaBeaconState.decode(data.data as Uint8Array)
+  // TODO: Add a helper to identify the fork programmatically so the right types can be selected based on fork number rather
+  // than hardcoded as below
+  if (stateSlot < ssz.ForkSlots.Altair) return ssz.Phase0BeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Bellatrix)
+    return ssz.AltairBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Capella)
+    return ssz.BellatrixBeaconState.decode(data.data as Uint8Array)
+  else if (stateSlot < ssz.ForkSlots.Deneb)
+    return ssz.CapellaBeaconState.decode(data.data as Uint8Array)
   else return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array)
 }
 
@@ -103,6 +95,7 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
       indices.blockSlotIndex!.recordStart + indices.blockSlotIndex!.slotOffsets[offset],
     ),
   )
+
   const data = await parseEntry(blockEntry)
   if (equalsBytes(blockEntry.type, EraTypes.CompressedSignedBeaconBlockType) === false) {
     throw EthereumJSErrorWithoutCode(
@@ -111,12 +104,14 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   }
 
   const slot = indices.blockSlotIndex!.startSlot + offset
-  if (slot < ForkSlots.Altair) return Phase0SignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Bellatrix)
-    return AltairSignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Capella)
-    return BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
-  else if (slot < ForkSlots.Deneb) return CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
+  if (slot < ssz.ForkSlots.Altair)
+    return ssz.Phase0SignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Bellatrix)
+    return ssz.AltairSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Capella)
+    return ssz.BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Deneb)
+    return ssz.CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
   else return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array)
 }
 
@@ -134,16 +129,8 @@ export async function* readBlocksFromEra(eraFile: Uint8Array) {
   }
 
   for (let x = 0; x < maxBlocks; x++) {
-    try {
-      const block = await readBeaconBlock(eraFile, x)
-      yield block
-    } catch (err: any) {
-      // Nimbus ERA files appear to have a block entry where the entry type is 0x6532 (i.e. the version type) for empty slots
-      if (err?.message?.includes('0x6532') === true) {
-        // Skip empty slots
-        continue
-      }
-      throw err
-    }
+    if (indices.blockSlotIndex!.slotOffsets[x] === 0) continue // skip empty slots
+    const block = await readBeaconBlock(eraFile, x)
+    yield block
   }
 }

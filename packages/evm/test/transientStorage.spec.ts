@@ -8,8 +8,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
-import { TransientStorage } from '../src/transientStorage.js'
+import { createEVM } from '../src/index.ts'
+import { TransientStorage } from '../src/transientStorage.ts'
 
 describe('Transient Storage', () => {
   it('should set and get storage', () => {
@@ -196,7 +196,7 @@ describe('Transient Storage', () => {
     })
     const created = result.createdAddress!
     const stored = evm.transientStorage.get(created, keyBuf)
-    assert.ok(
+    assert.isTrue(
       equalsBytes(unpadBytes(stored), new Uint8Array()),
       'Transient storage has been cleared',
     )
@@ -213,7 +213,7 @@ describe('Transient Storage', () => {
       gasLimit: BigInt(100_000),
     })
     const stored = evm.transientStorage.get(contractAddress, keyBuf)
-    assert.ok(
+    assert.isTrue(
       equalsBytes(unpadBytes(stored), new Uint8Array()),
       'Transient storage has been cleared',
     )

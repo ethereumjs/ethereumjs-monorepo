@@ -1,4 +1,4 @@
-import { utils } from '../src/index.js'
+import { utils } from '../src/index.ts'
 
 const { hexToBytes } = utils
 

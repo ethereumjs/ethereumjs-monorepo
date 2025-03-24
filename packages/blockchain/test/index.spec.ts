@@ -8,12 +8,12 @@ import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.js'
+import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.ts'
 
-import { blocksMainnetData } from './testdata/blocks_mainnet.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { preLondonData } from './testdata/testdata_pre-london.js'
-import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
+import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { preLondonData } from './testdata/testdata_pre-london.ts'
+import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.ts'
 
 import type { Block, BlockOptions } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -78,8 +78,8 @@ describe('blockchain test', () => {
       common = new Common({ chain: Goerli })
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
-      assert.ok(chain instanceof Blockchain, 'should not throw')
-    } catch (error) {
+      assert.instanceOf(chain, Blockchain, 'should not throw')
+    } catch {
       assert.fail('show not have thrown')
     }
   })
@@ -109,7 +109,7 @@ describe('blockchain test', () => {
         genesisBlock,
       })
     } catch (error: any) {
-      assert.ok(error, 'returned with error')
+      assert.isDefined(error, 'returned with error')
     }
   })
 
@@ -223,7 +223,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(5)
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-number request`,
       )
@@ -233,7 +233,7 @@ describe('blockchain test', () => {
       await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-hash request`,
       )
@@ -247,7 +247,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(blocks[0].header.number, getBlocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
 
     const canonicalHeaderOriginal = await blockchain.getCanonicalHeadHeader()
     assert.equal(canonicalHeaderOriginal.number, BigInt(24), 'block 24 should be canonical header')
@@ -262,7 +262,10 @@ describe('blockchain test', () => {
       await blockchain.getBlock(22)
       assert.fail('canonical references should have been deleted')
     } catch (err: any) {
-      assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
+      assert.isTrue(
+        err.message.includes('not found in DB'),
+        'canonical references correctly deleted',
+      )
     }
 
     try {
@@ -298,7 +301,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 1, false)
     assert.equal(getBlocks!.length, 5, 'should get 5 blocks')
     assert.equal(getBlocks![1].header.number, blocks[2].header.number, 'should skip second block')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 4 blocks, skipping 2 apart, starting from genesis hash', async () => {
@@ -312,7 +315,7 @@ describe('blockchain test', () => {
       blocks[3].header.number,
       'should skip two blocks apart',
     )
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 10 consecutive blocks, starting from genesis hash', async () => {
@@ -322,7 +325,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 17, 0, false)
     assert.equal(getBlocks!.length, 15)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 0', async () => {
@@ -332,7 +335,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 blocks, skipping 1 apart, starting from block 1', async () => {
@@ -342,7 +345,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(1, 5, 1, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip one block')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 5 blocks, skipping 2 apart, starting from block 0', async () => {
@@ -352,7 +355,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 5, 2, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![1].header.number, blocks[3].header.number, 'should skip two blocks')
-    assert.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!), 'blocks should not be consecutive')
   })
 
   it('should get 15 consecutive blocks, starting from block 0', async () => {
@@ -362,7 +365,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(0, 17, 0, false)
     assert.equal(getBlocks!.length, 15)
     assert.equal(getBlocks![0].header.number, blocks[0].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 1', async () => {
@@ -372,7 +375,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(1, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[1].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 5', async () => {
@@ -382,7 +385,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 5, 0, false)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!), 'blocks should be consecutive')
   })
 
   it('should get 5 consecutive blocks, starting from block 5, reversed', async () => {
@@ -392,7 +395,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 5, 0, true)
     assert.equal(getBlocks!.length, 5)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
   it('should get 6 consecutive blocks, starting from block 5, reversed', async () => {
@@ -402,7 +405,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(5, 15, 0, true)
     assert.equal(getBlocks!.length, 6)
     assert.equal(getBlocks![0].header.number, blocks[5].header.number)
-    assert.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
+    assert.isTrue(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
   })
 
   it('should get 6 blocks, starting from block 10, reversed, skipping 1 apart', async () => {
@@ -412,7 +415,7 @@ describe('blockchain test', () => {
     const getBlocks = await blockchain.getBlocks(10, 10, 1, true)
     assert.equal(getBlocks!.length, 6)
     assert.equal(getBlocks![1].header.number, blocks[8].header.number, 'should skip one block')
-    assert.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
+    assert.isFalse(isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
   })
 
   it('should find needed hashes', async () => {
@@ -462,7 +465,7 @@ describe('blockchain test', () => {
       number: 15,
       parentHash: blocks[14].hash(),
       gasLimit: 8000000,
-      //eslint-disable-next-line
+
       timestamp: BigInt(blocks[14].header.timestamp) + BigInt(1),
     }
     const forkHeader = createBlockHeader(headerData, {
@@ -574,7 +577,7 @@ describe('blockchain test', () => {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
     } catch (error: any) {
-      assert.ok(error, 'should not validate an invalid block')
+      assert.isDefined(error, 'should not validate an invalid block')
     }
   })
 
@@ -757,7 +760,7 @@ describe('blockchain test', () => {
         error = err
       }
       if (i === 2) {
-        assert.ok(error.message.match('Chain mismatch'), 'should return chain mismatch error')
+        assert.include(error.message, 'Chain mismatch', 'should return chain mismatch error')
       } else {
         assert.isUndefined(error, 'should not return mismatch error')
       }

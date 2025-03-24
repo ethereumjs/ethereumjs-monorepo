@@ -2,7 +2,13 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type {
+  Account,
+  Address,
+  BinaryTreeExecutionWitness,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -64,18 +70,65 @@ export type AccessEventFlags = {
   chunkFill: boolean
 }
 
-/**
- * Verkle related
- *
- * Experimental (do not implement)
- */
+export type BinaryTreeAccessedStateType =
+  (typeof BinaryTreeAccessedStateType)[keyof typeof BinaryTreeAccessedStateType]
 
-export enum VerkleAccessedStateType {
-  BasicData = 'basicData',
-  CodeHash = 'codeHash',
-  Code = 'code',
-  Storage = 'storage',
+export const BinaryTreeAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
+
+export type RawBinaryTreeAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
 }
+
+export type BinaryTreeAccessedState =
+  | {
+      type: Exclude<
+        BinaryTreeAccessedStateType,
+        typeof BinaryTreeAccessedStateType.Code | typeof BinaryTreeAccessedStateType.Storage
+      >
+    }
+  | { type: typeof BinaryTreeAccessedStateType.Code; codeOffset: number }
+  | { type: typeof BinaryTreeAccessedStateType.Storage; slot: bigint }
+
+export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface BinaryTreeAccessWitnessInterface {
+  accesses(): Generator<BinaryTreeAccessedStateWithAddress>
+  rawAccesses(): Generator<RawBinaryTreeAccessedState>
+  debugWitnessCost(): void
+  readAccountBasicData(address: Address): bigint
+  writeAccountBasicData(address: Address): bigint
+  readAccountCodeHash(address: Address): bigint
+  writeAccountCodeHash(address: Address): bigint
+  readAccountHeader(address: Address): bigint
+  writeAccountHeader(address: Address): bigint
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  readAccountStorage(contract: Address, storageSlot: bigint): bigint
+  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
+  merge(accessWitness: BinaryTreeAccessWitnessInterface): void
+  commit(): void
+  revert(): void
+}
+
+export type VerkleAccessedStateType =
+  (typeof VerkleAccessedStateType)[keyof typeof VerkleAccessedStateType]
+
+export const VerkleAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
 
 export type RawVerkleAccessedState = {
   address: Address
@@ -88,11 +141,11 @@ export type VerkleAccessedState =
   | {
       type: Exclude<
         VerkleAccessedStateType,
-        VerkleAccessedStateType.Code | VerkleAccessedStateType.Storage
+        typeof VerkleAccessedStateType.Code | typeof VerkleAccessedStateType.Storage
       >
     }
-  | { type: VerkleAccessedStateType.Code; codeOffset: number }
-  | { type: VerkleAccessedStateType.Storage; slot: bigint }
+  | { type: typeof VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: typeof VerkleAccessedStateType.Storage; slot: bigint }
 
 export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
   address: Address
@@ -177,7 +230,12 @@ export interface StateManagerInterface {
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
   ): void
-  verifyPostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
+  verifyVerklePostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
+  initBinaryTreeExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: BinaryTreeExecutionWitness | null,
+  ): void
+  verifyBinaryTreePostState?(accessWitness: BinaryTreeAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

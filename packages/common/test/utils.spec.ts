@@ -1,16 +1,16 @@
 import { assert, describe, it } from 'vitest'
 
-import { Mainnet } from '../src/chains.js'
-import { Hardfork } from '../src/enums.js'
-import { createCommonFromGethGenesis } from '../src/index.js'
-import { parseGethGenesis } from '../src/utils.js'
+import { Mainnet } from '../src/chains.ts'
+import { Hardfork } from '../src/enums.ts'
+import { createCommonFromGethGenesis } from '../src/index.ts'
+import { parseGethGenesis } from '../src/utils.ts'
 
-import { invalidSpuriousDragonData } from './data/geth-genesis/invalid-spurious-dragon.js'
-import { noExtraData } from './data/geth-genesis/no-extra-data.js'
-import { poaData } from './data/geth-genesis/poa.js'
-import { postMergeData } from './data/geth-genesis/post-merge.js'
-import { testnetData } from './data/geth-genesis/testnetData.js'
-import { postMergeHardforkData } from './data/post-merge-hardfork.js'
+import { invalidSpuriousDragonData } from './data/geth-genesis/invalid-spurious-dragon.ts'
+import { noExtraData } from './data/geth-genesis/no-extra-data.ts'
+import { poaData } from './data/geth-genesis/poa.ts'
+import { postMergeData } from './data/geth-genesis/post-merge.ts'
+import { testnetData } from './data/geth-genesis/testnetData.ts'
+import { postMergeHardforkData } from './data/post-merge-hardfork.ts'
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
@@ -98,7 +98,7 @@ describe('[Utils/Parse]', () => {
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
     const genesisJSON = postMergeData
-    // @ts-expect-error we want shanghaiTime to exist
+    //@ts-expect-error we want shanghaiTime to exist
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
@@ -108,9 +108,9 @@ describe('[Utils/Parse]', () => {
   })
   it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
     const genesisJSON = postMergeData
-    // @ts-expect-error we don't want shanghaiTime to exist
+    //@ts-expect-error we don't want shanghaiTime to exist
     delete genesisJSON.config.shanghaiTime
-    // @ts-expect-error we don't want terminalTotalDifficultyPassed to exist
+    //@ts-expect-error we don't want terminalTotalDifficultyPassed to exist
     delete genesisJSON.config.terminalTotalDifficultyPassed
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(

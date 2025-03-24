@@ -1,10 +1,10 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { createEVM } from '../src/index.ts'
 
-import type { RunState } from '../src/interpreter.js'
-import type { AddOpcode } from '../src/types.js'
+import type { RunState } from '../src/interpreter.ts'
+import type { AddOpcode } from '../src/types.ts'
 
 describe('VM: custom opcodes', () => {
   const fee = 333
@@ -27,7 +27,7 @@ describe('VM: custom opcodes', () => {
   it('should add custom opcodes to the EVM', async () => {
     const evm = await createEVM({ customOpcodes: [testOpcode] })
     const gas = 123456
-    let correctOpcodeName = false
+    let correctOpcodeName: boolean = false
     evm.events.on('step', (e) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
@@ -37,9 +37,9 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x21'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
-    assert.ok(correctOpcodeName, 'successfully set opcode name')
+    assert.isTrue(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    assert.equal(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
+    assert.isTrue(correctOpcodeName, 'successfully set opcode name')
   })
 
   it('should delete opcodes from the EVM', async () => {
@@ -51,7 +51,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.isTrue(res.executionGasUsed === gas, 'successfully deleted opcode')
   })
 
   it('should not override default opcodes', async () => {
@@ -65,7 +65,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x01'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.equal(res.executionGasUsed, gas, 'successfully deleted opcode')
 
     const evmDefault = await createEVM()
 
@@ -81,7 +81,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(equalsBytes(result.returnValue, hexToBytes('0x05')))
+    assert.isTrue(equalsBytes(result.returnValue, hexToBytes('0x05')))
   })
 
   it('should override opcodes in the EVM', async () => {
@@ -92,8 +92,8 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
+    assert.equal(res.executionGasUsed, totalFee, 'successfully charged correct gas')
+    assert.equal(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
   })
 
   it('should pass the correct EVM options when copying the EVM', async () => {
@@ -115,8 +115,8 @@ describe('VM: custom opcodes', () => {
     const evmCopy = evm.shallowCopy()
 
     assert.deepEqual(
-      (evmCopy as any)._customOpcodes,
-      (evmCopy as any)._customOpcodes,
+      evmCopy['_customOpcodes'],
+      evm['_customOpcodes'],
       'evm.shallowCopy() successfully copied customOpcodes option',
     )
 

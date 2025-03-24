@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src/index.js'
+import { RLP, utils } from '../src/index.ts'
 
-import { invalidData } from './fixture/invalid.js'
+import { invalidData } from './fixture/invalid.ts'
 
 const { hexToBytes } = utils
 
@@ -30,8 +30,8 @@ describe('invalid tests', () => {
       'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss', // cspell:disable-line
     )
     // sanity checks
-    assert.ok(longBufferTest[0] > 0xb7)
-    assert.ok(longBufferTest[0] <= 0xbf)
+    assert.isTrue(longBufferTest[0] > 0xb7)
+    assert.isTrue(longBufferTest[0] <= 0xbf)
 
     // try to decode the partial buffer
     assert.throws(

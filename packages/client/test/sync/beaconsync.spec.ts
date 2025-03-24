@@ -3,10 +3,10 @@ import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher.js'
-import { Skeleton } from '../../src/sync/index.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher.ts'
+import { Skeleton } from '../../src/sync/index.ts'
 
 describe('[BeaconSynchronizer]', async () => {
   const execution: any = { run: () => {} }
@@ -29,10 +29,10 @@ describe('[BeaconSynchronizer]', async () => {
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
 
-  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.js', () =>
+  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.ts', () =>
     td.constructor(ReverseBlockFetcher),
   )
-  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.js')
+  const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.ts')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -53,7 +53,7 @@ describe('[BeaconSynchronizer]', async () => {
     ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -75,7 +75,7 @@ describe('[BeaconSynchronizer]', async () => {
     const headers = [{ number: BigInt(5) }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
     const latest = await peer.latest()
-    assert.ok(latest!.number === BigInt(5), 'got height')
+    assert.equal(latest?.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
   })
@@ -155,13 +155,13 @@ describe('[BeaconSynchronizer]', async () => {
     }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
+        assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=1 count=1'))
-        assert.ok(true, 'should sync block 1 and target chain start')
+        assert.isTrue(true, 'should sync block 1 and target chain start')
     })
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     await sync.sync()
@@ -170,7 +170,7 @@ describe('[BeaconSynchronizer]', async () => {
     ;(sync as any).chain = { blocks: { height: BigInt(4) } }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=1'))
-        assert.ok(true, 'should sync block 5 with count 1')
+        assert.isTrue(true, 'should sync block 5 with count 1')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()
@@ -206,7 +206,7 @@ describe('[BeaconSynchronizer]', async () => {
     }
     sync.config.logger.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
-        assert.ok(true, 'should sync block 5 and target chain start')
+        assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
     sync.config.logger.removeAllListeners()
@@ -230,13 +230,13 @@ describe('[BeaconSynchronizer]', async () => {
     const block = createBlock({
       header: { number: BigInt(16), parentHash: head.hash() },
     })
-    assert.ok(await sync.extendChain(block), 'should extend chain successfully')
-    assert.ok(await sync.setHead(block), 'should set head successfully')
+    assert.isTrue(await sync.extendChain(block), 'should extend chain successfully')
+    assert.isTrue(await sync.setHead(block), 'should set head successfully')
     assert.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
 
     const gapBlock = createBlock({ header: { number: BigInt(18) } })
-    assert.notOk(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
-    assert.ok(
+    assert.isFalse(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
+    assert.isTrue(
       await sync.setHead(gapBlock),
       'should be able to set and update head with gapped block',
     )

@@ -1,9 +1,9 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config.js'
-import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.js'
-import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol/index.js'
+import { Config } from '../../../src/config.ts'
+import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.ts'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol/index.ts'
 
 describe('[Protocol]', () => {
   const testMessage = {
@@ -48,7 +48,7 @@ describe('[Protocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     await p.open()
-    assert.ok(p.opened, 'is open')
+    assert.isTrue(p.opened, 'is open')
   })
 
   it('should perform handshake (status now)', async () => {
@@ -82,7 +82,7 @@ describe('[Protocol]', () => {
     try {
       await p.handshake(sender)
     } catch (e: any) {
-      assert.ok(/timed out/.test(e.message), 'got timeout error')
+      assert.isTrue(/timed out/.test(e.message), 'got timeout error')
     }
   })
 
@@ -107,7 +107,7 @@ describe('[Protocol]', () => {
 
     const bound = new BoundProtocol({ peer, sender, protocol: p, config: p.config })
 
-    assert.ok(bound instanceof BoundProtocol, 'correct bound protocol')
+    assert.instanceOf(bound, BoundProtocol, 'correct bound protocol')
   })
 
   td.reset()

@@ -1,9 +1,15 @@
-import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP,
+  bytesToHex,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.ts'
 
-import { createAccountWithDefaults } from './util.js'
+import { createAccountWithDefaults } from './util.ts'
 
 describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
@@ -11,29 +17,29 @@ describe('StateManager -> General/Account', () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
-      assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+      const address = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const account = createAccountWithDefaults(BigInt(0), BigInt(1000))
       await stateManager.checkpoint()
       await stateManager.putAccount(address, account)
       await stateManager.commit()
       await stateManager.flush()
-      assert.ok(!equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has a new root')
+      assert.isFalse(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has a new root')
 
       // set state root to empty trie root
       await stateManager.setStateRoot(KECCAK256_RLP)
 
       const res = await stateManager.getStateRoot()
-      assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
+      assert.isTrue(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     })
 
     it(`should clear the cache when the state root is set`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+      const address = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       const account = createAccountWithDefaults()
 
       // test account storage cache
@@ -60,7 +66,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putStorage(address, key, value)
 
       const contract0 = await stateManager.getStorage(address, key)
-      assert.ok(
+      assert.isTrue(
         equalsBytes(contract0, value),
         "contract key's value is set in the _storageTries cache",
       )
@@ -69,8 +75,8 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(initialStateRoot)
       try {
         await stateManager.getStorage(address, key)
-      } catch (e) {
-        assert.ok(true, 'should throw if getStorage() is called on non existing address')
+      } catch {
+        assert.isTrue(true, 'should throw if getStorage() is called on non existing address')
       }
     })
 
@@ -79,7 +85,7 @@ describe('StateManager -> General/Account', () => {
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults()
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+      const address = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 
       await stateManager.putAccount(address, account)
 
@@ -92,18 +98,19 @@ describe('StateManager -> General/Account', () => {
 
       const res2 = await stateManager.getAccount(address)
 
-      assert.ok(equalsBytes(res1!.serialize(), res2!.serialize()))
+      assert.isTrue(equalsBytes(res1!.serialize(), res2!.serialize()))
     })
 
     it(`should return undefined for a non-existent account`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-      const res = (await stateManager.getAccount(address)) === undefined
-
-      assert.ok(res)
+      assert.isUndefined(
+        await stateManager.getAccount(
+          createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'),
+        ),
+      )
     })
 
     it(`should return undefined for an existent account`, async () => {
@@ -111,13 +118,11 @@ describe('StateManager -> General/Account', () => {
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults(BigInt(0x1), BigInt(0x1))
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+      const address = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 
       await stateManager.putAccount(address, account)
 
-      const res = (await stateManager.getAccount(address)) === undefined
-
-      assert.notOk(res)
+      assert.isDefined(await stateManager.getAccount(address))
     })
 
     it(`should modify account fields correctly`, async () => {
@@ -125,7 +130,7 @@ describe('StateManager -> General/Account', () => {
         caches: new Caches({ account: accountCacheOpts }),
       })
       const account = createAccountWithDefaults()
-      const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+      const address = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
       await stateManager.putAccount(address, account)
 
       await stateManager.modifyAccountFields(address, { balance: BigInt(1234) })

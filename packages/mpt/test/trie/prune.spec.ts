@@ -1,9 +1,9 @@
 import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.js'
+import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.ts'
 
-import type { BranchMPTNode } from '../../src/index.js'
+import type { BranchMPTNode } from '../../src/index.ts'
 
 describe('Pruned trie tests', () => {
   it('should default to not prune the trie', async () => {
@@ -64,7 +64,7 @@ describe('Pruned trie tests', () => {
     await trie.put(key, value)
     await trie.put(key, value)
     const reported = await trie.get(key)
-    assert.ok(equalsBytes(reported!, value), 'value matches expected value')
+    assert.isTrue(equalsBytes(reported!, value), 'value matches expected value')
   })
 
   it('should not throw if a key is either non-existent or deleted twice', async () => {
@@ -85,9 +85,9 @@ describe('Pruned trie tests', () => {
     await trie.del(key)
     await trie.del(key)
     const reported = await trie.get(key)
-    assert.ok(reported === null, 'value is null')
+    assert.isNull(reported, 'value is null')
     const reported2 = await trie.get(key2)
-    assert.ok(equalsBytes(reported2!, value2), 'value matches expected value')
+    assert.isTrue(equalsBytes(reported2!, value2), 'value matches expected value')
   })
 
   it('should prune when keys are updated or deleted', async () => {
@@ -114,7 +114,7 @@ describe('Pruned trie tests', () => {
         await trie.put(key, utf8ToBytes(values[i]))
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
@@ -122,7 +122,7 @@ describe('Pruned trie tests', () => {
         await trie.del(keys[idx])
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
@@ -135,21 +135,17 @@ describe('Pruned trie tests', () => {
         }
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
         await trie.del(keys[idx])
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
-      let dbKeys = 0
-      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
-        dbKeys++
-      }
-      assert.ok(dbKeys === 0, 'db is empty')
+      assert.isEmpty((<any>trie)._db.db._database.keys(), 'db should be empty')
     }
   })
 
@@ -172,15 +168,18 @@ describe('Pruned trie tests', () => {
     const path = await trie.findPath(utf8ToBytes('key1'))
     const parentBranchMPTNode = path.stack[1] as BranchMPTNode
     // Hex ASCII value for for `1` is 31, and for `2` is 32. We should expect a branching out at indexes 1 an 2.
-    assert.ok(isRawMPTNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
-    assert.ok(isRawMPTNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
+    assert.isTrue(isRawMPTNode(parentBranchMPTNode._branches[1]!), 'key1 node is not a rawNode')
+    assert.isTrue(isRawMPTNode(parentBranchMPTNode._branches[2]!), 'key2 node is not a rawNode')
 
-    assert.notOk(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
+    assert.isFalse(equalsBytes(trie.root(), initialRoot), 'Root should have changed')
 
     // Delete the branch node
     await trie.del(utf8ToBytes('key2'))
 
-    assert.ok(equalsBytes(trie.root(), initialRoot), 'Root should be the same as the initial root')
+    assert.isTrue(
+      equalsBytes(trie.root(), initialRoot),
+      'Root should be the same as the initial root',
+    )
   })
 
   it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async () => {
@@ -190,19 +189,19 @@ describe('Pruned trie tests', () => {
     await trie.put(hexToBytes('0xaa'), hexToBytes('0xbb'))
     // Overwrite this value (trie is now not pruned anymore)
     await trie.put(hexToBytes('0xaa'), hexToBytes('0xaa'))
-    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
 
     // Create new empty MerklePatriciaTrie (is pruned)
     trie = new MerklePatriciaTrie()
     // Create a new value raw in DB (is not pruned)
     await (<any>trie)._db.db.put(utf8ToBytes('aa'))
-    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
     await (<any>trie)._db.db.del(utf8ToBytes('aa'))
-    assert.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
+    assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await trie.put(utf8ToBytes('aa'), utf8ToBytes('bb'))
-    assert.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
+    assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await (<any>trie)._db.db.put(utf8ToBytes('aa'))
-    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
   })
 
   it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async () => {
@@ -227,7 +226,7 @@ describe('Pruned trie tests', () => {
         await trie.put(key, utf8ToBytes(values[i]))
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
@@ -235,7 +234,7 @@ describe('Pruned trie tests', () => {
         await trie.del(keys[idx])
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
@@ -248,21 +247,21 @@ describe('Pruned trie tests', () => {
         }
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
         await trie.del(keys[idx])
       }
 
-      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
-      assert.ok(dbKeys === 1, 'db is empty')
+      assert.equal(dbKeys, 1, 'db is empty')
     }
   })
 })

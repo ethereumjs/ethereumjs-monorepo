@@ -20,12 +20,10 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/index.ts'
+import type { Caches, MerkleStateManagerOpts } from './index.ts'
+import { modifyAccountFields } from './util.ts'
 
-import { type MerkleStateManagerOpts } from './index.js'
-
-import type { Caches } from './index.js'
 import type {
   AccountFields,
   StateManagerInterface,

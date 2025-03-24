@@ -1,12 +1,12 @@
 import { BIGINT_0, EthereumJSErrorWithoutCode, short } from '@ethereumjs/util'
 import { EventEmitter } from 'eventemitter3'
 
-import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.js'
+import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.ts'
 
-import type { Config } from '../../config.js'
-import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
-import type { Server } from '../server/index.js'
 import type { BlockHeader } from '@ethereumjs/block'
+import type { Config } from '../../config.ts'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.ts'
+import type { Server } from '../server/index.ts'
 
 export interface PeerOptions {
   /* Config */

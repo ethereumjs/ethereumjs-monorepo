@@ -1,16 +1,16 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { Config } from '../../index.js'
-import { RlpxPeer } from '../../net/peer/rlpxpeer.js'
-import { getClientVersion } from '../../util/index.js'
-import { INTERNAL_ERROR } from '../error-code.js'
-import { callWithStackTrace } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { Config } from '../../index.ts'
+import { RlpxPeer } from '../../net/peer/rlpxpeer.ts'
+import { getClientVersion } from '../../util/index.ts'
+import { INTERNAL_ERROR } from '../error-code.ts'
+import { callWithStackTrace } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../client.js'
-import type { RlpxServer } from '../../net/server/rlpxserver.js'
-import type { FullEthereumService } from '../../service/index.js'
+import type { Chain } from '../../blockchain/index.ts'
+import type { EthereumClient } from '../../client.ts'
+import type { RlpxServer } from '../../net/server/rlpxserver.ts'
+import type { FullEthereumService } from '../../service/index.ts'
 
 /**
  * admin_* RPC module
@@ -115,7 +115,7 @@ export class Admin {
    * e.g. `.admin_addPeer [{"address": "127.0.0.1", "tcpPort": 30303, "udpPort": 30303}]`
    * @param params An object containing an address, tcpPort, and udpPort for target server to connect to
    */
-  async addPeer(params: [Object]) {
+  async addPeer(params: [object]) {
     const service = this._client.service as any as FullEthereumService
     const server = service.pool.config.server as RlpxServer
     const dpt = server.dpt

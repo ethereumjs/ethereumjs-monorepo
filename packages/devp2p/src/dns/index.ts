@@ -1,2 +1,2 @@
-export * from './dns.js'
-export * from './enr.js'
+export * from './dns.ts'
+export * from './enr.ts'

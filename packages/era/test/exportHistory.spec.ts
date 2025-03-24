@@ -1,7 +1,7 @@
 import { bytesToBigInt64, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { compressData, formatEntry } from '../src/index.js'
+import { compressData, formatEntry } from '../src/index.ts'
 describe('era1', async () => {
   const test = {
     compressed:

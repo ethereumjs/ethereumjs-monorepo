@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "6.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
@@ -37,11 +37,12 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
-    "lint": "npm run biome && eslint --config .eslintrc.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
@@ -49,19 +50,19 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/common": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
-    "@types/minimist": "^1.2.0",
-    "@types/node-dir": "^0.0.34",
+    "@types/minimist": "^1.2.5",
+    "@types/node-dir": "^0.0.37",
     "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.12.1",
-    "minimist": "^1.2.0",
-    "node-dir": "^0.1.16",
-    "yargs": "^17.7.1"
+    "micro-eth-signer": "^0.14.0",
+    "minimist": "^1.2.8",
+    "node-dir": "^0.1.17",
+    "yargs": "^17.7.2"
   },
   "engines": {
     "node": ">=18"

@@ -1,6 +1,6 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import type { EIP1559CompatibleTx } from '../types.js'
+import type { EIP1559CompatibleTx } from '../types.ts'
 
 export function getUpfrontCost(tx: EIP1559CompatibleTx, baseFee: bigint): bigint {
   const prio = tx.maxPriorityFeePerGas

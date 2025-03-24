@@ -2,14 +2,14 @@
   "extends": "../../config/tsconfig.prod.esm.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist/esm",
-    "composite": true
+    "outDir": "dist/esm"
   },
   "include": ["src/**/*.ts"],
   "references": [
     { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../util/tsconfig.prod.esm.json" },
-    { "path": "../verkle/tsconfig.prod.esm.json" }
+    { "path": "../verkle/tsconfig.prod.esm.json" },
+    { "path": "../binarytree/tsconfig.prod.esm.json" }
   ]
 }

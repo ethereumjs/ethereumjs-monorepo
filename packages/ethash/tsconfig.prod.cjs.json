@@ -3,8 +3,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "lib": ["dom"],
-    "composite": true
+    "lib": ["dom"]
   },
   "include": ["src/**/*.ts"],
   "references": [

@@ -3,14 +3,14 @@ import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/commo
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.js'
-import { createBlockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.ts'
+import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.js'
-import { generateConsecutiveBlock } from './util.js'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { generateConsecutiveBlock } from './util.ts'
 
-import type { ConsensusDict } from '../src/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { ConsensusDict } from '../src/index.ts'
 
 describe('reorg tests', () => {
   it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
@@ -55,11 +55,11 @@ describe('reorg tests', () => {
     const number_highTD = highTDBlock.header.number
 
     // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
-    assert.ok(
+    assert.isTrue(
       number_lowTD > number_highTD,
       'low TD should have a lower TD than the reported high TD',
     )
-    assert.ok(
+    assert.isTrue(
       blocks_lowTD[blocks_lowTD.length - 1].header.number >
         blocks_highTD[blocks_highTD.length - 1].header.number,
       'low TD block should have a higher number than high TD block',
@@ -157,48 +157,50 @@ describe('reorg tests', () => {
 
     let signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
 
-    assert.ok(
-      !signerStates.find(
-        (s: any) => s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
+    assert.isUndefined(
+      signerStates.find(
+        (s: any): boolean =>
+          s[0] === BigInt(2) && s[1].find((a: Address) => a.equals(beneficiary1)),
       ),
       'should not find reorged signer state',
     )
 
     let signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.ok(
-      !signerVotes.find(
-        (v: any) =>
+    assert.isUndefined(
+      signerVotes.find(
+        (v: any): boolean =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(cliqueSigner(block1_low.header)) &&
-          v[1][1].equal(beneficiary1) &&
+          (v[1][0] as Address).equals(cliqueSigner(block1_low.header)) &&
+          (v[1][1] as Address).equals(beneficiary1) &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
       'should not find reorged clique vote',
     )
 
     let blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.ok(
-      !blockSigners.find(
-        (s: any) => s[0] === BigInt(1) && s[1].equal(cliqueSigner(block1_low.header)),
+    assert.isUndefined(
+      blockSigners.find(
+        (s: any): boolean => s[0] === BigInt(1) && s[1].equals(cliqueSigner(block1_low.header)),
       ),
       'should not find reorged block signer',
     )
 
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
-    assert.ok(
-      !!signerStates.find(
-        (s: any) => s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
+    assert.isDefined(
+      signerStates.find(
+        (s: any): boolean =>
+          s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
       ),
       'should find reorged signer state',
     )
 
     signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.ok(signerVotes.length === 0, 'votes should be empty')
+    assert.equal(signerVotes.length, 0, 'votes should be empty')
 
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.ok(
-      !!blockSigners.find(
-        (s: any) => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
+    assert.isDefined(
+      blockSigners.find(
+        (s: any): boolean => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),
       'should find reorged block signer',
     )

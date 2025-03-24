@@ -2,7 +2,7 @@ import { EventEmitter } from 'eventemitter3'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { RlpxSender } from '../../../src/net/protocol/index.js'
+import { RlpxSender } from '../../../src/net/protocol/index.ts'
 
 import type { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 
@@ -14,7 +14,7 @@ describe('should send status', async () => {
   td.verify(rlpxProtocol.sendStatus(status))
   td.reset()
   it('sent status', () => {
-    assert.ok(true, 'status sent')
+    assert.isTrue(true, 'status sent')
   })
 })
 
@@ -25,7 +25,7 @@ describe('should send message', async () => {
   td.verify(rlpxProtocol.sendMessage(1, 5))
   td.reset()
   it('sent message', () => {
-    assert.ok(true, 'message sent')
+    assert.isTrue(true, 'message sent')
   })
 })
 

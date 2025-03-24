@@ -1,9 +1,9 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { DNS } from '../src/dns/index.js'
+import { DNS } from '../src/dns/index.ts'
 
-import { testData } from './testdata.js'
+import { testData } from './testdata.ts'
 
 describe('DNS', () => {
   const mockData = testData.dns
@@ -64,7 +64,7 @@ describe('DNS', () => {
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
     assert.equal(peers.length, 2, 'returns two peers')
-    assert.ok(peers[0].address !== peers[1].address, 'peer addresses are different')
+    assert.notEqual(peers[0].address, peers[1].address, 'peer addresses are different')
   })
 
   it('retrieves all peers (3) when branch entries are composed of multiple strings', async () => {
@@ -79,9 +79,9 @@ describe('DNS', () => {
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
     assert.equal(peers.length, 3, 'returns three peers')
-    assert.ok(peers[0].address !== peers[1].address, 'peer 0 is not peer 1')
-    assert.ok(peers[0].address !== peers[2].address, 'peer 0 is not peer 2')
-    assert.ok(peers[1].address !== peers[2].address, 'peer 1 is not peer 2')
+    assert.notEqual(peers[0].address, peers[1].address, 'peer 0 is not peer 1')
+    assert.notEqual(peers[0].address, peers[2].address, 'peer 0 is not peer 2')
+    assert.notEqual(peers[1].address, peers[2].address, 'peer 1 is not peer 2')
   })
 
   it('it tolerates circular branch references', async () => {
@@ -171,9 +171,10 @@ describe('DNS: (integration)', () => {
 
       const seen: string[] = []
       for (const peer of peers) {
-        assert.ok(peer!.address!.match(ipTestRegex), 'address is a valid ip')
-        assert.ok(!seen.includes(peer!.address as string), 'peer is not duplicate')
-        seen.push(peer!.address as string)
+        assert.isDefined(peer.address)
+        assert.match(peer.address, ipTestRegex, 'address is a valid ip')
+        assert.notInclude(seen, peer.address, 'peer is not duplicate')
+        seen.push(peer.address)
       }
     },
     { timeout: 10000 },

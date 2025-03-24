@@ -12,13 +12,15 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { paramsTx } from '../index.js'
-import { Capability, TransactionType } from '../types.js'
+import * as Legacy from '../capabilities/legacy.ts'
+import { paramsTx } from '../index.ts'
+import { Capability, TransactionType } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
-import { createLegacyTx } from './constructors.js'
+import { createLegacyTx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -26,12 +28,10 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
 
-export type TxData = AllTypesTxData[TransactionType.Legacy]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
+export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
   const v = Number(_v)
@@ -42,7 +42,7 @@ function meetsEIP155(_v: bigint, chainId: bigint) {
 /**
  * Validates tx's `v` value and extracts the chain id
  */
-function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undefined {
+function validateVAndExtractChainID(common: Common, _v?: bigint): bigint | undefined {
   let chainIdBigInt
   const v = _v !== undefined ? Number(_v) : undefined
   // Check for valid v values in the scope of a signed legacy tx
@@ -79,9 +79,9 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): BigInt | undef
 /**
  * An Ethereum non-typed (legacy) transaction
  */
-export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
+export class LegacyTx implements TransactionInterface<typeof TransactionType.Legacy> {
   /* Tx public data fields */
-  public type: number = TransactionType.Legacy // Legacy tx type
+  public type = TransactionType.Legacy // Legacy tx type
 
   // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
@@ -390,7 +390,7 @@ export class LegacyTx implements TransactionInterface<TransactionType.Legacy> {
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): LegacyTx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
     return <LegacyTx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

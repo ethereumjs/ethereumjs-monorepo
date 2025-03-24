@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -10,7 +9,7 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -19,6 +18,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'eof'
+
 const eofJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(eofJSON, { chain: network })
 
@@ -34,7 +34,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   })
 
   if (result.includes('EthereumJS') === true) {
-    assert.ok(true, 'connected to client')
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -42,7 +42,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -68,7 +68,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   it(' EIP 3670 tests', async () => {
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(data)
-    assert.ok(res.contractAddress !== undefined, 'created contract')
+    assert.isDefined(res.contractAddress, 'created contract')
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
     assert.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
   })
@@ -104,7 +104,7 @@ describe('EOF ephemeral hardfork tests', async () => {
   it('EIP 3855 tests', async () => {
     const push1res = await runTx('0x6000')
     const push0res = await runTx('0x5F')
-    assert.ok(
+    assert.isTrue(
       BigInt(push1res.gasUsed) > BigInt(push0res.gasUsed),
       'PUSH1 transaction costs higher gas than PUSH0',
     )
@@ -139,7 +139,7 @@ describe('EOF ephemeral hardfork tests', async () => {
       '0x5caba0a40000000000000000000000004242424242424242424242424242424242424242',
       contractAddress,
     )
-    assert.ok(
+    assert.isTrue(
       BigInt(readCold.gasUsed) > BigInt(readWarmCoinbase.gasUsed),
       'read cold storage tx should have higher cumulative gas than than read coinbase tx',
     )
@@ -148,8 +148,8 @@ describe('EOF ephemeral hardfork tests', async () => {
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   })

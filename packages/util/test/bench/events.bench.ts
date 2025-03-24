@@ -1,5 +1,5 @@
-import { EventEmitter as ee3 } from 'eventemitter3'
 import EventEmitter from 'events'
+import { EventEmitter as ee3 } from 'eventemitter3'
 import { bench, describe } from 'vitest'
 
 describe('event benchmarks', () => {

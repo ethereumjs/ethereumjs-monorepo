@@ -1,6 +1,6 @@
 import { equalsBytes } from '@ethereumjs/util'
 
-import type { PrecompileInput } from '../types.js'
+import type { PrecompileInput } from '../types.ts'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
 

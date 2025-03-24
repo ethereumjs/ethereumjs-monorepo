@@ -1,8 +1,8 @@
-import { EOFError, validationError } from './errors.js'
-import { stackDelta } from './stackDelta.js'
+import { EOFError, validationError } from './errors.ts'
+import { stackDelta } from './stackDelta.ts'
 
-import type { EVM } from '../evm.js'
-import type { EOFContainer } from './container.js'
+import type { EVM } from '../evm.ts'
+import type { EOFContainer } from './container.ts'
 
 /**
  * Note for reviewers regarding these flags: these only reside inside `verify.ts` (this file)
@@ -20,11 +20,13 @@ import type { EOFContainer } from './container.js'
  * This flag is thus to distinguish between subcontainers, and also thus also allows for data section sizes
  * lower than the size in the header in case of `InitCode`
  */
-export enum ContainerSectionType {
-  InitCode, // Targeted by EOFCreate
-  DeploymentCode, // Targeted by RETURNCONTRACT
-  RuntimeCode, // "Default" runtime code
-}
+export type ContainerSectionType = (typeof ContainerSectionType)[keyof typeof ContainerSectionType]
+
+export const ContainerSectionType = {
+  InitCode: 'initCode', // Targeted by EOFCreate
+  DeploymentCode: 'deploymentCode', // Targeted by RETURNCONTRACT
+  RuntimeCode: 'runtimeCode', // "Default" runtime code
+} as const
 
 /**
  * This method validates an EOF container deeply. It will validate the opcodes, validate the stack, and performs
@@ -43,7 +45,6 @@ export function verifyCode(
   evm: EVM,
   mode: ContainerSectionType = ContainerSectionType.RuntimeCode,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   return validateOpcodes(container, evm, mode)
 }
 
@@ -139,7 +140,6 @@ function validateOpcodes(
     // Track the jump locations (for forward jumps it is unknown at the first pass if the byte is intermediate)
     const jumpLocations = new Set<number>()
 
-    // eslint-disable-next-line no-inner-declarations
     function addJump(location: number) {
       if (intermediateBytes.has(location)) {
         // When trying to JUMP into an intermediate byte: this is invalid
@@ -148,7 +148,6 @@ function validateOpcodes(
       jumpLocations.add(location)
     }
 
-    // eslint-disable-next-line no-inner-declarations
     function addIntermediate(location: number) {
       if (jumpLocations.has(location)) {
         // When trying to add an intermediate to a location already JUMPed to: this is invalid

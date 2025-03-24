@@ -1,7 +1,7 @@
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 
-import { Goerli } from '../test/testdata/goerliCommon.js'
+import { Goerli } from '../test/testdata/goerliCommon.ts'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 

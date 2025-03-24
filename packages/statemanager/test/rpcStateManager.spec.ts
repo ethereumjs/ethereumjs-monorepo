@@ -1,6 +1,7 @@
 import { createBlockFromJSONRPCProvider, createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type EVMRunCallOpts, createEVM } from '@ethereumjs/evm'
+import { createEVM } from '@ethereumjs/evm'
+import type { EVMMockBlockchainInterface, EVMRunCallOpts } from '@ethereumjs/evm'
 import { verifyMerkleProof } from '@ethereumjs/mpt'
 import { createFeeMarket1559Tx, createTxFromRPC } from '@ethereumjs/tx'
 import {
@@ -18,15 +19,13 @@ import {
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { MerkleStateManager } from '../src/merkleStateManager.js'
-import { getRPCStateProof } from '../src/proof/index.js'
-import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
+import { MerkleStateManager } from '../src/merkleStateManager.ts'
+import { getRPCStateProof } from '../src/proof/index.ts'
+import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.ts'
 
-import { block as blockData } from './testdata/providerData/blocks/block0x7a120.js'
-import { getValues } from './testdata/providerData/mockProvider.js'
-import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.js'
-
-import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
+import { block as blockData } from './testdata/providerData/blocks/block0x7a120.ts'
+import { getValues } from './testdata/providerData/mockProvider.ts'
+import { tx as txData } from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.ts'
 
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
@@ -48,15 +47,16 @@ describe('RPC State Manager initialization tests', async () => {
 
   it('should work', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
-    assert.ok(state instanceof RPCStateManager, 'was able to instantiate state manager')
+    assert.instanceOf(state, RPCStateManager, 'was able to instantiate state manager')
     assert.equal(state['_blockTag'], '0x1', 'State manager starts with default block tag of 1')
 
     state = new RPCStateManager({ provider, blockTag: 1n })
     assert.equal(state['_blockTag'], '0x1', 'State Manager instantiated with predefined blocktag')
 
     state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
-    assert.ok(
-      state instanceof RPCStateManager,
+    assert.instanceOf(
+      state,
+      RPCStateManager,
       'was able to instantiate state manager with valid url',
     )
 
@@ -76,34 +76,34 @@ describe('RPC State Manager API tests', () => {
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
 
-    assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
+    assert.isTrue(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
     await state.putAccount(vitalikDotEth, account!)
 
     const retrievedVitalikAccount = createAccountFromRLP(
-      state['_caches'].account?.get(vitalikDotEth)?.accountRLP!,
+      state['_caches'].account!.get(vitalikDotEth)!.accountRLP!,
     )
 
-    assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
+    assert.isTrue(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
     const proof = await getRPCStateProof(state, address)
     const proofBuf = proof.accountProof.map((proofNode) => hexToBytes(proofNode))
     const doesThisAccountExist = await verifyMerkleProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
-    assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
+    assert.isNull(doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-    assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
+    assert.isDefined(state.getAccount(vitalikDotEth), 'vitalik.eth does exist')
 
     const UniswapERC20ContractAddress = createAddressFromString(
       '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
     )
     const UNIContractCode = await state.getCode(UniswapERC20ContractAddress)
-    assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
+    assert.isNotEmpty(UNIContractCode, 'was able to retrieve UNI contract code')
 
     await state.putCode(UniswapERC20ContractAddress, UNIContractCode)
-    assert.ok(
-      state['_caches'].code?.get(UniswapERC20ContractAddress) !== undefined,
+    assert.isDefined(
+      state['_caches'].code?.get(UniswapERC20ContractAddress),
       'UNI ERC20 contract code was found in cache',
     )
 
@@ -111,7 +111,7 @@ describe('RPC State Manager API tests', () => {
       UniswapERC20ContractAddress,
       setLengthLeft(bigIntToBytes(1n), 32),
     )
-    assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+    assert.isNotEmpty(storageSlot, 'was able to retrieve storage slot 1 for the UNI contract')
 
     await expect(async () => {
       await state.getStorage(UniswapERC20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
@@ -126,7 +126,7 @@ describe('RPC State Manager API tests', () => {
       UniswapERC20ContractAddress,
       setLengthLeft(bigIntToBytes(2n), 32),
     )
-    assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+    assert.isTrue(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
     const dumpedStorage = await state.dumpStorage(UniswapERC20ContractAddress)
     assert.deepEqual(dumpedStorage, {
@@ -161,8 +161,8 @@ describe('RPC State Manager API tests', () => {
 
     try {
       await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
-    } catch (err) {
-      assert.ok(true, 'calls getAccountFromProvider for non-cached account')
+    } catch {
+      assert.isTrue(true, 'calls getAccountFromProvider for non-cached account')
     }
 
     const deletedSlot = await state.getStorage(
@@ -173,14 +173,14 @@ describe('RPC State Manager API tests', () => {
     assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
-    assert.ok(
-      (await state.getAccount(vitalikDotEth)) === undefined,
+    assert.isUndefined(
+      await state.getAccount(vitalikDotEth),
       'account should not exist after being deleted',
     )
 
     await state.revert()
-    assert.ok(
-      (await state.getAccount(vitalikDotEth)) !== undefined,
+    assert.isDefined(
+      await state.getAccount(vitalikDotEth),
       'account deleted since last checkpoint should exist after revert called',
     )
 
@@ -209,7 +209,7 @@ describe('RPC State Manager API tests', () => {
       await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
         'threw with correct error when invalid blockTag provided',
       )
@@ -336,9 +336,9 @@ describe('blockchain', () =>
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.ok(
+    assert.equal(
       bytesToHex(res.execResult.returnValue),
-      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6',
+      '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d84',
     )
   }))
 

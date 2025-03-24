@@ -9,23 +9,25 @@ import {
   headerKey,
   numberToHashKey,
   tdKey,
-} from './constants.js'
+} from './constants.ts'
 
-import type { CacheMap } from './manager.js'
+import type { CacheMap } from './manager.ts'
 
-export enum DBTarget {
-  Heads,
-  HeadHeader,
-  HeadBlock,
-  HashToNumber,
-  NumberToHash,
-  TotalDifficulty,
-  Body,
-  Header,
-  CliqueSignerStates,
-  CliqueVotes,
-  CliqueBlockSigners,
-}
+export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
+
+export const DBTarget = {
+  Heads: 0,
+  HeadHeader: 1,
+  HeadBlock: 2,
+  HashToNumber: 3,
+  NumberToHash: 4,
+  TotalDifficulty: 5,
+  Body: 6,
+  Header: 7,
+  CliqueSignerStates: 8,
+  CliqueVotes: 9,
+  CliqueBlockSigners: 10,
+} as const
 
 /**
  * DBOpData is a type which has the purpose of holding the actual data of the Database Operation.

@@ -21,13 +21,13 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
-import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { PendingBlock } from '../../src/miner/index.js'
-import { TxPool } from '../../src/service/txpool.js'
-import { mockBlockchain } from '../rpc/mockBlockchain.js'
-import { Goerli } from '../testdata/common/goerliCommon.js'
+import { Config } from '../../src/config.ts'
+import { getLogger } from '../../src/logging.ts'
+import { PendingBlock } from '../../src/miner/index.ts'
+import { TxPool } from '../../src/service/txpool.ts'
+import { mockBlockchain } from '../rpc/mockBlockchain.ts'
+import { hardfork4844Data } from '../testdata/blocks/4844-hardfork.ts'
+import { Goerli } from '../testdata/common/goerliCommon.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -463,16 +463,16 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
     assert.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
     assert.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
     assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    assert.ok(pendingBlob !== undefined && pendingBlob === blobs[0])
+    assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
-    assert.ok(blobProof !== undefined && blobProof === proofs[0])
+    assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
   })
 
   it('should exclude missingBlobTx', async () => {
@@ -520,7 +520,7 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
   })
 })

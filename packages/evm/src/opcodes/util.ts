@@ -2,10 +2,10 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
   BIGINT_32,
   BIGINT_64,
+  BIGINT_160,
   BIGINT_NEG1,
   bytesToHex,
   createAddressFromBigInt,
@@ -15,12 +15,12 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions.js'
+import { EvmError } from '../exceptions.ts'
 
-import type { ERROR } from '../exceptions.js'
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import type { ERROR } from '../exceptions.ts'
+import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 

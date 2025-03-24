@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
-import { TransitionTool } from '../../t8n/t8ntool.js'
+import { TransitionTool } from '../../t8n/t8ntool.ts'
 
-import type { T8NOptions } from '../../t8n/types.js'
+import type { T8NOptions } from '../../t8n/types.ts'
 
 const t8nDir = 'test/t8n/testdata/'
 

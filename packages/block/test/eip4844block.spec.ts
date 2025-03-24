@@ -10,11 +10,11 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { fakeExponential, getNumBlobs } from '../src/helpers.js'
-import { createBlock, createBlockHeader } from '../src/index.js'
-import { paramsBlock } from '../src/params.js'
+import { fakeExponential, getNumBlobs } from '../src/helpers.ts'
+import { createBlock, createBlockHeader } from '../src/index.ts'
+import { paramsBlock } from '../src/params.ts'
 
-import { hardfork4844Data } from './testdata/4844-hardfork.js'
+import { hardfork4844Data } from './testdata/4844-hardfork.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
@@ -196,7 +196,6 @@ describe('transaction validation tests', () => {
     )
     const excessBlobGas = parentHeader.calcNextExcessBlobGas(common)
 
-    // eslint-disable-next-line no-inner-declarations
     function getBlock(transactions: TypedTransaction[]) {
       const blobs = getNumBlobs(transactions)
 
@@ -255,11 +254,9 @@ describe('transaction validation tests', () => {
       'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee',
     )
 
-    assert.ok(
-      blockWithTooManyBlobs
-        .getTransactionsValidationErrors()
-        .join(' ')
-        .includes('exceed maximum blob gas per block'),
+    assert.include(
+      blockWithTooManyBlobs.getTransactionsValidationErrors().join(' '),
+      'exceed maximum blob gas per block',
       'tx errors includes correct error message when too many blobs in a block',
     )
   })

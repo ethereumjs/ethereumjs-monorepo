@@ -9,18 +9,18 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -29,12 +29,11 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -42,9 +41,11 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarket1559Tx implements TransactionInterface<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx
+  implements TransactionInterface<typeof TransactionType.FeeMarketEIP1559>
+{
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public type: number = TransactionType.FeeMarketEIP1559 // 1559 tx type
+  public type = TransactionType.FeeMarketEIP1559 // 1559 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -63,8 +64,6 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
   public readonly s?: bigint
 
   // End of Tx data part
-
-  public readonly AccessListJSON: AccessList
 
   public readonly common!: Common
 
@@ -88,7 +87,8 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const { chainId, accessList: rawAccessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -103,12 +103,10 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
-    // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
 
+    // Verify the access list format.
+    EIP2930.verifyAccessList(this)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
@@ -330,7 +328,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
@@ -358,7 +356,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): FeeMarket1559Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return <FeeMarket1559Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

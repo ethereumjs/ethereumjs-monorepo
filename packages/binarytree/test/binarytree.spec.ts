@@ -2,8 +2,8 @@ import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createBinaryTree } from '../src/index.js'
-import { dumpLeafValues, dumpNodeHashes } from '../src/util.js'
+import { createBinaryTree } from '../src/index.ts'
+import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
 describe('insert', () => {
   it('should not destroy a previous root', async () => {
@@ -76,7 +76,7 @@ describe('insert', () => {
 
     await tree.put(stem, [index], [value])
     const [retrievedValue] = await tree.get(stem, [index])
-    assert.exists(retrievedValue, 'Retrieved value should exist')
+    assert.isDefined(retrievedValue, 'Retrieved value should exist')
     assert.isTrue(
       equalsBytes(retrievedValue!, value),
       'Retrieved value should match inserted value',
@@ -113,8 +113,8 @@ describe('insert', () => {
     const [retrievedValue2] = await tree.get(stem2, [index2])
 
     // Retrieved values should exist
-    assert.exists(retrievedValue1, 'Value for key1 should exist')
-    assert.exists(retrievedValue2, 'Value for key2 should exist')
+    assert.isDefined(retrievedValue1, 'Value for key1 should exist')
+    assert.isDefined(retrievedValue2, 'Value for key2 should exist')
 
     // Check that the computed state root matches the expected hash.
     assert.equal(
@@ -139,7 +139,7 @@ describe('insert', () => {
 
     for (let i = 0; i < suffixes.length; i++) {
       const [retrievedValue] = await tree.get(stem, [suffixes[i]])
-      assert.exists(retrievedValue, `Value at suffix ${suffixes[i]} should exist`)
+      assert.isDefined(retrievedValue, `Value at suffix ${suffixes[i]} should exist`)
       assert.isTrue(
         equalsBytes(retrievedValue!, values[i]),
         `Value at suffix ${suffixes[i]} should match inserted value`,
@@ -166,8 +166,8 @@ describe('insert', () => {
     for (let i = 0; i < suffixes1.length; i++) {
       const [retrievedValue1] = await tree.get(stem1, [suffixes1[i]])
       const [retrievedValue2] = await tree.get(stem2, [suffixes2[i]])
-      assert.exists(retrievedValue1, `Value at suffix ${suffixes1[i]} should exist`)
-      assert.exists(retrievedValue2, `Value at suffix ${suffixes2[i]} should exist`)
+      assert.isDefined(retrievedValue1, `Value at suffix ${suffixes1[i]} should exist`)
+      assert.isDefined(retrievedValue2, `Value at suffix ${suffixes2[i]} should exist`)
       assert.isTrue(
         equalsBytes(retrievedValue1!, values1[i]),
         `Value at suffix ${suffixes1[i]} should match inserted value`,
@@ -199,8 +199,8 @@ describe('insert', () => {
     const [retrievedValue1] = await tree.get(stem1, [index1])
     const [retrievedValue2] = await tree.get(stem2, [index2])
 
-    assert.exists(retrievedValue1, 'Value for key1 should exist')
-    assert.exists(retrievedValue2, 'Value for key2 should exist')
+    assert.isDefined(retrievedValue1, 'Value for key1 should exist')
+    assert.isDefined(retrievedValue2, 'Value for key2 should exist')
     assert.isTrue(
       equalsBytes(retrievedValue1!, value1),
       'Value for key1 should match inserted value',
@@ -237,9 +237,9 @@ describe('insert', () => {
     const [retrievedValue2] = await tree1.get(stem2, [index2])
     const [retrievedValue3] = await tree1.get(stem3, [index3])
 
-    assert.exists(retrievedValue1, 'Value for key1 should exist')
-    assert.exists(retrievedValue2, 'Value for key2 should exist')
-    assert.exists(retrievedValue3, 'Value for key3 should exist')
+    assert.isDefined(retrievedValue1, 'Value for key1 should exist')
+    assert.isDefined(retrievedValue2, 'Value for key2 should exist')
+    assert.isDefined(retrievedValue3, 'Value for key3 should exist')
     assert.isTrue(
       equalsBytes(retrievedValue1!, value1),
       'Value for key1 should match inserted value',
@@ -287,9 +287,9 @@ describe('insert', () => {
     const [retrievedValue2] = await tree1.get(stem2, [index2])
     const [retrievedValue3] = await tree1.get(stem3, [index3])
 
-    assert.exists(retrievedValue1, 'Value for key1 should exist')
-    assert.exists(retrievedValue2, 'Value for key2 should exist')
-    assert.exists(retrievedValue3, 'Value for key3 should exist')
+    assert.isDefined(retrievedValue1, 'Value for key1 should exist')
+    assert.isDefined(retrievedValue2, 'Value for key2 should exist')
+    assert.isDefined(retrievedValue3, 'Value for key3 should exist')
     assert.isTrue(
       equalsBytes(retrievedValue1!, value1),
       'Value for key1 should match inserted value',
@@ -405,7 +405,7 @@ describe('insert', () => {
       const stem = hashedKey.slice(0, 31)
       const index = hashedKey[31]
       const [retrievedValue] = await tree1.get(stem, [index])
-      assert.exists(
+      assert.isDefined(
         retrievedValue,
         `Value for key  ${bytesToHex(hashedKey)} | unhashed: ${bytesToHex(originalKey)} should exist`,
       )
@@ -432,21 +432,30 @@ describe('insert', () => {
       'Tree roots should match regardless of insertion order',
     )
 
+    // Ensure that updates on existing stem/index pairs are reflected in the root and result in consistent trees
+    const preUpdateRoot = tree1.root()
+
     // Insert a new value on an existing stem and verify the roots match
-    await tree1.put(
-      keyValuePairs[0].originalKey.slice(0, 31),
-      [6],
-      [hexToBytes(`0x${'06'.repeat(32)}`)],
-    )
-    await tree2.put(
-      keyValuePairs[0].originalKey.slice(0, 31),
-      [6],
-      [hexToBytes(`0x${'06'.repeat(32)}`)],
-    )
+    const stemToUpdate = keyValuePairs[0].hashedKey.slice(0, 31)
+    const indexToUpdate = 6
+    const updatedValue = hexToBytes(`0x${'06'.repeat(32)}`)
+    await tree1.put(stemToUpdate, [indexToUpdate], [updatedValue])
+    await tree2.put(stemToUpdate, [indexToUpdate], [updatedValue])
     assert.deepEqual(tree1.root(), tree2.root())
+
+    const postUpdateRoot = tree1.root()
+    assert.isFalse(equalsBytes(preUpdateRoot, postUpdateRoot), 'The tree root should have updated')
+
+    // Ensure that we can retrieve the updated value
+    const [retrievedValue] = await tree1.get(stemToUpdate, [indexToUpdate])
+    assert.isDefined(retrievedValue, 'Updated value should exist')
+    assert.isTrue(
+      equalsBytes(retrievedValue!, updatedValue),
+      'Retrieved value should match the updated value',
+    )
   })
   it('should dump leaf values and node hashes', async () => {
-    const tree1 = await createBinaryTree()
+    const tree = await createBinaryTree()
 
     // Create an array of 100 random key/value pairs by hashing keys.
     const keyValuePairs = []
@@ -468,11 +477,11 @@ describe('insert', () => {
     for (const { hashedKey, value } of keyValuePairs) {
       const stem = hashedKey.slice(0, 31)
       const index = hashedKey[31]
-      await tree1.put(stem, [index], [value])
+      await tree.put(stem, [index], [value])
     }
 
-    const leafValues = await dumpLeafValues(tree1, tree1.root())
-    assert.exists(leafValues)
+    const leafValues = await dumpLeafValues(tree, tree.root())
+    assert.isDefined(leafValues)
     assert.equal(leafValues!.length, 100)
 
     const expectedValues = keyValuePairs.map(({ value }) => bytesToHex(value)).sort()
@@ -483,10 +492,10 @@ describe('insert', () => {
     const actualKeys = leafValues!.map(([key]) => key).sort()
     assert.deepEqual(actualKeys, expectedKeys)
 
-    const nodeHashes = await dumpNodeHashes(tree1, tree1.root())
-    assert.exists(nodeHashes)
+    const nodeHashes = await dumpNodeHashes(tree, tree.root())
+    assert.isDefined(nodeHashes)
     expect(nodeHashes!.length).toBeGreaterThan(100)
-    assert.equal(nodeHashes![0][1], bytesToHex(tree1.root()))
+    assert.equal(nodeHashes![0][1], bytesToHex(tree.root()))
   })
 
   it('should update value when inserting a duplicate key', async () => {
@@ -504,7 +513,7 @@ describe('insert', () => {
 
     const [retrievedValue] = await tree.get(stem, [index])
 
-    assert.exists(retrievedValue, 'Retrieved value should exist')
+    assert.isDefined(retrievedValue, 'Retrieved value should exist')
     assert.isTrue(
       equalsBytes(retrievedValue!, value2),
       'Retrieved value should match the updated value',
@@ -544,7 +553,7 @@ describe('insert', () => {
     const [retrievedValue1] = await tree.get(stem1, [index1])
     const [retrievedValue2] = await tree.get(stem2, [index2])
 
-    assert.exists(retrievedValue1, 'Retrieved value should exist')
+    assert.isDefined(retrievedValue1, 'Retrieved value should exist')
     assert.notExists(retrievedValue2, 'Deleted value should not exist')
     assert.isTrue(
       equalsBytes(initialRoot, recoveredRoot),

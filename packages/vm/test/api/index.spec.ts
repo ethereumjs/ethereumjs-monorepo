@@ -3,10 +3,10 @@ import { EVM, createEVM } from '@ethereumjs/evm'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { type VMOpts, createVM, paramsVM } from '../../src/index.js'
+import { type VMOpts, createVM, paramsVM } from '../../src/index.ts'
 
-import { testnetMergeData } from './testdata/testnetMerge.js'
-import { setupVM } from './utils.js'
+import { testnetMergeData } from './testdata/testnetMerge.ts'
+import { setupVM } from './utils.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
@@ -28,13 +28,13 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
 describe('VM -> basic instantiation / boolean switches', () => {
   it('should instantiate without params', async () => {
     const vm = await createVM()
-    assert.ok(vm.stateManager)
+    assert.isDefined(vm.stateManager)
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )
-    assert.equal(vm.common.hardfork(), Hardfork.Cancun, 'it has correct default HF')
+    assert.equal(vm.common.hardfork(), Hardfork.Prague, 'it has correct default HF')
   })
 
   it('should be able to activate precompiles', async () => {
@@ -57,8 +57,8 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     try {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
-    } catch (e: any) {
-      assert.ok('correctly thrown')
+    } catch {
+      assert.isTrue(true, 'correctly thrown')
     }
   })
 
@@ -125,7 +125,7 @@ describe('VM -> supportedHardforks', () => {
       await createVM({ common })
       assert.fail('should have failed for unsupported hardfork')
     } catch (e: any) {
-      assert.ok(e.message.includes('supportedHardforks'))
+      assert.isTrue(e.message.includes('supportedHardforks') === true)
     }
     // restore supported hardforks
     EVM['supportedHardforks'] = prevSupported
@@ -189,7 +189,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
       vm = await createVM({ common })
       assert.fail('should have failed for invalid chain')
     } catch (e: any) {
-      assert.ok(e.message.includes('not supported'))
+      assert.isTrue(e.message.includes('not supported') === true)
     }
   })
 
@@ -197,8 +197,8 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const common = new Common({ chain: Mainnet, eips: [2537] })
     try {
       await createVM({ common })
-      assert.ok(true, 'did not throw')
-    } catch (error) {
+      assert.isTrue(true, 'did not throw')
+    } catch {
       assert.fail('should not have thrown')
     }
   })

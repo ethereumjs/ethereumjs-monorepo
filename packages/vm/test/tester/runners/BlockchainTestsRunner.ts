@@ -17,8 +17,8 @@ import {
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { setupPreConditions, verifyPostConditions } from '../../util.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
@@ -167,7 +167,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         const decoded: any = RLP.decode(blockRlp)
         timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch {}
 
       common.setHardforkBy({ blockNumber: currentBlock, timestamp })
 
