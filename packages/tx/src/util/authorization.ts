@@ -7,6 +7,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
+  concatBytes,
   ecrecover,
   ecsign,
   hexToBytes,
@@ -94,10 +95,13 @@ export function authorizationMessageToSign(
     if (address.length !== 20) {
       throw EthereumJSErrorWithoutCode('Cannot sign authority: address length should be 20 bytes')
     }
-    return RLP.encode([AUTHORITY_SIGNING_MAGIC, unpadBytes(chainId), address, unpadBytes(nonce)])
+    return concatBytes(
+      AUTHORITY_SIGNING_MAGIC,
+      RLP.encode([unpadBytes(chainId), address, unpadBytes(nonce)]),
+    )
   } else {
     const [chainId, address, nonce] = unsignedAuthorizationListToBytes(input)
-    return RLP.encode([AUTHORITY_SIGNING_MAGIC, chainId, address, nonce])
+    return concatBytes(AUTHORITY_SIGNING_MAGIC, RLP.encode([chainId, address, nonce]))
   }
 }
 
