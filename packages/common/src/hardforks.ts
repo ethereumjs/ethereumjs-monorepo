@@ -171,7 +171,4 @@ export const hardforksDict: HardforksDict = {
   verkle: {
     eips: [2935, 4762, 6800],
   },
-  evmmax: {
-    eips: [6690],
-  },
 }
