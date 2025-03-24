@@ -13,9 +13,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { paramsTx } from '../index.ts'
 import { Capability, TransactionType } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createLegacyTx } from './constructors.ts'
 

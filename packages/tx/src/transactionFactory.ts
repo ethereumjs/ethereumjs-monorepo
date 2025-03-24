@@ -17,7 +17,7 @@ import {
   isFeeMarket1559TxData,
   isLegacyTxData,
 } from './types.ts'
-import { normalizeTxParams } from './util.ts'
+import { normalizeTxParams } from './util/general.ts'
 
 import type { EthersProvider } from '@ethereumjs/util'
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'

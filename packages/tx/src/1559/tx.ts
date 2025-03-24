@@ -13,16 +13,14 @@ import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
-import { TransactionType } from '../types.ts'
-import { AccessLists } from '../util.ts'
+import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createFeeMarket1559Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -32,6 +30,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
@@ -66,8 +65,6 @@ export class FeeMarket1559Tx
 
   // End of Tx data part
 
-  public readonly AccessListJSON: AccessList
-
   public readonly common!: Common
 
   readonly txOptions!: TxOptions
@@ -90,7 +87,8 @@ export class FeeMarket1559Tx
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const { chainId, accessList: rawAccessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -105,12 +103,10 @@ export class FeeMarket1559Tx
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
-    // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
 
+    // Verify the access list format.
+    EIP2930.verifyAccessList(this)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
@@ -332,7 +328,7 @@ export class FeeMarket1559Tx
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
