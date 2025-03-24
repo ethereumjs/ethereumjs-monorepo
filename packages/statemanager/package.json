@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "3.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "An Ethereum statemanager implementation",
   "keywords": ["ethereum", "statemanager"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
@@ -44,12 +44,12 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^0.0.1",
-    "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/mpt": "^7.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
-    "@ethereumjs/verkle": "^0.2.0-alpha.1",
+    "@ethereumjs/binarytree": "^10.0.0-dev-rc.1",
+    "@ethereumjs/common": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/mpt": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
+    "@ethereumjs/verkle": "^10.0.0-dev-rc.1",
     "@js-sdsl/ordered-map": "^4.4.2",
     "@noble/hashes": "^1.7.1",
     "debug": "^4.4.0",
@@ -57,8 +57,8 @@
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/genesis": "^0.3.0-alpha.1",
+    "@ethereumjs/block": "^10.0.0-rc.1",
+    "@ethereumjs/genesis": "^10.0.0-rc.1",
     "@types/debug": "^4.1.12"
   }
 }
