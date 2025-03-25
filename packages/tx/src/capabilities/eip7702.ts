@@ -1,5 +1,4 @@
 import * as EIP2930 from './eip2930.ts'
-import * as Legacy from './legacy.ts'
 
 import {
   EthereumJSErrorWithoutCode,
@@ -14,11 +13,11 @@ import type { EIP7702CompatibleTx } from '../types.ts'
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP7702CompatibleTx): bigint {
-  const eip2930Cost = BigInt(EIP2930.getDataGas(tx))
+  const eip2930Cost = EIP2930.getDataGas(tx)
   const eip7702Cost = BigInt(
     tx.authorizationList.length * Number(tx.common.param('perEmptyAccountCost')),
   )
-  return Legacy.getDataGas(tx, eip2930Cost + eip7702Cost)
+  return eip2930Cost + eip7702Cost
 }
 
 /**
