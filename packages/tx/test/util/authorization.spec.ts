@@ -85,11 +85,11 @@ describe('Authorization lists', () => {
     const signedFromBytes = signAuthorization(unsignedBytesItem, PRIVATE_KEY)
     const signedFromJSON = signAuthorization(unsignedJSONItem, PRIVATE_KEY)
 
-    const signedFromBytesRLP = RLP.encode(signedFromBytes)
-    const signedFromJSONRLP = RLP.encode(signedFromJSON)
+    const signedFromBytes_RLP = RLP.encode(signedFromBytes)
+    const signedFromJSON_RLP = RLP.encode(signedFromJSON)
 
-    assert.isTrue(equalsBytes(signedFromBytesRLP, EXPECTED_RLP_BYTES), 'signed ok: bytes')
-    assert.isTrue(equalsBytes(signedFromJSONRLP, EXPECTED_RLP_BYTES), 'signed ok: json')
+    assert.isTrue(equalsBytes(signedFromBytes_RLP, EXPECTED_RLP_BYTES), 'signed ok: bytes')
+    assert.isTrue(equalsBytes(signedFromJSON_RLP, EXPECTED_RLP_BYTES), 'signed ok: json')
 
     assert.deepEqual(
       authorizationListBytesItemToJSON(signedFromBytes),
@@ -100,7 +100,7 @@ describe('Authorization lists', () => {
     const recoveredBytesAddress = recoverAuthority(signedFromBytes)
     const recoveredJSONAddress = recoverAuthority(SAMPLE_AUTH as AuthorizationListItem)
 
-    assert.isTrue(EXPECTED_SIGNER.equals(recoveredBytesAddress), 'bytes: recovered corerct signer')
-    assert.isTrue(EXPECTED_SIGNER.equals(recoveredJSONAddress), 'json: recovered corerct signer')
+    assert.isTrue(EXPECTED_SIGNER.equals(recoveredBytesAddress), 'bytes: recovered correct signer')
+    assert.isTrue(EXPECTED_SIGNER.equals(recoveredJSONAddress), 'json: recovered correct signer')
   })
 })
