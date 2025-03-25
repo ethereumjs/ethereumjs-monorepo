@@ -1,8 +1,14 @@
 import { DBOp } from '@ethereumjs/blockchain'
 import { type BatchDBOp, type DelBatch, concatBytes, intToBytes } from '@ethereumjs/util'
 import { Level } from 'level'
-import { DBTarget } from '../../../blockchain/dist/esm/db/operation.js'
 import { DBKey } from './metaDBManager.ts'
+
+export const DBTarget = {
+  NumberToHash: 4,
+  Body: 6,
+  Header: 7,
+  Receipts: 8,
+} as const
 
 async function initDBs(dataDir: string, chain: string) {
   const chainDir = `${dataDir}/${chain}`
