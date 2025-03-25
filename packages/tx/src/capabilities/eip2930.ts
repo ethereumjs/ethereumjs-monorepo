@@ -7,7 +7,8 @@ import type { EIP2930CompatibleTx } from '../types.ts'
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP2930CompatibleTx): bigint {
-  return Legacy.getDataGas(tx, BigInt(getAccessListDataGas(tx)))
+  const eip2930Gas = BigInt(getAccessListDataGas(tx))
+  return Legacy.getDataGas(tx) + eip2930Gas
 }
 
 /**
