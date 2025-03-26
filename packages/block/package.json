@@ -51,7 +51,7 @@
     "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/testdata": "workspace:*",
+    "@ethereumjs/testdata": "1.0.0",
     "@paulmillr/trusted-setups": "^0.1.2",
     "micro-eth-signer": "^0.14.0"
   },
