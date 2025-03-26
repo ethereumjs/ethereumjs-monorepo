@@ -10,7 +10,6 @@ const config = defineConfig({
       enabled: true,
       all: true,
       include: ['src/**'],
-      reporter: ['html'],
     },
   },
   optimizeDeps: {
