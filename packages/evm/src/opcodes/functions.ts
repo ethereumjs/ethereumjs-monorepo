@@ -37,7 +37,6 @@ import {
   createAddressFromStackBigInt,
   describeLocation,
   exponentiation,
-  extractEVMMAXImmediateInputs,
   fromTwos,
   getDataSlice,
   jumpIsValid,
@@ -48,6 +47,7 @@ import {
 } from './util.ts'
 
 import type { Common } from '@ethereumjs/common'
+import { extractEVMMAXImmediateInputs } from '../evmmax/index.js'
 import type { RunState } from '../interpreter.ts'
 
 export interface SyncOpHandler {

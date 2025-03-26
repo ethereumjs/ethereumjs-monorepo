@@ -271,15 +271,3 @@ export function updateSstoreGas(
     return common.param('sstoreSetGas')
   }
 }
-
-export function extractEVMMAXImmediateInputs(pc: number, code: Uint8Array) {
-  const out = Number(code[pc + 1])
-  const outStride = Number(code[pc + 2])
-  const x = Number(code[pc + 3])
-  const xStride = Number(code[pc + 4])
-  const y = Number(code[pc + 5])
-  const yStride = Number(code[pc + 6])
-  const count = Number(code[pc + 7])
-
-  return [out, outStride, x, xStride, y, yStride, count]
-}
