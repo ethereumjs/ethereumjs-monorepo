@@ -10,6 +10,7 @@ const config = defineConfig({
       enabled: true,
       all: true,
       include: ['src/**'],
+      reportsDirectory: './coverage/istanbul'
     },
   },
   optimizeDeps: {

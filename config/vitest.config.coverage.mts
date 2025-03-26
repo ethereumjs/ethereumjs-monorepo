@@ -9,6 +9,7 @@ const config = defineConfig({
       enabled: true,
       all: true,
       include: ['src/**'],
+      reportsDirectory: './coverage/v8',
     },
   },
   optimizeDeps: {
