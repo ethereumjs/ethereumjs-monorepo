@@ -9,6 +9,7 @@ const config = defineConfig({
       provider: 'istanbul',
       enabled: true,
       all: true,
+      include: ['src/**'],
       reporter: ['html'],
     },
   },
