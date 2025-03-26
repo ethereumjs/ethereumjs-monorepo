@@ -39,8 +39,8 @@ import type {
 } from '../types.ts'
 import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 import {
-  authorizationListBytesToJSON,
-  authorizationListJSONToBytes,
+  authorizationListBytesItemToJSON,
+  authorizationListJSONItemToBytes,
 } from '../util/authorization.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
@@ -125,7 +125,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
 
     // Populate the authority list fields
     this.authorizationList = isAuthorizationList(authorizationList)
-      ? authorizationListJSONToBytes(authorizationList)
+      ? authorizationList.map((item) => authorizationListJSONItemToBytes(item))
       : authorizationList
     // Verify the authority list format.
     EIP7702.verifyAuthorizationList(this)
@@ -364,7 +364,9 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
-    const authorizationList = authorizationListBytesToJSON(this.authorizationList)
+    const authorizationList = this.authorizationList.map((item) =>
+      authorizationListBytesItemToJSON(item),
+    )
 
     const baseJSON = getBaseJSON(this)
 
