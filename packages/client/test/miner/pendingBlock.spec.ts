@@ -2,6 +2,7 @@ import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { hardfork4844Data } from '@ethereumjs/testdata'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -26,7 +27,6 @@ import { getLogger } from '../../src/logging.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 import { mockBlockchain } from '../rpc/mockBlockchain.ts'
-import { hardfork4844Data } from '../testdata/blocks/4844-hardfork.ts'
 import { Goerli } from '../testdata/common/goerliCommon.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
