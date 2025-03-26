@@ -5,7 +5,7 @@ import { assert, describe, expect, it } from 'vitest'
 
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'
 
-import { devnet4844Config } from './testdata/4844-devnet.ts'
+import { devnet4844Config } from '@ethereumjs/testdata'
 import { payloadKaustinenData } from './testdata/payload-kaustinen.ts'
 import { payloadSlot87335Data } from './testdata/payload-slot-87335.ts'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.ts'
