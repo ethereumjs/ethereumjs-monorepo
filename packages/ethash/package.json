@@ -19,10 +19,12 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
-    },
-    "typescript": "./src/index.ts"
+    }
   },
   "files": ["dist", "src"],
   "scripts": {
@@ -38,7 +40,7 @@
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "npx vitest run",
+    "test": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
