@@ -24,7 +24,7 @@ import { assertIsBytes } from './helpers.ts'
 import type { PrefixedHexString } from './types.ts'
 
 export interface ECDSASignature {
-  v: bigint
+  v: bigint // TODO: change this to number? It is either 0 or 1.
   r: Uint8Array
   s: Uint8Array
 }
@@ -36,10 +36,6 @@ export interface ECSignOpts {
 
 /**
  * Returns the ECDSA signature of a message hash.
- *
- * If {@link ECSignOpts.chainId} is provided assume an EIP-155-style signature and calculate the `v` value
- * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
- *
  * {@link ECSignOpts.extraEntropy} defaults to `false`. If set to `true`, this will create a "hedged signature"
  * which is non-deterministic and provides additional protections against private key extraction attack vectors,
  * as described in https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801. It will yield a
@@ -54,9 +50,9 @@ export interface ECSignOpts {
 export function ecsign(
   msgHash: Uint8Array,
   privateKey: Uint8Array,
-  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = { extraEntropy: false },
+  ecSignOpts: { extraEntropy?: Uint8Array | boolean } = { extraEntropy: false },
 ): ECDSASignature {
-  const { chainId, extraEntropy } = ecSignOpts
+  const { extraEntropy } = ecSignOpts
   const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? false })
   const buf = sig.toCompactRawBytes()
   const r = buf.slice(0, 32)
@@ -72,12 +68,7 @@ export function ecsign(
     )
   }
 
-  const v =
-    chainId === undefined
-      ? BigInt(sig.recovery! + 27)
-      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BIGINT_2
-
-  return { r, s, v }
+  return { r, s, v: BigInt(sig.recovery) }
 }
 
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {

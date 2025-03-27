@@ -1,7 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
-  BIGINT_2,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -66,7 +65,7 @@ describe('WASM crypto tests', () => {
   })
 
   it('should compute the same signature whether js or WASM signature used', async () => {
-    const wasmSign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
+    const wasmSign = (msg: Uint8Array, pk: Uint8Array) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw new Error('message length must be 32 bytes or greater')
@@ -74,10 +73,7 @@ describe('WASM crypto tests', () => {
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
-      const v =
-        chainId === undefined
-          ? BigInt(buf[64] + 27)
-          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
+      const v = BigInt(buf[64])
 
       return { r, s, v }
     }

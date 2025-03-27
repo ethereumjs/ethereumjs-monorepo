@@ -153,7 +153,7 @@ export function generateCliqueBlockExtraData(
 
   const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
+  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v))
 
   const extraDataWithoutSeal = header.extraData.subarray(
     0,
