@@ -70,36 +70,38 @@ describe('TransactionTests', async () => {
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = forkTestData.exception !== undefined
 
-          try {
-            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
-            const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: Mainnet, hardfork })
-            const activateEIPs = EIPs[forkName]
-            if (activateEIPs !== undefined) {
-              common.setEIPs(activateEIPs)
-            }
-            const tx = createTxFromRLP(rawTx, { common })
-            const sender = tx.getSenderAddress().toString()
-            const hash = bytesToHex(tx.hash())
-            const txIsValid = tx.isValid()
-            const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash === hash
+          const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
+          const hardfork = forkNameMap[forkName]
+          const common = new Common({ chain: Mainnet, hardfork })
+          const activateEIPs = EIPs[forkName]
+          if (activateEIPs !== undefined) {
+            common.setEIPs(activateEIPs)
+          }
 
-            const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
-            if (shouldBeInvalid) {
-              assert.isFalse(txIsValid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.isTrue(
-                hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`,
-              )
-            }
+          let maybeTx
+          try {
+            maybeTx = createTxFromRLP(rawTx, { common })
           } catch {
-            if (shouldBeInvalid) {
-              assert.isTrue(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.fail(`Transaction should be valid on ${forkName}`)
+            if (!shouldBeInvalid) {
+              assert.fail('Tx creation threw an error, but should be valid')
             }
+            // Tx is correctly marked as "invalid", so test has passed
+            return
+          }
+
+          const tx = maybeTx!
+          const sender = tx.getSenderAddress().toString()
+          const hash = bytesToHex(tx.hash())
+          const txIsValid = tx.isValid()
+          const senderIsCorrect = forkTestData.sender === sender
+          const hashIsCorrect = forkTestData.hash === hash
+
+          if (shouldBeInvalid) {
+            assert.isFalse(txIsValid)
+          } else {
+            assert.isTrue(txIsValid, 'tx is valid')
+            assert.isTrue(senderIsCorrect, 'sender is correct')
+            assert.isTrue(hashIsCorrect, 'hash is correct')
           }
         }
       }, 120000)
