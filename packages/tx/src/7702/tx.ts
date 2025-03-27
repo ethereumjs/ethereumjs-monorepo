@@ -1,6 +1,5 @@
 import {
   BIGINT_0,
-  BIGINT_27,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
@@ -329,12 +328,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ): EOACode7702Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): EOACode7702Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -351,7 +345,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
         data: this.data,
         accessList: this.accessList,
         authorizationList: this.authorizationList,
-        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v,
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },

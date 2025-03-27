@@ -627,7 +627,7 @@ describe('runBlock() -> tx types', async () => {
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
       const signed = ecsign(msgToSign, pkey)
 
-      const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
+      const yParity = signed.v === BigInt(0) ? new Uint8Array() : new Uint8Array([1])
 
       return [
         chainIdBytes,
