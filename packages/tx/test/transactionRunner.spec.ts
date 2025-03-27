@@ -1,5 +1,5 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
@@ -78,9 +78,18 @@ describe('TransactionTests', async () => {
             common.setEIPs(activateEIPs)
           }
 
-          let maybeTx
+          let tx
+          let sender
+          let hash
+          let isValid
           try {
-            maybeTx = createTxFromRLP(rawTx, { common })
+            tx = createTxFromRLP(rawTx, { common })
+            sender = tx.getSenderAddress().toString()
+            hash = bytesToHex(tx.hash())
+            if (!tx.isValid()) {
+              throw EthereumJSErrorWithoutCode('Tx is invalid')
+            }
+            isValid = true
           } catch {
             if (!shouldBeInvalid) {
               assert.fail('Tx creation threw an error, but should be valid')
@@ -89,20 +98,11 @@ describe('TransactionTests', async () => {
             return
           }
 
-          const tx = maybeTx!
-          const sender = tx.getSenderAddress().toString()
-          const hash = bytesToHex(tx.hash())
-          const txIsValid = tx.isValid()
           const senderIsCorrect = forkTestData.sender === sender
           const hashIsCorrect = forkTestData.hash === hash
-
-          if (shouldBeInvalid) {
-            assert.isFalse(txIsValid)
-          } else {
-            assert.isTrue(txIsValid, 'tx is valid')
-            assert.isTrue(senderIsCorrect, 'sender is correct')
-            assert.isTrue(hashIsCorrect, 'hash is correct')
-          }
+          assert.isTrue(isValid, 'tx is valid')
+          assert.isTrue(senderIsCorrect, 'sender is correct')
+          assert.isTrue(hashIsCorrect, 'hash is correct')
         }, 120000)
       }
     },
