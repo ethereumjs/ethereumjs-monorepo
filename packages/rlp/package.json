@@ -29,7 +29,8 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
-    }
+    },
+    "typescript": "./src/index.ts"
   },
   "bin": {
     "rlp": "bin/rlp.cjs"

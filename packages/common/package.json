@@ -34,7 +34,8 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
-    }
+    },
+    "typescript": "./src/index.ts"
   },
   "files": ["dist", "src"],
   "scripts": {
