@@ -62,11 +62,11 @@ describe('TransactionTests', async () => {
       testName: string,
       testData: OfficialTransactionTestData,
     ) => {
-      it(testName, () => {
-        for (const forkName of forkNames) {
-          if (testData.result[forkName] === undefined) {
-            continue
-          }
+      for (const forkName of forkNames) {
+        if (testData.result[forkName] === undefined) {
+          continue
+        }
+        it(`${testName} - [${forkName}]`, () => {
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = forkTestData.exception !== undefined
 
@@ -103,8 +103,8 @@ describe('TransactionTests', async () => {
             assert.isTrue(senderIsCorrect, 'sender is correct')
             assert.isTrue(hashIsCorrect, 'hash is correct')
           }
-        }
-      }, 120000)
+        }, 120000)
+      }
     },
     fileFilterRegex,
     undefined,
