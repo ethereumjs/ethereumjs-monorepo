@@ -137,8 +137,7 @@ export function signAuthorization(
     chainId,
     address,
     nonce,
-    // Note: @ethereumjs/util ecsign adds 27 to the `v` (recovery bit / yParity) value, so we subtract it here
-    bigIntToUnpaddedBytes(signed.v - BigInt(27)),
+    bigIntToUnpaddedBytes(signed.v),
     unpadBytes(signed.r),
     unpadBytes(signed.s),
   ]
