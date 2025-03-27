@@ -1,6 +1,5 @@
 import {
   BIGINT_0,
-  BIGINT_27,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
@@ -295,12 +294,7 @@ export class FeeMarket1559Tx
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ): FeeMarket1559Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): FeeMarket1559Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -316,7 +310,7 @@ export class FeeMarket1559Tx
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v,
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
