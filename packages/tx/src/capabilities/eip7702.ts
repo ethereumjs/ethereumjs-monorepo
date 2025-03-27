@@ -36,6 +36,17 @@ export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
         'Invalid EIP-7702 transaction: authorization list item should have 6 elements',
       )
     }
+
+    for (const member of item) {
+      // This checks if the `member` is a list, not bytes
+      // This checks that the authority list does not have any embedded lists in it
+      if (Array.isArray(member)) {
+        throw EthereumJSErrorWithoutCode(
+          'Invalid EIP-7702 transaction: authority list element is a list, not bytes',
+        )
+      }
+    }
+
     const [chainId, address, nonce, yParity, r, s] = item
 
     validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
