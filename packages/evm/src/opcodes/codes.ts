@@ -343,6 +343,19 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 6690,
+    opcodes: {
+      // control & i/o
+      0xc0: asyncAndDynamicGasOp('SETMODX'),
+      0xc1: asyncAndDynamicGasOp('LOADX'),
+      0xc2: asyncAndDynamicGasOp('STOREX'),
+      // arithmetic
+      0xc3: asyncAndDynamicGasOp('ADDMODX'),
+      0xc4: asyncAndDynamicGasOp('SUBMODX'),
+      0xc5: asyncAndDynamicGasOp('MULMODX'),
+    },
+  },
+  {
     eip: 7069,
     opcodes: {
       0xf7: defaultOp('RETURNDATALOAD'),

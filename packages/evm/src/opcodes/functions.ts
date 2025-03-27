@@ -37,6 +37,7 @@ import {
   createAddressFromStackBigInt,
   describeLocation,
   exponentiation,
+  extractEVMMAXImmediateInputs,
   fromTwos,
   getDataSlice,
   jumpIsValid,
@@ -987,6 +988,73 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       runState.interpreter.log(mem, topicsCount, topicsBuf)
+    },
+  ],
+  // 0xc0: SETMODX
+  [
+    0xc0,
+    function (runState, _common) {
+      const [id, modOffset, modSize, allocCount] = runState.stack.popN(4)
+      const modulus = runState.memory.read(Number(modOffset), Number(modSize))
+      runState.evmmaxState.AllocAndSetActive(Number(id), modulus, allocCount)
+    },
+  ],
+  // 0xc1: STOREX
+  [
+    0xc1,
+    function (runState, _common) {
+      // TODO figure out if we need to use extend(), _store(), or or just write()
+      const [dest, source, count] = runState.stack.popN(3)
+      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
+      runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
+    },
+  ],
+  // 0xc2: LOADX
+  [
+    0xc2,
+    function (runState, _common) {
+      const [dest, source, count] = runState.stack.popN(3)
+      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const destBuf = new Uint8Array(copySize)
+      runState.evmmaxState.getActive()?.load(destBuf, Number(source), Number(count))
+      runState.memory.write(Number(dest), copySize, destBuf)
+    },
+  ],
+  // 0xc3: ADDMODX
+  [
+    0xc3,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
+    },
+  ],
+  // 0xc4: SUBMODX
+  [
+    0xc4,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().subM(out, outStride, x, xStride, y, yStride, count)
+    },
+  ],
+  // 0xc5: MULMODX
+  [
+    0xc5,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().mulM(out, outStride, x, xStride, y, yStride, count)
     },
   ],
   // 0xd0: DATALOAD

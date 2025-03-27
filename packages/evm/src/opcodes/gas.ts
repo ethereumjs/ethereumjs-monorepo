@@ -768,6 +768,48 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         return gas
       },
     ],
+    [
+      /* SETMODX */
+      0xc0,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
+    [
+      /* LOADX */
+      0xc1,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
+    [
+      /* STOREX */
+      0xc2,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
+    [
+      /* ADDMODX */
+      0xc3,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
+    [
+      /* SUBMODX */
+      0xc4,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
+    [
+      /* MULMODX */
+      0xc5,
+      async function (runState, gas, common): Promise<bigint> {
+        return 0n
+      },
+    ],
     /* EXTCALL */
     [
       0xf8,
