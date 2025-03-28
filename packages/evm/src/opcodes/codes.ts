@@ -50,7 +50,9 @@ export class Opcode {
 }
 
 export type OpcodeList = Map<number, Opcode>
-type OpcodeEntry = { [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean } }
+type OpcodeEntry = {
+  [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean }
+}
 type OpcodeEntryFee = OpcodeEntry & { [key: number]: { fee: number } }
 
 // Default: sync and no dynamic gas
