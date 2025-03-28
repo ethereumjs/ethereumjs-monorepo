@@ -20,7 +20,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -42,7 +45,7 @@
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
-    "test:node": "npx vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh",
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
