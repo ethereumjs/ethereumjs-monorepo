@@ -34,7 +34,7 @@ export function isSigned(tx: LegacyTxInterface): boolean {
 /**
  * The amount of gas paid for the data in this tx
  */
-export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
+export function getDataGas(tx: LegacyTxInterface): bigint {
   if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
     return tx.cache.dataFee.value
   }
@@ -42,7 +42,7 @@ export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   const txDataZero = tx.common.param('txDataZeroGas')
   const txDataNonZero = tx.common.param('txDataNonZeroGas')
 
-  let cost = extraCost ?? BIGINT_0
+  let cost = BIGINT_0
   for (let i = 0; i < tx.data.length; i++) {
     tx.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
   }

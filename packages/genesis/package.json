@@ -19,23 +19,38 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     },
     "./holesky": {
-      "import": "./dist/esm/genesisStates/holesky.js",
+      "import": {
+        "typescript": "./dist/esm/genesisStates/holesky.js",
+        "default": "./dist/esm/genesisStates/holesky.js"
+      },
       "require": "./dist/cjs/genesisStates/holesky.js"
     },
     "./hoodi": {
-      "import": "./dist/esm/genesisStates/hoodi.js",
+      "import": {
+        "typescript": "./dist/esm/genesisStates/hoodi.js",
+        "default": "./dist/esm/genesisStates/hoodi.js"
+      },
       "require": "./dist/cjs/genesisStates/hoodi.js"
     },
     "./mainnet": {
-      "import": "./dist/esm/genesisStates/mainnet.js",
+      "import": {
+        "typescript": "./dist/esm/genesisStates/mainnet.js",
+        "default": "./dist/esm/genesisStates/mainnet.js"
+      },
       "require": "./dist/cjs/genesisStates/mainnet.js"
     },
     "./sepolia": {
-      "import": "./dist/esm/genesisStates/sepolia.js",
+      "import": {
+        "typescript": "./dist/esm/genesisStates/sepolia.js",
+        "default": "./dist/esm/genesisStates/sepolia.js"
+      },
       "require": "./dist/cjs/genesisStates/sepolia.js"
     }
   },
@@ -55,7 +70,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
-    "test:node": "vitest run test/*",
+    "test:node": "vitest run test/* -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

@@ -1,5 +1,4 @@
 import * as EIP2930 from './eip2930.ts'
-import * as Legacy from './legacy.ts'
 
 import {
   EthereumJSErrorWithoutCode,
@@ -14,11 +13,11 @@ import type { EIP7702CompatibleTx } from '../types.ts'
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP7702CompatibleTx): bigint {
-  const eip2930Cost = BigInt(EIP2930.getDataGas(tx))
+  const eip2930Cost = EIP2930.getDataGas(tx)
   const eip7702Cost = BigInt(
     tx.authorizationList.length * Number(tx.common.param('perEmptyAccountCost')),
   )
-  return Legacy.getDataGas(tx, eip2930Cost + eip7702Cost)
+  return eip2930Cost + eip7702Cost
 }
 
 /**
@@ -37,6 +36,17 @@ export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
         'Invalid EIP-7702 transaction: authorization list item should have 6 elements',
       )
     }
+
+    for (const member of item) {
+      // This checks if the `member` is a list, not bytes
+      // This checks that the authority list does not have any embedded lists in it
+      if (Array.isArray(member)) {
+        throw EthereumJSErrorWithoutCode(
+          'Invalid EIP-7702 transaction: authority list element is a list, not bytes',
+        )
+      }
+    }
+
     const [chainId, address, nonce, yParity, r, s] = item
 
     validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
