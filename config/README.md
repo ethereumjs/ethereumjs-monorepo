@@ -140,7 +140,10 @@ the typescript sources directly without requiring you to recompile packages when
 Vitest is already configured to use the `typescript` entry points so simply specify `npx vitest run-c ../../config/vitest.config.mts test/myTest.spec.ts` 
 when running individual tests.
 
-If running other scripts, you can use `tsx --conditions=typescript myScript.ts` to accomplish the same goal.
+If running typescript scripts from the command line, you can use `tsx --conditions=typescript myScript.ts` to use the typescript sources.
+
+When running code using a bash script, you can set an environment variable `NODE_OPTIONS='--conditions=typescript'` and this will get picked by `tsx`.
+
 ## Documentation
 
 Add `typedoc.js` to a package that extends the generic TypeDoc configuration:
