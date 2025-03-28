@@ -225,7 +225,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   errorStr(): string
 
   addSignature(
-    v: bigint,
+    v: bigint, // TODO: change this to number?
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV?: boolean,

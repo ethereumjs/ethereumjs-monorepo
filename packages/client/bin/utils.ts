@@ -16,13 +16,13 @@ import {
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
+  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
   createAddressFromPrivateKey,
   createAddressFromString,
   ecrecover,
-  ecsign,
   hexToBytes,
   parseGethGenesisState,
   randomBytes,
@@ -39,6 +39,7 @@ import {
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
@@ -653,11 +654,11 @@ export async function generateClientConfig(args: ClientOpts) {
         throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
       const buf = secp256k1Sign(msg, pk)
-      const r = buf.slice(0, 32)
-      const s = buf.slice(32, 64)
-      const v = BigInt(buf[64])
+      const r = bytesToBigInt(buf.slice(0, 32))
+      const s = bytesToBigInt(buf.slice(32, 64))
+      const recovery = buf[64]
 
-      return { r, s, v }
+      return { r, s, recovery }
     }
     cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
       const sig = secp256k1Sign(hash, pk)
@@ -673,7 +674,7 @@ export async function generateClientConfig(args: ClientOpts) {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
-    cryptoFunctions.ecsign = ecsign
+    cryptoFunctions.ecsign = secp256k1.sign
     cryptoFunctions.ecdsaSign = ecdsaSign
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }

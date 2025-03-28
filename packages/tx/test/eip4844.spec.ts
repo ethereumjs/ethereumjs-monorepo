@@ -6,7 +6,6 @@ import {
   commitmentsToVersionedHashes,
   concatBytes,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   getBlobs,
   hexToBytes,
@@ -30,6 +29,7 @@ import { hardfork4844Data } from './testData/4844-hardfork.ts'
 import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
 const pk = randomBytes(32)
@@ -67,10 +67,10 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -86,11 +86,11 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v + BigInt(27), r, s)
+      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
     })
   })
 })

@@ -1,12 +1,13 @@
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, bytesToHex, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { TWO_POW256, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createFeeMarket1559Tx } from '../src/index.ts'
 
 import { eip1559Data } from './testData/eip1559.ts' // Source: Besu
 
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { JSONTx } from '../src/index.ts'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)
@@ -146,10 +147,10 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -159,11 +160,11 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v + BigInt(27), r, s)
+      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
     })
   })
 
