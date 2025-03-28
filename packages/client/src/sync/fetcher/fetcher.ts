@@ -348,12 +348,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     const jobStr = this.jobStr(job)
     if (
-      (<any>this)._readableState === undefined ||
-      (<any>this)._readableState!.length > this.maxQueue
+      (this as any)._readableState === undefined ||
+      (this as any)._readableState!.length > this.maxQueue
     ) {
       this.DEBUG &&
         this.debug(
-          `Readable state length=${(<any>this)._readableState!.length} exceeds max queue size=${
+          `Readable state length=${(this as any)._readableState!.length} exceeds max queue size=${
             this.maxQueue
           }, skip job ${jobStr} execution.`,
         )
