@@ -16,7 +16,7 @@ describe('Pruned trie tests', () => {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    assert.equal((<any>trie)._db.db._database.size, 6, 'DB size correct')
+    assert.equal((trie['_db'].db as any)._database.size, 6, 'DB size correct')
   })
 
   it('should prune simple trie', async () => {
@@ -29,20 +29,20 @@ describe('Pruned trie tests', () => {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
   it('should prune simple trie', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
-    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
 
     await trie.del(key)
-    assert.equal((<any>trie)._db.db._database.size, 0, 'DB size correct')
+    assert.equal((trie['_db'].db as any)._database.size, 0, 'DB size correct')
 
     await trie.put(key, utf8ToBytes('1'))
-    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
   it('should prune trie with depth = 2', async () => {
@@ -145,7 +145,7 @@ describe('Pruned trie tests', () => {
       assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
       assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
-      assert.isEmpty((<any>trie)._db.db._database.keys(), 'db should be empty')
+      assert.isEmpty((trie['_db'].db as any)._database.keys(), 'db should be empty')
     }
   })
 
@@ -194,13 +194,13 @@ describe('Pruned trie tests', () => {
     // Create new empty MerklePatriciaTrie (is pruned)
     trie = new MerklePatriciaTrie()
     // Create a new value raw in DB (is not pruned)
-    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    await (trie['_db'].db as any).put(utf8ToBytes('aa'))
     assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
-    await (<any>trie)._db.db.del(utf8ToBytes('aa'))
+    await (trie['_db'].db as any).del(utf8ToBytes('aa'))
     assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is pruned')
     await trie.put(utf8ToBytes('aa'), utf8ToBytes('bb'))
     assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is pruned')
-    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    await (trie['_db'].db as any).put(utf8ToBytes('aa'))
     assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
   })
 
@@ -258,7 +258,7 @@ describe('Pruned trie tests', () => {
       assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
-      for (const _dbkey of (<any>trie)._db.db._database.keys()) {
+      for (const _dbkey of (trie['_db'].db as any)._database.keys()) {
         dbKeys++
       }
       assert.equal(dbKeys, 1, 'db is empty')

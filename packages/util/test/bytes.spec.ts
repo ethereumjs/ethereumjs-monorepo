@@ -264,60 +264,45 @@ describe('toBytes', () => {
   })
 })
 
-describe('intToBytes', () => {
-  it('should throw on wrong input', () => {
-    assert.throws(() => intToBytes(<any>'test'), undefined, undefined, 'throws on string')
-    assert.throws(() => intToBytes(<any>Infinity), undefined, undefined, 'throws on +Infinity')
-    assert.throws(() => intToBytes(<any>-Infinity), undefined, undefined, 'throws on -Infinity')
-    assert.throws(() => intToBytes(<any>NaN), undefined, undefined, 'throws on NaN')
-    assert.throws(() => intToBytes(<any>undefined), undefined, undefined, 'throws on undefined')
-    assert.throws(() => intToBytes(<any>null), undefined, undefined, 'throws on null')
-    assert.throws(() => intToBytes(<any>-1), undefined, undefined, 'throws on negative numbers')
-    assert.throws(() => intToBytes(<any>1.05), undefined, undefined, 'throws on decimal numbers')
-    assert.throws(() => intToBytes(<any>{}), undefined, undefined, 'throws on objects')
-    assert.throws(() => intToBytes(<any>true), undefined, undefined, 'throws on true')
-    assert.throws(() => intToBytes(<any>false), undefined, undefined, 'throws on false')
-    assert.throws(() => intToBytes(<any>[]), undefined, undefined, 'throws on arrays')
-    assert.throws(() => intToBytes(<any>(() => {})), undefined, undefined, 'throws on arrays')
-    assert.throws(
-      () => intToBytes(Number.MAX_SAFE_INTEGER + 1),
-      undefined,
-      undefined,
-      'throws on unsafe integers',
-    )
+describe('intToBytes and intToHex', () => {
+  const errorCases = [
+    'test',
+    Infinity,
+    -Infinity,
+    NaN,
+    undefined,
+    null,
+    -1,
+    1.05,
+    {},
+    true,
+    false,
+    [],
+    () => {},
+    Number.MAX_SAFE_INTEGER + 1,
+  ]
+  it('intToBytes should throw on wrong input', () => {
+    for (const value of errorCases) {
+      // @ts-expect-error -- Testing wrong input
+      assert.throws(() => intToBytes(value), undefined, undefined, `throws on ${value}`)
+    }
+  })
+
+  it('intToHex should throw on wrong input', () => {
+    for (const value of errorCases) {
+      // @ts-expect-error -- Testing wrong input
+      assert.throws(() => intToHex(value), undefined, undefined, `throws on ${value}`)
+    }
+  })
+
+  it('should pass on correct input', () => {
+    assert.equal(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
+    assert.equal(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
   })
 
   it('should pass on correct input', () => {
     assert.deepEqual(intToBytes(0), hexToBytes('0x00'), 'correctly converts 0 to a Uint8Array')
     assert.deepEqual(intToBytes(1), hexToBytes('0x01'), 'correctly converts 1 to a Uint8Array')
-  })
-})
-
-describe('intToHex', () => {
-  it('should throw on wrong input', () => {
-    assert.throws(() => intToHex(<any>'test'), undefined, undefined, 'throws on string')
-    assert.throws(() => intToHex(<any>Infinity), undefined, undefined, 'throws on +Infinity')
-    assert.throws(() => intToHex(<any>-Infinity), undefined, undefined, 'throws on -Infinity')
-    assert.throws(() => intToHex(<any>NaN), undefined, undefined, 'throws on NaN')
-    assert.throws(() => intToHex(<any>undefined), undefined, undefined, 'throws on undefined')
-    assert.throws(() => intToHex(<any>null), undefined, undefined, 'throws on null')
-    assert.throws(() => intToHex(<any>-1), undefined, undefined, 'throws on negative numbers')
-    assert.throws(() => intToHex(<any>1.05), undefined, undefined, 'throws on decimal numbers')
-    assert.throws(() => intToHex(<any>{}), undefined, undefined, 'throws on objects')
-    assert.throws(() => intToHex(<any>true), undefined, undefined, 'throws on true')
-    assert.throws(() => intToHex(<any>false), undefined, undefined, 'throws on false')
-    assert.throws(() => intToHex(<any>[]), undefined, undefined, 'throws on arrays')
-    assert.throws(() => intToHex(<any>(() => {})), undefined, undefined, 'throws on arrays')
-    assert.throws(
-      () => intToHex(Number.MAX_SAFE_INTEGER + 1),
-      undefined,
-      undefined,
-      'throws on unsafe integers',
-    )
-  })
-  it('should pass on correct input', () => {
-    assert.equal(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
-    assert.equal(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
   })
 })
 

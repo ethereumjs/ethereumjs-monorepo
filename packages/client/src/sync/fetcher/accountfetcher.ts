@@ -414,7 +414,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             null,
             [],
             [],
-            <any>rangeResult.proof,
+            rangeResult.proof,
           )
           // if proof is false, reject corrupt peer
           if (isMissingRightRange !== false) return undefined

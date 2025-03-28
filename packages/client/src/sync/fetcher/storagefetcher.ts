@@ -282,7 +282,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             null,
             [],
             [],
-            <any>rangeResult.proof,
+            rangeResult.proof,
           )
 
           // if proof is false, reject corrupt peer

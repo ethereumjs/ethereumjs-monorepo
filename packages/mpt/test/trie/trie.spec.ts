@@ -170,7 +170,7 @@ for (const { constructor, defaults, title } of [
     for await (const { key, value } of keyvals) {
       await trie.put(key, value)
     }
-    const roots = [...(<any>trie.database().db)._database.keys()]
+    const roots = [...(trie.database().db as any)._database.keys()]
     it('should return true for all nodes in the trie', async () => {
       assert.isTrue(await trie.checkRoot(trie.root()), 'Should return true for root node')
       for (const root of roots) {

@@ -12,6 +12,7 @@ import {
   BIGINT_1,
   BIGINT_2,
   EthereumJSErrorWithoutCode,
+  type NestedUint8Array,
   TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
@@ -556,10 +557,13 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     const signerStates = await this.blockchain!.db.get(CLIQUE_SIGNERS_KEY)
     if (signerStates === undefined) return []
-    const states = RLP.decode(signerStates as Uint8Array) as [Uint8Array, Uint8Array[]]
+    const states = RLP.decode(signerStates as Uint8Array) as NestedUint8Array
     return states.map((state) => {
       const blockNum = bytesToBigInt(state[0] as Uint8Array)
-      const addresses = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
+      const addresses: Address[] = (state[1] as Uint8Array[]).map((bytes: Uint8Array): Address => {
+        const address = new Address(bytes)
+        return address
+      })
       return [blockNum, addresses]
     }) as CliqueLatestSignerStates
   }

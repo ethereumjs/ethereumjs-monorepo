@@ -1,5 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import type { EVM } from '../evm.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
 import { ERROR, EvmError } from '../exceptions.ts'
 
@@ -7,12 +8,12 @@ import { leading16ZeroBytesCheck } from './bls12_381/index.ts'
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck, moduloLengthCheck } from './util.ts'
 
-import type { EVMBLSInterface, ExecResult } from '../types.ts'
+import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
 export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('11')
-  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  const bls = (opts._EVM as EVM)['_bls']!
 
   const baseGas = opts.common.param('bls12381PairingBaseGas') ?? BigInt(0)
 

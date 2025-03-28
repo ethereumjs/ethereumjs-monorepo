@@ -427,8 +427,8 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
       }
       // TODO: decide what block validation method is appropriate here
       if (opts.skipHeaderValidation !== true) {
-        if (typeof (<any>vm.blockchain).validateHeader === 'function') {
-          await (<any>vm.blockchain).validateHeader(block.header)
+        if (typeof (vm.blockchain as any).validateHeader === 'function') {
+          await (vm.blockchain as any).validateHeader(block.header)
         } else {
           throw EthereumJSErrorWithoutCode(
             'cannot validate header: blockchain has no `validateHeader` method',

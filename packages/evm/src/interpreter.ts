@@ -438,7 +438,7 @@ export class Interpreter {
    * Get info for an opcode from EVM's list of opcodes.
    */
   lookupOpInfo(op: number): OpcodeMapEntry {
-    return (<any>this._evm)._opcodeMap[op]
+    return this._evm['_opcodeMap'][op]
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {

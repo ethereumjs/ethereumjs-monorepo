@@ -892,7 +892,7 @@ export class MerklePatriciaTrie {
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
     ]
-    for (const dbkey of (<any>this)._db.db._database.keys()) {
+    for (const dbkey of (this._db.db as any)._database.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph
