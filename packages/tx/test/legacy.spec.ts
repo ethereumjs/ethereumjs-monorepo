@@ -459,19 +459,19 @@ describe('[Transaction]', () => {
       common,
     }).sign(privateKey)
 
-    let signedWithEIP155 = createLegacyTx(<any>txData).sign(privateKey)
+    let signedWithEIP155 = createLegacyTx(txData).sign(privateKey)
 
     assert.isTrue(signedWithEIP155.verifySignature())
     assert.notEqual(signedWithEIP155.v?.toString(16), '1c')
     assert.notEqual(signedWithEIP155.v?.toString(16), '1b')
 
-    signedWithEIP155 = createLegacyTx(<any>fixtureTxSignedWithoutEIP155.toJSON()).sign(privateKey)
+    signedWithEIP155 = createLegacyTx(fixtureTxSignedWithoutEIP155.toJSON()).sign(privateKey)
 
     assert.isTrue(signedWithEIP155.verifySignature())
     assert.notEqual(signedWithEIP155.v?.toString(16), '1c')
     assert.notEqual(signedWithEIP155.v?.toString(16), '1b')
 
-    let signedWithoutEIP155 = createLegacyTx(<any>txData, {
+    let signedWithoutEIP155 = createLegacyTx(txData, {
       common,
     }).sign(privateKey)
 
@@ -481,7 +481,7 @@ describe('[Transaction]', () => {
       "v shouldn't be EIP155 encoded",
     )
 
-    signedWithoutEIP155 = createLegacyTx(<any>txData, {
+    signedWithoutEIP155 = createLegacyTx(txData, {
       common,
     }).sign(privateKey)
 
