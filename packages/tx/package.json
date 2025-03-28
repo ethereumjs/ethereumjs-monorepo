@@ -49,7 +49,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
-    "test:node": "NODE_OPTIONS='--conditions=typescript' vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
