@@ -44,7 +44,7 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:cli": "npx vitest run -c ../../config/vitest.config.mts ./test/cli/*.spec.ts",
     "test:integration": "npx vitest run -c ../../config/vitest.config.mts ./test/integration/*.spec.ts",
-    "test:unit": "npx vitest run -c ../../config/vitest.config.mts test/*",
+    "test:unit": "npx vitest run -c ./vitest.config.unit.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
