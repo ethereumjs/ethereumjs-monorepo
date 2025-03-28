@@ -60,7 +60,6 @@ export class Common {
   public events: EventEmitter<CommonEvent>
 
   constructor(opts: CommonOpts) {
-    console.log('hello from common')
     this.events = new EventEmitter<CommonEvent>()
 
     this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
