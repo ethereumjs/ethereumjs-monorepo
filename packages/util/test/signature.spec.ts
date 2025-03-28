@@ -3,8 +3,6 @@ import { assert, describe, it } from 'vitest'
 import {
   bigIntToBytes,
   ecrecover,
-  ecsign,
-  equalsBytes,
   fromRPCSig,
   hashPersonalMessage,
   hexToBytes,
@@ -15,54 +13,9 @@ import {
   utf8ToBytes,
 } from '../src/index.ts'
 
-import type { ECDSASignature } from '../src/index.ts'
-
 const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const ecPrivKey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
 const chainId = BigInt(3) // ropsten
-
-/**
- * Returns `true` if the signatures are equal, or `false` otherwise.
- */
-function sigCmp(sig1: ECDSASignature, sig2: ECDSASignature) {
-  return equalsBytes(sig1.s, sig2.s) && equalsBytes(sig1.r, sig2.r) && sig1.v === sig2.v
-}
-
-describe('ecsign', () => {
-  it('should produce a deterministic signature by default', () => {
-    const sig = ecsign(ecHash, ecPrivKey)
-    assert.deepEqual(
-      sig.r,
-      hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'),
-    )
-    assert.deepEqual(
-      sig.s,
-      hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'),
-    )
-    assert.equal(sig.v, BigInt(0))
-  })
-
-  it('should produce hedged signatures (extraEntropy=true)', () => {
-    const sig = ecsign(ecHash, ecPrivKey, { extraEntropy: true })
-    const sig2 = ecsign(ecHash, ecPrivKey)
-    assert.isFalse(sigCmp(sig, sig2), 'no chain id: signatures should be hedged and thus different')
-  })
-
-  it('should produce hedged signatures by default (with provided chainID)', () => {
-    const sigOpts = { extraEntropy: true }
-    const sig = ecsign(ecHash, ecPrivKey, sigOpts)
-    const sig2 = ecsign(ecHash, ecPrivKey, sigOpts)
-    assert.isFalse(sigCmp(sig, sig2), 'chain id: signatures should be hedged and thus different')
-  })
-
-  it('should produce deterministic signatures with set extraEntropy', () => {
-    const extraEntropy = bigIntToBytes(BigInt(13371337))
-    const sigOpts = { extraEntropy }
-    const sig = ecsign(ecHash, ecPrivKey, sigOpts)
-    const sig2 = ecsign(ecHash, ecPrivKey, sigOpts)
-    assert.isTrue(sigCmp(sig, sig2), 'no chain id: signatures should be deterministic')
-  })
-})
 
 describe('ecrecover', () => {
   it('should recover a public key', () => {

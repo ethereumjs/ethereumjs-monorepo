@@ -9,7 +9,6 @@ import {
   concatBytes,
   createAddressFromString,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   hexToBytes,
   privateToAddress,
@@ -23,6 +22,7 @@ import { createVM, runTx } from '../../../src/index.ts'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { VM } from '../../../src/index.ts'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
@@ -61,15 +61,15 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
   const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
-  const signed = ecsign(msgToSign, pkey)
+  const signed = secp256k1.sign(msgToSign, pkey)
 
   return [
     chainIdBytes,
     addressBytes,
     nonceBytes,
-    bigIntToUnpaddedBytes(signed.v),
-    unpadBytes(signed.r),
-    unpadBytes(signed.s),
+    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
+    bigIntToUnpaddedBytes(signed.r),
+    bigIntToUnpaddedBytes(signed.s),
   ]
 }
 

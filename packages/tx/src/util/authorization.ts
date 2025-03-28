@@ -9,13 +9,13 @@ import {
   bytesToHex,
   concatBytes,
   ecrecover,
-  ecsign,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
 import type {
   AuthorizationListBytesItem,
@@ -128,7 +128,8 @@ export function signAuthorization(
   privateKey: Uint8Array,
 ): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
-  const signed = ecsign(msgHash, privateKey)
+  // TODO: always uses the JS version: read ecsign from crypto
+  const signed = secp256k1.sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
     ? input
     : unsignedAuthorizationListToBytes(input)
@@ -137,9 +138,9 @@ export function signAuthorization(
     chainId,
     address,
     nonce,
-    bigIntToUnpaddedBytes(signed.v),
-    unpadBytes(signed.r),
-    unpadBytes(signed.s),
+    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
+    bigIntToUnpaddedBytes(signed.r),
+    bigIntToUnpaddedBytes(signed.s),
   ]
 }
 
