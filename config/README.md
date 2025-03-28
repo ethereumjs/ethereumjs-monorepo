@@ -132,6 +132,15 @@ Use CLI commands above in your `package.json`:
   }
 ```
 
+### Doing cross-package development
+
+All of our packages include a `typescript` entry in the `exports` map under the `esm` key.  This allows `node`/`tsx`/`vitest` to use
+the typescript sources directly without requiring you to recompile packages when you make changes.
+
+Vitest is already configured to use the `typescript` entry points so simply specify `npx vitest run-c ../../config/vitest.config.mts test/myTest.spec.ts` 
+when running individual tests.
+
+If running other scripts, you can use `tsx --conditions=typescript myScript.ts` to accomplish the same goal.
 ## Documentation
 
 Add `typedoc.js` to a package that extends the generic TypeDoc configuration:
