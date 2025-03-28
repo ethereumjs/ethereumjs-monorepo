@@ -65,11 +65,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
   syncErrored?: Error
 
-  private _readableState?: {
-    // This property is inherited from Readable. We only need `length`.
-    length: number
-  }
-
   private writer: Writable | null = null
 
   /**
@@ -352,10 +347,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const jobStr = this.jobStr(job)
-    if (this._readableState === undefined || this._readableState!.length > this.maxQueue) {
+    if (
+      (<any>this)._readableState === undefined ||
+      (<any>this)._readableState!.length > this.maxQueue
+    ) {
       this.DEBUG &&
         this.debug(
-          `Readable state length=${this._readableState!.length} exceeds max queue size=${
+          `Readable state length=${(<any>this)._readableState!.length} exceeds max queue size=${
             this.maxQueue
           }, skip job ${jobStr} execution.`,
         )
