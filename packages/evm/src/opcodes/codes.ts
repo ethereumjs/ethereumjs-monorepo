@@ -6,7 +6,7 @@ import { dynamicGasHandlers } from './gas.ts'
 import { getFullname } from './util.ts'
 
 import type { Common } from '@ethereumjs/common'
-import type { CustomOpcode } from '../types.ts'
+import { type CustomOpcode, isAddOpcode } from '../types.ts'
 import type { OpHandler } from './functions.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas.ts'
 
@@ -448,7 +448,8 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   if (customOpcodes) {
     for (const _code of customOpcodes) {
       const code = _code
-      if (code.logicFunction === undefined) {
+
+      if (!isAddOpcode(code)) {
         delete opcodeBuilder[code.opcode]
         continue
       }

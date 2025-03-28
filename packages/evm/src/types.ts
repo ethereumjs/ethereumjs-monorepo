@@ -20,10 +20,6 @@ import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number
-  opcodeName: undefined
-  baseFee: undefined
-  gasFunction: undefined
-  logicFunction: undefined
 }
 
 export type AddOpcode = {
@@ -35,6 +31,16 @@ export type AddOpcode = {
 }
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
+
+// Typeguard
+export function isAddOpcode(customOpcode: CustomOpcode): customOpcode is AddOpcode {
+  return (
+    'opcode' in customOpcode &&
+    'opcodeName' in customOpcode &&
+    'baseFee' in customOpcode &&
+    'logicFunction' in customOpcode
+  )
+}
 
 /**
  * Base options for the `EVM.runCode()` / `EVM.runCall()` method.
