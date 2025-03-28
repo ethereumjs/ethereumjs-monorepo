@@ -20,6 +20,10 @@ import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number
+  opcodeName: undefined
+  baseFee: undefined
+  gasFunction: undefined
+  logicFunction: undefined
 }
 
 export type AddOpcode = {

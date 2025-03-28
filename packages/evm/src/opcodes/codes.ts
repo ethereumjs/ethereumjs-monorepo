@@ -447,18 +447,12 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
 
   if (customOpcodes) {
     for (const _code of customOpcodes) {
-      const code = <any>_code
+      const code = _code
       if (code.logicFunction === undefined) {
         delete opcodeBuilder[code.opcode]
         continue
       }
 
-      // Sanity checks
-      if (code.opcodeName === undefined || code.baseFee === undefined) {
-        throw EthereumJSErrorWithoutCode(
-          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`,
-        )
-      }
       const entry = {
         [code.opcode]: {
           name: code.opcodeName,
