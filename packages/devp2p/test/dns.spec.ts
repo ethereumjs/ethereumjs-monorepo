@@ -7,7 +7,7 @@ import { testData } from './testdata.ts'
 
 describe('DNS', () => {
   const mockData = testData.dns
-  const mockDns = td.replace<any>('dns')
+  const mockDns = td.replace('dns') as any
 
   let dns: DNS
   function initializeDns() {
