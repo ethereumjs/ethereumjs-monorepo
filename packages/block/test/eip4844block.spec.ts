@@ -14,7 +14,7 @@ import { fakeExponential, getNumBlobs } from '../src/helpers.ts'
 import { createBlock, createBlockHeader } from '../src/index.ts'
 import { paramsBlock } from '../src/params.ts'
 
-import { hardfork4844Data } from './testdata/4844-hardfork.ts'
+import { hardfork4844Data } from '@ethereumjs/testdata'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 

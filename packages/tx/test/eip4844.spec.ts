@@ -26,7 +26,7 @@ import {
   paramsTx,
 } from '../src/index.ts'
 
-import { hardfork4844Data } from './testData/4844-hardfork.ts'
+import { hardfork4844Data } from '@ethereumjs/testdata'
 import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
