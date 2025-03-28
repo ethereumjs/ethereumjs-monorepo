@@ -15,7 +15,6 @@ import {
   getPresetChainConfig,
 } from '@ethereumjs/common'
 import {
-  BIGINT_2,
   EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
@@ -648,23 +647,15 @@ export async function generateClientConfig(args: ClientOpts) {
         ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
-    cryptoFunctions.ecsign = (
-      msg: Uint8Array,
-      pk: Uint8Array,
-      ecSignOpts: { chainId?: bigint } = {},
-    ) => {
+    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
-      const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
-      const v =
-        chainId === undefined
-          ? BigInt(buf[64] + 27)
-          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
+      const v = BigInt(buf[64])
 
       return { r, s, v }
     }
