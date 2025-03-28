@@ -39,14 +39,14 @@ export async function createInlineClient(
     >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   } else {
     chainDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/chainDB`,
+      `${datadir}/${common.chainName()}/chain`,
     ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
     stateDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/stateDB`,
+      `${datadir}/${common.chainName()}/state`,
     ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
     metaDB = new Level<string | Uint8Array, string | Uint8Array>(
-      `${datadir}/${common.chainName()}/metaDB`,
+      `${datadir}/${common.chainName()}/meta`,
     ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   }
   let validateConsensus = false

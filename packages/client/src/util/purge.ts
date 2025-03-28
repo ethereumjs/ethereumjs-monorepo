@@ -12,10 +12,12 @@ export const DBTarget = {
 
 async function initDBs(dataDir: string, chain: string) {
   const chainDir = `${dataDir}/${chain}`
+
   // Chain DB
   const chainDataDir = `${chainDir}/chain`
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
   await chainDB.open()
+
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = `${chainDir}/meta`
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
@@ -31,6 +33,7 @@ export async function purgeHistory(
   headers: boolean = false,
 ) {
   const { chainDB, metaDB } = await initDBs(dataDir, chain)
+
   const dbOps: DBOp[] = []
   const metaDBOps: {
     type: 'del'
@@ -43,6 +46,7 @@ export async function purgeHistory(
       keyEncoding: blockHashDBOp.baseDBOp.keyEncoding,
       valueEncoding: blockHashDBOp.baseDBOp.valueEncoding,
     })
+
     if (!(blockHash instanceof Uint8Array)) {
       blockNumber--
       continue
@@ -68,6 +72,7 @@ export async function purgeHistory(
     }
     return convertedOp as DelBatch
   })
+
   await chainDB.batch(convertedOps)
   await metaDB.batch(metaDBOps, { keyEncoding: 'view' })
 }
