@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "4.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": ["ethash", "ethereum", "POW"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
@@ -19,7 +19,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -37,18 +40,18 @@
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "npx vitest run",
+    "test": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/block": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "bigint-crypto-utils": "^3.3.0",
     "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^5.0.0-alpha.1"
+    "@ethereumjs/common": "^10.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"

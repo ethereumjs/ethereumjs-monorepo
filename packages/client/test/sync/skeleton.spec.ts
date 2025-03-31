@@ -897,7 +897,7 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should now be at head with correct chain',
     )
     const latestHash = chain.headers.latest?.hash()
-    assert.ok(
+    assert.isTrue(
       latestHash !== undefined && equalsBytes(latestHash, block4PoS.hash()),
       'canonical height should now be at head with correct chain',
     )

@@ -70,7 +70,7 @@ describe('EIP4844 addSignature tests', () => {
     const { v, r, s } = ecsign(msgHash, privKey)
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s, true)
+    const addSignatureTx = tx.addSignature(v, r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -90,7 +90,7 @@ describe('EIP4844 addSignature tests', () => {
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v, r, s, false)
+      tx.addSignature(v + BigInt(27), r, s)
     })
   })
 })
@@ -336,8 +336,8 @@ describe('Network wrapper tests', () => {
       'decoded sender address correctly',
     )
     const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, { common })
-    assert.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
-    assert.ok(
+    assert.isUndefined(minimalTx.blobs, 'minimal representation contains no blobs')
+    assert.isTrue(
       equalsBytes(minimalTx.hash(), deserializedTx.hash()),
       'has the same hash as the network wrapper version',
     )
@@ -572,7 +572,7 @@ describe('hash() and signature verification', () => {
       '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
       'was able to recover sender address',
     )
-    assert.ok(signedTx.verifySignature(), 'signature is valid')
+    assert.isTrue(signedTx.verifySignature(), 'signature is valid')
   })
 })
 

@@ -55,11 +55,11 @@ describe('reorg tests', () => {
     const number_highTD = highTDBlock.header.number
 
     // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
-    assert.ok(
+    assert.isTrue(
       number_lowTD > number_highTD,
       'low TD should have a lower TD than the reported high TD',
     )
-    assert.ok(
+    assert.isTrue(
       blocks_lowTD[blocks_lowTD.length - 1].header.number >
         blocks_highTD[blocks_highTD.length - 1].header.number,
       'low TD block should have a higher number than high TD block',
@@ -186,7 +186,7 @@ describe('reorg tests', () => {
     )
 
     signerStates = (blockchain.consensus as CliqueConsensus)._cliqueLatestSignerStates
-    assert.exists(
+    assert.isDefined(
       signerStates.find(
         (s: any): boolean =>
           s[0] === BigInt(3) && s[1].find((a: Address) => a.equals(beneficiary2)),
@@ -198,7 +198,7 @@ describe('reorg tests', () => {
     assert.equal(signerVotes.length, 0, 'votes should be empty')
 
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
-    assert.exists(
+    assert.isDefined(
       blockSigners.find(
         (s: any): boolean => s[0] === BigInt(3) && s[1].equals(cliqueSigner(block3_high.header)),
       ),

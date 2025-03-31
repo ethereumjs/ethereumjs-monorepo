@@ -52,7 +52,7 @@ describe('[Util/RPC]', () => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        assert.ok(
+        assert.isTrue(
           httpServer !== undefined && wsServer !== undefined,
           'should return http and ws servers',
         )
@@ -79,7 +79,7 @@ describe('[Util/RPC]', () => {
       server,
       withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
     })
-    assert.ok(
+    assert.isTrue(
       httpServer !== undefined && wsServer !== undefined,
       'should return http and ws servers',
     )

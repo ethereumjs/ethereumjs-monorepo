@@ -272,7 +272,7 @@ describe('RunCall tests', () => {
 
     assert.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
     assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    assert.ok(result.execResult.exceptionError!.error === ERROR.OUT_OF_GAS, 'call went out of gas')
+    assert.equal(result.execResult.exceptionError?.error, ERROR.OUT_OF_GAS, 'call went out of gas')
   })
 
   it('ensure selfdestruct pays for creating new accounts', async () => {
@@ -626,7 +626,7 @@ describe('RunCall tests', () => {
       to: contractAddress,
     }
 
-    let verifyMemoryExpanded = false
+    let verifyMemoryExpanded: boolean = false
 
     evm.events.on('step', (e) => {
       assert.isTrue(e.memory.length <= 96)
@@ -635,7 +635,7 @@ describe('RunCall tests', () => {
       }
     })
     await evm.runCall(runCallArgs)
-    assert.ok(verifyMemoryExpanded, 'memory did expand')
+    assert.isTrue(verifyMemoryExpanded, 'memory did expand')
   })
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {

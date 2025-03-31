@@ -221,18 +221,15 @@ describe('StateManager -> General', () => {
     const proof1 = await getMerkleStateProof(stateManager, address1)
 
     const partialStateManager = await fromMerkleStateProof(proof1)
-    let account1 = await partialStateManager.getAccount(address1)!
 
-    verifyAccount(account1!, state1)
+    verifyAccount((await partialStateManager.getAccount(address1))!, state1)
 
     const proof2 = await getMerkleStateProof(stateManager, address2)
     await addMerkleStateProofData(partialStateManager, proof2)
 
-    let account2 = await partialStateManager.getAccount(address2)
-    verifyAccount(account2!, state2)
+    verifyAccount((await partialStateManager.getAccount(address2))!, state2)
 
-    let account3 = await partialStateManager.getAccount(address3)
-    assert.ok(account3 === undefined)
+    assert.isUndefined(await partialStateManager.getAccount(address3))
 
     // Input proofs
     const stProof = await getMerkleStateProof(stateManager, address1, [
@@ -254,14 +251,11 @@ describe('StateManager -> General', () => {
     const newPartialStateManager = await fromMerkleStateProof([proof2, stProof])
 
     async function postVerify(sm: MerkleStateManager) {
-      account1 = await sm.getAccount(address1)
-      verifyAccount(account1!, state1)
+      verifyAccount((await sm.getAccount(address1))!, state1)
 
-      account2 = await sm.getAccount(address2)
-      verifyAccount(account2!, state2)
+      verifyAccount((await sm.getAccount(address2))!, state2)
 
-      account3 = await sm.getAccount(address3)
-      assert.ok(account3 === undefined)
+      assert.isUndefined(await sm.getAccount(address3))
 
       stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
       assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
@@ -282,7 +276,7 @@ describe('StateManager -> General', () => {
       await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
+      assert.include(e.message, 'proof does not have the expected trie root')
     }
 
     await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
@@ -303,11 +297,11 @@ describe('StateManager -> General', () => {
     await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)
 
     let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount === undefined)
+    assert.isUndefined(zeroAccount)
 
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
     zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount!.nonce === zeroAddressNonce)
+    assert.equal(zeroAccount?.nonce, zeroAddressNonce)
   })
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',

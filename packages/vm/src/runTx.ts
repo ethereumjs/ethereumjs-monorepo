@@ -1,13 +1,12 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
-import { RLP } from '@ethereumjs/rlp'
 import {
   StatefulBinaryTreeStateManager,
   StatefulVerkleStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -22,14 +21,11 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  ecrecover,
   equalsBytes,
   hexToBytes,
-  publicToAddress,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.ts'
 import { emitEVMProfile } from './emitEVMProfile.ts'
@@ -155,10 +151,13 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessList2930Tx>opts.tx
 
-    for (const accessListItem of castedTx.AccessListJSON) {
-      vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
-      for (const storageKey of accessListItem.storageKeys) {
-        vm.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
+    for (const accessListItem of castedTx.accessList) {
+      const [addressBytes, slotBytesList] = accessListItem
+      const address = bytesToUnprefixedHex(addressBytes)
+      // Note: in here, the 0x is stripped, so immediately do this here
+      vm.evm.journal.addAlwaysWarmAddress(address, true)
+      for (const storageKey of slotBytesList) {
+        vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
       }
     }
   }
@@ -478,7 +477,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
-    const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i]
@@ -509,19 +507,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         continue
       }
 
-      const r = data[4]
-
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
-      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      let pubKey
+      // Address to set code to
+      let authority
       try {
-        pubKey = ecrecover(toSign, yParity, r, s)
+        authority = recoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue
       }
-      // Address to set code to
-      const authority = new Address(publicToAddress(pubKey))
       const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
       const accountExists = accountMaybeUndefined !== undefined
       const account = accountMaybeUndefined ?? new Account()

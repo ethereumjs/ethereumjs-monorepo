@@ -12,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { valueBoundaryCheck } from '../src/features/util.ts'
 import {
   AccessList2930Tx,
   Capability,
@@ -30,6 +29,7 @@ import {
   createLegacyTxFromRLP,
   paramsTx,
 } from '../src/index.ts'
+import { valueBoundaryCheck } from '../src/util/internal.ts'
 
 import { eip1559TxsData } from './testData/eip1559txs.ts'
 import { eip2930TxsData } from './testData/eip2930txs.ts'
@@ -122,7 +122,7 @@ describe('[BaseTransaction]', () => {
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: Mainnet,
@@ -143,8 +143,8 @@ describe('[BaseTransaction]', () => {
       )
 
       tx = txType.create.txData({}, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
@@ -165,20 +165,20 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.rlp(rlpData, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
     }
@@ -234,11 +234,11 @@ describe('[BaseTransaction]', () => {
   it('serialize()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.exists(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
-        assert.exists(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
@@ -250,13 +250,13 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
-          assert.exists(
+          assert.isDefined(
             tx.supports(activeCapability),
             `${txType.name}: should recognize all supported capabilities`,
           )
         }
         for (const notActiveCapability of txType.notActiveCapabilities) {
-          assert.notOk(
+          assert.isFalse(
             tx.supports(notActiveCapability),
             `${txType.name}: should reject non-active existing and not existing capabilities`,
           )
@@ -268,7 +268,7 @@ describe('[BaseTransaction]', () => {
   it('raw()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.exists(
+        assert.isDefined(
           txType.create.bytesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
         )
@@ -291,11 +291,12 @@ describe('[BaseTransaction]', () => {
         txFixture.data.s = '0x' + '0'
         const tx = txType.create.txData((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
-        assert.ok(
-          tx.getValidationErrors().includes('Invalid Signature'),
+        assert.include(
+          tx.getValidationErrors(),
+          'Invalid Signature',
           `${txType.name}: should return an error string about not verifying signatures`,
         )
-        assert.notOk(tx.isValid(), `${txType.name}: should not validate correctly`)
+        assert.isFalse(tx.isValid(), `${txType.name}: should not validate correctly`)
       }
     }
   })
@@ -305,7 +306,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.exists(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
+          assert.isDefined(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(
@@ -367,7 +368,7 @@ describe('[BaseTransaction]', () => {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           const txPubKey = signedTx.getSenderPublicKey()
           const pubKeyFromPriv = privateToPublic(hexToBytes(`0x${privateKey}`))
-          assert.ok(
+          assert.isTrue(
             equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`,
           )
@@ -405,7 +406,7 @@ describe('[BaseTransaction]', () => {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
-          assert.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
+          assert.isTrue(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
     }

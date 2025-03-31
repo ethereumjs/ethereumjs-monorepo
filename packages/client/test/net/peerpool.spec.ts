@@ -11,8 +11,8 @@ describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   it('should open/close', async () => {
-    assert.notOk((pool as any).pool.size, 'empty pool')
-    assert.notOk((pool as any).opened, 'not open')
+    assert.equal(pool['pool'].size, 0, 'empty pool')
+    assert.isFalse(pool['opened'], 'not open')
     const peer = new MockPeer({
       id: 'peer',
       location: 'abc',
@@ -31,7 +31,7 @@ describe('should initialize', () => {
     pool.remove(peer)
     assert.equal(await pool.open(), false, 'already opened')
     await pool.close()
-    assert.notOk((pool as any).opened, 'closed')
+    assert.isFalse(pool['opened'], 'closed')
   })
 })
 
@@ -44,13 +44,13 @@ describe('should connect/disconnect peer', () => {
   ;(pool as any).connected(peer)
   pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
     it('should get message', () => {
-      assert.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
+      assert.isTrue(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
   })
   config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
   pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
   ;(pool as any).disconnected(peer)
-  assert.notOk((pool as any).pool.get('abc'), 'peer removed')
+  assert.isUndefined(pool['pool'].get('abc'), 'peer removed')
 })
 
 class Peer {
@@ -67,7 +67,7 @@ describe('should check contains', () => {
   const pool = new PeerPool({ config })
   it('should add peer', () => {
     pool.add(peer as any)
-    assert.ok(pool.contains(peer.id), 'found peer')
+    assert.isTrue(pool.contains(peer.id), 'found peer')
   })
 })
 

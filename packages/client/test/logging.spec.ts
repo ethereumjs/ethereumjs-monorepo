@@ -11,11 +11,11 @@ describe('[Logging]', () => {
   const format = logger.transports.find((t: any) => t.name === 'console')!.format!
 
   it('should have correct transports', () => {
-    assert.ok(
+    assert.isTrue(
       logger.transports.find((t: any) => t.name === 'console') !== undefined,
       'should have stdout transport',
     )
-    assert.ok(
+    assert.isTrue(
       logger.transports.find((t: any) => t.name === 'file') !== undefined,
       'should have file transport',
     )
@@ -26,11 +26,11 @@ describe('[Logging]', () => {
       throw new Error('an error')
     } catch (e: any) {
       e.level = 'error'
-      assert.ok(
+      assert.isTrue(
         /an error\n {4}at/.test((format.transform(e) as any).message),
         'log message should contain stack trace (1)',
       )
-      assert.ok(
+      assert.isTrue(
         /an error\n {4}at/.test((format.transform({ level: 'error', message: e }) as any).message),
         'log message should contain stack trace (2)',
       )

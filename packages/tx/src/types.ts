@@ -144,6 +144,10 @@ export interface TransactionCache {
     hardfork: string | Hardfork
   }
   senderPubKey?: Uint8Array
+  // TODO: re-add these cache items for the JSON
+  // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3932
+  //accessListJSON?: AccessList
+  //authorityListJSON?: AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
@@ -240,7 +244,6 @@ export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2718CompatibleTx<T> {
   readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
 }
 
 export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
@@ -606,14 +609,19 @@ export type AccessList = AccessListItem[]
 /**
  * Authorization list types
  */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
+export type AuthorizationListItemUnsigned = {
+  // Note: these are `PrefixedHexString`s
+  chainId: string
+  address: string
+  nonce: string
 }
+
+export type AuthorizationListItem = {
+  // Note: these are `PrefixedHexString`s
+  yParity: string
+  r: string
+  s: string
+} & AuthorizationListItemUnsigned
 
 // Tuple of [chain_id, address, [nonce], y_parity, r, s]
 export type AuthorizationListBytesItem = [
@@ -626,3 +634,5 @@ export type AuthorizationListBytesItem = [
 ]
 export type AuthorizationListBytes = AuthorizationListBytesItem[]
 export type AuthorizationList = AuthorizationListItem[]
+
+export type AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]

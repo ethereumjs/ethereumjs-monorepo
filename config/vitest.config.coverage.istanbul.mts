@@ -9,7 +9,8 @@ const config = defineConfig({
       provider: 'istanbul',
       enabled: true,
       all: true,
-      reporter: ['html'],
+      include: ['src/**'],
+      reportsDirectory: './coverage/istanbul'
     },
   },
   optimizeDeps: {

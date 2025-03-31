@@ -64,7 +64,7 @@ describe('Account Cache: checkpointing', () => {
       cache.put(addr, updatedAcc)
 
       let elem = cache.get(addr)
-      assert.ok(
+      assert.isTrue(
         elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
@@ -85,7 +85,7 @@ describe('Account Cache: checkpointing', () => {
       cache.commit()
       cache.revert()
       const accCmp = cache.get(addr)
-      assert.ok(accCmp === undefined)
+      assert.isUndefined(accCmp)
     })
 
     it(`cache clearing`, async () => {

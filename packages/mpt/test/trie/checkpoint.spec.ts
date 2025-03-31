@@ -40,7 +40,7 @@ describe('testing checkpoints', () => {
 
   it('should create a checkpoint', () => {
     trie.checkpoint()
-    assert.ok(trie.hasCheckpoints())
+    assert.isTrue(trie.hasCheckpoints())
   })
 
   it('should save to the cache', async () => {
@@ -53,7 +53,7 @@ describe('testing checkpoints', () => {
     trieCopy = trie.shallowCopy()
     assert.equal(bytesToHex(trieCopy.root()), postRoot)
     assert.equal(trieCopy['_db'].checkpoints.length, 1)
-    assert.ok(trieCopy.hasCheckpoints())
+    assert.isTrue(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
     assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
     const res2 = await trieCopy.get(utf8ToBytes('love'))

@@ -255,7 +255,7 @@ describe(`valid verkle network setup`, async () => {
           keccak256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
-        assert.ok(
+        assert.isTrue(
           savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
           `Incorrect preimage for ${preimage}`,
         )

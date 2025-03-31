@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "5.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -32,7 +32,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -52,11 +55,11 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
-    "test:node": "npx vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {

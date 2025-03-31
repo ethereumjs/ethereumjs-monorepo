@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "3.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "Utilities for handling Ethereum keys",
   "keywords": ["ethereum", "wallets", "keys"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
@@ -19,7 +19,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -39,11 +42,11 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
-    "test:node": "vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "@scure/base": "^1.2.4",
     "ethereum-cryptography": "^3.1.0",
     "js-md5": "^0.8.3",

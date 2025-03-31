@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "8.0.0-alpha.1",
+  "version": "10.0.0-rc.1",
   "description": "A module to store and interact with blocks",
   "keywords": ["ethereum", "blockchain"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
@@ -19,7 +19,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -39,21 +42,21 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
-    "test:node": "npx vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^6.0.0-alpha.1",
-    "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/mpt": "^7.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
+    "@ethereumjs/block": "^10.0.0-rc.1",
+    "@ethereumjs/common": "^10.0.0-rc.1",
+    "@ethereumjs/mpt": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0-rc.1",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "^4.0.0-alpha.1"
+    "@ethereumjs/ethash": "^10.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"

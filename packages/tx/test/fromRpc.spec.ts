@@ -8,7 +8,7 @@ import {
   createTxFromJSONRPCProvider,
   createTxFromRPC,
 } from '../src/index.ts'
-import { normalizeTxParams } from '../src/util.ts'
+import { normalizeTxParams } from '../src/util/general.ts'
 
 import { optimismTxData } from './testData/optimismTx.ts'
 import { rpcTxData } from './testData/rpcTx.ts'
@@ -90,9 +90,9 @@ describe('fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism syste
   it('should work', async () => {
     for (const txType of txTypes) {
       const tx = await createTxFromRPC({ ...optimismTxData, type: txType } as TypedTxData)
-      assert.ok(tx.v === undefined)
-      assert.ok(tx.s === undefined)
-      assert.ok(tx.r === undefined)
+      assert.isUndefined(tx.v)
+      assert.isUndefined(tx.s)
+      assert.isUndefined(tx.r)
     }
   })
 })
@@ -109,7 +109,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
       }
       const common = createCustomCommon({ chainId: 0x10f2c }, Mainnet)
       const tx = await createTxFromRPC({ ...v0txData, type: txType } as TypedTxData, { common })
-      assert.ok(tx.isSigned())
+      assert.isTrue(tx.isSigned())
     }
   })
 })

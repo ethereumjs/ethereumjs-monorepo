@@ -76,7 +76,7 @@ describe('should handle expiration', async () => {
     })
 
     fetcher['in'].insert(job as any)
-    fetcher['_readableState'] = []
+    ;(<any>fetcher)['_readableState'] = []
     fetcher['running'] = true
     fetcher['total'] = 10
     fetcher.next()
@@ -116,7 +116,7 @@ describe('should handle queue management', () => {
     fetcher['in'].insert(job3 as any)
     fetcher['in'].insert(job4 as any)
     fetcher['in'].insert(job5 as any)
-    assert.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
+    assert.isFalse(fetcher.next(), 'next() fails when heap length exceeds maxQueue')
   })
 })
 
