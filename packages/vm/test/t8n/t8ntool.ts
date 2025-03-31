@@ -215,25 +215,56 @@ export class TransitionTool {
 
     this.stateTracker = new StateTracker(this.vm, this.alloc)
 
-    if (args.log === true) {
+    if (args.log === true || args.trace === true) {
+      const trace = []
       this.vm.events.on('beforeTx', (_, resolve) => {
         // eslint-disable-next-line no-console
-        console.log('Processing new transaction...')
+        if (args.log === true) console.log('Processing new transaction...')
         resolve?.()
       })
-      this.vm.events.on('afterTx', () => {
-        // eslint-disable-next-line no-console
-        console.log('Done processing transaction (system operations might follow next)')
+      this.vm.events.on('afterTx', async (event) => {
+        if (args.trace === true) {
+          const summary = {
+            stateRoot: bytesToHex(await this.vm.stateManager.getStateRoot()),
+            output: bytesToHex(event.execResult.returnValue),
+            gasUsed: bigIntToHex(event.totalGasSpent),
+            pass: event.execResult.exceptionError === undefined,
+            fork: this.vm.common.hardfork(),
+          }
+          trace.push(JSON.stringify(summary))
+          writeFileSync(`trace-${bytesToHex(event.transaction.hash())}.json`, JSON.stringify(trace))
+        }
+
+        if (args.log === true)
+          // eslint-disable-next-line no-console
+          console.log('Done processing transaction (system operations might follow next)')
       })
       this.vm.evm.events?.on('step', (e) => {
-        // eslint-disable-next-line no-console
-        console.log({
-          gasLeft: e.gasLeft.toString(),
-          stack: e.stack.map((a) => bigIntToHex(a)),
-          opName: e.opcode.name,
-          depth: e.depth,
-          address: e.address.toString(),
-        })
+        if (args.log === true)
+          // eslint-disable-next-line no-console
+          console.log({
+            gasLeft: e.gasLeft.toString(),
+            stack: e.stack.map((a) => bigIntToHex(a)),
+            opName: e.opcode.name,
+            depth: e.depth,
+            address: e.address.toString(),
+          })
+        if (args.trace === true) {
+          let hexStack = []
+          hexStack = e.stack.map((item: bigint) => {
+            return '0x' + item.toString(16)
+          })
+          const opTrace = {
+            pc: e.pc,
+            op: e.opcode.name,
+            gas: bigIntToHex(e.gasLeft),
+            gasCost: bigIntToHex(BigInt(e.opcode.fee)),
+            stack: hexStack,
+            depth: e.depth,
+            opName: e.opcode.name,
+          }
+          trace.push(JSON.stringify(opTrace))
+        }
       })
     }
   }

@@ -64,6 +64,11 @@ export function getArguments() {
       type: 'boolean',
       default: false,
     })
+    .option('trace', {
+      describe: 'Write EVM traces as JSON to trace-<tx-number>-<tx-hash>.json',
+      type: 'boolean',
+      default: false,
+    })
     .strict()
     .help().argv
 
@@ -84,7 +89,7 @@ export function getArguments() {
     reward: BigInt((<any>args)['state.reward']),
     chainid: BigInt((<any>args)['state.chainid']),
   }
-
+  args.trace = (<any>args)['trace']
   return args
 }
 
