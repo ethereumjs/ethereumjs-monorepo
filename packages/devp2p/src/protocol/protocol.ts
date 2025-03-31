@@ -54,8 +54,8 @@ export abstract class Protocol {
   }
 
   private initMsgDebuggers(protocol: ProtocolType) {
-    const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
-      (value) => typeof value === 'string',
+    const MESSAGE_NAMES = Object.keys(this._messageCodes).filter(
+      (key) => typeof key === 'string',
     ) as string[]
     for (const name of MESSAGE_NAMES) {
       this.msgDebuggers[name] = devp2pDebug.extend(protocol).extend(name)
