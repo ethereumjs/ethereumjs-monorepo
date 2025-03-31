@@ -102,14 +102,14 @@ describe('[FullSynchronizer]', async () => {
     })
     ;(sync as any).running = true
     const peers = [
-      { eth: { status: { td: BigInt(1) } }, inbound: false },
+      { eth: undefined, inbound: false },
       { eth: { status: { td: BigInt(2) } }, inbound: false },
     ]
     ;(sync as any).height = vi.fn((input) => {
       if (JSON.stringify(input) === JSON.stringify(peers[0]))
-        return Promise.resolve(peers[0].eth.status.td)
+        return Promise.resolve(peers[0].eth?.status.td)
       if (JSON.stringify(input) === JSON.stringify(peers[1]))
-        return Promise.resolve(peers[1].eth.status.td)
+        return Promise.resolve(peers[1].eth?.status.td)
     })
     ;(sync as any).chain = { blocks: { td: BigInt(1) } }
     ;(sync as any).pool = { peers }
