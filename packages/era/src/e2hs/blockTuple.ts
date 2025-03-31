@@ -1,6 +1,9 @@
+import { bytelist, container } from 'micro-eth-signer/ssz'
 import { readEntry } from '../e2store.ts'
 import { decompressData } from '../snappy.ts'
 
+import { RLP } from '@ethereumjs/rlp'
+import type { NestedUint8Array } from '@ethereumjs/util'
 import type { e2StoreEntry } from '../types.ts'
 
 export async function decompressE2HSTuple({
@@ -27,4 +30,37 @@ export function readE2HSTupleAtOffset(bytes: Uint8Array, recordStart: number, of
     bytes.slice(recordStart + offset + headerWithProofLength + bodyLength),
   )
   return decompressE2HSTuple({ headerWithProofEntry, bodyEntry, receiptsEntry })
+}
+
+const MAX_HEADER_LENGTH = 8192
+const MAX_HEADER_PROOF_LENGTH = 1024
+
+const sszHeader = bytelist(MAX_HEADER_LENGTH)
+const sszProof = bytelist(MAX_HEADER_PROOF_LENGTH)
+
+const sszHeaderWithProof = container({
+  header: sszHeader,
+  proof: sszProof,
+})
+
+type HeaderWithProof = {
+  header: Uint8Array
+  proof: Uint8Array
+}
+
+type RawBlockTuple = {
+  headerWithProof: HeaderWithProof
+  body: Uint8Array | NestedUint8Array
+  receipts: Uint8Array | NestedUint8Array
+}
+
+export function parseEH2SBlockTuple(tuple: {
+  headerWithProof: Uint8Array
+  body: Uint8Array
+  receipts: Uint8Array
+}): RawBlockTuple {
+  const headerWithProof = sszHeaderWithProof.decode(tuple.headerWithProof)
+  const body = RLP.decode(tuple.body)
+  const receipts = RLP.decode(tuple.receipts)
+  return { headerWithProof, body, receipts }
 }
