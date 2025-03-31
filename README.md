@@ -16,6 +16,125 @@ Finally, the [EthereumJS Execution Client][client-package] (EthereumJS) has been
 
 Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution.
 
+## Getting Started for New Developers
+
+If you're new to the EthereumJS monorepo, this section will help you get up and running quickly.
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm (v8 or higher)
+- Git
+
+### Initial Setup
+
+1. **Clone the repository and initialize submodules**:
+
+```sh
+git clone https://github.com/ethereumjs/ethereumjs-monorepo.git
+cd ethereumjs-monorepo
+git submodule init
+git submodule update
+```
+
+2. **Install dependencies**:
+
+```sh
+npm install
+```
+
+3. **Build all packages**:
+
+```sh
+npm run build --workspaces
+```
+
+### Development Workflow
+
+The monorepo uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to link local packages together, making development easier.
+
+#### Common Commands
+
+- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
+- **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
+- **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
+- **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
+
+#### Working on a Specific Package
+
+To focus on a single package (e.g., VM):
+
+1. Navigate to the package directory: `cd packages/vm`
+2. Run tests: `npm test`
+3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
+4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
+
+#### Cross-Package Development
+
+All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
+
+- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
+- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
+- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
+
+### Testing Packages with an external project
+
+To test changes locally before publishing, use npm link:
+
+1. **Build the package you want to test**:
+
+```sh
+cd packages/vm  # Or another package
+npm run build
+```
+
+2. **Link the package globally**:
+
+```sh
+npm link
+```
+
+3. **In your test project, link to the local package**:
+
+```sh
+cd path/to/your/project
+npm link @ethereumjs/vm  # Use the appropriate package name
+```
+
+4. **When you're done, unlink the package**:
+
+```sh
+# In your test project
+npm unlink @ethereumjs/vm
+
+# In the package directory
+npm unlink
+```
+
+When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
+
+### Windows Users Note
+
+Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
+
+```sh
+npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
+```
+
+To reset this setting:
+
+```sh
+npm config delete script-shell
+```
+
+### Detailed Documentation
+
+For more detailed information:
+
+- [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Comprehensive guide for contributors
+- [Linting and TypeScript Configuration](./config/README.md)
+- [E2E Testing](./config/E2E_TESTING.md)
+
 ## Packages
 
 Below you can find a list of the packages included in this repository.
