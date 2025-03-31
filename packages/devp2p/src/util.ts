@@ -12,7 +12,9 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { EthStatusMsg } from './protocol/eth.ts'
 
-export const devp2pDebug = debug('devp2p:#')
+// Do not use :# here, no logging without subnamespace occurring and current code structure
+// otherwise creates loggers like `devp2p:#:eth`
+export const devp2pDebug = debug('devp2p')
 
 export function genPrivateKey(): Uint8Array {
   const privateKey = secp256k1.utils.randomPrivateKey()
