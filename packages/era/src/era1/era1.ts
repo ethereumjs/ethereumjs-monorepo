@@ -1,10 +1,4 @@
-import {
-  EthereumJSErrorWithoutCode,
-  bigInt64ToBytes,
-  bytesToBigInt64,
-  concatBytes,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { bigInt64ToBytes, concatBytes, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
 import {
@@ -13,6 +7,8 @@ import {
   Era1Types,
   VERSION,
   formatEntry,
+  getBlockIndex,
+  readBlockIndex,
   readEntry,
 } from '../index.ts'
 import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.ts'
@@ -103,32 +99,6 @@ export const formatEra1 = async (
   // version | block-tuple* | other-entries | Accumulator | BLockIndex
   const era1 = concatBytes(version, ...blocks, accumulatorEntry, blockIndex)
   return era1
-}
-
-export function getBlockIndex(bytes: Uint8Array) {
-  const count = Number(bytesToBigInt64(bytes.slice(-8), true))
-  const recordLength = 8 * count + 24
-  const recordEnd = bytes.length
-  const recordStart = recordEnd - recordLength
-  const { data, type } = readEntry(bytes.subarray(recordStart, recordEnd))
-  if (!equalsBytes(type, CommonTypes.BlockIndex)) {
-    throw EthereumJSErrorWithoutCode('not a valid block index')
-  }
-  return { data, type, count, recordStart }
-}
-
-export function readBlockIndex(data: Uint8Array, count: number) {
-  const startingNumber = Number(bytesToBigInt64(data.slice(0, 8), true))
-  const offsets: number[] = []
-  for (let i = 0; i < count; i++) {
-    const slotEntry = data.subarray((i + 1) * 8, (i + 2) * 8)
-    const offset = Number(new DataView(slotEntry.slice(0, 8).buffer).getBigInt64(0, true))
-    offsets.push(offset)
-  }
-  return {
-    startingNumber,
-    offsets,
-  }
 }
 
 export async function* readBlockTuplesFromERA1(
