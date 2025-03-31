@@ -4,7 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, concatBytes, intToBytes } from '@ethereumjs/util'
 import { Level } from 'level'
 
-import { formatEra1 } from './era1.ts'
+import { formatEra1 } from './era1/index.ts'
 
 import type { BlockBodyBytes } from '@ethereumjs/block'
 

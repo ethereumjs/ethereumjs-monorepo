@@ -1,9 +1,9 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import { EraTypes, parseEntry, readEntry } from './index.ts'
+import { EraTypes, parseEntry, readEntry } from '../index.ts'
 
-import type { SlotIndex } from './index.ts'
+import type { SlotIndex } from '../index.ts'
 
 /**
  * Reads a Slot Index from the end of a bytestring representing an era file
