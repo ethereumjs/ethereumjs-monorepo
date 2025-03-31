@@ -1,7 +1,7 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/rlp'
-import { bytesToBigInt64, equalsBytes } from '@ethereumjs/util'
-import { readEntry } from './e2store.ts'
-import { CommonTypes } from './types.ts'
+import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { formatEntry, readEntry } from './e2store.ts'
+import { CommonTypes, VERSION } from './types.ts'
 
 export function getBlockIndex(bytes: Uint8Array) {
   const count = Number(bytesToBigInt64(bytes.slice(-8), true))
@@ -27,4 +27,29 @@ export function readBlockIndex(data: Uint8Array, count: number) {
     startingNumber,
     offsets,
   }
+}
+
+export async function createBlockIndex(blockTuples: Uint8Array[], startingNumber: bigint) {
+  const version = await formatEntry(VERSION)
+  const tuplesLength = blockTuples.reduce((acc, b) => acc + b.length, 0)
+  const count = bigInt64ToBytes(BigInt(blockTuples.length), true)
+  const blockIndexLength = 8 * blockTuples.length + 24
+  const e2hsLength = version.length + tuplesLength + count.length + blockIndexLength
+  const recordStart = e2hsLength - blockIndexLength
+  const offsetBigInt: bigint[] = []
+  for (let i = 0; i < blockTuples.length; i++) {
+    if (i === 0) {
+      const offset = 8 - recordStart
+      offsetBigInt.push(BigInt(offset))
+    } else {
+      const offset = offsetBigInt[i - 1] + BigInt(blockTuples[i - 1].length)
+      offsetBigInt.push(offset)
+    }
+  }
+  const offsets: Uint8Array[] = offsetBigInt.map((o) => bigInt64ToBytes(o, true))
+  const blockIndex = await formatEntry({
+    type: CommonTypes.BlockIndex,
+    data: concatBytes(bigInt64ToBytes(startingNumber, true), ...offsets, count),
+  })
+  return blockIndex
 }
