@@ -12,7 +12,7 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { EthStatusMsg } from './protocol/eth.ts'
 
-// Do not use :# here, no logging without subnamespace occurring and current code structure
+// Do not use :# here, no logging without sub namespace occurring and current code structure
 // otherwise creates loggers like `devp2p:#:eth`
 export const devp2pDebug = debug('devp2p')
 
