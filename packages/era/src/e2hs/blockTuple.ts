@@ -3,7 +3,7 @@ import { decompressData } from '../snappy.ts'
 
 import type { e2StoreEntry } from '../types.ts'
 
-export async function parseE2HSTuple({
+export async function decompressE2HSTuple({
   headerWithProofEntry,
   bodyEntry,
   receiptsEntry,
@@ -26,5 +26,5 @@ export function readE2HSTupleAtOffset(bytes: Uint8Array, recordStart: number, of
   const receiptsEntry = readEntry(
     bytes.slice(recordStart + offset + headerWithProofLength + bodyLength),
   )
-  return parseE2HSTuple({ headerWithProofEntry, bodyEntry, receiptsEntry })
+  return decompressE2HSTuple({ headerWithProofEntry, bodyEntry, receiptsEntry })
 }
