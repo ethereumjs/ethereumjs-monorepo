@@ -7,7 +7,14 @@ import {
 } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
-import { EpochAccumulator, Era1Types, VERSION, formatEntry, readEntry } from '../index.ts'
+import {
+  CommonTypes,
+  EpochAccumulator,
+  Era1Types,
+  VERSION,
+  formatEntry,
+  readEntry,
+} from '../index.ts'
 import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.ts'
 
 /**
@@ -89,7 +96,7 @@ export const formatEra1 = async (
 
   // startingNumber | index | index | index ... | count
   const blockIndex = await formatEntry({
-    type: Era1Types.BlockIndex,
+    type: CommonTypes.BlockIndex,
     data: concatBytes(startingNumber, ...offsets, count),
   })
 
@@ -104,7 +111,7 @@ export function getBlockIndex(bytes: Uint8Array) {
   const recordEnd = bytes.length
   const recordStart = recordEnd - recordLength
   const { data, type } = readEntry(bytes.subarray(recordStart, recordEnd))
-  if (!equalsBytes(type, Era1Types.BlockIndex)) {
+  if (!equalsBytes(type, CommonTypes.BlockIndex)) {
     throw EthereumJSErrorWithoutCode('not a valid block index')
   }
   return { data, type, count, recordStart }
