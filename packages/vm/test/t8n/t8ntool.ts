@@ -232,7 +232,10 @@ export class TransitionTool {
             fork: this.vm.common.hardfork(),
           }
           trace.push(JSON.stringify(summary))
-          writeFileSync(`trace-${bytesToHex(event.transaction.hash())}.json`, JSON.stringify(trace))
+          writeFileSync(
+            `trace-${bytesToHex(event.transaction.hash())}.json`,
+            `[${trace.join(',\n')}]`,
+          )
         }
 
         if (args.log === true)
