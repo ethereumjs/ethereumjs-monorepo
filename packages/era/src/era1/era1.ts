@@ -1,11 +1,11 @@
-import { bigInt64ToBytes, concatBytes, equalsBytes } from '@ethereumjs/util'
+import { concatBytes, equalsBytes } from '@ethereumjs/util'
 import * as ssz from 'micro-eth-signer/ssz'
 
 import {
-  CommonTypes,
   EpochAccumulator,
   Era1Types,
   VERSION,
+  createBlockIndex,
   formatEntry,
   getBlockIndex,
   readBlockIndex,
@@ -60,7 +60,6 @@ export const formatEra1 = async (
     )
     blocks.push(entry)
   }
-  const blocksLength = blocks.reduce((acc, b) => acc + b.length, 0)
 
   const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
 
@@ -69,32 +68,10 @@ export const formatEra1 = async (
     data: epochAccumulatorRoot,
   })
 
-  const startingNumber = bigInt64ToBytes(BigInt(epoch * 8192), true)
-  const count = bigInt64ToBytes(BigInt(blocks.length), true)
-
-  const blockIndexLength = 8 * blocks.length + 24
-
-  const eraLength = version.length + blocksLength + accumulatorEntry.length + blockIndexLength
-
-  const recordStart = eraLength - blockIndexLength
-  const offsetBigInt: bigint[] = []
-  for (let i = 0; i < blocks.length; i++) {
-    if (i === 0) {
-      const offset = 8 - recordStart
-      offsetBigInt.push(BigInt(offset))
-    } else {
-      const offset = offsetBigInt[i - 1] + BigInt(blocks[i - 1].length)
-      offsetBigInt.push(offset)
-    }
-  }
-
-  const offsets: Uint8Array[] = offsetBigInt.map((o) => bigInt64ToBytes(o, true))
+  const startingNumber = BigInt(epoch * 8192)
 
   // startingNumber | index | index | index ... | count
-  const blockIndex = await formatEntry({
-    type: CommonTypes.BlockIndex,
-    data: concatBytes(startingNumber, ...offsets, count),
-  })
+  const blockIndex = await createBlockIndex(blocks, startingNumber)
 
   // version | block-tuple* | other-entries | Accumulator | BLockIndex
   const era1 = concatBytes(version, ...blocks, accumulatorEntry, blockIndex)
