@@ -6,16 +6,19 @@ const config = defineConfig({
       enabled: true,
       headless: true,
       fileParallelism: false,
-      provider: 'webdriverio',
+      provider: 'playwright',
       instances: [
         {
-          browser: 'chrome',
+          browser: 'chromium',
           headless: true,
           isolate: true,
         },
       ],
     },
-    maxConcurrency: 1
+    maxConcurrency: 1,
+    testTimeout: 30000,
+    hookTimeout: 50000,
+    fileParallelism: false,
   },
   optimizeDeps: {
     exclude: ['kzg-wasm'],
