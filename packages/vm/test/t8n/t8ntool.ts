@@ -167,6 +167,9 @@ export class TransitionTool {
     let trace: any[] = []
     // Tracing
     if (args.trace === true) {
+      this.vm.events.on('beforeTx', () => {
+        trace = []
+      })
       this.vm.evm.events?.on('step', (e) => {
         let hexStack = []
         hexStack = e.stack.map((item: bigint) => {
@@ -186,7 +189,8 @@ export class TransitionTool {
       this.vm.events.on('afterTx', async (event) => {
         const summary = {
           stateRoot: bytesToHex(await this.vm.stateManager.getStateRoot()),
-          output: bytesToHex(event.execResult.returnValue),
+          output:
+            event.execResult.returnValue.length > 0 ? bytesToHex(event.execResult.returnValue) : '',
           gasUsed: bigIntToHex(event.totalGasSpent),
           pass: event.execResult.exceptionError === undefined,
           fork: this.vm.common.hardfork(),
@@ -194,7 +198,7 @@ export class TransitionTool {
         trace.push(JSON.stringify(summary))
         writeFileSync(
           `trace-${index}-${bytesToHex(event.transaction.hash())}.json`,
-          `[${trace.join(',\n')}]`,
+          `${trace.join('\n')}`,
         )
         trace = []
       })
@@ -253,10 +257,10 @@ export class TransitionTool {
     if (args.log === true) {
       this.vm.events.on('beforeTx', (_, resolve) => {
         // eslint-disable-next-line no-console
-        if (args.log === true) console.log('Processing new transaction...')
+        console.log('Processing new transaction...')
         resolve?.()
       })
-      this.vm.events.on('afterTx', async () => {
+      this.vm.events.on('afterTx', () => {
         // eslint-disable-next-line no-console
         console.log('Done processing transaction (system operations might follow next)')
       })
