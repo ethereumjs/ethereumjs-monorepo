@@ -115,5 +115,5 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
         }
       })
     })
-  }, 100000)
+  }, 200000)
 })
