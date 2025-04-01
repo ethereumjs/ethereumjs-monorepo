@@ -48,15 +48,19 @@ export const formatE2HS = async (
 }
 
 export async function* readTuplesFromE2HS(bytes: Uint8Array) {
-  const { data, count, recordStart } = getBlockIndex(bytes)
+  const { data, count } = getBlockIndex(bytes)
   const { offsets } = readBlockIndex(data, count)
   for (let x = 0; x < count; x++) {
-    yield readE2HSTupleAtOffset(bytes, recordStart, offsets[x])
+    try {
+      yield readE2HSTupleAtOffset(bytes, offsets[x])
+    } catch {
+      // noop - we skip empty slots
+    }
   }
 }
 
 export async function readE2HSTupleAtIndex(bytes: Uint8Array, index: number) {
-  const { data, count, recordStart } = getBlockIndex(bytes)
+  const { data, count } = getBlockIndex(bytes)
   const { offsets } = readBlockIndex(data, count)
-  return readE2HSTupleAtOffset(bytes, recordStart, offsets[index])
+  return readE2HSTupleAtOffset(bytes, offsets[index])
 }
