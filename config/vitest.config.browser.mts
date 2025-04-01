@@ -6,10 +6,10 @@ const config = defineConfig({
       enabled: true,
       headless: true,
       fileParallelism: false,
-      provider: 'webdriverio',
+      provider: 'playwright',
       instances: [
         {
-          browser: 'chrome',
+          browser: 'chromium',
           headless: true,
           isolate: true,
         },
