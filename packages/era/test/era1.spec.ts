@@ -4,7 +4,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import {
-  Era1Types,
+  CommonTypes,
   getBlockIndex,
   parseBlockTuple,
   readBlockIndex,
@@ -29,7 +29,7 @@ describe('Read Era1', async () => {
   })
   const blockIndex = getBlockIndex(era1File)
   it('should have block index type', () => {
-    assert.deepEqual(blockIndex.type, Era1Types.BlockIndex)
+    assert.deepEqual(blockIndex.type, CommonTypes.BlockIndex)
   })
   it('should have correct count', () => {
     expect(blockIndex.count).toEqual(8192)

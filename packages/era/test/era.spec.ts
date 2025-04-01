@@ -1,7 +1,12 @@
 import { readFileSync } from 'fs'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { readBeaconBlock, readBeaconState, readBlocksFromEra, readSlotIndex } from '../src/era.ts'
+import {
+  readBeaconBlock,
+  readBeaconState,
+  readBlocksFromEra,
+  readSlotIndex,
+} from '../src/era/index.ts'
 import { readBinaryFile } from '../src/index.ts'
 
 // To test this, download mainnet-01339-75d1c621.era from https://mainnet.era.nimbus.team/mainnet-01339-75d1c621.era
