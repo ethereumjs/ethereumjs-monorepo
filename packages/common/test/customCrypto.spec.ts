@@ -1,4 +1,4 @@
-import { concatBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToBigInt, concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Common, Mainnet, createCustomCommon } from '../src/index.ts'
@@ -26,9 +26,9 @@ describe('[Common]: Custom Crypto', () => {
 
   const customEcSign = (_msg: Uint8Array, _pk: Uint8Array): ECDSASignature => {
     return {
-      v: 0n,
-      r: Uint8Array.from([0, 1, 2, 3]),
-      s: Uint8Array.from([0, 1, 2, 3]),
+      recovery: 0,
+      r: bytesToBigInt(Uint8Array.from([0, 1, 2, 3])),
+      s: bytesToBigInt(Uint8Array.from([0, 1, 2, 3])),
     }
   }
 
@@ -81,6 +81,6 @@ describe('[Common]: Custom Crypto', () => {
       ecsign: customEcSign,
     }
     const c = new Common({ chain: Mainnet, customCrypto })
-    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).v, 0n)
+    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).recovery, 0)
   })
 })

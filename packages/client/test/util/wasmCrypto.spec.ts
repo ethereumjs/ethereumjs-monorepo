@@ -1,10 +1,10 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
+  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
-  ecsign,
   hexToBytes,
   randomBytes,
   setLengthLeft,
@@ -18,6 +18,7 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
@@ -66,22 +67,24 @@ describe('WASM crypto tests', () => {
 
   it('should compute the same signature whether js or WASM signature used', async () => {
     const wasmSign = (msg: Uint8Array, pk: Uint8Array) => {
+      // TODO: ensure this entire method matches `client/bin/utils.ts` the definition of the WASM version
+      // without copying that entire block to here
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw new Error('message length must be 32 bytes or greater')
       }
       const buf = secp256k1Sign(msg, pk)
-      const r = buf.slice(0, 32)
-      const s = buf.slice(32, 64)
-      const v = BigInt(buf[64])
+      const r = bytesToBigInt(buf.slice(0, 32))
+      const s = bytesToBigInt(buf.slice(32, 64))
+      const recovery = buf[64]
 
-      return { r, s, v }
+      return { r, s, recovery }
     }
 
     await waitReady()
     const msg = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
     const pk = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
-    const jsSig = ecsign(msg, pk)
+    const jsSig = secp256k1.sign(msg, pk)
     const wasmSig = wasmSign(msg, pk)
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
     assert.throws(

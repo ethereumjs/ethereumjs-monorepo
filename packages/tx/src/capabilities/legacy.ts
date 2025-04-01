@@ -7,7 +7,6 @@ import {
   bigIntToUnpaddedBytes,
   bytesToHex,
   ecrecover,
-  ecsign,
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -15,6 +14,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Capability, TransactionType } from '../types.ts'
 
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
@@ -256,9 +256,10 @@ export function sign(
   }
 
   const msgHash = tx.getHashedMessageToSign()
-  const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
-  const signedTx = tx.addSignature(v, r, s, true)
+  const ecSignFunction = tx.common.customCrypto?.ecsign ?? secp256k1.sign
+  const { recovery, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
+  // TODO: addSignature `v` can likely be converted to type `number` instead `bigint`
+  const signedTx = tx.addSignature(BigInt(recovery), r, s, true)
 
   // Hack part 2
   if (hackApplied) {
