@@ -143,7 +143,7 @@ export class FullSynchronizer extends Synchronizer {
       }
       return best
     } else {
-      // Simple first-peer-availabe selection for PoS chains (can be improved)
+      // Simple first-peer-available selection for PoS chains (can be improved)
       for (const peer of peers) {
         if (peer.eth?.status !== undefined) {
           return peer
