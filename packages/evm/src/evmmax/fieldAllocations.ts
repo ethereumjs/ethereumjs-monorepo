@@ -17,7 +17,7 @@ export class FieldAllocs {
    * Each field element occupies memory equivalent to the size of the modulus
    * padded to the nearest multiple of 8 bytes.
    */
-  async AllocAndSetActive(id: number, modulus: Uint8Array, allocCount: bigint): Promise<void> {
+  async allocAndSetActive(id: number, modulus: Uint8Array, allocCount: bigint): Promise<void> {
     if (id < 0 || id > 255) {
       throw new Error('id must be between 0 and 255 inclusive')
     }
@@ -32,7 +32,7 @@ export class FieldAllocs {
    * AllocSize returns the amount of EVMMAX-allocated memory (in bytes)
    * in the current EVM call context.
    */
-  AllocSize(): bigint {
+  allocSize(): bigint {
     return this.allocedSize
   }
 
@@ -41,7 +41,7 @@ export class FieldAllocs {
    * The modulus associated with id is assumed to have already been instantiated
    * by a previous call to AllocAndSetActive.
    */
-  SetActive(id: number): void {
+  setActive(id: number): void {
     const fieldContext = this.alloced.get(id)
     if (!fieldContext) {
       throw new Error(`FieldContext with id ${id} not found`)
@@ -52,5 +52,9 @@ export class FieldAllocs {
   getActive(): FieldContext {
     if (this.active == null) throw new Error('Active not set')
     return this.active
+  }
+
+  getAlloced(): Map<number, FieldContext> {
+    return this.alloced
   }
 }
