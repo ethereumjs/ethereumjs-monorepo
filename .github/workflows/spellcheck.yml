@@ -19,4 +19,4 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - run: npm run cspell
+      - run: npm run spellcheck
