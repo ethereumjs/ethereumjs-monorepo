@@ -346,13 +346,13 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     eip: 6690,
     opcodes: {
       // control & i/o
-      0xc0: asyncAndDynamicGasOp('SETMODX'),
-      0xc1: asyncAndDynamicGasOp('LOADX'),
-      0xc2: asyncAndDynamicGasOp('STOREX'),
+      0xc0: dynamicGasOp('SETMODX'),
+      0xc1: dynamicGasOp('LOADX'),
+      0xc2: dynamicGasOp('STOREX'),
       // arithmetic
-      0xc3: asyncAndDynamicGasOp('ADDMODX'),
-      0xc4: asyncAndDynamicGasOp('SUBMODX'),
-      0xc5: asyncAndDynamicGasOp('MULMODX'),
+      0xc3: dynamicGasOp('ADDMODX'),
+      0xc4: dynamicGasOp('SUBMODX'),
+      0xc5: dynamicGasOp('MULMODX'),
     },
   },
   {
