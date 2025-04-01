@@ -127,6 +127,7 @@ export interface InterpreterStep {
     fee: number
     dynamicFee?: bigint
     isAsync: boolean
+    code: number
   }
   account: Account
   address: Address
@@ -460,6 +461,7 @@ export class Interpreter {
         fee: opcode.fee,
         dynamicFee,
         isAsync: opcode.isAsync,
+        code: opcode.code,
       },
       stack: this._runState.stack.getStack(),
       depth: this._env.depth,
@@ -506,6 +508,7 @@ export class Interpreter {
      * @property {fee}        opcode.number Base fee of the opcode
      * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
      * @property {boolean}    opcode.isAsync opcode is async
+     * @property {number}     opcode.code opcode code
      * @property {BigInt} gasLeft amount of gasLeft
      * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance

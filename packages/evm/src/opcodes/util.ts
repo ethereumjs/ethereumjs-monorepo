@@ -7,12 +7,12 @@ import {
   BIGINT_64,
   BIGINT_160,
   BIGINT_NEG1,
+  bigIntToHex,
   bytesToHex,
   createAddressFromBigInt,
   equalsBytes,
   setLengthLeft,
   setLengthRight,
-  bigIntToHex,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -286,12 +286,12 @@ export const JSONifyStepTrace = (step: InterpreterStep, memory: boolean = false)
   })
   const opTrace = {
     pc: step.pc,
-    op: step.opcode.name,
+    op: step.opcode.code,
     gas: bigIntToHex(step.gasLeft),
-    gasCost: bigIntToHex(BigInt(step.opcode.fee)),
-    memSize: step.memoryWordCount,
+    gasCost: bigIntToHex(BigInt(step.opcode.fee) + (step.opcode.dynamicFee ?? BIGINT_0)),
+    memSize: Number(step.memoryWordCount) * 32,
     stack: hexStack,
-    depth: step.depth,
+    depth: step.depth + 1, // Other clients start depth at 1
     refund: Number(step.gasRefund),
     opName: step.opcode.name,
     memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '') : undefined,
