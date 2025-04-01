@@ -18,6 +18,7 @@ const config = defineConfig({
     maxConcurrency: 1,
     testTimeout: 30000,
     hookTimeout: 50000,
+    fileParallelism: false,
   },
   optimizeDeps: {
     exclude: ['kzg-wasm'],
