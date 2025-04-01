@@ -374,6 +374,13 @@ export class Interpreter {
 
     let gas = opInfo.feeBigInt
 
+    // Cache pre-gas memory size if doing tracing (EIP-3155)
+    let memorySize = BIGINT_0
+
+    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
+      memorySize = this._runState.memoryWordCount
+    }
+
     try {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
@@ -384,7 +391,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft())
+        await this._runStepHook(gas, this.getGasLeft(), memorySize)
       }
 
       if (
@@ -441,7 +448,7 @@ export class Interpreter {
     return (<any>this._evm)._opcodeMap[op]
   }
 
-  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
     const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
     const opcode = opcodeInfo.opcodeInfo
     const eventObj: InterpreterStep = {
@@ -458,8 +465,8 @@ export class Interpreter {
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
-      memoryWordCount: this._runState.memoryWordCount,
+      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
     }
