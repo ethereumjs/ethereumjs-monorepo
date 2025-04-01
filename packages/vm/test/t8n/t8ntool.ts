@@ -111,6 +111,8 @@ export class TransitionTool {
   public txsData: TypedTxData[]
   public inputEnv: T8NEnv
 
+  // [txHash, trace]
+  private traces: [string, string[]][] = []
   public common!: Common
   public vm!: VM
 
@@ -196,11 +198,7 @@ export class TransitionTool {
           fork: this.vm.common.hardfork(),
         }
         trace.push(JSON.stringify(summary))
-        writeFileSync(
-          `trace-${index}-${bytesToHex(event.transaction.hash())}.json`,
-          `${trace.join('\n')}`,
-        )
-        trace = []
+        this.traces[index] = [bytesToHex(event.transaction.hash()), trace]
       })
 
       this.vm.events.on('afterTx', (event) => {
@@ -363,8 +361,13 @@ export class TransitionTool {
   private writeOutput(args: T8NOptions, output: T8NOutput, outputAlloc: T8NAlloc) {
     const outputResultFilePath = join(args.output.basedir, args.output.result)
     const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
-
     writeFileSync(outputResultFilePath, JSON.stringify(output))
     writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
+    if (args.trace === true) {
+      for (let i = 0; i < this.traces.length; i++) {
+        const tracePath = join(args.output.basedir, `trace-${i}-${this.traces[i][0]}.json`)
+        writeFileSync(tracePath, `${this.traces[i][1].join('\n')}`)
+      }
+    }
   }
 }
