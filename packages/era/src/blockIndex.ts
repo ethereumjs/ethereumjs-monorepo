@@ -10,7 +10,9 @@ export function getBlockIndex(bytes: Uint8Array) {
   const recordStart = recordEnd - recordLength
   const { data, type } = readEntry(bytes.subarray(recordStart, recordEnd))
   if (!equalsBytes(type, CommonTypes.BlockIndex)) {
-    throw EthereumJSErrorWithoutCode('not a valid block index')
+    throw EthereumJSErrorWithoutCode(
+      `Expected block index (type: ${CommonTypes.BlockIndex}) but got ${type}`,
+    )
   }
   return { data, type, count, recordStart }
 }
