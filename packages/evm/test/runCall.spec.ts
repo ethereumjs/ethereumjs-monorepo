@@ -18,10 +18,10 @@ import { assert, describe, it } from 'vitest'
 
 import { defaultBlock } from '../src/evm.ts'
 import { ERROR } from '../src/exceptions.ts'
-import { createEVM } from '../src/index.ts'
+import { createEVM, JSONifyStepTrace } from '../src/index.ts'
 
 import { eip4844Data } from './testdata/eip4844.ts'
-
+import { readFileSync } from 'fs'
 import type { EVMRunCallOpts } from '../src/types.ts'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
@@ -751,5 +751,29 @@ describe('RunCall tests', () => {
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame
       assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)
     }
+  })
+})
+describe('JSON traces', () => {
+  it('should produce a trace that matches EIP 3155 spec', async () => {
+    // Test case provided in the EIP-3155 spec
+    const gethTrace = readFileSync(__dirname + '/testdata/besuTrace.json', 'utf-8')
+    const evm = await createEVM({
+      common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
+    })
+    const bytecodeHex = '0x604080536040604055604060006040600060025afa6040f3'
+    const bytecode = hexToBytes(bytecodeHex)
+    const runCallArgs = {
+      data: bytecode,
+      gasLimit: BigInt(0x2540be400),
+    }
+
+    const traces: string[] = []
+    evm.events.on('step', (e) => {
+      const trace = JSONifyStepTrace(e)
+      traces.push(JSON.stringify(trace))
+    })
+    await evm.runCall(runCallArgs)
+    const traceString = traces.join('\n')
+    assert.equal(traceString, gethTrace)
   })
 })

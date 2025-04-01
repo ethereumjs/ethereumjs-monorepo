@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createBlock } from '@ethereumjs/block'
-import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
+import { EVMMockBlockchain, JSONifyStepTrace, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
@@ -173,19 +173,7 @@ export class TransitionTool {
         trace = []
       })
       this.vm.evm.events?.on('step', (e) => {
-        let hexStack = []
-        hexStack = e.stack.map((item: bigint) => {
-          return '0x' + item.toString(16)
-        })
-        const opTrace = {
-          pc: e.pc,
-          op: e.opcode.name,
-          gas: bigIntToHex(e.gasLeft),
-          gasCost: bigIntToHex(BigInt(e.opcode.fee)),
-          stack: hexStack,
-          depth: e.depth,
-          opName: e.opcode.name,
-        }
+        const opTrace = JSONifyStepTrace(e)
         trace.push(JSON.stringify(opTrace))
       })
       this.vm.events.on('afterTx', async (event) => {

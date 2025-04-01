@@ -12,6 +12,7 @@ import {
   equalsBytes,
   setLengthLeft,
   setLengthRight,
+  bigIntToHex,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -20,7 +21,7 @@ import { EvmError } from '../exceptions.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { ERROR } from '../exceptions.ts'
-import type { RunState } from '../interpreter.ts'
+import type { InterpreterStep, RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
@@ -270,4 +271,30 @@ export function updateSstoreGas(
     */
     return common.param('sstoreSetGas')
   }
+}
+
+/**
+ * Formats an individual EVM step trace as a JSON object
+ * @param step an {@link InterpreterStep} emitted by the EVM `step` event
+ * @param memory whether to include the memory in the trace
+ * @returns a JSON object that matches teh EIP-3155 trace format
+ */
+export const JSONifyStepTrace = (step: InterpreterStep, memory: boolean = false) => {
+  let hexStack = []
+  hexStack = step.stack.map((item: bigint) => {
+    return '0x' + item.toString(16)
+  })
+  const opTrace = {
+    pc: step.pc,
+    op: step.opcode.name,
+    gas: bigIntToHex(step.gasLeft),
+    gasCost: bigIntToHex(BigInt(step.opcode.fee)),
+    memSize: step.memoryWordCount,
+    stack: hexStack,
+    depth: step.depth,
+    refund: Number(step.gasRefund),
+    opName: step.opcode.name,
+    memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '') : undefined,
+  }
+  return opTrace
 }
