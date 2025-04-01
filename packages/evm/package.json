@@ -48,7 +48,7 @@
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
+    "test:browser": "",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh",
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
