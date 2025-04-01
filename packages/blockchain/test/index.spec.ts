@@ -609,8 +609,7 @@ describe('blockchain test', () => {
     const hash = await blockchain.dbManager.numberToHash(BigInt(0))
     assert.deepEqual(genesis.hash(), hash, 'should perform _numberToHash correctly')
 
-    // cast the blockchain as <any> in order to get access to the private getTotalDifficulty
-    const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), BigInt(0))
+    const td = await blockchain.getTotalDifficulty(genesis.hash(), BigInt(0))
     assert.equal(td, genesis.header.difficulty, 'should perform getTotalDifficulty correctly')
   })
 
