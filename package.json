@@ -27,7 +27,7 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.1.1"
+    "install-browser-deps": "npm install webdriverio@9.12.2 @vitest/browser@3.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -57,7 +57,7 @@
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
     "vitest": "3.1.1",
-    "webdriverio": "9.8.0"
+    "webdriverio": "9.12.2"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
