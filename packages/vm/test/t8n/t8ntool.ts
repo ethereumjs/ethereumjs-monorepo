@@ -164,43 +164,78 @@ export class TransitionTool {
 
     let index = 0
 
-    this.vm.events.on('afterTx', (event) => {
-      this.afterTx(event, index, builder)
-    })
-
-    for (const txData of this.txsData) {
-      try {
-        const tx = createTx(txData, { common: this.common })
-        if (!tx.isValid()) {
-          throw new Error(tx.getValidationErrors().join(', '))
-        }
-        // Set `allowNoBlobs` to `true`, since the test might not have the blob
-        // The 4844-tx at this should still be valid, since it has the `blobHashes` field
-        await builder.addTransaction(tx, { allowNoBlobs: true })
-      } catch (e: any) {
-        this.rejected.push({
-          index,
-          error: e.message,
+    let trace: any[] = []
+    // Tracing
+    if (args.trace === true) {
+      this.vm.evm.events?.on('step', (e) => {
+        let hexStack = []
+        hexStack = e.stack.map((item: bigint) => {
+          return '0x' + item.toString(16)
         })
+        const opTrace = {
+          pc: e.pc,
+          op: e.opcode.name,
+          gas: bigIntToHex(e.gasLeft),
+          gasCost: bigIntToHex(BigInt(e.opcode.fee)),
+          stack: hexStack,
+          depth: e.depth,
+          opName: e.opcode.name,
+        }
+        trace.push(JSON.stringify(opTrace))
+      })
+      this.vm.events.on('afterTx', async (event) => {
+        const summary = {
+          stateRoot: bytesToHex(await this.vm.stateManager.getStateRoot()),
+          output: bytesToHex(event.execResult.returnValue),
+          gasUsed: bigIntToHex(event.totalGasSpent),
+          pass: event.execResult.exceptionError === undefined,
+          fork: this.vm.common.hardfork(),
+        }
+        trace.push(JSON.stringify(summary))
+        writeFileSync(
+          `trace-${index}-${bytesToHex(event.transaction.hash())}.json`,
+          `[${trace.join(',\n')}]`,
+        )
+        trace = []
+      })
+
+      this.vm.events.on('afterTx', (event) => {
+        this.afterTx(event, index, builder)
+      })
+
+      for (const txData of this.txsData) {
+        try {
+          const tx = createTx(txData, { common: this.common })
+          if (!tx.isValid()) {
+            throw new Error(tx.getValidationErrors().join(', '))
+          }
+          // Set `allowNoBlobs` to `true`, since the test might not have the blob
+          // The 4844-tx at this should still be valid, since it has the `blobHashes` field
+          await builder.addTransaction(tx, { allowNoBlobs: true })
+        } catch (e: any) {
+          this.rejected.push({
+            index,
+            error: e.message,
+          })
+        }
+        index++
       }
-      index++
+
+      // Reward miner
+
+      if (args.state.reward !== BigInt(-1)) {
+        await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+        await this.vm.evm.journal.cleanup()
+      }
+
+      const result = await builder.build()
+
+      const convertedOutput = this.getOutput(result.block, result.requests)
+      const alloc = await this.stateTracker.dumpAlloc()
+
+      this.writeOutput(args, convertedOutput, alloc)
     }
-
-    // Reward miner
-
-    if (args.state.reward !== BigInt(-1)) {
-      await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
-      await this.vm.evm.journal.cleanup()
-    }
-
-    const result = await builder.build()
-
-    const convertedOutput = this.getOutput(result.block, result.requests)
-    const alloc = await this.stateTracker.dumpAlloc()
-
-    this.writeOutput(args, convertedOutput, alloc)
   }
-
   private async setup(args: T8NOptions) {
     this.common = getCommon(args.state.fork, kzg)
 
@@ -215,59 +250,25 @@ export class TransitionTool {
 
     this.stateTracker = new StateTracker(this.vm, this.alloc)
 
-    if (args.log === true || args.trace === true) {
-      const trace = []
+    if (args.log === true) {
       this.vm.events.on('beforeTx', (_, resolve) => {
         // eslint-disable-next-line no-console
         if (args.log === true) console.log('Processing new transaction...')
         resolve?.()
       })
-      this.vm.events.on('afterTx', async (event) => {
-        if (args.trace === true) {
-          const summary = {
-            stateRoot: bytesToHex(await this.vm.stateManager.getStateRoot()),
-            output: bytesToHex(event.execResult.returnValue),
-            gasUsed: bigIntToHex(event.totalGasSpent),
-            pass: event.execResult.exceptionError === undefined,
-            fork: this.vm.common.hardfork(),
-          }
-          trace.push(JSON.stringify(summary))
-          writeFileSync(
-            `trace-${bytesToHex(event.transaction.hash())}.json`,
-            `[${trace.join(',\n')}]`,
-          )
-        }
-
-        if (args.log === true)
-          // eslint-disable-next-line no-console
-          console.log('Done processing transaction (system operations might follow next)')
+      this.vm.events.on('afterTx', async () => {
+        // eslint-disable-next-line no-console
+        console.log('Done processing transaction (system operations might follow next)')
       })
       this.vm.evm.events?.on('step', (e) => {
-        if (args.log === true)
-          // eslint-disable-next-line no-console
-          console.log({
-            gasLeft: e.gasLeft.toString(),
-            stack: e.stack.map((a) => bigIntToHex(a)),
-            opName: e.opcode.name,
-            depth: e.depth,
-            address: e.address.toString(),
-          })
-        if (args.trace === true) {
-          let hexStack = []
-          hexStack = e.stack.map((item: bigint) => {
-            return '0x' + item.toString(16)
-          })
-          const opTrace = {
-            pc: e.pc,
-            op: e.opcode.name,
-            gas: bigIntToHex(e.gasLeft),
-            gasCost: bigIntToHex(BigInt(e.opcode.fee)),
-            stack: hexStack,
-            depth: e.depth,
-            opName: e.opcode.name,
-          }
-          trace.push(JSON.stringify(opTrace))
-        }
+        // eslint-disable-next-line no-console
+        console.log({
+          gasLeft: e.gasLeft.toString(),
+          stack: e.stack.map((a) => bigIntToHex(a)),
+          opName: e.opcode.name,
+          depth: e.depth,
+          address: e.address.toString(),
+        })
       })
     }
   }
