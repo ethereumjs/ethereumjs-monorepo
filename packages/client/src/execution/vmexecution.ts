@@ -112,7 +112,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm !== undefined) {
       this.vm = this.config.vm
-      // @ts-expect-error -- Assigning to read only property
+      // @ts-expect-error -- Assigning to read-only property
       this.vm['blockchain'] = this.chain.blockchain
     }
 
