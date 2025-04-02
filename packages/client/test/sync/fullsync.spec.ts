@@ -2,10 +2,55 @@ import { createBlock } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
+import { Common } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
 import { Event } from '../../src/types.ts'
 import { wait } from '../integration/util.ts'
+
+const powConfig = {
+  name: 'testnet',
+  chainId: 12345,
+  defaultHardfork: 'byzantium',
+  consensus: {
+    type: 'pow',
+    algorithm: 'ethash',
+  },
+  comment: 'PoW network [test]',
+  url: '[TESTNET_URL]',
+  genesis: {
+    gasLimit: 1000000,
+    difficulty: 1,
+    nonce: '0xbb00000000000000' as PrefixedHexString,
+    extraData: '0xaabbccdd' as PrefixedHexString,
+  },
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    {
+      name: 'homestead',
+      block: 1,
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 2,
+    },
+    {
+      name: 'spuriousDragon',
+      block: 3,
+    },
+    {
+      name: 'byzantium',
+      block: 4,
+    },
+  ],
+  bootstrapNodes: [],
+}
+
+const powCommon = new Common({ chain: powConfig })
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -88,8 +133,8 @@ describe('[FullSynchronizer]', async () => {
     await sync.close()
   })
 
-  it('should find best', async () => {
-    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+  it('should find best (pow)', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000, common: powCommon })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
