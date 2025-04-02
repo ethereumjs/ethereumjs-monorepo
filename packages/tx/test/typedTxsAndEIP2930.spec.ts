@@ -28,6 +28,7 @@ import {
 
 import { Goerli } from './testData/goerliCommon.ts'
 
+import type { TxData } from '../src/2930/tx.ts'
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.ts'
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
@@ -607,7 +608,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
   it('should sign transaction correctly and return expected JSON', () => {
     const address = hexToBytes('0x0000000000000000000000000000000000001337')
     const slot1 = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
-    const txData = {
+    const txData: TxData = {
       data: hexToBytes('0x'),
       gasLimit: 0x62d4,
       gasPrice: 0x3b9aca00,
@@ -615,12 +616,12 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       to: new Address(hexToBytes('0xdf0a88b2b68c673713a8ec826003676f272e3573')),
       value: 0x01,
       chainId: bytesToBigInt(hexToBytes('0x796f6c6f763378')),
-      accessList: <any>[[address, [slot1]]],
+      accessList: [[address, [slot1]]],
     }
 
     const customChainParams = {
       name: 'custom',
-      chainId: txData.chainId.toString(),
+      chainId: txData.chainId!.toString(),
       eips: [2718, 2929, 2930],
     }
     const usedCommon = createCustomCommon(customChainParams, Mainnet, {

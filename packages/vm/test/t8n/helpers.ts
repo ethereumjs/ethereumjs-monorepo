@@ -75,19 +75,19 @@ export function getArguments() {
   const args = argsParsed as any as T8NOptions
 
   args.input = {
-    alloc: (<any>args)['input.alloc'],
-    txs: (<any>args)['input.txs'],
-    env: (<any>args)['input.env'],
+    alloc: (args as any)['input.alloc'],
+    txs: (args as any)['input.txs'],
+    env: (args as any)['input.env'],
   }
   args.output = {
-    basedir: (<any>args)['output.basedir'],
-    result: (<any>args)['output.result'],
-    alloc: (<any>args)['output.alloc'],
+    basedir: (args as any)['output.basedir'],
+    result: (args as any)['output.result'],
+    alloc: (args as any)['output.alloc'],
   }
   args.state = {
-    fork: (<any>args)['state.fork'],
-    reward: BigInt((<any>args)['state.reward']),
-    chainid: BigInt((<any>args)['state.chainid']),
+    fork: (args as any)['state.fork'],
+    reward: BigInt((args as any)['state.reward']),
+    chainid: BigInt((args as any)['state.chainid']),
   }
   args.trace = (<any>args)['trace']
   return args

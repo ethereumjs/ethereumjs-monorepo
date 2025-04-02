@@ -15,6 +15,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Capability, TransactionType } from '../types.ts'
 
+import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
@@ -250,8 +251,7 @@ export function sign(
     tx.common.gteHardfork('spuriousDragon') &&
     !tx.supports(Capability.EIP155ReplayProtection)
   ) {
-    // cast as any to edit the protected `activeCapabilities`
-    ;(tx as any).activeCapabilities.push(Capability.EIP155ReplayProtection)
+    ;(tx as LegacyTx)['activeCapabilities'].push(Capability.EIP155ReplayProtection)
     hackApplied = true
   }
 
@@ -262,11 +262,9 @@ export function sign(
 
   // Hack part 2
   if (hackApplied) {
-    // cast as any to edit the protected `activeCapabilities`
-    const index = (<any>tx).activeCapabilities.indexOf(Capability.EIP155ReplayProtection)
+    const index = (tx as LegacyTx)['activeCapabilities'].indexOf(Capability.EIP155ReplayProtection)
     if (index > -1) {
-      // cast as any to edit the protected `activeCapabilities`
-      ;(<any>tx).activeCapabilities.splice(index, 1)
+      ;(tx as LegacyTx)['activeCapabilities'].splice(index, 1)
     }
   }
 

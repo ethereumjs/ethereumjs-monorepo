@@ -21,7 +21,8 @@ describe('getProvider', () => {
       'returned correct provider url string',
     )
     assert.throws(
-      () => getProvider(<any>1),
+      // @ts-expect-error -- Testing wrong input
+      () => getProvider(1),
       'Must provide valid provider URL or Web3Provider',
       undefined,
       'throws correct error',

@@ -7,9 +7,6 @@
     "biome:fix": "npx @biomejs/biome check --write",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
-    "cspell": "npm run cspell:ts && npm run cspell:md",
-    "cspell:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
-    "cspell:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
@@ -25,8 +22,12 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
     "prepare": "git config --local core.hooksPath .githooks",
+    "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.0.8"
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -55,8 +56,7 @@
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "3.0.8",
-    "webdriverio": "^9.8.0"
+    "vitest": "3.0.8"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"

@@ -40,7 +40,7 @@ export async function createMPT(opts?: MPTOpts) {
     } else {
       await opts?.db.put(
         bytesToUnprefixedHex(key),
-        <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
+        encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root),
         {
           keyEncoding: KeyEncoding.String,
           valueEncoding: encoding,
