@@ -9,6 +9,10 @@
 - [Introduction](#introduction)
 - [Packages Overview](#packages-overview)
 - [Getting Started for New Developers](#getting-started-for-new-developers)
+- [Branches](#branches)
+- [Package Dependency Relationships](#package-dependency-relationships)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Introduction
 
@@ -158,13 +162,11 @@ To reset this setting:
 npm config delete script-shell
 ```
 
-### Detailed Documentation
+### Configuration Guide
 
-For more detailed information:
+The [config](config/) folder gives an overview on shared configuration and scripts between packages.
 
-- [Developer Guide](./docs/DEVELOPER_GUIDE.md) - Comprehensive guide for contributors
-- [Linting and TypeScript Configuration](./config/README.md)
-- [E2E Testing](./config/E2E_TESTING.md)
+You can find more detailed information on the configuration of different tooling and language parts (TypeScript, linting, testing,...) in the specific [Configuration Guide](./config/README.md).
 
 ## Branches
 
@@ -180,13 +182,7 @@ Breaking releases are mostly done in sync for all libraries (latest exceptions: 
 
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
-## Coverage report
-
-Detailed version can be seen on [Codecov.io][coverage-link]
-
-[![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graphs/icicle.svg)][coverage-link]
-
-## Package Dependency Relationship
+## Package Dependency Relationships
 
 ```mermaid
  graph TD
@@ -236,10 +232,6 @@ Detailed version can be seen on [Codecov.io][coverage-link]
 ```
 
 To update the diagram above edit the README file and open a new PR with the changes.
-
-## Getting Started
-
-See our [monorepo](config/MONOREPO.md) documentation to get started on setting up the repository and installing dependencies. The [config](config/) folder gives an overview on shared configuration and scripts between packages.
 
 ## EthereumJS
 
