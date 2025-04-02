@@ -158,7 +158,8 @@ describe('[Invalid Array Input values]', () => {
         }
         const rawValues = tx.raw()
         for (let x = 0; x < rawValues.length; x++) {
-          rawValues[x] = <any>[1, 2, 3]
+          // @ts-expect-error -- Testing wrong input
+          rawValues[x] = [1, 2, 3]
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
@@ -216,11 +217,12 @@ describe('[Invalid Access Lists]', () => {
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
         for (const invalidAccessListItem of invalidAccessLists) {
-          let tx: any
+          let tx
           try {
             tx = createTx({
               type: txType,
-              accessList: <any>invalidAccessListItem,
+              // @ts-expect-error -- Testing wrong input
+              accessList: invalidAccessListItem,
             })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
@@ -236,8 +238,11 @@ describe('[Invalid Access Lists]', () => {
           const rawValues = tx!.raw()
 
           if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
+            // @ts-expect-error -- Testing wrong input
             rawValues[7] = invalidAccessListItem
+            // @ts-expect-error -- Testing wrong input
           } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
+            // @ts-expect-error -- Testing wrong input
             rawValues[8] = invalidAccessListItem
           }
 
