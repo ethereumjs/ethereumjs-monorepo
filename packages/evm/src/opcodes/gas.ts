@@ -7,7 +7,9 @@ import {
   BIGINT_32,
   BIGINT_64,
   bigIntToBytes,
+  bytesToBigInt,
   equalsBytes,
+  hexToBigInt,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -21,6 +23,8 @@ import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
+  evmmaxMemoryGasCost,
+  isPowerOfTwo,
   maxCallGas,
   setLengthLeftStorage,
   subMemUsage,
@@ -30,6 +34,11 @@ import {
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import {
+  MAX_ALLOC_SIZE,
+  SETMODX_ODD_MODULUS_COST,
+  setmodxOddModulusCost,
+} from '../evmmax/constants.js'
 import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
@@ -45,6 +54,11 @@ async function eip7702GasCost(
     return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
   }
   return BIGINT_0
+}
+
+const MAX_UINT64 = 2n ** 64n - 1n
+function isUint64(value: bigint): boolean {
+  return value >= 0n && value <= MAX_UINT64
 }
 
 /**
@@ -772,7 +786,37 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* SETMODX */
       0xc0,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        const [modId, modOffset, modSize, allocCount] = runState.stack.peek(4)
+
+        if (!isUint64(modId) || !isUint64(modSize) || !isUint64(allocCount)) {
+          trap('one or more parameters overflows 64 bits')
+        }
+        if (runState.evmmaxState.getAlloced().get(Number(modId)) !== undefined) {
+          return 0n
+        }
+        if (modSize > 96n) {
+          trap('modulus cannot exceed 768 bits in width')
+        }
+        if (!isUint64(modOffset + modSize)) {
+          trap('modulus offset + size overflows uint64')
+        }
+        if (allocCount > 256) {
+          trap('cannot allocate more than 256 field elements per modulus id')
+        }
+        const paddedModSize = (modSize + 7n) / 8n
+        const precompCost = SETMODX_ODD_MODULUS_COST[Number(paddedModSize)]
+
+        const allocSize = paddedModSize * allocCount
+        if (runState.evmmaxState.allocSize() + allocSize > MAX_ALLOC_SIZE) {
+          trap('call context evmmax allocation threshold exceeded')
+        }
+
+        const memCost = evmmaxMemoryGasCost(runState, common, allocSize, 0n, 0n) // TODO should I be setting length and offset to 0?
+        const modBytes = runState.memory.read(Number(modOffset), Number(modSize))
+        if (!isPowerOfTwo(bytesToBigInt(modBytes))) {
+          return BigInt(precompCost) + memCost
+        }
+        return memCost
       },
     ],
     [

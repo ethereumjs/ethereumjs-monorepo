@@ -10,6 +10,7 @@ import {
   bytesToHex,
   createAddressFromBigInt,
   equalsBytes,
+  hexToBigInt,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
@@ -197,31 +198,74 @@ export function maxCallGas(
   }
 }
 
-/**
- * Subtracts the amount needed for memory usage from `runState.gasLeft`
- */
-export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
+export function isPowerOfTwo(val: bigint): boolean {
+  if (val <= 0n) return false
+
+  const bin = val.toString(2)
+  const topBitIndex = bin.length - 1
+  const cleared = val - (1n << BigInt(topBitIndex))
+
+  return cleared === 0n
+}
+
+export function evmmaxMemoryGasCost(
+  runState: RunState,
+  common: Common,
+  newEVMMAXMemSize: bigint,
+  offset: bigint,
+  length: bigint,
+) {
+  if (runState.memoryWordCount === 0n && newEVMMAXMemSize === 0n) {
+    return 0n
+  }
+
   // YP (225): access with zero length will not extend the memory
   if (length === BIGINT_0) return BIGINT_0
 
   const newMemoryWordCount = divCeil(offset + length, BIGINT_32)
   if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
 
-  const words = newMemoryWordCount
-  const fee = common.param('memoryGas')
-  const quadCoefficient = common.param('quadCoefficientDivGas')
-  // words * 3 + words ^2 / 512
-  let cost = words * fee + (words * words) / quadCoefficient
+  let newMemSize = newMemoryWordCount
 
-  if (cost > runState.highestMemCost) {
-    const currentHighestMemCost = runState.highestMemCost
-    runState.highestMemCost = cost
-    cost -= currentHighestMemCost
+  if (newMemSize > hexToBigInt('0x1FFFFFFFE0')) {
+    trap('gas uint64 overflow') // TODO is there an error code for gas overflow?
+  }
+  const newMemSizePadded = newMemSize * 32n
+
+  const curEVMMAXMemSizePadded = runState.evmmaxState.getActive().getAllocatedSize() * 32
+  const newEVMMAXMemSizePadded = Number(newEVMMAXMemSize) * 32
+
+  if (
+    newMemSizePadded > BigInt(runState.memory._store.length) ||
+    newEVMMAXMemSizePadded > curEVMMAXMemSizePadded
+  ) {
+    if (newMemSize <= BigInt(runState.memory._store.length)) {
+      newMemSize = BigInt(runState.memory._store.length)
+    }
+    const newEffectiveMemSizeWords = newEVMMAXMemSize + newMemSize // toWordSize?
+    const words = newEffectiveMemSizeWords
+    const fee = common.param('memoryGas')
+    const quadCoefficient = common.param('quadCoefficientDivGas')
+    // words * 3 + words ^2 / 512
+    let cost = words * fee + (words * words) / quadCoefficient
+    if (cost > runState.highestMemCost) {
+      const currentHighestMemCost = runState.highestMemCost
+      runState.highestMemCost = cost
+      cost -= currentHighestMemCost
+    }
+    runState.memoryWordCount = newMemoryWordCount
+
+    return cost
   }
 
-  runState.memoryWordCount = newMemoryWordCount
+  return 0n
+}
 
-  return cost
+/**
+ * Subtracts the amount needed for memory usage from `runState.gasLeft`
+ */
+export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
+  return evmmaxMemoryGasCost(runState, common, runState.evmmaxState.allocSize(), offset, length)
 }
 
 /**
