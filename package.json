@@ -27,7 +27,7 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "npm install webdriverio@9.8.0 playwright@1.15.1 @vitest/browser@3.0.8"
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -47,7 +47,6 @@
     "eslint-plugin-import": "^2.31.0",
     "lint-staged": "15.5.0",
     "lockfile-lint-api": "^5.9.1",
-    "playwright": "1.15.1",
     "sort-package-json": "3.0.0",
     "tape": "5.9.0",
     "tsx": "^4.19.3",
@@ -57,8 +56,7 @@
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "3.0.8",
-    "webdriverio": "^9.8.0"
+    "vitest": "3.0.8"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
