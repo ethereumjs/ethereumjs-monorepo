@@ -4,6 +4,14 @@
 
 # EthereumJS Monorepo
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Packages Overview](#packages-overview)
+- [Getting Started for New Developers](#getting-started-for-new-developers)
+
+## Introduction
+
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
@@ -14,6 +22,30 @@ All libraries are bound together by the core [Common][common-package] library ke
 Finally, the [EthereumJS Execution Client][client-package] (EthereumJS) has been in active development for some time now. It already serves a variety of purposes like testing, research (e.g. EIPs) and developer tooling to engage with the protocol.
 
 Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution.
+
+## Packages Overview
+
+Below you can find a list of the packages included in this repository.
+
+| package                                          | npm                                                             | issues                                                                        | tests                                                                      | coverage                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [@ethereumjs/binarytree][binarytree-package]             | [![NPM Package][binarytree-npm-badge]][binarytree-npm-link]             | [![VM Issues][binarytree-issues-badge]][binarytree-issues-link]                       | [![Actions Status][binarytree-actions-badge]][binarytree-actions-link]             | [![Code Coverage][binarytree-coverage-badge]][binarytree-coverage-link]     
+| [@ethereumjs/block][block-package]               | [![NPM Package][block-npm-badge]][block-npm-link]               | [![Block Issues][block-issues-badge]][block-issues-link]                      | [![Actions Status][block-actions-badge]][block-actions-link]               | [![Code Coverage][block-coverage-badge]][block-coverage-link]               |
+| [@ethereumjs/blockchain][blockchain-package]     | [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]     | [![Blockchain Issues][blockchain-issues-badge]][blockchain-issues-link]       | [![Actions Status][blockchain-actions-badge]][blockchain-actions-link]     | [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]     |
+| [@ethereumjs/client][client-package]             | [![NPM Package][client-npm-badge]][client-npm-link]             | [![Client Issues][client-issues-badge]][client-issues-link]                   | [![Actions Status][client-actions-badge]][client-actions-link]             | [![Code Coverage][client-coverage-badge]][client-coverage-link]             |
+| [@ethereumjs/common][common-package]             | [![NPM Package][common-npm-badge]][common-npm-link]             | [![Common Issues][common-issues-badge]][common-issues-link]                   | [![Actions Status][common-actions-badge]][common-actions-link]             | [![Code Coverage][common-coverage-badge]][common-coverage-link]             |
+| [@ethereumjs/devp2p][devp2p-package]             | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]             | [![Devp2p Issues][devp2p-issues-badge]][devp2p-issues-link]                   | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]             | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link]             |
+| [@ethereumjs/ethash][ethash-package]             | [![NPM Package][ethash-npm-badge]][ethash-npm-link]             | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]                   | [![Actions Status][ethash-actions-badge]][ethash-actions-link]             | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]             |
+| [@ethereumjs/evm][evm-package]                   | [![NPM Package][evm-npm-badge]][evm-npm-link]                   | [![EVM Issues][evm-issues-badge]][evm-issues-link]                            | [![Actions Status][evm-actions-badge]][evm-actions-link]                   | [![Code Coverage][evm-coverage-badge]][evm-coverage-link]                   |
+| [@ethereumjs/genesis][genesis-package]           | [![NPM Package][genesis-npm-badge]][genesis-npm-link]           | [![Genesis Issues][genesis-issues-badge]][genesis-issues-link]                | [![Actions Status][genesis-actions-badge]][genesis-actions-link]           | [![Code Coverage][genesis-coverage-badge]][genesis-coverage-link]           |
+| [@ethereumjs/rlp][rlp-package]                   | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
+| [@ethereumjs/statemanager][statemanager-package] | [![NPM Package][statemanager-npm-badge]][statemanager-npm-link] | [![StateManager Issues][statemanager-issues-badge]][statemanager-issues-link] | [![Actions Status][statemanager-actions-badge]][statemanager-actions-link] | [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link] |
+| [@ethereumjs/mpt][mpt-package]                   | [![NPM Package][mpt-npm-badge]][mpt-npm-link]                   | [![MPT Issues][mpt-issues-badge]][mpt-issues-link]                            | [![Actions Status][mpt-actions-badge]][mpt-actions-link]                   | [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]                   |
+| [@ethereumjs/tx][tx-package]                     | [![NPM Package][tx-npm-badge]][tx-npm-link]                     | [![Tx Issues][tx-issues-badge]][tx-issues-link]                               | [![Actions Status][tx-actions-badge]][tx-actions-link]                     | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                     |
+| [@ethereumjs/util][util-package]                 | [![NPM Package][util-npm-badge]][util-npm-link]                 | [![Util Issues][util-issues-badge]][util-issues-link]                         | [![Actions Status][util-actions-badge]][util-actions-link]                 | [![Code Coverage][util-coverage-badge]][util-coverage-link]                 |
+| [@ethereumjs/verkle][verkle-package]             | [![NPM Package][verkle-npm-badge]][verkle-npm-link]             | [![VM Issues][verkle-issues-badge]][verkle-issues-link]                       | [![Actions Status][verkle-actions-badge]][verkle-actions-link]             | [![Code Coverage][verkle-coverage-badge]][verkle-coverage-link]             |
+| [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
+| [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
 
 ## Getting Started for New Developers
 
@@ -134,30 +166,6 @@ For more detailed information:
 - [Linting and TypeScript Configuration](./config/README.md)
 - [E2E Testing](./config/E2E_TESTING.md)
 
-## Packages
-
-Below you can find a list of the packages included in this repository.
-
-| package                                          | npm                                                             | issues                                                                        | tests                                                                      | coverage                                                                    |
-| ------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [@ethereumjs/binarytree][binarytree-package]             | [![NPM Package][binarytree-npm-badge]][binarytree-npm-link]             | [![VM Issues][binarytree-issues-badge]][binarytree-issues-link]                       | [![Actions Status][binarytree-actions-badge]][binarytree-actions-link]             | [![Code Coverage][binarytree-coverage-badge]][binarytree-coverage-link]     
-| [@ethereumjs/block][block-package]               | [![NPM Package][block-npm-badge]][block-npm-link]               | [![Block Issues][block-issues-badge]][block-issues-link]                      | [![Actions Status][block-actions-badge]][block-actions-link]               | [![Code Coverage][block-coverage-badge]][block-coverage-link]               |
-| [@ethereumjs/blockchain][blockchain-package]     | [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]     | [![Blockchain Issues][blockchain-issues-badge]][blockchain-issues-link]       | [![Actions Status][blockchain-actions-badge]][blockchain-actions-link]     | [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]     |
-| [@ethereumjs/client][client-package]             | [![NPM Package][client-npm-badge]][client-npm-link]             | [![Client Issues][client-issues-badge]][client-issues-link]                   | [![Actions Status][client-actions-badge]][client-actions-link]             | [![Code Coverage][client-coverage-badge]][client-coverage-link]             |
-| [@ethereumjs/common][common-package]             | [![NPM Package][common-npm-badge]][common-npm-link]             | [![Common Issues][common-issues-badge]][common-issues-link]                   | [![Actions Status][common-actions-badge]][common-actions-link]             | [![Code Coverage][common-coverage-badge]][common-coverage-link]             |
-| [@ethereumjs/devp2p][devp2p-package]             | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]             | [![Devp2p Issues][devp2p-issues-badge]][devp2p-issues-link]                   | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]             | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link]             |
-| [@ethereumjs/ethash][ethash-package]             | [![NPM Package][ethash-npm-badge]][ethash-npm-link]             | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]                   | [![Actions Status][ethash-actions-badge]][ethash-actions-link]             | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]             |
-| [@ethereumjs/evm][evm-package]                   | [![NPM Package][evm-npm-badge]][evm-npm-link]                   | [![EVM Issues][evm-issues-badge]][evm-issues-link]                            | [![Actions Status][evm-actions-badge]][evm-actions-link]                   | [![Code Coverage][evm-coverage-badge]][evm-coverage-link]                   |
-| [@ethereumjs/genesis][genesis-package]           | [![NPM Package][genesis-npm-badge]][genesis-npm-link]           | [![Genesis Issues][genesis-issues-badge]][genesis-issues-link]                | [![Actions Status][genesis-actions-badge]][genesis-actions-link]           | [![Code Coverage][genesis-coverage-badge]][genesis-coverage-link]           |
-| [@ethereumjs/rlp][rlp-package]                   | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
-| [@ethereumjs/statemanager][statemanager-package] | [![NPM Package][statemanager-npm-badge]][statemanager-npm-link] | [![StateManager Issues][statemanager-issues-badge]][statemanager-issues-link] | [![Actions Status][statemanager-actions-badge]][statemanager-actions-link] | [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link] |
-| [@ethereumjs/mpt][mpt-package]                   | [![NPM Package][mpt-npm-badge]][mpt-npm-link]                   | [![MPT Issues][mpt-issues-badge]][mpt-issues-link]                            | [![Actions Status][mpt-actions-badge]][mpt-actions-link]                   | [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]                   |
-| [@ethereumjs/tx][tx-package]                     | [![NPM Package][tx-npm-badge]][tx-npm-link]                     | [![Tx Issues][tx-issues-badge]][tx-issues-link]                               | [![Actions Status][tx-actions-badge]][tx-actions-link]                     | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                     |
-| [@ethereumjs/util][util-package]                 | [![NPM Package][util-npm-badge]][util-npm-link]                 | [![Util Issues][util-issues-badge]][util-issues-link]                         | [![Actions Status][util-actions-badge]][util-actions-link]                 | [![Code Coverage][util-coverage-badge]][util-coverage-link]                 |
-| [@ethereumjs/verkle][verkle-package]             | [![NPM Package][verkle-npm-badge]][verkle-npm-link]             | [![VM Issues][verkle-issues-badge]][verkle-issues-link]                       | [![Actions Status][verkle-actions-badge]][verkle-actions-link]             | [![Code Coverage][verkle-coverage-badge]][verkle-coverage-link]             |
-| [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
-| [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
-
 ## Branches
 
 The following are our currently active branches:
@@ -178,7 +186,7 @@ Detailed version can be seen on [Codecov.io][coverage-link]
 
 [![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graphs/icicle.svg)][coverage-link]
 
-## Package dependency relationship
+## Package Dependency Relationship
 
 ```mermaid
  graph TD
