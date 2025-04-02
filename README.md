@@ -8,9 +8,9 @@
 
 - [Introduction](#introduction)
 - [Packages Overview](#packages-overview)
-- [Getting Started for New Developers](#getting-started-for-new-developers)
+- [Getting Started](#getting-started)
 - [Branches](#branches)
-- [Package Dependency Relationships](#package-dependency-relationships)
+- [Packages Relationships](#packages-relationships)
 - [EthereumJS](#ethereumjs)
 - [License](#license)
 
@@ -51,7 +51,7 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
 | [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
 
-## Getting Started for New Developers
+## Getting Started
 
 If you're new to the EthereumJS monorepo, this section will help you get up and running quickly.
 
@@ -170,19 +170,25 @@ You can find more detailed information on the configuration of different tooling
 
 ## Branches
 
+### Overview
+
 The following are our currently active branches:
 
 | Branch                                                                                  | Release Series         | Status        |  Description                                   |
 | --------------------------------------------------------------------------------------- | ---------------------- | ------------- | ---------------------------------------------- |
-| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | Upcoming (Autumn 2024) | `Develop`     | Breaking release work                          |
+| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | Upcoming (Spring 2025) | `Develop`     | Breaking release work                          |
 | [maintenance-v8](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v8) | v7/v8                  | `Maintenance` | Maintenance for v8 releases (v7 also included) |
 | [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6                     | `Maintenance` | Maintenance for v6 releases                    |
 
-Breaking releases are mostly done in sync for all libraries (latest exceptions: VM v8, EVM v3), and release cycles are currently named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch. If there is no current working branch, please ask! 🙂
+### Breaking Releases
+
+Breaking releases are mostly done in sync for all libraries (latest exceptions: VM v8, EVM v3). Starting with the spring 2025 release series, we have aligned all package versions to have the same major version number. This makes it easier to clearly identify package versions compatible with each other as well as reason about functionality or bugs for a certain release series.
+
+Old release cycles up to the VM v7/v8 version were named after the `@ethereumjs/vm` version. In most cases PRs should be opened towards the current working branch. If there is no current working branch, please ask! 🙂
 
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
-## Package Dependency Relationships
+## Packages Relationships
 
 ```mermaid
  graph TD
