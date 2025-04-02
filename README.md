@@ -112,6 +112,10 @@ All packages include a `typescript` entry in the exports map that allows direct 
 - Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
 - Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
 
+### Browser Testing
+
+We use `vitest` with `playwright` to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+
 ### Testing Packages with an external project
 
 To test changes locally before publishing, use npm link:
