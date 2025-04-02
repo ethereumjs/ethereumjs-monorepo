@@ -6,7 +6,6 @@
 
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
-[![GitPOAP][gitpoap-badge]][gitpoap-link]
 
 This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer and is managed by the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as a [MPT][mpt-package] (Merkle Patricia Tree) and [devp2p][devp2p-package] (execution networking layer) implementation.
 
