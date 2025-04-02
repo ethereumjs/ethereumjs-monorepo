@@ -326,6 +326,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
+  /// @ts-expect-error -- Property exists on actual class but not on interface
   vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {
@@ -381,6 +382,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
+  /// @ts-expect-error -- Property exists on actual class but not on interface
   vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = async (blocks: Block[]) => {
@@ -464,6 +466,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     assert.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
   }
   // disable consensus to skip PoA block signer validation
+  /// @ts-expect-error -- Property exists on actual class but not on interface
   vm.blockchain['_validateConsensus'] = false
   ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
     assert.equal(block.transactions.length, 0, 'should not include tx')
@@ -516,6 +519,7 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
   await txPool.add(tx2ExceedsBlockGasLimit)
 
   // disable consensus to skip PoA block signer validation
+  /// @ts-expect-error -- Property exists on actual class but not on interface
   vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {

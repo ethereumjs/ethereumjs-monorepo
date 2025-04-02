@@ -55,6 +55,7 @@ describe('[FullSynchronizer]', async () => {
       execution,
     })
     sync['pool'].open = vi.fn().mockResolvedValue(null)
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['pool'].peers = []
     await sync.open()
     assert.isTrue(true, 'opened')
@@ -105,13 +106,16 @@ describe('[FullSynchronizer]', async () => {
       { eth: { status: { td: BigInt(1) } }, inbound: false },
       { eth: { status: { td: BigInt(2) } }, inbound: false },
     ]
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['height'] = vi.fn((input) => {
       if (JSON.stringify(input) === JSON.stringify(peers[0]))
         return Promise.resolve(peers[0].eth.status.td)
       if (JSON.stringify(input) === JSON.stringify(peers[1]))
         return Promise.resolve(peers[1].eth.status.td)
     })
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['chain'] = { blocks: { td: BigInt(1) } }
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['pool'] = { peers }
     sync['forceSync'] = true
     assert.equal(await sync.best(), peers[1] as any, 'found best')
@@ -155,9 +159,11 @@ describe('[FullSynchronizer]', async () => {
         throw new Error('stubbed function called more than twice')
       }
     })
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['chain'] = { blocks: { height: BigInt(3) } }
     assert.isFalse(await sync.sync(), 'local height > remote height')
     sync['chain'] = {
+      /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(0) },
     }
     setTimeout(() => {
@@ -186,6 +192,7 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['_fetcher'] = {
       enqueueByNumberList: (blockNumberList: bigint[], min: bigint) => {
         assert.equal(blockNumberList[0], BigInt(0), 'enqueueing the correct block in the Fetcher')
@@ -233,6 +240,7 @@ describe('[FullSynchronizer]', async () => {
         inbound: false,
       },
     ]
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['pool'] = { peers }
 
     const chainTip = createBlock({
@@ -258,6 +266,7 @@ describe('[FullSynchronizer]', async () => {
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
     assert.isTrue(true, 'did not send NewBlock to Peer 3')
+    /// @ts-expect-error -- Assigning simpler config for testing
     sync['chain']._blocks = {
       latest: chainTip,
     }

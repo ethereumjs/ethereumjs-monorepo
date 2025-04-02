@@ -118,6 +118,7 @@ describe(`valid verkle network setup`, async () => {
       savePreimages: true,
     },
   )
+  /// @ts-expect-error -- Simple config for testing
   chain.blockchain['validateHeader'] = () => {}
 
   const rpc = getRPCClient(server)

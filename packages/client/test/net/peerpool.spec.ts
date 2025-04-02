@@ -75,6 +75,7 @@ describe('should get idle peers', () => {
   const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
+  /// @ts-expect-error -- Create new property
   peers[1]['idle'] = true
   it('should add peers', () => {
     for (const p of peers) {

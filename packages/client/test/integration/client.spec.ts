@@ -17,6 +17,7 @@ const config = new Config({
 })
 
 // attach server to centralized event bus
+/// @ts-expect-error -- Overwriting events
 config.server?.config['events'] = config.events
 const client = await EthereumClient.create({ config })
 

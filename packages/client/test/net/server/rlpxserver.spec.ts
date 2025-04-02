@@ -210,6 +210,7 @@ describe('should return rlpx server info with ip6', async () => {
         throw new Error('err0')
     }),
   } as any
+  /// @ts-expect-error -- Simple config for testing
   server['rlpx'] = { destroy: vi.fn() }
 
   //@ts-expect-error -- Assigning to read-only property
@@ -271,6 +272,7 @@ describe('should ban peer', async () => {
       })
     }),
   } as any
+  /// @ts-expect-error -- Simple config for testing
   server['rlpx'] = { destroy: vi.fn(), disconnect: vi.fn() }
   server.ban('112233', 1234)
 })

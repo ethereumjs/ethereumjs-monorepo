@@ -185,9 +185,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
       },
     } as any,
   )
+
   service.chain['_headers'] = {
     height: 5n,
+    /// @ts-expect-error -- For testing purposes
     td: null,
+    /// @ts-expect-error -- For testing purposes
     latest: 5n,
   }
 
@@ -341,6 +344,7 @@ describe('should handle GetPooledTransactions', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
+  /// @ts-expect-error -- Assigning simpler config for testing
   service.txPool['validate'] = () => {}
 
   const tx = createTx({ type: 2 }).sign(randomBytes(32))
@@ -370,7 +374,9 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
+  /// @ts-expect-error -- Assigning simpler config for testing
   service.txPool['validate'] = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
   service.txPool['handleAnnouncedTxHashes'] = (hashes: Uint8Array[], _peer: any, _pool: any) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
@@ -381,10 +387,11 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
     { name: 'NewPooledTransactionHashes', data: [[1], [100], [txHash]] },
     'eth',
     {
+      /// @ts-expect-error -- Assigning simpler config for testing
       eth: {
         versions: [67, 68],
       },
-    } as any,
+    },
   )
 })
 
@@ -393,11 +400,13 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
+  /// @ts-expect-error -- Assigning simpler config for testing
   service.txPool['validate'] = () => {}
   service.txPool.sendNewTxHashes(
     [[1], [100], [txHash]],
     [
       {
+        /// @ts-expect-error -- Assigning simpler config for testing
         eth: {
           versions: [67, 68],
           request: (data: any): any => {
@@ -406,7 +415,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
             })
           },
         },
-      } as any,
+      },
     ],
   )
 })

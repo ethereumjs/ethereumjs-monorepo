@@ -160,8 +160,11 @@ describe(method, () => {
       common,
       freeze: false,
     })
+    /// @ts-expect-error -- Assign to-readonly property
     tx['v'] = undefined
+    /// @ts-expect-error -- Assign to-readonly property
     tx['r'] = undefined
+    /// @ts-expect-error -- Assign to-readonly property
     tx['s'] = undefined
     const txHex = bytesToHex(tx.serialize())
     const res = await rpc.request(method, [txHex])
