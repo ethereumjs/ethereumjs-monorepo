@@ -353,7 +353,7 @@ export class TransitionTool {
     writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
     if (args.trace === true) {
       for (let i = 0; i < this.traces.length; i++) {
-        const tracePath = join(args.output.basedir, `trace-${i}-${this.traces[i][0]}.json`)
+        const tracePath = join(args.output.basedir, `trace-${i}-${this.traces[i][0]}.jsonl`)
         writeFileSync(tracePath, `${this.traces[i][1].join('\n')}`)
       }
     }
