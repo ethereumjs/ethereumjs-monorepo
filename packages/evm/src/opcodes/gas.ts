@@ -9,7 +9,6 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   equalsBytes,
-  hexToBigInt,
   setLengthLeft,
 } from '@ethereumjs/util'
 
@@ -34,11 +33,7 @@ import {
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import {
-  MAX_ALLOC_SIZE,
-  SETMODX_ODD_MODULUS_COST,
-  setmodxOddModulusCost,
-} from '../evmmax/constants.js'
+import { MAX_ALLOC_SIZE, SETMODX_ODD_MODULUS_COST } from '../evmmax/constants.js'
 import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)

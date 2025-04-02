@@ -996,7 +996,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, _common) {
       const [id, modOffset, modSize, allocCount] = runState.stack.popN(4)
       const modulus = runState.memory.read(Number(modOffset), Number(modSize))
-      runState.evmmaxState.AllocAndSetActive(Number(id), modulus, allocCount)
+      runState.evmmaxState.allocAndSetActive(Number(id), modulus, allocCount)
     },
   ],
   // 0xc1: STOREX
