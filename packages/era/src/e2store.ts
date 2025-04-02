@@ -9,7 +9,7 @@ import {
 import { uint256 } from 'micro-eth-signer/ssz'
 
 import { compressData, decompressData } from './snappy.ts'
-import { Era1Types, EraTypes } from './types.ts'
+import { CommonTypes, Era1Types, EraTypes } from './types.ts'
 
 import type { e2StoreEntry } from './types.ts'
 
@@ -29,7 +29,7 @@ export async function parseEntry(entry: e2StoreEntry) {
     case bytesToHex(Era1Types.CompressedReceipts):
       data = RLP.decode(decompressed)
       break
-    case bytesToHex(Era1Types.Version):
+    case bytesToHex(CommonTypes.Version):
     case bytesToHex(Era1Types.AccumulatorRoot):
     case bytesToHex(EraTypes.CompressedBeaconState):
     case bytesToHex(EraTypes.CompressedSignedBeaconBlockType):
@@ -84,9 +84,9 @@ export const formatEntry = async ({
     ? data
     : equalsBytes(type, Era1Types.AccumulatorRoot)
       ? data
-      : equalsBytes(type, Era1Types.Version)
+      : equalsBytes(type, CommonTypes.Version)
         ? data
-        : equalsBytes(type, Era1Types.BlockIndex)
+        : equalsBytes(type, CommonTypes.BlockIndex)
           ? data
           : await compressData(data)
   const length = compressed.length
