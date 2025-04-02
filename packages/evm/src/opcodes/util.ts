@@ -288,7 +288,7 @@ export const JSONifyStepTrace = (step: InterpreterStep, memory: boolean = false)
     pc: step.pc,
     op: step.opcode.code,
     gas: bigIntToHex(step.gasLeft),
-    gasCost: bigIntToHex(BigInt(step.opcode.fee) + (step.opcode.dynamicFee ?? BIGINT_0)),
+    gasCost: bigIntToHex(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
     memSize: Number(step.memoryWordCount) * 32,
     stack: hexStack,
     depth: step.depth + 1, // Other clients start depth at 1
