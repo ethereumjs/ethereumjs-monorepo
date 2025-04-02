@@ -149,7 +149,7 @@ describe('[FeeMarket1559Tx]', () => {
     const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s, true)
+    const addSignatureTx = tx.addSignature(v, r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -163,7 +163,7 @@ describe('[FeeMarket1559Tx]', () => {
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v, r, s, false)
+      tx.addSignature(v + BigInt(27), r, s)
     })
   })
 

@@ -79,6 +79,11 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    mpt --> blockchain
    mpt --> block
    mpt --> statemanager
+   verkle --> vm
+   verkle --> evm
+   verkle --> statemanager
+   binarytree --> vm
+   binarytree --> statemanager
    util --> common
    common --> block
    common --> statemanager
