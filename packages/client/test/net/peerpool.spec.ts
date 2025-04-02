@@ -39,9 +39,9 @@ describe('should connect/disconnect peer', () => {
   const peer = new EventEmitter() as any
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  ;(peer as any).id = 'abc'
-  ;(peer as any).handleMessageQueue = vi.fn()
-  ;(pool as any).connected(peer)
+  peer['id'] = 'abc'
+  peer['handleMessageQueue'] = vi.fn()
+  pool['connected'](peer)
   pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
     it('should get message', () => {
       assert.isTrue(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
@@ -49,7 +49,7 @@ describe('should connect/disconnect peer', () => {
   })
   config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
   pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
-  ;(pool as any).disconnected(peer)
+  pool['disconnected'](peer)
   assert.isUndefined(pool['pool'].get('abc'), 'peer removed')
 })
 
@@ -75,7 +75,7 @@ describe('should get idle peers', () => {
   const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  ;(peers[1] as any).idle = true
+  peers[1]['idle'] = true
   it('should add peers', () => {
     for (const p of peers) {
       pool.add(p as any)

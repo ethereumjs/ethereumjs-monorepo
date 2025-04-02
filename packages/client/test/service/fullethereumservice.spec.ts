@@ -185,7 +185,7 @@ describe('should correctly handle GetBlockHeaders', async () => {
       },
     } as any,
   )
-  ;(service.chain as any)._headers = {
+  service.chain['_headers'] = {
     height: 5n,
     td: null,
     latest: 5n,
@@ -341,7 +341,7 @@ describe('should handle GetPooledTransactions', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  service.txPool['validate'] = () => {}
 
   const tx = createTx({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
@@ -370,12 +370,8 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
-  ;(service.txPool as any).handleAnnouncedTxHashes = (
-    hashes: Uint8Array[],
-    _peer: any,
-    _pool: any,
-  ) => {
+  service.txPool['validate'] = () => {}
+  service.txPool['handleAnnouncedTxHashes'] = (hashes: Uint8Array[], _peer: any, _pool: any) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
     })
@@ -397,7 +393,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  service.txPool['validate'] = () => {}
   service.txPool.sendNewTxHashes(
     [[1], [100], [txHash]],
     [

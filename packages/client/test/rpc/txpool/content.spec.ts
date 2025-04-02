@@ -71,7 +71,7 @@ describe(method, () => {
     vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
     await runBlock(vm, { block: londonBlock, generate: true, skipBlockValidation: true })
     await vm.blockchain.putBlock(ranBlock!)
-    ;(service.txPool as any).validate = () => {}
+    service.txPool['validate'] = () => {}
     await service.txPool.add(createTx({ type: 2 }, {}).sign(randomBytes(32)))
 
     const res = await rpc.request(method, [])

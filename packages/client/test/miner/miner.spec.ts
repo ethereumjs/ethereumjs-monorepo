@@ -326,7 +326,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should be properly ordered by gasPrice and nonce', () => {
@@ -381,7 +381,7 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = async (blocks: Block[]) => {
     it('should be properly ordered by gasPrice and nonce', async () => {
@@ -464,7 +464,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
     assert.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
   }
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  vm.blockchain['_validateConsensus'] = false
   ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
     assert.equal(block.transactions.length, 0, 'should not include tx')
     miner.stop()
@@ -516,7 +516,7 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
   await txPool.add(tx2ExceedsBlockGasLimit)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx', () => {
@@ -553,7 +553,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
 
   // stub chainUpdated so assemble isn't called again
   // when emitting Event.CHAIN_UPDATED in this test
-  ;(miner as any).chainUpdated = async () => {}
+  miner['chainUpdated'] = async () => {}
 
   const { txPool } = service
   const { vm } = service.execution
@@ -615,7 +615,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   const { vm } = service.execution
   ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
   vm.blockchain.validateHeader = vi.fn() // stub
-  ;(miner as any).chainUpdated = async () => {} // stub
+  miner['chainUpdated'] = async () => {} // stub
   miner.start()
   await wait(100)
 
@@ -707,8 +707,8 @@ describe.skip('should handle mining ethash PoW', async () => {
     chain: 'devnet',
     hardfork: Hardfork.London,
   })
-  ;(common as any)._chainParams['genesis'].difficulty = 1
-  ;(common as any)._chainParams['genesis'].difficulty = 1
+  common['_chainParams']['genesis'].difficulty = 1
+  common['_chainParams']['genesis'].difficulty = 1
   const config = new Config({
     accountCache: 10000,
     storageCache: 1000,
@@ -723,8 +723,8 @@ describe.skip('should handle mining ethash PoW', async () => {
     chain,
   })
   const miner = new Miner({ config, service, skipHardForkValidation: true })
-  ;(chain.blockchain as any)._validateConsensus = false
-  ;(miner as any).chainUpdated = async () => {} // stub
+  chain.blockchain['_validateConsensus'] = false
+  miner['chainUpdated'] = async () => {} // stub
   miner.start()
   await wait(1000)
   config.events.on(Event.CHAIN_UPDATED, async () => {

@@ -19,7 +19,7 @@ import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefet
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
-;(BigInt.prototype as any).toJSON = function () {
+BigInt.prototype['toJSON'] = function () {
   return this.toString()
 }
 

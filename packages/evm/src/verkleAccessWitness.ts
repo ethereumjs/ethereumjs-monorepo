@@ -35,6 +35,7 @@ import type {
   PrefixedHexString,
   VerkleCrypto,
   VerkleExecutionWitness,
+  VerkleProof,
 } from '@ethereumjs/util'
 import type { VerkleTree } from '@ethereumjs/verkle'
 
@@ -408,7 +409,17 @@ export const generateExecutionWitness = async (
   const ew: VerkleExecutionWitness = {
     stateDiff: [],
     parentStateRoot: bytesToHex(parentStateRoot),
-    verkleProof: undefined as any, // Verkle proofs are not implemented (and never will be)
+    verkleProof: {
+      commitmentsByPath: [],
+      d: '0x',
+      depthExtensionPresent: '0x',
+      ipaProof: {
+        cl: [],
+        cr: [],
+        finalEvaluation: '0x',
+      },
+      otherStems: [],
+    },
   }
 
   // Generate a map of all stems with their accessed suffixes

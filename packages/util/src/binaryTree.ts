@@ -71,7 +71,7 @@ export interface BinaryTreeExecutionWitness {
    * The proof for the block.
    * Proves that the provided stateDiff belongs to the canonical binary tree.
    */
-  proof: any
+  proof: BinaryTreeProof
 }
 
 export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]

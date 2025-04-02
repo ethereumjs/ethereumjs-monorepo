@@ -54,8 +54,8 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
-    ;(sync as any).pool.peers = []
+    sync['pool'].open = vi.fn().mockResolvedValue(null)
+    sync['pool'].peers = []
     await sync.open()
     assert.isTrue(true, 'opened')
     await sync.close()
@@ -100,20 +100,20 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any).running = true
+    sync['running'] = true
     const peers = [
       { eth: { status: { td: BigInt(1) } }, inbound: false },
       { eth: { status: { td: BigInt(2) } }, inbound: false },
     ]
-    ;(sync as any).height = vi.fn((input) => {
+    sync['height'] = vi.fn((input) => {
       if (JSON.stringify(input) === JSON.stringify(peers[0]))
         return Promise.resolve(peers[0].eth.status.td)
       if (JSON.stringify(input) === JSON.stringify(peers[1]))
         return Promise.resolve(peers[1].eth.status.td)
     })
-    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
-    ;(sync as any).pool = { peers }
-    ;(sync as any).forceSync = true
+    sync['chain'] = { blocks: { td: BigInt(1) } }
+    sync['pool'] = { peers }
+    sync['forceSync'] = true
     assert.equal(await sync.best(), peers[1] as any, 'found best')
     await sync.stop()
     await sync.close()
@@ -155,9 +155,9 @@ describe('[FullSynchronizer]', async () => {
         throw new Error('stubbed function called more than twice')
       }
     })
-    ;(sync as any).chain = { blocks: { height: BigInt(3) } }
+    sync['chain'] = { blocks: { height: BigInt(3) } }
     assert.isFalse(await sync.sync(), 'local height > remote height')
-    ;(sync as any).chain = {
+    sync['chain'] = {
       blocks: { height: BigInt(0) },
     }
     setTimeout(() => {
@@ -186,7 +186,7 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any)._fetcher = {
+    sync['_fetcher'] = {
       enqueueByNumberList: (blockNumberList: bigint[], min: bigint) => {
         assert.equal(blockNumberList[0], BigInt(0), 'enqueueing the correct block in the Fetcher')
         assert.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
@@ -233,7 +233,7 @@ describe('[FullSynchronizer]', async () => {
         inbound: false,
       },
     ]
-    ;(sync as any).pool = { peers }
+    sync['pool'] = { peers }
 
     const chainTip = createBlock({
       header: {},
@@ -258,10 +258,10 @@ describe('[FullSynchronizer]', async () => {
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
     assert.isTrue(true, 'did not send NewBlock to Peer 3')
-    ;(sync as any).chain._blocks = {
+    sync['chain']._blocks = {
       latest: chainTip,
     }
-    ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
+    sync['newBlocksKnownByPeer'].delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
   })
 

@@ -160,9 +160,9 @@ describe(method, () => {
       common,
       freeze: false,
     })
-    ;(tx as any).v = undefined
-    ;(tx as any).r = undefined
-    ;(tx as any).s = undefined
+    tx['v'] = undefined
+    tx['r'] = undefined
+    tx['s'] = undefined
     const txHex = bytesToHex(tx.serialize())
     const res = await rpc.request(method, [txHex])
 

@@ -165,7 +165,8 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
-    ;(block.header as any).transactionsTrie = new Uint8Array(32)
+    // @ts-expect-error -- Assigning a read-only property
+    block.header.transactionsTrie = new Uint8Array(32)
     try {
       await block.validateData()
       assert.fail('should throw')
@@ -205,7 +206,8 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
-    ;(block.transactions[0] as any).gasPrice = BigInt(0)
+    // @ts-expect-error -- Assigning to read-only property
+    block.transactions[0]['gasPrice'] = BigInt(0)
     const result = block.getTransactionsValidationErrors()
     assert.isTrue(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
@@ -218,7 +220,8 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondon2Data.blocks[2].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
-    ;(block.header as any).uncleHash = new Uint8Array(32)
+    // @ts-expect-error -- Assigning to read-only property
+    block.header['uncleHash'] = new Uint8Array(32)
     try {
       await block.validateData()
       assert.fail('should throw')

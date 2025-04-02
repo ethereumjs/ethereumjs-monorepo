@@ -17,7 +17,7 @@ const config = new Config({
 })
 
 // attach server to centralized event bus
-;(config.server?.config as any).events = config.events
+config.server?.config['events'] = config.events
 const client = await EthereumClient.create({ config })
 
 describe('client should start/stop/error', async () => {

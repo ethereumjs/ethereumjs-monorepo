@@ -118,7 +118,7 @@ describe(`valid verkle network setup`, async () => {
       savePreimages: true,
     },
   )
-  ;(chain.blockchain as any).validateHeader = () => {}
+  chain.blockchain['validateHeader'] = () => {}
 
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {

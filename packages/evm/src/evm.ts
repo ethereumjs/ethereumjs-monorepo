@@ -1203,7 +1203,8 @@ export class EVM implements EVMInterface {
       common,
       stateManager: this.stateManager.shallowCopy(),
     }
-    ;(opts.stateManager as any).common = common
+    // @ts-expect-error -- Assignin a StateManager property that is absent from the interface
+    opts.stateManager['common'] = common
     return new EVM(opts)
   }
 
