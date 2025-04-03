@@ -289,12 +289,12 @@ export const JSONifyStepTrace = (step: InterpreterStep, memory: boolean = false)
     op: step.opcode.code,
     gas: bigIntToHex(step.gasLeft),
     gasCost: bigIntToHex(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
+    memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '0x') : undefined,
     memSize: Number(step.memoryWordCount) * 32,
     stack: hexStack,
     depth: step.depth + 1, // Other clients start depth at 1
     refund: Number(step.gasRefund),
     opName: step.opcode.name,
-    memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '') : undefined,
   }
   return opTrace
 }

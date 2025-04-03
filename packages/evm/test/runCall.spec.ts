@@ -2,7 +2,9 @@ import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereu
 import {
   Account,
   Address,
+  BIGINT_0,
   MAX_UINT64,
+  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
@@ -18,11 +20,12 @@ import { assert, describe, it } from 'vitest'
 
 import { defaultBlock } from '../src/evm.ts'
 import { ERROR } from '../src/exceptions.ts'
-import { createEVM, JSONifyStepTrace } from '../src/index.ts'
+import { JSONifyStepTrace, createEVM } from '../src/index.ts'
 
-import { eip4844Data } from './testdata/eip4844.ts'
 import { readFileSync } from 'fs'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { EVMRunCallOpts } from '../src/types.ts'
+import { eip4844Data } from './testdata/eip4844.ts'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
@@ -754,11 +757,16 @@ describe('RunCall tests', () => {
   })
 })
 describe('JSON traces', () => {
-  it('should produce a trace that matches EIP 3155 spec', async () => {
-    // Test case provided in the EIP-3155 spec
-    const gethTrace = readFileSync(__dirname + '/testdata/besuTrace.json', 'utf-8')
+  it.skip('should produce a trace that matches EIP 3155 spec', async () => {
+    // Test case provided in the EIP-3155 spec -- doesn't actually match spec with regard to representation of memory
+    const gethTrace = readFileSync(__dirname + '/testdata/besuTrace.jsonl', 'utf-8')
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const stateManager = new MerkleStateManager({
+      common,
+    })
     const evm = await createEVM({
-      common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
+      stateManager,
+      common,
     })
     const bytecodeHex = '0x604080536040604055604060006040600060025afa6040f3'
     const bytecode = hexToBytes(bytecodeHex)
@@ -769,8 +777,20 @@ describe('JSON traces', () => {
 
     const traces: string[] = []
     evm.events.on('step', (e) => {
-      const trace = JSONifyStepTrace(e)
+      const trace = JSONifyStepTrace(e, true)
       traces.push(JSON.stringify(trace))
+    })
+    evm.events.on('afterMessage', async (e) => {
+      const summary = {
+        stateRoot: bytesToHex(await evm.stateManager.getStateRoot()),
+        output: e.execResult.returnValue.length > 0 ? bytesToHex(e.execResult.returnValue) : '',
+        gasUsed: bigIntToHex(
+          e.execResult.executionGasUsed + (e.execResult.blobGasUsed ?? BIGINT_0), // TODO: figure out how to get total gas used
+        ),
+        pass: e.execResult.exceptionError === undefined,
+        fork: evm.common.hardfork(),
+      }
+      traces.push(JSON.stringify(summary))
     })
     await evm.runCall(runCallArgs)
     const traceString = traces.join('\n')
