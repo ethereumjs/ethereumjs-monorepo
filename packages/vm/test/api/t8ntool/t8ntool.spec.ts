@@ -24,6 +24,7 @@ const args: T8NOptions = {
     alloc: `output/allocTEST.json`,
   },
   log: false,
+  trace: false,
 }
 
 // This test is generated using `execution-spec-tests` commit 88cab2521322191b2ec7ef7d548740c0b0a264fc, running:
