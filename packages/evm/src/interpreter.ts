@@ -284,7 +284,7 @@ export class Interpreter {
     while (true) {
       const programCounter = this._runState.programCounter
       let opCode: number
-      let opCodeObj: OpcodeMapEntry
+      let opCodeObj: OpcodeMapEntry | undefined
       if (doJumpAnalysis) {
         opCode = this._runState.code[programCounter] ?? 0 // Yellow Paper calls for explicitly executing STOP if no opcode found at PC (i.e. PC is beyond end of code)
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
@@ -299,7 +299,11 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        opCodeObj = cachedOpcodes![programCounter] ?? 0
+        opCodeObj = cachedOpcodes![programCounter]
+        if (opCodeObj === undefined) {
+          // If programCounter is out of bounds, set opCodeObj to STOP as above
+          opCodeObj = this.lookupOpInfo(0)
+        }
         opCode = opCodeObj.opcodeInfo.code
       }
 
@@ -320,13 +324,13 @@ export class Interpreter {
         }
       }
 
-      this._runState.opCode = opCode!
+      this._runState.opCode = opCode
 
       try {
         if (overheadTimer !== undefined) {
           this.performanceLogger.pauseTimer()
         }
-        await this.runStep(opCodeObj!)
+        await this.runStep(opCodeObj)
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
