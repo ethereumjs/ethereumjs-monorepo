@@ -24,6 +24,7 @@ import {
   divCeil,
   evmmaxMemoryGasCost,
   isPowerOfTwo,
+  makeEVMMAXArithGasFunc,
   maxCallGas,
   setLengthLeftStorage,
   subMemUsage,
@@ -33,7 +34,13 @@ import {
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import { MAX_ALLOC_SIZE, SETMODX_ODD_MODULUS_COST } from '../evmmax/constants.js'
+import {
+  ADD_OR_SUB_COST,
+  MAX_ALLOC_SIZE,
+  MULMODX_COST,
+  SETMODX_ODD_MODULUS_COST,
+} from '../evmmax/index.ts'
+import { add64, mul64 } from '../evmmax/util.ts'
 import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
@@ -787,7 +794,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap('one or more parameters overflows 64 bits')
         }
         if (runState.evmmaxState.getAlloced().get(Number(modId)) !== undefined) {
-          return 0n
+          return gas
         }
         if (modSize > 96n) {
           trap('modulus cannot exceed 768 bits in width')
@@ -809,44 +816,104 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const memCost = evmmaxMemoryGasCost(runState, common, allocSize, 0n, 0n) // TODO should I be setting length and offset to 0?
         const modBytes = runState.memory.read(Number(modOffset), Number(modSize))
         if (!isPowerOfTwo(bytesToBigInt(modBytes))) {
-          return BigInt(precompCost) + memCost
+          return (gas += BigInt(precompCost) + memCost)
         }
-        return memCost
+        return gas + memCost
       },
     ],
     [
       /* LOADX */
       0xc1,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        const [dst, src, count] = runState.stack.peek(3)
+
+        if (!isUint64(src) || src >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('src index out of bounds')
+        }
+        if (!isUint64(count) || count >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('count must be less than number of field elements in the active space')
+        }
+        const [last1, overflow1] = add64(src, count, 0n)
+        if (overflow1 !== 0n || last1 > runState.evmmaxState.getActive().getNumElems()) {
+          trap('out of bounds copy source')
+        }
+        if (!isUint64(dst)) {
+          trap('destination of copy out of bounds')
+        }
+
+        const [loadSize, overflow2] = mul64(
+          count,
+          BigInt(runState.evmmaxState.getActive().getElemSize()),
+        )
+        if (overflow2 !== 0n) {
+          trap('overflow')
+        }
+        const [last2, overflow3] = add64(dst, loadSize, 0n)
+        if (overflow3 !== 0n || last2 > runState.memoryWordCount) {
+          trap('out of bounds destination')
+        }
+
+        if (runState.evmmaxState.getActive().isModulusBinary) {
+          return gas + loadSize * common.param('copyGas') // TODO check if this translates from go: toWordSize(storeSize) * params.copyGas
+        } else {
+          return (
+            gas +
+            count *
+              BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
+          )
+        }
       },
     ],
     [
       /* STOREX */
       0xc2,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        const [dst, src, count] = runState.stack.peek(3)
+
+        if (!isUint64(src) || src >= runState.memoryWordCount) {
+          trap('src index out of bounds')
+        }
+        if (!isUint64(dst) || dst >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('destination of copy out of bounds')
+        }
+        if (!isUint64(count) || count >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('count must be less than number of field elements in the active space')
+        }
+        const storeSize = count * runState.evmmaxState.getActive().getNumElems()
+        if (src + storeSize > runState.memoryWordCount) {
+          trap('source of copy out of bounds of EVM memory')
+        }
+
+        if (runState.evmmaxState.getActive().isModulusBinary) {
+          return gas + storeSize * common.param('copyGas') // TODO check if this translates from go: toWordSize(storeSize) * params.copyGas
+        } else {
+          return (
+            gas +
+            count *
+              BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
+          )
+        }
       },
     ],
     [
       /* ADDMODX */
       0xc3,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        return makeEVMMAXArithGasFunc(ADD_OR_SUB_COST)(runState, gas, common)
       },
     ],
     [
       /* SUBMODX */
       0xc4,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        return makeEVMMAXArithGasFunc(ADD_OR_SUB_COST)(runState, gas, common)
       },
     ],
     [
       /* MULMODX */
       0xc5,
       async function (runState, gas, common): Promise<bigint> {
-        return 0n
+        return makeEVMMAXArithGasFunc(MULMODX_COST)(runState, gas, common)
       },
     ],
     /* EXTCALL */

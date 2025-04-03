@@ -20,6 +20,7 @@ import { EvmError } from '../exceptions.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import { extractEVMMAXImmediateInputs } from '../evmmax/util.ts'
 import type { ERROR } from '../exceptions.ts'
 import type { RunState } from '../interpreter.ts'
 
@@ -206,6 +207,26 @@ export function isPowerOfTwo(val: bigint): boolean {
   const cleared = val - (1n << BigInt(topBitIndex))
 
   return cleared === 0n
+}
+
+export function makeEVMMAXArithGasFunc(opCosts: number[]): Function {
+  return function (runState, gas, common) {
+    const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+      runState.programCounter,
+      runState.code,
+    )
+    const values = [x + xStride * count, y + yStride * count, out + outStride * count]
+    const maxOffset = values.reduce((max, current) => (current > max ? current : max), 0)
+    if (
+      count === 0 ||
+      outStride === 0 ||
+      maxOffset > runState.evmmaxState.getActive().getNumElems()
+    ) {
+      trap('bad parameters')
+    }
+
+    return gas + count * opCosts[runState.evmmax.getActive().modulus.length - 1]
+  }
 }
 
 export function evmmaxMemoryGasCost(

@@ -50,7 +50,7 @@ export class FieldAllocs {
   }
 
   getActive(): FieldContext {
-    if (this.active == null) throw new Error('Active not set')
+    if (this.active == null) throw new Error('No active mod set')
     return this.active
   }
 

@@ -121,6 +121,10 @@ export class FieldContext {
     return Number(this.elemSize)
   }
 
+  getNumElems(): bigint {
+    return this.scratchSpaceElemCount
+  }
+
   store(dst: number, count: number, from: Uint8Array) {
     const elemSize = this.modulus.length
 
