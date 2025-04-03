@@ -10,16 +10,15 @@
 | ------------------------------------------------------------ |
 
 
-
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply install the project using `npm`:
 
 ```shell
 npm install @ethereumjs/block
 ```
 
-**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
 ## Usage
 
