@@ -23,7 +23,7 @@ const powConfig = {
     gasLimit: 1000000,
     difficulty: 1,
     nonce: '0xbb00000000000000' as PrefixedHexString,
-    extraData: '0xaabbccdd' as PrefixedHexString,
+    extraData: ('0x' + '00'.repeat(97)) as PrefixedHexString,
   },
   hardforks: [
     {
@@ -51,6 +51,16 @@ const powConfig = {
 }
 
 const powCommon = new Common({ chain: powConfig })
+const cliqueConfig = JSON.parse(JSON.stringify(powConfig))
+cliqueConfig.consensus = {
+  type: 'poa',
+  algorithm: 'clique',
+  clique: {
+    period: 15,
+    epoch: 30000,
+  },
+}
+const cliqueCommon = new Common({ chain: cliqueConfig })
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -133,36 +143,38 @@ describe('[FullSynchronizer]', async () => {
     await sync.close()
   })
 
-  it('should find best (pow)', async () => {
-    const config = new Config({ accountCache: 10000, storageCache: 1000, common: powCommon })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const sync = new FullSynchronizer({
-      config,
-      interval: 1,
-      pool,
-      chain,
-      txPool,
-      execution,
+  for (const common of [powCommon, cliqueCommon]) {
+    it(`should find best (${common.consensusAlgorithm()})`, async () => {
+      const config = new Config({ accountCache: 10000, storageCache: 1000, common })
+      const pool = new PeerPool() as any
+      const chain = await Chain.create({ config })
+      const sync = new FullSynchronizer({
+        config,
+        interval: 1,
+        pool,
+        chain,
+        txPool,
+        execution,
+      })
+      ;(sync as any).running = true
+      const peers = [
+        { eth: { status: { td: BigInt(1) } }, inbound: false },
+        { eth: { status: { td: BigInt(2) } }, inbound: false },
+      ]
+      ;(sync as any).height = vi.fn((input) => {
+        if (JSON.stringify(input) === JSON.stringify(peers[0]))
+          return Promise.resolve(peers[0].eth.status.td)
+        if (JSON.stringify(input) === JSON.stringify(peers[1]))
+          return Promise.resolve(peers[1].eth.status.td)
+      })
+      ;(sync as any).chain = { blocks: { td: BigInt(1) } }
+      ;(sync as any).pool = { peers }
+      ;(sync as any).forceSync = true
+      assert.equal(await sync.best(), peers[1] as any, 'found best')
+      await sync.stop()
+      await sync.close()
     })
-    ;(sync as any).running = true
-    const peers = [
-      { eth: { status: { td: BigInt(1) } }, inbound: false },
-      { eth: { status: { td: BigInt(2) } }, inbound: false },
-    ]
-    ;(sync as any).height = vi.fn((input) => {
-      if (JSON.stringify(input) === JSON.stringify(peers[0]))
-        return Promise.resolve(peers[0].eth.status.td)
-      if (JSON.stringify(input) === JSON.stringify(peers[1]))
-        return Promise.resolve(peers[1].eth.status.td)
-    })
-    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
-    ;(sync as any).pool = { peers }
-    ;(sync as any).forceSync = true
-    assert.equal(await sync.best(), peers[1] as any, 'found best')
-    await sync.stop()
-    await sync.close()
-  })
+  }
 
   it('should sync', async () => {
     const config = new Config({

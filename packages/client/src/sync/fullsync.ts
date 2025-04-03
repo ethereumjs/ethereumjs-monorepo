@@ -124,11 +124,13 @@ export class FullSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
 
+    const consensus = this.config.chainCommon.consensusAlgorithm()
+
     if (
-      this.config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Ethash &&
+      (consensus === ConsensusAlgorithm.Ethash || consensus === ConsensusAlgorithm.Clique) &&
       this.config.chainCommon.hardforkBlock(Hardfork.Paris) === null
     ) {
-      // For pure non-Merge HF Ethash chains we want to select the peer with the highest TD
+      // For pure non-Merge HF Ethash/Clique chains we want to select the peer with the highest TD
       let best
       for (const peer of peers) {
         if (peer.eth?.status !== undefined) {
