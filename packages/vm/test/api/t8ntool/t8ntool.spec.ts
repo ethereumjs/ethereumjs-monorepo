@@ -5,7 +5,7 @@ import { TransitionTool } from '../../t8n/t8ntool.ts'
 
 import type { T8NOptions } from '../../t8n/types.ts'
 
-const t8nDir = 'test/t8n/testdata/'
+const t8nDir = 'test/t8n/testdata'
 
 const args: T8NOptions = {
   state: {
