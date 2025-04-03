@@ -143,12 +143,10 @@ export class FullSynchronizer extends Synchronizer {
       }
       return best
     } else {
-      // Simple first-peer-available selection for PoS chains (can be improved)
-      for (const peer of peers) {
-        if (peer.eth?.status !== undefined) {
-          return peer
-        }
-      }
+      // Take a random peer which advertises the eth protocol (and did handshake with, `status !== undefined`)
+      const peersWithEth = peers.filter((peer) => peer.eth?.status !== undefined)
+      // If the array is empty, will return `peersWithEth[0]`, so `undefined`.
+      return peersWithEth[Math.floor(Math.random() * peersWithEth.length)]
     }
   }
 
