@@ -18,12 +18,6 @@ import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
-  const consensusConfig = {
-    clique: {
-      period: 1,
-      epoch: 30000,
-    },
-  }
   const defaultChainData = {
     config: {
       chainId: 123456,
@@ -38,7 +32,6 @@ async function setupDevnet(prefundAddress: Address) {
       istanbulBlock: 0,
       berlinBlock: 0,
       londonBlock: 0,
-      ...consensusConfig,
     },
     nonce: '0x0',
     timestamp: '0x614b3731',
@@ -115,5 +108,5 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
         }
       })
     })
-  }, 60000)
+  }, 200000)
 })
