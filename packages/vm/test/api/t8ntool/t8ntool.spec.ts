@@ -5,7 +5,7 @@ import { TransitionTool } from '../../t8n/t8ntool.ts'
 
 import type { T8NOptions } from '../../t8n/types.ts'
 
-const t8nDir = 'test/t8n/testdata'
+const t8nDir = 'test/t8n/testdata/'
 
 const args: T8NOptions = {
   state: {
@@ -35,10 +35,10 @@ const args: T8NOptions = {
 describe('test runner config tests', () => {
   it('should run t8ntool with inputs and report the expected output', async () => {
     await TransitionTool.run(args)
-    const expectedResult = JSON.parse(readFileSync(`${t8nDir}/output/result.json`).toString())
-    const expectedAlloc = JSON.parse(readFileSync(`${t8nDir}/output/alloc.json`).toString())
-    const reportedResult = JSON.parse(readFileSync(`${t8nDir}/output/resultTEST.json`).toString())
-    const reportedAlloc = JSON.parse(readFileSync(`${t8nDir}/output/allocTEST.json`).toString())
+    const expectedResult = JSON.parse(readFileSync(`${t8nDir}output/result.json`).toString())
+    const expectedAlloc = JSON.parse(readFileSync(`${t8nDir}output/alloc.json`).toString())
+    const reportedResult = JSON.parse(readFileSync(`${t8nDir}output/resultTEST.json`).toString())
+    const reportedAlloc = JSON.parse(readFileSync(`${t8nDir}output/allocTEST.json`).toString())
     assert.deepStrictEqual(reportedResult, expectedResult, 'result matches expected result')
     assert.deepStrictEqual(reportedAlloc, expectedAlloc, 'alloc matches expected alloc')
   })
