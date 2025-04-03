@@ -18,6 +18,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
+import { FieldAllocs } from './evmmax/index.ts'
 import { ERROR, EvmError } from './exceptions.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
@@ -108,6 +109,7 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
+  evmmaxState: FieldAllocs
 }
 
 export interface InterpreterResult {
@@ -193,6 +195,7 @@ export class Interpreter {
       stateManager: this._stateManager,
       blockchain,
       env,
+      evmmaxState: new FieldAllocs(),
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
