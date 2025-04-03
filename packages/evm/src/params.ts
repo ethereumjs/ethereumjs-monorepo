@@ -409,4 +409,11 @@ export const paramsEVM: ParamsDict = {
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
+  9999: {
+    /* Not an actual EIP, but a placeholder for future EXECUTE precompile EIP */
+    // gasPrices
+    executeGasCost: 50000,
+    executeCumulativeGasLimit: 10000000,
+    executeCumulativeGasTarget: 100000,
+  },
 }
