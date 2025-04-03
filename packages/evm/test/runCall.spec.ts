@@ -22,7 +22,6 @@ import { defaultBlock } from '../src/evm.ts'
 import { ERROR } from '../src/exceptions.ts'
 import { StepTraceJSON, createEVM } from '../src/index.ts'
 
-import { readFileSync } from 'fs'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { EVMRunCallOpts } from '../src/types.ts'
 import { eip4844Data } from './testdata/eip4844.ts'
@@ -759,7 +758,207 @@ describe('RunCall tests', () => {
 describe('JSON traces', () => {
   it.skip('should produce a trace that matches EIP 3155 spec', async () => {
     // Test case provided in the EIP-3155 spec -- doesn't actually match spec with regard to representation of memory
-    const gethTrace = readFileSync(__dirname + '/testdata/besuTrace.jsonl', 'utf-8')
+    // Put here to avoid using `fs` and breaking browser tests
+    const besuTrace = [
+      {
+        pc: 0,
+        op: 96,
+        gas: '0x2540be400',
+        gasCost: '0x3',
+        memSize: 0,
+        stack: [],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 2,
+        op: 128,
+        gas: '0x2540be3fd',
+        gasCost: '0x3',
+        memSize: 0,
+        stack: ['0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'DUP1',
+      },
+      {
+        pc: 3,
+        op: 83,
+        gas: '0x2540be3fa',
+        gasCost: '0xc',
+        memSize: 0,
+        stack: ['0x40', '0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'MSTORE8',
+      },
+      {
+        pc: 4,
+        op: 96,
+        gas: '0x2540be3ee',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: [],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 6,
+        op: 96,
+        gas: '0x2540be3eb',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 8,
+        op: 85,
+        gas: '0x2540be3e8',
+        gasCost: '0x4e20',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'SSTORE',
+      },
+      {
+        pc: 9,
+        op: 96,
+        gas: '0x2540b95c8',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: [],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 11,
+        op: 96,
+        gas: '0x2540b95c5',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 13,
+        op: 96,
+        gas: '0x2540b95c2',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x0'],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 15,
+        op: 96,
+        gas: '0x2540b95bf',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x0', '0x40'],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 17,
+        op: 96,
+        gas: '0x2540b95bc',
+        gasCost: '0x3',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x0', '0x40', '0x0'],
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 19,
+        op: 90,
+        gas: '0x2540b95b9',
+        gasCost: '0x2',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x0', '0x40', '0x0', '0x2'],
+        depth: 1,
+        refund: 0,
+        opName: 'GAS',
+      },
+      {
+        pc: 20,
+        op: 250,
+        gas: '0x2540b95b7',
+        gasCost: '0x24abb676c',
+        memory:
+          '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x40', '0x0', '0x40', '0x0', '0x2', '0x2540b95b7'],
+        depth: 1,
+        refund: 0,
+        opName: 'STATICCALL',
+      },
+      {
+        pc: 21,
+        op: 96,
+        gas: '0x2540b92a7',
+        gasCost: '0x3',
+        memory:
+          '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b00000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x1'],
+        returnData: '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b',
+        depth: 1,
+        refund: 0,
+        opName: 'PUSH1',
+      },
+      {
+        pc: 23,
+        op: 243,
+        gas: '0x2540b92a4',
+        gasCost: '0x0',
+        memory:
+          '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b00000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000',
+        memSize: 96,
+        stack: ['0x1', '0x40'],
+        returnData: '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b',
+        depth: 1,
+        refund: 0,
+        opName: 'RETURN',
+      },
+      {
+        stateRoot: '0x8fa0dcc7f1d2383c89e5737c2843632db881c0946e80b71fe7175365e6538797',
+        output: '0x40',
+        gasUsed: '0x515c',
+        pass: true,
+        fork: 'Istanbul',
+      },
+    ]
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const stateManager = new MerkleStateManager({
       common,
@@ -794,6 +993,6 @@ describe('JSON traces', () => {
     })
     await evm.runCall(runCallArgs)
     const traceString = traces.join('\n')
-    assert.equal(traceString, gethTrace)
+    assert.equal(traceString, besuTrace.map((t) => JSON.stringify(t)).join('\n'))
   })
 })
