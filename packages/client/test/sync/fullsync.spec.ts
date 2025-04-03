@@ -2,10 +2,65 @@ import { createBlock } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
+import { Common } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
 import { Event } from '../../src/types.ts'
 import { wait } from '../integration/util.ts'
+
+const powConfig = {
+  name: 'testnet',
+  chainId: 12345,
+  defaultHardfork: 'byzantium',
+  consensus: {
+    type: 'pow',
+    algorithm: 'ethash',
+  },
+  comment: 'PoW network [test]',
+  url: '[TESTNET_URL]',
+  genesis: {
+    gasLimit: 1000000,
+    difficulty: 1,
+    nonce: '0xbb00000000000000' as PrefixedHexString,
+    extraData: ('0x' + '00'.repeat(97)) as PrefixedHexString,
+  },
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    {
+      name: 'homestead',
+      block: 1,
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 2,
+    },
+    {
+      name: 'spuriousDragon',
+      block: 3,
+    },
+    {
+      name: 'byzantium',
+      block: 4,
+    },
+  ],
+  bootstrapNodes: [],
+}
+
+const powCommon = new Common({ chain: powConfig })
+const cliqueConfig = JSON.parse(JSON.stringify(powConfig))
+cliqueConfig.consensus = {
+  type: 'poa',
+  algorithm: 'clique',
+  clique: {
+    period: 15,
+    epoch: 30000,
+  },
+}
+const cliqueCommon = new Common({ chain: cliqueConfig })
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -89,39 +144,41 @@ describe('[FullSynchronizer]', async () => {
     await sync.close()
   })
 
-  it('should find best', async () => {
-    const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const sync = new FullSynchronizer({
-      config,
-      interval: 1,
-      pool,
-      chain,
-      txPool,
-      execution,
+  for (const common of [powCommon, cliqueCommon]) {
+    it(`should find best (${common.consensusAlgorithm()})`, async () => {
+      const config = new Config({ accountCache: 10000, storageCache: 1000, common })
+      const pool = new PeerPool() as any
+      const chain = await Chain.create({ config })
+      const sync = new FullSynchronizer({
+        config,
+        interval: 1,
+        pool,
+        chain,
+        txPool,
+        execution,
+      })
+      sync['running'] = true
+      const peers = [
+        { eth: { status: { td: BigInt(1) } }, inbound: false },
+        { eth: { status: { td: BigInt(2) } }, inbound: false },
+      ]
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync['height'] = vi.fn((input) => {
+        if (JSON.stringify(input) === JSON.stringify(peers[0]))
+          return Promise.resolve(peers[0].eth.status.td)
+        if (JSON.stringify(input) === JSON.stringify(peers[1]))
+          return Promise.resolve(peers[1].eth.status.td)
+      })
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync['chain'] = { blocks: { td: BigInt(1) } }
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync['pool'] = { peers }
+      sync['forceSync'] = true
+      assert.equal(await sync.best(), peers[1] as any, 'found best')
+      await sync.stop()
+      await sync.close()
     })
-    sync['running'] = true
-    const peers = [
-      { eth: { status: { td: BigInt(1) } }, inbound: false },
-      { eth: { status: { td: BigInt(2) } }, inbound: false },
-    ]
-    /// @ts-expect-error -- Assigning simpler config for testing
-    sync['height'] = vi.fn((input) => {
-      if (JSON.stringify(input) === JSON.stringify(peers[0]))
-        return Promise.resolve(peers[0].eth.status.td)
-      if (JSON.stringify(input) === JSON.stringify(peers[1]))
-        return Promise.resolve(peers[1].eth.status.td)
-    })
-    /// @ts-expect-error -- Assigning simpler config for testing
-    sync['chain'] = { blocks: { td: BigInt(1) } }
-    /// @ts-expect-error -- Assigning simpler config for testing
-    sync['pool'] = { peers }
-    sync['forceSync'] = true
-    assert.equal(await sync.best(), peers[1] as any, 'found best')
-    await sync.stop()
-    await sync.close()
-  })
+  }
 
   it('should sync', async () => {
     const config = new Config({
