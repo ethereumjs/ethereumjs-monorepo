@@ -83,7 +83,6 @@ describe('trace a call', async () => {
       .toHaveProperty('failed')
       .toHaveProperty('structLogs')
 
-    console.log(res2.result)
     assert.deepEqual(
       res2.result,
       {
