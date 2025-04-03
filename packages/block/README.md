@@ -9,7 +9,7 @@
 | Implements schema and functions related to Ethereum's block. |
 | ------------------------------------------------------------ |
 
-Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceding release.
+
 
 ## Installation
 
@@ -25,15 +25,25 @@ npm install @ethereumjs/block
 
 ### Introduction
 
-There are five standalone functions to instantiate a `Block`:
+There are several standalone functions to instantiate a `Block`:
 
 - `createBlock(blockData: BlockData = {}, opts?: BlockOptions)`
-- `createBlockFromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
+- `createEmptyBlock(headerData: HeaderData, opts?: BlockOptions)`
 - `createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions)`
-- `createBlockFromRPC(blockParams: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
-- `createBlockFromJsonRPCProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
+- `createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions)`
+- `createBlockFromRPC(blockParams: JSONRPCBlock, uncles?: any[], opts?: BlockOptions)`
+- `createBlockFromJSONRPCProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
+- `createBlockFromExecutionPayload(payload: ExecutionPayload, opts?: BlockOptions)`
+- `createBlockFromBeaconPayloadJSON(payload: BeaconPayloadJSON, opts?: BlockOptions)`
+- `createSealedCliqueBlock(blockData: BlockData = {}, cliqueSigner: Uint8Array, opts?: BlockOptions)`
 
-For `BlockHeader` instantiation standalone functions exists for instantiation, see API docs linked below.
+For `BlockHeader` instantiation, there are similar standalone functions:
+
+- `createBlockHeader(headerData: HeaderData = {}, opts?: BlockOptions)`
+- `createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts?: BlockOptions)`
+- `createBlockHeaderFromRLP(serializedHeaderData: Uint8Array, opts?: BlockOptions)`
+- `createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: BlockOptions)`
+- `createSealedCliqueBlockHeader(headerData: HeaderData = {}, cliqueSigner: Uint8Array, opts?: BlockOptions)`
 
 Instantiation Example:
 
@@ -338,7 +348,7 @@ const main = async () => {
   console.log(
     `Instantiated block with ${
       block.requests?.length
-    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`,
+    } withdrawal request, requestsTrieValid=${await block.requestsTrieIsValid()}`,
   )
 }
 
@@ -519,17 +529,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ## Testing
 
