@@ -280,13 +280,13 @@ export class Interpreter {
       overheadTimer = this.performanceLogger.startTimer('Overhead')
     }
 
-    // Iterate through the given ops until something breaks or we hit STOP
-    while (this._runState.programCounter < this._runState.code.length) {
+    // Iterate through the given ops until we hit STOP or some exception occurs
+    while (true) {
       const programCounter = this._runState.programCounter
       let opCode: number
       let opCodeObj: OpcodeMapEntry
       if (doJumpAnalysis) {
-        opCode = this._runState.code[programCounter]
+        opCode = this._runState.code[programCounter] ?? 0 // Yellow Paper calls for explicitly executing STOP if no opcode found at PC (i.e. PC is beyond end of code)
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
           const { jumps, pushes, opcodesCached } = this._getValidJumpDestinations(
@@ -299,7 +299,7 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        opCodeObj = cachedOpcodes![programCounter]
+        opCodeObj = cachedOpcodes![programCounter] ?? 0
         opCode = opCodeObj.opcodeInfo.code
       }
 
