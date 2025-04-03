@@ -277,9 +277,9 @@ export function updateSstoreGas(
  * Formats an individual EVM step trace as a JSON object
  * @param step an {@link InterpreterStep} emitted by the EVM `step` event
  * @param memory whether to include the memory in the trace
- * @returns a JSON object that matches teh EIP-3155 trace format
+ * @returns a JSON object that matches the EIP-3155 trace format
  */
-export const JSONifyStepTrace = (step: InterpreterStep, memory: boolean = false) => {
+export const StepTraceJSON = (step: InterpreterStep, memory: boolean = false) => {
   let hexStack = []
   hexStack = step.stack.map((item: bigint) => {
     return '0x' + item.toString(16)

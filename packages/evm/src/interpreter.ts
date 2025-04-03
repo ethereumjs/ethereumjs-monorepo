@@ -299,11 +299,8 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        opCodeObj = cachedOpcodes![programCounter]
-        if (opCodeObj === undefined) {
-          // If programCounter is out of bounds, set opCodeObj to STOP as above
-          opCodeObj = this.lookupOpInfo(0)
-        }
+        // If programCounter is out of bounds, set opCodeObj to STOP as above
+        opCodeObj = cachedOpcodes![programCounter] ?? this.lookupOpInfo(0)
         opCode = opCodeObj.opcodeInfo.code
       }
 
@@ -380,11 +377,7 @@ export class Interpreter {
     let gas = opInfo.feeBigInt
 
     // Cache pre-gas memory size if doing tracing (EIP-3155)
-    let memorySize = BIGINT_0
-
-    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
-      memorySize = this._runState.memoryWordCount
-    }
+    const memorySizeCache = this._runState.memoryWordCount
 
     try {
       if (opInfo.dynamicGas) {
@@ -396,7 +389,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft(), memorySize)
+        await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
       }
 
       if (
