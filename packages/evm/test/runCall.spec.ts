@@ -20,7 +20,7 @@ import { assert, describe, it } from 'vitest'
 
 import { defaultBlock } from '../src/evm.ts'
 import { ERROR } from '../src/exceptions.ts'
-import { StepTraceJSON, createEVM } from '../src/index.ts'
+import { createEVM, stepTraceJSON } from '../src/index.ts'
 
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { EVMRunCallOpts } from '../src/types.ts'
@@ -976,7 +976,7 @@ describe('JSON traces', () => {
 
     const traces: string[] = []
     evm.events.on('step', (e) => {
-      const trace = StepTraceJSON(e, true)
+      const trace = stepTraceJSON(e, true)
       traces.push(JSON.stringify(trace))
     })
     evm.events.on('afterMessage', async (e) => {

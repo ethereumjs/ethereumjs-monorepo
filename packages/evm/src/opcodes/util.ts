@@ -278,7 +278,7 @@ export function updateSstoreGas(
  * @param memory whether to include the memory in the trace
  * @returns a JSON object that matches the EIP-3155 trace format
  */
-export const StepTraceJSON = (step: InterpreterStep, memory: boolean = false) => {
+export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) => {
   let hexStack = []
   hexStack = step.stack.map((item: bigint) => {
     return '0x' + item.toString(16)
