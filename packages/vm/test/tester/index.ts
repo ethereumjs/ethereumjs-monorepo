@@ -242,7 +242,8 @@ async function runTests() {
     tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
-      ;(t as any).on('result', (o: any) => {
+      // @ts-expect-error -- Tape doesn't seem to be properly typed
+      t.on('result', (o: any) => {
         if (
           typeof o.ok !== 'undefined' &&
           o.ok !== null &&

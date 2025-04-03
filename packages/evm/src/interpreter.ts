@@ -511,7 +511,7 @@ export class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    await (this._evm as any)._emit('step', eventObj)
+    await this._evm['_emit']('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.
@@ -803,7 +803,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the block’s number.
+   * Returns the block's number.
    */
   getBlockNumber(): bigint {
     return this._env.block.header.number
@@ -953,7 +953,7 @@ export class Interpreter {
   }
 
   /**
-   * Message-call into this account with an alternative account’s code, but
+   * Message-call into this account with an alternative account's code, but
    * persisting the current values for sender and value.
    */
   async callDelegate(

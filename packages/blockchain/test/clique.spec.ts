@@ -218,9 +218,11 @@ describe('Clique: Initialization', () => {
 
   it('should throw if signer in epoch checkpoint is not active', async () => {
     const { blockchain } = await initWithSigners([A])
-    ;(blockchain as any)._validateBlocks = false
+    // @ts-expect-error -- Assign to read-only property
+    blockchain['_validateBlocks'] = false
     // _validateConsensus needs to be true to trigger this test condition
-    ;(blockchain as any)._validateConsensus = true
+    // @ts-expect-error -- Assign to read-only property
+    blockchain['_validateConsensus'] = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
     const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(

@@ -139,7 +139,7 @@ async function runTransition(argsIn: any) {
   }
 
   if (rejected.length > 0) {
-    ;(output as any).rejected = rejected
+    output['rejected'] = rejected
   }
 
   const outputAlloc = alloc //{}

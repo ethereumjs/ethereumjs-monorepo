@@ -26,6 +26,7 @@ import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/in
 
 import type { Block } from '@ethereumjs/block'
 import type { ChainConfig } from '@ethereumjs/common'
+import type { EVM } from '@ethereumjs/evm'
 import type { LegacyTxData } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '../../../src/index.ts'
@@ -266,8 +267,9 @@ describe('EIP 2935: historical block hashes', () => {
         validateBlocks: false,
         validateConsensus: false,
       })
-      ;(vm as any).blockchain = blockchainEmpty
-      ;(vm.evm as any).blockchain = blockchainEmpty
+      // @ts-expect-error -- Assign to read-only property
+      vm['blockchain'] = blockchainEmpty
+      ;(vm.evm as EVM)['blockchain'] = blockchainEmpty
 
       for (let i = 1; i <= blocksToBuild; i++) {
         const block = await blockchain.getBlock(i)

@@ -386,7 +386,8 @@ describe('[BaseTransaction]', () => {
         if (privateKey !== undefined) {
           let signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
-          ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
+          // @ts-expect-error -- Assign to read-only property
+          signedTx.s = SECP256K1_ORDER + BigInt(1)
           assert.throws(
             () => {
               signedTx.getSenderPublicKey()

@@ -46,7 +46,7 @@ it('should handle failure', () => {
   config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
     assert.equal(err.message, 'err0', 'got error'),
   )
-  ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
+  fetcher['failure'](job as Job<any, any, any>, new Error('err0'))
   assert.equal(fetcher['in'].length, 1, 'enqueued job')
 })
 

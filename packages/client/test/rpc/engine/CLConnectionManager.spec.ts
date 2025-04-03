@@ -169,7 +169,7 @@ describe('updates connection status correctly', async () => {
 
   it('incremented disconnection check', () => {
     manager['config'].chainCommon.setHardfork('paris')
-    ;(manager as any)._inActivityCb = () => vi.fn()
+    manager['_inActivityCb'] = () => vi.fn()
     const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')
     manager['connectionCheck']()
     expect(callbackSpy).toHaveBeenCalledTimes(1)
