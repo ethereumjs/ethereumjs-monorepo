@@ -581,7 +581,7 @@ async function inputAccounts(args: ClientOpts) {
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
-        // @ts-expect-error -- Absent from type
+        // @ts-expect-error -- -- Property not present on type
         rl['history'] = rl['history'].slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
