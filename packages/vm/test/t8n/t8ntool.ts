@@ -188,43 +188,43 @@ export class TransitionTool {
         trace.push(JSON.stringify(summary))
         this.traces[index] = [bytesToHex(event.transaction.hash()), trace]
       })
-
-      this.vm.events.on('afterTx', (event) => {
-        this.afterTx(event, index, builder)
-      })
-
-      for (const txData of this.txsData) {
-        try {
-          const tx = createTx(txData, { common: this.common })
-          if (!tx.isValid()) {
-            throw new Error(tx.getValidationErrors().join(', '))
-          }
-          // Set `allowNoBlobs` to `true`, since the test might not have the blob
-          // The 4844-tx at this should still be valid, since it has the `blobHashes` field
-          await builder.addTransaction(tx, { allowNoBlobs: true })
-        } catch (e: any) {
-          this.rejected.push({
-            index,
-            error: e.message,
-          })
-        }
-        index++
-      }
-
-      // Reward miner
-
-      if (args.state.reward !== BigInt(-1)) {
-        await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
-        await this.vm.evm.journal.cleanup()
-      }
-
-      const result = await builder.build()
-
-      const convertedOutput = this.getOutput(result.block, result.requests)
-      const alloc = await this.stateTracker.dumpAlloc()
-
-      this.writeOutput(args, convertedOutput, alloc)
     }
+
+    this.vm.events.on('afterTx', (event) => {
+      this.afterTx(event, index, builder)
+    })
+
+    for (const txData of this.txsData) {
+      try {
+        const tx = createTx(txData, { common: this.common })
+        if (!tx.isValid()) {
+          throw new Error(tx.getValidationErrors().join(', '))
+        }
+        // Set `allowNoBlobs` to `true`, since the test might not have the blob
+        // The 4844-tx at this should still be valid, since it has the `blobHashes` field
+        await builder.addTransaction(tx, { allowNoBlobs: true })
+      } catch (e: any) {
+        this.rejected.push({
+          index,
+          error: e.message,
+        })
+      }
+      index++
+    }
+
+    // Reward miner
+
+    if (args.state.reward !== BigInt(-1)) {
+      await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+      await this.vm.evm.journal.cleanup()
+    }
+
+    const result = await builder.build()
+
+    const convertedOutput = this.getOutput(result.block, result.requests)
+    const alloc = await this.stateTracker.dumpAlloc()
+
+    this.writeOutput(args, convertedOutput, alloc)
   }
   private async setup(args: T8NOptions) {
     this.common = getCommon(args.state.fork, kzg)
