@@ -347,7 +347,6 @@ export class TransitionTool {
   }
 
   private writeOutput(args: T8NOptions, output: T8NOutput, outputAlloc: T8NAlloc) {
-    console.log(args)
     const outputResultFilePath = join(args.output.basedir, args.output.result)
     const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
     writeFileSync(outputResultFilePath, JSON.stringify(output))

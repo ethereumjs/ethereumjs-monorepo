@@ -7,7 +7,6 @@ import {
   BIGINT_64,
   BIGINT_160,
   BIGINT_NEG1,
-  bigIntToHex,
   bytesToHex,
   createAddressFromBigInt,
   equalsBytes,
@@ -287,10 +286,10 @@ export const StepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
   const opTrace = {
     pc: step.pc,
     op: step.opcode.code,
-    gas: bigIntToHex(step.gasLeft),
-    gasCost: bigIntToHex(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
+    gas: Number(step.gasLeft),
+    gasCost: Number(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
     memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '0x') : undefined,
-    memSize: Number(step.memoryWordCount) * 32,
+    memSize: Number(step.memoryWordCount) * 8,
     stack: hexStack,
     depth: step.depth + 1, // Other clients start depth at 1
     refund: Number(step.gasRefund),
