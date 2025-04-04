@@ -127,6 +127,7 @@ export interface InterpreterStep {
     fee: number
     dynamicFee?: bigint
     isAsync: boolean
+    code: number
   }
   account: Account
   address: Address
@@ -283,7 +284,7 @@ export class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const programCounter = this._runState.programCounter
       let opCode: number
-      let opCodeObj: OpcodeMapEntry
+      let opCodeObj: OpcodeMapEntry | undefined
       if (doJumpAnalysis) {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
@@ -319,13 +320,13 @@ export class Interpreter {
         }
       }
 
-      this._runState.opCode = opCode!
+      this._runState.opCode = opCode
 
       try {
         if (overheadTimer !== undefined) {
           this.performanceLogger.pauseTimer()
         }
-        await this.runStep(opCodeObj!)
+        await this.runStep(opCodeObj)
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -374,6 +375,9 @@ export class Interpreter {
 
     let gas = opInfo.feeBigInt
 
+    // Cache pre-gas memory size if doing tracing (EIP-7756)
+    const memorySizeCache = this._runState.memoryWordCount
+
     try {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
@@ -384,7 +388,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft())
+        await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
       }
 
       if (
@@ -441,7 +445,7 @@ export class Interpreter {
     return this._evm['_opcodeMap'][op]
   }
 
-  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
     const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
     const opcode = opcodeInfo.opcodeInfo
     const eventObj: InterpreterStep = {
@@ -453,13 +457,14 @@ export class Interpreter {
         fee: opcode.fee,
         dynamicFee,
         isAsync: opcode.isAsync,
+        code: opcode.code,
       },
       stack: this._runState.stack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
-      memoryWordCount: this._runState.memoryWordCount,
+      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
     }
@@ -499,6 +504,7 @@ export class Interpreter {
      * @property {fee}        opcode.number Base fee of the opcode
      * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
      * @property {boolean}    opcode.isAsync opcode is async
+     * @property {number}     opcode.code opcode code
      * @property {BigInt} gasLeft amount of gasLeft
      * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance

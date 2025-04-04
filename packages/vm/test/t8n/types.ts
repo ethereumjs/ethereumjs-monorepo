@@ -15,6 +15,7 @@ export type T8NOptions = {
     alloc: string
   }
   log: boolean
+  trace: boolean
 }
 
 export type T8NAlloc = {
