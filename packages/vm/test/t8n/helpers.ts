@@ -146,7 +146,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     return '0x' + item.toString(16)
   })
   let memWords = undefined
-  const memSize = Number(step.memoryWordCount) * 8 // memSize is reported in bytes, not wods (i.e 32 bytes)
+  const memSize = Number(step.memoryWordCount) * 8 // memSize is reported in bytes, not words (i.e 32 bytes)
   if (memory) {
     memWords = []
     for (let i = 0; i < step.memoryWordCount; i++) {
