@@ -2,7 +2,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
-import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import type { AfterTxEvent } from '../../src/types.ts'
 import type { VM } from '../../src/vm.ts'
 import type { T8NOptions } from './types.ts'
@@ -149,7 +149,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
   const memSize = Number(step.memoryWordCount) * 8 // memSize is reported in bytes, not wods (i.e 32 bytes)
   if (memory) {
     memWords = []
-    for (let i = 0; i < memSize; i++) {
+    for (let i = 0; i < step.memoryWordCount; i++) {
       memWords.push(bytesToHex(step.memory.slice(i * 32, (i + 1) * 32))) // memory is returned in 32 byte words
     }
   }
@@ -159,7 +159,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     op: '0x' + step.opcode.code.toString(16),
     gas: Number(step.gasLeft),
     gasCost: Number(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
-    memory,
+    memory: memory ? memWords : undefined,
     memSize,
     stack: hexStack,
     depth: step.depth + 1, // Depth starts at 1 - EIP-7756
@@ -170,6 +170,12 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
   return opTrace
 }
 
+/**
+ * Formats an individual EVM summary trace as a JSON object
+ * @param event an {@link AfterTxEvent} emitted by the vm `afterTx` event
+ * @param vm a {@link VM} instance
+ * @returns a JSON object that matches the EIP-7756 summary object format
+ */
 export const summaryTraceJSON = async (event: AfterTxEvent, vm: VM) => {
   const summary = {
     stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
