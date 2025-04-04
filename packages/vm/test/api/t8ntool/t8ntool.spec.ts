@@ -53,7 +53,7 @@ describe('trace tests', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
-    const bytecode = hexToBytes('0x604260005260206000F3')
+    const bytecode = hexToBytes('0x604260005260206000F3') // PUSH1 42 PUSH1 00 MSTORE PUSH1 20 PUSH1 00 RETURN
     const contractAddress = createAddressFromPrivateKey(randomBytes(32))
     await vm.stateManager.putAccount(contractAddress)
     await vm.stateManager.putCode(contractAddress, bytecode)
