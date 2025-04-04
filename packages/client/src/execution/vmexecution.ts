@@ -856,8 +856,6 @@ export class VMExecution extends Execution {
             const endHeadBlock = await this.chain.blockchain.getIteratorHead('vm')
 
             if (typeof numExecuted === 'number' && numExecuted > 0) {
-              console.log('dbg300')
-              console.log(this.config.logger)
               const firstNumber = startHeadBlock.header.number
               const firstHash = short(startHeadBlock.hash())
               const lastNumber = endHeadBlock.header.number
