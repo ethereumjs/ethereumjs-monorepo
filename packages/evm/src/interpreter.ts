@@ -280,13 +280,13 @@ export class Interpreter {
       overheadTimer = this.performanceLogger.startTimer('Overhead')
     }
 
-    // Iterate through the given ops until we hit STOP or some exception occurs
-    while (true) {
+    // Iterate through the given ops until something breaks or we hit STOP
+    while (this._runState.programCounter < this._runState.code.length) {
       const programCounter = this._runState.programCounter
       let opCode: number
       let opCodeObj: OpcodeMapEntry | undefined
       if (doJumpAnalysis) {
-        opCode = this._runState.code[programCounter] ?? 0 // Yellow Paper calls for explicitly executing STOP if no opcode found at PC (i.e. PC is beyond end of code)
+        opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
           const { jumps, pushes, opcodesCached } = this._getValidJumpDestinations(
@@ -299,8 +299,7 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        // If programCounter is out of bounds, set opCodeObj to STOP as above
-        opCodeObj = cachedOpcodes![programCounter] ?? this.lookupOpInfo(0)
+        opCodeObj = cachedOpcodes![programCounter]
         opCode = opCodeObj.opcodeInfo.code
       }
 
@@ -376,7 +375,7 @@ export class Interpreter {
 
     let gas = opInfo.feeBigInt
 
-    // Cache pre-gas memory size if doing tracing (EIP-3155)
+    // Cache pre-gas memory size if doing tracing (EIP-7756)
     const memorySizeCache = this._runState.memoryWordCount
 
     try {

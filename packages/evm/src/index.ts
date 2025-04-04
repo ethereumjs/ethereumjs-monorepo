@@ -58,6 +58,7 @@ export {
   RustBN254,
   validateEOF,
 }
+
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'
 export * from './params.ts'

@@ -9,7 +9,7 @@ const JUMP = '56'
 const JUMPDEST = '5b'
 
 const testCases = [
-  { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 7 },
+  { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
   {
     code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST],
     pc: -1,
