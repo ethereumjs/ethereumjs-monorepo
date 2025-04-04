@@ -1,10 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../../../types.ts'
+import { Event, type Logger } from '../../../types.ts'
 import { short, timeDiff } from '../../../util/index.ts'
 
 import type { Block } from '@ethereumjs/block'
-import type winston from 'winston'
 import type { Config } from '../../../config.ts'
 import type {
   ExecutionPayloadV1,
@@ -58,7 +57,7 @@ type PayloadToPayloadStats = {
   txs: { [key: number]: number }
 }
 
-const logCLStatus = (logger: winston.Logger, logMsg: string, logLevel: logLevel) => {
+const logCLStatus = (logger: Logger, logMsg: string, logLevel: logLevel) => {
   logger[logLevel](enginePrefix + logMsg)
 }
 export class CLConnectionManager {

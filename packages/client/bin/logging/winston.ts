@@ -2,10 +2,12 @@ import chalk from 'chalk'
 import * as winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 
-import type { Logger as WinstonLogger } from 'winston'
+import type { Logger as WinstonLoggerType } from 'winston'
+import type { Logger } from '../../src/types.ts'
+
 const { createLogger, format, transports: wTransports } = winston
 
-export type Logger = WinstonLogger
+// export type Logger = WinstonLogger
 type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
   logRotate?: boolean
   logMaxFiles?: number
@@ -126,6 +128,47 @@ function logFileTransport(args: LoggerArgs) {
   }
 }
 
+export class WinstonLogger implements Logger {
+  public logger
+
+  constructor(logger: WinstonLoggerType) {
+    this.logger = logger
+
+    // Bind methods for logger instance
+    this.info = this.info.bind(this)
+    this.warn = this.warn.bind(this)
+    this.error = this.error.bind(this)
+    this.debug = this.debug.bind(this)
+  }
+  info(message: string, ...meta: any[]) {
+    this.logger.info(`${message}`, ...meta)
+  }
+
+  warn(message: string, ...meta: any[]) {
+    this.logger.warn(`${message}`, ...meta)
+  }
+
+  error(message: string, ...meta: any[]) {
+    this.logger.error(`${message}`, ...meta)
+  }
+
+  debug(message: string, ...meta: any[]) {
+    this.logger.debug(`${message}`, ...meta)
+  }
+
+  isInfoEnabled() {
+    return this.logger.isInfoEnabled()
+  }
+
+  configure(args: { [key: string]: any }) {
+    this.logger.configure(args)
+  }
+
+  getLevel() {
+    return this.logger.level
+  }
+}
+
 /**
  * Returns a formatted {@link Logger}
  */
@@ -140,10 +183,12 @@ export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
   if (typeof args.logFile === 'string') {
     transports.push(logFileTransport(args as LoggerArgs))
   }
+
+  // up the chain to logger instantiation, this file contains the `winston` import
   const logger = createLogger({
     transports,
     format: formatConfig(),
     level: args.logLevel,
   })
-  return logger
+  return new WinstonLogger(logger)
 }
