@@ -58,7 +58,6 @@ export {
   RustBN254,
   validateEOF,
 }
-export { stepTraceJSON } from './opcodes/util.ts'
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'
 export * from './params.ts'

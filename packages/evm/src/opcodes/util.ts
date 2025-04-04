@@ -20,7 +20,7 @@ import { EvmError } from '../exceptions.ts'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { ERROR } from '../exceptions.ts'
-import type { InterpreterStep, RunState } from '../interpreter.ts'
+import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
@@ -270,30 +270,4 @@ export function updateSstoreGas(
     */
     return common.param('sstoreSetGas')
   }
-}
-
-/**
- * Formats an individual EVM step trace as a JSON object
- * @param step an {@link InterpreterStep} emitted by the EVM `step` event
- * @param memory whether to include the memory in the trace
- * @returns a JSON object that matches the EIP-3155 trace format
- */
-export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) => {
-  let hexStack = []
-  hexStack = step.stack.map((item: bigint) => {
-    return '0x' + item.toString(16)
-  })
-  const opTrace = {
-    pc: step.pc,
-    op: step.opcode.code,
-    gas: Number(step.gasLeft),
-    gasCost: Number(step.opcode.dynamicFee ?? BigInt(step.opcode.fee)), // if `dynamicFee` is set, it includes base fee
-    memory: memory ? (step.memory.length > 0 ? bytesToHex(step.memory) : '0x') : undefined,
-    memSize: Number(step.memoryWordCount) * 8,
-    stack: hexStack,
-    depth: step.depth + 1, // Other clients start depth at 1
-    refund: Number(step.gasRefund),
-    opName: step.opcode.name,
-  }
-  return opTrace
 }

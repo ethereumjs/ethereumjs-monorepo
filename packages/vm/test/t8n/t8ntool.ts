@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createBlock } from '@ethereumjs/block'
-import { EVMMockBlockchain, NobleBLS, stepTraceJSON } from '@ethereumjs/evm'
+import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
@@ -14,7 +14,7 @@ import { rewardAccount } from '../../src/runBlock.ts'
 import { getCommon } from '../tester/config.ts'
 import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../util.ts'
 
-import { normalizeNumbers } from './helpers.ts'
+import { normalizeNumbers, stepTraceJSON, summaryTraceJSON } from './helpers.ts'
 import { StateTracker } from './stateTracker.ts'
 
 import type { Block } from '@ethereumjs/block'
@@ -176,18 +176,45 @@ export class TransitionTool {
         const opTrace = stepTraceJSON(e)
         trace.push(JSON.stringify(opTrace))
       })
+
       this.vm.events.on('afterTx', async (event) => {
-        const summary = {
-          stateRoot: bytesToHex(await this.vm.stateManager.getStateRoot()),
-          output:
-            event.execResult.returnValue.length > 0 ? bytesToHex(event.execResult.returnValue) : '',
-          gasUsed: bigIntToHex(event.totalGasSpent),
-          pass: event.execResult.exceptionError === undefined,
-          fork: this.vm.common.hardfork(),
-        }
+        const summary = await summaryTraceJSON(event, this.vm)
         trace.push(JSON.stringify(summary))
         this.traces[index] = [bytesToHex(event.transaction.hash()), trace]
+        this.afterTx(event, index, builder)
       })
+
+      for (const txData of this.txsData) {
+        try {
+          const tx = createTx(txData, { common: this.common })
+          if (!tx.isValid()) {
+            throw new Error(tx.getValidationErrors().join(', '))
+          }
+          // Set `allowNoBlobs` to `true`, since the test might not have the blob
+          // The 4844-tx at this should still be valid, since it has the `blobHashes` field
+          await builder.addTransaction(tx, { allowNoBlobs: true })
+        } catch (e: any) {
+          this.rejected.push({
+            index,
+            error: e.message,
+          })
+        }
+        index++
+      }
+
+      // Reward miner
+
+      if (args.state.reward !== BigInt(-1)) {
+        await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+        await this.vm.evm.journal.cleanup()
+      }
+
+      const result = await builder.build()
+
+      const convertedOutput = this.getOutput(result.block, result.requests)
+      const alloc = await this.stateTracker.dumpAlloc()
+
+      this.writeOutput(args, convertedOutput, alloc)
     }
 
     this.vm.events.on('afterTx', (event) => {
