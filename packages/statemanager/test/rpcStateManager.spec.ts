@@ -236,7 +236,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type MerkleStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: state })
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(

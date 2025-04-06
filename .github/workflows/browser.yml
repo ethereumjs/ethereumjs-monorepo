@@ -64,6 +64,7 @@ jobs:
           key: ${{ inputs.submodule-cache-key }}
 
       - run: npm run install-browser-deps
+      - run: npx playwright install --with-deps
 
       - run: npm run test:browser --workspaces --if-present
 

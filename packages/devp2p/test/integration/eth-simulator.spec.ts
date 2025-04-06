@@ -231,7 +231,8 @@ describe('ETH simulator tests', () => {
           switch (code) {
             case EthMessageCodes.STATUS:
               protocol.sendStatus(status)
-              assert.throws(() => protocol.sendMessage(<any>0x55, []), /Unknown code 85/)
+              // @ts-expect-error -- Testing unknown code
+              assert.throws(() => protocol.sendMessage(0x55, []), /Unknown code 85/)
               util.destroyRLPXs(rlpxs)
               resolve(undefined)
           }
