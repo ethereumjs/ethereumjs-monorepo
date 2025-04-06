@@ -621,16 +621,12 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts) {
-  // Give chainId priority over networkId
-  // Give networkId precedence over network name
-  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
-  const chain = getPresetChainConfig(chainName)
+export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
 
   const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
-  if (args.useJsCrypto === false) {
+  if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
     cryptoFunctions.ecrecover = (
@@ -680,6 +676,18 @@ export async function generateClientConfig(args: ClientOpts) {
   }
   cryptoFunctions.kzg = kzg
   cryptoFunctions.verkle = verkle
+  return cryptoFunctions
+}
+
+export async function generateClientConfig(args: ClientOpts) {
+  // Give chainId priority over networkId
+  // Give networkId precedence over network name
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
+
+  // `useJsCrypto` defaults to `false` in the CLI defaults
+  const cryptoFunctions = await getCryptoFunctions(args.useJsCrypto ?? false)
+
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
