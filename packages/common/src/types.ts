@@ -96,7 +96,7 @@ export interface CustomCrypto {
     pk: Uint8Array,
     ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
   ) => ECDSASignature
-  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
+  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number } // TODO this looks incorrect?
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
   verkle?: VerkleCrypto

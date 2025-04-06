@@ -1,5 +1,6 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -126,10 +127,12 @@ export function authorizationHashedMessageToSign(
 export function signAuthorization(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
   privateKey: Uint8Array,
+  common?: Common,
 ): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
   // TODO: always uses the JS version: read ecsign from crypto
-  const signed = secp256k1.sign(msgHash, privateKey)
+  const secp256k1Sign = common?.customCrypto.ecdsaSign ?? secp256k1.sign
+  const signed = secp256k1Sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
     ? input
     : unsignedAuthorizationListToBytes(input)
