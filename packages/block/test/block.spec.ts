@@ -1,6 +1,11 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { goerliChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
+import {
+  goerliChainConfig,
+  preLondonTestData1,
+  preLondonTestData2,
+  testnetMergeChainConfig,
+} from '@ethereumjs/testdata'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -19,8 +24,6 @@ import {
 
 import { genesisHashesTestData } from './testdata/genesisHashesTest.ts'
 import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.ts'
-import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.ts'
-import { testdataPreLondonData } from './testdata/testdata_pre-london.ts'
 
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -134,7 +137,7 @@ describe('[Block]: block functions', () => {
 
   it('should test block validation on pow chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestData1.blocks[0].rlp as PrefixedHexString)
     try {
       createBlockFromRLP(blockRlp, { common })
       assert.isTrue(true, 'should pass')
@@ -160,7 +163,7 @@ describe('[Block]: block functions', () => {
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
-    const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestData1.blocks[0].rlp as PrefixedHexString)
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
@@ -201,7 +204,7 @@ describe('[Block]: block functions', () => {
 
   it('should test transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestData1.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     ;(block.transactions[0] as any).gasPrice = BigInt(0)
@@ -214,7 +217,7 @@ describe('[Block]: block functions', () => {
 
   it('should test uncles hash validation', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = hexToBytes(testdataPreLondon2Data.blocks[2].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestData2.blocks[2].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
     ;(block.header as any).uncleHash = new Uint8Array(32)
@@ -351,7 +354,7 @@ describe('[Block]: block functions', () => {
   it('should return the same block data from raw()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const block = createBlockFromRLP(
-      toBytes(testdataPreLondon2Data.blocks[2].rlp as PrefixedHexString),
+      toBytes(preLondonTestData2.blocks[2].rlp as PrefixedHexString),
       {
         common,
       },
@@ -363,7 +366,7 @@ describe('[Block]: block functions', () => {
   it('should test toJSON', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const block = createBlockFromRLP(
-      toBytes(testdataPreLondon2Data.blocks[2].rlp as PrefixedHexString),
+      toBytes(preLondonTestData2.blocks[2].rlp as PrefixedHexString),
       {
         common,
       },
@@ -373,7 +376,7 @@ describe('[Block]: block functions', () => {
 
   it('DAO hardfork', () => {
     const blockData = RLP.decode(
-      testdataPreLondon2Data.blocks[0].rlp as PrefixedHexString,
+      preLondonTestData2.blocks[0].rlp as PrefixedHexString,
     ) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = hexToBytes('0x1D4C00')

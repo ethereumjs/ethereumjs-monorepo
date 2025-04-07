@@ -1,4 +1,4 @@
-export const testdataPreLondon2Data = {
+export const preLondonTestData2 = {
   _info: {
     comment: '',
     filledwith: 'cpp-1.3.0+commit.26123543.Linux.g++',

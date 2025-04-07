@@ -1,4 +1,4 @@
-export const testdataPreLondonData = {
+export const preLondonTestData1 = {
   blocks: [
     {
       blockHeader: {
