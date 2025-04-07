@@ -1,7 +1,7 @@
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { eip4844GethGenesis, postMergeGethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -13,7 +13,6 @@ import {
 import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
@@ -122,7 +121,7 @@ describe(method, () => {
     MerkleStateManager.prototype.shallowCopy = function () {
       return this
     }
-    const { chain, service, server, common } = await setupChain(postMergeData, 'london', {
+    const { chain, service, server, common } = await setupChain(postMergeGethGenesis, 'london', {
       engine: true,
       hardfork: Hardfork.London,
     })

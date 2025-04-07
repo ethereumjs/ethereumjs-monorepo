@@ -18,6 +18,7 @@ export const postMergeGethGenesis = {
     },
     terminalTotalDifficulty: 0,
     terminalTotalDifficultyPassed: true,
+    mergeForkBlock: 0,
   },
   nonce: '0x42',
   timestamp: '0x0',

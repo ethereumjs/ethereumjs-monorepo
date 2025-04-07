@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { TransactionType, createTx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -7,7 +8,6 @@ import { Chain } from '../../src/blockchain/index.ts'
 import { Config, SyncMode } from '../../src/config.ts'
 import { RlpxServer } from '../../src/net/server/index.ts'
 import { Event } from '../../src/types.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Log } from '@ethereumjs/evm'
 import type { BeaconSynchronizer } from '../../src/sync/index.ts'
@@ -416,7 +416,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })
