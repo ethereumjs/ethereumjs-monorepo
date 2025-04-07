@@ -126,7 +126,7 @@ describe('[VMExecution]', () => {
     const common = createCustomCommon(customChainConfig, Mainnet)
     exec = await testSetup(blockchain, common)
     await exec.run()
-    assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
+    assert.equal(exec.hardfork, 'constantinople', 'should update HF on block run')
   })
 
   it('Test block execution using executeBlocks function', async () => {

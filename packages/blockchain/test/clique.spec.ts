@@ -640,7 +640,7 @@ describe('Clique: Initialization', () => {
           },
         },
       },
-      Goerli,
+      goerliChainConfig,
       {
         hardfork: Hardfork.Chainstart,
       },
@@ -696,7 +696,7 @@ describe('Clique: Initialization', () => {
           },
         },
       },
-      Goerli,
+      goerliChainConfig,
       {
         hardfork: Hardfork.Chainstart,
       },

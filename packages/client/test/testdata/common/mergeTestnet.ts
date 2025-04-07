@@ -8,7 +8,7 @@ export const mergeTestnetData: ChainConfig = {
     type: 'pow',
     algorithm: 'ethash',
   },
-  comment: 'Private teast network',
+  comment: 'Private test network',
   url: '[TESTNET_URL]',
   genesis: {
     gasLimit: 1000000,
