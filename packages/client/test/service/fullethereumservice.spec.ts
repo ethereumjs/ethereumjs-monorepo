@@ -345,7 +345,7 @@ describe('should handle GetPooledTransactions', async () => {
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
   /// @ts-expect-error -- Assigning simpler config for testing
-  service.txPool['validate'] = () => {}
+  service.txPool.validate = () => {}
 
   const tx = createTx({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
@@ -375,7 +375,7 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
   /// @ts-expect-error -- Assigning simpler config for testing
-  service.txPool['validate'] = () => {}
+  service.txPool.validate = () => {}
   /// @ts-expect-error -- Assigning simpler config for testing
   service.txPool['handleAnnouncedTxHashes'] = (hashes: Uint8Array[], _peer: any, _pool: any) => {
     it('should get correct tx hash from eth68 message', () => {
@@ -401,7 +401,7 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
   /// @ts-expect-error -- Assigning simpler config for testing
-  service.txPool['validate'] = () => {}
+  service.txPool.validate = () => {}
   service.txPool.sendNewTxHashes(
     [[1], [100], [txHash]],
     [

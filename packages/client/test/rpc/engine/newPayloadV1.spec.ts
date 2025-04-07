@@ -246,7 +246,7 @@ describe(method, () => {
 
     // set the newpayload limit to 100 for test
     /// @ts-expect-error -- Assign to-readonly property
-    chain.config['engineNewpayloadMaxTxsExecute'] = 100
+    chain.config.engineNewpayloadMaxTxsExecute = 100
 
     // newpayload shouldn't execute block but just return either SYNCING or ACCEPTED
 
@@ -255,7 +255,7 @@ describe(method, () => {
 
     // set the newpayload limit to 101 and the block should be executed
     /// @ts-expect-error -- Assign to-readonly property
-    chain.config['engineNewpayloadMaxTxsExecute'] = 101
+    chain.config.engineNewpayloadMaxTxsExecute = 101
 
     res = await rpc.request(method, [blockDataWithValidTransaction])
     assert.equal(res.result.status, 'VALID')

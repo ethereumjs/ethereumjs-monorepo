@@ -551,6 +551,7 @@ async function inputAccounts(args: ClientOpts) {
   })
 
   // Hide key input
+  // TODO: Investigate why type doesn't match & if this actually works
   // @ts-expect-error -- Absent from type
   rl['input'].on('keypress', function () {
     // get the number of characters entered so far:
@@ -561,6 +562,7 @@ async function inputAccounts(args: ClientOpts) {
     readline.clearLine((rl as any).output, 1)
     // replace the original input with asterisks:
     for (let i = 0; i < len; i++) {
+      // TODO: Investigate why type doesn't match & if this actually works
       // @ts-expect-error -- Absent from type
       rl['output'].write('*')
     }
@@ -581,6 +583,7 @@ async function inputAccounts(args: ClientOpts) {
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
+        // TODO: Investigate why type doesn't match & if this actually works
         // @ts-expect-error -- -- Property not present on type
         rl['history'] = rl['history'].slice(1)
         const privKey = hexToBytes(inputKey)

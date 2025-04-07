@@ -163,16 +163,16 @@ describe('[FullSynchronizer]', async () => {
         { eth: { status: { td: BigInt(2) } }, inbound: false },
       ]
       /// @ts-expect-error -- Assigning simpler config for testing
-      sync['height'] = vi.fn((input) => {
+      sync.height = vi.fn((input) => {
         if (JSON.stringify(input) === JSON.stringify(peers[0]))
           return Promise.resolve(peers[0].eth.status.td)
         if (JSON.stringify(input) === JSON.stringify(peers[1]))
           return Promise.resolve(peers[1].eth.status.td)
       })
       /// @ts-expect-error -- Assigning simpler config for testing
-      sync['chain'] = { blocks: { td: BigInt(1) } }
+      sync.chain = { blocks: { td: BigInt(1) } }
       /// @ts-expect-error -- Assigning simpler config for testing
-      sync['pool'] = { peers }
+      sync.pool = { peers }
       sync['forceSync'] = true
       assert.equal(await sync.best(), peers[1] as any, 'found best')
       await sync.stop()
@@ -298,7 +298,7 @@ describe('[FullSynchronizer]', async () => {
       },
     ]
     /// @ts-expect-error -- Assigning simpler config for testing
-    sync['pool'] = { peers }
+    sync.pool = { peers }
 
     const chainTip = createBlock({
       header: {},

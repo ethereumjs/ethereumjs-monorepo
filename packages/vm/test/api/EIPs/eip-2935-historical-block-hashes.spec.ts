@@ -268,8 +268,8 @@ describe('EIP 2935: historical block hashes', () => {
         validateConsensus: false,
       })
       // @ts-expect-error -- Assign to read-only property
-      vm['blockchain'] = blockchainEmpty
-      ;(vm.evm as EVM)['blockchain'] = blockchainEmpty
+      vm.blockchain = blockchainEmpty
+      ;(vm.evm as EVM).blockchain = blockchainEmpty
 
       for (let i = 1; i <= blocksToBuild; i++) {
         const block = await blockchain.getBlock(i)

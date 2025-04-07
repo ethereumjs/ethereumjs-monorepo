@@ -277,6 +277,7 @@ describe('[CLI]', () => {
         assert.include(message, 'engine', 'engine ws started')
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
+        // TODO: Investigate why type doesn't match & if this actually works
         // @ts-expect-error -- Property not present on type
         client['ws'].on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
@@ -308,6 +309,7 @@ describe('[CLI]', () => {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
+        // TODO: Investigate why type doesn't match & if this actually works
         // @ts-expect-error -- Property not present on type
         client['ws'].on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)

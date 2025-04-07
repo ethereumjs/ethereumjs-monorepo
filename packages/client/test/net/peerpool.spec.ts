@@ -39,8 +39,8 @@ describe('should connect/disconnect peer', () => {
   const peer = new EventEmitter() as any
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  peer['id'] = 'abc'
-  peer['handleMessageQueue'] = vi.fn()
+  peer.id = 'abc'
+  peer.handleMessageQueue = vi.fn()
   pool['connected'](peer)
   pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
     it('should get message', () => {
@@ -76,7 +76,7 @@ describe('should get idle peers', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   /// @ts-expect-error -- Create new property
-  peers[1]['idle'] = true
+  peers[1].idle = true
   it('should add peers', () => {
     for (const p of peers) {
       pool.add(p as any)
