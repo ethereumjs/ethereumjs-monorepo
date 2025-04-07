@@ -22,7 +22,7 @@ import { ERROR, EvmError } from './exceptions.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
-import { trap } from './opcodes/index.ts'
+import { getImmediate, trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -134,6 +134,10 @@ export interface InterpreterStep {
   memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
+  section?: number // Current EOF section being executed
+  immediate?: Uint8Array // Immedate argument of the opcode
+  functionDepth?: number // Depth of CALLF return stack
+  error?: Uint8Array // Error bytes returned if revert occurs
 }
 
 /**
@@ -446,18 +450,35 @@ export class Interpreter {
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
-    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
-    const opcode = opcodeInfo.opcodeInfo
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode).opcodeInfo
+    const section = this._env.eof?.container.header.getSectionFromCodePosition(
+      this._runState.programCounter,
+    )
+    let error = undefined
+    let immediate = undefined
+    if (opcodeInfo.code === 0xfd) {
+      // If opcode is REVERT, read error data and return in trace
+      const [offset, length] = this._runState.stack.peek(2)
+      error = new Uint8Array(0)
+      if (length !== BIGINT_0) {
+        error = this._runState.memory.read(Number(offset), Number(length))
+      }
+    }
+    const opcodesWithImmediates = [0x0e, 0xe1, 0xe2] // We exclude PUSHn because the values are on the stack (per EIP-7655)
+
+    if (opcodesWithImmediates.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
+      immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
+    }
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
       gasRefund: this._runState.gasRefund,
       opcode: {
-        name: opcode.fullName,
-        fee: opcode.fee,
+        name: opcodeInfo.fullName,
+        fee: opcodeInfo.fee,
         dynamicFee,
-        isAsync: opcode.isAsync,
-        code: opcode.code,
+        isAsync: opcodeInfo.isAsync,
+        code: opcodeInfo.code,
       },
       stack: this._runState.stack.getStack(),
       depth: this._env.depth,
@@ -467,6 +488,13 @@ export class Interpreter {
       memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
+      section,
+      immediate,
+      error,
+      functionDepth:
+        this._env.eof && this._env.eof.eofRunState.returnStack.length > 0
+          ? this._env.eof?.eofRunState.returnStack.length
+          : undefined,
     }
 
     if (this._evm.DEBUG) {
@@ -517,7 +545,7 @@ export class Interpreter {
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    await (this._evm as any)._emit('step', eventObj)
+    await this._evm['_emit']('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.

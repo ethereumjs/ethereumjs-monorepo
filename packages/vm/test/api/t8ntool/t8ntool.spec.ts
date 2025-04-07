@@ -6,7 +6,7 @@ import { TransitionTool } from '../../t8n/t8ntool.ts'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
-import { createAddressFromPrivateKey, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { Account, createAddressFromPrivateKey, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { createVM, runTx } from '../../../src/index.ts'
 import { stepTraceJSON, summaryTraceJSON } from '../../t8n/helpers.ts'
 import type { T8NOptions } from '../../t8n/types.ts'
@@ -49,7 +49,7 @@ describe('test runner config tests', () => {
   })
 })
 describe('trace tests', async () => {
-  it('should produce a valid step trace', async () => {
+  it('should produce a valid step trace for a legacy contract', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
@@ -73,5 +73,46 @@ describe('trace tests', async () => {
     await runTx(vm, { tx, skipBalance: true, skipBlockGasLimitValidation: true, skipNonce: true })
     assert.equal(trace.length, 7, 'trace length is 7')
     assert.equal(JSON.parse(trace[6]).gasUsed, 21154)
+  })
+  it('should run without failing', async () => {
+    const common = new Common({
+      hardfork: Hardfork.Prague,
+      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      chain: Mainnet,
+    })
+    const sm = new MerkleStateManager({ common })
+    const vm = await createVM({ common, stateManager: sm })
+    const code = hexToBytes('0xef000101000402000100030400010000800001305000ef')
+
+    const pk = randomBytes(32)
+    const caller = createAddressFromPrivateKey(pk) // caller address
+    const contractAddress = createAddressFromPrivateKey(randomBytes(32)) // contract address
+
+    await vm.stateManager.putCode(contractAddress, code)
+    await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111)))
+
+    const tx = await createTx({
+      gasLimit: BigInt(0xffff),
+      gasPrice: 0x7,
+      to: contractAddress,
+    }).sign(pk)
+    const trace: string[] = []
+    vm.evm.events!.on('step', (step) => {
+      trace.push(JSON.stringify(stepTraceJSON(step, true)))
+    })
+    vm.events!.on('afterTx', async (event) => {
+      trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
+    })
+    const result = await runTx(vm, {
+      tx,
+      skipBalance: true,
+      skipNonce: true,
+      skipBlockGasLimitValidation: true,
+    })
+
+    // The code which is being ran should run ADDRESS POP STOP
+    // This costs 4 gas
+    assert.equal(result.execResult.executionGasUsed, BigInt(4))
+    console.log(trace)
   })
 })

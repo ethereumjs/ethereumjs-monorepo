@@ -7,6 +7,7 @@ import {
   BIGINT_64,
   BIGINT_160,
   BIGINT_NEG1,
+  EthereumJSError,
   bytesToHex,
   createAddressFromBigInt,
   equalsBytes,
@@ -270,4 +271,25 @@ export function updateSstoreGas(
     */
     return common.param('sstoreSetGas')
   }
+}
+
+export const getImmediate = (opcode: number, code: Uint8Array, pc: number) => {
+  let immediate: Uint8Array
+  switch (opcode) {
+    case 0xe0: // RJUMP
+      immediate = code.slice(pc, pc + 1)
+      break
+    case 0xe1: // RJUMPI
+      immediate = code.slice(pc, pc + 1)
+      break
+    case 0xe2: // RJUMPV
+      immediate = code.slice(pc)
+      break
+    case 0xe3: // CALLF
+      immediate = code.slice(pc, pc + 2)
+      break
+    default:
+      throw new EthereumJSError({ code: `Unsupported opcode: ${opcode}` })
+  }
+  return immediate
 }

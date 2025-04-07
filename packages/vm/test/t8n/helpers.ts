@@ -165,7 +165,10 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     depth: step.depth + 1, // Depth starts at 1 - EIP-7756
     refund: Number(step.gasRefund),
     opName: step.opcode.name,
-    error: undefined, // TODO: figure out how to get error since not available in the InterpreterStep (since runStepHook occurs before opcode handler execution)
+    section: step.section,
+    immediate: step.immediate !== undefined ? bytesToHex(step.immediate) : undefined,
+    functionDepth: step.functionDepth,
+    error: step.error !== undefined ? step.error.toString() : undefined,
   }
   return opTrace
 }
