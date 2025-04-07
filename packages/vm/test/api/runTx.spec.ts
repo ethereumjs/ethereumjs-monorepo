@@ -471,7 +471,7 @@ describe('runTx() -> runtime behavior', () => {
       await runTx(vm, { tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
       assert.equal(
-        (<any>vm.stateManager).originalStorageCache.map.size,
+        (vm.stateManager.originalStorageCache as any).map.size,
         0,
         `should clear storage cache after every ${txType.name}`,
       )
@@ -500,7 +500,7 @@ describe('runTx() -> runtime errors', () => {
         `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
-        (<any>vm.stateManager)._checkpointCount,
+        (vm.stateManager as any)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`,
       )
@@ -528,7 +528,7 @@ describe('runTx() -> runtime errors', () => {
         `result should have 'value overflow' error set (${txType.name})`,
       )
       assert.equal(
-        (<any>vm.stateManager)._checkpointCount,
+        (vm.stateManager as any)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`,
       )
