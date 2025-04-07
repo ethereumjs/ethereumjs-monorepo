@@ -867,12 +867,13 @@ export class VMExecution extends Execution {
               const tdAdd = this.config.execCommon.gteHardfork(Hardfork.Paris)
                 ? ''
                 : `td=${this.chain.blocks.td} `
-              ;(this.config.execCommon.gteHardfork(Hardfork.Paris)
-                ? this.config.logger?.debug
-                : this.config.logger?.info)(
-                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`,
-              )
 
+              const msg = `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
+              if (this.config.execCommon.gteHardfork(Hardfork.Paris) === true) {
+                this.config.logger?.debug(msg)
+              } else {
+                this.config.logger?.info(msg)
+              }
               await this.chain.update(false)
             } else {
               this.config.logger?.debug(

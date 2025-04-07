@@ -20,12 +20,73 @@ import type * as http from 'http'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
+import { getFileSink } from '@logtape/file'
+import {
+  ansiColorFormatter,
+  configure,
+  getConsoleSink,
+  getLogger as getLogtapeLogger,
+} from '@logtape/logtape'
+import type { Logger as LogtapeLoggerType } from '@logtape/logtape'
 import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.ts'
 import type { FullEthereumService } from '../src/service/index.ts'
 import type { ClientOpts, Logger } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
+
+const LEVELS: Record<string, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+}
+
+export class LogtapeLogger implements Logger {
+  public logger: LogtapeLoggerType
+  private logLevel: string
+
+  constructor(logger: LogtapeLoggerType, logLevel: string = 'info') {
+    this.logger = logger
+    this.logLevel = logLevel
+
+    // Bind methods for logger instance
+    this.info = this.info.bind(this)
+    this.warn = this.warn.bind(this)
+    this.error = this.error.bind(this)
+    this.debug = this.debug.bind(this)
+  }
+
+  info(message: string, ...meta: any[]) {
+    this.logger?.info(`${message}`, ...meta)
+  }
+
+  warn(message: string, ...meta: any[]) {
+    this.logger?.warn(`${message}`, ...meta)
+  }
+
+  error(message: string, ...meta: any[]) {
+    this.logger?.error(`${message}`, ...meta)
+  }
+
+  debug(message: string, ...meta: any[]) {
+    this.logger?.debug(`${message}`, ...meta)
+  }
+
+  isInfoEnabled() {
+    return LEVELS[this.logLevel] >= LEVELS['info']
+  }
+
+  configure(args: { [key: string]: any }) {
+    console.warn(
+      'Dynamic configuration is not supported in Logtapelogger?. Please configure globally.',
+    )
+  }
+
+  getLevel() {
+    return this.logLevel
+  }
+}
 
 let logger: Logger
 
@@ -346,10 +407,27 @@ async function run() {
     return helpRPC()
   }
 
+  // use Logtape logger with cli
+  const sinks: { [key: string]: any } = {
+    console: getConsoleSink({ formatter: ansiColorFormatter }),
+  }
+  if (typeof args.logFile === 'string') {
+    sinks.file = getFileSink(args.logFile)
+  }
+  await configure({
+    sinks,
+    loggers: [
+      {
+        category: 'ethjs',
+        lowestLevel: args.logLevel as any,
+        // Use all configured sink names.
+        sinks: Object.keys(sinks),
+      },
+    ],
+  })
+  logger = new LogtapeLogger(getLogtapeLogger(['ethjs', 'client']))
   const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
-    await generateClientConfig(args)
-
-  logger = config.logger
+    await generateClientConfig({ ...args, logger })
 
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
   // else a SIGINT before may kill the process in unclean manner

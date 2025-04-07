@@ -46,15 +46,13 @@ import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { Config, SyncMode } from '../src/config.ts'
-import { Event } from '../src/types.ts'
-import { parseMultiaddrs } from '../src/util/index.ts'
-import { setupMetrics } from '../src/util/metrics.ts'
-import { getLogger } from './logging/winston.ts'
-
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import { Config, SyncMode } from '../src/config.ts'
+import { Event } from '../src/types.ts'
 import type { ClientOpts, Logger } from '../src/types.ts'
+import { parseMultiaddrs } from '../src/util/index.ts'
+import { setupMetrics } from '../src/util/metrics.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 
@@ -619,7 +617,7 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts) {
+export async function generateClientConfig(args: ClientOpts & { logger: Logger | undefined }) {
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
@@ -748,7 +746,7 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   // logger is initialized through here
-  const logger: Logger = getLogger(args)
+  const logger: Logger | undefined = args.logger
   let bootnodes
   if (args.bootnodes !== undefined) {
     // File path passed, read bootnodes from disk
