@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { Goerli } from '../../testdata/common/goerliCommon.ts'
 import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'eth_chainId'
@@ -24,7 +24,7 @@ describe(method, () => {
 
   it('returns 5 for Goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: goerliChainConfig }) }),
     )
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 

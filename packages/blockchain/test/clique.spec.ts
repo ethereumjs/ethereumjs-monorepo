@@ -22,13 +22,13 @@ import { assert, describe, it } from 'vitest'
 import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.ts'
 import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.ts'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { Blockchain, ConsensusDict } from '../src/index.ts'
 
-const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -201,7 +201,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({ common, consensusDict })

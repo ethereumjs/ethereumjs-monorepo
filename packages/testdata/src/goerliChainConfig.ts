@@ -1,6 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 
-export const Goerli: ChainConfig = {
+export const goerliChainConfig: ChainConfig = {
   name: 'goerli',
   chainId: 5,
   defaultHardfork: 'cancun',

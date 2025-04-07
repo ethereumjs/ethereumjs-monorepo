@@ -1,4 +1,4 @@
-export const invalidSpuriousDragonData = {
+export const invalidSpuriousDragonGethGenesis = {
   config: {
     chainId: 5,
     homesteadBlock: 0,

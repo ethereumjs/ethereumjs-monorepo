@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { testnetMergeChainConfig } from '@ethereumjs/testdata'
+import { goerliChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -18,7 +18,6 @@ import {
 } from '../src/index.ts'
 
 import { genesisHashesTestData } from './testdata/genesisHashesTest.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
 import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.ts'
 import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.ts'
 import { testdataPreLondonData } from './testdata/testdata_pre-london.ts'
@@ -145,7 +144,7 @@ describe('[Block]: block functions', () => {
   })
 
   it('should test block validation on poa chain', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     try {
       createBlockFromRPC(testdataFromRPCGoerliData, [], { common })

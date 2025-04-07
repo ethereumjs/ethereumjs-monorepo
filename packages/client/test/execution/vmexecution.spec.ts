@@ -7,7 +7,13 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { customChainConfig, withdrawalsGethGenesis } from '@ethereumjs/testdata'
+import {
+  blocksGoerli,
+  blocksMainnet,
+  customChainConfig,
+  goerliGethGenesis,
+  withdrawalsGethGenesis,
+} from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
@@ -16,9 +22,6 @@ import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
 import { VMExecution } from '../../src/execution/index.ts'
 import { closeRPC, setupChain, testSetup } from '../rpc/helpers.ts'
-import { goerliData } from '../testdata/blocks/goerli.ts'
-import { mainnetData } from '../testdata/blocks/mainnet.ts'
-import { goerliGenesis } from '../testdata/geth-genesis/goerliGenesis.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
@@ -111,7 +114,7 @@ describe('[VMExecution]', () => {
     let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await createBlockchainFromBlocksData(mainnetData, {
+    blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -133,7 +136,7 @@ describe('[VMExecution]', () => {
     })
     let exec = await testSetup(blockchain)
 
-    blockchain = await createBlockchainFromBlocksData(mainnetData, {
+    blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -165,8 +168,8 @@ describe('[VMExecution]', () => {
   })
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
-    const goerliState = parseGethGenesisState(goerliGenesis)
-    const common = createCommonFromGethGenesis(goerliGenesis, {})
+    const goerliState = parseGethGenesisState(goerliGethGenesis)
+    const common = createCommonFromGethGenesis(goerliGethGenesis, {})
     let blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
@@ -188,7 +191,7 @@ describe('[VMExecution]', () => {
     let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await createBlockchainFromBlocksData(goerliData, {
+    blockchain = await createBlockchainFromBlocksData(blocksGoerli, {
       validateBlocks: true,
       validateConsensus: false,
       common,

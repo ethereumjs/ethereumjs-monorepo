@@ -1,9 +1,8 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
-import { Goerli } from '../test/testdata/goerliCommon.ts'
-
-const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
 console.log(common.consensusType()) // 'poa'
 console.log(common.consensusAlgorithm()) // 'clique'

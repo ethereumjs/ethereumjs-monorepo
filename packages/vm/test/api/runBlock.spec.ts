@@ -8,7 +8,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
-import { customChainConfig } from '@ethereumjs/testdata'
+import { customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
   LegacyTx,
@@ -42,7 +42,6 @@ import { createVM, runBlock } from '../../src/index.ts'
 import { getDAOCommon, setupPreConditions } from '../util.ts'
 
 import { blockchainData } from './testdata/blockchain.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
@@ -365,7 +364,7 @@ describe('runBlock() -> runtime behavior', async () => {
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {

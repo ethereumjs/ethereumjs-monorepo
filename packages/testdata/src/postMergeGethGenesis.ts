@@ -1,4 +1,4 @@
-export const postMergeData = {
+export const postMergeGethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,

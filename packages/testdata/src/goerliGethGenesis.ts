@@ -1,4 +1,4 @@
-export const goerliGenesis = {
+export const goerliGethGenesis = {
   config: {
     chainId: 5,
     homesteadBlock: 0,

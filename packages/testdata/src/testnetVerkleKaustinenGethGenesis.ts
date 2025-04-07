@@ -1,4 +1,4 @@
-export const testnetVerkleKaustinenData = {
+export const testnetVerkleKaustinenGethGenesis = {
   config: {
     chainId: 69420,
     homesteadBlock: 0,

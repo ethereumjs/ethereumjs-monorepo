@@ -29,7 +29,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.ts'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.ts'
 
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
@@ -76,7 +76,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     let vm = await createVM({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+    common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
     vm = await createVM({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),

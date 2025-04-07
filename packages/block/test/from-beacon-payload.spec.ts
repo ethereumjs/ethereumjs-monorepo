@@ -9,7 +9,7 @@ import { devnet4844Config } from '@ethereumjs/testdata'
 import { payloadKaustinenData } from './testdata/payload-kaustinen.ts'
 import { payloadSlot87335Data } from './testdata/payload-slot-87335.ts'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.ts'
-import { testnetVerkleKaustinenData } from './testdata/testnetVerkleKaustinen.ts'
+import { testnetVerkleKaustinenGethGenesis } from './testdata/testnetVerkleKaustinen.ts'
 
 const kzg = new microEthKZG(trustedSetup)
 describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
@@ -74,7 +74,7 @@ describe('[fromExecutionPayloadJSON]: kaustinen', () => {
   const network = 'kaustinen'
 
   // safely change chainId without modifying underlying json
-  const common = createCommonFromGethGenesis(testnetVerkleKaustinenData, {
+  const common = createCommonFromGethGenesis(testnetVerkleKaustinenGethGenesis, {
     chain: network,
     eips: [6800],
   })
