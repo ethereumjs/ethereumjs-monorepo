@@ -1,4 +1,4 @@
-export const eip4844Data = {
+export const eip4844GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,
