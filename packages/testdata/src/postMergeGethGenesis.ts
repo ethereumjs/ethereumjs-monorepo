@@ -3,6 +3,7 @@ export const postMergeGethGenesis = {
     chainId: 1,
     homesteadBlock: 0,
     eip150Block: 0,
+    eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     eip155Block: 0,
     eip158Block: 0,
     byzantiumBlock: 0,

@@ -10,9 +10,7 @@ import { Hardfork } from '../src/enums.ts'
 import { createCommonFromGethGenesis } from '../src/index.ts'
 import { parseGethGenesis } from '../src/utils.ts'
 
-import { noExtraData } from './data/geth-genesis/no-extra-data.ts'
 import { poaData } from './data/geth-genesis/poa.ts'
-import { postMergeHardforkData } from './data/post-merge-hardfork.ts'
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
@@ -52,9 +50,9 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should successfully parse genesis file with no extraData', async () => {
-    const params = parseGethGenesis(noExtraData, 'noExtraData')
+    const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
     assert.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
-    assert.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
+    assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
@@ -66,7 +64,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
-    const common = createCommonFromGethGenesis(postMergeHardforkData, {
+    const common = createCommonFromGethGenesis(postMergeGethGenesis, {
       chain: 'customChain',
     })
     const depositContractAddress =
@@ -81,7 +79,7 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     Object.assign(customData.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
@@ -114,6 +112,8 @@ describe('[Utils/Parse]', () => {
     delete genesisJSON.config.shanghaiTime
     //@ts-expect-error we don't want terminalTotalDifficultyPassed to exist
     delete genesisJSON.config.terminalTotalDifficultyPassed
+    //@ts-expect-error we don't want mergeForkBlock to exist
+    delete genesisJSON.config.mergeForkBlock
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
@@ -127,7 +127,7 @@ describe('[Utils/Parse]', () => {
 
   it('should assign correct blob schedule', () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
       chainId: 3151908,
       homesteadBlock: 0,
@@ -201,7 +201,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should throw on invalid blob schedules', () => {
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
       chainId: 3151908,
       homesteadBlock: 0,
