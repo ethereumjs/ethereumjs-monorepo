@@ -1,6 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 
-export const testnetData: ChainConfig = {
+export const customChainConfig: ChainConfig = {
   name: 'testnet',
   chainId: 12345,
   defaultHardfork: 'byzantium',
@@ -37,6 +37,34 @@ export const testnetData: ChainConfig = {
     {
       name: 'byzantium',
       block: 4,
+    },
+    {
+      name: 'constantinople',
+      block: 5,
+    },
+    {
+      name: 'petersburg',
+      block: 6,
+    },
+    {
+      name: 'istanbul',
+      block: 7,
+    },
+    {
+      name: 'muirGlacier',
+      block: 8,
+    },
+    {
+      name: 'berlin',
+      block: 9,
+    },
+    {
+      name: 'london',
+      block: 10,
+    },
+    {
+      name: 'paris',
+      block: 11,
     },
   ],
   bootstrapNodes: [

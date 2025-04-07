@@ -8,6 +8,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { customChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
   LegacyTx,
@@ -42,7 +43,6 @@ import { getDAOCommon, setupPreConditions } from '../util.ts'
 
 import { blockchainData } from './testdata/blockchain.ts'
 import { Goerli } from './testdata/goerliCommon.ts'
-import { testnetData } from './testdata/testnet.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
@@ -154,7 +154,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const common = createCustomCommon(testnetData, Mainnet, {
+    const common = createCustomCommon(customChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })

@@ -1,3 +1,4 @@
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { Mainnet } from '../src/chains.ts'
@@ -9,12 +10,11 @@ import { invalidSpuriousDragonData } from './data/geth-genesis/invalid-spurious-
 import { noExtraData } from './data/geth-genesis/no-extra-data.ts'
 import { poaData } from './data/geth-genesis/poa.ts'
 import { postMergeData } from './data/geth-genesis/post-merge.ts'
-import { testnetData } from './data/geth-genesis/testnetData.ts'
 import { postMergeHardforkData } from './data/post-merge-hardfork.ts'
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
-    const params = parseGethGenesis(testnetData, 'rinkeby')
+    const params = parseGethGenesis(eip4844GethGenesis)
     assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
   })
 

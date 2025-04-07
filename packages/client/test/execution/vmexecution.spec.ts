@@ -7,7 +7,7 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { withdrawalsGethGenesis } from '@ethereumjs/testdata'
+import { customChainConfig, withdrawalsGethGenesis } from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
@@ -18,7 +18,6 @@ import { VMExecution } from '../../src/execution/index.ts'
 import { closeRPC, setupChain, testSetup } from '../rpc/helpers.ts'
 import { goerliData } from '../testdata/blocks/goerli.ts'
 import { mainnetData } from '../testdata/blocks/mainnet.ts'
-import { testnetData } from '../testdata/common/testnet.ts'
 import { goerliGenesis } from '../testdata/geth-genesis/goerliGenesis.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
@@ -121,7 +120,7 @@ describe('[VMExecution]', () => {
     newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
-    const common = createCustomCommon(testnetData, Mainnet)
+    const common = createCustomCommon(customChainConfig, Mainnet)
     exec = await testSetup(blockchain, common)
     await exec.run()
     assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')

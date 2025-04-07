@@ -1,6 +1,6 @@
 import type { ChainConfig } from '@ethereumjs/common'
 
-export const testnetMergeData: ChainConfig = {
+export const testnetMergeChainConfig: ChainConfig = {
   name: 'testnetMerge',
   chainId: 55555,
   defaultHardfork: 'istanbul',
@@ -56,7 +56,7 @@ export const testnetMergeData: ChainConfig = {
     },
     {
       name: 'paris',
-      block: null,
+      block: 15,
     },
     {
       name: 'shanghai',
