@@ -492,9 +492,7 @@ export class Interpreter {
       immediate,
       error,
       functionDepth:
-        this._env.eof && this._env.eof.eofRunState.returnStack.length > 0
-          ? this._env.eof?.eofRunState.returnStack.length
-          : undefined,
+        this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
     }
 
     if (this._evm.DEBUG) {
