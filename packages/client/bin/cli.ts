@@ -77,7 +77,7 @@ export class LogtapeLogger implements Logger {
     return LEVELS[this.logLevel] >= LEVELS['info']
   }
 
-  configure(args: { [key: string]: any }) {
+  configure(_: { [key: string]: any }) {
     console.warn(
       'Dynamic configuration is not supported in Logtapelogger?. Please configure globally.',
     )

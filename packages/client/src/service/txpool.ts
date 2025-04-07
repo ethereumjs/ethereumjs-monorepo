@@ -209,7 +209,7 @@ export class TxPool {
       this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60,
     )
 
-    if (this.config.logger?.isInfoEnabled()) {
+    if (this.config.logger?.isInfoEnabled() === true) {
       // Only turn on txPool stats calculator if log level is info or above
       // since all stats calculator does is print `info` logs
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
