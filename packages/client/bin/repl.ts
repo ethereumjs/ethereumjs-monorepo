@@ -12,7 +12,7 @@ import DailyRotateFile from 'winston-daily-rotate-file'
 
 import type { Common } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
-import { Logger as WinstonLoggerType } from 'winston'
+import type { Logger as WinstonLoggerType } from 'winston'
 import type { Config } from '../src/config.ts'
 import type { EthereumClient } from '../src/index.ts'
 import type { ClientOpts, Logger } from '../src/types.ts'
@@ -253,7 +253,7 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
     help: `Sets the log level.  Example usage: .logLevel info`,
     action(params) {
       const logger = (replServer.context.client as EthereumClient).config.logger
-      if (logger === undefined || !(logger instanceof WinstonLoggerType)) {
+      if (logger === undefined || !(logger instanceof WinstonLogger)) {
         console.log('logLevel is only supported when using Winston logger.')
         this.displayPrompt()
         return
@@ -261,7 +261,7 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
       const level = params
       if (['debug', 'info', 'warn', 'error'].includes(level)) {
         // TODO type this out better so we don't have to cast to type
-        for (const transport of logger.transports) {
+        for (const transport of logger.logger.transports) {
           transport.level = level
         }
       } else {
