@@ -2,7 +2,14 @@
   "name": "@ethereumjs/client",
   "version": "0.10.4",
   "description": "EthereumJS Execution Layer (EL) Client Implementation",
-  "keywords": ["ethereum", "ethereumjs", "client", "blockchain", "light sync", "full sync"],
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "client",
+    "blockchain",
+    "light sync",
+    "full sync"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+client%22"
@@ -19,7 +26,9 @@
   "bin": {
     "ethereumjs": "dist/esm/bin/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "binWorkaround": "test -f dist/bin/cli.js || echo 'install fails if bin script does not exist (https://github.com/npm/cli/issues/2632), creating placeholder file at \"dist/bin/cli.js\"' && mkdir -p 'dist/bin' && touch dist/bin/cli.js",
     "biome": "npx @biomejs/biome check",
@@ -66,6 +75,8 @@
     "@ethereumjs/util": "10.0.0-rc.1",
     "@ethereumjs/vm": "10.0.0-rc.1",
     "@js-sdsl/ordered-map": "^4.4.2",
+    "@logtape/file": "^0.9.0",
+    "@logtape/logtape": "^0.9.0",
     "@multiformats/multiaddr": "^12.4.0",
     "@paulmillr/trusted-setups": "^0.1.2",
     "@polkadot/wasm-crypto": "^7.4.1",
