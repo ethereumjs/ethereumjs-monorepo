@@ -567,7 +567,7 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ logLevel: 'error' }) // logger is being instantiated here too, so two places so far getLogger is called
 
-    this.logger.info(`Sync Mode ${this.syncmode}`)
+    this.logger?.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
@@ -627,7 +627,7 @@ export class Config {
         const diff = Date.now() - this.lastSyncDate
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
-          this.logger.info(
+          this.logger?.info(
             `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
@@ -635,7 +635,7 @@ export class Config {
     }
 
     if (this.synchronized !== this.lastSynchronized) {
-      this.logger.debug(
+      this.logger?.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
@@ -711,11 +711,11 @@ export class Config {
     for (const msg of msgs) {
       len = msg.length > len ? msg.length : len
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
     for (const msg of msgs) {
-      this.logger.info(msg, meta)
+      this.logger?.info(msg, meta)
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
   }
 
   /**

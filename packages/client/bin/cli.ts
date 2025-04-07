@@ -117,7 +117,7 @@ async function startBlock(client: EthereumClient) {
   }
   try {
     await client.chain.resetCanonicalHead(startBlock)
-    client.config.logger.info(`Chain height reset to ${client.chain.headers.height}`)
+    client.config.logger?.info(`Chain height reset to ${client.chain.headers.height}`)
   } catch (err: any) {
     throw EthereumJSErrorWithoutCode(`Error setting back chain in startBlock: ${err}`)
   }
@@ -149,7 +149,7 @@ async function startExecutionFrom(client: EthereumClient) {
       try {
         await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
         await client.chain.update(false)
-        client.config.logger.info(
+        client.config.logger?.info(
           `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
         )
       } catch (err: any) {
@@ -161,7 +161,7 @@ async function startExecutionFrom(client: EthereumClient) {
       try {
         await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
         await client.chain.update(false)
-        client.config.logger.info(
+        client.config.logger?.info(
           `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
         )
       } catch (err: any) {
@@ -186,7 +186,7 @@ async function startClient(
   genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {},
 ) {
   // TODO make sure all logger usage is preservable through newly created logger interface
-  config.logger.info(`Data directory: ${config.datadir}`)
+  config.logger?.info(`Data directory: ${config.datadir}`)
 
   const dbs = initDBs(config)
 
@@ -243,13 +243,13 @@ async function startClient(
           })
           blocks.push(block)
           buf = RLP.decode(buf.remainder, true)
-          config.logger.info(
+          config.logger?.info(
             `Preloading block hash=${short(bytesToHex(block.header.hash()))} number=${
               block.header.number
             }`,
           )
         } catch (err: any) {
-          config.logger.info(
+          config.logger?.info(
             `Encountered error while while preloading chain data  error=${err.message}`,
           )
           break
@@ -310,28 +310,28 @@ const stopClient = async (
     servers: (RPCServer | http.Server)[]
   } | null>,
 ) => {
-  config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
-  config.logger.info('(This might take a little longer if client not yet fully started)')
+  config.logger?.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
+  config.logger?.info('(This might take a little longer if client not yet fully started)')
   let timeoutHandle
   if (clientStartPromise?.toString().includes('Promise') === true)
     // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
     timeoutHandle = setTimeout(() => {
-      config.logger.warn('Client has become unresponsive while starting up.')
-      config.logger.warn('Check logging output for potential errors.  Exiting...')
+      config.logger?.warn('Client has become unresponsive while starting up.')
+      config.logger?.warn('Check logging output for potential errors.  Exiting...')
       process.exit(1)
     }, 30000)
   const clientHandle = await clientStartPromise
   if (clientHandle !== null) {
-    config.logger.info('Shutting down the client and the servers...')
+    config.logger?.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
       //@ts-expect-error jayson.Server type doesn't play well with ESM for some reason
       s['http'] !== undefined ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()
-    config.logger.info('Exiting.')
+    config.logger?.info('Exiting.')
   } else {
-    config.logger.info('Client did not start properly, exiting ...')
+    config.logger?.info('Client did not start properly, exiting ...')
   }
   clearTimeout(timeoutHandle)
   process.exit()
@@ -366,14 +366,14 @@ async function run() {
         client.config.chainCommon.gteHardfork(Hardfork.Paris) &&
         (args.rpcEngine === false || args.rpcEngine === undefined)
       ) {
-        config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
+        config.logger?.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
       if (metricsServer !== undefined) servers.push(metricsServer)
       config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {
-      config.logger.error('Error starting client', e)
+      config.logger?.error('Error starting client', e)
       return null
     })
 
@@ -388,8 +388,8 @@ async function run() {
   process.on('uncaughtException', (err) => {
     // Handles uncaught exceptions that are thrown in async events/functions and aren't caught in
     // main client process
-    config.logger.error(`Uncaught error: ${err.message}`)
-    config.logger.error(err.stack ?? err.message)
+    config.logger?.error(`Uncaught error: ${err.message}`)
+    config.logger?.error(err.stack ?? err.message)
 
     void stopClient(config, clientStartPromise)
   })

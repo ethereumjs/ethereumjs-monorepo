@@ -768,7 +768,7 @@ export async function generateClientConfig(args: ClientOpts) {
         }
       })
       bootnodes = parseMultiaddrs(nodeURLs)
-      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+      logger?.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
     } else {
       bootnodes = parseMultiaddrs(args.bootnodes)
     }
@@ -815,7 +815,7 @@ export async function generateClientConfig(args: ClientOpts) {
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics
-    logger.info(`Starting Metrics Server on port ${args.prometheusPort}`)
+    logger?.info(`Starting Metrics Server on port ${args.prometheusPort}`)
     metricsServer.listen(args.prometheusPort)
   }
 
@@ -875,12 +875,12 @@ export async function generateClientConfig(args: ClientOpts) {
       writeFileSync(`${networkDir}/${details.transport}`, details.url)
     } catch (e) {
       // In case dir is not really setup, mostly to take care of mockserver in test
-      config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+      config.logger?.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })
   if (customGenesisState !== undefined) {
     const numAccounts = Object.keys(customGenesisState).length
-    config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
+    config.logger?.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
   const customGenesisStateRoot = args.verkleGenesisStateRoot
 

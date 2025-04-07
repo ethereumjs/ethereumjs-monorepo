@@ -343,7 +343,7 @@ export class CLConnectionManager {
       return
     }
     if (!this.config.synchronized) {
-      this.config.logger.info('')
+      this.config.logger?.info('')
       if (!this._lastPayload) {
         logCLStatus(this.config.logger, 'No consensus payload received yet', logLevel.INFO)
       } else {
@@ -380,7 +380,7 @@ export class CLConnectionManager {
   public newPayloadLog() {
     if (this._lastPayload) {
       const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
-      this.config.logger.info('')
+      this.config.logger?.info('')
       logCLStatus(
         this.config.logger,
         `New consensus payload received  ${payloadMsg}`,

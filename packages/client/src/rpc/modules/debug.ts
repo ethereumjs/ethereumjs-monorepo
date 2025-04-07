@@ -460,8 +460,8 @@ export class Debug {
    */
   async verbosity(params: [number]) {
     const [level] = params
-    this.client.config.logger.configure({ level: logLevels[level] })
-    return `level: ${this.client.config.logger.getLevel()}`
+    this.client.config.logger?.configure({ level: logLevels[level] })
+    return `level: ${this.client.config.logger?.getLevel()}`
   }
 
   /**

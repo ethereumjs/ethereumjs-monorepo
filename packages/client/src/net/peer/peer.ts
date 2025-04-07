@@ -121,7 +121,7 @@ export abstract class Peer extends EventEmitter {
             this.config.syncTargetHeight < latest.number)
         ) {
           this.config.syncTargetHeight = height
-          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+          this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
         }
       }
     }

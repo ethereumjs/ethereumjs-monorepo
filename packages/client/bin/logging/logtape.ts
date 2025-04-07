@@ -31,19 +31,19 @@ export class LogtapeLogger implements Logger {
   }
 
   info(message: string, ...meta: any[]) {
-    this.logger.info(`${message}`, ...meta)
+    this.logger?.info(`${message}`, ...meta)
   }
 
   warn(message: string, ...meta: any[]) {
-    this.logger.warn(`${message}`, ...meta)
+    this.logger?.warn(`${message}`, ...meta)
   }
 
   error(message: string, ...meta: any[]) {
-    this.logger.error(`${message}`, ...meta)
+    this.logger?.error(`${message}`, ...meta)
   }
 
   debug(message: string, ...meta: any[]) {
-    this.logger.debug(`${message}`, ...meta)
+    this.logger?.debug(`${message}`, ...meta)
   }
 
   isInfoEnabled() {
@@ -52,7 +52,7 @@ export class LogtapeLogger implements Logger {
 
   configure(args: { [key: string]: any }) {
     console.warn(
-      'Dynamic configuration is not supported in LogtapeLogger. Please configure globally.',
+      'Dynamic configuration is not supported in Logtapelogger?. Please configure globally.',
     )
   }
 

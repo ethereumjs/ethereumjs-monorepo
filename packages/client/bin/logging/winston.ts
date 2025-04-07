@@ -141,31 +141,31 @@ export class WinstonLogger implements Logger {
     this.debug = this.debug.bind(this)
   }
   info(message: string, ...meta: any[]) {
-    this.logger.info(`${message}`, ...meta)
+    this.logger?.info(`${message}`, ...meta)
   }
 
   warn(message: string, ...meta: any[]) {
-    this.logger.warn(`${message}`, ...meta)
+    this.logger?.warn(`${message}`, ...meta)
   }
 
   error(message: string, ...meta: any[]) {
-    this.logger.error(`${message}`, ...meta)
+    this.logger?.error(`${message}`, ...meta)
   }
 
   debug(message: string, ...meta: any[]) {
-    this.logger.debug(`${message}`, ...meta)
+    this.logger?.debug(`${message}`, ...meta)
   }
 
   isInfoEnabled() {
-    return this.logger.isInfoEnabled()
+    return this.logger?.isInfoEnabled()
   }
 
   configure(args: { [key: string]: any }) {
-    this.logger.configure(args)
+    this.logger?.configure(args)
   }
 
   getLevel() {
-    return this.logger.level
+    return this.logger?.level
   }
 }
 
