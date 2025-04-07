@@ -7,6 +7,7 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { withdrawalsGethGenesis } from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
@@ -19,7 +20,6 @@ import { goerliData } from '../testdata/blocks/goerli.ts'
 import { mainnetData } from '../testdata/blocks/mainnet.ts'
 import { testnetData } from '../testdata/common/testnet.ts'
 import { goerliGenesis } from '../testdata/geth-genesis/goerliGenesis.ts'
-import { withdrawalsData } from '../testdata/geth-genesis/withdrawals.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
@@ -210,9 +210,13 @@ describe('[VMExecution]', () => {
   })
 
   it('Block execution / Hardforks PoA (goerli)', async () => {
-    const { server, execution, blockchain } = await setupChain(withdrawalsData, 'post-merge', {
-      engine: true,
-    })
+    const { server, execution, blockchain } = await setupChain(
+      withdrawalsGethGenesis,
+      'post-merge',
+      {
+        engine: true,
+      },
+    )
 
     const block = await createBlockFromExecutionPayload(shanghaiPayload, {
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }),

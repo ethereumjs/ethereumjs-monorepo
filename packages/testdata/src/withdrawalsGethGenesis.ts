@@ -1,4 +1,4 @@
-export const withdrawalsData = {
+export const withdrawalsGethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,
@@ -12,6 +12,7 @@ export const withdrawalsData = {
     muirGlacierBlock: 0,
     berlinBlock: 0,
     londonBlock: 0,
+    mergeForkBlock: 0,
     shanghaiTime: 0,
     clique: {
       blockperiodseconds: 5,
@@ -29,7 +30,9 @@ export const withdrawalsData = {
   mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   coinbase: '0x0000000000000000000000000000000000000000',
   alloc: {
-    '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': { balance: '0x6d6172697573766477000000' },
+    '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
+      balance: '0x6d6172697573766477000000',
+    },
   },
   number: '0x0',
   gasUsed: '0x0',
