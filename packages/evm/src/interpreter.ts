@@ -456,6 +456,7 @@ export class Interpreter {
     )
     let error = undefined
     let immediate = undefined
+
     if (opcodeInfo.code === 0xfd) {
       // If opcode is REVERT, read error data and return in trace
       const [offset, length] = this._runState.stack.peek(2)
@@ -464,11 +465,15 @@ export class Interpreter {
         error = this._runState.memory.read(Number(offset), Number(length))
       }
     }
+
+    // Add immediate (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
     const opcodesWithImmediate = [0x0e, 0xe1, 0xe2] // We exclude PUSHn because the values are on the stack (per EIP-7655)
 
     if (opcodesWithImmediate.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
       immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
     }
+
+    // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
@@ -542,6 +547,10 @@ export class Interpreter {
      * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
+     * @property {number} section the current EOF code section referenced by the PC
+     * @property {Uint8Array} immediate the immediate argument of the opcode
+     * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
+     * @property {number} functionDepth the depth of the function call (only present for EOF)
      */
     await this._evm['_emit']('step', eventObj)
   }
