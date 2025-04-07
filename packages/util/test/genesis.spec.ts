@@ -1,9 +1,8 @@
+// kiln genesis with deposit contract storage set
+import { gethGenesisKilnData } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { parseGethGenesisState } from '../src/genesis.ts'
-
-// kiln genesis with deposit contract storage set
-import { gethGenesisKilnData } from './testdata/gethGenesisKiln.ts'
 
 describe('[Util/genesis]', () => {
   it('should properly generate stateRoot from gethGenesis', () => {

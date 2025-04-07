@@ -1,10 +1,10 @@
 import { getGenesis } from '@ethereumjs/genesis'
+// kiln genesis with deposit contract storage set
+import { gethGenesisKilnData } from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { genesisMPTStateRoot } from '../../src/util/genesisState.ts'
-// kiln genesis with deposit contract storage set
-import { gethGenesisKilnData } from '../fixtures/gethGenesisKiln.ts'
 
 import type { GenesisState } from '@ethereumjs/util'
 

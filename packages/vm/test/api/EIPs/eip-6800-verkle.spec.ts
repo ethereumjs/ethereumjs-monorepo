@@ -2,13 +2,13 @@ import { createBlock } from '@ethereumjs/block'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import * as verkle from 'micro-eth-signer/verkle'
 import { describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../../src/index.ts'
-import { verkleKaustinen6Block72Data } from '../testdata/verkleKaustinen6Block72.ts'
 
 const customChainParams = { name: 'custom', chainId: 69420 }
 const common = createCustomCommon(customChainParams, Mainnet, {
