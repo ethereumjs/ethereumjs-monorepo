@@ -361,7 +361,7 @@ export class TransitionTool {
       output.requests = []
       for (const request of requests) {
         if (request.bytes.length > 1) {
-          output.requests.push(bytesToHex(request.bytes.slice(1)))
+          output.requests.push(bytesToHex(request.bytes))
         }
       }
     }
