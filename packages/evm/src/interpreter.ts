@@ -135,7 +135,7 @@ export interface InterpreterStep {
   memoryWordCount: bigint
   codeAddress: Address
   section?: number // Current EOF section being executed
-  immediate?: Uint8Array // Immedate argument of the opcode
+  immediate?: Uint8Array // Immediate argument of the opcode
   functionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
 }
@@ -464,9 +464,9 @@ export class Interpreter {
         error = this._runState.memory.read(Number(offset), Number(length))
       }
     }
-    const opcodesWithImmediates = [0x0e, 0xe1, 0xe2] // We exclude PUSHn because the values are on the stack (per EIP-7655)
+    const opcodesWithImmediate = [0x0e, 0xe1, 0xe2] // We exclude PUSHn because the values are on the stack (per EIP-7655)
 
-    if (opcodesWithImmediates.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
+    if (opcodesWithImmediate.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
       immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
     }
     const eventObj: InterpreterStep = {
