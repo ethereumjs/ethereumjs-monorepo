@@ -94,7 +94,8 @@ describe('EIP1559 tests', () => {
           freeze: false,
         },
       )
-      ;(header as any).baseFeePerGas = undefined
+      // @ts-expect-error -- Assigning to read-only property
+      header.baseFeePerGas = undefined
       await (header as any)._genericFormatValidation()
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'

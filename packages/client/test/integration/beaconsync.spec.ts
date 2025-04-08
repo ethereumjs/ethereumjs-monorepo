@@ -5,6 +5,7 @@ import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Event } from '../../src/types.ts'
 
+import type { BeaconSynchronizer } from '../../src/sync/beaconsync.ts'
 import { destroy, setup, wait } from './util.ts'
 
 const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
@@ -21,7 +22,7 @@ describe('should sync blocks', async () => {
   const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
   const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
   const next = await remoteService.chain.getCanonicalHeadHeader()
-  ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
+  ;(localService.synchronizer as BeaconSynchronizer).skeleton['status'].progress.subchains = [
     {
       head: BigInt(21),
       tail: BigInt(21),
@@ -73,7 +74,7 @@ describe('should sync with best peer', async () => {
     common,
     minPeers: 2,
   })
-  ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
+  ;(localService.synchronizer as BeaconSynchronizer).skeleton['status'].progress.subchains = [
     {
       head: BigInt(11),
       tail: BigInt(11),
