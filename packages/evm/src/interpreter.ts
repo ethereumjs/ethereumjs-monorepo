@@ -133,7 +133,7 @@ export interface InterpreterStep {
   }
   account: Account
   address: Address
-  memory?: Uint8Array
+  memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
   section?: number // Current EOF section being executed
