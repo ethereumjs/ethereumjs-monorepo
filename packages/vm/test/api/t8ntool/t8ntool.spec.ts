@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { TransitionTool } from '../../t8n/t8ntool.ts'
 
@@ -74,7 +74,7 @@ describe('trace tests', async () => {
     assert.equal(trace.length, 7, 'trace length is 7')
     assert.equal(JSON.parse(trace[6]).gasUsed, 21154)
   })
-  it('should run without failing', async () => {
+  it('should produce a trace of the correct length', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
@@ -109,10 +109,41 @@ describe('trace tests', async () => {
       skipNonce: true,
       skipBlockGasLimitValidation: true,
     })
-
-    // The code which is being ran should run ADDRESS POP STOP
-    // This costs 4 gas
     assert.equal(result.execResult.executionGasUsed, BigInt(4))
-    console.log(trace)
+    assert.equal(trace.length, 4)
+  })
+  it('should produce a trace with storage activates', async () => {
+    const bytecode = hexToBytes('0x604260005560206000f3') // PUSH1 42 PUSH1 00 MSTORE PUSH1 20 PUSH1 00 RETURN
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
+    const sm = new MerkleStateManager({ common })
+    const vm = await createVM({ common, stateManager: sm })
+    const contractAddress = createAddressFromPrivateKey(randomBytes(32))
+    await vm.stateManager.putAccount(contractAddress)
+    await vm.stateManager.putCode(contractAddress, bytecode)
+    const trace: string[] = []
+    vm.evm.events!.on('step', (step) => {
+      trace.push(JSON.stringify(stepTraceJSON(step, false, true)))
+    })
+    vm.events!.on('afterTx', async (event) => {
+      trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
+    })
+    const tx = await createTx({
+      to: contractAddress,
+      gasLimit: 0xffffffff,
+      gasPrice: 0xf,
+    }).sign(randomBytes(32))
+
+    await runTx(vm, { tx, skipBalance: true, skipBlockGasLimitValidation: true, skipNonce: true })
+    assert.equal(trace.length, 7, 'trace length is 7')
+
+    // First step trace should have empty storage
+    const traceStepWithoutStorage = JSON.parse(trace[0])
+    expect(traceStepWithoutStorage.storage.length).toBe(0)
+
+    // Last step trace should have storage with actual value
+    const traceStepWithStorage = JSON.parse(trace[5])
+    assert.exists(traceStepWithStorage.storage)
+    expect(traceStepWithStorage.storage).toMatchObject([['0x0', '0x42']])
+    assert.equal(JSON.parse(trace[6]).gasUsed, 43115)
   })
 })

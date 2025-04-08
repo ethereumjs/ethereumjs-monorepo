@@ -140,7 +140,11 @@ export function normalizeNumbers(input: any) {
  * @param memory whether to include the memory in the trace
  * @returns a JSON object that matches the EIP-7756 trace format
  */
-export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) => {
+export const stepTraceJSON = (
+  step: InterpreterStep,
+  memory: boolean = false,
+  storage: boolean = false,
+) => {
   let hexStack = []
   hexStack = step.stack.map((item: bigint) => {
     return '0x' + item.toString(16)
@@ -154,6 +158,13 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     }
   }
 
+  let storageWords = undefined
+  if (storage) {
+    storageWords = []
+    for (let i = 0; i < step.memoryWordCount; i++) {
+      storageWords.push(bytesToHex(step.memory.slice(i * 32, (i + 1) * 32))) // memory is returned in 32 byte words
+    }
+  }
   const opTrace = {
     pc: step.pc,
     op: '0x' + step.opcode.code.toString(16),
@@ -169,6 +180,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     immediate: step.immediate !== undefined ? bytesToHex(step.immediate) : undefined,
     functionDepth: step.functionDepth,
     error: step.error !== undefined ? step.error.toString() : undefined,
+    storage: storage ? step.storage : undefined,
   }
   return opTrace
 }

@@ -6,6 +6,7 @@ import {
   BIGINT_2,
   EthereumJSErrorWithoutCode,
   MAX_UINT64,
+  bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
@@ -108,6 +109,7 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
+  accessedStorage: Map<PrefixedHexString, PrefixedHexString>
 }
 
 export interface InterpreterResult {
@@ -131,13 +133,14 @@ export interface InterpreterStep {
   }
   account: Account
   address: Address
-  memory: Uint8Array
+  memory?: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
   section?: number // Current EOF section being executed
   immediate?: Uint8Array // Immediate argument of the opcode
   functionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
+  storage?: [PrefixedHexString, PrefixedHexString][]
 }
 
 /**
@@ -203,6 +206,7 @@ export class Interpreter {
       gasRefund: env.gasRefund,
       gasLeft,
       returnBytes: new Uint8Array(0),
+      accessedStorage: new Map(),
     }
     this.journal = journal
     this._env = env
@@ -456,7 +460,6 @@ export class Interpreter {
     )
     let error = undefined
     let immediate = undefined
-
     if (opcodeInfo.code === 0xfd) {
       // If opcode is REVERT, read error data and return in trace
       const [offset, length] = this._runState.stack.peek(2)
@@ -471,6 +474,19 @@ export class Interpreter {
 
     if (opcodesWithImmediate.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
       immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
+    }
+
+    if (opcodeInfo.code === 0x54) {
+      // Store SLOADed values for recording in trace
+      const key = this._runState.stack.peek(1)
+      const value = await this.storageLoad(bigIntToBytes(key[0]))
+      this._runState.accessedStorage.set(`0x${key[0].toString(16)}`, bytesToHex(value))
+    }
+
+    if (opcodeInfo.code === 0x55) {
+      // Store SSTOREed values for recording in trace
+      const [key, value] = this._runState.stack.peek(2)
+      this._runState.accessedStorage.set(`0x${key.toString(16)}`, `0x${value.toString(16)}`)
     }
 
     // Create event object for step
@@ -498,6 +514,7 @@ export class Interpreter {
       error,
       functionDepth:
         this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
+      storage: Array.from(this._runState.accessedStorage.entries()),
     }
 
     if (this._evm.DEBUG) {
