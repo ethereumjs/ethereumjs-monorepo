@@ -347,7 +347,7 @@ const main = async () => {
   console.log(
     `Instantiated block with ${
       block.requests?.length
-    } withdrawal request, requestsTrieValid=${await block.requestsTrieIsValid()}`,
+    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`,
   )
 }
 
