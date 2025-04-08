@@ -21,7 +21,6 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
-import { getLogger } from '../../bin/logging/winston.ts'
 import { Config } from '../../src/config.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'
@@ -33,6 +32,7 @@ import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
+import { getLogger } from '../logging.spec.ts'
 
 const kzg = new microEthKZG(trustedSetup)
 

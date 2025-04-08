@@ -623,7 +623,7 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts & { logger: Logger | undefined }) {
+export async function generateClientConfig(args: ClientOpts & { logger?: Logger | undefined }) {
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet

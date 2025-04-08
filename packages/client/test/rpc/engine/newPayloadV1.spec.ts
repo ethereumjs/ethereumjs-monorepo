@@ -115,7 +115,7 @@ describe(method, () => {
   it('call with valid data but invalid transactions', async () => {
     const { chain, server } = await setupChain(postMergeData, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
-    chain.config.logger.silent = true
+    chain.config.logger!.logger.silent = true
     const blockDataWithInvalidTransaction = {
       ...blockData,
       transactions: ['0x1'],
@@ -136,7 +136,7 @@ describe(method, () => {
       engine: true,
     })
     const rpc = getRPCClient(server)
-    chain.config.logger.silent = true
+    chain.config.logger!.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
     const tx = createFeeMarket1559Tx(
