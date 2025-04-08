@@ -11,6 +11,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -479,7 +480,7 @@ export class Interpreter {
     if (opcodeInfo.code === 0x54) {
       // Store SLOADed values for recording in trace
       const key = this._runState.stack.peek(1)
-      const value = await this.storageLoad(bigIntToBytes(key[0]))
+      const value = await this.storageLoad(setLengthLeft(bigIntToBytes(key[0]), 32))
       this._runState.accessedStorage.set(`0x${key[0].toString(16)}`, bytesToHex(value))
     }
 
