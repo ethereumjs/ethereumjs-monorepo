@@ -65,7 +65,7 @@ export class BinaryTree {
     this._root = this.EMPTY_TREE_ROOT
 
     if (opts?.root) {
-      this.root(opts.root as any)
+      this.root(opts.root)
     }
 
     this.DEBUG =

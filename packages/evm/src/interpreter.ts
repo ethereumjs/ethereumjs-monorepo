@@ -861,7 +861,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the block’s number.
+   * Returns the block's number.
    */
   getBlockNumber(): bigint {
     return this._env.block.header.number
@@ -1011,7 +1011,7 @@ export class Interpreter {
   }
 
   /**
-   * Message-call into this account with an alternative account’s code, but
+   * Message-call into this account with an alternative account's code, but
    * persisting the current values for sender and value.
    */
   async callDelegate(
