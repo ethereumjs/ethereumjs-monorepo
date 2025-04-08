@@ -1,10 +1,5 @@
-import type {
-  BigIntLike,
-  ECDSASignature,
-  KZG,
-  PrefixedHexString,
-  VerkleCrypto,
-} from '@ethereumjs/util'
+import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
 export interface ChainName {
@@ -95,7 +90,7 @@ export interface CustomCrypto {
     msg: Uint8Array,
     pk: Uint8Array,
     ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
-  ) => ECDSASignature
+  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>
   ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { r: bigint; s: bigint; recovery: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
