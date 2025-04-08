@@ -70,11 +70,23 @@ describe(method, () => {
       return this
     }
 
-    const { service, server, common } = await setupChain(eip4844GethGenesis, 'post-merge', {
-      engine: true,
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
+    // Overwriting alloc since this particular tests relies on an exact alloc specification to pass
+    const { service, server, common } = await setupChain(
+      {
+        ...eip4844GethGenesis,
+        alloc: {
+          '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
+            balance: '0x6d6172697573766477000000',
+          },
+        },
+      },
+      'post-merge',
+      {
+        engine: true,
+        hardfork: Hardfork.Cancun,
+        customCrypto: { kzg },
+      },
+    )
 
     const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.Cancun)
@@ -82,15 +94,11 @@ describe(method, () => {
     const address = createAddressFromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
-
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
-    assert.isTrue(
-      payloadId !== undefined && payloadId !== null,
-      'valid payloadId should be received',
-    )
+    assert.exists(payloadId, 'valid payloadId should be received')
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(kzg, txBlobs)
