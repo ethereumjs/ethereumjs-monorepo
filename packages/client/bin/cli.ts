@@ -35,20 +35,11 @@ import type { FullEthereumService } from '../src/service/index.ts'
 import type { ClientOpts, Logger } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
 
-const LEVELS: Record<string, number> = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3,
-}
-
 export class LogtapeLogger implements Logger {
   public logger: LogtapeLoggerType
-  private logLevel: string
 
-  constructor(logger: LogtapeLoggerType, logLevel: string = 'info') {
+  constructor(logger: LogtapeLoggerType) {
     this.logger = logger
-    this.logLevel = logLevel
 
     // Bind methods for logger instance
     this.info = this.info.bind(this)
@@ -74,17 +65,18 @@ export class LogtapeLogger implements Logger {
   }
 
   isInfoEnabled() {
-    return LEVELS[this.logLevel] >= LEVELS['info']
+    const level = (this.logger as any).lowestLevel
+    return level === 'info' || level === 'debug'
   }
 
   configure(_: { [key: string]: any }) {
     console.warn(
-      'Dynamic configuration is not supported in Logtapelogger?. Please configure globally.',
+      'Dynamic configuration is not supported in Logtapelogger. Please configure globally.',
     )
   }
 
   getLevel() {
-    return this.logLevel
+    return (this.logger as any).lowestLevel
   }
 }
 

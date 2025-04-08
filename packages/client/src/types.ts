@@ -165,4 +165,5 @@ export interface Logger {
   debug(message: string, ...meta: any[]): void
   isInfoEnabled(): boolean
   configure(args: { [key: string]: any }): void
+  getLevel(): string
 }
