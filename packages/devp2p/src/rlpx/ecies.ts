@@ -2,22 +2,24 @@ import * as crypto from 'crypto'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
+  bigIntToBytes,
   bytesToInt,
   concatBytes,
   hexToBytes,
   intToBytes,
+  setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { ecdh, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
 import { MAC } from './mac.ts'
 
-import type { Common } from '@ethereumjs/common'
+import type { Common, CustomCrypto } from '@ethereumjs/common'
 type Decipher = crypto.Decipher
 
 const debug = debugDefault('devp2p:rlpx:peer')
@@ -77,13 +79,7 @@ export class ECIES {
   protected _bodySize: number | null = null
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
-  protected _ecdsaSign: (
-    msg: Uint8Array,
-    pk: Uint8Array,
-  ) => {
-    signature: Uint8Array
-    recid: number
-  }
+  protected _ecdsaSign: Required<CustomCrypto>['ecsign']
   protected _ecdsaRecover: (
     sig: Uint8Array,
     recId: number,
@@ -101,7 +97,7 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
-    this._ecdsaSign = common?.customCrypto.ecdsaSign ?? ecdsaSign
+    this._ecdsaSign = common?.customCrypto.ecdsaSign ?? secp256k1.sign
     this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
   }
 
@@ -198,7 +194,11 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
-      concatBytes(sig.signature, Uint8Array.from([sig.recid])),
+      concatBytes(
+        setLengthLeft(bigIntToBytes(sig.r), 32),
+        setLengthLeft(bigIntToBytes(sig.s), 32),
+        Uint8Array.from([sig.recovery]),
+      ),
       // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -221,8 +221,9 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = concatBytes(
-      sig.signature,
-      Uint8Array.from([sig.recid]),
+      bigIntToBytes(sig.r),
+      bigIntToBytes(sig.s),
+      Uint8Array.from([sig.recovery]),
       this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,

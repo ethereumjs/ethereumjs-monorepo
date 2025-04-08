@@ -38,7 +38,7 @@ import {
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -658,9 +658,14 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     }
     cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
       const sig = secp256k1Sign(hash, pk)
+      const r = bytesToBigInt(sig.slice(0, 32))
+      const s = bytesToBigInt(sig.slice(32, 64))
+      const recovery = Number(sig[64])
+
       return {
-        signature: sig.slice(0, 64),
-        recid: sig[64],
+        r,
+        s,
+        recovery,
       }
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
@@ -671,7 +676,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign
-    cryptoFunctions.ecdsaSign = ecdsaSign
+    cryptoFunctions.ecdsaSign = secp256k1.sign
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   cryptoFunctions.kzg = kzg
