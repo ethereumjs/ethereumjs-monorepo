@@ -2,12 +2,12 @@ import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { getLogger } from '../../../bin/logging/winston.ts'
 import { Chain } from '../../../src/blockchain/chain.ts'
 import { Config } from '../../../src/config.ts'
 import { Skeleton } from '../../../src/service/skeleton.ts'
 import { Event } from '../../../src/types.ts'
 import { wait } from '../../integration/util.ts'
+import { getLogger } from '../../logging.spec.ts'
 
 class PeerPool {
   idle() {}

@@ -9,7 +9,6 @@ import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../../bin/logging/winston.ts'
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
@@ -19,6 +18,7 @@ import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
 import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Block } from '@ethereumjs/block'
+import { getLogger } from '../logging.spec.ts'
 type Subchain = {
   head: bigint
   tail: bigint

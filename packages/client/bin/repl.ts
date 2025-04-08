@@ -19,8 +19,7 @@ import type { ClientOpts, Logger } from '../src/types.ts'
 
 const { createLogger, format, transports: wTransports } = winston
 
-// export type Logger = WinstonLogger
-type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
+export type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
   logRotate?: boolean
   logMaxFiles?: number
 }
@@ -103,7 +102,7 @@ function logFormat(colors = false) {
 /**
  * Returns the complete logger format
  */
-function formatConfig(colors = false) {
+export function formatConfig(colors = false) {
   return combine(
     errorFormat(),
     format.splat(),
@@ -116,7 +115,7 @@ function formatConfig(colors = false) {
 /**
  * Returns a transport with log file saving (rotates if args.logRotate is true)
  */
-function logFileTransport(args: LoggerArgs) {
+export function logFileTransport(args: LoggerArgs) {
   let filename = args.logFile
   const opts = {
     level: args.logLevelFile,
@@ -140,7 +139,7 @@ function logFileTransport(args: LoggerArgs) {
   }
 }
 
-class WinstonLogger implements Logger {
+export class WinstonLogger implements Logger {
   public logger
 
   constructor(logger: WinstonLoggerType) {
