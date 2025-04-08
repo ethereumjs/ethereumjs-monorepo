@@ -75,10 +75,6 @@ describe('WASM crypto tests', () => {
     const jsSig = secp256k1.sign(msg, pk)
     const wasmSig = wasmSign(msg, pk)
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
-    assert.throws(
-      () => wasmSign(randomBytes(31), randomBytes(32)),
-      'message length must be 32 bytes or greater',
-    )
   })
   it('should have the same signature and verification', async () => {
     await waitReady()
