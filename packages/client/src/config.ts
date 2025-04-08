@@ -725,7 +725,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['sepolia', 'holesky']
+    const dnsNets = ['sepolia', 'holesky', 'hoodi']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 }

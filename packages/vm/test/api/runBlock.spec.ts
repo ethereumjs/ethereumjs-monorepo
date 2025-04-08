@@ -279,7 +279,8 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await createVM({ common })
     const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
-    ;(vm.blockchain as any).validateHeader = undefined
+    // @ts-expect-error -- Assigning undefined to test error case
+    vm.blockchain['validateHeader'] = undefined
     try {
       await runBlock(vm, { block })
     } catch (err: any) {
