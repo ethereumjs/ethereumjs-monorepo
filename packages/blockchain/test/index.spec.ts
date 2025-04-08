@@ -5,7 +5,7 @@ import {
   createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
-import { blocksMainnet, goerliChainConfig, preLondonTestData1 } from '@ethereumjs/testdata'
+import { mainnetBlocks, goerliChainConfig, preLondonTestData1 } from '@ethereumjs/testdata'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -59,7 +59,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with createBlockchainFromBlocksData()', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
       common,

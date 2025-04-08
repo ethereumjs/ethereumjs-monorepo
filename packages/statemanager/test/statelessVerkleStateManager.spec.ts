@@ -1,9 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  testnetVerkleKaustinenGethGenesis,
-  verkleKaustinen6Block72Data,
-} from '@ethereumjs/testdata'
+import { verkleKaustinenGethGenesis, verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   Address,
@@ -23,7 +20,7 @@ import { assert, describe, it, test } from 'vitest'
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.ts'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
-  const common = createCommonFromGethGenesis(testnetVerkleKaustinenGethGenesis, {
+  const common = createCommonFromGethGenesis(verkleKaustinenGethGenesis, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
     customCrypto: { verkle },

@@ -1,6 +1,6 @@
 import type { BlockData } from '@ethereumjs/block'
 
-export const blocksGoerli: BlockData[] = [
+export const goerliBlocks: BlockData[] = [
   {
     header: {
       parentHash: '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a',

@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { blocksGoerli, blocksMainnet, goerliChainConfig } from '@ethereumjs/testdata'
+import { goerliBlocks, mainnetBlocks, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
@@ -451,7 +451,7 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = createBlockHeader(blocksMainnet[0]['header'], { common })
+    let header = createBlockHeader(mainnetBlocks[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
@@ -459,7 +459,7 @@ describe('[Block]: Header functions', () => {
     )
 
     common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
-    header = createBlockHeader(blocksGoerli[0]['header'], { common })
+    header = createBlockHeader(goerliBlocks[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',

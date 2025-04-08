@@ -8,8 +8,8 @@ import {
   createCustomCommon,
 } from '@ethereumjs/common'
 import {
-  blocksGoerli,
-  blocksMainnet,
+  goerliBlocks,
+  mainnetBlocks,
   customChainConfig,
   goerliGethGenesis,
   withdrawalsGethGenesis,
@@ -114,7 +114,7 @@ describe('[VMExecution]', () => {
     let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -136,7 +136,7 @@ describe('[VMExecution]', () => {
     })
     let exec = await testSetup(blockchain)
 
-    blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -191,7 +191,7 @@ describe('[VMExecution]', () => {
     let newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
     assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await createBlockchainFromBlocksData(blocksGoerli, {
+    blockchain = await createBlockchainFromBlocksData(goerliBlocks, {
       validateBlocks: true,
       validateConsensus: false,
       common,

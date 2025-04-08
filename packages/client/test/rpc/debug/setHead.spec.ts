@@ -1,5 +1,5 @@
 import { createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
-import { blocksMainnet } from '@ethereumjs/testdata'
+import { mainnetBlocks } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC, testSetup } from '../helpers.ts'
@@ -10,7 +10,7 @@ const method = 'debug_setHead'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -18,7 +18,7 @@ describe(method, async () => {
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
-    assert.equal(newHead.header.number, BigInt(blocksMainnet.length), 'should run all blocks')
+    assert.equal(newHead.header.number, BigInt(mainnetBlocks.length), 'should run all blocks')
 
     const client = await createClient({ blockchain })
     await client.service.skeleton?.open()
@@ -47,7 +47,7 @@ describe(method, async () => {
   })
 
   it('should return error for pending block', async () => {
-    const blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -62,14 +62,14 @@ describe(method, async () => {
   })
 
   it('should handle internal errors', async () => {
-    const blockchain = await createBlockchainFromBlocksData(blocksMainnet, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
-    assert.equal(newHead.header.number, BigInt(blocksMainnet.length), 'should run all blocks')
+    assert.equal(newHead.header.number, BigInt(mainnetBlocks.length), 'should run all blocks')
 
     const client = await createClient({ blockchain })
     ;(client.service.skeleton as any) = {

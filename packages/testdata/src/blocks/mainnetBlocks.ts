@@ -1,6 +1,6 @@
 import type { BlockData } from '@ethereumjs/block'
 
-export const blocksMainnet: BlockData[] = [
+export const mainnetBlocks: BlockData[] = [
   {
     header: {
       parentHash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',

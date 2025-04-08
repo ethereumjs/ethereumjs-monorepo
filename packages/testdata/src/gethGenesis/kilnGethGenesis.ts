@@ -1,4 +1,4 @@
-export const gethGenesisKilnData = {
+export const kilnGethGenesis = {
   config: {
     chainId: 1337802,
     homesteadBlock: 0,
