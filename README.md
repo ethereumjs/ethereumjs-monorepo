@@ -78,12 +78,6 @@ git submodule update
 npm install
 ```
 
-3. **Build all packages**:
-
-```sh
-npm run build --workspaces
-```
-
 ### Development Workflow
 
 The monorepo uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to link local packages together, making development easier.
@@ -93,6 +87,7 @@ The monorepo uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/works
 - **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
 - **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
 - **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
+- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
 - **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
 
 #### Working on a Specific Package
