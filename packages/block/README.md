@@ -458,7 +458,7 @@ console.log(`Old Clique Proof-of-Authority block created`)
 For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
 
 ```ts
-const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
+const cliqueSigner = hexToBytes('PRIVATE_KEY_HEX_STRING')
 const block = createSealedCliqueBlock(blockData, cliqueSigner)
 ```
 
