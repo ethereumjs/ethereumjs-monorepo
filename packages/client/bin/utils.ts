@@ -548,7 +548,9 @@ async function inputAccounts(args: ClientOpts) {
   })
 
   // Hide key input
-  ;(rl as any).input.on('keypress', function () {
+  // TODO: Investigate why type doesn't match & if this actually works
+  // @ts-expect-error -- Absent from type
+  rl['input'].on('keypress', function () {
     // get the number of characters entered so far:
     const len = (rl as any).line.length
     // move cursor back to the beginning of the input:
@@ -557,7 +559,9 @@ async function inputAccounts(args: ClientOpts) {
     readline.clearLine((rl as any).output, 1)
     // replace the original input with asterisks:
     for (let i = 0; i < len; i++) {
-      ;(rl as any).output.write('*')
+      // TODO: Investigate why type doesn't match & if this actually works
+      // @ts-expect-error -- Absent from type
+      rl['output'].write('*')
     }
   })
 
@@ -576,7 +580,9 @@ async function inputAccounts(args: ClientOpts) {
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
-        ;(rl as any).history = (rl as any).history.slice(1)
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- -- Property not present on type
+        rl['history'] = rl['history'].slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
         if (address.equals(derivedAddress) === true) {
@@ -717,7 +723,8 @@ export async function generateClientConfig(args: ClientOpts & { logger: Logger |
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
     })
-    ;(common.customCrypto as any) = cryptoFunctions
+    // @ts-expect-error -- Assign to read-only property
+    common.customCrypto = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 

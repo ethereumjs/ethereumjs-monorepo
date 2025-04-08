@@ -49,8 +49,10 @@ describe('[BeaconSynchronizer]', async () => {
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    ;(sync as any).pool.open = td.func<PeerPool['open']>()
-    ;(sync as any).pool.peers = []
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync.pool.open = td.func<PeerPool['open']>()
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync.pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     assert.isTrue(true, 'opened')
@@ -86,7 +88,7 @@ describe('[BeaconSynchronizer]', async () => {
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    ;(sync as any).running = true
+    sync.running = true
     const peers = [
       {
         eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash1' }, inbound: false },
@@ -115,8 +117,9 @@ describe('[BeaconSynchronizer]', async () => {
       BigInt(1),
       [{ number: BigInt(10) }],
     ])
-    ;(sync as any).pool = { peers }
-    ;(sync as any).forceSync = true
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync.pool = { peers }
+    sync['forceSync'] = true
     assert.equal(await sync.best(), <any>peers[1], 'found best')
     await sync.stop()
     await sync.close()
@@ -146,11 +149,14 @@ describe('[BeaconSynchronizer]', async () => {
       },
     } as any)
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(false)
-    ;(skeleton as any).status.progress.subchains = [
+    skeleton['status'].progress.subchains = [
+      /// @ts-expect-error -- Assigning simpler config for testing
       { head: BigInt(10), tail: BigInt(6) },
+      /// @ts-expect-error -- Assigning simpler config for testing
       { head: BigInt(4), tail: BigInt(2) },
     ]
-    ;(sync as any).chain = {
+    sync['chain'] = {
+      /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(0) },
     }
     sync.config.logger['logger'].addListener('data', (data: any) => {
@@ -163,11 +169,14 @@ describe('[BeaconSynchronizer]', async () => {
       if ((data.message as string).includes('first=1 count=1'))
         assert.isTrue(true, 'should sync block 1 and target chain start')
     })
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
+    /// @ts-expect-error -- Assigning simpler config for testing
+    skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     await sync.sync()
     sync.config.logger['logger'].removeAllListeners()
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
-    ;(sync as any).chain = { blocks: { height: BigInt(4) } }
+    /// @ts-expect-error -- Assigning simpler config for testing
+    skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync['chain'] = { blocks: { height: BigInt(4) } }
     sync.config.logger['logger'].addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=1'))
         assert.isTrue(true, 'should sync block 5 with count 1')
@@ -199,9 +208,11 @@ describe('[BeaconSynchronizer]', async () => {
       },
     } as any)
     td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(false)
-    ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
-    ;(sync as any).chain = {
+    /// @ts-expect-error -- Assigning simpler config for testing
+    skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
+    sync['chain'] = {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered
+      /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(100) },
     }
     sync.config.logger['logger'].addListener('data', (data: any) => {
@@ -220,7 +231,9 @@ describe('[BeaconSynchronizer]', async () => {
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const head = createBlock({ header: { number: BigInt(15) } })
     await skeleton['putBlock'](head)
-    ;(skeleton as any).status.progress.subchains = [
+
+    skeleton['status'].progress.subchains = [
+      /// @ts-expect-error -- Assigning simpler config for testing
       {
         head: BigInt(15),
         tail: BigInt(11),

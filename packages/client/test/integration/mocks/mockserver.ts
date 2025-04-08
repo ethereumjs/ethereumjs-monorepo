@@ -39,7 +39,9 @@ export class MockServer extends Server {
       transport: this.name,
       url: `mock://${this.location}`,
     })
-    ;(this.server as any).on('connection', async ({ id, stream }: { id: string; stream: any }) => {
+    // TODO: Investigate why type doesn't match & if this actually works
+    /// @ts-expect-error -- on property does not seem to exist?
+    this.server['on']('connection', async ({ id, stream }: { id: string; stream: any }) => {
       await this.connect(id, stream)
     })
     return true

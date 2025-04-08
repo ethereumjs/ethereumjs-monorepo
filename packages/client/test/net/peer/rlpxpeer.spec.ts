@@ -79,7 +79,7 @@ describe('[RlpxPeer]', async () => {
       port: 1234,
     })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
-    ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
+    peer['bindProtocols'] = vi.fn().mockResolvedValue(undefined)
     peer.rlpxPeer = rlpxPeer
 
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: any) => {
@@ -101,7 +101,7 @@ describe('[RlpxPeer]', async () => {
     peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
     peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
-    ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
+    peer['bindProtocols'] = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
     })
