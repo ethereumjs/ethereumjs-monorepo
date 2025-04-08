@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { verkleKaustinenGethGenesis, verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
+import { verkleKaustinen6Block72Data, verkleKaustinenGethGenesis } from '@ethereumjs/testdata'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   Address,

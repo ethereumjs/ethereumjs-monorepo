@@ -5,7 +5,7 @@ import { assert, describe, expect, it } from 'vitest'
 
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'
 
-import { devnet4844Config } from '@ethereumjs/testdata'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { payloadKaustinenData } from './testdata/payload-kaustinen.ts'
 import { payloadSlot87335Data } from './testdata/payload-slot-87335.ts'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.ts'
@@ -13,7 +13,7 @@ import { verkleKaustinenGethGenesis } from './testdata/testnetVerkleKaustinen.ts
 
 const kzg = new microEthKZG(trustedSetup)
 describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
-  const commonConfig = { ...devnet4844Config }
+  const commonConfig = { ...eip4844GethGenesis }
   commonConfig.config = { ...commonConfig.config, chainId: 4844001005 }
   const network = 'sharding'
   const common = createCommonFromGethGenesis(commonConfig, {

@@ -8,10 +8,10 @@ import {
   createCustomCommon,
 } from '@ethereumjs/common'
 import {
-  goerliBlocks,
-  mainnetBlocks,
   customChainConfig,
+  goerliBlocks,
   goerliGethGenesis,
+  mainnetBlocks,
   withdrawalsGethGenesis,
 } from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'

@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { goerliBlocks, mainnetBlocks, goerliChainConfig } from '@ethereumjs/testdata'
+import { goerliBlocks, goerliChainConfig, mainnetBlocks } from '@ethereumjs/testdata'
 import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,

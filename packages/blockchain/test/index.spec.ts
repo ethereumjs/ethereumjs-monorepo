@@ -5,7 +5,7 @@ import {
   createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
-import { mainnetBlocks, goerliChainConfig, preLondonTestData1 } from '@ethereumjs/testdata'
+import { goerliChainConfig, mainnetBlocks, preLondonTestDataBlocks1 } from '@ethereumjs/testdata'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -581,7 +581,7 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(preLondonTestData1.genesisRLP as PrefixedHexString)
+    const genesisRlp = hexToBytes(preLondonTestDataBlocks1.genesisRLP as PrefixedHexString)
     const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
@@ -589,7 +589,7 @@ describe('blockchain test', () => {
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(preLondonTestData1.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks1.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })

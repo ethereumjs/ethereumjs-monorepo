@@ -2,7 +2,7 @@ import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { goerliChainConfig, hardfork4844Data } from '@ethereumjs/testdata'
+import { eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -348,7 +348,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -475,7 +475,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

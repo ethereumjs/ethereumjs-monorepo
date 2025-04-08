@@ -86,16 +86,16 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.isTrue(true)
     } else {
-      const { hardfork4844Data } = await import('@ethereumjs/testdata')
+      const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-      const common = createCommonFromGethGenesis(hardfork4844Data, {
+      const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(hardfork4844Data, 'customChain', {
+      const { chain, execution, server } = await setupChain(eip4844GethGenesis, 'customChain', {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)

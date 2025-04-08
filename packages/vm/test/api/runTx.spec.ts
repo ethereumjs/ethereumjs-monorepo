@@ -864,8 +864,8 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 describe('EIP 4844 transaction tests', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should work', async () => {
-    const { hardfork4844Data } = await import('@ethereumjs/testdata')
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
