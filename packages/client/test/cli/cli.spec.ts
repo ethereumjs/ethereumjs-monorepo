@@ -426,6 +426,29 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should start client with no logger when logLevel is set to off', async () => {
+    const cliArgs = [
+      '--logFile=false',
+      '--logRotate=false',
+      '--logMaxFiles=0',
+      '--logLevelFile="debug"',
+      '--logLevel="off"',
+      '--dev=poa',
+      '--port=39671',
+    ]
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('logger turned off')) {
+        assert.isTrue(true, 'logLevel option can be used to turn off logger')
+        child.kill()
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const cliArgs = ['--accountCache=2000', '--port=30314', '--rpc=false']
