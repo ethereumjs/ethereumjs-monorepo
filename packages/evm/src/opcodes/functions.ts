@@ -1135,10 +1135,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFError.StackOverflow)
+        trap(EOFError.STACK_OVERFLOW)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFError.ReturnStackOverflow)
+        trap(EOFError.RETURN_STACK_OVERFLOW)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
@@ -1157,7 +1157,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const newPc = runState.env.eof!.eofRunState.returnStack.pop()
       if (newPc === undefined) {
         // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        trap(EOFError.RetfNoReturn)
+        trap(EOFError.RETF_NO_RETURN)
       }
       runState.programCounter = newPc!
     },
@@ -1179,7 +1179,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFError.StackOverflow)
+        trap(EOFError.STACK_OVERFLOW)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
         trap(EOFError.ReturnStackOverflow)
@@ -1310,7 +1310,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
 
         if (actualSectionSize < originalDataSize) {
-          trap(EOFError.InvalidReturnContractDataSize)
+          trap(EOFError.INVALID_RETURN_CONTRACT_DATA_SIZE)
         }
 
         if (actualSectionSize > 0xffff) {

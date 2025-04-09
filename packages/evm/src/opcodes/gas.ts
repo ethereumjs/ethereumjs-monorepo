@@ -793,7 +793,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(EOFError.INVALID_EXTCALL_TARGET)
         }
 
         // Charge for memory expansion
@@ -860,7 +860,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(EOFError.INVALID_EXTCALL_TARGET)
         }
 
         // Charge for memory expansion
@@ -964,7 +964,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(EOFError.INVALID_EXTCALL_TARGET)
         }
 
         // Charge for memory expansion
