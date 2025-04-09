@@ -4,11 +4,7 @@ import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/index.ts'
-import {
-  CLConnectionManager,
-  ConnectionStatus,
-  logLevel,
-} from '../../../src/rpc/modules/engine/index.ts'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.ts'
 import { Event } from '../../../src/types.ts'
 
 import { getLogger } from '../../../src/logging.ts'
