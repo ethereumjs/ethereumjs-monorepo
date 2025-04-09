@@ -1,16 +1,16 @@
-import debug from 'debug'
 import { Readable, Writable } from 'stream'
+import debug from 'debug'
 
-import { Heap } from '../../ext/qheap.js'
-import { Event } from '../../types.js'
+import { Heap } from '../../ext/qheap.ts'
+import { Event } from '../../types.ts'
 
-import type { Config } from '../../config.js'
-import type { QHeap } from '../../ext/qheap.js'
-import type { Peer } from '../../net/peer/index.js'
-import type { PeerPool } from '../../net/peerpool.js'
-import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.js'
-import type { Job } from './types.js'
 import type { Debugger } from 'debug'
+import type { Config } from '../../config.ts'
+import type { QHeap } from '../../ext/qheap.ts'
+import type { Peer } from '../../net/peer/index.ts'
+import type { PeerPool } from '../../net/peerpool.ts'
+import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase.ts'
+import type { Job } from './types.ts'
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -64,11 +64,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected reading: boolean
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
   syncErrored?: Error
-
-  private _readableState?: {
-    // This property is inherited from Readable. We only need `length`.
-    length: number
-  }
 
   private writer: Writable | null = null
 
@@ -352,10 +347,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const jobStr = this.jobStr(job)
-    if (this._readableState === undefined || this._readableState!.length > this.maxQueue) {
+    if (
+      (this as any)._readableState === undefined ||
+      (this as any)._readableState!.length > this.maxQueue
+    ) {
       this.DEBUG &&
         this.debug(
-          `Readable state length=${this._readableState!.length} exceeds max queue size=${
+          `Readable state length=${(this as any)._readableState!.length} exceeds max queue size=${
             this.maxQueue
           }, skip job ${jobStr} execution.`,
         )

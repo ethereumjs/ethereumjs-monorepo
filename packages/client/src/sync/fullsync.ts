@@ -1,17 +1,17 @@
-import { Hardfork } from '@ethereumjs/common'
+import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { short } from '../util/index.ts'
 
-import { BlockFetcher } from './fetcher/index.js'
-import { Synchronizer } from './sync.js'
+import { BlockFetcher } from './fetcher/index.ts'
+import { Synchronizer } from './sync.ts'
 
-import type { VMExecution } from '../execution/index.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { TxPool } from '../service/txpool.js'
-import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { TxPool } from '../service/txpool.ts'
+import type { SynchronizerOptions } from './sync.ts'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
@@ -118,24 +118,38 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Finds the best peer to sync with. We will synchronize to this peer's
-   * blockchain. Returns null if no valid peer is found
+   * blockchain. Returns null if no valid peer is found.
    */
   async best(): Promise<Peer | undefined> {
-    let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
-    for (const peer of peers) {
-      if (peer.eth?.status !== undefined) {
-        const td = peer.eth.status.td
-        if (
-          (!best && td >= this.chain.blocks.td) ||
-          (best && best.eth && best.eth.status.td < td)
-        ) {
-          best = peer
+
+    const consensus = this.config.chainCommon.consensusAlgorithm()
+
+    if (
+      (consensus === ConsensusAlgorithm.Ethash || consensus === ConsensusAlgorithm.Clique) &&
+      this.config.chainCommon.hardforkBlock(Hardfork.Paris) === null
+    ) {
+      // For pure non-Merge HF Ethash/Clique chains we want to select the peer with the highest TD
+      let best
+      for (const peer of peers) {
+        if (peer.eth?.status !== undefined) {
+          const td = peer.eth.status.td
+          if (
+            (!best && td >= this.chain.blocks.td) ||
+            (best && best.eth && best.eth.status.td < td)
+          ) {
+            best = peer
+          }
         }
       }
+      return best
+    } else {
+      // Take a random peer which advertises the eth protocol (and did handshake with, `status !== undefined`)
+      const peersWithEth = peers.filter((peer) => peer.eth?.status !== undefined)
+      // If the array is empty, will return `peersWithEth[0]`, so `undefined`.
+      return peersWithEth[Math.floor(Math.random() * peersWithEth.length)]
     }
-    return best
   }
 
   /**

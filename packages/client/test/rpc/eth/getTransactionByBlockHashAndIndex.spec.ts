@@ -1,9 +1,9 @@
 import { createLegacyTx } from '@ethereumjs/tx'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.ts'
 
 const method = 'eth_getTransactionByBlockHashAndIndex'
 
@@ -19,11 +19,11 @@ async function setUp() {
         to: '0x0000000000000000000000000000000000000000',
       },
       { common },
-    ).sign(dummy.privKey, false),
+    ).sign(dummy.privKey),
     createLegacyTx(
       { gasLimit: 21000, gasPrice: 50, nonce: 1, to: '0x0000000000000000000000000000000000000000' },
       { common },
-    ).sign(dummy.privKey, false),
+    ).sign(dummy.privKey),
   ]
 
   await runBlockWithTxs(chain, execution, txs)
@@ -49,7 +49,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument 0'))
+    assert.isTrue(res.error.message.includes('missing value for required argument 0'))
   })
 
   it('call with unknown block hash', async () => {
@@ -60,7 +60,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('not found in DB'))
+    assert.isTrue(res.error.message.includes('not found in DB'))
   })
 
   it('call with invalid block hash', async () => {
@@ -71,7 +71,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
   })
 
   it('call without tx hash', async () => {
@@ -81,7 +81,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [mockBlockHash])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument 1'))
+    assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
   it('call with invalid tx hash', async () => {
@@ -92,7 +92,7 @@ describe(method, async () => {
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
 
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 1: hex string without 0x prefix'))
+    assert.isTrue(res.error.message.includes('invalid argument 1: hex string without 0x prefix'))
   })
 
   it('call with out-of-bound tx hash ', async () => {

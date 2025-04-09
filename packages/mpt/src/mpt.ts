@@ -20,7 +20,7 @@ import {
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { CheckpointDB } from './db/checkpointDB.js'
+import { CheckpointDB } from './db/checkpointDB.ts'
 import {
   BranchMPTNode,
   ExtensionMPTNode,
@@ -28,12 +28,14 @@ import {
   decodeMPTNode,
   decodeRawMPTNode,
   isRawMPTNode,
-} from './node/index.js'
-import { ROOT_DB_KEY } from './types.js'
-import { _walkTrie } from './util/asyncWalk.js'
-import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.js'
-import { WalkController } from './util/walkController.js'
+} from './node/index.ts'
+import { ROOT_DB_KEY } from './types.ts'
+import { _walkTrie } from './util/asyncWalk.ts'
+import { bytesToNibbles, matchingNibbleLength, nibblesTypeToPackedBytes } from './util/nibbles.ts'
+import { WalkController } from './util/walkController.ts'
 
+import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 import type {
   BranchMPTNodeBranchValue,
   FoundNodeFunction,
@@ -44,10 +46,8 @@ import type {
   NodeReferenceOrRawMPTNode,
   Path,
   TrieShallowCopyOpts,
-} from './types.js'
-import type { OnFound } from './util/asyncWalk.js'
-import type { BatchDBOp, DB } from '@ethereumjs/util'
-import type { Debugger } from 'debug'
+} from './types.ts'
+import type { OnFound } from './util/asyncWalk.ts'
 
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
@@ -892,7 +892,7 @@ export class MerklePatriciaTrie {
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
     ]
-    for (const dbkey of (<any>this)._db.db._database.keys()) {
+    for (const dbkey of (this._db.db as any)._database.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph

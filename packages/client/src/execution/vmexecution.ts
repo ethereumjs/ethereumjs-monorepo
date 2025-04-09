@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -26,29 +27,30 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
-import { Event } from '../types.js'
-import { debugCodeReplayBlock } from '../util/debug.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { debugCodeReplayBlock } from '../util/debug.ts'
+import { short } from '../util/index.ts'
 
-import { Execution } from './execution.js'
-import { LevelDB } from './level.js'
-import { PreimagesManager } from './preimage.js'
-import { ReceiptsManager } from './receipt.js'
+import { Execution } from './execution.ts'
+import { LevelDB } from './level.ts'
+import { PreimagesManager } from './preimage.ts'
+import { ReceiptsManager } from './receipt.ts'
 
-import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
+import type { ExecutionOptions } from './execution.ts'
 
-export enum ExecStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-  IGNORE_INVALID = 'IGNORE_INVALID',
-}
+export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
+
+export const ExecStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  IGNORE_INVALID: 'IGNORE_INVALID',
+} as const
 
 type ChainStatus = {
   height: bigint
@@ -110,7 +112,8 @@ export class VMExecution extends Execution {
 
     if (this.config.vm !== undefined) {
       this.vm = this.config.vm
-      ;(this.vm as any).blockchain = this.chain.blockchain
+      // @ts-expect-error -- Assigning to read-only property
+      this.vm.blockchain = this.chain.blockchain
     }
 
     if (this.metaDB) {
@@ -895,11 +898,7 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
-    this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
 
     if (this.running || !this.started) {
       return false

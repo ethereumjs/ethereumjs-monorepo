@@ -16,7 +16,6 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { hardfork4844Data } from '../../block/test/testdata/4844-hardfork.js'
 import {
   blobTxNetworkWrapperToJSON,
   createBlob4844Tx,
@@ -25,12 +24,13 @@ import {
   createMinimal4844TxFromNetworkWrapper,
   createTx,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { serialized4844TxData } from './testData/serialized4844tx.js'
+import { hardfork4844Data } from './testData/4844-hardfork.ts'
+import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
-import type { BlobEIP4844TxData } from '../src/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlobEIP4844TxData } from '../src/index.ts'
 
 const pk = randomBytes(32)
 const kzg = new microEthKZG(trustedSetup)
@@ -67,10 +67,10 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey, { extraEntropy: false })
+    const { v, r, s } = ecsign(msgHash, privKey)
 
-    const signedTx = tx.sign(privKey, false)
-    const addSignatureTx = tx.addSignature(v, r, s, true)
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -90,7 +90,7 @@ describe('EIP4844 addSignature tests', () => {
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v, r, s, false)
+      tx.addSignature(v + BigInt(27), r, s)
     })
   })
 })
@@ -131,9 +131,9 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {
-      const hash = bytesToHex(tx.sign(pk).hash())
+      const hash = bytesToHex(tx.sign(pk, true).hash())
       if (hashSet.has(hash)) {
-        assert.ok(false, 'should not reuse the same hash (hedged signature test)')
+        assert.fail('should not reuse the same hash (hedged signature test)')
       }
       hashSet.add(hash)
     }
@@ -179,7 +179,7 @@ describe('fromTxData using from a json', () => {
     })
     try {
       const tx = createBlob4844Tx(txData as BlobEIP4844TxData, { common: c })
-      assert.ok(true, 'Should be able to parse a json data and hash it')
+      assert.isTrue(true, 'Should be able to parse a json data and hash it')
 
       assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
       assert.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
@@ -203,7 +203,7 @@ describe('fromTxData using from a json', () => {
         txMeta.hash,
         'fromSerializedTx hash should match',
       )
-    } catch (e) {
+    } catch {
       assert.fail('failed to parse json data')
     }
   })
@@ -238,7 +238,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     try {
       createBlob4844Tx({ ...baseTxData, ...shortVersionHash }, { common })
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('versioned hash is invalid length'),
         'throws on invalid versioned hash length',
       )
@@ -246,7 +246,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     try {
       createBlob4844Tx({ ...baseTxData, ...invalidVersionHash }, { common })
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('does not start with KZG commitment'),
         'throws on invalid commitment version',
       )
@@ -254,7 +254,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     try {
       createBlob4844Tx({ ...baseTxData, ...tooManyBlobs }, { common })
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('tx can contain at most'),
         'throws on too many versioned hashes',
       )
@@ -336,8 +336,8 @@ describe('Network wrapper tests', () => {
       'decoded sender address correctly',
     )
     const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, { common })
-    assert.ok(minimalTx.blobs === undefined, 'minimal representation contains no blobs')
-    assert.ok(
+    assert.isUndefined(minimalTx.blobs, 'minimal representation contains no blobs')
+    assert.isTrue(
       equalsBytes(minimalTx.hash(), deserializedTx.hash()),
       'has the same hash as the network wrapper version',
     )
@@ -572,7 +572,7 @@ describe('hash() and signature verification', () => {
       '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
       'was able to recover sender address',
     )
-    assert.ok(signedTx.verifySignature(), 'signature is valid')
+    assert.isTrue(signedTx.verifySignature(), 'signature is valid')
   })
 })
 

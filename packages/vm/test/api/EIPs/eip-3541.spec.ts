@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 import type { Address } from '@ethereumjs/util'
 
@@ -43,7 +43,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(created!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
 
     // check if we can deposit a contract on non-EIP3541 chains
 
@@ -58,7 +58,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(created!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 
   it('deploy contracts starting with 0xEF using CREATE', async () => {
@@ -94,7 +94,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(address!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 
   it('deploy contracts starting with 0xEF using CREATE2', async () => {
@@ -130,6 +130,6 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(address!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 })

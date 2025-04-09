@@ -1,10 +1,10 @@
 import { assert, describe, it } from 'vitest'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config, SyncMode } from '../../src/config.js'
-import { Event } from '../../src/types.js'
+import { EthereumClient } from '../../src/client.ts'
+import { Config, SyncMode } from '../../src/config.ts'
+import { Event } from '../../src/types.ts'
 
-import { MockServer } from './mocks/mockserver.js'
+import { MockServer } from './mocks/mockserver.ts'
 
 const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
 const server = new MockServer({ config: serverConfig }) as any
@@ -17,7 +17,8 @@ const config = new Config({
 })
 
 // attach server to centralized event bus
-;(config.server!.config as any).events = config.events
+/// @ts-expect-error -- Overwriting events
+config.server.config.events = config.events
 const client = await EthereumClient.create({ config })
 
 describe('client should start/stop/error', async () => {
@@ -35,9 +36,9 @@ describe('client should start/stop/error', async () => {
   client.service.interval = 100
   client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.server!)
   await client.start()
-  assert.ok(client.service!.synchronizer!.running, 'sync running')
+  assert.isTrue(client.service?.synchronizer?.running, 'sync running')
   await client.stop()
   it('should stop', () => {
-    assert.ok(true, 'client stopped')
+    assert.isTrue(true, 'client stopped')
   })
 }, 60000)

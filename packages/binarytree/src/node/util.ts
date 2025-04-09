@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import { InternalBinaryNode } from './internalNode.js'
-import { StemBinaryNode } from './stemNode.js'
-import { type BinaryNode, BinaryNodeType } from './types.js'
+import { InternalBinaryNode } from './internalNode.ts'
+import { StemBinaryNode } from './stemNode.ts'
+import { type BinaryNode, BinaryNodeType } from './types.ts'
 
 export function decodeRawBinaryNode(raw: Uint8Array[]): BinaryNode {
   const nodeType = raw[0][0]

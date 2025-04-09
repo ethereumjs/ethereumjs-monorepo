@@ -23,35 +23,35 @@ import {
   toBytes,
   toType,
 } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { Bloom } from './bloom/index.js'
-import { accumulateRequests } from './requests.js'
+import { Bloom } from './bloom/index.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
-} from './runBlock.js'
+} from './runBlock.ts'
 
-import { runTx } from './index.js'
-
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
-import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.ts'
+import type { VM } from './vm.ts'
 
-export enum BuildStatus {
-  Reverted = 'reverted',
-  Build = 'build',
-  Pending = 'pending',
-}
+export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+export const BuildStatus = {
+  Reverted: 'reverted',
+  Build: 'build',
+  Pending: 'pending',
+} as const
 
 type BlockStatus =
-  | { status: BuildStatus.Pending | BuildStatus.Reverted }
-  | { status: BuildStatus.Build; block: Block }
+  | { status: typeof BuildStatus.Pending | typeof BuildStatus.Reverted }
+  | { status: typeof BuildStatus.Build; block: Block }
 
 export class BlockBuilder {
   /**

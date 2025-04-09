@@ -10,7 +10,7 @@ import {
   MAX_INTEGER,
   TWO_POW256,
   bytesToHex,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 describe('constants', () => {
   it('should match constants', () => {

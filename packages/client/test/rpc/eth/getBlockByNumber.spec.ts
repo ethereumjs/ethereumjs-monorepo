@@ -6,8 +6,8 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
@@ -113,7 +113,7 @@ describe(method, async () => {
     const res = await rpc.request(method, ['pending', true])
 
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with non-string block number', async () => {
@@ -122,7 +122,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [10, true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a string'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
   it('call with invalid block number', async () => {
@@ -131,7 +131,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes(
         'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
       ),
@@ -144,7 +144,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument 1'))
+    assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
   it('call with invalid second parameter', async () => {

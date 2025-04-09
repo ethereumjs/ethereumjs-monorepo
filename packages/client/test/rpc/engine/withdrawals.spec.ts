@@ -3,9 +3,9 @@ import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { withdrawalsData } from '../../testdata/geth-genesis/withdrawals.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { withdrawalsData } from '../../testdata/geth-genesis/withdrawals.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -119,7 +119,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       validPayloadAttributes,
     ])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.isTrue(
       res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated'),
     )
 

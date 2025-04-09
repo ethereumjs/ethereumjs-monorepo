@@ -1,23 +1,23 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import {
   EthereumJSErrorWithoutCode,
   bytesToUnprefixedHex,
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
-import * as modules from '../src/rpc/modules/index.js'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.ts'
+import * as modules from '../src/rpc/modules/index.ts'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../src/util/index.js'
+} from '../src/util/index.ts'
 
-import type { EthereumClient } from '../src/client.js'
-import type { Config } from '../src/config.js'
-import type jayson from 'jayson/promise/index.js'
+import type { Server } from 'jayson/promise/index.js'
+import type { EthereumClient } from '../src/client.ts'
+import type { Config } from '../src/config.ts'
 
 export type RPCArgs = {
   rpc: boolean
@@ -45,7 +45,7 @@ export type RPCArgs = {
 function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
   let jwtSecret: Uint8Array
   const defaultJwtPath = `${config.datadir}/jwtsecret`
-  const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
+  const usedJwtPath = jwtFilePath ?? defaultJwtPath
 
   // If jwtFilePath is provided, it should exist
   if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
@@ -79,7 +79,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const { config } = client
-  const servers: jayson.Server[] = []
+  const servers: Server[] = []
   const {
     rpc,
     rpcAddr,

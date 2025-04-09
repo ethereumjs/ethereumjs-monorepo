@@ -2,8 +2,8 @@ import { createBlockFromRPC } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
-import { createVM, runBlock } from '../src/index.js'
-import { Goerli } from '../test/api/testdata/goerliCommon.js'
+import { createVM, runBlock } from '../src/index.ts'
+import { Goerli } from '../test/api/testdata/goerliCommon.ts'
 
 import goerliBlock2 from './testData/goerliBlock2.json'
 

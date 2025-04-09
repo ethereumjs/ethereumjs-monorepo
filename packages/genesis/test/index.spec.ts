@@ -1,7 +1,7 @@
 import { Chain, ChainGenesis } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { getGenesis } from '../src/index.js'
+import { getGenesis } from '../src/index.ts'
 
 describe('genesis test', () => {
   it('tests getGenesis', async () => {
@@ -13,10 +13,7 @@ describe('genesis test', () => {
       const { name } = ChainGenesis[chainId as unknown as Chain]
 
       const genesisState = getGenesis(Number(chainId))
-      assert.ok(
-        genesisState !== undefined,
-        `network=${name} chainId=${chainId} genesis should be found`,
-      )
+      assert.isDefined(genesisState, `network=${name} chainId=${chainId} genesis should be found`)
     }
   })
 })

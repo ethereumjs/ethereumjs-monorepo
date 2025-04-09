@@ -18,25 +18,17 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
-import { CasperConsensus } from './consensus/casper.js'
+import { CasperConsensus } from './consensus/casper.ts'
 import {
   DBOp,
   DBSaveLookups,
   DBSetBlockOrHeader,
   DBSetHashToNumber,
   DBSetTD,
-} from './db/helpers.js'
-import { DBManager } from './db/manager.js'
-import { DBTarget } from './db/operation.js'
+} from './db/helpers.ts'
+import { DBManager } from './db/manager.ts'
+import { DBTarget } from './db/operation.ts'
 
-import type {
-  BlockchainEvent,
-  BlockchainInterface,
-  BlockchainOptions,
-  Consensus,
-  ConsensusDict,
-  OnBlock,
-} from './types.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type {
@@ -47,6 +39,14 @@ import type {
   VerkleExecutionWitness,
 } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type {
+  BlockchainEvent,
+  BlockchainInterface,
+  BlockchainOptions,
+  Consensus,
+  ConsensusDict,
+  OnBlock,
+} from './types.ts'
 
 /**
  * Blockchain implementation to create and maintain a valid canonical chain
@@ -133,7 +133,7 @@ export class Blockchain implements BlockchainInterface {
     this._validateConsensus = opts.validateConsensus ?? false
     this._customGenesisState = opts.genesisState
 
-    this.db = opts.db !== undefined ? opts.db : new MapDB()
+    this.db = opts.db ?? new MapDB()
 
     this.dbManager = new DBManager(this.db, this.common)
 
@@ -1301,7 +1301,7 @@ export class Blockchain implements BlockchainInterface {
    */
   async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
     const hash = await this.dbManager.numberToHash(number)
-    return hash !== undefined ? hash : false
+    return hash ?? false
   }
 
   /**

@@ -4,7 +4,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { genTransactionsTrieRoot } from '../src/helpers.js'
+import { genTransactionsTrieRoot } from '../src/helpers.ts'
 import {
   type Block,
   type BlockBytes,
@@ -14,14 +14,14 @@ import {
   createBlockFromRPC,
   createEmptyBlock,
   paramsBlock,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-import { genesisHashesTestData } from './testdata/genesisHashesTest.js'
-import { Goerli } from './testdata/goerliCommon.js'
-import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.js'
-import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.js'
-import { testdataPreLondonData } from './testdata/testdata_pre-london.js'
-import { testnetMergeData } from './testdata/testnetMerge.js'
+import { genesisHashesTestData } from './testdata/genesisHashesTest.ts'
+import { Goerli } from './testdata/goerliCommon.ts'
+import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.ts'
+import { testdataPreLondon2Data } from './testdata/testdata_pre-london-2.ts'
+import { testdataPreLondonData } from './testdata/testdata_pre-london.ts'
+import { testnetMergeData } from './testdata/testnetMerge.ts'
 
 import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
 
@@ -29,7 +29,7 @@ describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
-    assert.ok(bytesToHex(genesis.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(genesis.hash()), 'block should initialize')
 
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
@@ -41,28 +41,22 @@ describe('[Block]: block functions', () => {
     )
 
     const emptyBlock = createEmptyBlock({}, { common })
-    assert.ok(bytesToHex(emptyBlock.hash()), 'block should initialize')
+    assert.isDefined(bytesToHex(emptyBlock.hash()), 'block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
     block = createBlock({})
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlock({}, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const rlpBlock = block.serialize()
     block = createBlockFromRLP(rlpBlock)
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromRLP(rlpBlock, { freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
 
     const zero = new Uint8Array(0)
     const headerArray: Uint8Array[] = []
@@ -82,13 +76,10 @@ describe('[Block]: block functions', () => {
     const valuesArray = <BlockBytes>[headerArray, [], []]
 
     block = createBlockFromBytesArray(valuesArray, { common })
-    assert.ok(Object.isFrozen(block), 'block should be frozen by default')
+    assert.isFrozen(block, 'block should be frozen by default')
 
     block = createBlockFromBytesArray(valuesArray, { common, freeze: false })
-    assert.ok(
-      !Object.isFrozen(block),
-      'block should not be frozen when freeze deactivated in options',
-    )
+    assert.isNotFrozen(block, 'block should not be frozen when freeze deactivated in options')
   })
 
   it('initialization -> setHardfork option', () => {
@@ -147,8 +138,8 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
     try {
       createBlockFromRLP(blockRlp, { common })
-      assert.ok(true, 'should pass')
-    } catch (error: any) {
+      assert.isTrue(true, 'should pass')
+    } catch {
       assert.fail('should not throw')
     }
   })
@@ -158,15 +149,15 @@ describe('[Block]: block functions', () => {
 
     try {
       createBlockFromRPC(testdataFromRPCGoerliData, [], { common })
-      assert.ok(true, 'does not throw')
-    } catch (error: any) {
+      assert.isTrue(true, 'does not throw')
+    } catch {
       assert.fail('error thrown')
     }
   })
 
   async function testTransactionValidation(block: Block) {
-    assert.ok(block.transactionsAreValid())
-    assert.ok(block.getTransactionsValidationErrors().length === 0)
+    assert.isTrue(block.transactionsAreValid())
+    assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
@@ -174,12 +165,13 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
-    ;(block.header as any).transactionsTrie = new Uint8Array(32)
+    // @ts-expect-error -- Assigning a read-only property
+    block.header.transactionsTrie = new Uint8Array(32)
     try {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid transaction trie'))
+      assert.isTrue((error.message as string).includes('invalid transaction trie'))
     }
   })
 
@@ -200,7 +192,7 @@ describe('[Block]: block functions', () => {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('unsigned'))
+      assert.isTrue((error.message as string).includes('unsigned'))
     }
   })
 
@@ -214,9 +206,10 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondonData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
-    ;(block.transactions[0] as any).gasPrice = BigInt(0)
+    // @ts-expect-error -- Assigning to read-only property
+    block.transactions[0].gasPrice = BigInt(0)
     const result = block.getTransactionsValidationErrors()
-    assert.ok(
+    assert.isTrue(
       result[0].includes('tx unable to pay base fee (non EIP-1559 tx)'),
       'should throw when legacy tx is unable to pay base fee',
     )
@@ -227,12 +220,13 @@ describe('[Block]: block functions', () => {
     const blockRlp = hexToBytes(testdataPreLondon2Data.blocks[2].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
-    ;(block.header as any).uncleHash = new Uint8Array(32)
+    // @ts-expect-error -- Assigning to read-only property
+    block.header.uncleHash = new Uint8Array(32)
     try {
       await block.validateData()
       assert.fail('should throw')
     } catch (error: any) {
-      assert.ok((error.message as string).includes('invalid uncle hash'))
+      assert.isTrue((error.message as string).includes('invalid uncle hash'))
     }
   })
 
@@ -255,7 +249,7 @@ describe('[Block]: block functions', () => {
         await fn
         assert.fail('should throw')
       } catch (e: any) {
-        assert.ok((e.message as string).includes(errorMsg))
+        assert.isTrue((e.message as string).includes(errorMsg))
       }
     }
 
@@ -316,7 +310,7 @@ describe('[Block]: block functions', () => {
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
     const block = createBlockFromRLP(rlp, { common })
-    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+    assert.isTrue(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
 
   it('should test hash() method (mainnet default)', () => {
@@ -324,7 +318,7 @@ describe('[Block]: block functions', () => {
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
     let block = createBlockFromRLP(rlp, { common })
-    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+    assert.isTrue(equalsBytes(block.hash(), hash), 'genesis hash match')
 
     common = new Common({
       chain: Mainnet,
@@ -367,7 +361,7 @@ describe('[Block]: block functions', () => {
       },
     )
     const createBlockFromRaw = createBlockFromBytesArray(block.raw(), { common })
-    assert.ok(equalsBytes(block.hash(), createBlockFromRaw.hash()))
+    assert.isTrue(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
   it('should test toJSON', () => {
@@ -396,7 +390,7 @@ describe('[Block]: block functions', () => {
       /extraData should be 'dao-hard-fork/,
       undefined,
       'should throw on DAO HF block with wrong extra data',
-    ) // eslint-disable-line
+    )
 
     // Set extraData to dao-hard-fork
     blockData[0][12] = hexToBytes('0x64616f2d686172642d666f726b')
@@ -441,13 +435,14 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
-      blockWithDifficultyCalculation.header.difficulty > BigInt(0),
+    assert.notEqual(
+      blockWithDifficultyCalculation.header.difficulty,
+      BigInt(0),
       'header difficulty should be set if difficulty header is given',
     )
-    assert.ok(
-      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header) ===
-        blockWithDifficultyCalculation.header.difficulty,
+    assert.equal(
+      blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header),
+      blockWithDifficultyCalculation.header.difficulty,
       'header difficulty is canonical difficulty if difficulty header is given',
     )
 
@@ -467,7 +462,7 @@ describe('[Block]: block functions', () => {
       },
     )
 
-    assert.ok(
+    assert.isTrue(
       block_farAhead.header.difficulty > BigInt(0),
       'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header',
     )

@@ -21,27 +21,29 @@ import {
   TYPE_MAX,
   TYPE_MIN,
   VERSION,
-} from './constants.js'
-import { EOFError, validationError } from './errors.js'
-import { ContainerSectionType, verifyCode } from './verify.js'
+} from './constants.ts'
+import { EOFError, validationError } from './errors.ts'
+import { ContainerSectionType, verifyCode } from './verify.ts'
 
-import type { EVM } from '../evm.js'
+import type { EVM } from '../evm.ts'
 
 /*
   This file creates EOF Containers
-  EOF Containers are described in EIP-3540. 
+  EOF Containers are described in EIP-3540.
   A container consists of a header and a body. The header describes the layout of the body.
-  The body has the actual "interesting" contents, such as the bytecode to run, the data section, 
+  The body has the actual "interesting" contents, such as the bytecode to run, the data section,
   and possibly yet-to-be-deployed containers (via EOFCREATE, to create new EOF contracts from an existing one)
 */
 
 // This enum marks the "mode" of a container
 // Depending on this mode, certain extra checks for validity have to be done, or some checks can be skipped
-export enum EOFContainerMode {
-  Default, // Default container validation
-  Initmode, // Initmode container validation (for subcontainers pointed to by EOFCreate)
-  TxInitmode, // Tx initmode container validation (for txs deploying EOF contracts)
-}
+export type EOFContainerMode = (typeof EOFContainerMode)[keyof typeof EOFContainerMode]
+
+export const EOFContainerMode = {
+  Default: 'default', // Default container validation
+  Initmode: 'initMode', // Initmode container validation (for subcontainers pointed to by EOFCreate)
+  TxInitmode: 'txInitMode', // Tx initmode container validation (for txs deploying EOF contracts)
+} as const
 
 // The StreamReader is a helper class to help reading byte arrays
 class StreamReader {

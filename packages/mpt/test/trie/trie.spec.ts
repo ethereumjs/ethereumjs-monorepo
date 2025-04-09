@@ -17,7 +17,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createMPT } from '../../src/index.js'
+import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createMPT } from '../../src/index.ts'
 
 for (const { constructor, defaults, title } of [
   {
@@ -93,7 +93,7 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      assert.ok(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
+      assert.isTrue(equalsBytes((await trie['_db'].get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
@@ -170,7 +170,7 @@ for (const { constructor, defaults, title } of [
     for await (const { key, value } of keyvals) {
       await trie.put(key, value)
     }
-    const roots = [...(<any>trie.database().db)._database.keys()]
+    const roots = [...(trie.database().db as any)._database.keys()]
     it('should return true for all nodes in the trie', async () => {
       assert.isTrue(await trie.checkRoot(trie.root()), 'Should return true for root node')
       for (const root of roots) {

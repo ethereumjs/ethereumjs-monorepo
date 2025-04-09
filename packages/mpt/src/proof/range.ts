@@ -1,12 +1,12 @@
 import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { createMPTFromProof } from '../index.js'
-import { MerklePatriciaTrie } from '../mpt.js'
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
-import { bytesToNibbles, nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.js'
+import { createMPTFromProof } from '../index.ts'
+import { MerklePatriciaTrie } from '../mpt.ts'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.ts'
+import { bytesToNibbles, nibblesCompare, nibblesTypeToPackedBytes } from '../util/nibbles.ts'
 
-import type { HashKeysFunction, MPTNode, Nibbles } from '../types.js'
+import type { HashKeysFunction, MPTNode, Nibbles } from '../types.ts'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -124,7 +124,6 @@ async function unsetInternal(
 
   // 1. Find the fork point of `left` and `right`
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (node instanceof ExtensionMPTNode || node instanceof LeafMPTNode) {
       // record this node on the stack

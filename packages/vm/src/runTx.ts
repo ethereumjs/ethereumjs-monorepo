@@ -1,9 +1,12 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
-import { RLP } from '@ethereumjs/rlp'
-import { StatefulVerkleStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
+import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
+import {
+  StatefulBinaryTreeStateManager,
+  StatefulVerkleStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
+import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -18,31 +21,17 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  ecrecover,
   equalsBytes,
   hexToBytes,
-  publicToAddress,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
 
-import type {
-  AfterTxEvent,
-  BaseTxReceipt,
-  EIP4844BlobTxReceipt,
-  PostByzantiumTxReceipt,
-  PreByzantiumTxReceipt,
-  RunTxOpts,
-  RunTxResult,
-  TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
 import type { Block } from '@ethereumjs/block'
-import type { Common, VerkleAccessWitnessInterface } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type {
   AccessList,
   AccessList2930Tx,
@@ -52,6 +41,17 @@ import type {
   LegacyTx,
   TypedTransaction,
 } from '@ethereumjs/tx'
+import type {
+  AfterTxEvent,
+  BaseTxReceipt,
+  EIP4844BlobTxReceipt,
+  PostByzantiumTxReceipt,
+  PreByzantiumTxReceipt,
+  RunTxOpts,
+  RunTxResult,
+  TxReceipt,
+} from './types.ts'
+import type { VM } from './vm.ts'
 
 const debug = debugDefault('vm:tx')
 const debugGas = debugDefault('vm:tx:gas')
@@ -151,10 +151,13 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     const castedTx = <AccessList2930Tx>opts.tx
 
-    for (const accessListItem of castedTx.AccessListJSON) {
-      vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
-      for (const storageKey of accessListItem.storageKeys) {
-        vm.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
+    for (const accessListItem of castedTx.accessList) {
+      const [addressBytes, slotBytesList] = accessListItem
+      const address = bytesToUnprefixedHex(addressBytes)
+      // Note: in here, the 0x is stripped, so immediately do this here
+      vm.evm.journal.addAlwaysWarmAddress(address, true)
+      for (const storageKey of slotBytesList) {
+        vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
       }
     }
   }
@@ -195,8 +198,8 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses: VerkleAccessWitnessInterface | undefined
-  let txAccesses: VerkleAccessWitnessInterface | undefined
+  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
+  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
     if (vm.evm.verkleAccessWitness === undefined) {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
@@ -210,6 +213,20 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = vm.evm.verkleAccessWitness
     txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+  } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.evm.binaryTreeAccessWitness === undefined) {
+      throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
+    }
+
+    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+      throw EthereumJSErrorWithoutCode(
+        `Binary tree State Manager needed for execution of binary tree blocks`,
+      )
+    }
+    stateAccesses = vm.evm.binaryTreeAccessWitness
+    txAccesses = new BinaryTreeAccessWitness({
+      hashFunction: vm.evm.binaryTreeAccessWitness.hashFunction,
+    })
   }
 
   const { tx, block } = opts
@@ -460,7 +477,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
     const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
-    const MAGIC = new Uint8Array([5])
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i]
@@ -491,19 +507,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         continue
       }
 
-      const r = data[4]
-
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
-      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      let pubKey
+      // Address to set code to
+      let authority
       try {
-        pubKey = ecrecover(toSign, yParity, r, s)
-      } catch (e) {
+        authority = recoverAuthority(data)
+      } catch {
         // Invalid signature, continue
         continue
       }
-      // Address to set code to
-      const authority = new Address(publicToAddress(pubKey))
       const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
       const accountExists = accountMaybeUndefined !== undefined
       const account = accountMaybeUndefined ?? new Account()
@@ -588,7 +599,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    stateAccesses?.merge(txAccesses!)
+    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+  } else if (vm.common.isActivatedEIP(7864)) {
+    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {
@@ -799,10 +812,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed =
-    opts.blockGasUsed !== undefined
-      ? opts.blockGasUsed
-      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
+  const gasUsed = opts.blockGasUsed ?? block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,

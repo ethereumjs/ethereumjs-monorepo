@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import * as http from 'http'
+import { homedir } from 'os'
+import * as path from 'path'
+import * as readline from 'readline'
+import * as url from 'url'
 import {
   Chain,
   Common,
@@ -8,7 +15,6 @@ import {
   getPresetChainConfig,
 } from '@ethereumjs/common'
 import {
-  BIGINT_2,
   EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
@@ -31,31 +37,25 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import * as http from 'http'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
-import { homedir } from 'os'
-import * as path from 'path'
 import * as promClient from 'prom-client'
-import * as readline from 'readline'
-import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { Config, SyncMode } from '../src/config.js'
-import { getLogger } from '../src/logging.js'
-import { Event } from '../src/types.js'
-import { parseMultiaddrs } from '../src/util/index.js'
-import { setupMetrics } from '../src/util/metrics.js'
+import { Config, SyncMode } from '../src/config.ts'
+import { getLogger } from '../src/logging.ts'
+import { Event } from '../src/types.ts'
+import { parseMultiaddrs } from '../src/util/index.ts'
+import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { Logger } from '../src/logging.js'
-import type { ClientOpts } from '../src/types.js'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { Logger } from '../src/logging.ts'
+import type { ClientOpts } from '../src/types.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 
@@ -77,7 +77,7 @@ export function getArgs(): ClientOpts {
       .option('chainId', {
         describe: 'Chain ID',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and chainId
@@ -87,7 +87,7 @@ export function getArgs(): ClientOpts {
         deprecated: true,
         deprecate: 'use --chainId instead',
         choices: Object.entries(Chain)
-          .map((n) => parseInt(n[1] as string))
+          .map((n) => (typeof n[1] === 'string' ? parseInt(n[1]) : n[1]))
           .filter((el) => !isNaN(el)),
         default: undefined,
         conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
@@ -544,15 +544,16 @@ async function inputAccounts(args: ClientOpts) {
   const accounts: Account[] = []
 
   const rl = readline.createInterface({
-    // @ts-ignore Looks like there is a type incompatibility in NodeJS ReadStream vs what this package expects
-    // TODO: See whether package needs to be updated or not
+    // @ts-ignore node/types has a mismatch and readline is typed incorrectly
     input: process.stdin,
-    // @ts-ignore
+    // @ts-ignore node/types has a mismatch and readline is typed incorrectly
     output: process.stdout,
   })
 
   // Hide key input
-  ;(rl as any).input.on('keypress', function () {
+  // TODO: Investigate why type doesn't match & if this actually works
+  // @ts-expect-error -- Absent from type
+  rl['input'].on('keypress', function () {
     // get the number of characters entered so far:
     const len = (rl as any).line.length
     // move cursor back to the beginning of the input:
@@ -561,7 +562,9 @@ async function inputAccounts(args: ClientOpts) {
     readline.clearLine((rl as any).output, 1)
     // replace the original input with asterisks:
     for (let i = 0; i < len; i++) {
-      ;(rl as any).output.write('*')
+      // TODO: Investigate why type doesn't match & if this actually works
+      // @ts-expect-error -- Absent from type
+      rl['output'].write('*')
     }
   })
 
@@ -580,7 +583,9 @@ async function inputAccounts(args: ClientOpts) {
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
-        ;(rl as any).history = (rl as any).history.slice(1)
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- -- Property not present on type
+        rl['history'] = rl['history'].slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
         if (address.equals(derivedAddress) === true) {
@@ -648,23 +653,15 @@ export async function generateClientConfig(args: ClientOpts) {
         ),
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
-    cryptoFunctions.ecsign = (
-      msg: Uint8Array,
-      pk: Uint8Array,
-      ecSignOpts: { chainId?: bigint } = {},
-    ) => {
+    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
         throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
-      const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
       const r = buf.slice(0, 32)
       const s = buf.slice(32, 64)
-      const v =
-        chainId === undefined
-          ? BigInt(buf[64] + 27)
-          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
+      const v = BigInt(buf[64])
 
       return { r, s, v }
     }
@@ -729,7 +726,8 @@ export async function generateClientConfig(args: ClientOpts) {
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
     })
-    ;(common.customCrypto as any) = cryptoFunctions
+    // @ts-expect-error -- Assign to read-only property
+    common.customCrypto = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 
@@ -784,8 +782,8 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
-  const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
-  const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
+  const mine = args.mine ?? args.dev !== undefined
+  const isSingleNode = args.isSingleNode ?? args.dev !== undefined
 
   let prometheusMetrics = undefined
   let metricsServer: http.Server | undefined

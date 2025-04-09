@@ -25,7 +25,7 @@ import {
   getFullSize,
   getSeed,
   params,
-} from './util.js'
+} from './util.ts'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
@@ -158,7 +158,7 @@ export class Miner {
 }
 
 export class Ethash {
-  dbOpts: Object
+  dbOpts: object
   cacheDB?: DB<number, DBObject>
   cache: Uint8Array[]
   epoc?: number

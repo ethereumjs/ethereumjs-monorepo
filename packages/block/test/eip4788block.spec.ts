@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/index.js'
+import { createBlock, createBlockHeader } from '../src/index.ts'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {

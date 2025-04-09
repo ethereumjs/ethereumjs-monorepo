@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToInt, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -43,8 +43,9 @@ describe('EIP 1153: transient storage', () => {
 
       if (i > 0) {
         const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-        assert.ok(
-          gasUsed === expectedGasUsed,
+        assert.equal(
+          gasUsed,
+          expectedGasUsed,
           `Opcode: ${
             test.steps[i - 1].expectedOpcode
           }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`,

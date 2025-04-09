@@ -8,8 +8,8 @@ import {
   createCValues,
   decodeVerkleNode,
   isLeafVerkleNode,
-} from '../src/node/index.js'
-import { LeafVerkleNode } from '../src/node/leafNode.js'
+} from '../src/node/index.ts'
+import { LeafVerkleNode } from '../src/node/leafNode.ts'
 
 describe('verkle node - leaf', () => {
   it('constructor should create an leaf node', async () => {
@@ -27,16 +27,13 @@ describe('verkle node - leaf', () => {
       verkleCrypto: verkle,
     })
 
-    assert.ok(isLeafVerkleNode(node), 'typeguard should return true')
+    assert.isTrue(isLeafVerkleNode(node), 'typeguard should return true')
     assert.equal(node.type, VerkleNodeType.Leaf, 'type should be set')
-    assert.ok(
-      equalsBytes(node.commitment as unknown as Uint8Array, commitment),
-      'commitment should be set',
-    )
-    assert.ok(equalsBytes(node.c1 as unknown as Uint8Array, c1), 'c1 should be set')
-    assert.ok(equalsBytes(node.c2 as unknown as Uint8Array, c2), 'c2 should be set')
-    assert.ok(equalsBytes(node.stem, stem), 'stem should be set')
-    assert.ok(
+    assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
+    assert.isTrue(equalsBytes(node.c1!, c1), 'c1 should be set')
+    assert.isTrue(equalsBytes(node.c2!, c2), 'c2 should be set')
+    assert.isTrue(equalsBytes(node.stem, stem), 'stem should be set')
+    assert.isTrue(
       values.every((value, index) => equalsBytes(value, node.values[index] as Uint8Array)),
       'values should be set',
     )
@@ -49,13 +46,13 @@ describe('verkle node - leaf', () => {
     values[2] = value
     const stem = key.slice(0, 31)
     const node = await LeafVerkleNode.create(stem, verkle, values)
-    assert.ok(node instanceof LeafVerkleNode)
+    assert.instanceOf(node, LeafVerkleNode)
   })
 
   it('should create a leafnode with default values', async () => {
     const key = randomBytes(32)
     const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
-    assert.ok(node instanceof LeafVerkleNode)
+    assert.instanceOf(node, LeafVerkleNode)
     assert.equal(node.getValue(0), undefined)
     node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
     assert.deepEqual(node.getValue(0), setLengthRight(Uint8Array.from([5]), 32))

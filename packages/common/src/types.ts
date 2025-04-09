@@ -1,4 +1,3 @@
-import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
 import type {
   BigIntLike,
   ECDSASignature,
@@ -6,6 +5,7 @@ import type {
   PrefixedHexString,
   VerkleCrypto,
 } from '@ethereumjs/util'
+import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
 export interface ChainName {
   [chainId: string]: string
@@ -94,7 +94,7 @@ export interface CustomCrypto {
   ecsign?: (
     msg: Uint8Array,
     pk: Uint8Array,
-    ecSignOpts?: { chainId?: bigint; extraEntropy?: Uint8Array | boolean },
+    ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
   ) => ECDSASignature
   ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array

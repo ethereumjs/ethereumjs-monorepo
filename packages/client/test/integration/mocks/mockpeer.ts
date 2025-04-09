@@ -1,22 +1,17 @@
 import { EventEmitter } from 'eventemitter3'
 import { pipe } from 'it-pipe'
-import pushable from 'it-pushable'
+import { pushable } from 'it-pushable'
 
-import { Peer } from '../../../src/net/peer/index.js'
-import { Event } from '../../../src/types.js'
+import { Peer } from '../../../src/net/peer/index.ts'
+import { Event } from '../../../src/types.ts'
 
-import { MockSender } from './mocksender.js'
-import { createStream } from './network.js'
+import { MockSender } from './mocksender.ts'
+import { createStream } from './network.ts'
 
-import type { PeerOptions } from '../../../src/net/peer/index.js'
-import type { MockServer } from './mockserver.js'
-import type { RemoteStream } from './network.js'
 import type { BlockHeader } from '@ethereumjs/block'
-
-// TypeScript doesn't have support yet for ReturnType
-// with generic types, so this wrapper is used as a helper.
-const wrapperPushable = () => pushable<Uint8Array>()
-export type Pushable = ReturnType<typeof wrapperPushable>
+import type { PeerOptions } from '../../../src/net/peer/index.ts'
+import type { MockServer } from './mockserver.ts'
+import type { RemoteStream } from './network.ts'
 
 interface MockPeerOptions extends PeerOptions {
   location: string
@@ -65,8 +60,8 @@ export class MockPeer extends Peer {
 
   async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
-    const pushableFn: Pushable = pushable()
-    pipe(pushableFn, stream)
+    const pushableFn = pushable({ objectMode: true })
+    void pipe(pushableFn, stream)
     void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {

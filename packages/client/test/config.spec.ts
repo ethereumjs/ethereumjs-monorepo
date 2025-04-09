@@ -1,9 +1,9 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { Config, DataDirectory } from '../src/config.js'
+import { Config, DataDirectory } from '../src/config.ts'
 
-import { Goerli } from './testdata/common/goerliCommon.js'
+import { Goerli } from './testdata/common/goerliCommon.ts'
 
 describe('[Config]', () => {
   it('Initialization with default parameters', () => {

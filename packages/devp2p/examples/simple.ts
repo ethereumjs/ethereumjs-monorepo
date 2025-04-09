@@ -24,7 +24,6 @@ const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
   },
 })
 
-/* eslint-disable no-console */
 dpt.events.on('error', (err) => console.error(chalk.red(err.stack ?? err)))
 
 dpt.events.on('peer:added', (peer) => {

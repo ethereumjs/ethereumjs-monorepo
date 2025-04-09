@@ -1,9 +1,9 @@
-import type { ChainConfig } from './types.js'
+import type { ChainConfig } from './types.ts'
 
 export const Mainnet: ChainConfig = {
   name: 'mainnet',
   chainId: 1,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -116,6 +116,8 @@ export const Mainnet: ChainConfig = {
     {
       name: 'prague',
       block: null,
+      // Note: Prague is not yet scheduled for Mainnet.
+      // Timestamp will be added once it is scheduled.
     },
     {
       name: 'osaka',
@@ -164,7 +166,7 @@ export const Mainnet: ChainConfig = {
 export const Sepolia: ChainConfig = {
   name: 'sepolia',
   chainId: 11155111,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -260,6 +262,12 @@ export const Sepolia: ChainConfig = {
       timestamp: '1706655072',
       forkHash: '0x88cf81d9',
     },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1741159776',
+      forkHash: '0xed88b5fd',
+    },
   ],
   bootstrapNodes: [
     {
@@ -299,7 +307,7 @@ export const Sepolia: ChainConfig = {
 export const Holesky: ChainConfig = {
   name: 'holesky',
   chainId: 17000,
-  defaultHardfork: 'paris',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -393,6 +401,12 @@ export const Holesky: ChainConfig = {
       timestamp: '1707305664',
       forkHash: '0x9b192ad0',
     },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1740434112',
+      forkHash: '0xdfbd9bed',
+    },
   ],
   bootstrapNodes: [
     {
@@ -412,6 +426,138 @@ export const Holesky: ChainConfig = {
   ],
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
+  ],
+}
+
+export const Hoodi: ChainConfig = {
+  name: 'hoodi',
+  chainId: 560048,
+  defaultHardfork: 'prague',
+  consensus: {
+    type: 'pos',
+    algorithm: 'casper',
+  },
+  comment: 'PoS test network to replace Holesky',
+  url: 'https://github.com/eth-clients/hoodi',
+  genesis: {
+    baseFeePerGas: '0x3B9ACA00',
+    difficulty: '0x01',
+    extraData: '0x',
+    gasLimit: '0x2255100',
+    nonce: '0x0000000000001234',
+    timestamp: '0x67d80ec0',
+  },
+  depositContractAddress: '0x00000000219ab540356cBB839Cbe05303d7705Fa',
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'homestead',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'spuriousDragon',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'byzantium',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'constantinople',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'petersburg',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'istanbul',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'muirGlacier',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'berlin',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'london',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'paris',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'mergeNetsplitBlock',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'shanghai',
+      block: null,
+      timestamp: '0',
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'cancun',
+      block: null,
+      timestamp: '0',
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1742999832',
+      forkHash: '0x0929e24e',
+    },
+  ],
+  bootstrapNodes: [
+    {
+      ip: '134.209.138.84',
+      port: 30303,
+      id: '2112dd3839dd752813d4df7f40936f06829fc54c0e051a93967c26e5f5d27d99d886b57b4ffcc3c475e930ec9e79c56ef1dbb7d86ca5ee83a9d2ccf36e5c240c',
+      location: '',
+      comment: 'bootnode 1',
+    },
+    {
+      ip: '209.38.124.160',
+      port: 30303,
+      id: '60203fcb3524e07c5df60a14ae1c9c5b24023ea5d47463dfae051d2c9f3219f309657537576090ca0ae641f73d419f53d8e8000d7a464319d4784acd7d2abc41',
+      location: '',
+      comment: 'bootnode 2',
+    },
+    {
+      ip: '134.199.184.23',
+      port: 30303,
+      id: '8ae4a48101b2299597341263da0deb47cc38aa4d3ef4b7430b897d49bfa10eb1ccfe1655679b1ed46928ef177fbf21b86837bd724400196c508427a6f41602cd',
+      location: '',
+      comment: 'bootnode 3',
+    },
+  ],
+  dnsNetworks: [
+    'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.hoodi.ethdisco.net',
   ],
 }
 

@@ -1,6 +1,6 @@
 import { assert, describe, it, vi } from 'vitest'
 
-import { fetchFromProvider, getProvider } from '../src/index.js'
+import { fetchFromProvider, getProvider } from '../src/index.ts'
 
 const providerUrl = 'https://myfakeprovider.com'
 const fakeEthersProvider = {
@@ -21,7 +21,8 @@ describe('getProvider', () => {
       'returned correct provider url string',
     )
     assert.throws(
-      () => getProvider(<any>1),
+      // @ts-expect-error -- Testing wrong input
+      () => getProvider(1),
       'Must provide valid provider URL or Web3Provider',
       undefined,
       'throws correct error',
@@ -60,7 +61,7 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
+      assert.isTrue(err.message.includes('fetch'), 'tried to fetch and failed')
     }
   })
 
@@ -80,8 +81,8 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
-      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+      assert.isTrue(err.message.includes('ERROR'), 'received a formatted RPC error')
+      assert.isTrue(err.message.includes('eth_getBalance'), 'error is for correct method')
     }
     vi.unstubAllGlobals()
   })
@@ -102,8 +103,8 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(err.message.includes('Could not parse error'), 'received a formatted RPC error')
-      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+      assert.isTrue(err.message.includes('Could not parse error'), 'received a formatted RPC error')
+      assert.isTrue(err.message.includes('eth_getBalance'), 'error is for correct method')
     }
     vi.unstubAllGlobals()
   })

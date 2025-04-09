@@ -13,7 +13,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 
@@ -47,7 +47,8 @@ const sender = new Address(privateToAddress(pkey))
  */
 function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: TransactionType) {
   const signed = transaction.sign(pkey)
-  const json = <any>signed.toJSON()
+  const json = signed.toJSON()
+  // @ts-expect-error -- Manually assigning type
   json.type = txType
   const block = createBlock(
     {

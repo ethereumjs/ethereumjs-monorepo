@@ -2,7 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { createEVM } from '../src/index.ts'
 
 describe('async events', () => {
   it('should work', async () => {
@@ -14,7 +14,7 @@ describe('async events', () => {
     evm.events.on('step', async (event, next) => {
       const startTime = Date.now()
       setTimeout(() => {
-        assert.ok(Date.now() > startTime + 999, 'evm paused on step function for one second')
+        assert.isTrue(Date.now() > startTime + 999, 'evm paused on step function for one second')
         next?.()
       }, 1000)
     })

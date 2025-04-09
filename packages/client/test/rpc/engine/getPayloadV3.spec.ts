@@ -16,9 +16,9 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
@@ -51,7 +51,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
   it('call with unknown payloadId', async () => {
@@ -87,7 +87,10 @@ describe(method, () => {
     await service.execution.vm.stateManager.putAccount(address, account!)
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    assert.isTrue(
+      payloadId !== undefined && payloadId !== null,
+      'valid payloadId should be received',
+    )
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(kzg, txBlobs)
@@ -108,7 +111,7 @@ describe(method, () => {
         to: createZeroAddress(),
       },
       { common },
-    ).sign(pkey, false)
+    ).sign(pkey)
 
     await service.txPool.add(tx, true)
 
@@ -132,7 +135,7 @@ describe(method, () => {
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
     assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
-    assert.ok(
+    assert.isTrue(
       commitments.length === proofs.length && commitments.length === blobs.length,
       'equal commitments, proofs and blobs',
     )

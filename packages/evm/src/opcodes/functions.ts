@@ -2,19 +2,19 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
+  BIGINT_2EXP96,
+  BIGINT_2EXP160,
+  BIGINT_2EXP224,
+  BIGINT_7,
+  BIGINT_8,
+  BIGINT_31,
+  BIGINT_32,
+  BIGINT_96,
+  BIGINT_160,
   BIGINT_224,
   BIGINT_255,
   BIGINT_256,
-  BIGINT_2EXP160,
-  BIGINT_2EXP224,
-  BIGINT_2EXP96,
-  BIGINT_31,
-  BIGINT_32,
-  BIGINT_7,
-  BIGINT_8,
-  BIGINT_96,
   MAX_INTEGER_BIGINT,
   TWO_POW256,
   bigIntToAddressBytes,
@@ -28,10 +28,10 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EOFContainer, EOFContainerMode } from '../eof/container.js'
-import { EOFError } from '../eof/errors.js'
-import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
-import { ERROR } from '../exceptions.js'
+import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
+import { EOFError } from '../eof/errors.ts'
+import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
+import { ERROR } from '../exceptions.ts'
 
 import {
   createAddressFromStackBigInt,
@@ -44,10 +44,10 @@ import {
   toTwos,
   trap,
   writeCallOutput,
-} from './util.js'
+} from './util.ts'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.ts'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -633,7 +633,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const historyServeWindow = common.param('historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
-        if (common.isActivatedEIP(6800)) {
+        if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
           // create witnesses and charge gas
           const statelessGas = runState.env.accessWitness!.readAccountStorage(
             historyAddress,
@@ -920,7 +920,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
 
-      if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
+      if (
+        (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
+        runState.env.chargeCodeAccesses === true
+      ) {
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)

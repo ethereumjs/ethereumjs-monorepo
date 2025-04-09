@@ -8,15 +8,15 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 
-import { DNS } from '../dns/index.js'
-import { devp2pDebug, pk2id } from '../util.js'
+import { DNS } from '../dns/index.ts'
+import { devp2pDebug, pk2id } from '../util.ts'
 
-import { BanList } from './ban-list.js'
-import { KBucket } from './kbucket.js'
-import { Server as DPTServer } from './server.js'
+import { BanList } from './ban-list.ts'
+import { KBucket } from './kbucket.ts'
+import { Server as DPTServer } from './server.ts'
 
-import type { DPTEvent, DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
 

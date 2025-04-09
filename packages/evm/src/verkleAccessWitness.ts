@@ -19,8 +19,8 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { ChunkCache } from './chunkCache.js'
-import { StemCache } from './stemCache.js'
+import { ChunkCache } from './chunkCache.ts'
+import { StemCache } from './stemCache.ts'
 
 import type {
   AccessEventFlags,
@@ -408,7 +408,8 @@ export const generateExecutionWitness = async (
   const ew: VerkleExecutionWitness = {
     stateDiff: [],
     parentStateRoot: bytesToHex(parentStateRoot),
-    verkleProof: undefined as any, // Verkle proofs are not implemented (and never will be)
+    /// @ts-expect-error -- Verkle proofs are unimplemented
+    verkleProof: undefined,
   }
 
   // Generate a map of all stems with their accessed suffixes

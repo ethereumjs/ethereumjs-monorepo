@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { readBeaconBlock, readBeaconState, readBlocksFromEra, readSlotIndex } from '../src/era.js'
-import { readBinaryFile } from '../src/index.js'
+import { readBeaconBlock, readBeaconState, readBlocksFromEra, readSlotIndex } from '../src/era.ts'
+import { readBinaryFile } from '../src/index.ts'
 
 // To test this, download mainnet-01339-75d1c621.era from https://mainnet.era.nimbus.team/mainnet-01339-75d1c621.era
 // This era file is around 500mb in size so don't commit it to the repo
@@ -26,7 +26,7 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
   it('read blocks from an era file', async () => {
     let count = 0
     for await (const block of readBlocksFromEra(data)) {
-      assert.exists(block.message.slot)
+      assert.isDefined(block.message.slot)
       count++
       if (count > 10) break
     }

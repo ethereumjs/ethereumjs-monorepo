@@ -1,7 +1,7 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
+import type { TxOptions, TypedTransaction } from '@ethereumjs/tx'
 import {
-  type TxOptions,
   createTx,
   createTxFromBlockBodyData,
   createTxFromRLP,
@@ -21,17 +21,18 @@ import {
   isHexString,
 } from '@ethereumjs/util'
 
-import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.js'
+import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
+import { genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.ts'
 import {
   Block,
   createBlockHeader,
   createBlockHeaderFromBytesArray,
   createBlockHeaderFromRPC,
   executionPayloadFromBeaconPayload,
-} from '../index.js'
+} from '../index.ts'
 
-import type { BeaconPayloadJSON } from '../from-beacon-payload.js'
+import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
+import type { BeaconPayloadJSON } from '../from-beacon-payload.ts'
 import type {
   BlockBytes,
   BlockData,
@@ -41,9 +42,7 @@ import type {
   HeaderData,
   JSONRPCBlock,
   WithdrawalsBytes,
-} from '../types.js'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
+} from '../types.ts'
 
 /**
  * Static constructor to create a block from a block data dictionary

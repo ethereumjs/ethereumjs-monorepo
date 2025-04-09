@@ -1,5 +1,4 @@
 import {
-  BIGINT_27,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
@@ -8,17 +7,17 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists } from '../util.js'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
-import { createAccessList2930Tx } from './constructors.js'
+import { createAccessList2930Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
@@ -27,12 +26,11 @@ import type {
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 
-export type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
+export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]
 
 /**
  * Typed transaction with optional access lists
@@ -40,8 +38,10 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessList2930Tx implements TransactionInterface<TransactionType.AccessListEIP2930> {
-  public type: number = TransactionType.AccessListEIP2930 // 2930 tx type
+export class AccessList2930Tx
+  implements TransactionInterface<typeof TransactionType.AccessListEIP2930>
+{
+  public type = TransactionType.AccessListEIP2930 // 2930 tx type
 
   // Tx data part (part of the RLP)
   public readonly gasPrice: bigint
@@ -59,8 +59,6 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
   public readonly s?: bigint
 
   // End of Tx data part
-
-  public readonly AccessListJSON: AccessList
 
   public readonly common!: Common
 
@@ -84,7 +82,8 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.AccessListEIP2930 }, opts)
-    const { chainId, accessList, gasPrice } = txData
+    const { chainId, accessList: rawAccessList, gasPrice } = txData
+    const accessList = rawAccessList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -100,11 +99,9 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    EIP2930.verifyAccessList(this)
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
@@ -273,12 +270,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ): AccessList2930Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): AccessList2930Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -293,7 +285,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v,
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
@@ -305,7 +297,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
 
     return {
@@ -332,7 +324,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): AccessList2930Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): AccessList2930Tx {
     return <AccessList2930Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

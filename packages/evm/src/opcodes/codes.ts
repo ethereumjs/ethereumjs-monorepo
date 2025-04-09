@@ -1,14 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-import { handlers } from './functions.js'
-import { dynamicGasHandlers } from './gas.js'
-import { getFullname } from './util.js'
+import { handlers } from './functions.ts'
+import { dynamicGasHandlers } from './gas.ts'
+import { getFullname } from './util.ts'
 
-import type { CustomOpcode } from '../types.js'
-import type { OpHandler } from './functions.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas.js'
 import type { Common } from '@ethereumjs/common'
+import { type CustomOpcode, isAddOpcode } from '../types.ts'
+import type { OpHandler } from './functions.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './gas.ts'
 
 export class Opcode {
   readonly code: number
@@ -50,7 +50,9 @@ export class Opcode {
 }
 
 export type OpcodeList = Map<number, Opcode>
-type OpcodeEntry = { [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean } }
+type OpcodeEntry = {
+  [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean }
+}
 type OpcodeEntryFee = OpcodeEntry & { [key: number]: { fee: number } }
 
 // Default: sync and no dynamic gas
@@ -447,18 +449,13 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
 
   if (customOpcodes) {
     for (const _code of customOpcodes) {
-      const code = <any>_code
-      if (code.logicFunction === undefined) {
+      const code = _code
+
+      if (!isAddOpcode(code)) {
         delete opcodeBuilder[code.opcode]
         continue
       }
 
-      // Sanity checks
-      if (code.opcodeName === undefined || code.baseFee === undefined) {
-        throw EthereumJSErrorWithoutCode(
-          `Custom opcode ${code.opcode} does not have the required values: opcodeName and baseFee are required`,
-        )
-      }
       const entry = {
         [code.opcode]: {
           name: code.opcodeName,

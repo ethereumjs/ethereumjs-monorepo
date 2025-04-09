@@ -1,10 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, validateNoLeadingZeroes } from '@ethereumjs/util'
 
-import { LegacyTx } from './tx.js'
+import { LegacyTx } from './tx.ts'
 
-import type { TxOptions } from '../types.js'
-import type { TxData, TxValuesArray } from './tx.js'
+import type { TxOptions } from '../types.ts'
+import type { TxData, TxValuesArray } from './tx.ts'
 
 /**
  * Instantiate a transaction from a data dictionary.

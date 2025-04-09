@@ -2,10 +2,65 @@ import { createBlock } from '@ethereumjs/block'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Event } from '../../src/types.js'
-import { wait } from '../integration/util.js'
+import { Common } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Event } from '../../src/types.ts'
+import { wait } from '../integration/util.ts'
+
+const powConfig = {
+  name: 'testnet',
+  chainId: 12345,
+  defaultHardfork: 'byzantium',
+  consensus: {
+    type: 'pow',
+    algorithm: 'ethash',
+  },
+  comment: 'PoW network [test]',
+  url: '[TESTNET_URL]',
+  genesis: {
+    gasLimit: 1000000,
+    difficulty: 1,
+    nonce: '0xbb00000000000000' as PrefixedHexString,
+    extraData: ('0x' + '00'.repeat(97)) as PrefixedHexString,
+  },
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    {
+      name: 'homestead',
+      block: 1,
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 2,
+    },
+    {
+      name: 'spuriousDragon',
+      block: 3,
+    },
+    {
+      name: 'byzantium',
+      block: 4,
+    },
+  ],
+  bootstrapNodes: [],
+}
+
+const powCommon = new Common({ chain: powConfig })
+const cliqueConfig = JSON.parse(JSON.stringify(powConfig))
+cliqueConfig.consensus = {
+  type: 'poa',
+  algorithm: 'clique',
+  clique: {
+    period: 15,
+    epoch: 30000,
+  },
+}
+const cliqueCommon = new Common({ chain: cliqueConfig })
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -27,13 +82,13 @@ describe('[FullSynchronizer]', async () => {
   BlockFetcher.prototype.fetch = vi.fn()
   BlockFetcher.prototype.clear = vi.fn()
   BlockFetcher.prototype.destroy = vi.fn()
-  vi.doMock('../../src/sync/fetcher/index.js', () => {
+  vi.doMock('../../src/sync/fetcher/index.ts', () => {
     return {
       default: () => ({ BlockFetcher }),
     }
   })
 
-  const { FullSynchronizer } = await import('../../src/sync/fullsync.js')
+  const { FullSynchronizer } = await import('../../src/sync/fullsync.ts')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -54,10 +109,11 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
-    ;(sync as any).pool.peers = []
+    sync['pool'].open = vi.fn().mockResolvedValue(null)
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync['pool'].peers = []
     await sync.open()
-    assert.ok(true, 'opened')
+    assert.isTrue(true, 'opened')
     await sync.close()
   })
 
@@ -88,36 +144,41 @@ describe('[FullSynchronizer]', async () => {
     await sync.close()
   })
 
-  it('should find best', async () => {
-    const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const sync = new FullSynchronizer({
-      config,
-      interval: 1,
-      pool,
-      chain,
-      txPool,
-      execution,
+  for (const common of [powCommon, cliqueCommon]) {
+    it(`should find best (${common.consensusAlgorithm()})`, async () => {
+      const config = new Config({ accountCache: 10000, storageCache: 1000, common })
+      const pool = new PeerPool() as any
+      const chain = await Chain.create({ config })
+      const sync = new FullSynchronizer({
+        config,
+        interval: 1,
+        pool,
+        chain,
+        txPool,
+        execution,
+      })
+      sync['running'] = true
+      const peers = [
+        { eth: { status: { td: BigInt(1) } }, inbound: false },
+        { eth: { status: { td: BigInt(2) } }, inbound: false },
+      ]
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync.height = vi.fn((input) => {
+        if (JSON.stringify(input) === JSON.stringify(peers[0]))
+          return Promise.resolve(peers[0].eth.status.td)
+        if (JSON.stringify(input) === JSON.stringify(peers[1]))
+          return Promise.resolve(peers[1].eth.status.td)
+      })
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync.chain = { blocks: { td: BigInt(1) } }
+      /// @ts-expect-error -- Assigning simpler config for testing
+      sync.pool = { peers }
+      sync['forceSync'] = true
+      assert.equal(await sync.best(), peers[1] as any, 'found best')
+      await sync.stop()
+      await sync.close()
     })
-    ;(sync as any).running = true
-    const peers = [
-      { eth: { status: { td: BigInt(1) } }, inbound: false },
-      { eth: { status: { td: BigInt(2) } }, inbound: false },
-    ]
-    ;(sync as any).height = vi.fn((input) => {
-      if (JSON.stringify(input) === JSON.stringify(peers[0]))
-        return Promise.resolve(peers[0].eth.status.td)
-      if (JSON.stringify(input) === JSON.stringify(peers[1]))
-        return Promise.resolve(peers[1].eth.status.td)
-    })
-    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
-    ;(sync as any).pool = { peers }
-    ;(sync as any).forceSync = true
-    assert.equal(await sync.best(), <any>peers[1], 'found best')
-    await sync.stop()
-    await sync.close()
-  })
+  }
 
   it('should sync', async () => {
     const config = new Config({
@@ -155,15 +216,17 @@ describe('[FullSynchronizer]', async () => {
         throw new Error('stubbed function called more than twice')
       }
     })
-    ;(sync as any).chain = { blocks: { height: BigInt(3) } }
-    assert.notOk(await sync.sync(), 'local height > remote height')
-    ;(sync as any).chain = {
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync['chain'] = { blocks: { height: BigInt(3) } }
+    assert.isFalse(await sync.sync(), 'local height > remote height')
+    sync['chain'] = {
+      /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(0) },
     }
     setTimeout(() => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
-    assert.ok(await sync.sync(), 'local height < remote height')
+    assert.isTrue(await sync.sync(), 'local height < remote height')
     BlockFetcher.prototype.fetch = vi.fn().mockRejectedValue(new Error('err0'))
     try {
       await sync.sync()
@@ -186,7 +249,8 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any)._fetcher = {
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync['_fetcher'] = {
       enqueueByNumberList: (blockNumberList: bigint[], min: bigint) => {
         assert.equal(blockNumberList[0], BigInt(0), 'enqueueing the correct block in the Fetcher')
         assert.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
@@ -233,7 +297,8 @@ describe('[FullSynchronizer]', async () => {
         inbound: false,
       },
     ]
-    ;(sync as any).pool = { peers }
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync.pool = { peers }
 
     const chainTip = createBlock({
       header: {},
@@ -245,8 +310,9 @@ describe('[FullSynchronizer]', async () => {
     })
     chain.getCanonicalHeadBlock = vi.fn()
     chain.putBlocks = vi.fn((input) => {
-      assert.ok(
-        JSON.stringify(input) === JSON.stringify([newBlock]),
+      assert.equal(
+        JSON.stringify(input),
+        JSON.stringify([newBlock]),
         'putBlocks is called as expected',
       )
     }) as any
@@ -256,11 +322,12 @@ describe('[FullSynchronizer]', async () => {
     assert.equal(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
     assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
-    assert.ok(true, 'did not send NewBlock to Peer 3')
-    ;(sync as any).chain._blocks = {
+    assert.isTrue(true, 'did not send NewBlock to Peer 3')
+    /// @ts-expect-error -- Assigning simpler config for testing
+    sync['chain']._blocks = {
       latest: chainTip,
     }
-    ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
+    sync['newBlocksKnownByPeer'].delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
   })
 
@@ -287,6 +354,6 @@ describe('[FullSynchronizer]', async () => {
     })
 
     sync.running = true
-    assert.ok(await sync.processBlocks([newBlock]), 'should successfully process blocks')
+    assert.isTrue(await sync.processBlocks([newBlock]), 'should successfully process blocks')
   })
 })

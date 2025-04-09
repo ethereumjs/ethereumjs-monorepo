@@ -1,9 +1,9 @@
-import { Address } from './address.js'
-import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
-import { BIGINT_0 } from './constants.js'
-import { TypeOutput, toType } from './types.js'
+import { Address } from './address.ts'
+import { bigIntToHex, bytesToHex, toBytes } from './bytes.ts'
+import { BIGINT_0 } from './constants.ts'
+import { TypeOutput, toType } from './types.ts'
 
-import type { AddressLike, BigIntLike, PrefixedHexString } from './types.js'
+import type { AddressLike, BigIntLike, PrefixedHexString } from './types.ts'
 
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
@@ -57,20 +57,22 @@ export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData):
  * Representation of EIP-4895 withdrawal data
  */
 export class Withdrawal {
+  public readonly index: bigint
+  public readonly validatorIndex: bigint
+  public readonly address: Address
+  public readonly amount: bigint
+
   /**
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating a Withdrawal object from varying data types.
    * Its amount is in Gwei to match CL representation and for eventual ssz withdrawalsRoot
    */
-  constructor(
-    public readonly index: bigint,
-    public readonly validatorIndex: bigint,
-    public readonly address: Address,
-    /**
-     * withdrawal amount in Gwei to match the CL representation and eventually ssz withdrawalsRoot
-     */
-    public readonly amount: bigint,
-  ) {}
+  constructor(index: bigint, validatorIndex: bigint, address: Address, amount: bigint) {
+    this.index = index
+    this.validatorIndex = validatorIndex
+    this.address = address
+    this.amount = amount
+  }
 
   raw() {
     return withdrawalToBytesArray(this)

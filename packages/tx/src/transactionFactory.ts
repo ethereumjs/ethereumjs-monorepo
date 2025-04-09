@@ -1,14 +1,14 @@
 import { EthereumJSErrorWithoutCode, fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.js'
-import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.js'
-import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.js'
-import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.js'
+import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.ts'
+import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.ts'
+import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.ts'
+import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.ts'
 import {
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
-} from './legacy/constructors.js'
+} from './legacy/constructors.ts'
 import {
   TransactionType,
   isAccessList2930TxData,
@@ -16,11 +16,11 @@ import {
   isEOACode7702TxData,
   isFeeMarket1559TxData,
   isLegacyTxData,
-} from './types.js'
-import { normalizeTxParams } from './util.js'
+} from './types.ts'
+import { normalizeTxParams } from './util/general.ts'
 
-import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
 import type { EthersProvider } from '@ethereumjs/util'
+import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'
 /**
  * Create a transaction from a `txData` object
  *

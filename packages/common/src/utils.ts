@@ -1,11 +1,11 @@
 import { EthereumJSErrorWithoutCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
 
-import { Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
-import { Hardfork } from './enums.js'
-import { hardforksDict } from './hardforks.js'
+import { Holesky, Hoodi, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
+import { Hardfork } from './enums.ts'
+import { hardforksDict } from './hardforks.ts'
 
-import type { HardforksDict } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { HardforksDict } from './types.ts'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -180,6 +180,7 @@ function parseGethParams(json: any) {
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
     [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
   }
 
@@ -319,6 +320,9 @@ export const getPresetChainConfig = (chain: string | number) => {
     case 'holesky':
     case 17000:
       return Holesky
+    case 'hoodi':
+    case 560048:
+      return Hoodi
     case 'kaustinen6':
     case 69420:
       return Kaustinen6

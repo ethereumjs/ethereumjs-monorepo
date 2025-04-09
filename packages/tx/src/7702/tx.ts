@@ -1,6 +1,5 @@
 import {
   BIGINT_0,
-  BIGINT_27,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
@@ -9,34 +8,42 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP7702 from '../capabilities/eip7702.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, AuthorizationLists, validateNotArray } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as EIP7702 from '../capabilities/eip7702.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
+import {
+  getBaseJSON,
+  sharedConstructor,
+  validateNotArray,
+  valueBoundaryCheck,
+} from '../util/internal.ts'
 
-import { createEOACode7702Tx } from './constructors.js'
+import { createEOACode7702Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  AuthorizationList,
   AuthorizationListBytes,
   Capability,
   JSONTx,
   TransactionCache,
   TransactionInterface,
   TxOptions,
-} from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+} from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import {
+  authorizationListBytesItemToJSON,
+  authorizationListJSONItemToBytes,
+} from '../util/authorization.ts'
 
-export type TxData = AllTypesTxData[TransactionType.EOACodeEIP7702]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702]
+export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
  * Typed transaction with the ability to set codes on EOA accounts
@@ -44,8 +51,8 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.EOACodeEIP7702
  * - TransactionType: 4
  * - EIP: [EIP-7702](https://github.com/ethereum/EIPs/blob/62419ca3f45375db00b04a368ea37c0bfb05386a/EIPS/eip-7702.md)
  */
-export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACodeEIP7702> {
-  public type: number = TransactionType.EOACodeEIP7702 // 7702 tx type
+export class EOACode7702Tx implements TransactionInterface<typeof TransactionType.EOACodeEIP7702> {
+  public type = TransactionType.EOACodeEIP7702 // 7702 tx type
 
   // Tx data part (part of the RLP)
   public readonly nonce!: bigint
@@ -65,9 +72,6 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
   public readonly s?: bigint
 
   // End of Tx data part
-
-  public readonly AccessListJSON: AccessList
-  public readonly AuthorizationListJSON: AuthorizationList
 
   public readonly common!: Common
 
@@ -91,7 +95,15 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
-    const { chainId, accessList, authorizationList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const {
+      chainId,
+      accessList: rawAccessList,
+      authorizationList: rawAuthorizationList,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } = txData
+    const accessList = rawAccessList ?? []
+    const authorizationList = rawAuthorizationList ?? []
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
@@ -106,20 +118,16 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930, 7702])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
     // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    EIP2930.verifyAccessList(this)
 
     // Populate the authority list fields
-    const authorizationListData = AuthorizationLists.getAuthorizationListData(
-      authorizationList ?? [],
-    )
-    this.authorizationList = authorizationListData.authorizationList
-    this.AuthorizationListJSON = authorizationListData.AuthorizationListJSON
+    this.authorizationList = isAuthorizationList(authorizationList)
+      ? authorizationList.map((item) => authorizationListJSONItemToBytes(item))
+      : authorizationList
     // Verify the authority list format.
-    AuthorizationLists.verifyAuthorizationList(this.authorizationList)
+    EIP7702.verifyAuthorizationList(this)
 
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
@@ -320,12 +328,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ): EOACode7702Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): EOACode7702Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -342,7 +345,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
         data: this.data,
         accessList: this.accessList,
         authorizationList: this.authorizationList,
-        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v,
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
@@ -354,7 +357,11 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
+    const accessListJSON = accessListBytesToJSON(this.accessList)
+    const authorizationList = this.authorizationList.map((item) =>
+      authorizationListBytesItemToJSON(item),
+    )
+
     const baseJSON = getBaseJSON(this)
 
     return {
@@ -363,7 +370,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
-      authorizationList: this.AuthorizationListJSON,
+      authorizationList,
     }
   }
 
@@ -383,7 +390,7 @@ export class EOACode7702Tx implements TransactionInterface<TransactionType.EOACo
     return Legacy.getSenderAddress(this)
   }
 
-  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = true): EOACode7702Tx {
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): EOACode7702Tx {
     return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
   }
 

@@ -1,2 +1,2 @@
-export * from './block.js'
-export * from './constructors.js'
+export * from './block.ts'
+export * from './constructors.ts'

@@ -12,6 +12,7 @@ import {
   BIGINT_1,
   BIGINT_2,
   EthereumJSErrorWithoutCode,
+  type NestedUint8Array,
   TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
@@ -21,10 +22,10 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import type { Blockchain } from '../index.js'
-import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { Blockchain } from '../index.ts'
+import type { Consensus, ConsensusOptions } from '../types.ts'
 
 const debug = debugDefault('blockchain:clique')
 
@@ -281,7 +282,7 @@ export class CliqueConsensus implements Consensus {
           i++
         }
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch {}
     }
   }
 
@@ -556,10 +557,13 @@ export class CliqueConsensus implements Consensus {
   private async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     const signerStates = await this.blockchain!.db.get(CLIQUE_SIGNERS_KEY)
     if (signerStates === undefined) return []
-    const states = RLP.decode(signerStates as Uint8Array) as [Uint8Array, Uint8Array[]]
+    const states = RLP.decode(signerStates as Uint8Array) as NestedUint8Array
     return states.map((state) => {
       const blockNum = bytesToBigInt(state[0] as Uint8Array)
-      const addresses = (<any>state[1]).map((bytes: Uint8Array) => new Address(bytes))
+      const addresses: Address[] = (state[1] as Uint8Array[]).map((bytes: Uint8Array): Address => {
+        const address = new Address(bytes)
+        return address
+      })
       return [blockNum, addresses]
     }) as CliqueLatestSignerStates
   }
@@ -622,7 +626,7 @@ export class CliqueConsensus implements Consensus {
       throw EthereumJSErrorWithoutCode('Signer not found')
     }
     const { number } = await this.blockchain!.getCanonicalHeadHeader()
-    //eslint-disable-next-line
+
     return (number + BigInt(1)) % BigInt(signers.length) === BigInt(signerIndex)
   }
 }

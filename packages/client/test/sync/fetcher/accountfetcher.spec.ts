@@ -4,14 +4,14 @@ import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher.js'
-import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher.js'
-import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher.js'
-import { Event } from '../../../src/types.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher.ts'
+import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher.ts'
+import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher.ts'
+import { Event } from '../../../src/types.ts'
+import { wait } from '../../integration/util.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -38,7 +38,7 @@ describe('[AccountFetcher]', async () => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.js')
+  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -51,14 +51,14 @@ describe('[AccountFetcher]', async () => {
       count: BigInt(10),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 1, 'added 1 tasks')
+    assert.equal(fetcher['in'].length, 1, 'added 1 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
+    assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should update highest known hash', () => {
@@ -126,7 +126,7 @@ describe('[AccountFetcher]', async () => {
     accountDataResponse.completed = true
 
     assert.deepEqual(fetcher.process({} as any, accountDataResponse), fullResult, 'got results')
-    assert.notOk(fetcher.process({} as any, []), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, []), 'bad results')
   })
 
   it('should adopt correctly', () => {
@@ -151,11 +151,11 @@ describe('[AccountFetcher]', async () => {
     ]
     accountDataResponse.completed = false
     const task = { count: BigInt(3), first: BigInt(1) }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, accountDataResponse)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
+    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
     assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
     assert.equal(results, undefined, 'Process should not return full results yet')
 
@@ -202,8 +202,9 @@ describe('[AccountFetcher]', async () => {
     ]
     const job = { peer, partialResult, task }
     const result = (await fetcher.request(job as any)) as any
-    assert.ok(
-      JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
+    assert.equal(
+      JSON.stringify(result[0]),
+      JSON.stringify({ skipped: true }),
       'skipped fetching task with limit lower than highest known key hash',
     )
   })
@@ -278,8 +279,8 @@ describe('[AccountFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === true,
+    assert.isTrue(
+      ret?.completed,
       'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right',
     )
   })
@@ -317,8 +318,8 @@ describe('[AccountFetcher]', async () => {
     const job = { peer, task }
 
     const ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === undefined,
+    assert.isUndefined(
+      ret?.completed,
       'proof verification should fail if elements still remain to the right of the proof',
     )
   })
@@ -339,7 +340,7 @@ describe('[AccountFetcher]', async () => {
         hexToBytes('0x000010c6f7a0b5ed8d36b4c7f34938583621fafc8b0079a2834d26fa3fcc9ea9'),
       ),
     })
-    assert.ok(fetcher.storageFetcher !== undefined, 'storageFetcher should be created')
+    assert.isDefined(fetcher.storageFetcher, 'storageFetcher should be created')
 
     const task = { count: 3, first: BigInt(1) }
     const resData = RLP.decode(hexToBytes(_accountRangeRLP))
@@ -362,18 +363,15 @@ describe('[AccountFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.ok(results !== undefined, 'Proof verification is completed without errors')
-    assert.ok(
-      fetcher.process(job as any, results!) !== undefined,
-      'Response should be processed properly',
-    )
+    assert.isDefined(results, 'Proof verification is completed without errors')
+    assert.isDefined(fetcher.process(job as any, results!), 'Response should be processed properly')
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
     fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()
     fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = vi.fn()
     try {
       await fetcher.store(results!)
-      assert.ok(true, 'fetcher stored results successfully')
+      assert.isTrue(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
@@ -390,8 +388,8 @@ describe('[AccountFetcher]', async () => {
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])
-      assert.ok(true, 'completed snap sync')
-    } catch (e) {
+      assert.isTrue(true, 'completed snap sync')
+    } catch {
       assert.fail('could not complete snap sync in 40 seconds')
     }
 

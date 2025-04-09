@@ -11,8 +11,11 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
+import type { Common } from '@ethereumjs/common'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -20,22 +23,19 @@ import { sha256 } from 'ethereum-cryptography/sha256'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genTransactionsTrieRoot,
-  genWithdrawalsTrieRoot,
   BlockHeader,
-  type createBlockFromBeaconPayloadJSON,
   type createBlock,
+  type createBlockFromBeaconPayloadJSON,
+  type createBlockFromBytesArray,
   type createBlockFromExecutionPayload,
   type createBlockFromJSONRPCProvider,
   type createBlockFromRLP,
   type createBlockFromRPC,
-  type createBlockFromBytesArray,
-} from '../index.js'
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+} from '../index.ts'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.ts'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -539,13 +539,13 @@ export class Block {
     let hash = ''
     try {
       hash = bytesToHex(this.hash())
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
     let errorStr = `block number=${this.header.number} hash=${hash} `

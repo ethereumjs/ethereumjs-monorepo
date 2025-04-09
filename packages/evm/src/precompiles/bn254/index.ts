@@ -1,2 +1,2 @@
-export { NobleBN254 } from './noble.js'
-export { RustBN254 } from './rustbn.js'
+export { NobleBN254 } from './noble.ts'
+export { RustBN254 } from './rustbn.ts'

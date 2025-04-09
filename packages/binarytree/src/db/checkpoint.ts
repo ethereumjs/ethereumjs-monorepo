@@ -6,8 +6,8 @@ import {
 } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
-import type { Checkpoint, CheckpointDBOpts } from '../types.js'
 import type { BatchDBOp, DB, EncodingOpts } from '@ethereumjs/util'
+import type { Checkpoint, CheckpointDBOpts } from '../types.ts'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -188,7 +188,7 @@ export class CheckpointDB implements DB {
     } else {
       const valuePut =
         this.valueEncoding === ValueEncoding.Bytes ? value : bytesToUnprefixedHex(value)
-      await this.db.put(keyHex, <any>valuePut, {
+      await this.db.put(keyHex, valuePut, {
         keyEncoding: KeyEncoding.String,
         valueEncoding: this.valueEncoding,
       })
@@ -254,7 +254,7 @@ export class CheckpointDB implements DB {
         }
         return convertedOp
       })
-      await this.db.batch(<any>convertedOps)
+      await this.db.batch(convertedOps as any)
     }
   }
 

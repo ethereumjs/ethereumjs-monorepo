@@ -1,10 +1,10 @@
-/* eslint-disable no-console */
+import * as path from 'path'
+
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'
-import * as path from 'path'
 import * as process from 'process'
 import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
@@ -17,10 +17,10 @@ import {
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
-} from './config.js'
-import { runBlockchainTest } from './runners/BlockchainTestsRunner.js'
-import { runStateTest } from './runners/GeneralStateTestsRunner.js'
-import { getTestFromSource, getTestsFromArgs } from './testLoader.js'
+} from './config.ts'
+import { runBlockchainTest } from './runners/BlockchainTestsRunner.ts'
+import { runStateTest } from './runners/GeneralStateTestsRunner.ts'
+import { getTestFromSource, getTestsFromArgs } from './testLoader.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { EVMBLSInterface, EVMBN254Interface } from '@ethereumjs/evm'
@@ -227,7 +227,7 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
-    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
+    //@ts-expect-error tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
@@ -239,11 +239,12 @@ async function runTests() {
       })
     })
   } else {
-    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
-      ;(t as any).on('result', (o: any) => {
+      // TODO: Investigate why the type doesn't match
+      // @ts-expect-error -- Tape doesn't seem to be properly typed
+      t.on('result', (o: any) => {
         if (
           typeof o.ok !== 'undefined' &&
           o.ok !== null &&
@@ -314,4 +315,4 @@ async function runTests() {
   }
 }
 
-runTests() // eslint-disable-line @typescript-eslint/no-floating-promises
+runTests()

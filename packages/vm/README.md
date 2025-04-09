@@ -110,11 +110,12 @@ const main = async () => {
 
   // Add more transactions
 
-  const block = await blockBuilder.build()
+  const { block } = await blockBuilder.build()
   console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
 }
 
 void main()
+
 ```
 
 ### WASM Crypto Support
@@ -160,18 +161,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
-
 ## Architecture
 
 ### VM/EVM Relation
@@ -213,10 +202,11 @@ The following is a simple example for a block run on `Goerli`:
 // ./examples/runGoerliBlock.ts
 
 import { createBlockFromRPC } from '@ethereumjs/block'
-import { Common, Goerli } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
-import { createVM, runBlock } from '../src/index.js'
+import { createVM, runBlock } from '../src/index.ts'
+import { Goerli } from '../test/api/testdata/goerliCommon.ts'
 
 import goerliBlock2 from './testData/goerliBlock2.json'
 
@@ -230,6 +220,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 ### Hardfork Support
@@ -353,7 +344,7 @@ To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-import { createVM } from '../src/index.js'
+import { createVM } from '../src/index.ts'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -362,6 +353,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.

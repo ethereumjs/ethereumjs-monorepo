@@ -10,13 +10,13 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { Cache } from './cache.js'
-import { DBOp, DBTarget } from './operation.js'
+import { Cache } from './cache.ts'
+import { DBOp, DBTarget } from './operation.ts'
 
-import type { DatabaseKey } from './operation.js'
 import type { Block, BlockBodyBytes, BlockBytes, BlockOptions } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { BatchDBOp, DB, DBObject, DelBatch, PutBatch } from '@ethereumjs/util'
+import type { DatabaseKey } from './operation.ts'
 
 /**
  * @hidden
@@ -223,12 +223,7 @@ export class DBManager {
    */
   async batch(ops: DBOp[]) {
     const convertedOps: BatchDBOp[] = ops.map((op) => {
-      const type =
-        op.baseDBOp.type !== undefined
-          ? op.baseDBOp.type
-          : op.baseDBOp.value !== undefined
-            ? 'put'
-            : 'del'
+      const type = op.baseDBOp.type ?? (op.baseDBOp.value !== undefined ? 'put' : 'del')
       const convertedOp = {
         key: op.baseDBOp.key,
         value: op.baseDBOp.value,

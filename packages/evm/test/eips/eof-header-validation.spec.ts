@@ -1,13 +1,13 @@
+import path from 'path'
 import { hexToBytes } from '@ethereumjs/util'
 import * as dir from 'node-dir'
-import path from 'path'
 import { assert, describe, it } from 'vitest'
 
-import { EOFContainerMode, validateEOF } from '../../src/eof/container.js'
-import { ContainerSectionType } from '../../src/eof/verify.js'
-import { createEVM } from '../../src/index.js'
+import { EOFContainerMode, validateEOF } from '../../src/eof/container.ts'
+import { ContainerSectionType } from '../../src/eof/verify.ts'
+import { createEVM } from '../../src/index.ts'
 
-import { getCommon } from './eof-utils.js'
+import { getCommon } from './eof-utils.ts'
 
 // Rename this test dir to the location of EOF header tests
 // To test, use `npx vitest run ./scripts/eof-header-validation.spec.ts
@@ -45,8 +45,7 @@ await new Promise<void>((resolve, reject) => {
       const evm = await getEVM()
       for (const key in testData) {
         it(`Test ${key}`, () => {
-          //@ts-ignore
-          const input = testData[key]
+          const input = testData[key as keyof typeof testData]
           for (const testKey in input.vectors) {
             const test = input.vectors[testKey]
 
@@ -55,8 +54,8 @@ await new Promise<void>((resolve, reject) => {
             const expected = test.results.Osaka.result
             const _exception = test.results.Osaka.exception
 
-            let containerSectionType = ContainerSectionType.RuntimeCode
-            let eofContainerMode = EOFContainerMode.Default
+            let containerSectionType: ContainerSectionType = ContainerSectionType.RuntimeCode
+            let eofContainerMode: EOFContainerMode = EOFContainerMode.Default
 
             if (test.containerKind !== undefined) {
               if (test.containerKind === 'INITCODE') {

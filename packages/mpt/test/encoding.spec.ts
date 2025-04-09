@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerklePatriciaTrie } from '../src/index.js'
+import { MerklePatriciaTrie } from '../src/index.ts'
 
 const key = new Uint8Array([11])
 const value = new Uint8Array([255, 255])
@@ -27,12 +27,12 @@ describe('encoding hex prefixes', () => {
 describe('support for Uint8Array', () => {
   it('should use Uint8Array in memory by default', async () => {
     const trie = new MerklePatriciaTrie()
-    const db = (<any>trie)._db.db as MapDB<any, any>
+    const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size
     assert.equal(keys, 1, 'there exists a a key in the db')
     for (const value of db._database.values()) {
-      assert.ok(value instanceof Uint8Array, 'memory db defaults to Uint8Array')
+      assert.instanceOf(value, Uint8Array, 'memory db defaults to Uint8Array')
     }
   })
 
@@ -44,26 +44,23 @@ describe('support for Uint8Array', () => {
 
   it('should default to use strings when a database is provided', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB() })
-    const db = (<any>trie)._db.db as MapDB<any, any>
+    const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size
     assert.equal(keys, 1, 'there exists a a key in the db')
     for (const value of db._database.values()) {
-      assert.ok(
-        typeof value === 'string',
-        'if a database is provided, string values will be used internally',
-      )
+      assert.isString(value, 'if a database is provided, string values will be used internally')
     }
   })
 
   it('should use Uint8Array in memory by default', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB(), valueEncoding: ValueEncoding.Bytes })
-    const db = (<any>trie)._db.db as MapDB<any, any>
+    const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)
     const keys = db._database.size
     assert.equal(keys, 1, 'there exists a a key in the db')
     for (const value of db._database.values()) {
-      assert.ok(value instanceof Uint8Array, 'db respects valueEncoding')
+      assert.instanceOf(value, Uint8Array, 'db respects valueEncoding')
     }
   })
 })

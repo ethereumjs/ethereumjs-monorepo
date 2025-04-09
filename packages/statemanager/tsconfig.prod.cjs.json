@@ -10,6 +10,7 @@
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../mpt/tsconfig.prod.cjs.json" },
     { "path": "../util/tsconfig.prod.cjs.json" },
-    { "path": "../verkle/tsconfig.prod.cjs.json" }
+    { "path": "../verkle/tsconfig.prod.cjs.json" },
+    { "path": "../binarytree/tsconfig.prod.cjs.json" }
   ]
 }

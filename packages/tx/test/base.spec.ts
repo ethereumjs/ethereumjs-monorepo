@@ -12,7 +12,6 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { valueBoundaryCheck } from '../src/features/util.js'
 import {
   AccessList2930Tx,
   Capability,
@@ -29,13 +28,14 @@ import {
   createLegacyTxFromBytesArray,
   createLegacyTxFromRLP,
   paramsTx,
-} from '../src/index.js'
+} from '../src/index.ts'
+import { valueBoundaryCheck } from '../src/util/internal.ts'
 
-import { eip1559TxsData } from './testData/eip1559txs.js'
-import { eip2930TxsData } from './testData/eip2930txs.js'
-import { txsData } from './testData/txs.js'
+import { eip1559TxsData } from './testData/eip1559txs.ts'
+import { eip2930TxsData } from './testData/eip2930txs.ts'
+import { txsData } from './testData/txs.ts'
 
-import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
+import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.ts'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -122,7 +122,7 @@ describe('[BaseTransaction]', () => {
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: Mainnet,
@@ -143,8 +143,8 @@ describe('[BaseTransaction]', () => {
       )
 
       tx = txType.create.txData({}, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
@@ -165,20 +165,20 @@ describe('[BaseTransaction]', () => {
         `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.rlp(rlpData, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
-      assert.ok(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
     }
@@ -191,7 +191,7 @@ describe('[BaseTransaction]', () => {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('nonce cannot have leading zeroes'),
         'should throw with nonce with leading zeroes',
       )
@@ -202,7 +202,7 @@ describe('[BaseTransaction]', () => {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('v cannot have leading zeroes'),
         'should throw with v with leading zeroes',
       )
@@ -213,7 +213,7 @@ describe('[BaseTransaction]', () => {
       createAccessList2930TxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('gasLimit cannot have leading zeroes'),
         'should throw with gasLimit with leading zeroes',
       )
@@ -224,7 +224,7 @@ describe('[BaseTransaction]', () => {
       create1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('maxPriorityFeePerGas cannot have leading zeroes'),
         'should throw with maxPriorityFeePerGas with leading zeroes',
       )
@@ -234,11 +234,11 @@ describe('[BaseTransaction]', () => {
   it('serialize()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.ok(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
-        assert.ok(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
@@ -250,13 +250,13 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
-          assert.ok(
+          assert.isDefined(
             tx.supports(activeCapability),
             `${txType.name}: should recognize all supported capabilities`,
           )
         }
         for (const notActiveCapability of txType.notActiveCapabilities) {
-          assert.notOk(
+          assert.isFalse(
             tx.supports(notActiveCapability),
             `${txType.name}: should reject non-active existing and not existing capabilities`,
           )
@@ -268,7 +268,7 @@ describe('[BaseTransaction]', () => {
   it('raw()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.ok(
+        assert.isDefined(
           txType.create.bytesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
         )
@@ -291,11 +291,12 @@ describe('[BaseTransaction]', () => {
         txFixture.data.s = '0x' + '0'
         const tx = txType.create.txData((txFixture as any).data, { common })
         assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
-        assert.ok(
-          tx.getValidationErrors().includes('Invalid Signature'),
+        assert.include(
+          tx.getValidationErrors(),
+          'Invalid Signature',
           `${txType.name}: should return an error string about not verifying signatures`,
         )
-        assert.notOk(tx.isValid(), `${txType.name}: should not validate correctly`)
+        assert.isFalse(tx.isValid(), `${txType.name}: should not validate correctly`)
       }
     }
   })
@@ -305,7 +306,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.ok(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
+          assert.isDefined(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(
@@ -324,7 +325,7 @@ describe('[BaseTransaction]', () => {
         ...txType.txs,
         // add unsigned variants
         ...txType.txs.map((tx) =>
-          // @ts-ignore Not sure why this is now throwing
+          //@ts-expect-error Not sure why this is now throwing
           txType.create.txData({
             ...tx,
             v: undefined,
@@ -367,7 +368,7 @@ describe('[BaseTransaction]', () => {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           const txPubKey = signedTx.getSenderPublicKey()
           const pubKeyFromPriv = privateToPublic(hexToBytes(`0x${privateKey}`))
-          assert.ok(
+          assert.isTrue(
             equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`,
           )
@@ -385,7 +386,8 @@ describe('[BaseTransaction]', () => {
         if (privateKey !== undefined) {
           let signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
-          ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
+          // @ts-expect-error -- Assign to read-only property
+          signedTx.s = SECP256K1_ORDER + BigInt(1)
           assert.throws(
             () => {
               signedTx.getSenderPublicKey()
@@ -405,7 +407,7 @@ describe('[BaseTransaction]', () => {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
-          assert.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
+          assert.isTrue(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
     }
@@ -440,7 +442,7 @@ describe('[BaseTransaction]', () => {
     try {
       valueBoundaryCheck({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('equal or exceed MAX_INTEGER'),
         'throws when value equals or exceeds MAX_INTEGER',
       )
@@ -448,12 +450,15 @@ describe('[BaseTransaction]', () => {
     try {
       valueBoundaryCheck({ a: MAX_INTEGER + BigInt(1) }, 256, false)
     } catch (err: any) {
-      assert.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
+      assert.isTrue(
+        err.message.includes('exceed MAX_INTEGER'),
+        'throws when value exceeds MAX_INTEGER',
+      )
     }
     try {
       valueBoundaryCheck({ a: BigInt(0) }, 100, false)
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('unimplemented bits value'),
         'throws when bits value other than 64 or 256 provided',
       )
@@ -461,12 +466,12 @@ describe('[BaseTransaction]', () => {
     try {
       valueBoundaryCheck({ a: MAX_UINT64 + BigInt(1) }, 64, false)
     } catch (err: any) {
-      assert.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
+      assert.isTrue(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }
     try {
       valueBoundaryCheck({ a: MAX_UINT64 }, 64, true)
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('2^64'),
         'throws when 64 bit integer equals or exceeds MAX_UINT64',
       )

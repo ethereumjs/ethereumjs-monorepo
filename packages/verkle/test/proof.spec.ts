@@ -2,8 +2,8 @@ import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { createVerkleTree } from '../src/constructors.js'
-import { LeafVerkleNode } from '../src/index.js'
+import { createVerkleTree } from '../src/constructors.ts'
+import { LeafVerkleNode } from '../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle'
@@ -56,7 +56,7 @@ describe('lets make proofs', () => {
 
     try {
       const res = verkle.verifyProof(proof, [verificationInput])
-      assert.ok(res)
+      assert.isTrue(res)
     } catch (err) {
       assert.fail(`Failed to verify proof: ${err}`)
     }
@@ -85,7 +85,7 @@ describe('lets make proofs', () => {
         indexValuePairs: [{ index: 0, value: new Uint8Array(32) }],
       },
     ])
-    assert.ok(res)
+    assert.isTrue(res)
   })
   it.skip('should verify proof for single leaf node', async () => {
     const node = await LeafVerkleNode.create(randomBytes(31), verkle)
@@ -111,6 +111,6 @@ describe('lets make proofs', () => {
         indexValuePairs: [{ index: 0, value: node.getValue(0)! }],
       },
     ])
-    assert.ok(res)
+    assert.isTrue(res)
   })
 })

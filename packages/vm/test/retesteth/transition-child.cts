@@ -1,16 +1,16 @@
+import { readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
 import { Block, BlockHeader, createBlockFromBlockData } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTxFromBytesArray, createTxFromSerializedData } from '@ethereumjs/tx'
 import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
 
-import { VM } from '../../dist/cjs'
-import { BlockBuilder } from '../../dist/cjs/buildBlock'
-import { getCommon } from '../tester/config'
-import { makeBlockFromEnv, setupPreConditions } from '../util'
+import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
+import { VM } from '../../dist/cjs/index.js'
+import { getCommon } from '../tester/config.ts'
+import { makeBlockFromEnv, setupPreConditions } from '../util.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
@@ -139,7 +139,7 @@ async function runTransition(argsIn: any) {
   }
 
   if (rejected.length > 0) {
-    ;(output as any).rejected = rejected
+    output['rejected'] = rejected
   }
 
   const outputAlloc = alloc //{}
@@ -163,7 +163,6 @@ process.on('message', async (message) => {
     running = true
     try {
       await runTransition(message)
-      // eslint-disable-next-line no-empty
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e)

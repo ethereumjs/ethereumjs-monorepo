@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { BranchMPTNodeBranchValue, NodeReferenceOrRawMPTNode } from '../types.js'
+import type { BranchMPTNodeBranchValue, NodeReferenceOrRawMPTNode } from '../types.ts'
 
 export class BranchMPTNode {
   _branches: BranchMPTNodeBranchValue[]

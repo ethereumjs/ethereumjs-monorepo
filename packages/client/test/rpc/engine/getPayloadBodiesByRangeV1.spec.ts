@@ -11,10 +11,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadBodiesByRangeV1'
 
@@ -24,7 +24,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', '0x55'])
     assert.equal(res.error.code, TOO_LARGE_REQUEST)
-    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
+    assert.isTrue(res.error.message.includes('More than 32 execution payload bodies requested'))
   })
 
   it('call with invalid parameters', async () => {
@@ -32,7 +32,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x0', '0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('Start and Count parameters cannot be less than 1'))
+    assert.isTrue(res.error.message.includes('Start and Count parameters cannot be less than 1'))
   })
 
   it('call with valid parameters', async () => {

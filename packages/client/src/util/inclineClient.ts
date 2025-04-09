@@ -3,12 +3,13 @@ import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level.js'
+import { EthereumClient } from '../client.ts'
+import { Config } from '../config.ts'
+import { LevelDB } from '../execution/level.ts'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
+import type { AbstractLevel } from 'abstract-level'
 
 export async function createInlineClient(
   config: Config,
@@ -21,20 +22,32 @@ export async function createInlineClient(
   let stateDB
   let metaDB
   if (memoryDB) {
-    chainDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    stateDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
-    metaDB = new MemoryLevel<string | Uint8Array, string | Uint8Array>()
+    // `Level` and `AbstractLevel` somehow have a few property differences even though
+    // `Level` extends `AbstractLevel`.  We don't use any of the missing properties so
+    // just ignore this error
+    chainDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    stateDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+    metaDB = new MemoryLevel<
+      string | Uint8Array,
+      string | Uint8Array
+    >() as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   } else {
     chainDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/chainDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
     stateDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/stateDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
     metaDB = new Level<string | Uint8Array, string | Uint8Array>(
       `${datadir}/${common.chainName()}/metaDB`,
-    )
+    ) as unknown as AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   }
   let validateConsensus = false
   const consensusDict: ConsensusDict = {}

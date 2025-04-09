@@ -15,8 +15,8 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 
-import type { BlockHeader } from '../index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BlockHeader } from '../index.ts'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32
@@ -153,7 +153,7 @@ export function generateCliqueBlockExtraData(
 
   const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
+  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v))
 
   const extraDataWithoutSeal = header.extraData.subarray(
     0,

@@ -1,9 +1,9 @@
 import { EthereumJSErrorWithoutCode, PrioritizedTaskExecutor } from '@ethereumjs/util'
 
-import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.js'
+import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.ts'
 
-import type { MerklePatriciaTrie } from '../mpt.js'
-import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.js'
+import type { MerklePatriciaTrie } from '../mpt.ts'
+import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.ts'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.

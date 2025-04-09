@@ -9,17 +9,15 @@
 | A module to store and interact with blocks. |
 | ------------------------------------------- |
 
-Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-blockchain) for an introduction on the last preceding release.
-
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply install the project using `npm`:
 
 ```shell
 npm install @ethereumjs/blockchain
 ```
 
-**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+**Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
 ## Usage
 
@@ -116,23 +114,10 @@ Note, if you construct a blockchain with a custom consensus implementation, tran
 
 ## Custom Genesis State
 
-### Genesis in v7 (removed genesis dependency)
+### Genesis State
 
-Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
+Genesis state for the 4 supported networks (mainnet, sepolia, hoodi, holesky) is stored in an auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
 
-Starting with the v7 release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
-
-This goes along with some changes in Blockchain and VM API:
-
-- Blockchain: There is a new constructor option `genesisStateRoot` beside `genesisBlock` and `genesisState` for an alternative condensed way to provide the genesis state root directly
-- Blockchain: `genesisState(): GenesisState` method has been replaced by the async `getGenesisStateRoot(chainId: Chain): Promise<Uint8Array>` method
-- VM: `activateGenesisState?: boolean` constructor option has been replaced with a `genesisState?: GenesisState` option
-
-### Genesis in v6
-
-For the v6 release responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
-
-A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
 
 ### Custom genesis from a Geth genesis config
 
@@ -145,12 +130,12 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 
-import gethGenesisJSON from './genesisData/post-merge.json'
+import { postMergeGethGenesis } from './genesisData/post-merge.ts'
 
 const main = async () => {
-  // Load geth genesis json file into lets say `gethGenesisJSON`
-  const common = createCommonFromGethGenesis(gethGenesisJSON, { chain: 'customChain' })
-  const genesisState = parseGethGenesisState(gethGenesisJSON)
+  // Load geth genesis file
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'customChain' })
+  const genesisState = parseGethGenesisState(postMergeGethGenesis)
   const blockchain = await createBlockchain({
     genesisState,
     common,
@@ -163,6 +148,7 @@ const main = async () => {
 }
 
 void main()
+
 ```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
@@ -218,18 +204,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ## Events
 

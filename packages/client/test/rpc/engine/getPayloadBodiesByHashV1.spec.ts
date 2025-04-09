@@ -12,10 +12,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.ts'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadBodiesByHashV1'
 
@@ -28,7 +28,7 @@ describe(method, () => {
     }
     const res = await rpc.request(method, [tooManyHashes])
     assert.equal(res.error.code, TOO_LARGE_REQUEST)
-    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
+    assert.isTrue(res.error.message.includes('More than 32 execution payload bodies requested'))
   })
 
   it('call with valid parameters', async () => {

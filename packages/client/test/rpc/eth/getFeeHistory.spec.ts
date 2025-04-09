@@ -18,13 +18,13 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.js'
+import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
-import type { Chain } from '../../../src/blockchain/index.js'
-import type { VMExecution } from '../../../src/execution/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../../src/blockchain/index.ts'
+import type { VMExecution } from '../../../src/execution/index.ts'
 
 const method = 'eth_feeHistory'
 
@@ -316,7 +316,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x0', 'latest', []])
-    assert.ok(req.error !== undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should throw error if block count is above 1024`, async () => {
@@ -325,7 +325,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
-    assert.ok(req.error !== undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should generate reward percentiles with 0s`, async () => {
@@ -357,7 +357,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles`, async () => {
@@ -369,7 +369,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles - sorted check`, async () => {
@@ -383,7 +383,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
     const expected = priorityFees.map(bigIntToHex)
     assert.deepEqual(res.result.reward[0], expected)
 
@@ -392,7 +392,7 @@ describe(method, () => {
     await produceBlockWithTx(execution, chain, priorityFees.reverse(), gasUsed.reverse())
 
     const res2 = await rpc.request(method, ['0x1', 'latest', [40, 100]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
     assert.deepEqual(res2.result.reward[0], expected)
   })
 

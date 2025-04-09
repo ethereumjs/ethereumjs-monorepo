@@ -1,7 +1,7 @@
 /**
  * @module sync/fetcher
  */
-export * from './accountfetcher.js'
-export * from './blockfetcher.js'
-export * from './fetcher.js'
-export * from './reverseblockfetcher.js'
+export * from './accountfetcher.ts'
+export * from './blockfetcher.ts'
+export * from './fetcher.ts'
+export * from './reverseblockfetcher.ts'

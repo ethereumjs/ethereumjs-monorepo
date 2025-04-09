@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 
-import { createVM } from '../src/index.js'
+import { createVM } from '../src/index.ts'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })

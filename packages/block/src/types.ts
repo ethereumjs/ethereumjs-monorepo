@@ -1,4 +1,3 @@
-import type { BlockHeader } from './index.js'
 import type { Common, ParamsDict } from '@ethereumjs/common'
 import type { JSONRPCTx, JSONTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
@@ -12,6 +11,7 @@ import type {
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
+import type { BlockHeader } from './index.ts'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -210,7 +210,7 @@ export interface JSONRPCBlock {
   receiptsRoot: PrefixedHexString // the root of the receipts trie of the block.
   miner: PrefixedHexString // the address of the beneficiary to whom the mining rewards were given.
   difficulty: PrefixedHexString | NumericString // integer of the difficulty for this block. Can be a 0x-prefixed hex string or a string integer
-  totalDifficulty: PrefixedHexString // integer of the total difficulty of the chain until this block.
+  totalDifficulty?: PrefixedHexString // integer of the total difficulty of the chain until this block.
   extraData: PrefixedHexString // the “extra data” field of this block.
   size: PrefixedHexString // integer the size of this block in bytes.
   gasLimit: PrefixedHexString // the maximum gas allowed in this block.

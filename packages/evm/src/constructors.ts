@@ -1,12 +1,11 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
 
-import { NobleBN254 } from './precompiles/index.js'
-import { EVMMockBlockchain } from './types.js'
+import { EVM } from './index.ts'
+import { NobleBN254 } from './precompiles/index.ts'
+import { EVMMockBlockchain } from './types.ts'
 
-import { EVM } from './index.js'
-
-import type { EVMOpts } from './index.js'
+import type { EVMOpts } from './index.ts'
 
 /**
  * Use this async static constructor for the initialization

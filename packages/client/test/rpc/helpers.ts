@@ -17,30 +17,30 @@ import {
   parseGethGenesisState,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { Client, Server as RPCServer } from 'jayson/promise'
+import { Client, Server as RPCServer } from 'jayson/promise/index.js'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
-import { Chain } from '../../src/blockchain/chain.js'
-import { Config } from '../../src/config.js'
-import { VMExecution } from '../../src/execution/index.js'
-import { getLogger } from '../../src/logging.js'
-import { RlpxServer } from '../../src/net/server/rlpxserver.js'
-import { RPCManager as Manager } from '../../src/rpc/index.js'
-import { Skeleton } from '../../src/service/skeleton.js'
-import { TxPool } from '../../src/service/txpool.js'
-import { Event } from '../../src/types.js'
-import { createRPCServerListener, createWsRPCServerListener } from '../../src/util/index.js'
+import { Chain } from '../../src/blockchain/chain.ts'
+import { Config } from '../../src/config.ts'
+import { VMExecution } from '../../src/execution/index.ts'
+import { getLogger } from '../../src/logging.ts'
+import { RlpxServer } from '../../src/net/server/rlpxserver.ts'
+import { RPCManager as Manager } from '../../src/rpc/index.ts'
+import { Skeleton } from '../../src/service/skeleton.ts'
+import { TxPool } from '../../src/service/txpool.ts'
+import { Event } from '../../src/types.ts'
+import { createRPCServerListener, createWsRPCServerListener } from '../../src/util/index.ts'
 
-import { mockBlockchain } from './mockBlockchain.js'
+import { mockBlockchain } from './mockBlockchain.ts'
 
-import type { EthereumClient } from '../../src/client.js'
+import type { AddressInfo } from 'node:net'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
-import type { HttpClient, HttpServer } from 'jayson/promise'
-import type { AddressInfo } from 'node:net'
+import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
+import type { EthereumClient } from '../../src/client.ts'
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -127,7 +127,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
   if ((chain as any)._headers !== undefined) {
-    ;(chain as any)._headers.latest = createBlockHeader(
+    chain['_headers'].latest = createBlockHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common },
     )

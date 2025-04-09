@@ -1,5 +1,5 @@
-import { EthereumJSErrorWithoutCode } from './errors.js'
-import { isHexString } from './internal.js'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { isHexString } from './internal.ts'
 
 /**
  * Throws if a string is not hex prefixed

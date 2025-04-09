@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
+import { randomBytes } from 'node:crypto'
+
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
-import { randomBytes } from 'node:crypto'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,7 +15,7 @@ import {
   sleep,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -24,6 +24,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
+
 const shardingJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 
@@ -43,7 +44,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
   })
 
   if (result.includes('EthereumJS') === true) {
-    assert.ok(true, 'connected to client')
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -51,7 +52,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -152,7 +153,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
         }
         await sleep(2000)
       }
-      assert.ok(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
+      assert.isTrue(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
     },
     10 * 60_000,
   )
@@ -200,8 +201,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
       receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
       await sleep(1000)
     }
-    assert.ok(
-      receipt.result.contractAddress !== undefined,
+    assert.isDefined(
+      receipt.result.contractAddress,
       'successfully deployed contract that calls precompile',
     )
   }, 60_000)
@@ -216,8 +217,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)
