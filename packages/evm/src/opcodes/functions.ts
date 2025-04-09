@@ -31,7 +31,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFError } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
-import { EVMError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
 
 import {
   createAddressFromStackBigInt,

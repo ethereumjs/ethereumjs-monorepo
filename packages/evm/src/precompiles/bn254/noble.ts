@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { bn254 } from '@noble/curves/bn254'
 
-import { EVMError, EvmError } from '../../exceptions.ts'
+import { EVMError, EvmError } from '../../errors.ts'
 
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 import type { EVMBN254Interface } from '../../types.ts'

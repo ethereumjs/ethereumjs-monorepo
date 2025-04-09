@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EVMError, EvmError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { EVMError, EvmError } from '../exceptions.ts'
 
 import {
   BLS_GAS_DISCOUNT_PAIRS_G1,

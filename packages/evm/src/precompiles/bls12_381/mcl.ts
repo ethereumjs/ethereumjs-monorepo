@@ -7,7 +7,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { EVMError, EvmError } from '../../exceptions.ts'
+import { EVMError, EvmError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,

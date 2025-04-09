@@ -1,4 +1,4 @@
-import { EVMError, EvmError } from './exceptions.ts'
+import { EVMError, EvmError } from './errors.ts'
 
 /**
  * Implementation of the stack used in evm.

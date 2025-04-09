@@ -21,7 +21,7 @@ import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.ts'
 import { isEOF } from './eof/util.ts'
-import { EVMError, EvmError } from './exceptions.ts'
+import { EVMError, EvmError } from './errors.ts'
 import { Interpreter } from './interpreter.ts'
 import { Journal } from './journal.ts'
 import { EVMPerformanceLogger } from './logger.ts'

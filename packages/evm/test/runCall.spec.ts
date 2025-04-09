@@ -16,8 +16,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
+import { EVMError } from '../src/errors.ts'
 import { defaultBlock } from '../src/evm.ts'
-import { EVMError } from '../src/exceptions.ts'
 import { createEVM } from '../src/index.ts'
 
 import { eip4844Data } from './testdata/eip4844.ts'

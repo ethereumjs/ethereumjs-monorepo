@@ -15,11 +15,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions.ts'
+import { EvmError } from '../errors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { EVMErrorType } from '../exceptions.ts'
+import type { EVMErrorType } from '../errors.ts'
 import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1

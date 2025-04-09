@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 
 import { EOFError } from '../eof/errors.ts'
-import { EVMError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.ts'

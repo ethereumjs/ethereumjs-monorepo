@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
 
-import { EVMError, EvmError } from '../../exceptions.ts'
+import { EVMError, EvmError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,

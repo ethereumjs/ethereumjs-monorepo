@@ -1,6 +1,6 @@
 import { equalsBytes } from '@ethereumjs/util'
 
-import { EVMError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
 
 import { adjustSstoreGasEIP2929 } from './EIP2929.ts'
 import { trap } from './util.ts'

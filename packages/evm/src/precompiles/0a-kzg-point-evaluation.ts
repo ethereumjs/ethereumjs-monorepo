@@ -7,8 +7,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
+import { EVMError, EvmError } from '../errors.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { EVMError, EvmError } from '../exceptions.ts'
 
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck } from './util.ts'
