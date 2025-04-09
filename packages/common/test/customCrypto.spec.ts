@@ -1,9 +1,8 @@
 import { bytesToBigInt, concatBytes, randomBytes } from '@ethereumjs/util'
+import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { assert, describe, it } from 'vitest'
 
 import { Common, Mainnet, createCustomCommon } from '../src/index.ts'
-
-import type { ECDSASignature } from '@ethereumjs/util'
 
 describe('[Common]: Custom Crypto', () => {
   const customKeccak256 = (msg: Uint8Array) => {
@@ -24,7 +23,10 @@ describe('[Common]: Custom Crypto', () => {
     return msg
   }
 
-  const customEcSign = (_msg: Uint8Array, _pk: Uint8Array): ECDSASignature => {
+  const customEcSign = (
+    _msg: Uint8Array,
+    _pk: Uint8Array,
+  ): Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'> => {
     return {
       recovery: 0,
       r: bytesToBigInt(Uint8Array.from([0, 1, 2, 3])),

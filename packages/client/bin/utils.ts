@@ -651,28 +651,12 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      if (msg.length < 32) {
-        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
-      }
       const buf = secp256k1Sign(msg, pk)
       const r = bytesToBigInt(buf.slice(0, 32))
       const s = bytesToBigInt(buf.slice(32, 64))
       const recovery = buf[64]
 
       return { r, s, recovery }
-    }
-    cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
-      const sig = secp256k1Sign(hash, pk)
-      const r = bytesToBigInt(sig.slice(0, 32))
-      const s = bytesToBigInt(sig.slice(32, 64))
-      const recovery = Number(sig[64])
-
-      return {
-        r,
-        s,
-        recovery,
-      }
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
@@ -682,7 +666,6 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign
-    cryptoFunctions.ecdsaSign = secp256k1.sign
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   cryptoFunctions.kzg = kzg

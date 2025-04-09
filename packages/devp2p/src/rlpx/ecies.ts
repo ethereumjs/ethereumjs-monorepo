@@ -97,7 +97,7 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
-    this._ecdsaSign = common?.customCrypto.ecdsaSign ?? secp256k1.sign
+    this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
     this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
   }
 

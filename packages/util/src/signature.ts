@@ -23,13 +23,6 @@ import { assertIsBytes } from './helpers.ts'
 
 import type { PrefixedHexString } from './types.ts'
 
-// This is the interface which matches the return value of `secp256k1.sign` from `ethereum-cryptography`
-export interface ECDSASignature {
-  recovery: number
-  r: bigint
-  s: bigint
-}
-
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
 

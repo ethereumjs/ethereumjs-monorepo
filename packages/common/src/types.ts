@@ -91,7 +91,6 @@ export interface CustomCrypto {
     pk: Uint8Array,
     ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
   ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>
-  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { r: bigint; s: bigint; recovery: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
   verkle?: VerkleCrypto

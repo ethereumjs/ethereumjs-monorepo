@@ -189,7 +189,7 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
-  const sig = (common?.customCrypto.ecdsaSign ?? secp256k1.sign)(sighash, privateKey)
+  const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
   const hashdata = concatBytes(
     setLengthLeft(bigIntToBytes(sig.r), 32),
     setLengthLeft(bigIntToBytes(sig.s), 32),
