@@ -130,7 +130,6 @@ export function signAuthorization(
   common?: Common,
 ): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
-  // TODO: always uses the JS version: read ecsign from crypto
   const secp256k1Sign = common?.customCrypto.ecdsaSign ?? secp256k1.sign
   const signed = secp256k1Sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
