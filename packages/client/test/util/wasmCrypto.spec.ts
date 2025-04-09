@@ -67,7 +67,7 @@ describe('WASM crypto tests', () => {
 
   it('should compute the same signature whether js or WASM signature used', async () => {
     const crypto = await getCryptoFunctions(true)
-    const wasmSign = crypto.ecdsaSign!
+    const wasmSign = crypto.ecsign!
 
     await waitReady()
     const msg = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
