@@ -637,7 +637,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     cryptoFunctions.keccak256 = keccak256WASM
     cryptoFunctions.ecrecover = (
       msgHash: Uint8Array,
-      v: bigint,
+      v: number,
       r: Uint8Array,
       s: Uint8Array,
       chainID?: bigint,
@@ -651,10 +651,6 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      if (msg.length < 32) {
-        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
-      }
       const buf = secp256k1Sign(msg, pk)
       const r = bytesToBigInt(buf.slice(0, 32))
       const s = bytesToBigInt(buf.slice(32, 64))

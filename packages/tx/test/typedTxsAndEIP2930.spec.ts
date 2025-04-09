@@ -406,7 +406,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
+    const addSignatureTx = tx.addSignature(recovery, r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -420,7 +420,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
+      tx.addSignature(recovery + 27, r, s)
     })
   })
 
@@ -639,7 +639,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
     const expectedHash = hexToBytes(
       '0xbbd570a3c6acc9bb7da0d5c0322fe4ea2a300db80226f7df4fef39b2d6649eec',
     )
-    const v = BigInt(0)
+    const v = 0
     const r = bytesToBigInt(
       hexToBytes('0x294ac94077b35057971e6b4b06dfdf55a6fbed819133a6c1d31e187f1bca938d'),
     )

@@ -80,7 +80,7 @@ export interface CustomCrypto {
   keccak256?: (msg: Uint8Array) => Uint8Array
   ecrecover?: (
     msgHash: Uint8Array,
-    v: bigint,
+    v: number,
     r: Uint8Array,
     s: Uint8Array,
     chainId?: bigint,

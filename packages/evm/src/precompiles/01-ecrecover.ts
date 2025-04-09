@@ -3,6 +3,7 @@ import {
   BIGINT_28,
   bytesToBigInt,
   bytesToHex,
+  bytesToInt,
   ecrecover,
   publicToAddress,
   setLengthLeft,
@@ -56,7 +57,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
         )} r=${bytesToHex(r)}s=${bytesToHex(s)}}`,
       )
     }
-    publicKey = ecrecoverFunction(msgHash, bytesToBigInt(v), r, s)
+    publicKey = ecrecoverFunction(msgHash, bytesToInt(v), r, s)
   } catch {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: PK recovery failed`)
