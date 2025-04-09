@@ -206,7 +206,7 @@ export function getArgs(): ClientOpts {
       })
       .option('logLevel', {
         describe: 'Logging verbosity',
-        choices: ['error', 'warn', 'info', 'debug'],
+        choices: ['error', 'warn', 'info', 'debug', 'off'],
         default: 'info',
       })
       .option('logFile', {
@@ -757,7 +757,7 @@ export async function generateClientConfig(args: ClientOpts) {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
 
-  const logger: Logger = getLogger(args)
+  const logger: Logger | undefined = getLogger(args)
   let bootnodes
   if (args.bootnodes !== undefined) {
     // File path passed, read bootnodes from disk

@@ -28,7 +28,7 @@ import type { FullEthereumService } from '../src/service/index.ts'
 import type { ClientOpts } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
 
-let logger: Logger
+let logger: Logger | undefined
 
 const args: ClientOpts = getArgs()
 

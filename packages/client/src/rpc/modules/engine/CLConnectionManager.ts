@@ -58,7 +58,8 @@ type PayloadToPayloadStats = {
   txs: { [key: number]: number }
 }
 
-const logCLStatus = (logger: winston.Logger, logMsg: string, logLevel: logLevel) => {
+const logCLStatus = (logger: winston.Logger | undefined, logMsg: string, logLevel: logLevel) => {
+  if (logger === undefined) return
   logger[logLevel](enginePrefix + logMsg)
 }
 export class CLConnectionManager {

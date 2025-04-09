@@ -398,7 +398,7 @@ export class Config {
   // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
   public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
 
-  public readonly logger: Logger
+  public readonly logger: Logger | undefined
   public readonly syncmode: SyncMode
   public readonly vm?: VM
   public readonly datadir: string
@@ -566,7 +566,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
+    this.logger = options.logger
 
     this.logger?.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {

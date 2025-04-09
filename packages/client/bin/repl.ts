@@ -83,7 +83,13 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
     action(params) {
       const level = params
       if (['debug', 'info', 'warn', 'error'].includes(level)) {
-        for (const transport of (replServer.context.client as EthereumClient).config.logger
+        const logger = (replServer.context.client as EthereumClient).config.logger
+        if (logger === undefined) {
+          console.log('No logger available')
+          this.displayPrompt()
+          return
+        }
+        for (const transport of (replServer.context.client as EthereumClient).config.logger!
           .transports) {
           transport.level = level
         }
