@@ -43,7 +43,7 @@ export const EOFError = {
   UNREACHABLE_CONTAINER_SECTIONS: 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
   CONTAINER_TYPE_ERROR:
     'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
-  DANGLINE_BYTES: 'got dangling bytes in body',
+  DANGLING_BYTES: 'got dangling bytes in body',
   INVALID_OPCODE: 'invalid opcode',
   INVALID_TERMINATOR: 'invalid terminating opcode',
   OPCODE_INTERMEDIATES_OOB: 'invalid opcode: intermediates out-of-bounds',
@@ -152,8 +152,8 @@ export function validationErrorMsg(type: EOFError, ...args: any) {
     case EOFError.MAX_STACK_HEIGHT_LIMIT: {
       return `${EOFError.MAX_STACK_HEIGHT_LIMIT}, got: ${args[1]} - typeSection ${args[0]}`
     }
-    case EOFError.DANGLINE_BYTES: {
-      return EOFError.DANGLINE_BYTES
+    case EOFError.DANGLING_BYTES: {
+      return EOFError.DANGLING_BYTES
     }
     default: {
       return type
@@ -231,8 +231,8 @@ export function validationError(type: EOFError, ...args: any): never {
         `${EOFError.MAX_STACK_HEIGHT_LIMIT}, got: ${args[1]} - typeSection ${args[0]}`,
       )
     }
-    case EOFError.DANGLINE_BYTES: {
-      throw EthereumJSErrorWithoutCode(EOFError.DANGLINE_BYTES)
+    case EOFError.DANGLING_BYTES: {
+      throw EthereumJSErrorWithoutCode(EOFError.DANGLING_BYTES)
     }
     default: {
       throw EthereumJSErrorWithoutCode(type)

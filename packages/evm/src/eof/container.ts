@@ -366,7 +366,7 @@ class EOFBody {
       if (eofMode === EOFContainerMode.Default) {
         if (!stream.isAtEnd()) {
           // If there are dangling bytes in default container mode, this is invalid
-          validationError(EOFError.DANGLINE_BYTES)
+          validationError(EOFError.DANGLING_BYTES)
         }
       } else {
         // Tx init mode: the remaining bytes (if any) are used as CALLDATA in the EVM, in case of a Tx init
@@ -376,7 +376,7 @@ class EOFBody {
       dataSection = stream.readRemainder()
 
       if (dataSection.length > header.dataSize) {
-        validationError(EOFError.DANGLINE_BYTES)
+        validationError(EOFError.DANGLING_BYTES)
       }
     }
 
