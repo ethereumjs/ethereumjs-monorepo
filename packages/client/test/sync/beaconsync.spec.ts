@@ -159,30 +159,30 @@ describe('[BeaconSynchronizer]', async () => {
       /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(0) },
     }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger?.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
         assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger?.removeAllListeners()
+    sync.config.logger?.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=1 count=1'))
         assert.isTrue(true, 'should sync block 1 and target chain start')
     })
     /// @ts-expect-error -- Assigning simpler config for testing
     skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(2) }]
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger?.removeAllListeners()
     /// @ts-expect-error -- Assigning simpler config for testing
     skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     /// @ts-expect-error -- Assigning simpler config for testing
     sync['chain'] = { blocks: { height: BigInt(4) } }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger?.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=1'))
         assert.isTrue(true, 'should sync block 5 with count 1')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger?.removeAllListeners()
   })
 
   it('should not sync pre-genesis', async () => {
@@ -215,12 +215,12 @@ describe('[BeaconSynchronizer]', async () => {
       /// @ts-expect-error -- Assigning simpler config for testing
       blocks: { height: BigInt(100) },
     }
-    sync.config.logger.addListener('data', (data: any) => {
+    sync.config.logger?.addListener('data', (data: any) => {
       if ((data.message as string).includes('first=5 count=5'))
         assert.isTrue(true, 'should sync block 5 and target chain start')
     })
     await sync.sync()
-    sync.config.logger.removeAllListeners()
+    sync.config.logger?.removeAllListeners()
   })
 
   it('should extend and set with a valid head', async () => {

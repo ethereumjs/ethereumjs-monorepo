@@ -209,7 +209,7 @@ export class TxPool {
       this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60,
     )
 
-    if (this.config.logger.isInfoEnabled()) {
+    if (this.config.logger?.isInfoEnabled()) {
       // Only turn on txPool stats calculator if log level is info or above
       // since all stats calculator does is print `info` logs
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
@@ -606,7 +606,7 @@ export class TxPool {
    */
   async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txs.length === 0) return
-    this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
+    this.config.logger?.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
       txs.map((tx) => tx.hash()),
       peer,
@@ -620,7 +620,7 @@ export class TxPool {
         newTxHashes[1].push(tx.serialize().byteLength)
         newTxHashes[2].push(tx.hash())
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
@@ -654,11 +654,11 @@ export class TxPool {
 
     if (reqHashes.length === 0) return
 
-    this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
+    this.config.logger?.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
     const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`,
     )
     const getPooledTxs = await peer.eth?.getPooledTransactions({
@@ -672,14 +672,14 @@ export class TxPool {
       return
     }
     const [_, txs] = getPooledTxs
-    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
+    this.config.logger?.debug(`TxPool: received requested txs number=${txs.length}`)
 
     const newTxHashes: [number[], number[], Uint8Array[]] = [[], [], []] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
@@ -883,7 +883,7 @@ export class TxPool {
         byNonce.set(address, [])
       }
     }
-    this.config.logger.info(
+    this.config.logger?.info(
       `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`,
     )
     return txs
@@ -897,7 +897,7 @@ export class TxPool {
     clearInterval(this._cleanupInterval as NodeJS.Timeout)
     clearInterval(this._logInterval as NodeJS.Timeout)
     this.running = false
-    this.config.logger.info('TxPool stopped.')
+    this.config.logger?.info('TxPool stopped.')
     return true
   }
 
@@ -945,13 +945,13 @@ export class TxPool {
         handlederrors++
       }
     }
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`,
     )
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`,
     )
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`,
     )
   }

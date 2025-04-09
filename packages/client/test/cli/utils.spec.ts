@@ -129,6 +129,6 @@ describe('generateClientConfig', () => {
       logLevel: 'debug',
     }
     const { config } = await generateClientConfig(opts)
-    assert.equal(config.logger.level, 'debug', 'Log level should be set to debug')
+    assert.equal(config.logger?.level, 'debug', 'Log level should be set to debug')
   })
 })

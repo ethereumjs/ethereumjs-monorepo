@@ -45,7 +45,7 @@ export class FullEthereumService extends Service {
   constructor(options: ServiceOptions) {
     super(options)
 
-    this.config.logger.info('Full sync mode')
+    this.config.logger?.info('Full sync mode')
 
     const { metaDB } = options
     if (metaDB !== undefined) {
@@ -87,7 +87,7 @@ export class FullEthereumService extends Service {
         // also with skipOpen this call is a sync call as no async operation is executed
         // as good as creating the synchronizer here
         void this.switchToBeaconSync(true)
-        this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
+        this.config.logger?.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
         this.synchronizer = new FullSynchronizer({
           config: this.config,
@@ -146,7 +146,7 @@ export class FullEthereumService extends Service {
 
   async open() {
     if (this.synchronizer !== undefined) {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Preparing for sync using FullEthereumService with ${
           this.synchronizer instanceof BeaconSynchronizer
             ? 'BeaconSynchronizer'
@@ -154,7 +154,7 @@ export class FullEthereumService extends Service {
         }.`,
       )
     } else {
-      this.config.logger.info('Starting FullEthereumService with no syncing.')
+      this.config.logger?.info('Starting FullEthereumService with no syncing.')
     }
     // Broadcast pending txs to newly connected peer
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
@@ -188,7 +188,7 @@ export class FullEthereumService extends Service {
         await this.execution.setupVerkleVM()
         this.execution.vm = this.execution.verkleVM!
       } else {
-        this.execution.config.logger.info(
+        this.execution.config.logger?.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
         )
         await this.execution.setupMerkleVM()
@@ -247,17 +247,17 @@ export class FullEthereumService extends Service {
             }
           }
         } else {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`,
           )
         }
       } else {
-        this.config.logger.warn(
+        this.config.logger?.warn(
           'skipping building head state as neither execution is started nor snapsync is available',
         )
       }
     } catch (error) {
-      this.config.logger.error(`Error building headstate error=${error}`)
+      this.config.logger?.error(`Error building headstate error=${error}`)
     } finally {
       this.building = false
     }
@@ -361,7 +361,7 @@ export class FullEthereumService extends Service {
       }
       case 'NewBlockHashes': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
@@ -376,7 +376,7 @@ export class FullEthereumService extends Service {
       }
       case 'NewBlock': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)

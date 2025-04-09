@@ -157,7 +157,7 @@ export const assembleBlock = async (
     return { block }
   } catch (error) {
     const validationError = `Error assembling block from payload: ${error}`
-    config.logger.error(validationError)
+    config.logger?.error(validationError)
     const latestValidHash = await validHash(
       hexToBytes(payload.parentHash as PrefixedHexString),
       chain,

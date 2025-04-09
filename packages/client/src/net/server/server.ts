@@ -74,7 +74,7 @@ export class Server {
     const protocols: Protocol[] = Array.from(this.protocols)
     await Promise.all(protocols.map((p) => p.open()))
     this.started = true
-    this.config.logger.info(`Started ${this.name} server maxPeers=${this.config.maxPeers}`)
+    this.config.logger?.info(`Started ${this.name} server maxPeers=${this.config.maxPeers}`)
     return true
   }
 
@@ -89,7 +89,7 @@ export class Server {
    */
   async stop(): Promise<boolean> {
     this.started = false
-    this.config.logger.info(`Stopped ${this.name} server.`)
+    this.config.logger?.info(`Stopped ${this.name} server.`)
     return this.started
   }
 
@@ -100,7 +100,7 @@ export class Server {
    */
   addProtocols(protocols: Protocol[]) {
     if (this.started) {
-      this.config.logger.error('Cannot require protocols after server has been started')
+      this.config.logger?.error('Cannot require protocols after server has been started')
       return false
     }
     for (const p of protocols) {
