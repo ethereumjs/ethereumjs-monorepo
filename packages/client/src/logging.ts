@@ -132,6 +132,10 @@ function logFileTransport(args: LoggerArgs) {
 export function getLogger(
   args: { [key: string]: any } = { logLevel: 'info' },
 ): WinstonLogger | undefined {
+  if (args.logLevel === 'off') {
+    console.log('logger turned off')
+    return undefined
+  }
   const transports: any[] = [
     new wTransports.Console({
       level: args.logLevel,
@@ -142,10 +146,9 @@ export function getLogger(
   if (typeof args.logFile === 'string') {
     transports.push(logFileTransport(args as LoggerArgs))
   }
-  const logger = createLogger({
+  return createLogger({
     transports,
     format: formatConfig(),
     level: args.logLevel,
   })
-  return args.logLevel === 'off' ? undefined : logger
 }
