@@ -17,7 +17,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { defaultBlock } from '../src/evm.ts'
-import { ERROR } from '../src/exceptions.ts'
+import { EVMError } from '../src/exceptions.ts'
 import { createEVM } from '../src/index.ts'
 
 import { eip4844Data } from './testdata/eip4844.ts'
@@ -272,7 +272,11 @@ describe('RunCall tests', () => {
 
     assert.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
     assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    assert.equal(result.execResult.exceptionError?.error, ERROR.OUT_OF_GAS, 'call went out of gas')
+    assert.equal(
+      result.execResult.exceptionError?.error,
+      EVMError.OUT_OF_GAS,
+      'call went out of gas',
+    )
   })
 
   it('ensure selfdestruct pays for creating new accounts', async () => {
@@ -538,7 +542,7 @@ describe('RunCall tests', () => {
     const result = await evm.runCall(runCallArgs)
     assert.equal(
       result.execResult.exceptionError?.error,
-      ERROR.CODESIZE_EXCEEDS_MAXIMUM,
+      EVMError.CODESIZE_EXCEEDS_MAXIMUM,
       'reported error is correct',
     )
   })
@@ -649,7 +653,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+    assert.equal(res.execResult.exceptionError?.error, EVMError.CODESIZE_EXCEEDS_MAXIMUM)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -658,7 +662,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, EVMError.OUT_OF_GAS)
   })
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
@@ -672,7 +676,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.equal(res.execResult.exceptionError?.error, ERROR.CODESTORE_OUT_OF_GAS)
+    assert.equal(res.execResult.exceptionError?.error, EVMError.CODESTORE_OUT_OF_GAS)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -681,7 +685,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.equal(res2.execResult.exceptionError?.error, ERROR.OUT_OF_GAS)
+    assert.equal(res2.execResult.exceptionError?.error, EVMError.OUT_OF_GAS)
   })
 
   it('ensure call and callcode handle gas stipend correctly', async () => {
