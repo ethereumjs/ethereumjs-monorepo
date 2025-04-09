@@ -31,12 +31,11 @@ import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/index.ts'
+import { modifyAccountFields } from './util.ts'
 
-import { type TransitionStateManagerOpts } from './index.js'
+import type { Caches, TransitionStateManagerOpts } from './index.ts'
 
-import type { Caches } from './index.js'
 import type {
   AccountFields,
   StateManagerInterface,
@@ -241,7 +240,6 @@ export class TransitionStateManager implements StateManagerInterface {
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
-    //@ts-ignore
     await modifyAccountFields(this, address, accountFields)
   }
   putCode = async (address: Address, value: Uint8Array): Promise<void> => {
