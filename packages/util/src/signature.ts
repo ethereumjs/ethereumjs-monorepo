@@ -10,23 +10,37 @@ import {
   toBytes,
   utf8ToBytes,
 } from './bytes.ts'
-import { BIGINT_0, BIGINT_27, SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants.ts'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_27,
+  SECP256K1_ORDER,
+  SECP256K1_ORDER_DIV_2,
+} from './constants.ts'
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsBytes } from './helpers.ts'
 
 import type { PrefixedHexString } from './types.ts'
 
-export function calculateSigRecovery(v: number, chainId?: bigint): number {
-  if (v === 0 || v === 1) return v
-
-  if (chainId === undefined) {
-    return v - 27
-  }
-  return v - (Number(chainId) * 2 + 35)
+// This is the interface which matches the return value of `secp256k1.sign` from `ethereum-cryptography`
+export interface ECDSASignature {
+  recovery: number
+  r: bigint
+  s: bigint
 }
 
-function isValidSigRecovery(recovery: number): boolean {
-  return recovery === 0 || recovery === 1
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (v === BIGINT_0 || v === BIGINT_1) return v
+
+  if (chainId === undefined) {
+    return v - BIGINT_27
+  }
+  return v - (chainId * BIGINT_2 + BigInt(35))
+}
+
+function isValidSigRecovery(recovery: bigint): boolean {
+  return recovery === BIGINT_0 || recovery === BIGINT_1
 }
 
 /**
@@ -36,7 +50,7 @@ function isValidSigRecovery(recovery: number): boolean {
  */
 export const ecrecover = function (
   msgHash: Uint8Array,
-  v: number,
+  v: bigint,
   r: Uint8Array,
   s: Uint8Array,
   chainId?: bigint,
@@ -47,7 +61,7 @@ export const ecrecover = function (
     throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
-  const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(recovery)
+  const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
   const senderPubKey = sig.recoverPublicKey(msgHash)
   return senderPubKey.toRawBytes(false).slice(1)
 }
@@ -58,7 +72,7 @@ export const ecrecover = function (
  * @returns Signature
  */
 export const toRPCSig = function (
-  v: number,
+  v: bigint,
   r: Uint8Array,
   s: Uint8Array,
   chainId?: bigint,
@@ -79,7 +93,7 @@ export const toRPCSig = function (
  * @returns Signature
  */
 export const toCompactSig = function (
-  v: number,
+  v: bigint,
   r: Uint8Array,
   s: Uint8Array,
   chainId?: bigint,
@@ -90,7 +104,7 @@ export const toCompactSig = function (
   }
 
   const ss = Uint8Array.from([...s])
-  if ((v > BigInt(28) && v % 2 === 1) || v === 1 || v === 28) {
+  if ((v > BigInt(28) && v % BIGINT_2 === BIGINT_1) || v === BIGINT_1 || v === BigInt(28)) {
     ss[0] |= 0x80
   }
 
@@ -148,7 +162,7 @@ export const fromRPCSig = function (sig: PrefixedHexString): {
  * @param homesteadOrLater Indicates whether this is being used on either the homestead hardfork or a later one
  */
 export const isValidSignature = function (
-  v: number,
+  v: bigint,
   r: Uint8Array,
   s: Uint8Array,
   homesteadOrLater: boolean = true,

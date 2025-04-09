@@ -4,7 +4,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  intToBytes,
   toBytes,
 } from '@ethereumjs/util'
 
@@ -55,7 +54,7 @@ export class AccessList2930Tx
   public readonly chainId: bigint
 
   // Props only for signed txs
-  public readonly v?: number
+  public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
 
@@ -201,7 +200,7 @@ export class AccessList2930Tx
       bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      this.v !== undefined ? intToBytes(this.v) : new Uint8Array(0),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
@@ -271,7 +270,7 @@ export class AccessList2930Tx
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(v: number, r: Uint8Array | bigint, s: Uint8Array | bigint): AccessList2930Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): AccessList2930Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }

@@ -7,9 +7,7 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
-  bytesToInt,
   hexToBytes,
-  intToHex,
   toBytes,
 } from '@ethereumjs/util'
 
@@ -150,7 +148,7 @@ export function sharedConstructor(
   tx.data = toBytes(data === '' ? '0x' : data)
 
   // Set signature values (if the tx is signed)
-  tx.v = vB.length > 0 ? bytesToInt(vB) : undefined
+  tx.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
   tx.r = rB.length > 0 ? bytesToBigInt(rB) : undefined
   tx.s = sB.length > 0 ? bytesToBigInt(sB) : undefined
 
@@ -181,10 +179,10 @@ export function getBaseJSON(tx: TransactionInterface) {
     to: tx.to !== undefined ? tx.to.toString() : undefined,
     value: bigIntToHex(tx.value),
     data: bytesToHex(tx.data),
-    v: tx.v !== undefined ? intToHex(tx.v) : undefined,
+    v: tx.v !== undefined ? bigIntToHex(tx.v) : undefined,
     r: tx.r !== undefined ? bigIntToHex(tx.r) : undefined,
     s: tx.s !== undefined ? bigIntToHex(tx.s) : undefined,
     chainId: bigIntToHex(tx.common.chainId()),
-    yParity: tx.v === 0 || tx.v === 1 ? intToHex(tx.v) : undefined,
+    yParity: tx.v === 0n || tx.v === 1n ? bigIntToHex(tx.v) : undefined,
   }
 }

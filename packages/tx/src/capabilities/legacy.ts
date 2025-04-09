@@ -258,7 +258,8 @@ export function sign(
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? secp256k1.sign
   const { recovery, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
-  const signedTx = tx.addSignature(recovery, r, s, true)
+  // TODO: addSignature `v` can likely be converted to type `number` instead `bigint`
+  const signedTx = tx.addSignature(BigInt(recovery), r, s, true)
 
   // Hack part 2
   if (hackApplied) {

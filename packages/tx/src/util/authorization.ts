@@ -6,8 +6,8 @@ import {
   Address,
   EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   bytesToHex,
-  bytesToInt,
   concatBytes,
   ecrecover,
   hexToBytes,
@@ -153,6 +153,6 @@ export function recoverAuthority(
   const inputBytes = Array.isArray(input) ? input : authorizationListJSONItemToBytes(input)
   const [chainId, address, nonce, yParity, r, s] = inputBytes
   const msgHash = authorizationHashedMessageToSign([chainId, address, nonce])
-  const pubKey = ecrecover(msgHash, bytesToInt(yParity), r, s)
+  const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
   return new Address(publicToAddress(pubKey))
 }

@@ -197,7 +197,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   readonly to?: Address
   readonly value: bigint
   readonly data: Uint8Array
-  readonly v?: number
+  readonly v?: bigint
   readonly r?: bigint
   readonly s?: bigint
   readonly cache: TransactionCache
@@ -225,7 +225,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   errorStr(): string
 
   addSignature(
-    v: number,
+    v: bigint, // TODO: change this to number?
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     convertV?: boolean,

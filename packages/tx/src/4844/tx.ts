@@ -7,7 +7,6 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   hexToBytes,
-  intToBytes,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -66,7 +65,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public blobVersionedHashes: PrefixedHexString[]
 
   // Props only for signed txs
-  public readonly v?: number
+  public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
 
@@ -297,7 +296,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       this.accessList,
       bigIntToUnpaddedBytes(this.maxFeePerBlobGas),
       this.blobVersionedHashes.map((hash) => hexToBytes(hash)),
-      this.v !== undefined ? intToBytes(this.v) : new Uint8Array(0),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
@@ -396,7 +395,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     }
   }
 
-  addSignature(v: number, r: Uint8Array | bigint, s: Uint8Array | bigint): Blob4844Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): Blob4844Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }

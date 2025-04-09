@@ -3,10 +3,11 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   BIGINT_0,
+  BIGINT_27,
   EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bigIntToUnpaddedBytes,
-  bytesToInt,
+  bytesToBigInt,
   concatBytes,
   createAddressFromPublicKey,
   createZeroAddress,
@@ -112,7 +113,7 @@ export function cliqueSigner(header: BlockHeader): Address {
   }
   const r = extraSeal.subarray(0, 32)
   const s = extraSeal.subarray(32, 64)
-  const v = bytesToInt(extraSeal.subarray(64, 65)) + 27
+  const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
   const pubKey = ecrecover(cliqueSigHash(header), v, r, s)
   return createAddressFromPublicKey(pubKey)
 }

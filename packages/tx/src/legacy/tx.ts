@@ -6,7 +6,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -33,7 +32,8 @@ import type {
 export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
 
-function meetsEIP155(v: number, chainId: bigint) {
+function meetsEIP155(_v: bigint, chainId: bigint) {
+  const v = Number(_v)
   const chainIdDoubled = Number(chainId) * 2
   return v === chainIdDoubled + 35 || v === chainIdDoubled + 36
 }
@@ -41,9 +41,9 @@ function meetsEIP155(v: number, chainId: bigint) {
 /**
  * Validates tx's `v` value and extracts the chain id
  */
-function validateVAndExtractChainID(common: Common, v?: number): bigint | undefined {
+function validateVAndExtractChainID(common: Common, _v?: bigint): bigint | undefined {
   let chainIdBigInt
-
+  const v = _v !== undefined ? Number(_v) : undefined
   // Check for valid v values in the scope of a signed legacy tx
   if (v !== undefined) {
     // v is 1. not matching the EIP-155 chainId included case and...
@@ -57,7 +57,7 @@ function validateVAndExtractChainID(common: Common, v?: number): bigint | undefi
 
   // No unsigned tx and EIP-155 activated and chain ID included
   if (v !== undefined && v !== 0 && common.gteHardfork('spuriousDragon') && v !== 27 && v !== 28) {
-    if (!meetsEIP155(v, common.chainId())) {
+    if (!meetsEIP155(BigInt(v), common.chainId())) {
       throw EthereumJSErrorWithoutCode(
         `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
       )
@@ -91,7 +91,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   public readonly to?: Address
 
   // Props only for signed txs
-  public readonly v?: number
+  public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
 
@@ -212,7 +212,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
       this.to !== undefined ? this.to.bytes : new Uint8Array(0),
       bigIntToUnpaddedBytes(this.value),
       this.data,
-      this.v !== undefined ? intToBytes(this.v) : new Uint8Array(0),
+      this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
       this.s !== undefined ? bigIntToUnpaddedBytes(this.s) : new Uint8Array(0),
     ]
@@ -332,7 +332,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   }
 
   addSignature(
-    v: number,
+    v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
     // convertV is `true` when called from `sign`
@@ -345,9 +345,9 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     r = toBytes(r)
     s = toBytes(s)
     if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
-      v += 35 + Number(this.common.chainId()) * 2
+      v += BigInt(35) + this.common.chainId() * BIGINT_2
     } else if (convertV) {
-      v += 27
+      v += BigInt(27)
     }
 
     const opts = { ...this.txOptions, common: this.common }

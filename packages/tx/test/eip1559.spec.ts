@@ -150,7 +150,7 @@ describe('[FeeMarket1559Tx]', () => {
     const { recovery, r, s } = secp256k1.sign(msgHash, privKey, { extraEntropy: false })
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(recovery, r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -164,11 +164,11 @@ describe('[FeeMarket1559Tx]', () => {
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(recovery + 27, r, s)
+      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
     })
   })
 
-  it.only('hash()', () => {
+  it('hash()', () => {
     const data = eip1559Data[0]
     const pkey = hexToBytes(data.privateKey)
     let txn = createFeeMarket1559Tx(data, { common })
