@@ -1,3 +1,8 @@
+import {
+  eip4844GethGenesis,
+  invalidSpuriousDragonGethGenesis,
+  postMergeGethGenesis,
+} from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { Mainnet } from '../src/chains.ts'
@@ -5,22 +10,17 @@ import { Hardfork } from '../src/enums.ts'
 import { createCommonFromGethGenesis } from '../src/index.ts'
 import { parseGethGenesis } from '../src/utils.ts'
 
-import { invalidSpuriousDragonData } from './data/geth-genesis/invalid-spurious-dragon.ts'
-import { noExtraData } from './data/geth-genesis/no-extra-data.ts'
 import { poaData } from './data/geth-genesis/poa.ts'
-import { postMergeData } from './data/geth-genesis/post-merge.ts'
-import { testnetData } from './data/geth-genesis/testnetData.ts'
-import { postMergeHardforkData } from './data/post-merge-hardfork.ts'
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
-    const params = parseGethGenesis(testnetData, 'rinkeby')
+    const params = parseGethGenesis(eip4844GethGenesis)
     assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
   })
 
   it('should throw with invalid Spurious Dragon blocks', async () => {
     const f = () => {
-      parseGethGenesis(invalidSpuriousDragonData, 'bad_params')
+      parseGethGenesis(invalidSpuriousDragonGethGenesis, 'bad_params')
     }
     assert.throws(f, undefined, undefined, 'should throw')
   })
@@ -45,26 +45,26 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
-    const params = parseGethGenesis(postMergeData, 'post-merge')
-    assert.equal(params.genesis.baseFeePerGas, postMergeData.baseFeePerGas)
+    const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
+    assert.equal(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
   })
 
   it('should successfully parse genesis file with no extraData', async () => {
-    const params = parseGethGenesis(noExtraData, 'noExtraData')
+    const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
     assert.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
-    assert.equal(params.genesis.timestamp, '0x10', 'timestamp parsed correctly')
+    assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
     const mergeAtGenesisData = {} as any
-    Object.assign(mergeAtGenesisData, postMergeData)
+    Object.assign(mergeAtGenesisData, postMergeGethGenesis)
     mergeAtGenesisData.config.terminalTotalDifficultyPassed = true
     const common = createCommonFromGethGenesis(mergeAtGenesisData, {})
     assert.equal(common.hardforks().slice(-1)[0].block, 0)
   })
 
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
-    const common = createCommonFromGethGenesis(postMergeHardforkData, {
+    const common = createCommonFromGethGenesis(postMergeGethGenesis, {
       chain: 'customChain',
     })
     const depositContractAddress =
@@ -79,7 +79,7 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     Object.assign(customData.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
@@ -97,7 +97,7 @@ describe('[Utils/Parse]', () => {
     )
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
-    const genesisJSON = postMergeData
+    const genesisJSON = postMergeGethGenesis
     //@ts-expect-error we want shanghaiTime to exist
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
@@ -107,11 +107,13 @@ describe('[Utils/Parse]', () => {
     )
   })
   it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
-    const genesisJSON = postMergeData
+    const genesisJSON = postMergeGethGenesis
     //@ts-expect-error we don't want shanghaiTime to exist
     delete genesisJSON.config.shanghaiTime
     //@ts-expect-error we don't want terminalTotalDifficultyPassed to exist
     delete genesisJSON.config.terminalTotalDifficultyPassed
+    //@ts-expect-error we don't want mergeForkBlock to exist
+    delete genesisJSON.config.mergeForkBlock
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
@@ -125,7 +127,7 @@ describe('[Utils/Parse]', () => {
 
   it('should assign correct blob schedule', () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
       chainId: 3151908,
       homesteadBlock: 0,
@@ -199,7 +201,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should throw on invalid blob schedules', () => {
-    const customData = JSON.parse(JSON.stringify(postMergeHardforkData))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
       chainId: 3151908,
       homesteadBlock: 0,

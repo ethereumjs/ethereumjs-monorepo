@@ -1,3 +1,4 @@
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -9,7 +10,6 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
 import { beaconData } from '../../testdata/blocks/beacon.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV2'
@@ -48,7 +48,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with non existent block hash', async () => {
-    const { server } = await setupChain(postMergeData, 'merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'merge', { engine: true })
     const rpc = getRPCClient(server)
     const blockDataNonExistentBlockHash = [
       {
@@ -62,7 +62,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with non existent parent hash', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const blockDataNonExistentParentHash = [
       {
@@ -77,7 +77,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, [beaconData[1]])
 
@@ -103,7 +103,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with valid data', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [blockData])
 
@@ -112,7 +112,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with valid data but invalid transactions', async () => {
-    const { chain, server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { chain, server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     chain.config.logger.silent = true
     const blockDataWithInvalidTransaction = {
@@ -130,7 +130,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with valid data & valid transaction but not signed', async () => {
-    const { server, common, chain } = await setupChain(postMergeData, 'post-merge', {
+    const { server, common, chain } = await setupChain(postMergeGethGenesis, 'post-merge', {
       engine: true,
     })
     const rpc = getRPCClient(server)
@@ -165,9 +165,9 @@ describe(`${method}: call with executionPayloadV1`, () => {
     )
     const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
-      ...postMergeData,
+      ...postMergeGethGenesis,
       alloc: {
-        ...postMergeData.alloc,
+        ...postMergeGethGenesis.alloc,
         [accountAddress.toString()]: {
           balance: '0x1000000',
         },
@@ -200,7 +200,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('re-execute payload and verify that no errors occur', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     await batchBlocks(rpc, beaconData)
 
@@ -222,7 +222,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('parent hash equals to block hash', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     const blockDataHasBlockHashSameAsParentHash = [
       {

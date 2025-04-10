@@ -1,11 +1,10 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { genesisMPTStateRoot } from '@ethereumjs/mpt'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createBlockchain } from '../src/index.ts'
-
-import { postMergeData } from './testdata/post-merge.ts'
 
 import type { Blockchain } from '../src/blockchain.ts'
 
@@ -21,7 +20,7 @@ async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
 
 describe('[Utils/Parse]', () => {
   it('should properly parse genesis state from gethGenesis', async () => {
-    const genesisState = parseGethGenesisState(postMergeData)
+    const genesisState = parseGethGenesisState(postMergeGethGenesis)
     const stateRoot = await genesisMPTStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
@@ -31,7 +30,7 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should initialize blockchain from gethGenesis', async () => {
-    const blockchain = await getBlockchain(postMergeData)
+    const blockchain = await getBlockchain(postMergeGethGenesis)
     const genesisHash = blockchain.genesisBlock.hash()
 
     assert.equal(

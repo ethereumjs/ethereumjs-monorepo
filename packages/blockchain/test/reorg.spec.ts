@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { CLIQUE_NONCE_AUTH, CliqueConsensus } from '../src/consensus/clique.ts'
 import { createBlockchain } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.ts'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { generateConsecutiveBlock } from './util.ts'
 
 import type { Block } from '@ethereumjs/block'
@@ -67,7 +67,7 @@ describe('reorg tests', () => {
   })
 
   it('should correctly reorg a poa chain and remove blocks from clique snapshots', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const genesisBlock = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
     const consensusDict: ConsensusDict = {}

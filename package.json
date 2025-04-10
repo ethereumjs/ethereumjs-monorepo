@@ -20,7 +20,7 @@
     "test:node": "npm run test:node --workspaces --if-present",
     "test:browser": "npm run test:browser --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces",
+    "postinstall": "npm run build --workspaces --if-present",
     "prepare": "git config --local core.hooksPath .githooks",
     "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
