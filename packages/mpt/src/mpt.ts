@@ -333,7 +333,7 @@ export class MerklePatriciaTrie {
     let progress = 0
     for (let i = 0; i < partialPath.stack.length - 1; i++) {
       stack[i] = partialPath.stack[i]
-      progress += stack[i] instanceof BranchMPTNode ? 1 : (<ExtensionMPTNode>stack[i]).keyLength()
+      progress += stack[i] instanceof BranchMPTNode ? 1 : (stack[i] as ExtensionMPTNode).keyLength()
     }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
