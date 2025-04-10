@@ -38,7 +38,6 @@ import {
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -666,7 +665,13 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign
-    cryptoFunctions.ecdsaRecover = ecdsaRecover
+    cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      // Adapted from @noble/curves docs
+      const sign = secp256k1.Signature.fromCompact(sig)
+      const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
+      const address = point.toRawBytes(true)
+      return address
+    }
   }
   cryptoFunctions.kzg = kzg
   cryptoFunctions.verkle = verkle
