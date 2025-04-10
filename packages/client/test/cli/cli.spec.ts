@@ -418,7 +418,7 @@ describe('[CLI]', () => {
       child: ChildProcessWithoutNullStreams,
       resolve: Function,
     ) => {
-      if (message.includes('DEBUG')) {
+      if (message.includes('DBG')) {
         assert.isTrue(true, 'debug logging is enabled')
         child.kill()
         resolve(undefined)

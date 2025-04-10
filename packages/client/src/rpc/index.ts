@@ -55,7 +55,7 @@ export class RPCManager {
         })
       }
     }
-    this._config.logger.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
+    this._config.logger?.debug(`RPC Initialized ${Object.keys(methods).join(', ')}`)
     return methods
   }
 

@@ -4,10 +4,10 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain.ts'
 import { Config } from '../../../src/config.ts'
-import { getLogger } from '../../../src/logging.ts'
 import { Skeleton } from '../../../src/service/skeleton.ts'
 import { Event } from '../../../src/types.ts'
 import { wait } from '../../integration/util.ts'
+import { getLogger } from '../../logging.spec.ts'
 
 class PeerPool {
   idle() {}

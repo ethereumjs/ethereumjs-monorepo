@@ -1,10 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../../../types.ts'
+import { Event, type Logger } from '../../../types.ts'
 import { short, timeDiff } from '../../../util/index.ts'
 
 import type { Block } from '@ethereumjs/block'
-import type winston from 'winston'
 import type { Config } from '../../../config.ts'
 import type {
   ExecutionPayloadV1,
@@ -58,7 +57,8 @@ type PayloadToPayloadStats = {
   txs: { [key: number]: number }
 }
 
-const logCLStatus = (logger: winston.Logger, logMsg: string, logLevel: logLevel) => {
+const logCLStatus = (logger: Logger | undefined, logMsg: string, logLevel: logLevel) => {
+  if (logger === undefined) return
   logger[logLevel](enginePrefix + logMsg)
 }
 export class CLConnectionManager {
@@ -344,7 +344,7 @@ export class CLConnectionManager {
       return
     }
     if (!this.config.synchronized) {
-      this.config.logger.info('')
+      this.config.logger?.info('')
       if (!this._lastPayload) {
         logCLStatus(this.config.logger, 'No consensus payload received yet', logLevel.INFO)
       } else {
@@ -381,7 +381,7 @@ export class CLConnectionManager {
   public newPayloadLog() {
     if (this._lastPayload) {
       const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
-      this.config.logger.info('')
+      this.config.logger?.info('')
       logCLStatus(
         this.config.logger,
         `New consensus payload received  ${payloadMsg}`,

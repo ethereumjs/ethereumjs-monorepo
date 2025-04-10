@@ -9,12 +9,12 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 import { parseMultiaddrs } from '../../src/util/parse.ts'
 
 import type { EthereumClient } from '../../src/index.ts'
+import { getLogger } from '../logging.spec.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)

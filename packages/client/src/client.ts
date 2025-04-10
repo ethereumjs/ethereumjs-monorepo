@@ -110,15 +110,15 @@ export class EthereumClient {
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
     const packageJSON = getPackageJSON()
-    this.config.logger.info(
+    this.config.logger?.info(
       `Initializing Ethereumjs client version=v${packageJSON.version} network=${name} chainId=${chainId}`,
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
-      this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)
+      this.config.logger?.warn(`Server error: ${error.name} - ${error.message}`)
     })
     this.config.events.on(Event.SERVER_LISTENING, (details) => {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Server listener up transport=${details.transport} url=${details.url}`,
       )
     })
@@ -135,7 +135,7 @@ export class EthereumClient {
     if (this.started) {
       return false
     }
-    this.config.logger.info('Setup networking and services.')
+    this.config.logger?.info('Setup networking and services.')
 
     await this.service.start()
     this.config.server && (await this.config.server.start())

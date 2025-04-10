@@ -66,6 +66,8 @@
     "@ethereumjs/util": "10.0.0-rc.1",
     "@ethereumjs/vm": "10.0.0-rc.1",
     "@js-sdsl/ordered-map": "^4.4.2",
+    "@logtape/file": "^0.9.0",
+    "@logtape/logtape": "^0.9.0",
     "@multiformats/multiaddr": "^12.4.0",
     "@paulmillr/trusted-setups": "^0.1.2",
     "@polkadot/wasm-crypto": "^7.4.1",

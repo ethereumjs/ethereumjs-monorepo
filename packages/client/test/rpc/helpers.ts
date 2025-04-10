@@ -24,7 +24,6 @@ import { assert } from 'vitest'
 import { Chain } from '../../src/blockchain/chain.ts'
 import { Config } from '../../src/config.ts'
 import { VMExecution } from '../../src/execution/index.ts'
-import { getLogger } from '../../src/logging.ts'
 import { RlpxServer } from '../../src/net/server/rlpxserver.ts'
 import { RPCManager as Manager } from '../../src/rpc/index.ts'
 import { Skeleton } from '../../src/service/skeleton.ts'
@@ -41,6 +40,7 @@ import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../../src/client.ts'
+import { getLogger } from '../logging.spec.ts'
 
 const config: any = {}
 config.logger = getLogger(config)

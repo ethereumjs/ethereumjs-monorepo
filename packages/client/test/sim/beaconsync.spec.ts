@@ -5,7 +5,6 @@ import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
@@ -21,6 +20,7 @@ import {
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EthereumClient } from '../../src/client.ts'
 import type { RlpxServer } from '../../src/net/server/index.ts'
+import { getLogger } from '../logging.spec.ts'
 
 const client = Client.http({ port: 8545 })
 

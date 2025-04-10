@@ -12,13 +12,13 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'
 import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
 
 import type { Block } from '@ethereumjs/block'
+import { getLogger } from '../logging.spec.ts'
 type Subchain = {
   head: bigint
   tail: bigint

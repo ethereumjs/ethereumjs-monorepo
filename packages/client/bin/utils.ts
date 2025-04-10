@@ -46,16 +46,13 @@ import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { Config, SyncMode } from '../src/config.ts'
-import { getLogger } from '../src/logging.ts'
-import { Event } from '../src/types.ts'
-import { parseMultiaddrs } from '../src/util/index.ts'
-import { setupMetrics } from '../src/util/metrics.ts'
-
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
-import type { Logger } from '../src/logging.ts'
-import type { ClientOpts } from '../src/types.ts'
+import { Config, SyncMode } from '../src/config.ts'
+import { Event } from '../src/types.ts'
+import type { ClientOpts, Logger } from '../src/types.ts'
+import { parseMultiaddrs } from '../src/util/index.ts'
+import { setupMetrics } from '../src/util/metrics.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 
@@ -626,7 +623,7 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts) {
+export async function generateClientConfig(args: ClientOpts & { logger?: Logger | undefined }) {
   // Give chainId priority over networkId
   // Give networkId precedence over network name
   const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
@@ -755,7 +752,8 @@ export async function generateClientConfig(args: ClientOpts) {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
 
-  const logger: Logger = getLogger(args)
+  // logger is initialized through here
+  const logger: Logger | undefined = args.logger
   let bootnodes
   if (args.bootnodes !== undefined) {
     // File path passed, read bootnodes from disk
@@ -775,7 +773,7 @@ export async function generateClientConfig(args: ClientOpts) {
         }
       })
       bootnodes = parseMultiaddrs(nodeURLs)
-      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+      logger?.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
     } else {
       bootnodes = parseMultiaddrs(args.bootnodes)
     }
@@ -822,7 +820,7 @@ export async function generateClientConfig(args: ClientOpts) {
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics
-    logger.info(`Starting Metrics Server on port ${args.prometheusPort}`)
+    logger?.info(`Starting Metrics Server on port ${args.prometheusPort}`)
     metricsServer.listen(args.prometheusPort)
   }
 
@@ -882,12 +880,12 @@ export async function generateClientConfig(args: ClientOpts) {
       writeFileSync(`${networkDir}/${details.transport}`, details.url)
     } catch (e) {
       // In case dir is not really setup, mostly to take care of mockserver in test
-      config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+      config.logger?.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })
   if (customGenesisState !== undefined) {
     const numAccounts = Object.keys(customGenesisState).length
-    config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
+    config.logger?.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
   const customGenesisStateRoot = args.verkleGenesisStateRoot
 

@@ -4,7 +4,6 @@ import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereu
 import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging.ts'
 import { RlpxServer } from './net/server/index.ts'
 import { Event } from './types.ts'
 import { isBrowser, short } from './util/index.ts'
@@ -12,8 +11,7 @@ import { isBrowser, short } from './util/index.ts'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Logger } from './logging.ts'
-import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
+import type { EventParams, Logger, MultiaddrLike, PrometheusMetrics } from './types.ts'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
@@ -398,7 +396,7 @@ export class Config {
   // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
   public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
 
-  public readonly logger: Logger
+  public readonly logger: Logger | undefined
   public readonly syncmode: SyncMode
   public readonly vm?: VM
   public readonly datadir: string
@@ -566,9 +564,9 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
+    this.logger = options.logger
 
-    this.logger.info(`Sync Mode ${this.syncmode}`)
+    this.logger?.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
@@ -628,7 +626,7 @@ export class Config {
         const diff = Date.now() - this.lastSyncDate
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
-          this.logger.info(
+          this.logger?.info(
             `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
@@ -636,7 +634,7 @@ export class Config {
     }
 
     if (this.synchronized !== this.lastSynchronized) {
-      this.logger.debug(
+      this.logger?.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
@@ -712,11 +710,11 @@ export class Config {
     for (const msg of msgs) {
       len = msg.length > len ? msg.length : len
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
     for (const msg of msgs) {
-      this.logger.info(msg, meta)
+      this.logger?.info(msg, meta)
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
   }
 
   /**

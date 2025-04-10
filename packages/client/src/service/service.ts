@@ -83,7 +83,7 @@ export class Service {
         try {
           await this.handle(message, protocol, peer)
         } catch (error: any) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Error handling message (${protocol}:${message.name}): ${error.message}`,
           )
         }
@@ -123,13 +123,13 @@ export class Service {
     this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      this.config.logger.debug(`Peer banned: ${peer}`),
+      this.config.logger?.debug(`Peer banned: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
-      this.config.logger.debug(`Peer added: ${peer}`),
+      this.config.logger?.debug(`Peer added: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      this.config.logger.debug(`Peer removed: ${peer}`),
+      this.config.logger?.debug(`Peer removed: ${peer}`),
     )
 
     await this.pool.open()
@@ -164,7 +164,7 @@ export class Service {
 
     this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
     this.running = true
-    this.config.logger.info(`Started ${this.name} service.`)
+    this.config.logger?.info(`Started ${this.name} service.`)
     return true
   }
 
@@ -180,7 +180,7 @@ export class Service {
     clearInterval(this._statsInterval)
     await this.synchronizer?.stop()
     this.running = false
-    this.config.logger.info(`Stopped ${this.name} service.`)
+    this.config.logger?.info(`Stopped ${this.name} service.`)
     return true
   }
 
@@ -193,14 +193,14 @@ export class Service {
       const msg = `Memory stats usage=${heapUsed} MB percentage=${percentage}%`
 
       if (this._statsCounter % 4 === 0) {
-        this.config.logger.info(msg)
+        this.config.logger?.info(msg)
         this._statsCounter = 0
       } else {
-        this.config.logger.debug(msg)
+        this.config.logger?.debug(msg)
       }
 
       if (percentage >= this.MEMORY_SHUTDOWN_THRESHOLD && !this.config.shutdown) {
-        this.config.logger.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
+        this.config.logger?.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
         process.kill(process.pid, 'SIGINT')
       }
       this._statsCounter += 1

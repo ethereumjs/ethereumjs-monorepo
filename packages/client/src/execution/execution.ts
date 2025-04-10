@@ -49,7 +49,7 @@ export abstract class Execution {
    */
   async open(): Promise<void> {
     this.started = true
-    this.config.logger.info('Setup EVM execution.')
+    this.config.logger?.info('Setup EVM execution.')
   }
 
   /**
@@ -57,7 +57,7 @@ export abstract class Execution {
    */
   async stop(): Promise<boolean> {
     this.started = false
-    this.config.logger.info('Stopped execution.')
+    this.config.logger?.info('Stopped execution.')
     return true
   }
 }

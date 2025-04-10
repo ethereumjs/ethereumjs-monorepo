@@ -460,8 +460,14 @@ export class Debug {
    */
   async verbosity(params: [number]) {
     const [level] = params
+    if (this.client.config.logger === undefined) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `no logger available`,
+      }
+    }
     this.client.config.logger.configure({ level: logLevels[level] })
-    return `level: ${this.client.config.logger.level}`
+    return `level: ${this.client.config.logger?.getLevel()}`
   }
 
   /**

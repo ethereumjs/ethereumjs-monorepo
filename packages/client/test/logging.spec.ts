@@ -1,9 +1,36 @@
 import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../src/logging.ts'
+import { createLogger, transports as wTransports } from 'winston'
+import { type LoggerArgs, WinstonLogger, formatConfig, logFileTransport } from '../bin/repl.ts'
+
+/**
+ * Returns a formatted {@link Logger}
+ */
+export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
+  const transports: any[] = [
+    new wTransports.Console({
+      level: args.logLevel,
+      silent: args.logLevel === 'off',
+      format: formatConfig(true),
+    }),
+  ]
+  if (typeof args.logFile === 'string') {
+    transports.push(logFileTransport(args as LoggerArgs))
+  }
+  const logger = createLogger({
+    transports,
+    format: formatConfig(),
+    level: args.logLevel,
+  })
+  return new WinstonLogger(logger)
+}
 
 describe('[Logging]', () => {
-  const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
+  const logger = getLogger({
+    logLevel: 'info',
+    logFile: 'ethereumjs.log',
+    logLevelFile: 'info',
+  }).logger
   const format = logger.transports.find((t: any) => t.name === 'console')!.format!
 
   it('should have correct transports', () => {
