@@ -1,14 +1,13 @@
+import { customChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.ts'
-
-import { testnetData } from './data/testnet.ts'
 
 import type { ChainConfig } from '../src/index.ts'
 
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
-    const c = new Common({ chain: testnetData, hardfork: Hardfork.Byzantium })
+    const c = new Common({ chain: customChainConfig, hardfork: Hardfork.Byzantium })
     assert.equal(c.chainName(), 'testnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(12345), 'should return correct chain Id')
     assert.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')

@@ -89,7 +89,8 @@
     "nyc": "^17.1.0",
     "solc": "^0.8.28",
     "tape": "^5.9.0",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "@ethereumjs/testdata": "1.0.0"
   },
   "engines": {
     "node": ">=18"

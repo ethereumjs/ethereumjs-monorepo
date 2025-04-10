@@ -1,7 +1,7 @@
 import { Common, Holesky } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Goerli } from '../../testdata/common/goerliCommon.ts'
 import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'net_version'
@@ -43,7 +43,7 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: goerliChainConfig }) }),
     )
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 

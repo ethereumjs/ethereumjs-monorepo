@@ -1,13 +1,12 @@
+// kiln genesis with deposit contract storage set
+import { kilnGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { parseGethGenesisState } from '../src/genesis.ts'
 
-// kiln genesis with deposit contract storage set
-import { gethGenesisKilnData } from './testdata/gethGenesisKiln.ts'
-
 describe('[Util/genesis]', () => {
   it('should properly generate stateRoot from gethGenesis', () => {
-    const genesisState = parseGethGenesisState(gethGenesisKilnData)
+    const genesisState = parseGethGenesisState(kilnGethGenesis)
     // just check for deposit contract inclusion
     assert.equal(
       genesisState['0x4242424242424242424242424242424242424242'][1].includes(

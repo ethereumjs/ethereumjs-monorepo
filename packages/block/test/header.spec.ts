@@ -1,5 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { goerliBlocks, goerliChainConfig, mainnetBlocks } from '@ethereumjs/testdata'
 import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
@@ -21,9 +22,6 @@ import {
 } from '../src/index.ts'
 
 import { bcBlockGasLimitTestData } from './testdata/bcBlockGasLimitTest.ts'
-import { blocksGoerliData } from './testdata/blocks_goerli.ts'
-import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -177,7 +175,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> Clique Blocks', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
   })
@@ -219,7 +217,7 @@ describe('[Block]: Header functions', () => {
     )
 
     // PoA
-    common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     genesis = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 
     parentHash = genesis.hash()
@@ -271,7 +269,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('should skip consensusFormatValidation if flag is set to false', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     assert.doesNotThrow(
       () =>
@@ -319,7 +317,7 @@ describe('[Block]: Header functions', () => {
   it('header validation -> poa checks',  () => {
     const headerData = testDataPreLondon.blocks[0].blockHeader
 
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
     const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
@@ -453,15 +451,15 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    let header = createBlockHeader(blocksMainnetData[0]['header'], { common })
+    let header = createBlockHeader(mainnetBlocks[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
       'correct PoW hash (mainnet block 1)',
     )
 
-    common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
-    header = createBlockHeader(blocksGoerliData[0]['header'], { common })
+    common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
+    header = createBlockHeader(goerliBlocks[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',

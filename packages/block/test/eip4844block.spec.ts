@@ -14,14 +14,14 @@ import { fakeExponential, getNumBlobs } from '../src/helpers.ts'
 import { createBlock, createBlockHeader } from '../src/index.ts'
 import { paramsBlock } from '../src/params.ts'
 
-import { hardfork4844Data } from './testdata/4844-hardfork.ts'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 describe('EIP4844 header tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -96,7 +96,7 @@ describe('EIP4844 header tests', () => {
 describe('blob gas tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsBlock,
@@ -154,7 +154,7 @@ describe('blob gas tests', () => {
 describe('transaction validation tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsBlock,
