@@ -158,7 +158,7 @@ export class Block {
    * Returns a Array of the raw Bytes Arrays of this block, in order.
    */
   raw(): BlockBytes {
-    const bytesArray = <BlockBytes>[
+    const bytesArray = [
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw(),
@@ -174,7 +174,7 @@ export class Block {
       const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
       bytesArray.push(executionWitnessBytes as any)
     }
-    return bytesArray
+    return bytesArray as BlockBytes
   }
 
   /**
