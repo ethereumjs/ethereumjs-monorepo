@@ -130,16 +130,16 @@ export interface InterpreterStep {
     fee: number
     dynamicFee?: bigint
     isAsync: boolean
-    code: number
+    code: number // The hexadecimal representation of the opcode (e.g. 0x60 for PUSH1)
   }
   account: Account
   address: Address
   memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
-  section?: number // Current EOF section being executed
+  eofSection?: number // Current EOF section being executed
   immediate?: Uint8Array // Immediate argument of the opcode
-  functionDepth?: number // Depth of CALLF return stack
+  eofFunctionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
   storage?: [PrefixedHexString, PrefixedHexString][]
 }
@@ -207,7 +207,7 @@ export class Interpreter {
       gasRefund: env.gasRefund,
       gasLeft,
       returnBytes: new Uint8Array(0),
-      accessedStorage: new Map(),
+      accessedStorage: new Map(), // Maps accessed storage keys to their values (i.e. SSTOREd and SLOADed values)
     }
     this.journal = journal
     this._env = env
@@ -456,7 +456,7 @@ export class Interpreter {
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
     const opcodeInfo = this.lookupOpInfo(this._runState.opCode).opcodeInfo
-    const section = this._env.eof?.container.header.getSectionFromCodePosition(
+    const section = this._env.eof?.container.header.getSectionFromProgramCounter(
       this._runState.programCounter,
     )
     let error = undefined
@@ -477,14 +477,14 @@ export class Interpreter {
       immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
     }
 
-    if (opcodeInfo.code === 0x54) {
+    if (opcodeInfo.name === 'SLOAD') {
       // Store SLOADed values for recording in trace
       const key = this._runState.stack.peek(1)
       const value = await this.storageLoad(setLengthLeft(bigIntToBytes(key[0]), 32))
       this._runState.accessedStorage.set(`0x${key[0].toString(16)}`, bytesToHex(value))
     }
 
-    if (opcodeInfo.code === 0x55) {
+    if (opcodeInfo.name === 'SSTORE') {
       // Store SSTOREed values for recording in trace
       const [key, value] = this._runState.stack.peek(2)
       this._runState.accessedStorage.set(`0x${key.toString(16)}`, `0x${value.toString(16)}`)
@@ -510,10 +510,10 @@ export class Interpreter {
       memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
-      section,
+      eofSection: section,
       immediate,
       error,
-      functionDepth:
+      eofFunctionDepth:
         this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
       storage: Array.from(this._runState.accessedStorage.entries()),
     }
@@ -565,10 +565,11 @@ export class Interpreter {
      * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
-     * @property {number} section the current EOF code section referenced by the PC
+     * @property {number} eofSection the current EOF code section referenced by the PC
      * @property {Uint8Array} immediate the immediate argument of the opcode
      * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
-     * @property {number} functionDepth the depth of the function call (only present for EOF)
+     * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
+     * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
      */
     await this._evm['_emit']('step', eventObj)
   }

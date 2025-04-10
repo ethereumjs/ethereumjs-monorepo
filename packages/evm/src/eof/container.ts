@@ -270,25 +270,25 @@ class EOFHeader {
     return offset
   }
 
-  // Returns the code section for a given code position
-  getSectionFromCodePosition(codePosition: number) {
+  // Returns the code section for a given program counter position
+  getSectionFromProgramCounter(programCounter: number) {
     if (
-      codePosition < 0 ||
-      codePosition >
+      programCounter < 0 ||
+      programCounter >
         this.codeStartPos[this.codeStartPos.lastIndex] + this.codeSizes[this.codeSizes.lastIndex]
     ) {
       // If code position is outside the beginning or end of the code sections, return 0
-      return 0
+      throw EthereumJSErrorWithoutCode('program counter out of bounds')
     }
 
     for (let i = 0; i < this.codeSizes.length; i++) {
-      if (codePosition < this.codeStartPos[i] + this.codeSizes[i]) {
+      if (programCounter < this.codeStartPos[i] + this.codeSizes[i]) {
         // We've found our section if the code position is less than the end of the current code section
         return i
       }
     }
     // This shouldn't happen so just error
-    throw new EthereumJSError({ code: 'EOF_INVALID_CODE_POSITION' }, 'Invalid code position')
+    throw EthereumJSErrorWithoutCode(`Invalid program counter value: ${programCounter}`)
   }
 }
 
