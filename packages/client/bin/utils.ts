@@ -16,13 +16,13 @@ import {
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
+  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
   createAddressFromPrivateKey,
   createAddressFromString,
   ecrecover,
-  ecsign,
   hexToBytes,
   parseGethGenesisState,
   randomBytes,
@@ -38,7 +38,7 @@ import {
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
@@ -626,16 +626,12 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts) {
-  // Give chainId priority over networkId
-  // Give networkId precedence over network name
-  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
-  const chain = getPresetChainConfig(chainName)
+export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
 
   const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
-  if (args.useJsCrypto === false) {
+  if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
     cryptoFunctions.ecrecover = (
@@ -654,23 +650,12 @@ export async function generateClientConfig(args: ClientOpts) {
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      if (msg.length < 32) {
-        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
-      }
       const buf = secp256k1Sign(msg, pk)
-      const r = buf.slice(0, 32)
-      const s = buf.slice(32, 64)
-      const v = BigInt(buf[64])
+      const r = bytesToBigInt(buf.slice(0, 32))
+      const s = bytesToBigInt(buf.slice(32, 64))
+      const recovery = buf[64]
 
-      return { r, s, v }
-    }
-    cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
-      const sig = secp256k1Sign(hash, pk)
-      return {
-        signature: sig.slice(0, 64),
-        recid: sig[64],
-      }
+      return { r, s, recovery }
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
@@ -679,12 +664,29 @@ export async function generateClientConfig(args: ClientOpts) {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
-    cryptoFunctions.ecsign = ecsign
-    cryptoFunctions.ecdsaSign = ecdsaSign
-    cryptoFunctions.ecdsaRecover = ecdsaRecover
+    cryptoFunctions.ecsign = secp256k1.sign
+    cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      // Adapted from @noble/curves docs
+      const sign = secp256k1.Signature.fromCompact(sig)
+      const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
+      const address = point.toRawBytes(true)
+      return address
+    }
   }
   cryptoFunctions.kzg = kzg
   cryptoFunctions.verkle = verkle
+  return cryptoFunctions
+}
+
+export async function generateClientConfig(args: ClientOpts) {
+  // Give chainId priority over networkId
+  // Give networkId precedence over network name
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
+
+  // `useJsCrypto` defaults to `false` in the CLI defaults
+  const cryptoFunctions = await getCryptoFunctions(args.useJsCrypto ?? false)
+
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {

@@ -8,7 +8,6 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  ecsign,
   equalsBytes,
   hexToBytes,
   privateToAddress,
@@ -27,6 +26,7 @@ import {
   paramsTx,
 } from '../src/index.ts'
 
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { TxData } from '../src/2930/tx.ts'
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.ts'
 
@@ -402,10 +402,10 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -415,11 +415,11 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v + BigInt(27), r, s)
+      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
     })
   })
 

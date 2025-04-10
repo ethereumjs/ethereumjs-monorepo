@@ -1,19 +1,22 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
+  bigIntToBytes,
   bytesToHex,
   bytesToInt,
   bytesToUtf8,
   concatBytes,
   intToBytes,
+  setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
 import type { Common } from '@ethereumjs/common'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:server')
@@ -186,8 +189,13 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
-  const sig = (common?.customCrypto.ecdsaSign ?? ecdsaSign)(sighash, privateKey)
-  const hashdata = concatBytes(sig.signature, Uint8Array.from([sig.recid]), typedata)
+  const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
+  const hashdata = concatBytes(
+    setLengthLeft(bigIntToBytes(sig.r), 32),
+    setLengthLeft(bigIntToBytes(sig.s), 32),
+    Uint8Array.from([sig.recovery]),
+    typedata,
+  )
   const hash = (common?.customCrypto.keccak256 ?? keccak256)(hashdata)
   return concatBytes(hash, hashdata)
 }
