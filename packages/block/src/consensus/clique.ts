@@ -13,6 +13,7 @@ import {
   createZeroAddress,
   ecrecover,
   equalsBytes,
+  setLengthLeft,
 } from '@ethereumjs/util'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
@@ -152,11 +153,11 @@ export function generateCliqueBlockExtraData(
 
   requireClique(header, 'generateCliqueBlockExtraData')
 
-  const ecSignFunction = secp256k1.sign
+  const ecSignFunction = header.common.customCrypto?.ecsign ?? secp256k1.sign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
   const signatureB = concatBytes(
-    bigIntToUnpaddedBytes(signature.r),
-    bigIntToUnpaddedBytes(signature.s),
+    setLengthLeft(bigIntToUnpaddedBytes(signature.r), 32),
+    setLengthLeft(bigIntToUnpaddedBytes(signature.s), 32),
     bigIntToBytes(BigInt(signature.recovery)),
   )
 
