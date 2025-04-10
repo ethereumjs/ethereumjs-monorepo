@@ -1,5 +1,6 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
@@ -9,13 +10,13 @@ import {
   bytesToHex,
   concatBytes,
   ecrecover,
-  ecsign,
   hexToBytes,
   publicToAddress,
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
 import type {
   AuthorizationListBytesItem,
@@ -126,9 +127,11 @@ export function authorizationHashedMessageToSign(
 export function signAuthorization(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
   privateKey: Uint8Array,
+  common?: Common,
 ): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
-  const signed = ecsign(msgHash, privateKey)
+  const secp256k1Sign = common?.customCrypto.ecsign ?? secp256k1.sign
+  const signed = secp256k1Sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
     ? input
     : unsignedAuthorizationListToBytes(input)
@@ -137,9 +140,9 @@ export function signAuthorization(
     chainId,
     address,
     nonce,
-    bigIntToUnpaddedBytes(signed.v),
-    unpadBytes(signed.r),
-    unpadBytes(signed.s),
+    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
+    bigIntToUnpaddedBytes(signed.r),
+    bigIntToUnpaddedBytes(signed.s),
   ]
 }
 
