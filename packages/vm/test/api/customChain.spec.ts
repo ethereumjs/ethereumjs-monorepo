@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { customChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -12,9 +13,6 @@ import { Interface } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
-
-import { testnetData } from './testdata/testnet.ts'
-import { testnetMergeData } from './testdata/testnetMerge.ts'
 
 import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
 
@@ -48,7 +46,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = createCustomCommon(testnetData, Mainnet, {
+const common = createCustomCommon(customChainConfig, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -112,7 +110,7 @@ describe('VM initialized with custom state', () => {
   })
 
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMergeData, Mainnet, {
+    const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 

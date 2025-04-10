@@ -1,11 +1,11 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { EVM, createEVM } from '@ethereumjs/evm'
+import { testnetMergeChainConfig } from '@ethereumjs/testdata'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { type VMOpts, createVM, paramsVM } from '../../src/index.ts'
 
-import { testnetMergeData } from './testdata/testnetMerge.ts'
 import { setupVM } from './utils.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
@@ -216,7 +216,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
 describe('VM -> setHardfork, blockchain', () => {
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMergeData, Mainnet, {
+    const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 

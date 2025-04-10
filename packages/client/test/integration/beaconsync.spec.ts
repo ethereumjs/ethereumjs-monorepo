@@ -1,14 +1,14 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Event } from '../../src/types.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { BeaconSynchronizer } from '../../src/sync/beaconsync.ts'
 import { destroy, setup, wait } from './util.ts'
 
-const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
 common.setHardforkBy({ blockNumber: BigInt(0) })
 
 describe('should sync blocks', async () => {

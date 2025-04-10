@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import {
   Account,
   Address,
@@ -19,8 +20,6 @@ import { assert, describe, it } from 'vitest'
 import { defaultBlock } from '../src/evm.ts'
 import { ERROR } from '../src/exceptions.ts'
 import { createEVM } from '../src/index.ts'
-
-import { eip4844Data } from './testdata/eip4844.ts'
 
 import type { EVMRunCallOpts } from '../src/types.ts'
 
@@ -544,7 +543,7 @@ describe('RunCall tests', () => {
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -581,7 +580,7 @@ describe('RunCall tests', () => {
 
   it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })

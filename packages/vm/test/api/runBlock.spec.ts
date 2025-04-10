@@ -8,6 +8,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
   LegacyTx,
@@ -42,8 +43,6 @@ import { createVM, runBlock } from '../../src/index.ts'
 import { getDAOCommon, setupPreConditions } from '../util.ts'
 
 import { blockchainData } from './testdata/blockchain.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
-import { testnetData } from './testdata/testnet.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
@@ -155,7 +154,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const common = createCustomCommon(testnetData, Mainnet, {
+    const common = createCustomCommon(customChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })
@@ -367,7 +366,7 @@ describe('runBlock() -> runtime behavior', async () => {
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {

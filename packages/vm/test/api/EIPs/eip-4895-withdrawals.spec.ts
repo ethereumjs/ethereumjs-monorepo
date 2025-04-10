@@ -2,6 +2,7 @@ import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
+import { withdrawalsGethGenesis } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -16,7 +17,6 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
-import { withdrawalsData } from '../testdata/withdrawals.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
@@ -131,7 +131,7 @@ describe('EIP4895 tests', () => {
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })
 
-    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsGethGenesis))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
     assert.equal(
       preState,
@@ -192,9 +192,9 @@ describe('EIP4895 tests', () => {
   })
 
   it('should build a block correctly with withdrawals', async () => {
-    const common = createCommonFromGethGenesis(withdrawalsData, { chain: 'custom' })
+    const common = createCommonFromGethGenesis(withdrawalsGethGenesis, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
-    const genesisState = parseGethGenesisState(withdrawalsData)
+    const genesisState = parseGethGenesisState(withdrawalsGethGenesis)
     const blockchain = await createBlockchain({
       common,
       validateBlocks: false,
@@ -209,7 +209,7 @@ describe('EIP4895 tests', () => {
       'correct state root should be generated',
     )
     const vm = await createVM({ common, blockchain })
-    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsData))
+    await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsGethGenesis))
     const vmCopy = await vm.shallowCopy()
 
     const gethBlockBufferArray = decode(hexToBytes(gethWithdrawals8BlockRlp))

@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Address,
   MAX_INTEGER,
@@ -24,8 +25,6 @@ import {
   createFeeMarket1559TxFromRLP,
   paramsTx,
 } from '../src/index.ts'
-
-import { Goerli } from './testData/goerliCommon.ts'
 
 import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { TxData } from '../src/2930/tx.ts'
@@ -75,7 +74,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         {
           chainId: 5,
         },
-        { common: new Common({ chain: Goerli }) },
+        { common: new Common({ chain: goerliChainConfig }) },
       )
       assert.equal(
         tx.common.chainId(),

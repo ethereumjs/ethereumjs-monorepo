@@ -5,6 +5,7 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
@@ -16,7 +17,6 @@ import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'
 import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -406,9 +406,9 @@ describe('[Skeleton] / setHead', async () => {
 
   it(`skeleton init should throw error if merge not set`, async () => {
     const genesis = {
-      ...postMergeData,
+      ...postMergeGethGenesis,
       config: {
-        ...postMergeData.config,
+        ...postMergeGethGenesis.config,
         // skip the merge hardfork
         terminalTotalDifficulty: undefined,
         clique: undefined,
