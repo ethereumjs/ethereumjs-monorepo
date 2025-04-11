@@ -117,6 +117,7 @@ export const Mainnet: ChainConfig = {
       name: 'prague',
       block: null,
       timestamp: '1746612311',
+      forkHash: '0xc376cf8b',
     },
     {
       name: 'osaka',
