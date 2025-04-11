@@ -52,7 +52,7 @@ jobs:
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: npm ci --ignore-scripts  
         working-directory: ${{ github.workspace }}
     
       - run: node --conditions=typescript --experimental-strip-types bin/cli.ts --dev=poa --maxPeers=0
