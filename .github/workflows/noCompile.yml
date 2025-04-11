@@ -1,4 +1,4 @@
-name: Packages examples
+name: NoCompile
 on:
   workflow_call:
     inputs:
@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-examples:
+  test-nocompile:
     runs-on: ubuntu-latest
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
