@@ -24,7 +24,7 @@ import { ERROR, EvmError } from './exceptions.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
-import { getImmediate, trap } from './opcodes/index.ts'
+import { trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -34,6 +34,7 @@ import type {
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
@@ -470,11 +471,12 @@ export class Interpreter {
       }
     }
 
-    // Add immediate (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
-    const opcodesWithImmediate = [0x0e, 0xe1, 0xe2] // We exclude PUSHn because the values are on the stack (per EIP-7655)
-
-    if (opcodesWithImmediate.findIndex((opcode) => opcode === opcodeInfo.code) !== -1) {
-      immediate = getImmediate(opcodeInfo.code, this._runState.code, this._runState.programCounter)
+    // Add immediate if present (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
+    if (stackDelta[opcodeInfo.code].intermediates > 0) {
+      immediate = this._runState.code.slice(
+        this._runState.programCounter,
+        this._runState.programCounter + stackDelta[opcodeInfo.code].intermediates,
+      )
     }
 
     if (opcodeInfo.name === 'SLOAD') {
