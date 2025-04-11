@@ -349,7 +349,7 @@ async function run() {
   const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
     await generateClientConfig(args)
 
-  logger = <any>config.logger
+  logger = config.logger
 
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
   // else a SIGINT before may kill the process in unclean manner
