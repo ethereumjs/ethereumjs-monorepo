@@ -24,20 +24,25 @@ concurrency:
 jobs:
   test-nocompile:
     runs-on: ubuntu-latest
+    # Set default values for cache keys when triggered by push
+    env:
+      DEP_CACHE_KEY: ${{ github.event_name == 'push' && 'none' || inputs.dep-cache-key }}
+      SUBMODULE_CACHE_KEY: ${{ github.event_name == 'push' && 'none' || inputs.submodule-cache-key }}
+    
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      - if: inputs.submodule-cache-key == 'none'
+      # We clone the repo and submodules if triggered from work-flow dispatch or push
+      - if: env.SUBMODULE_CACHE_KEY == 'none'
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
       # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none' 
+      - if: env.DEP_CACHE_KEY != 'none' 
         uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
+          key: ${{ env.DEP_CACHE_KEY }}
   
       - name: Use Node.js 20
         uses: actions/setup-node@v4
