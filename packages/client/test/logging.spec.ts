@@ -4,15 +4,15 @@ import { getLogger } from '../src/logging.ts'
 
 describe('[Logging]', () => {
   const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
-  const format = logger.transports.find((t: any) => t.name === 'console')!.format!
+  const format = logger!.transports.find((t: any) => t.name === 'console')!.format!
 
   it('should have correct transports', () => {
     assert.isTrue(
-      logger.transports.find((t: any) => t.name === 'console') !== undefined,
+      logger?.transports.find((t: any) => t.name === 'console') !== undefined,
       'should have stdout transport',
     )
     assert.isTrue(
-      logger.transports.find((t: any) => t.name === 'file') !== undefined,
+      logger?.transports.find((t: any) => t.name === 'file') !== undefined,
       'should have file transport',
     )
   })

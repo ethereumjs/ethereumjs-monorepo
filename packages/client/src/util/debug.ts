@@ -62,5 +62,5 @@ const main = async () => {
 
 main()
     `
-  execution.config.logger.info(code)
+  execution.config.logger?.info(code)
 }

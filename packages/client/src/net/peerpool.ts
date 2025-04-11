@@ -74,7 +74,7 @@ export class PeerPool {
     })
     this.config.events.on(Event.PEER_ERROR, (error, peer) => {
       if (this.pool.get(peer.id)) {
-        this.config.logger.warn(`Peer error: ${error} ${peer}`)
+        this.config.logger?.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)
       }
     })
@@ -247,17 +247,17 @@ export class PeerPool {
       if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
         if (this.config.server !== undefined) {
-          this.config.logger.info('Restarting RLPx server')
+          this.config.logger?.info('Restarting RLPx server')
           await this.config.server.stop()
           await this.config.server.start()
-          this.config.logger.info('Reinitiating server bootstrap')
+          this.config.logger?.info('Reinitiating server bootstrap')
           await this.config.server.bootstrap()
         }
       } else {
         let tablesize: number | undefined = 0
         if (this.config.server !== undefined && this.config.server.discovery) {
           tablesize = this.config.server.dpt?.getPeers().length
-          this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
+          this.config.logger?.info(`Looking for suited peers: peertablesize=${tablesize}`)
         }
       }
     } else {
