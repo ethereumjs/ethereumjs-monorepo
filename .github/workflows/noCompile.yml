@@ -13,6 +13,9 @@ on:
       submodule-cache-key:
         required: false
         default: 'none'
+  push:
+    branches:
+      - clean-angle-brackets
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-examples
