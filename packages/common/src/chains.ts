@@ -116,8 +116,8 @@ export const Mainnet: ChainConfig = {
     {
       name: 'prague',
       block: null,
-      // Note: Prague is not yet scheduled for Mainnet.
-      // Timestamp will be added once it is scheduled.
+      timestamp: '1746612311',
+      forkHash: '0xc376cf8b',
     },
     {
       name: 'osaka',
