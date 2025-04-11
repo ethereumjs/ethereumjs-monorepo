@@ -598,7 +598,7 @@ describe('runTx() -> API return values', () => {
       } else {
         assert.equal(
           res.amountSpent,
-          res.totalGasSpent * (<LegacyTx>tx).gasPrice,
+          res.totalGasSpent * (tx as LegacyTx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       }

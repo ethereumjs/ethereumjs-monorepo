@@ -269,7 +269,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        t.comment('invalid account in the trie: ' + <string>key)
+        t.comment('invalid account in the trie: ' + key)
       }
     })
 
@@ -364,9 +364,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   }
   if (opts?.common && opts.common.gteHardfork('paris')) {
     headerData['mixHash'] = setLengthLeft(
-      <Uint8Array>toType(currentRandom, TypeOutput.Uint8Array)!,
+      toType(currentRandom, TypeOutput.Uint8Array)!,
       32,
-    )
+    ) as Uint8Array
     headerData['difficulty'] = 0
   }
   if (opts?.common && opts.common.gteHardfork('cancun')) {

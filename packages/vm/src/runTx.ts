@@ -149,7 +149,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw EthereumJSErrorWithoutCode(msg)
     }
 
-    const castedTx = <AccessList2930Tx>opts.tx
+    const castedTx = opts.tx as AccessList2930Tx
 
     for (const accessListItem of castedTx.accessList) {
       const [addressBytes, slotBytesList] = accessListItem
@@ -183,14 +183,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (enableProfiler) {
       // eslint-disable-next-line no-console
       console.timeEnd(entireTxLabel)
-      const logs = (<EVM>vm.evm).getPerformanceLogs()
+      const logs = (vm.evm as EVM).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
         // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-      ;(<EVM>vm.evm).clearPerformanceLogs()
+      ;(vm.evm as EVM).clearPerformanceLogs()
     }
   }
 }
@@ -449,10 +449,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<LegacyTx>tx).gasPrice
+    gasPrice = (tx as LegacyTx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
       const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
-      inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
+      inclusionFeePerGas = (tx as LegacyTx).gasPrice - baseFee
     }
   }
 
@@ -476,7 +476,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
-    const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
+    const authorizationList = (tx as EIP7702CompatibleTx).authorizationList
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i]

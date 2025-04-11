@@ -149,7 +149,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         if (
           !(
             value === 'chainId' &&
-            ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
+            ((typeof testCase === 'number' && isNaN(testCase)) || testCase === false)
           )
         ) {
           txData[value] = testCase

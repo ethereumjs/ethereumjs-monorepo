@@ -77,7 +77,7 @@ describe('unpadArray', () => {
   })
   it('should throw if input is not an Array', () => {
     assert.throws(function () {
-      unpadArray((<unknown>toBytes([0, 0, 0, 1])) as number[])
+      unpadArray(toBytes([0, 0, 0, 1]) as unknown as number[])
     })
   })
 })

@@ -48,7 +48,7 @@ export class StateTracker {
     vm.stateManager.putStorage = async function (...args: [Address, Uint8Array, Uint8Array]) {
       const address = args[0]
       const key = args[1]
-      self['addStorage'](address.toString(), <PrefixedHexString>bytesToHex(key))
+      self['addStorage'](address.toString(), bytesToHex(key))
       return originalPutStorage.apply(this, args)
     }
   }
@@ -90,7 +90,7 @@ export class StateTracker {
       outputAlloc[addressString].storage = outputAlloc[addressString].storage ?? {}
 
       for (const key of storage) {
-        const keyBytes = hexToBytes(<PrefixedHexString>key)
+        const keyBytes = hexToBytes(key)
         let storageKeyTrimmed = bytesToHex(unpadBytes(keyBytes))
         if (storageKeyTrimmed === '0x') {
           storageKeyTrimmed = '0x00'

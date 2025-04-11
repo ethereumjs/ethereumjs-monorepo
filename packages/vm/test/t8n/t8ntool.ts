@@ -43,7 +43,7 @@ function getBlockchain(inputEnv: T8NEnv) {
       if (Number(key) === number) {
         return {
           hash() {
-            return hexToBytes(<PrefixedHexString>inputEnv.blockHashes[key])
+            return hexToBytes(inputEnv.blockHashes[key])
           },
         }
       }
@@ -154,7 +154,7 @@ export class TransitionTool {
     const parentBlock = createBlock({ header: parentBlockHeader }, { common: this.common })
 
     const headerData = block.header.toJSON()
-    headerData.difficulty = <PrefixedHexString>this.inputEnv.parentDifficulty
+    headerData.difficulty = this.inputEnv.parentDifficulty as PrefixedHexString
 
     const builder = await buildBlock(this.vm, {
       parentBlock,

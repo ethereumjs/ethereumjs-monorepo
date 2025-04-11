@@ -55,7 +55,7 @@ describe('[FeeMarket1559Tx]', () => {
         if (
           !(
             value === 'chainId' &&
-            ((typeof testCase === 'number' && isNaN(<number>testCase)) || testCase === false)
+            ((typeof testCase === 'number' && isNaN(testCase)) || testCase === false)
           )
         ) {
           txData[value] = testCase
