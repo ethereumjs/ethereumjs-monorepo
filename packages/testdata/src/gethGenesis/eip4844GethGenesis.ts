@@ -1,4 +1,6 @@
-export const eip4844GethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const eip4844GethGenesis: GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,

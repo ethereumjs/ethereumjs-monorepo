@@ -1,4 +1,6 @@
-export const invalidSpuriousDragonGethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const invalidSpuriousDragonGethGenesis: GethGenesis = {
   config: {
     chainId: 5,
     homesteadBlock: 0,

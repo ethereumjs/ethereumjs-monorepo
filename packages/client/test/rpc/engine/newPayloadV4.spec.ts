@@ -137,7 +137,7 @@ function readyPragueGenesis() {
       pragueTime,
     },
   }
-  Object.assign(pragueGenesis.alloc, electraGenesisContracts)
+  Object.assign(pragueGenesis.alloc!, electraGenesisContracts)
   return { pragueGenesis, pragueTime }
 }
 
