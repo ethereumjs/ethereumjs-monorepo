@@ -26,6 +26,7 @@ export interface GethGenesisConfig {
   grayGlacierBlock?: number
   shanghaiTime?: number
   cancunTime?: number
+  pragueTime?: number
   terminalTotalDifficulty?: number
   terminalTotalDifficultyPassed?: boolean
   ethash?: {}
