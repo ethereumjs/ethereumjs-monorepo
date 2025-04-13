@@ -48,7 +48,7 @@ export function createCommonFromGethGenesis(
     chain: {
       ...genesisParams,
       name: genesisParams.name ?? 'Custom chain',
-    } as ChainConfig,
+    } as ChainConfig, // Typecasting because of `string` -> `PrefixedHexString` mismatches
     eips,
     params,
     hardfork: hardfork ?? genesisParams.hardfork,
