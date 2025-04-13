@@ -53,6 +53,13 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
+      # Upload build output (adjust the path to match your project)
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: ./ # Change this to the directory where your build output is stored
+
       - run: npm run coverage
       - uses: codecov/codecov-action@v4
         with:
