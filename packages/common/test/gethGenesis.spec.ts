@@ -55,7 +55,7 @@ describe('[Utils/Parse]', () => {
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly',
     )
-    assert.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
+    assert.equal(params.hardfork, Hardfork.Istanbul, 'should correctly infer current hardfork')
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
