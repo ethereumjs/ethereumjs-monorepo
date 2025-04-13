@@ -1,4 +1,10 @@
-import { EthereumJSErrorWithoutCode, intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  addHexPrefix,
+  intToHex,
+  isHexString,
+  stripHexPrefix,
+} from '@ethereumjs/util'
 
 import { Holesky, Hoodi, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
 import { Hardfork } from './enums.ts'
@@ -28,10 +34,10 @@ function formatNonce(nonce: string): PrefixedHexString {
 
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
- * @param json object representing the Geth genesis file
+ * @param gethGenesis GethGenesis object
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: GethGenesis) {
+function parseGethParams(gethGenesis: GethGenesis) {
   const {
     name,
     config,
@@ -45,13 +51,12 @@ function parseGethParams(json: GethGenesis) {
     extraData: unparsedExtraData,
     nonce: unparsedNonce,
     timestamp: unparsedTimestamp,
-  } = json
+  } = gethGenesis
   const genesisTimestamp = Number(unparsedTimestamp)
   const { chainId, depositContractAddress } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
-  const extraData: PrefixedHexString =
-    unparsedExtraData === '' ? '0x' : (unparsedExtraData as PrefixedHexString)
+  const extraData = addHexPrefix(unparsedExtraData ?? '')
 
   // geth may use number for timestamp
   const timestamp: PrefixedHexString = isHexString(unparsedTimestamp)
@@ -59,8 +64,8 @@ function parseGethParams(json: GethGenesis) {
     : intToHex(parseInt(unparsedTimestamp))
 
   // geth may not give us a nonce strictly formatted to an 8 byte 0x-prefixed hex string
-  const nonce: PrefixedHexString =
-    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : (unparsedNonce as PrefixedHexString)
+  const nonce =
+    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : addHexPrefix(unparsedNonce)
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
@@ -79,11 +84,7 @@ function parseGethParams(json: GethGenesis) {
       if (hfConfig === undefined) {
         throw EthereumJSErrorWithoutCode(`unknown hardfork=${hfKey} specified in blobSchedule`)
       }
-      const {
-        target,
-        max,
-        baseFeeUpdateFraction: blobGasPriceUpdateFraction,
-      } = hfSchedule as { target?: number; max?: number; baseFeeUpdateFraction?: undefined }
+      const { target, max, baseFeeUpdateFraction: blobGasPriceUpdateFraction } = hfSchedule
       if (target === undefined || max === undefined || blobGasPriceUpdateFraction === undefined) {
         throw EthereumJSErrorWithoutCode(
           `undefined target, max or baseFeeUpdateFraction specified in blobSchedule for hardfork=${hfKey}`,
@@ -269,27 +270,27 @@ function parseGethParams(json: GethGenesis) {
 
 /**
  * Parses a genesis.json exported from Geth into parameters for Common instance
- * @param json representing the Geth genesis file
+ * @param gethGenesis GethGenesis object
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string) {
+export function parseGethGenesis(gethGenesis: GethGenesis, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
-    if (required.some((field) => !(field in json))) {
-      const missingField = required.filter((field) => !(field in json))
+    if (required.some((field) => !(field in gethGenesis))) {
+      const missingField = required.filter((field) => !(field in gethGenesis))
       throw EthereumJSErrorWithoutCode(
         `Invalid format, expected geth genesis field "${missingField}" missing`,
       )
     }
 
-    // We copy the JSON object here because it's frozen in browser and properties can't be modified
-    const finalJSON = { ...json }
+    // We copy the object here because it's frozen in browser and properties can't be modified
+    const finalGethGenesis = { ...gethGenesis }
 
     if (name !== undefined) {
-      finalJSON.name = name
+      finalGethGenesis.name = name
     }
-    return parseGethParams(finalJSON)
+    return parseGethParams(finalGethGenesis)
   } catch (e: any) {
     throw EthereumJSErrorWithoutCode(`Error parsing parameters file: ${e.message}`)
   }

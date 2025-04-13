@@ -143,21 +143,18 @@ export interface GenesisState {
 
 /**
  * Parses the geth genesis state into Blockchain {@link GenesisState}
- * @param json representing the `alloc` key in a Geth genesis file
+ * @param gethGenesis GethGenesis object
  */
-export function parseGethGenesisState(json: GethGenesis): GenesisState {
+export function parseGethGenesisState(gethGenesis: GethGenesis): GenesisState {
   const state: GenesisState = {}
 
-  if (json.alloc === undefined) {
-    return state
-  }
-  for (const address of Object.keys(json.alloc)) {
+  for (const address of Object.keys(gethGenesis.alloc)) {
     const {
       balance: rawBalance,
       code: rawCode,
       nonce: rawNonce,
       storage: rawStorage,
-    } = json.alloc[address]
+    } = gethGenesis.alloc[address]
     // create a map with lowercase for easy lookups
     const prefixedAddress = addHexPrefix(address.toLowerCase())
     const balance = isHexString(rawBalance) ? rawBalance : bigIntToHex(BigInt(rawBalance))
