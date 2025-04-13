@@ -10,7 +10,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { MerklePatriciaTrie } from '../mpt.ts'
 
-import type { AccountState, GenesisState } from '@ethereumjs/util'
+import type { AccountState, GenesisState } from '@ethereumjs/common'
 
 /**
  * Derives the stateRoot of the genesis block based on genesis allocations

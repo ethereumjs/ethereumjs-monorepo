@@ -1,7 +1,7 @@
 import { Common, parseGethGenesis } from './index.ts'
 
+import type { GethGenesis } from './gethGenesis.ts'
 import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
-import type { GethGenesis } from './types/gethGenesis.ts'
 
 /**
  * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -45,7 +45,10 @@ export function createCommonFromGethGenesis(
 ): Common {
   const genesisParams = parseGethGenesis(genesisJSON, chain)
   const common = new Common({
-    chain: genesisParams,
+    chain: {
+      ...genesisParams,
+      name: genesisParams.name ?? 'Custom chain',
+    } as ChainConfig,
     eips,
     params,
     hardfork: hardfork ?? genesisParams.hardfork,

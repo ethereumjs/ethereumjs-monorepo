@@ -127,8 +127,8 @@ For many custom chains we might come across a genesis configuration, which can b
 // ./examples/gethGenesis.ts
 
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
+import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { bytesToHex} from '@ethereumjs/util'
 
 import { postMergeGethGenesis } from './genesisData/post-merge.ts'
 

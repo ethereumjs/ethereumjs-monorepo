@@ -1,5 +1,5 @@
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
-import { type Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 
@@ -8,7 +8,7 @@ import { Config } from '../config.ts'
 import { LevelDB } from '../execution/level.ts'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
-import type { GenesisState } from '@ethereumjs/util'
+import type { Common, GenesisState } from '@ethereumjs/common'
 import type { AbstractLevel } from 'abstract-level'
 
 export async function createInlineClient(

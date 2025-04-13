@@ -4,7 +4,7 @@ import { Event } from './types.ts'
 import { getPackageJSON } from './util/index.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
 import type { AbstractLevel } from 'abstract-level'
 import type { Config } from './config.ts'
 import type { MultiaddrLike } from './types.ts'

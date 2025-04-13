@@ -5,6 +5,7 @@ import { Hardfork } from './enums.ts'
 import { hardforksDict } from './hardforks.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { GethGenesis } from './gethGenesis.ts'
 import type { HardforksDict } from './types.ts'
 
 type ConfigHardfork =
@@ -30,7 +31,7 @@ function formatNonce(nonce: string): PrefixedHexString {
  * @param json object representing the Geth genesis file
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any) {
+function parseGethParams(json: GethGenesis) {
   const {
     name,
     config,
@@ -44,25 +45,9 @@ function parseGethParams(json: any) {
     extraData: unparsedExtraData,
     nonce: unparsedNonce,
     timestamp: unparsedTimestamp,
-  }: {
-    name: string
-    config: any
-    difficulty: PrefixedHexString
-    mixHash: PrefixedHexString
-    gasLimit: PrefixedHexString
-    coinbase: PrefixedHexString
-    baseFeePerGas: PrefixedHexString
-    excessBlobGas: PrefixedHexString
-    requestsHash: PrefixedHexString
-    extraData: string
-    nonce: string
-    timestamp: string
   } = json
   const genesisTimestamp = Number(unparsedTimestamp)
-  const {
-    chainId,
-    depositContractAddress,
-  }: { chainId: number; depositContractAddress: PrefixedHexString } = config
+  const { chainId, depositContractAddress } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
   const extraData: PrefixedHexString =
@@ -194,18 +179,18 @@ function parseGethParams(json: any) {
   )
 
   params.hardforks = Object.entries(forkMapRev)
-    .map(([nameBlock, hardfork]) => ({
-      name: hardfork,
-      block:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
-          ? null
-          : config[nameBlock],
-      timestamp:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true && typeof config[nameBlock] === 'number'
-          ? config[nameBlock]
-          : undefined,
-    }))
-    .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
+    .map(([nameBlock, hardfork]) => {
+      const configValue = config[nameBlock as keyof typeof config]
+      const isTimestamp = forkMap[hardfork].isTimestamp === true
+
+      const block = isTimestamp || typeof configValue !== 'number' ? null : configValue
+
+      const timestamp = isTimestamp && typeof configValue === 'number' ? configValue : undefined
+
+      return { name: hardfork, block, timestamp }
+    })
+    .filter(({ block, timestamp }) => block !== null || timestamp !== undefined) as ConfigHardfork[]
+
   const mergeIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Paris)
   let mergeNetsplitBlockIndex = params.hardforks.findIndex(
     (hf) => hf.name === Hardfork.MergeNetsplitBlock,

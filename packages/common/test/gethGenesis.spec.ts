@@ -1,16 +1,30 @@
 import {
   eip4844GethGenesis,
+  goerliGethGenesis,
   invalidSpuriousDragonGethGenesis,
+  kilnGethGenesis,
   postMergeGethGenesis,
 } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { Mainnet } from '../src/chains.ts'
-import { Hardfork } from '../src/enums.ts'
-import { createCommonFromGethGenesis } from '../src/index.ts'
-import { parseGethGenesis } from '../src/utils.ts'
+import { parseGethGenesisState } from '../src/gethGenesis.ts'
+import { Hardfork, Mainnet, createCommonFromGethGenesis, parseGethGenesis } from '../src/index.ts'
 
-import { poaData } from './data/geth-genesis/poa.ts'
+describe('[Common/genesis]', () => {
+  it('should properly generate stateRoot from gethGenesis', () => {
+    const genesisState = parseGethGenesisState(kilnGethGenesis)
+    // just check for deposit contract inclusion
+    assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
+    assert.equal(
+      genesisState['0x4242424242424242424242424242424242424242'][1].includes(
+        // sample data check
+        '0x60806040526004361061003',
+      ),
+      true,
+      'should have deposit contract',
+    )
+  })
+})
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
@@ -26,14 +40,14 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should import poa network params correctly', async () => {
-    let params = parseGethGenesis(poaData, 'poa')
+    let params = parseGethGenesis(goerliGethGenesis, 'poa')
     assert.equal(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches',
     )
-    const poaCopy = Object.assign({}, poaData)
+    const poaCopy = Object.assign({}, goerliGethGenesis)
     poaCopy.nonce = '00'
     params = parseGethGenesis(poaCopy, 'poa')
     assert.equal(
