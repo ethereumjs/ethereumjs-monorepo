@@ -120,7 +120,7 @@ describe('[BeaconSynchronizer]', async () => {
     /// @ts-expect-error -- Assigning simpler config for testing
     sync.pool = { peers }
     sync['forceSync'] = true
-    assert.equal(await sync.best(), <any>peers[1], 'found best')
+    assert.equal(await sync.best(), peers[1] as any, 'found best')
     await sync.stop()
     await sync.close()
   })

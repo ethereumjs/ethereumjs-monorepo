@@ -41,7 +41,7 @@ await new Promise<void>((resolve, reject) => {
     }
     const name = path.parse(fileName).name
     describe(`EOF Header validation tests - ${name}`, async () => {
-      const testData = JSON.parse(<string>content)
+      const testData = JSON.parse(content as string)
       const evm = await getEVM()
       for (const key in testData) {
         it(`Test ${key}`, () => {

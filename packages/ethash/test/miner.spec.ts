@@ -65,7 +65,7 @@ describe('Miner', () => {
       { common },
     )
     const miner = e.getMiner(block.header)
-    const solution = <BlockHeader>await miner.mine(-1)
+    const solution = (await miner.mine(-1)) as BlockHeader
 
     assert.isTrue(
       await e.verifyPOW(createBlock({ header: solution.toJSON() }, { common })),
@@ -73,7 +73,7 @@ describe('Miner', () => {
     )
 
     const blockMiner = e.getMiner(block)
-    const blockSolution = <Block>await blockMiner.mine(-1)
+    const blockSolution = (await blockMiner.mine(-1)) as Block
 
     assert.isTrue(await e.verifyPOW(blockSolution))
   }, 60000)
@@ -129,13 +129,13 @@ describe('Miner', () => {
     )
 
     const miner = e.getMiner(block.header)
-    const solution = <BlockHeader>await miner.mine(-1)
+    const solution = (await miner.mine(-1)) as BlockHeader
 
     assert.equal(solution.common.hardfork(), Hardfork.Petersburg, 'hardfork did not change')
     assert.equal(solution.common.chainName(), 'mainnet', 'chain name did not change')
 
     const blockMiner = e.getMiner(block)
-    const blockSolution = <Block>await blockMiner.mine(-1)
+    const blockSolution = (await blockMiner.mine(-1)) as Block
 
     assert.equal(blockSolution.common.hardfork(), Hardfork.Petersburg, 'hardfork did not change')
     assert.equal(blockSolution.common.chainName(), 'mainnet', 'chain name did not change')
