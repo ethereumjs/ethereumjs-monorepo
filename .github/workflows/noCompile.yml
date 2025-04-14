@@ -34,7 +34,7 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ env.DEP_CACHE_KEY }}
   
-      - name: Use Node.js 20
+      - name: Use Node.js 23
         uses: actions/setup-node@v4
         with:
           node-version: 23
