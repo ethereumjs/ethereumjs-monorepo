@@ -85,7 +85,6 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
       if (['debug', 'info', 'warn', 'error'].includes(level)) {
         const logger = (replServer.context.client as EthereumClient).config.logger
         if (logger === undefined) {
-          console.log('No logger available')
           this.displayPrompt()
           return
         }
