@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
+    needs: build-artifacts
     steps:
       -
         name: Set up QEMU
@@ -32,7 +33,7 @@ jobs:
 
       # Download the build artifacts produced in the previous job
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: ./
