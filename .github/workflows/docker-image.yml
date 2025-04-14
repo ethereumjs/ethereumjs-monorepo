@@ -14,7 +14,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20]
-    needs: build-artifacts
     steps:
       -
         name: Set up QEMU
@@ -31,21 +30,20 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3
 
-      # Download the build artifacts produced in the previous job
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          name: build-artifacts
-          path: ./
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-      # (Optional) List artifacts for debugging
-      - name: List Build Artifacts
-        run: ls -la ./
+      - run: npm i
+        working-directory: ${{ github.workspace }}
+
       -
         name: Build & Push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-          tags: ghcr.io/${{ github.repository_owner }}/ultralight:latest
+          tags: ghcr.io/${{ github.repository_owner }}/ethereumjs:latest
           provenance: false
