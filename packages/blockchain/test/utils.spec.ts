@@ -1,14 +1,18 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import {
+  type GethGenesis,
+  createCommonFromGethGenesis,
+  parseGethGenesisState,
+} from '@ethereumjs/common'
 import { genesisMPTStateRoot } from '@ethereumjs/mpt'
 import { postMergeGethGenesis } from '@ethereumjs/testdata'
-import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createBlockchain } from '../src/index.ts'
 
 import type { Blockchain } from '../src/blockchain.ts'
 
-async function getBlockchain(gethGenesis: any): Promise<Blockchain> {
+async function getBlockchain(gethGenesis: GethGenesis): Promise<Blockchain> {
   const common = createCommonFromGethGenesis(gethGenesis, { chain: 'kiln' })
   const genesisState = parseGethGenesisState(gethGenesis)
   const blockchain = await createBlockchain({

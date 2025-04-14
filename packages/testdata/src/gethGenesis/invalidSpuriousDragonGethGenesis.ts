@@ -1,4 +1,6 @@
-export const invalidSpuriousDragonGethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const invalidSpuriousDragonGethGenesis: GethGenesis = {
   config: {
     chainId: 5,
     homesteadBlock: 0,
@@ -30,4 +32,4 @@ export const invalidSpuriousDragonGethGenesis = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   baseFeePerGas: null,
-}
+} as GethGenesis
