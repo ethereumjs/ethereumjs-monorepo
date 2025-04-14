@@ -14,7 +14,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
 
-import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { AccountState, GenesisState } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
   [
@@ -106,7 +107,7 @@ describe('VM initialized with custom state', () => {
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
+    assert.equal(bytesToHex(callResult.execResult.returnValue), storage?.[0][1])
   })
 
   it('setHardfork', async () => {
@@ -115,9 +116,9 @@ describe('VM initialized with custom state', () => {
     })
 
     let vm = await createVM({ common, setHardfork: true })
-    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
+    assert.equal(vm['_setHardfork'], true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
+    assert.equal(vm['_setHardfork'], BigInt(5001), 'should set setHardfork option')
   })
 })

@@ -6,6 +6,7 @@ import {
   Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
+  parseGethGenesisState,
 } from '@ethereumjs/common'
 import {
   customChainConfig,
@@ -14,7 +15,6 @@ import {
   mainnetBlocks,
   withdrawalsGethGenesis,
 } from '@ethereumjs/testdata'
-import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
@@ -25,6 +25,7 @@ import { closeRPC, setupChain, testSetup } from '../rpc/helpers.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
+import { bytesToHex } from '@ethereumjs/util'
 
 const shanghaiPayload: ExecutionPayload = {
   blockNumber: '0x1',

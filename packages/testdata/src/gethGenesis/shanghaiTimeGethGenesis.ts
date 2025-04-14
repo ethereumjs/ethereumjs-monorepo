@@ -1,4 +1,6 @@
-export const shanghaiTimeData = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const shanghaiTimeGethGenesis: GethGenesis = {
   config: {
     chainId: 1337803,
     homesteadBlock: 0,
@@ -879,7 +881,7 @@ export const shanghaiTimeData = {
   extraData: '',
   gasLimit: '0x400000',
   nonce: '0x1234',
-  mixhash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   timestamp: '1668697340',
 }
