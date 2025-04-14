@@ -1,13 +1,7 @@
 import { BinaryTree } from '@ethereumjs/binarytree'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type {
-  Address,
-  BinaryTreeExecutionWitness,
-  GenesisState,
-  PrefixedHexString,
-  StoragePair,
-} from '@ethereumjs/util'
+import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 import {
   Account,
   BINARY_TREE_CODE_CHUNK_SIZE,
@@ -50,8 +44,10 @@ import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedStateWithAddress,
+  GenesisState,
   StateManagerInterface,
   StorageDump,
+  StoragePair,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
@@ -748,7 +744,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     for (const addressStr of Object.keys(genesisState)) {
       const addrState = genesisState[addressStr]
       let nonce, balance, code
-      let storage: StoragePair[] = []
+      let storage: StoragePair[] | undefined = []
       if (Array.isArray(addrState)) {
         ;[balance, code, storage, nonce] = addrState
       } else {

@@ -1,4 +1,6 @@
-export const goerliGethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const goerliGethGenesis: GethGenesis = {
   config: {
     chainId: 5,
     homesteadBlock: 0,

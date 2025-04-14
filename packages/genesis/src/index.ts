@@ -5,7 +5,7 @@ import { hoodiGenesis } from './genesisStates/hoodi.ts'
 import { mainnetGenesis } from './genesisStates/mainnet.ts'
 import { sepoliaGenesis } from './genesisStates/sepolia.ts'
 
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
 
 /**
  * Utility to get the genesisState of a well known network

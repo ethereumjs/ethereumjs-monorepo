@@ -1,4 +1,6 @@
-export const postMergeGethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const postMergeGethGenesis: GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,

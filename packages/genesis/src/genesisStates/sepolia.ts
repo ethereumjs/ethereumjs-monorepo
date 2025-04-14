@@ -1,4 +1,4 @@
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
 
 export const sepoliaGenesis: GenesisState = {
   '0xa2A6d93439144FFE4D27c9E088dCD8b783946263': '0xD3C21BCECCEDA1000000',
