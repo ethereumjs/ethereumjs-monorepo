@@ -132,6 +132,9 @@ function logFileTransport(args: LoggerArgs) {
 export function getLogger(
   args: { [key: string]: any } = { logLevel: 'info' },
 ): WinstonLogger | undefined {
+  if (args.logLevel === 'off') {
+    return undefined
+  }
   const transports: any[] = [
     new wTransports.Console({
       level: args.logLevel,
