@@ -1,11 +1,5 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  bytesToHex,
-  createAddressFromString,
-  hexToBytes,
-  parseGethGenesisState,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { bytesToHex, createAddressFromString, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'

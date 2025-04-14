@@ -6,6 +6,7 @@ import {
   Mainnet,
   createCommonFromGethGenesis,
   parseGethGenesis,
+  parseGethGenesisState,
 } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
@@ -14,7 +15,6 @@ import {
   KECCAK256_RLP,
   createAddressFromString,
   hexToBytes,
-  parseGethGenesisState,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { Client, Server as RPCServer } from 'jayson/promise/index.js'
@@ -36,8 +36,8 @@ import { mockBlockchain } from './mockBlockchain.ts'
 
 import type { AddressInfo } from 'node:net'
 import type { Blockchain } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../../src/client.ts'
