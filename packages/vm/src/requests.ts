@@ -7,7 +7,6 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
-  bytesToInt,
   concatBytes,
   createAddressFromString,
   setLengthLeft,
@@ -22,11 +21,11 @@ const WITHDRAWAL_CREDENTIALS_OFFSET = BigInt(256)
 const AMOUNT_OFFSET = BigInt(320)
 const SIGNATURE_OFFSET = BigInt(384)
 const INDEX_OFFSET = BigInt(512)
-const PUBKEY_SIZE = 48
-const WITHDRAWAL_CREDENTIALS_SIZE = 32
-const AMOUNT_SIZE = 8
-const SIGNATURE_SIZE = 96
-const INDEX_SIZE = 8
+const PUBKEY_SIZE = BigInt(48)
+const WITHDRAWAL_CREDENTIALS_SIZE = BigInt(32)
+const AMOUNT_SIZE = BigInt(8)
+const SIGNATURE_SIZE = BigInt(96)
+const INDEX_SIZE = BigInt(8)
 const LOG_SIZE = 576
 const LOG_LAYOUT_MISMATCH = 'invalid deposit log: unsupported data layout'
 
@@ -204,23 +203,29 @@ function parseDepositLog(requestData: Uint8Array) {
   const sigIdx = Number(sigIdxBigInt)
   const indexIdx = Number(indexIdxBigInt)
 
-  const pubKeySize = bytesToInt(requestData.slice(pubKeyIdx, pubKeyIdx + 32))
-  const withdrawalCreditsSize = bytesToInt(
+  const pubKeySizeBigInt = bytesToBigInt(requestData.slice(pubKeyIdx, pubKeyIdx + 32))
+  const withdrawalCreditsSizeBigInt = bytesToBigInt(
     requestData.slice(withdrawalCreditsIdx, withdrawalCreditsIdx + 32),
   )
-  const amountSize = bytesToInt(requestData.slice(amountIdx, amountIdx + 32))
-  const sigSize = bytesToInt(requestData.slice(sigIdx, sigIdx + 32))
-  const indexSize = bytesToInt(requestData.slice(indexIdx, indexIdx + 32))
+  const amountSizeBigInt = bytesToBigInt(requestData.slice(amountIdx, amountIdx + 32))
+  const sigSizeBigInt = bytesToBigInt(requestData.slice(sigIdx, sigIdx + 32))
+  const indexSizeBigInt = bytesToBigInt(requestData.slice(indexIdx, indexIdx + 32))
 
   if (
-    pubKeySize !== PUBKEY_SIZE ||
-    withdrawalCreditsSize !== WITHDRAWAL_CREDENTIALS_SIZE ||
-    amountSize !== AMOUNT_SIZE ||
-    sigSize !== SIGNATURE_SIZE ||
-    indexSize !== INDEX_SIZE
+    pubKeySizeBigInt !== PUBKEY_SIZE ||
+    withdrawalCreditsSizeBigInt !== WITHDRAWAL_CREDENTIALS_SIZE ||
+    amountSizeBigInt !== AMOUNT_SIZE ||
+    sigSizeBigInt !== SIGNATURE_SIZE ||
+    indexSizeBigInt !== INDEX_SIZE
   ) {
     throw EthereumJSErrorWithoutCode(LOG_LAYOUT_MISMATCH)
   }
+
+  const pubKeySize = Number(pubKeySizeBigInt)
+  const withdrawalCreditsSize = Number(withdrawalCreditsSizeBigInt)
+  const amountSize = Number(amountSizeBigInt)
+  const sigSize = Number(sigSizeBigInt)
+  const indexSize = Number(indexSizeBigInt)
 
   const pubkey = requestData.slice(pubKeyIdx + 32, pubKeyIdx + 32 + pubKeySize)
   const withdrawalCredentials = requestData.slice(
