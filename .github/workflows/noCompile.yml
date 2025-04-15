@@ -1,0 +1,49 @@
+name: NoCompile
+on:
+  workflow_call:
+    inputs:
+      dep-cache-key:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-noCompile
+  cancel-in-progress: true
+
+jobs:
+  test-nocompile:
+    runs-on: ubuntu-latest
+    # Set default values for cache keys when triggered by push
+    env:
+      DEP_CACHE_KEY: ${{ github.event_name == 'push' && 'none' || inputs.dep-cache-key }}
+    
+    steps:
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
+      - if: env.DEP_CACHE_KEY != 'none' 
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ env.DEP_CACHE_KEY }}
+  
+      - name: Use Node.js 23
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts  
+        working-directory: ${{ github.workspace }}
+    
+      - run: node --conditions=typescript --experimental-strip-types examples/inlineClient.ts
+        working-directory: ${{ github.workspace }}/packages/client

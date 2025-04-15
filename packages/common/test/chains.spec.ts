@@ -1,3 +1,4 @@
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -8,8 +9,6 @@ import {
   Mainnet,
   getPresetChainConfig,
 } from '../src/index.ts'
-
-import { Goerli } from './data/goerliCommon.ts'
 
 import type { ChainConfig } from '../src/index.ts'
 
@@ -92,7 +91,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     )
     assert.deepEqual(c.consensusConfig(), {}, 'should return empty dictionary for consensus config')
 
-    c = new Common({ chain: Goerli, hardfork: 'spuriousDragon' })
+    c = new Common({ chain: goerliChainConfig, hardfork: 'spuriousDragon' })
     assert.equal(c.hardforks()[3]['block'], 0, 'should return correct hardfork data')
     assert.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     assert.equal(
@@ -113,7 +112,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide the bootnode information in a uniform way', () => {
-    const configs = [Mainnet, Goerli]
+    const configs = [Mainnet, goerliChainConfig]
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
@@ -134,7 +133,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide DNS network information in a uniform way', () => {
-    const configs = [Mainnet, Goerli]
+    const configs = [Mainnet, goerliChainConfig]
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()

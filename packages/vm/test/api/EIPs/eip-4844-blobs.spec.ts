@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   Units,
@@ -18,7 +19,6 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
-import { eip4844Data } from '../testdata/eip4844.ts'
 import { setBalance } from '../utils.ts'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -27,7 +27,7 @@ const sender = bytesToHex(privateToAddress(pk))
 describe('EIP4844 tests', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should build a block correctly with blobs', async () => {
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

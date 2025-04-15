@@ -2,9 +2,7 @@ import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import type {
   Address,
-  GenesisState,
   PrefixedHexString,
-  StoragePair,
   VerkleCrypto,
   VerkleExecutionWitness,
 } from '@ethereumjs/util'
@@ -49,8 +47,10 @@ import { modifyAccountFields } from './util.ts'
 import type {
   AccountFields,
   Common,
+  GenesisState,
   StateManagerInterface,
   StorageDump,
+  StoragePair,
   StorageRange,
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
@@ -748,7 +748,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     for (const addressStr of Object.keys(genesisState)) {
       const addrState = genesisState[addressStr]
       let nonce, balance, code
-      let storage: StoragePair[] = []
+      let storage: StoragePair[] | undefined = []
       if (Array.isArray(addrState)) {
         ;[balance, code, storage, nonce] = addrState
       } else {

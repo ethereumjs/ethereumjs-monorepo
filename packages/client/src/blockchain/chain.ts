@@ -8,7 +8,8 @@ import { Event } from '../types.ts'
 
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
-import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
+import type { DB, DBObject } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 import type { Config } from '../config.ts'
 

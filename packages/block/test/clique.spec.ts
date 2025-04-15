@@ -13,10 +13,10 @@ import {
   createSealedCliqueBlockHeader,
 } from '../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.ts'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
 describe('[Header]: Clique PoA Functionality', () => {
-  const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
   it('Header Data', () => {
     let header = createBlockHeader({ number: 1 })
