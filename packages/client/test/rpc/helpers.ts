@@ -62,6 +62,7 @@ type createClientArgs = {
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
   savePreimages: boolean
+  statelessVerkle: boolean
 }
 export function startRPC(
   methods: any,
@@ -108,6 +109,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
     logger: getLogger({}),
+    statelessVerkle: clientOpts.statelessVerkle,
   })
   const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 
