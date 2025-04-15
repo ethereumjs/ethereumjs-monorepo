@@ -15,7 +15,7 @@ export const kaustinen6Data = {
     terminalTotalDifficulty: 0,
     terminalTotalDifficultyPassed: true,
     shanghaiTime: 0,
-    osakaTime: 0,
+    verkleTime: 0,
     proofInBlocks: true,
   },
   alloc: {

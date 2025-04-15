@@ -13,7 +13,7 @@ export const kaustinen2Data = {
     londonBlock: 0,
     mergeNetsplitBlock: 0,
     shanghaiTime: 0,
-    osakaTime: 0,
+    verkleTime: 0,
     terminalTotalDifficulty: 0,
     terminalTotalDifficultyPassed: true,
     proofInBlocks: true,
