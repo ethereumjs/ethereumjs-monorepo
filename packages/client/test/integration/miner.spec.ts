@@ -1,11 +1,5 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  Address,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-  parseGethGenesisState,
-} from '@ethereumjs/util'
+import { Hardfork, createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { Address, bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'

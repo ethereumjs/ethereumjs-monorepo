@@ -1,3 +1,4 @@
+import { shanghaiTimeGethGenesis } from '@ethereumjs/testdata'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -9,11 +10,9 @@ import {
   createCustomCommon,
 } from '../src/index.ts'
 
-import { shanghaiTimeData } from './data/shanghai-time.ts'
-
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {
-    const c = createCommonFromGethGenesis(shanghaiTimeData, {
+    const c = createCommonFromGethGenesis(shanghaiTimeGethGenesis, {
       chain: 'withdrawals',
     })
     assert.equal(
@@ -34,10 +33,10 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding on shanghai-time', () => {
-    const config = Object.assign({}, shanghaiTimeData.config, {
-      cancunTime: shanghaiTimeData.config.shanghaiTime,
+    const config = Object.assign({}, shanghaiTimeGethGenesis.config, {
+      cancunTime: shanghaiTimeGethGenesis.config.shanghaiTime,
     })
-    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const modifiedJSON = Object.assign({}, shanghaiTimeGethGenesis, { config })
     const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
@@ -54,10 +53,10 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding post shanghai-time', () => {
-    const config = Object.assign({}, shanghaiTimeData.config, {
-      cancunTime: shanghaiTimeData.config.shanghaiTime + 1000,
+    const config = Object.assign({}, shanghaiTimeGethGenesis.config, {
+      cancunTime: shanghaiTimeGethGenesis.config.shanghaiTime! + 1000,
     })
-    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const modifiedJSON = Object.assign({}, shanghaiTimeGethGenesis, { config })
     const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })

@@ -9,8 +9,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import type { Common } from '@ethereumjs/common'
-import type { GenesisState, PrefixedHexString, StoragePair } from '@ethereumjs/util'
+import type { Common, GenesisState, StoragePair } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export async function generateVKTStateRoot(genesisState: GenesisState, common: Common) {
   const state = new StatefulVerkleStateManager({ common })
@@ -19,7 +19,7 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
   for (const addressStr of Object.keys(genesisState)) {
     const addrState = genesisState[addressStr]
     let nonce, balance, code
-    let storage: StoragePair[] = []
+    let storage: StoragePair[] | undefined = []
     if (Array.isArray(addrState)) {
       ;[balance, code, storage, nonce] = addrState
     } else {
@@ -29,7 +29,7 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
     }
     const address = createAddressFromString(addressStr)
     await state.putAccount(address, new Account())
-    const codeBuf = hexToBytes((code as string) ?? '0x')
+    const codeBuf = hexToBytes(code ?? '0x')
     if (common.customCrypto?.keccak256 === undefined) {
       throw Error('keccak256 required')
     }

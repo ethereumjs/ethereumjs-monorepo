@@ -1,6 +1,12 @@
 import { createBlock, genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import {
+  Common,
+  Hardfork,
+  Mainnet,
+  createCommonFromGethGenesis,
+  parseGethGenesisState,
+} from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
 import { withdrawalsGethGenesis } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
@@ -12,7 +18,6 @@ import {
   bytesToHex,
   createWithdrawalFromBytesArray,
   hexToBytes,
-  parseGethGenesisState,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 

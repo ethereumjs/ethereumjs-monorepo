@@ -76,7 +76,7 @@ describe('should handle expiration', async () => {
     })
 
     fetcher['in'].insert(job as any)
-    ;(<any>fetcher)['_readableState'] = []
+    ;(fetcher as any)['_readableState'] = []
     fetcher['running'] = true
     fetcher['total'] = 10
     fetcher.next()

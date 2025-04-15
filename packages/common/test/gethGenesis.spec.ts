@@ -1,16 +1,30 @@
 import {
   eip4844GethGenesis,
+  goerliGethGenesis,
   invalidSpuriousDragonGethGenesis,
+  kilnGethGenesis,
   postMergeGethGenesis,
 } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { Mainnet } from '../src/chains.ts'
-import { Hardfork } from '../src/enums.ts'
-import { createCommonFromGethGenesis } from '../src/index.ts'
-import { parseGethGenesis } from '../src/utils.ts'
+import { parseGethGenesisState } from '../src/gethGenesis.ts'
+import { Hardfork, Mainnet, createCommonFromGethGenesis, parseGethGenesis } from '../src/index.ts'
 
-import { poaData } from './data/geth-genesis/poa.ts'
+describe('[Common/genesis]', () => {
+  it('should properly generate stateRoot from gethGenesis', () => {
+    const genesisState = parseGethGenesisState(kilnGethGenesis)
+    // just check for deposit contract inclusion
+    assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
+    assert.equal(
+      genesisState['0x4242424242424242424242424242424242424242'][1].includes(
+        // sample data check
+        '0x60806040526004361061003',
+      ),
+      true,
+      'should have deposit contract',
+    )
+  })
+})
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
@@ -26,14 +40,14 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should import poa network params correctly', async () => {
-    let params = parseGethGenesis(poaData, 'poa')
+    let params = parseGethGenesis(goerliGethGenesis, 'poa')
     assert.equal(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
       'consensus config matches',
     )
-    const poaCopy = Object.assign({}, poaData)
+    const poaCopy = Object.assign({}, goerliGethGenesis)
     poaCopy.nonce = '00'
     params = parseGethGenesis(poaCopy, 'poa')
     assert.equal(
@@ -41,7 +55,7 @@ describe('[Utils/Parse]', () => {
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly',
     )
-    assert.equal(params.hardfork, Hardfork.London, 'should correctly infer current hardfork')
+    assert.equal(params.hardfork, Hardfork.Istanbul, 'should correctly infer current hardfork')
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
@@ -98,7 +112,6 @@ describe('[Utils/Parse]', () => {
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
     const genesisJSON = postMergeGethGenesis
-    //@ts-expect-error we want shanghaiTime to exist
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(
@@ -108,11 +121,8 @@ describe('[Utils/Parse]', () => {
   })
   it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
     const genesisJSON = postMergeGethGenesis
-    //@ts-expect-error we don't want shanghaiTime to exist
     delete genesisJSON.config.shanghaiTime
-    //@ts-expect-error we don't want terminalTotalDifficultyPassed to exist
     delete genesisJSON.config.terminalTotalDifficultyPassed
-    //@ts-expect-error we don't want mergeForkBlock to exist
     delete genesisJSON.config.mergeForkBlock
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.equal(

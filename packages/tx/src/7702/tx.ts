@@ -391,7 +391,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   }
 
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): EOACode7702Tx {
-    return <EOACode7702Tx>Legacy.sign(this, privateKey, extraEntropy)
+    return Legacy.sign(this, privateKey, extraEntropy) as EOACode7702Tx
   }
 
   public isSigned(): boolean {

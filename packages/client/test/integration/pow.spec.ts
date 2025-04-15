@@ -1,12 +1,11 @@
 import { rmSync } from 'fs'
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createAddressFromPrivateKey, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import { Hardfork, createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
-import type { Address } from '@ethereumjs/util'
+import { type Address, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = createAddressFromPrivateKey(pk)

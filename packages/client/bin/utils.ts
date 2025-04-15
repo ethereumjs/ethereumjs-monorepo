@@ -13,6 +13,7 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
   getPresetChainConfig,
+  parseGethGenesisState,
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
@@ -24,7 +25,6 @@ import {
   createAddressFromString,
   ecrecover,
   hexToBytes,
-  parseGethGenesisState,
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -52,8 +52,8 @@ import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { CustomCrypto } from '@ethereumjs/common'
-import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { CustomCrypto, GenesisState } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Logger } from '../src/logging.ts'
 import type { ClientOpts } from '../src/types.ts'
 
