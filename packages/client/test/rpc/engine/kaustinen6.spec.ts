@@ -16,7 +16,7 @@ import { getRPCClient, setupChain } from '../helpers.ts'
 
 import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { VerkleExecutionWitness } from '@ethereumjs/util'
+import type { VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { HttpClient } from 'jayson/promise/index.js'
 import type { Chain } from '../../../src/blockchain/index.ts'
 const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
@@ -36,7 +36,7 @@ const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11f
  *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts` // cspell:disable-line
  */
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
+const originalValidate = (BlockHeader).prototype['_consensusFormatValidation']
 
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
@@ -61,7 +61,7 @@ async function runBlock(
   const blockCache = chain.blockCache
 
   const parentPayload =
-    isBeaconData === true ? executionPayloadFromBeaconPayload(parent as any) : parent
+    isBeaconData === true ? executionPayloadFromBeaconPayload(parent) : parent
   const parentBlock = await createBlockFromExecutionPayload(parentPayload, {
     common,
   })
@@ -69,7 +69,7 @@ async function runBlock(
   blockCache.executedBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
 
   const executePayload =
-    isBeaconData === true ? executionPayloadFromBeaconPayload(execute as any) : execute
+    isBeaconData === true ? executionPayloadFromBeaconPayload(execute) : execute
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
 
   // if the block was not executed mark as skip so it shows in test
@@ -82,8 +82,8 @@ async function runBlock(
 describe.skip(`valid verkle network setup`, async () => {
   const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
-    genesisStateRoot: genesisVerkleStateRoot,
-    customCrypto: { verkle },
+    genesisStateRoot: hexToBytes(genesisVerkleStateRoot),
+    customCrypto: { verkle: verkle as unknown as VerkleCrypto },
     statelessVerkle: true,
   })
   const rpc = getRPCClient(server)
