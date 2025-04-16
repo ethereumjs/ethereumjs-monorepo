@@ -84,6 +84,7 @@ describe.skip(`valid verkle network setup`, async () => {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
     customCrypto: { verkle },
+    statelessVerkle: true,
   })
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
