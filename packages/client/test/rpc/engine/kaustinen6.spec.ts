@@ -36,7 +36,7 @@ const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11f
  *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts` // cspell:disable-line
  */
 
-const originalValidate = (BlockHeader).prototype['_consensusFormatValidation']
+const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
 
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
@@ -60,8 +60,7 @@ async function runBlock(
 ) {
   const blockCache = chain.blockCache
 
-  const parentPayload =
-    isBeaconData === true ? executionPayloadFromBeaconPayload(parent) : parent
+  const parentPayload = isBeaconData === true ? executionPayloadFromBeaconPayload(parent) : parent
   const parentBlock = await createBlockFromExecutionPayload(parentPayload, {
     common,
   })
