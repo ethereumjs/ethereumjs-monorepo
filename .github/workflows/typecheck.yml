@@ -21,7 +21,7 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - run: npm i tsc
+      - run: npm install typescript
    
       - run: npm run tsc --workspaces
         working-directory: ${{ github.workspace }}
