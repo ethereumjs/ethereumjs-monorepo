@@ -19,7 +19,7 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
   for (const addressStr of Object.keys(genesisState)) {
     const addrState = genesisState[addressStr]
     let nonce, balance, code
-    let storage: StoragePair[] | undefined = []
+    let storage: StoragePair[] | undefined
     if (Array.isArray(addrState)) {
       ;[balance, code, storage, nonce] = addrState
     } else {
