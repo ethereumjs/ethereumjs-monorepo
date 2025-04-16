@@ -5,6 +5,9 @@ on:
       dep-cache-key:
         required: true
         type: string
+      submodule-cache-key:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       dep-cache-key:
@@ -33,7 +36,7 @@ jobs:
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
-
+  
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -44,6 +47,16 @@ jobs:
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
+
+      - if: inputs.submodule-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        name: Initialize ethereum-tests
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ${{ inputs.submodule-cache-key}}
+          fail-on-cache-miss: true
+            
    
       - run: npm run tsc --workspaces
         working-directory: ${{ github.workspace }}
