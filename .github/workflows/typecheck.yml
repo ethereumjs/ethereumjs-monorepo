@@ -1,8 +1,15 @@
 name: Typecheck (tsc)
 on:
   workflow_call:
-  pull_request:
-    branches: [ '*' ]
+    inputs:
+      dep-cache-key:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-typecheck
@@ -12,13 +19,22 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Use Node.js 22
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
+      - if: inputs.dep-cache-key != 'none' 
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
+  
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci     
         working-directory: ${{ github.workspace }}
            

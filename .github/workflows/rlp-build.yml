@@ -52,9 +52,37 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
+      # Run coverage for rlp
       - run: npm run coverage
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: rlp
+
+      # Run coverage for genesis
+      - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/genesis
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: genesis
+
+      # Run coverage for ethash
+      - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/ethash
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: ethash
+
+      # Run coverage for wallet
+      - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/wallet
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: wallet
