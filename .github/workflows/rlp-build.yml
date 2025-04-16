@@ -71,5 +71,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
-          flags: wallet,genesis,ethash,rlp
+          flags: smalljobs
 
