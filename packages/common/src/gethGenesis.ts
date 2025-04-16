@@ -24,9 +24,11 @@ export interface GethGenesisConfig {
   cancunBlock?: number
   arrowGlacierBlock?: number
   grayGlacierBlock?: number
+  mergeNetsplitBlock?: number
   shanghaiTime?: number
   cancunTime?: number
   pragueTime?: number
+  verkleTime?: number
   terminalTotalDifficulty?: number
   terminalTotalDifficultyPassed?: boolean
   ethash?: {}
@@ -48,6 +50,7 @@ export interface GethGenesisConfig {
     threshold: number
   }
   blobSchedule?: GethGenesisBlobSchedule
+  proofInBlocks?: boolean
 }
 
 /**

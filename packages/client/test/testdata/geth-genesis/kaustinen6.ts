@@ -1,4 +1,6 @@
-export const kaustinen6Data = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const kaustinen6Data: GethGenesis = {
   config: {
     chainId: 69420,
     homesteadBlock: 0,
