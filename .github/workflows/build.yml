@@ -150,9 +150,9 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  rlp:
+  static:
     needs: build
-    uses: ./.github/workflows/rlp-build.yml
+    uses: ./.github/workflows/static-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
