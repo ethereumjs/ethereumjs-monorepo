@@ -200,13 +200,13 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   noCompile:
-    needs: [build, checkout-submodules]
+    needs: build
     uses: ./.github/workflows/noCompile.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   typecheck:
-    needs: build
+    needs: [build, checkout-submodules]
     uses: ./.github/workflows/typecheck.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
