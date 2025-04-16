@@ -18,7 +18,7 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { powData } from '../../testdata/geth-genesis/pow.ts'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
@@ -429,7 +429,7 @@ describe(method, () => {
   it(
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
-      const { chain, execution, server } = await setupChain(eip4844Data, 'post-merge', {
+      const { chain, execution, server } = await setupChain(eip4844GethGenesis, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,
         customCrypto: {

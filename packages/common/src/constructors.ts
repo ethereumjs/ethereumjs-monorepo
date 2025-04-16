@@ -1,5 +1,6 @@
 import { Common, parseGethGenesis } from './index.ts'
 
+import type { GethGenesis } from './gethGenesis.ts'
 import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
 
 /**
@@ -33,18 +34,21 @@ export function createCustomCommon(
 }
 
 /**
- * Static method to load and set common from a geth genesis JSON
- * @param genesisJSON JSON of geth configuration
+ * Static method to load and set common from a geth genesis object
+ * @param gethGenesis GethGenesis object
  * @param  opts additional {@link GethConfigOpts} for configuring common
  * @returns Common
  */
 export function createCommonFromGethGenesis(
-  genesisJSON: any,
+  genesisJSON: GethGenesis,
   { chain, eips, genesisHash, hardfork, params, customCrypto }: GethConfigOpts,
 ): Common {
   const genesisParams = parseGethGenesis(genesisJSON, chain)
   const common = new Common({
-    chain: genesisParams,
+    chain: {
+      ...genesisParams,
+      name: genesisParams.name ?? 'Custom chain',
+    } as ChainConfig, // Typecasting because of `string` -> `PrefixedHexString` mismatches
     eips,
     params,
     hardfork: hardfork ?? genesisParams.hardfork,

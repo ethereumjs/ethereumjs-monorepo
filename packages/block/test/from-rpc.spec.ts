@@ -8,8 +8,8 @@ import {
   createBlockHeaderFromRPC,
 } from '../src/index.ts'
 
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { alchemy14151203Data } from './testdata/alchemy14151203.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
 import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.ts'
 import { infura2000004withTransactionsData } from './testdata/infura2000004withTransactions.ts'
 import { infura2000004withoutTransactionsData } from './testdata/infura2000004withoutTransactions.ts'
@@ -91,7 +91,7 @@ describe('[fromRPC]:', () => {
   })
 
   it('should create a block from london hardfork', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
     const block = createBlockFromRPC(testdataFromRPCGoerliLondonData, [], { common })
     assert.equal(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
@@ -172,7 +172,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   })
 
   it('should correctly parse a cancun block over rpc', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Cancun })
     const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893Data, { common }) // cspell:disable-line
     const hash = hexToBytes(infuraGoerliBlock10536893Data.hash)
     assert.isTrue(equalsBytes(block.hash(), hash))

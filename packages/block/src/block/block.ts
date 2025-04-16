@@ -158,7 +158,7 @@ export class Block {
    * Returns a Array of the raw Bytes Arrays of this block, in order.
    */
   raw(): BlockBytes {
-    const bytesArray = <BlockBytes>[
+    const bytesArray: BlockBytes = [
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw(),

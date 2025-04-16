@@ -6,6 +6,7 @@ import {
   createCustomCommon,
 } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
@@ -18,7 +19,6 @@ import { Miner } from '../../src/miner/index.ts'
 import { FullEthereumService } from '../../src/service/index.ts'
 // import { Event } from '../../src/types'
 import { wait } from '../integration/util.ts'
-import { Goerli } from '../testdata/common/goerliCommon.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
@@ -149,7 +149,7 @@ const customConfig = new Config({
   common: customCommon,
 })
 
-const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
+const goerliCommon = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Berlin })
 
 const goerliConfig = new Config({
   accountCache: 10000,
@@ -422,7 +422,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
       { name: 'london', block: 0 },
     ],
   }
-  const common = createCustomCommon(customChainParams, Goerli, {
+  const common = createCustomCommon(customChainParams, goerliChainConfig, {
     hardfork: Hardfork.London,
   })
   const config = new Config({

@@ -1,10 +1,10 @@
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
 import { beaconData } from '../../testdata/blocks/beacon.ts'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 
@@ -16,7 +16,7 @@ const [blockData] = beaconData
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const { server } = await setupChain(eip4844Data, 'post-merge', {
+    const { server } = await setupChain(eip4844GethGenesis, 'post-merge', {
       engine: true,
       customCrypto: { kzg },
     })

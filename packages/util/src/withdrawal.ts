@@ -44,7 +44,7 @@ export function withdrawalToBytesArray(withdrawal: Withdrawal | WithdrawalData):
       ? new Uint8Array()
       : toType(validatorIndex, TypeOutput.Uint8Array)
   const addressBytes =
-    address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
+    address instanceof Address ? address.bytes : toType(address, TypeOutput.Uint8Array)
 
   const amountBytes =
     toType(amount, TypeOutput.BigInt) === BIGINT_0

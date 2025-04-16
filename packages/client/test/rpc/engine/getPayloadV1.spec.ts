@@ -1,7 +1,7 @@
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadV1'
@@ -36,7 +36,7 @@ describe(method, () => {
   })
 
   it('call with known payload', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV1', validPayload)
     const payloadId = res.result.payloadId

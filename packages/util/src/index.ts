@@ -53,7 +53,6 @@ export * from './types.ts'
  */
 export * from './binaryTree.ts'
 export * from './blobs.ts'
-export * from './genesis.ts'
 export {
   arrayContainsArray,
   fromAscii,

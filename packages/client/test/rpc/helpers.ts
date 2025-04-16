@@ -6,6 +6,7 @@ import {
   Mainnet,
   createCommonFromGethGenesis,
   parseGethGenesis,
+  parseGethGenesisState,
 } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
@@ -14,7 +15,6 @@ import {
   KECCAK256_RLP,
   createAddressFromString,
   hexToBytes,
-  parseGethGenesisState,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { Client, Server as RPCServer } from 'jayson/promise/index.js'
@@ -36,8 +36,8 @@ import { mockBlockchain } from './mockBlockchain.ts'
 
 import type { AddressInfo } from 'node:net'
 import type { Blockchain } from '@ethereumjs/blockchain'
+import type { GenesisState } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../../src/client.ts'
@@ -62,6 +62,7 @@ type createClientArgs = {
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
   savePreimages: boolean
+  statelessVerkle: boolean
 }
 export function startRPC(
   methods: any,
@@ -108,6 +109,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
     logger: getLogger({}),
+    statelessVerkle: clientOpts.statelessVerkle,
   })
   const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 

@@ -674,7 +674,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
+                    const wasPreVerkle = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
@@ -683,8 +683,8 @@ export class VMExecution extends Execution {
                       blockNumber: number,
                       timestamp,
                     })
-                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Verkle)
-                    if (wasPrePrague && isPostOsaka) {
+                    const isPostVerkle = this.config.execCommon.gteHardfork(Hardfork.Verkle)
+                    if (wasPreVerkle && isPostVerkle) {
                       await this.transitionToVerkle(parentState!)
                       clearCache = false
                     }
@@ -966,7 +966,7 @@ export class VMExecution extends Execution {
       timestamp: block.header.timestamp,
     })
 
-    // Setup VM with verkle state manager if Osaka is active
+    // Setup VM with verkle state manager if Verkle is active
     if (
       this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle) &&
       this.config.statelessVerkle

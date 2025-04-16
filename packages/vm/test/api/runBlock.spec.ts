@@ -8,6 +8,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
   LegacyTx,
@@ -21,11 +22,11 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  bigIntToUnpaddedBytes,
   bytesToHex,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   hexToBytes,
   privateToAddress,
@@ -34,6 +35,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
@@ -41,8 +43,6 @@ import { createVM, runBlock } from '../../src/index.ts'
 import { getDAOCommon, setupPreConditions } from '../util.ts'
 
 import { blockchainData } from './testdata/blockchain.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
-import { testnetData } from './testdata/testnet.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
@@ -154,7 +154,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const common = createCustomCommon(testnetData, Mainnet, {
+    const common = createCustomCommon(customChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })
@@ -366,7 +366,7 @@ describe('runBlock() -> runtime behavior', async () => {
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {
@@ -626,17 +626,17 @@ describe('runBlock() -> tx types', async () => {
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
-      const signed = ecsign(msgToSign, pkey)
+      const signed = secp256k1.sign(msgToSign, pkey)
 
-      const yParity = signed.v === BigInt(0) ? new Uint8Array() : new Uint8Array([1])
+      const yParity = signed.recovery === 0 ? new Uint8Array() : new Uint8Array([1])
 
       return [
         chainIdBytes,
         addressBytes,
         nonceBytes,
         yParity,
-        unpadBytes(signed.r),
-        unpadBytes(signed.s),
+        bigIntToUnpaddedBytes(signed.r),
+        bigIntToUnpaddedBytes(signed.s),
       ]
     }
 

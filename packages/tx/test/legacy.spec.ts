@@ -1,5 +1,6 @@
 import { Common, Hardfork, Mainnet, Sepolia, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import {
   bytesToBigInt,
   bytesToHex,
@@ -17,7 +18,6 @@ import {
   createLegacyTxFromRLP,
 } from '../src/index.ts'
 
-import { Goerli } from './testData/goerliCommon.ts'
 import { transactionTestEip155VitalikTestsData } from './testData/transactionTestEip155VitalikTests.ts'
 import { txsData } from './testData/txs.ts'
 
@@ -65,7 +65,7 @@ describe('[Transaction]', () => {
       createLegacyTx({}, { common: nonEIP2930Common }),
       'should initialize on a pre-Berlin Hardfork (EIP-2930 not activated)',
     )
-    let common = new Common({ chain: Goerli })
+    let common = new Common({ chain: goerliChainConfig })
     const txData = txsData[3].raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
     txData[6] = intToBytes(45) // v with 0-parity and chain ID 5
     let tx = createLegacyTxFromBytesArray(txData, { common })
@@ -127,7 +127,7 @@ describe('[Transaction]', () => {
   })
 
   it('Initialization -> throws when creating a a transaction with incompatible chainid and v value', () => {
-    let common = new Common({ chain: Goerli, hardfork: Hardfork.Petersburg })
+    let common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Petersburg })
     let tx = createLegacyTx({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
     const privKey = hexToBytes(`0x${txsData[0].privateKey}`)
@@ -510,7 +510,7 @@ describe('[Transaction]', () => {
   })
 
   it('sign(), verifySignature(): sign tx with chainId specified in params', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Petersburg })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Petersburg })
     let tx = createLegacyTx({}, { common })
     assert.equal(tx.common.chainId(), BigInt(5))
 
