@@ -1,4 +1,6 @@
-export const testnetVerkleKaustinenData = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const verkleKaustinenGethGenesis: GethGenesis = {
   config: {
     chainId: 69420,
     homesteadBlock: 0,

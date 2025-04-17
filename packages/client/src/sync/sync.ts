@@ -64,7 +64,7 @@ export abstract class Synchronizer {
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {
-        this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
+        this.config.logger?.debug(`Found ${this.type} peer: ${peer}`)
       }
     })
 
@@ -139,7 +139,7 @@ export abstract class Synchronizer {
   resolveSync(height?: bigint) {
     this.clearFetcher()
     const heightStr = typeof height === 'bigint' && height !== BIGINT_0 ? ` height=${height}` : ''
-    this.config.logger.debug(`Finishing up sync with the current fetcher ${heightStr}`)
+    this.config.logger?.debug(`Finishing up sync with the current fetcher ${heightStr}`)
     return true
   }
 
@@ -148,10 +148,10 @@ export abstract class Synchronizer {
       if (this._fetcher) {
         await this._fetcher.blockingFetch()
       }
-      this.config.logger.debug(`Fetcher finished fetching...`)
+      this.config.logger?.debug(`Fetcher finished fetching...`)
       return this.resolveSync()
     } catch (error: any) {
-      this.config.logger.error(
+      this.config.logger?.error(
         `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )
       this.clearFetcher()
@@ -167,7 +167,7 @@ export abstract class Synchronizer {
     let peer = await this.best()
     let numAttempts = 1
     while (!peer && this.opened) {
-      this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
+      this.config.logger?.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await wait(5000)
       peer = await this.best()
       numAttempts += 1
@@ -205,7 +205,7 @@ export abstract class Synchronizer {
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
-    this.config.logger.info('Stopped synchronization.')
+    this.config.logger?.info('Stopped synchronization.')
     return true
   }
 

@@ -1,6 +1,6 @@
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type { Common, ConsensusAlgorithm, GenesisState } from '@ethereumjs/common'
+import type { DB, DBObject } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { Blockchain } from './index.ts'
 

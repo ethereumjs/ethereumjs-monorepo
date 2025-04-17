@@ -116,8 +116,8 @@ export const Mainnet: ChainConfig = {
     {
       name: 'prague',
       block: null,
-      // Note: Prague is not yet scheduled for Mainnet.
-      // Timestamp will be added once it is scheduled.
+      timestamp: '1746612311',
+      forkHash: '0xc376cf8b',
     },
     {
       name: 'osaka',
@@ -564,7 +564,7 @@ export const Hoodi: ChainConfig = {
 export const Kaustinen6: ChainConfig = {
   name: 'kaustinen6',
   chainId: 69420,
-  defaultHardfork: 'osaka',
+  defaultHardfork: 'verkle',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -633,7 +633,7 @@ export const Kaustinen6: ChainConfig = {
       timestamp: '0',
     },
     {
-      name: 'osaka',
+      name: 'verkle',
       block: null,
       timestamp: '1712848500',
     },

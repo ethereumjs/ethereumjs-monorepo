@@ -1,12 +1,13 @@
 import { createBlock } from '@ethereumjs/block'
 import { createCommonFromGethGenesis, parseGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/index.ts'
 import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.ts'
 import { Event } from '../../../src/types.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 
+import { getLogger } from '../../../src/logging.ts'
 import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.ts'
 
 const payload: NewPayload = {
@@ -49,9 +50,9 @@ describe('starts and stops connection manager', () => {
 })
 
 describe('hardfork MergeForkBlock', () => {
-  postMergeData.config.mergeForkBlock = 0
-  const params = parseGethGenesis(postMergeData, 'post-merge')
-  const common = createCommonFromGethGenesis(postMergeData, { chain: params.name })
+  postMergeGethGenesis.config.mergeForkBlock = 0
+  const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: params.name })
   common.setHardforkBy({ blockNumber: 0 })
   const config = new Config({ common })
   it('instantiates with config', () => {
@@ -62,10 +63,10 @@ describe('hardfork MergeForkBlock', () => {
 })
 describe('postmerge hardfork', () => {
   it('starts on mergeBlock', async () => {
-    postMergeData.config.mergeForkBlock = 10
-    const params = parseGethGenesis(postMergeData, 'post-merge')
+    postMergeGethGenesis.config.mergeForkBlock = 10
+    const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
 
-    const common = createCommonFromGethGenesis(postMergeData, {
+    const common = createCommonFromGethGenesis(postMergeGethGenesis, {
       chain: params.name,
     })
     common.setHardforkBy({ blockNumber: 11 })
@@ -87,9 +88,9 @@ describe('postmerge hardfork', () => {
 })
 
 describe('Status updates', async () => {
-  const config = new Config()
+  const config = new Config({ logger: getLogger({}) })
   const manager = new CLConnectionManager({ config })
-  config.logger.on('data', (chunk) => {
+  config.logger?.on('data', (chunk) => {
     it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
         assert.isTrue(true, 'received last fork choice message')
@@ -97,7 +98,7 @@ describe('Status updates', async () => {
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
         assert.isTrue(true, 'received last payload message')
         manager.stop()
-        config.logger.removeAllListeners()
+        config.logger?.removeAllListeners()
       }
     })
   })
@@ -116,11 +117,11 @@ describe('updates stats when a new block is processed', () => {
         number: payload.payload.blockNumber,
       },
     })
-    config.logger.on('data', (chunk) => {
+    config.logger?.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
         assert.isTrue(true, 'received last payload stats message')
         manager.stop()
-        config.logger.removeAllListeners()
+        config.logger?.removeAllListeners()
       }
     })
 

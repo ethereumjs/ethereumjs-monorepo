@@ -129,7 +129,12 @@ function logFileTransport(args: LoggerArgs) {
 /**
  * Returns a formatted {@link Logger}
  */
-export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
+export function getLogger(
+  args: { [key: string]: any } = { logLevel: 'info' },
+): WinstonLogger | undefined {
+  if (args.logLevel === 'off') {
+    return undefined
+  }
   const transports: any[] = [
     new wTransports.Console({
       level: args.logLevel,
@@ -145,5 +150,5 @@ export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
     format: formatConfig(),
     level: args.logLevel,
   })
-  return logger
+  return args.logLevel === 'off' ? undefined : logger
 }

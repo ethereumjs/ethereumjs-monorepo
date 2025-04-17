@@ -1,10 +1,10 @@
 import { genWithdrawalsTrieRoot } from '@ethereumjs/block'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { withdrawalsGethGenesis } from '@ethereumjs/testdata'
 import { bigIntToHex, bytesToHex, createWithdrawal, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { withdrawalsData } from '../../testdata/geth-genesis/withdrawals.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
@@ -112,7 +112,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       computedWithdrawalsRoot,
       'withdrawalsRoot computation should match',
     )
-    const { server } = await setupChain(withdrawalsData, 'post-merge', { engine: true })
+    const { server } = await setupChain(withdrawalsGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV2', [
       validForkChoiceState,

@@ -393,7 +393,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(entireBlockLabel)
-    const logs = (<EVM>vm.evm).getPerformanceLogs()
+    const logs = (vm.evm as EVM).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
       // eslint-disable-next-line no-console
       console.log('No block txs with precompile or opcode execution.')
@@ -401,7 +401,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
     emitEVMProfile(logs.precompiles, 'Precompile performance')
     emitEVMProfile(logs.opcodes, 'Opcodes performance')
-    ;(<EVM>vm.evm).clearPerformanceLogs()
+    ;(vm.evm as EVM).clearPerformanceLogs()
   }
 
   return results

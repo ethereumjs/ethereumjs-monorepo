@@ -441,7 +441,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
-    return <Blob4844Tx>Legacy.sign(this, privateKey, extraEntropy)
+    return Legacy.sign(this, privateKey, extraEntropy) as Blob4844Tx
   }
 
   public isSigned(): boolean {
