@@ -177,15 +177,16 @@ The `Common` class has a public property `events` which contains an `EventEmitte
 The `chain` can be set in the constructor like this:
 
 ```ts
-const c = new Common({ chain: Chain.Mainnet })
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
 ```
 
 Supported chains:
 
-- `mainnet` (`Chain.Mainnet`)
-- `goerli` (`Chain.Goerli`)
-- `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
-- `holesky` (`Chain.Holesky`) (`v4.1.0`+)
+- `mainnet` (`Mainnet`)
+- `sepolia` (`Sepolia`) (`v2.6.1`+)
+- `holesky` (`Holesky`) (`v4.1.0`+)
+- `hoodi`(`Hoodi`) (`v10+` (new versioning scheme))
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
