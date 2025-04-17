@@ -357,7 +357,7 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
-    // fill up the blobsAndProofsByHash and proofs cache before adding a blob tx
+    // fill up the blobAndProofByHash and proofs cache before adding a blob tx
     // for cache pruning check
     const fillBlobs = getBlobs('hello world')
     const fillCommitments = blobsToCommitments(kzg, fillBlobs)
@@ -371,13 +371,9 @@ describe('[PendingBlock]', async () => {
 
     for (let i = 0; i < allowedLength; i++) {
       // this is space efficient as same object is inserted in dummy positions
-      txPool.blobsAndProofsByHash.set(intToHex(i), fillBlobAndProof)
+      txPool.blobAndProofByHash.set(intToHex(i), fillBlobAndProof)
     }
-    assert.strictEqual(
-      txPool.blobsAndProofsByHash.size,
-      allowedLength,
-      'fill the cache to capacity',
-    )
+    assert.strictEqual(txPool.blobAndProofByHash.size, allowedLength, 'fill the cache to capacity')
 
     // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
     let blobs: PrefixedHexString[] = [],
@@ -419,7 +415,7 @@ describe('[PendingBlock]', async () => {
     }
 
     assert.strictEqual(
-      txPool.blobsAndProofsByHash.size,
+      txPool.blobAndProofByHash.size,
       allowedLength,
       'cache should be prune and stay at same size',
     )
@@ -429,7 +425,7 @@ describe('[PendingBlock]', async () => {
       const blob = blobs[i]
       const proof = proofs[i]
 
-      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {
+      const blobAndProof = txPool.blobAndProofByHash.get(versionedHash) ?? {
         blob: '0x0',
         proof: '0x0',
       }
