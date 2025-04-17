@@ -209,6 +209,10 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       txData.networkWrapperVersion !== undefined
         ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
         : undefined
+    if (!this.common.isActivatedEIP(7594)) {
+      throw EthereumJSErrorWithoutCode('EIP-7594 not enabled on Common')
+    }
+
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
