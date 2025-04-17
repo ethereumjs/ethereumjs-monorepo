@@ -6,7 +6,9 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToInt,
   hexToBytes,
+  intToUnpaddedBytes,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -42,6 +44,12 @@ import type {
 export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
+export const NetworkWrapperType = {
+  EIP4844: 0,
+  EIP7594: 1,
+} as const
+export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof NetworkWrapperType]
+
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
  *
@@ -70,7 +78,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public readonly s?: bigint
 
   // End of Tx data part
-
+  networkWrapperVersion?: NetworkWrapperType
   blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
@@ -197,6 +205,10 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       throw EthereumJSErrorWithoutCode(msg)
     }
 
+    this.networkWrapperVersion =
+      txData.networkWrapperVersion !== undefined
+        ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
+        : undefined
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
@@ -323,6 +335,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    */
   serializeNetworkWrapper(): Uint8Array {
     if (
+      this.networkWrapperVersion === undefined ||
       this.blobs === undefined ||
       this.kzgCommitments === undefined ||
       this.kzgProofs === undefined
@@ -332,7 +345,18 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       )
     }
 
-    return EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
+    const networkSerialized =
+      this.networkWrapperVersion === NetworkWrapperType.EIP4844
+        ? EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
+        : EIP2718.serialize(this, [
+            this.raw(),
+            intToUnpaddedBytes(this.networkWrapperVersion),
+            this.blobs,
+            this.kzgCommitments,
+            this.kzgProofs,
+          ])
+
+    return networkSerialized
   }
 
   /**

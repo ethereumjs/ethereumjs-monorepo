@@ -6,10 +6,12 @@ import {
   blobsToProofs,
   bytesToBigInt,
   bytesToHex,
+  bytesToInt,
   commitmentsToVersionedHashes,
   computeVersionedHash,
   equalsBytes,
   getBlobs,
+  intToHex,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
@@ -17,11 +19,12 @@ import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
 import { accessListBytesToJSON } from '../util/access.ts'
 
-import { Blob4844Tx } from './tx.ts'
+import { Blob4844Tx, NetworkWrapperType } from './tx.ts'
 
 import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
   BlobEIP4844NetworkValuesArray,
+  BlobEIP7594NetworkValuesArray,
   JSONBlobTxNetworkWrapper,
   TxOptions,
 } from '../types.ts'
@@ -250,11 +253,16 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
 
   // Validate network wrapper
   const networkTxValues = RLP.decode(serialized.subarray(1))
-  if (networkTxValues.length !== 4) {
-    throw Error(`Expected 4 values in the deserialized network transaction`)
+  let txValues, blobs, kzgCommitments, kzgProofs, networkWrapperVersion
+  if (networkTxValues.length === 4) {
+    ;[txValues, blobs, kzgCommitments, kzgProofs] = networkTxValues as BlobEIP4844NetworkValuesArray
+    networkWrapperVersion = Uint8Array.from([NetworkWrapperType.EIP4844])
+  } else if (networkTxValues.length === 5) {
+    ;[txValues, networkWrapperVersion, blobs, kzgCommitments, kzgProofs] =
+      networkTxValues as BlobEIP7594NetworkValuesArray
+  } else {
+    throw Error(`Expected 4 or 5 values in the deserialized network transaction`)
   }
-  const [txValues, blobs, kzgCommitments, kzgProofs] =
-    networkTxValues as BlobEIP4844NetworkValuesArray
 
   // Construct the tx but don't freeze yet, we will assign blobs etc once validated
   const decodedTx = createBlob4844TxFromBytesArray(txValues, { ...opts, freeze: false })
@@ -279,6 +287,7 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   )
 
   // set the network blob data on the tx
+  decodedTx.networkWrapperVersion = bytesToInt(networkWrapperVersion) as NetworkWrapperType
   decodedTx.blobs = blobsHex
   decodedTx.kzgCommitments = commsHex
   decodedTx.kzgProofs = proofsHex
@@ -312,7 +321,12 @@ export function createMinimal4844TxFromNetworkWrapper(
   const tx = createBlob4844Tx(
     {
       ...txData,
-      ...{ blobs: undefined, kzgCommitments: undefined, kzgProofs: undefined },
+      ...{
+        networkWrapperVersion: undefined,
+        blobs: undefined,
+        kzgCommitments: undefined,
+        kzgProofs: undefined,
+      },
     },
     opts,
   )
@@ -343,6 +357,8 @@ export function blobTxNetworkWrapperToJSON(
     accessList: accessListJSON,
     maxFeePerBlobGas: bigIntToHex(tx.maxFeePerBlobGas),
     blobVersionedHashes: tx.blobVersionedHashes,
+
+    networkWrapperVersion: intToHex(tx.networkWrapperVersion!),
     blobs: tx.blobs!,
     kzgCommitments: tx.kzgCommitments!,
     kzgProofs: tx.kzgProofs!,
