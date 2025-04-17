@@ -384,7 +384,7 @@ export class Engine {
       let response = error
       if (!response) {
         const validationError = `Error assembling block from payload during initialization`
-        this.config.logger.debug(validationError)
+        this.config.logger?.debug(validationError)
         const latestValidHash = await validHash(
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
@@ -402,7 +402,7 @@ export class Engine {
     this.connectionManager.updatePayloadStats(headBlock)
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Hardfork change along new payload block number=${headBlock.header.number} hash=${short(
           headBlock.hash(),
         )} old=${this.lastNewPayloadHF} new=${hardfork}`,
@@ -651,7 +651,7 @@ export class Engine {
 
           // if can't be executed then return syncing/accepted
           if (!executed) {
-            this.config.logger.debug(
+            this.config.logger?.debug(
               `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
                 headBlock.hash(),
               )} : pendingBlocks=${blocks.length - i}(limit=${
@@ -697,7 +697,7 @@ export class Engine {
       }
 
       const validationError = `Error verifying block while running: ${errorMsg}`
-      this.config.logger.error(validationError)
+      this.config.logger?.error(validationError)
 
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
@@ -898,7 +898,7 @@ export class Engine {
     const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
     if (prevError !== undefined) {
       const validationError = `Received block previously marked INVALID: ${prevError.message}`
-      this.config.logger.debug(validationError)
+      this.config.logger?.debug(validationError)
       const latestValidHash = null
       const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
       const response = { payloadStatus, payloadId: null }
@@ -917,7 +917,7 @@ export class Engine {
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
     } catch {
-      this.config.logger.debug(
+      this.config.logger?.debug(
         `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )
       const payloadStatus = {
@@ -934,7 +934,7 @@ export class Engine {
      */
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Hardfork change along forkchoice head block update number=${
           headBlock.header.number
         } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`,
@@ -944,7 +944,7 @@ export class Engine {
 
     // Always keep beaconSync skeleton updated so that it stays updated with any skeleton sync
     // requirements that might come later because of reorg or CL restarts
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `Forkchoice requested update to new head number=${headBlock.header.number} hash=${short(
         headBlock.hash(),
       )}`,
@@ -1016,7 +1016,7 @@ export class Engine {
         this.config.ignoreStatelessInvalidExecs === true
       ) {
         // jump the vm head to failing block so that next block can be executed
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`,
         )
         await this.execution.jumpVmHead(
