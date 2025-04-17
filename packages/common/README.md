@@ -9,8 +9,6 @@
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
-Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceding release.
-
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -37,7 +35,7 @@ const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 
 ### Parameters
 
-All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Chain.Mainnet') or the `chain` together with a specific `hardfork` provided:
+All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Mainnet') or the `chain` together with a specific `hardfork` provided:
 
 ```ts
 // ./examples/common.ts#L1-L7
@@ -45,7 +43,7 @@ All parameters can be accessed through the `Common` class, instantiated with an 
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
-const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
 
 // Instantiate with the chain (and the default hardfork)
 let c = new Common({ chain: Mainnet })
@@ -53,7 +51,7 @@ let c = new Common({ chain: Mainnet })
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `Hardfork.Shanghai`
+Current `DEFAULT_HARDFORK`: `Hardfork.Prague`
 
 Here are some simple usage examples:
 
@@ -64,26 +62,18 @@ Here are some simple usage examples:
 console.log('Below are the known bootstrap nodes')
 console.log(c.bootstrapNodes()) // Array with current nodes
 
-// Instantiate with an EIP activated
-c = new Common({ chain: Mainnet, eips: [4844] })
-console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
+// Instantiate with an EIP activated (with pre-EIP hardfork)
+c = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+console.log(`EIP 7702 is active -- ${c.isActivatedEIP(7702)}`)
 
 // Instantiate common with custom chainID
 const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
-console.log(`The current chain ID is ${commonWithCustomChainId.chainId}`)
+console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
 ```
 
 ### Custom Cryptography Primitives (WASM)
 
-All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default.
-These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
-Javascript and therefore have the potential downside of being less performant than alternative cryptography modules
-written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of
-the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in
-place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper
-methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-See the implementation of this in the [`@ethereumjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
-for an example of how this is done for each available cryptographic primitive.
+All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native Javascript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
 
 Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
 
@@ -115,9 +105,7 @@ void main()
 
 ### Example 2: KZG
 
-The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property
-and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how
-to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
+The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
 // ./examples/initKzg.ts
