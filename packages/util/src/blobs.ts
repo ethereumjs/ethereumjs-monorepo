@@ -14,6 +14,7 @@ const USEFUL_BYTES_PER_BLOB = 32 * FIELD_ELEMENTS_PER_BLOB
 const MAX_BLOBS_PER_TX = 2
 const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
+export const CELLS_PER_EXT_BLOB = 128
 
 function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
