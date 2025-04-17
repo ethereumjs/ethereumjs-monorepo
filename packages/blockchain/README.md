@@ -207,7 +207,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Events
 
-The `Blockchain` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
+The `Blockchain` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
 
 | Event                    | Description                                 |
 | ------------------------ | ------------------------------------------- |

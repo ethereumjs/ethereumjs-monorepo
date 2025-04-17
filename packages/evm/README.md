@@ -322,7 +322,7 @@ EIP-4844 comes with a new opcode `BLOBHASH` (Attention! Renamed from `DATAHASH`)
 
 ### Tracing Events
 
-The EVM emits events that support async listeners.
+The EVM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
 
 You can subscribe to the following events:
 

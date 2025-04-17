@@ -362,7 +362,7 @@ EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation prec
 
 ### Tracing Events
 
-Our `TypeScript` VM emits events that support async listeners.
+Our `TypeScript` VM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
 
 You can subscribe to the following events:
 
