@@ -18,7 +18,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
-import { EVMError, EvmError } from './errors.ts'
+import { EVMErrorMessages, EvmError } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
@@ -219,14 +219,14 @@ export class Interpreter {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMError.INVALID_BYTECODE_RESULT),
+          exceptionError: new EvmError(EVMErrorMessages.INVALID_BYTECODE_RESULT),
         }
       }
       if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMError.INVALID_EOF_FORMAT),
+          exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT),
         }
       }
       this._runState.code = code
@@ -239,7 +239,7 @@ export class Interpreter {
       } catch {
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMError.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+          exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
         }
       }
 
@@ -256,7 +256,7 @@ export class Interpreter {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,
-            exceptionError: new EvmError(EVMError.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+            exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
           }
         }
       }
@@ -340,7 +340,7 @@ export class Interpreter {
           throw e
         }
         // STOP is not an exception
-        if (e.error !== EVMError.STOP) {
+        if (e.error !== EVMErrorMessages.STOP) {
           err = e
         }
         break
@@ -403,7 +403,7 @@ export class Interpreter {
 
       // Check for invalid opcode
       if (opInfo.isInvalid) {
-        throw new EvmError(EVMError.INVALID_OPCODE)
+        throw new EvmError(EVMErrorMessages.INVALID_OPCODE)
       }
 
       // Reduce opcode's base fee
@@ -563,7 +563,7 @@ export class Interpreter {
     }
     if (this._runState.gasLeft < BIGINT_0) {
       this._runState.gasLeft = BIGINT_0
-      trap(EVMError.OUT_OF_GAS)
+      trap(EVMErrorMessages.OUT_OF_GAS)
     }
   }
 
@@ -599,7 +599,7 @@ export class Interpreter {
     this._runState.gasRefund -= amount
     if (this._runState.gasRefund < BIGINT_0) {
       this._runState.gasRefund = BIGINT_0
-      trap(EVMError.REFUND_EXHAUSTED)
+      trap(EVMErrorMessages.REFUND_EXHAUSTED)
     }
   }
 
@@ -681,7 +681,7 @@ export class Interpreter {
    */
   finish(returnData: Uint8Array): void {
     this._result.returnValue = returnData
-    trap(EVMError.STOP)
+    trap(EVMErrorMessages.STOP)
   }
 
   /**
@@ -691,7 +691,7 @@ export class Interpreter {
    */
   revert(returnData: Uint8Array): void {
     this._result.returnValue = returnData
-    trap(EVMError.REVERT)
+    trap(EVMErrorMessages.REVERT)
   }
 
   /**
@@ -1016,7 +1016,7 @@ export class Interpreter {
     if (
       results.execResult.returnValue !== undefined &&
       (!results.execResult.exceptionError ||
-        results.execResult.exceptionError.error === EVMError.REVERT)
+        results.execResult.exceptionError.error === EVMErrorMessages.REVERT)
     ) {
       this._runState.returnBytes = results.execResult.returnValue
     }
@@ -1117,14 +1117,14 @@ export class Interpreter {
     // Set return buffer in case revert happened
     if (
       results.execResult.exceptionError &&
-      results.execResult.exceptionError.error === EVMError.REVERT
+      results.execResult.exceptionError.error === EVMErrorMessages.REVERT
     ) {
       this._runState.returnBytes = results.execResult.returnValue
     }
 
     if (
       !results.execResult.exceptionError ||
-      results.execResult.exceptionError.error === EVMError.CODESTORE_OUT_OF_GAS
+      results.execResult.exceptionError.error === EVMErrorMessages.CODESTORE_OUT_OF_GAS
     ) {
       for (const addressToSelfdestructHex of selfdestruct) {
         this._result.selfdestruct.add(addressToSelfdestructHex)
@@ -1230,7 +1230,7 @@ export class Interpreter {
       })
     }
 
-    trap(EVMError.STOP)
+    trap(EVMErrorMessages.STOP)
   }
 
   /**
@@ -1238,11 +1238,11 @@ export class Interpreter {
    */
   log(data: Uint8Array, numberOfTopics: number, topics: Uint8Array[]): void {
     if (numberOfTopics < 0 || numberOfTopics > 4) {
-      trap(EVMError.OUT_OF_RANGE)
+      trap(EVMErrorMessages.OUT_OF_RANGE)
     }
 
     if (topics.length !== numberOfTopics) {
-      trap(EVMError.INTERNAL_ERROR)
+      trap(EVMErrorMessages.INTERNAL_ERROR)
     }
 
     const log: Log = [this._env.address.bytes, topics, data]
@@ -1259,7 +1259,7 @@ export class Interpreter {
     } else {
       // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
       if (results.execResult.exceptionError !== undefined) {
-        if (results.execResult.exceptionError.error === EVMError.REVERT) {
+        if (results.execResult.exceptionError.error === EVMErrorMessages.REVERT) {
           // Revert
           return BIGINT_1
         } else {

@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EvmError } from '../errors.ts'
+import { EVMErrorMessages, EvmError } from '../errors.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
@@ -13,7 +13,7 @@ import type { PrecompileInput } from './types.ts'
 export function precompile08(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('08')
   if (!moduloLengthCheck(opts, 192, pName)) {
-    return EvmErrorResult(new EvmError(EVMError.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EvmErrorResult(new EvmError(EVMErrorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))

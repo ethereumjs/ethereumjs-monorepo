@@ -1,6 +1,6 @@
-export type EVMErrorType = (typeof EVMError)[keyof typeof EVMError]
+export type EVMErrorType = (typeof EVMErrorMessages)[keyof typeof EVMErrorMessages]
 
-export const EVMError = {
+export const EVMErrorMessages = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM: 'code size to deposit exceeds maximum code size',
