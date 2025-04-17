@@ -205,40 +205,19 @@ The following chain-specific parameters are provided:
 To get an overview of the different parameters have a look at one of the chain configurations in the `chains.ts` configuration
 file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
-### Working with private/custom chains
+### Working with Private/Custom Chains
 
-There are two distinct APIs available for setting up custom(ized) chains.
-
-#### Basic Chain Customization / Predefined Custom Chains
-
-There is a dedicated `Common.custom()` static constructor which allows for an easy instantiation of a Common instance with somewhat adopted chain parameters, with the main use case to adopt on instantiating with a deviating chain ID (you can use this to adopt other chain parameters as well though). Instantiating a custom common instance with its own chain ID and inheriting all other parameters from `mainnet` can now be as easily done as:
+Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be both used to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
 
 ```ts
-// ./examples/common.ts#L25-L27
+import { createCustomCommon, Mainnet } from '@ethereumjs/common'
+ 
+createCustomCommon({chainId: 123}, Mainnet)
 ```
 
-The `custom()` method also takes a string as a first input (instead of a dictionary). This can be used in combination with the `CustomChain` enum dict which allows for the selection of predefined supported custom chains for an easier `Common` setup of these supported chains:
+See the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for how to use such a `Common` instance in the context of sending txs to L2 networks.
 
-```ts
-const common = Common.custom(CustomChain.ArbitrumRinkebyTestnet)
-```
-
-The following custom chains are currently supported:
-
-- `PolygonMainnet`
-- `PolygonMumbai`
-- `ArbitrumRinkebyTestnet`
-- `xDaiChain`
-- `OptimisticKovan`
-- `OptimisticEthereum`
-
-`Common` instances created with this simplified `custom()` constructor can't be used in all usage contexts (the HF configuration is very likely not matching the actual chain) but can be useful for specific use cases, e.g. for sending a tx with `@ethereumjs/tx` to an L2 network (see the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for a complete usage example).
-
-#### Activate with a single custom Chain setup
-
-If you want to initialize a `Common` instance with a single custom chain which is then directly activated
-you can pass a dictionary - conforming to the parameter format described above - with your custom chain
-values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
+Beyond it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
 
 ```ts
 // ./examples/customChain.ts
@@ -251,29 +230,6 @@ import myCustomChain1 from './genesisData/testnet.json'
 const common1 = createCustomCommon(myCustomChain1, Mainnet)
 console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
 ```
-
-#### Initialize using customChains Array
-
-A second way for custom chain initialization is to use the `customChains` constructor option. This
-option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on
-a common instance in addition to the already supported ones. It also allows for an activation-independent
-initialization, so you can add your chains by adding to the `customChains` array and either directly
-use the `chain` option to activate one of the custom chains passed or activate a build in chain
-(e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
-
-```ts
-// ./examples/customChain.ts
-
-import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
-
-import myCustomChain1 from './genesisData/testnet.json'
-
-// Add custom chain config
-const common1 = createCustomCommon(myCustomChain1, Mainnet)
-console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
-```
-
-Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
 #### Initialize using Geth's genesis json
 
