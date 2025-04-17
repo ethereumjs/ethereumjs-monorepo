@@ -1,4 +1,6 @@
-export const powData = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const powData: GethGenesis = {
   config: {
     chainId: 15470,
     homesteadBlock: 0,

@@ -564,7 +564,7 @@ export const Hoodi: ChainConfig = {
 export const Kaustinen6: ChainConfig = {
   name: 'kaustinen6',
   chainId: 69420,
-  defaultHardfork: 'osaka',
+  defaultHardfork: 'verkle',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -633,7 +633,7 @@ export const Kaustinen6: ChainConfig = {
       timestamp: '0',
     },
     {
-      name: 'osaka',
+      name: 'verkle',
       block: null,
       timestamp: '1712848500',
     },

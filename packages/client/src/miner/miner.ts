@@ -92,7 +92,7 @@ export class Miner {
       blockNumber: this.service.chain.headers.height + BIGINT_1,
     })
     if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
-      this.config.logger.info('Miner: reached merge hardfork - stopping')
+      this.config.logger?.info('Miner: reached merge hardfork - stopping')
       this.stop()
       return
     }
@@ -134,7 +134,7 @@ export class Miner {
     if (typeof this.ethash === 'undefined') {
       return
     }
-    this.config.logger.info('Miner: Finding next PoW solution 🔨')
+    this.config.logger?.info('Miner: Finding next PoW solution 🔨')
     const header = this.latestBlockHeader()
     this.ethashMiner = this.ethash.getMiner(header)
     const solution = await this.ethashMiner.iterate(-1)
@@ -143,7 +143,7 @@ export class Miner {
       return
     }
     this.nextSolution = solution
-    this.config.logger.info('Miner: Found PoW solution 🔨')
+    this.config.logger?.info('Miner: Found PoW solution 🔨')
     return solution
   }
 
@@ -155,7 +155,7 @@ export class Miner {
     const latestBlockHeader = this.latestBlockHeader()
     const target = Number(latestBlockHeader.timestamp) * 1000 + this.period - Date.now()
     const timeout = BIGINT_0 > target ? 0 : target
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `Miner: Chain updated with block ${
         latestBlockHeader.number
       }. Queuing next block assembly in ${Math.round(timeout / 1000)}s`,
@@ -173,7 +173,7 @@ export class Miner {
     this.running = true
     this._boundChainUpdatedHandler = this.chainUpdated.bind(this)
     this.config.events.on(Event.CHAIN_UPDATED, this._boundChainUpdatedHandler)
-    this.config.logger.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
+    this.config.logger?.info(`Miner started. Assembling next block in ${this.period / 1000}s`)
     void this.queueNextAssembly()
     return true
   }
@@ -215,7 +215,7 @@ export class Miner {
       if (
         (this.service.chain.blockchain as any).consensus.cliqueCheckRecentlySigned(header) === true
       ) {
-        this.config.logger.info(`Miner: We have too recently signed, waiting for next block`)
+        this.config.logger?.info(`Miner: We have too recently signed, waiting for next block`)
         this.assembling = false
         return
       }
@@ -223,7 +223,7 @@ export class Miner {
 
     if (this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork) {
       while (this.nextSolution === undefined) {
-        this.config.logger.info(`Miner: Waiting to find next PoW solution 🔨`)
+        this.config.logger?.info(`Miner: Waiting to find next PoW solution 🔨`)
         await new Promise((r) => setTimeout(r, 1000))
       }
     }
@@ -290,7 +290,7 @@ export class Miner {
     })
 
     const txs = await this.service.txPool.txsByPriceAndNonce(vmCopy, { baseFee: baseFeePerGas })
-    this.config.logger.info(
+    this.config.logger?.info(
       `Miner: Assembling block from ${txs.length} eligible txs ${
         typeof baseFeePerGas === 'bigint' && baseFeePerGas !== BIGINT_0
           ? `(baseFee: ${baseFeePerGas})`
@@ -316,14 +316,14 @@ export class Miner {
           if (blockBuilder.gasUsed > gasLimit - BigInt(21000)) {
             // If block has less than 21000 gas remaining, consider it full
             blockFull = true
-            this.config.logger.info(
+            this.config.logger?.info(
               `Miner: Assembled block full (gasLeft: ${gasLimit - blockBuilder.gasUsed})`,
             )
           }
         } else {
           // If there is an error adding a tx, it will be skipped
           const hash = bytesToHex(txs[index].hash())
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Skipping tx ${hash}, error encountered when trying to add tx:\n${error}`,
           )
         }
@@ -336,7 +336,7 @@ export class Miner {
     if (this.config.saveReceipts) {
       await this.execution.receiptsManager?.saveReceipts(block, receipts)
     }
-    this.config.logger.info(
+    this.config.logger?.info(
       `Miner: Sealed block with ${block.transactions.length} txs ${
         this.config.chainCommon.consensusType() === ConsensusType.ProofOfWork
           ? `(difficulty: ${block.header.difficulty})`
@@ -364,7 +364,7 @@ export class Miner {
       clearTimeout(this._nextAssemblyTimeoutId)
     }
     this.running = false
-    this.config.logger.info('Miner stopped.')
+    this.config.logger?.info('Miner stopped.')
     return true
   }
 }

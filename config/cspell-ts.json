@@ -636,6 +636,7 @@
     "ethportal",
     "bytevector",
     "blobschedule",
-    "hoodi"
+    "hoodi",
+    "peerdas"
   ]
 }

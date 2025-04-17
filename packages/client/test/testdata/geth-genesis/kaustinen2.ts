@@ -1,4 +1,6 @@
-export const kaustinen2Data = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const kaustinen2Data: GethGenesis = {
   config: {
     chainId: 69420,
     homesteadBlock: 0,
@@ -13,7 +15,7 @@ export const kaustinen2Data = {
     londonBlock: 0,
     mergeNetsplitBlock: 0,
     shanghaiTime: 0,
-    osakaTime: 0,
+    verkleTime: 0,
     terminalTotalDifficulty: 0,
     terminalTotalDifficultyPassed: true,
     proofInBlocks: true,
