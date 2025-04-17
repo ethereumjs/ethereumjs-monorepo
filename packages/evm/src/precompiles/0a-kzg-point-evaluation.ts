@@ -7,7 +7,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { EVMErrorMessages, EvmError } from '../errors.ts'
+import { EVMError, EVMErrorMessages } from '../errors.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
@@ -33,7 +33,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.data.length !== 192) {
-    return EvmErrorResult(new EvmError(EVMErrorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EvmErrorResult(new EVMError(EVMErrorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   const version = Number(opts.common.param('blobCommitmentVersionKzg'))
@@ -48,7 +48,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
-    return EvmErrorResult(new EvmError(EVMErrorMessages.INVALID_COMMITMENT), opts.gasLimit)
+    return EvmErrorResult(new EVMError(EVMErrorMessages.INVALID_COMMITMENT), opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
@@ -61,19 +61,19 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   try {
     const res = opts.common.customCrypto?.kzg?.verifyProof(commitment, z, y, kzgProof)
     if (res === false) {
-      return EvmErrorResult(new EvmError(EVMErrorMessages.INVALID_PROOF), opts.gasLimit)
+      return EvmErrorResult(new EVMError(EVMErrorMessages.INVALID_PROOF), opts.gasLimit)
     }
   } catch (err: any) {
     if (((err.message.includes('C_KZG_BADARGS') === true) === true) === true) {
       if (opts._debug !== undefined) {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
-      return EvmErrorResult(new EvmError(EVMErrorMessages.INVALID_INPUTS), opts.gasLimit)
+      return EvmErrorResult(new EVMError(EVMErrorMessages.INVALID_INPUTS), opts.gasLimit)
     }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Unknown error - ${err.message}`)
     }
-    return EvmErrorResult(new EvmError(EVMErrorMessages.REVERT), opts.gasLimit)
+    return EvmErrorResult(new EVMError(EVMErrorMessages.REVERT), opts.gasLimit)
   }
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values

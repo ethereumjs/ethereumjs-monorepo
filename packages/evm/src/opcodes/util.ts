@@ -15,7 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../errors.ts'
+import { EVMError } from '../errors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
@@ -89,7 +89,7 @@ export function setLengthLeftStorage(value: Uint8Array) {
  */
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
-  throw new EvmError(err as EVMErrorType)
+  throw new EVMError(err as EVMErrorType)
 }
 
 /**

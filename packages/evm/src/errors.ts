@@ -34,7 +34,7 @@ export const EVMErrorMessages = {
   INVALID_PROOF: 'kzg proof invalid',
 } as const
 
-export class EvmError {
+export class EVMError {
   error: EVMErrorType
   errorType: string
 

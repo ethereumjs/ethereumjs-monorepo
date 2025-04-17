@@ -18,7 +18,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
-import { EVMErrorMessages, EvmError } from './errors.ts'
+import { EVMError, EVMErrorMessages } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
@@ -112,7 +112,7 @@ export interface RunState {
 
 export interface InterpreterResult {
   runState: RunState
-  exceptionError?: EvmError
+  exceptionError?: EVMError
 }
 
 export interface InterpreterStep {
@@ -219,14 +219,14 @@ export class Interpreter {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMErrorMessages.INVALID_BYTECODE_RESULT),
+          exceptionError: new EVMError(EVMErrorMessages.INVALID_BYTECODE_RESULT),
         }
       }
       if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT),
+          exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT),
         }
       }
       this._runState.code = code
@@ -239,7 +239,7 @@ export class Interpreter {
       } catch {
         return {
           runState: this._runState,
-          exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+          exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
         }
       }
 
@@ -256,7 +256,7 @@ export class Interpreter {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,
-            exceptionError: new EvmError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+            exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
           }
         }
       }
@@ -403,7 +403,7 @@ export class Interpreter {
 
       // Check for invalid opcode
       if (opInfo.isInvalid) {
-        throw new EvmError(EVMErrorMessages.INVALID_OPCODE)
+        throw new EVMError(EVMErrorMessages.INVALID_OPCODE)
       }
 
       // Reduce opcode's base fee

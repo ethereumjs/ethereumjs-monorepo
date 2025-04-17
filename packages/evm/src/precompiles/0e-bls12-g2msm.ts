@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMErrorMessages, EvmError } from '../errors.ts'
+import { EVMError, EVMErrorMessages } from '../errors.ts'
 import type { EVM } from '../evm.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
 
@@ -23,7 +23,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
-    return EvmErrorResult(new EvmError(EVMErrorMessages.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
+    return EvmErrorResult(new EVMError(EVMErrorMessages.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
   }
 
   const numPairs = Math.floor(opts.data.length / 288)
@@ -36,7 +36,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
 
   if (!moduloLengthCheck(opts, 288, pName)) {
     return EvmErrorResult(
-      new EvmError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
       opts.gasLimit,
     )
   }
@@ -54,7 +54,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     const pairStart = 288 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
       return EvmErrorResult(
-        new EvmError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+        new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
         opts.gasLimit,
       )
     }

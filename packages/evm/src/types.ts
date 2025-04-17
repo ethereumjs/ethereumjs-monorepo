@@ -9,7 +9,7 @@ import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
 import type { EOFContainer } from './eof/container.ts'
-import type { EvmError } from './errors.ts'
+import type { EVMError } from './errors.ts'
 import type { InterpreterStep, RunState } from './interpreter.ts'
 import type { Message } from './message.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
@@ -403,7 +403,7 @@ export interface ExecResult {
   /**
    * Description of the exception, if any occurred
    */
-  exceptionError?: EvmError
+  exceptionError?: EVMError
   /**
    * Amount of gas left
    */
