@@ -285,13 +285,14 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
-- `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
+- `merge` (`Hardfork.Merge`) (since `v2.5.0`)
 - `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
 - `cancun` (`Hardfork.Cancun`) (since `v4.2.0`)
+- `prague` (`Hardfork.Prague`) (`DEFAULT_HARDFORK`) (since `v10`)
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Prague` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Osaka` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -308,16 +309,12 @@ See one of the hardfork configurations in the `hardforks.ts` file
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
 hardfork.
 
-The hardfork configurations above `chainstart` only contain the deltas from `chainstart` and
-shouldn't be accessed directly until you have a specific reason for it.
-
 ### EIPs
 
-Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
-and can be activated like this:
+EIPs are native citizens within the library and can be activated like this:
 
 ```ts
-const c = new Common({ chain: Chain.Mainnet, eips: [4844] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 ```
 
 The following EIPs are currently supported:
