@@ -80,7 +80,6 @@ export const SimpleErrors = {
   CODE0_IO: 'err: input and output of first code section must be 0',
   VERIFY_UINT: 'Uint does not match expected value ',
   VERIFY_BYTES: 'Bytes do not match expected value',
-  TYPE_SIZE_2: 'missing type size',
   INVALID_TYPE_SIZE: 'err: type section invalid',
   CODE_SIZE: 'missing code size',
   CODE_SECTION_SIZE: 'code section should be at least one byte',
