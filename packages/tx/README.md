@@ -58,12 +58,95 @@ This library by default uses JavaScript implementations for the basic standard c
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
-- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
-- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
+- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
 - `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+
+#### Gas Fee Market Transactions (EIP-1559)
+
+- Class: `FeeMarketEIP1559Transaction`
+- Activation: `london`
+- Type: `2`
+
+This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
+
+```ts
+// ./examples/londonTx.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
+}
+
+const tx = createFeeMarket1559Tx(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
+```
+
+#### Access List Transactions (EIP-2930)
+
+- Class: `AccessListEIP2930Transaction`
+- Activation: `berlin`
+- Type: `1`
+
+This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
+
+```ts
+// ./examples/accessListTx.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  gasPrice: '0x01',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [
+    {
+      address: '0x0000000000000000000000000000000000000101',
+      storageKeys: [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x00000000000000000000000000000000000000000000000000000000000060a7',
+      ],
+    },
+  ],
+  type: '0x01',
+}
+
+const tx = createAccessList2930Tx(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
+```
+
+For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
+on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
 #### Blob Transactions (EIP-4844)
 
@@ -129,43 +212,6 @@ Alternatively, you can pass a `blobsData` property with an array of strings corr
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
-#### Gas Fee Market Transactions (EIP-1559)
-
-- Class: `FeeMarketEIP1559Transaction`
-- Activation: `london`
-- Type: `2`
-
-This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
-
-```ts
-// ./examples/londonTx.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  maxPriorityFeePerGas: '0x01',
-  maxFeePerGas: '0xff',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [],
-  type: '0x02',
-}
-
-const tx = createFeeMarket1559Tx(txData, { common })
-console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
-```
-
 #### EOA Code Transaction (EIP-7702) (outdated)
 
 - Class: `EOACodeEIP7702Transaction`
@@ -209,53 +255,6 @@ console.log(
 ```
 
 Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
-
-#### Access List Transactions (EIP-2930)
-
-- Class: `AccessListEIP2930Transaction`
-- Activation: `berlin`
-- Type: `1`
-
-This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
-
-```ts
-// ./examples/accessListTx.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createAccessList2930Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
-
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  gasPrice: '0x01',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [
-    {
-      address: '0x0000000000000000000000000000000000000101',
-      storageKeys: [
-        '0x0000000000000000000000000000000000000000000000000000000000000000',
-        '0x00000000000000000000000000000000000000000000000000000000000060a7',
-      ],
-    },
-  ],
-  type: '0x01',
-}
-
-const tx = createAccessList2930Tx(txData, { common })
-console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
-```
-
-For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
-on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
 ### Legacy Transactions
 
