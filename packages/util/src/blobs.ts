@@ -109,3 +109,15 @@ export const commitmentsToVersionedHashes = (commitments: PrefixedHexString[]) =
   }
   return hashes
 }
+
+export const blobsToCells = (
+  kzg: KZG,
+  blobs: PrefixedHexString[],
+): [PrefixedHexString[], number[]] => {
+  const cells = blobs.reduce((acc, elem) => {
+    return [...acc, ...(kzg.computeCells(elem) as PrefixedHexString[])]
+  }, [] as PrefixedHexString[])
+  const indices = Array.from({ length: CELLS_PER_EXT_BLOB }, (_, i) => i)
+
+  return [cells, indices]
+}
