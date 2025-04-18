@@ -32,6 +32,7 @@ describe('[Util/RPC]', () => {
         const httpServer = createRPCServerListener({
           server,
           withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+          maxPayload: '15mb',
         })
         const wsServer = createWsRPCServerListener({
           server,
@@ -74,6 +75,7 @@ describe('[Util/RPC]', () => {
     const httpServer = createRPCServerListener({
       server,
       withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+      maxPayload: '15mb',
     })
     const wsServer = createWsRPCServerListener({
       server,

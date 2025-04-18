@@ -42,6 +42,8 @@ const setupClient = async (
     jwtSecret: '',
     rpcEngineAuth: false,
     rpcCors: '',
+    rpcEthMaxPayload: args.rpcEthMaxPayload ?? '5mb',
+    rpcEngineMaxPayload: args.rpcEngineMaxPayload ?? '15mb',
   })
 
   return { client, executionRPC: servers[0], engineRPC: servers[1] }
