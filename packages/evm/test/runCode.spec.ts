@@ -1,6 +1,7 @@
 import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { EVMErrorTypeString } from '../src/errors.ts'
 import { createEVM } from '../src/index.ts'
 
 const PUSH1 = '60'
@@ -71,7 +72,7 @@ describe('VM.runCode: interpreter', () => {
     } catch {
       assert.fail('should not throw error')
     }
-    assert.equal(result?.exceptionError?.errorType, 'EVMError')
+    assert.equal(result?.exceptionError?.errorType, EVMErrorTypeString)
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 

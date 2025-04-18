@@ -18,7 +18,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
-import { EVMError, EVMErrorMessages } from './errors.ts'
+import { EVMError, EVMErrorMessages, EVMErrorTypeString } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
@@ -336,7 +336,7 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
         // re-throw on non-VM errors
-        if (!('errorType' in e && e.errorType === 'EVMError')) {
+        if (!('errorType' in e && e.errorType === EVMErrorTypeString)) {
           throw e
         }
         // STOP is not an exception
