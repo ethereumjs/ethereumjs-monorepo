@@ -88,11 +88,11 @@ const main = async () => {
 void main()
 ```
 
-### Database Abstraction / Removed LevelDB Dependency
+### Block Storage
 
-With the v7 release the Blockchain library database has gotten an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669) and PR [#2673](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2673). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
+For storing blocks different backends can be used. The database needs to conform to the [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
 
-By default the blockchain package now uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+By default the blockchain package uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
 
 If you need a persistent data store for your use case you can consider using the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
 
@@ -169,11 +169,7 @@ The blockchain library now allows for blob transactions to be validated and incl
 
 ### EIP-7685 Requests Support
 
-This library supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
-
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
+This library supports blocks including the [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests to the consensus layer (like e.g. deposit or withdrawal requests).
 
 ## Browser
 
