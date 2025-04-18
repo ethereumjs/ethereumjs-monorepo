@@ -631,7 +631,7 @@ function generateAccount(): Account {
 export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
 
-  const kzg = new microEthKZG(trustedSetup)
+  // const kzg = new microEthKZG(trustedSetup)
   ckzg.loadTrustedSetup(0)
   const cKzg = {
     blobToKzgCommitment: (blob: string) => {
