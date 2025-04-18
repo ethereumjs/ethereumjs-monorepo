@@ -281,6 +281,7 @@ describe('Network wrapper tests', () => {
     const proofs = blobsToProofs(kzg, blobs, commitments)
     const unsignedTx = createBlob4844Tx(
       {
+        networkWrapperVersion: 0,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -456,6 +457,7 @@ describe('Network wrapper tests', () => {
 
     const txWithMissingBlob = createBlob4844Tx(
       {
+        networkWrapperVersion: 0,
         blobVersionedHashes,
         blobs: blobs.slice(1),
         kzgCommitments: commitments,
@@ -484,6 +486,7 @@ describe('Network wrapper tests', () => {
 
     const txWithInvalidCommitment = createBlob4844Tx(
       {
+        networkWrapperVersion: 0,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -512,6 +515,7 @@ describe('Network wrapper tests', () => {
 
     const txWithInvalidVersionedHashes = createBlob4844Tx(
       {
+        networkWrapperVersion: 0,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,

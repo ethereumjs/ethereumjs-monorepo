@@ -108,6 +108,7 @@ describe(method, () => {
     const tx = createTx(
       {
         type: 0x03,
+        networkWrapperVersion: 0,
         blobVersionedHashes: txVersionedHashes,
         blobs: txBlobs,
         kzgCommitments: txCommitments,
