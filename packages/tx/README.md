@@ -58,15 +58,15 @@ This library by default uses JavaScript implementations for the basic standard c
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
-- `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
-- `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
-- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
-- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
-- `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+- `FeeMarketEIP1559Tx` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
+- `AccessListEIP2930Tx` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
+- `BlobEIP4844Tx` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
+- `EOACodeEIP7702Tx` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
+- `LegacyTx`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
 
 #### Gas Fee Market Transactions (EIP-1559)
 
-- Class: `FeeMarketEIP1559Transaction`
+- Class: `FeeMarketEIP1559Tx`
 - Activation: `london`
 - Type: `2`
 
@@ -103,7 +103,7 @@ console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced3
 
 #### Access List Transactions (EIP-2930)
 
-- Class: `AccessListEIP2930Transaction`
+- Class: `AccessListEIP2930Tx`
 - Activation: `berlin`
 - Type: `1`
 
@@ -150,7 +150,7 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 
 #### Blob Transactions (EIP-4844)
 
-- Class: `BlobEIP4844Transaction`
+- Class: `BlobEIP4844Tx`
 - Activation: `cancun`
 - Type: `3`
 
@@ -160,7 +160,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ##### Usage
 
-See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
+See the following code snipped for an example on how to instantiate:
 
 ```ts
 // ./examples/blobTx.ts
@@ -212,15 +212,15 @@ Alternatively, you can pass a `blobsData` property with an array of strings corr
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
-#### EOA Code Transaction (EIP-7702) (outdated)
+#### EOA Code Transaction (EIP-7702)
 
-- Class: `EOACodeEIP7702Transaction`
-- Activation: `prague` (or per EIP setting)
+- Class: `EOACodeEIP7702Tx`
+- Activation: `prague`
 - Type: `4`
 
-This library supports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
-The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+The following is a simple example how to use an `EOACodeEIP7702Tx` with one authorization list item:
 
 ```ts
 // ./examples/EOACodeTx.ts
@@ -254,11 +254,9 @@ console.log(
 )
 ```
 
-Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
-
 ### Legacy Transactions
 
-- Class: `LegacyTransaction`
+- Class: `LegacyTx`
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
@@ -321,8 +319,8 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 `TransactionFactory` supports the following static constructor methods:
 
-- `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
-- `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction`
+- `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {})`
+- `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {})`
 - `public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {})`
 - `public static async fromJsonRpcProvider(provider: string | EthersProvider, txHash: string, txOptions?: TxOptions)`
 
