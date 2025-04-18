@@ -1,5 +1,7 @@
 export type EVMErrorType = (typeof EVMErrorMessages)[keyof typeof EVMErrorMessages]
 
+export const EVMErrorTypeString = 'EVMError'
+
 export const EVMErrorMessages = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',
@@ -40,6 +42,6 @@ export class EVMError {
 
   constructor(error: EVMErrorType) {
     this.error = error
-    this.errorType = 'EVMError'
+    this.errorType = EVMErrorTypeString
   }
 }
