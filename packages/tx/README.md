@@ -35,9 +35,9 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-The `LegacyTransaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
+If an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object is passed along tx creation chain and hardfork (for compatibilities) is derived from that. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken. In other cases the chain defaults to `mainnet`.
 
-Base default HF (determined by `Common`): `Hardfork.Shanghai`
+Base default HF (determined by `Common`): `Hardfork.Prague`
 
 Hardforks adding features and/or tx types:
 
