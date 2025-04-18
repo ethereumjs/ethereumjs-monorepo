@@ -6,8 +6,8 @@
 [![Code Coverage][block-coverage-badge]][block-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implements schema and functions related to Ethereum's block. |
-| ------------------------------------------------------------ |
+| Implements schema and functions related to Ethereum blocks. |
+| ----------------------------------------------------------- |
 
 
 ## Installation
@@ -84,7 +84,7 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ### EIP-1559 Blocks
 
-This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
+By default (since `Hardfork.London`) blocks created with this library are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible.
 
 ```ts
 // ./examples/1559.ts
@@ -92,7 +92,7 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet })
 
 const block = createBlock(
   {
@@ -130,7 +130,7 @@ await blockWithMatchingBaseFee.validateData()
 // failed validation throws error
 const tx = createTx(
   { type: 2, maxFeePerGas: BigInt(20) },
-  { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
+  { common: new Common({ chain: Mainnet }) },
 )
 blockWithMatchingBaseFee.transactions.push(tx)
 console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
@@ -141,11 +141,11 @@ try {
 }
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`).
 
 ### EIP-4895 Beacon Chain Withdrawals Blocks
 
-Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a `Common` object with a hardfork set to `shanghai` (default) or higher and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
 
 ```ts
 // ./examples/withdrawals.ts
@@ -186,11 +186,7 @@ Validation of the withdrawals trie can be manually triggered with the newly intr
 
 ### EIP-4844 Shard Blob Transaction Blocks
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
-
-#### Initialization
-
-To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library or use a 4844-including hardfork like `Cancun`:
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
 
 ```ts
 // ./examples/4844.ts
@@ -208,7 +204,6 @@ const main = async () => {
 
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Cancun,
     customCrypto: {
       kzg,
     },
@@ -245,11 +240,11 @@ void main()
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
-Starting with v5.3.0 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
+Starting with v10 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) (`Hardfork.Prague` or higher).
 
 #### EIP-6110 Deposit Requests
 
-[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer. Starting with v5.3.0 this library supports deposit requests and a containing block can be instantiated as follows:
+[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer. A deposit request containing block can be instantiated as follows:
 
 ```ts
 // ./examples/6110Requests.ts
@@ -268,7 +263,6 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 const main = async () => {
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Prague,
   })
 
   const depositRequestData = {
