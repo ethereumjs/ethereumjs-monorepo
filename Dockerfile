@@ -1,7 +1,7 @@
 FROM node:22-alpine
 RUN apk update && apk add --no-cache bash git g++ make python3 && rm -rf /var/cache/apk/*
 
-WORKDIR /usr/app
+WORKDIR /ethereumjs-monorepo
 
 COPY .git .git
 COPY node_modules node_modules
@@ -48,11 +48,11 @@ COPY packages/wallet/package.json packages/wallet/package.json
 
 
 # Sanity check
-RUN node /usr/app/packages/client/dist/esm/bin/cli.js --help
+RUN node /ethereumjs-monorepo/packages/client/dist/esm/bin/cli.js --help
 
 # NodeJS applications have a default memory limit of 2.5GB.
 # This limit is bit tight, it is recommended to raise the limit
 # since memory may spike during certain network conditions.
 ENV NODE_OPTIONS=--max_old_space_size=6144
 
-ENTRYPOINT ["node", "/usr/app/packages/client/dist/esm/bin/cli.js"]
+ENTRYPOINT ["node", "/ethereumjs-monorepo/packages/client/dist/esm/bin/cli.js"]
