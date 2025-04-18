@@ -35,7 +35,7 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-If an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object is passed along tx creation chain and hardfork (for compatibilities) is derived from that. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken. In other cases the chain defaults to `mainnet`.
+To use a chain other than the default Mainnet chain, or a different hardfork than the default [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) hardfork (`Hardfork.Prague`), provide a `common` object in the constructor of the tx.
 
 Base default HF (determined by `Common`): `Hardfork.Prague`
 

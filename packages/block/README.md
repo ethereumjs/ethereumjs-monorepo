@@ -141,8 +141,6 @@ try {
 }
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`).
-
 ### EIP-4895 Beacon Chain Withdrawals Blocks
 
 Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
@@ -246,7 +244,7 @@ Starting with v10 this library supports requests to the consensus layer which ha
 
 ### Proof-of-Stake
 
-By default (`Hardfork.Paris` (aka: Merge) and higher) block created are created as Proof-of-Stake blocks. These blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
+By default (`Hardfork.Paris` (aka: Merge) and higher) blocks are created as Proof-of-Stake blocks. These blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
 You can instantiate a Merge/PoS block like this:
 

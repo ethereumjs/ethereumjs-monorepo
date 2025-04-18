@@ -247,7 +247,7 @@ Refer to [this test script](./test/rpcStateManager.spec.ts) for complete example
 
 ### `StatefulVerkleStateManager`/`StatelessVerkleStateManager` (experimental)
 
-There are two new verkle related state managers integrated into the code base. This state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
+There are two new verkle related state managers integrated into the code base. These state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
 
 See [PRs around Verkle](https://github.com/search?q=repo%3Aethereumjs%2Fethereumjs-monorepo+verkle&type=pullrequests) in our monorepo for an entrypoint if you are interested in our current Verkle related work.
 

@@ -12,7 +12,6 @@
 This module provides access to Ethereum genesis state for the following networks:
 
 - Mainnet
-- Goerli
 - Sepolia
 - Holesky
 - Hoodi
