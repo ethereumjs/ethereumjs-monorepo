@@ -358,7 +358,7 @@ Note: We did not want to directly bundle because bundle sizes are large due to t
 
 #### L2 Support
 
-This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
+This library has been tested to work with various L2 networks. To set an associated chainID, use the `createCustomCommon()` constructor from our `Common` library. The following is a simple example to send a tx to the xDai chain:
 
 ```ts
 // ./examples/l2tx.ts
@@ -383,26 +383,6 @@ const txData = {
 const tx = createLegacyTx(txData, { common })
 const signedTx = tx.sign(pk)
 console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
-```
-
-The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
-
-|  L2 Network              |  Common name                          |  Issue                                                                  |
-| ------------------------ | ------------------------------------- | ----------------------------------------------------------------------- |
-| Arbitrum Rinkeby Testnet |  `CustomChain.ArbitrumRinkebyTestnet` |  [#1290](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1290) |
-| Polygon Mainnet          |  `CustomChain.PolygonMainnet`         |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| Polygon Mumbai Testnet   |  `CustomChain.PolygonMumbai`          |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| xDai Chain               |  `Common.xDaiChain`                   |  [#1323](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1323) |
-| Optimistic Kovan         | `Common.OptimisticKovan`              | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
-| Optimistic Ethereum      | `Common.OptimisticEthereum`           | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
-
-Note: For Optimistic Kovan and Optimistic Ethereum, the London hardfork has not been implemented so transactions submitted with a `baseFee` will revert.
-The London hardfork is targeted to implement on Optimism in Q1.22.
-
-For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
-
-```ts
-const common = Common.custom({ chainId: 1234 })
 ```
 
 ## Browser
