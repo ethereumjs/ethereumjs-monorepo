@@ -306,6 +306,7 @@
     "MCOPY",
     "JUMPF",
     "SELFDESTRUCT",
+    "AUTHCALL",
     "triggerable",
     "RETURNDATASIZE",
     "RETURNDATACOPY",
