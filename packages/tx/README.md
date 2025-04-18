@@ -21,19 +21,9 @@ npm install @ethereumjs/tx
 
 ### KZG Setup
 
-This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
+This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
-
-Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
-
-This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
-
-#### KZG Initialization
-
-As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
-
-Initialization can then be done like the following:
+As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
 
 ```ts
 // ./examples/initKzg.ts
@@ -57,7 +47,7 @@ const main = async () => {
 void main()
 ```
 
-Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
+Note: We did not want to directly bundle because bundle sizes are large due to the large trusted setup inclusion (especially for the mainnet trusted setup).
 
 ## Usage
 
