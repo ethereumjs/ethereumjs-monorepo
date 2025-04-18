@@ -19,16 +19,16 @@
       "url": "https://github.com/gabrocheleau"
     }
   ],
-  "type": "module",
   "sideEffects": false,
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     }
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "files": ["dist", "src"],
   "scripts": {
     "biome": "npx @biomejs/biome check",
@@ -43,8 +43,8 @@
     "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node",
-    "test:node": "npx vitest run",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

@@ -13,16 +13,16 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze (mb@ethdev.com)",
-  "type": "module",
   "sideEffects": false,
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     }
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "files": ["dist", "src"],
   "scripts": {
     "biome": "npx @biomejs/biome check",
@@ -43,8 +43,8 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/mpt": "^7.0.0-alpha.1",
+    "@ethereumjs/rlp": "^6.0.0-alpha.1",
     "@ethereumjs/tx": "^6.0.0-alpha.1",
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "ethereum-cryptography": "^3.1.0"

@@ -8,25 +8,31 @@
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
     "cspell": "npm run cspell:ts && npm run cspell:md",
-    "cspell:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "cspell:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "cspell:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "lint": "npm run biome && eslint --format codeframe --config ./config/eslint.cjs . --ext .js,.ts",
-    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.cjs . --ext .js,.ts",
-    "lint:diff": "./config/cli/lint-diff.sh",
-    "test": "npm run test --workspaces --if-present",
-    "test:node": "npm run test:node --workspaces --if-present",
-    "test:browser": "npm run test:browser --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
+    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.0.5",
+    "lint": "npm run biome && eslint --format codeframe --config ./config/eslint.cjs . --ext .js,.ts",
+    "lint:diff": "./config/cli/lint-diff.sh",
+    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.cjs . --ext .js,.ts",
     "prepare": "git config --local core.hooksPath .githooks",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.0.5"
+    "test": "npm run test --workspaces --if-present",
+    "test:browser": "npm run test:browser --workspaces --if-present",
+    "test:node": "npm run test:node --workspaces --if-present"
+  },
+  "resolutions": {
+    "puppeteer-core": "^23.6.1"
+  },
+  "dependencies": {
+    "@vercel/blob": "^1.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -59,26 +65,23 @@
     "vite-plugin-top-level-await": "^1.4.4",
     "vitest": "^3.0.5"
   },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "*"
-  },
   "peerDependencies": {
     "@vitest/browser": "^3.0.5",
     "webdriverio": "^9.8.0"
   },
   "peerDependenciesMeta": {
+    "@vitest/browser": {
+      "optional": true
+    },
     "playwright": {
       "optional": true
     },
     "webdriverio": {
       "optional": true
-    },
-    "@vitest/browser": {
-      "optional": true
     }
   },
-  "resolutions": {
-    "puppeteer-core": "^23.6.1"
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "*"
   },
   "engines": {
     "node": ">=18",
