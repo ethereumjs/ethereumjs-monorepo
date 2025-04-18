@@ -83,5 +83,8 @@
   "engines": {
     "node": ">=18",
     "npm": ">=7"
+  },
+  "dependencies": {
+    "@vercel/blob": "^1.0.0"
   }
 }
