@@ -61,7 +61,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - `FeeMarketEIP1559Tx` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
 - `AccessListEIP2930Tx` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
 - `BlobEIP4844Tx` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
-- `EOACodeEIP7702Tx` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
+- `EOACodeEIP7702Tx` ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
 - `LegacyTx`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
 
 #### Gas Fee Market Transactions (EIP-1559)
