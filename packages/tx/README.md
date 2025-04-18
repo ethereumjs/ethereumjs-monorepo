@@ -6,10 +6,8 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implements schema and functions related to Ethereum's transaction. |
-| ------------------------------------------------------------------ |
-
-Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceding release.
+| Implements schema and functions for the different Ethereum transaction types |
+| ---------------------------------------------------------------------------- |
 
 ## Installation
 
