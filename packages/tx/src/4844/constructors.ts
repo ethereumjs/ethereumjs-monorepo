@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
   bigIntToHex,
+  blobsToCells,
   blobsToCommitments,
   blobsToProofs,
   bytesToBigInt,
@@ -32,6 +33,7 @@ import { txTypeBytes, validateNotArray } from '../util/internal.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
 
 const validateBlobTransactionNetworkWrapper = (
+  networkWrapperVersion: NetworkWrapperType,
   blobVersionedHashes: PrefixedHexString[],
   blobs: PrefixedHexString[],
   commitments: PrefixedHexString[],
@@ -50,7 +52,12 @@ const validateBlobTransactionNetworkWrapper = (
 
   let isValid
   try {
-    isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
+    if (networkWrapperVersion === NetworkWrapperType.EIP4844) {
+      isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
+    } else {
+      const [cells, indices] = blobsToCells(kzg, blobs)
+      isValid = kzg.verifyCellKzgProofBatch(commitments, indices, cells, kzgProofs)
+    }
   } catch (error) {
     throw EthereumJSErrorWithoutCode(`KZG verification of blobs fail with error=${error}`)
   }
@@ -277,7 +284,16 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   const blobsHex = blobs.map((blob) => bytesToHex(blob))
   const commsHex = kzgCommitments.map((com) => bytesToHex(com))
   const proofsHex = kzgProofs.map((proof) => bytesToHex(proof))
+  const networkWrapperVersionInt = bytesToInt(networkWrapperVersion) as NetworkWrapperType
+  if (
+    networkWrapperVersionInt !== NetworkWrapperType.EIP4844 &&
+    networkWrapperVersionInt !== NetworkWrapperType.EIP7594
+  ) {
+    throw Error(`Invalid networkWrapperVersion=${networkWrapperVersionInt}`)
+  }
+
   validateBlobTransactionNetworkWrapper(
+    networkWrapperVersionInt,
     decodedTx.blobVersionedHashes,
     blobsHex,
     commsHex,
@@ -287,7 +303,7 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   )
 
   // set the network blob data on the tx
-  decodedTx.networkWrapperVersion = bytesToInt(networkWrapperVersion) as NetworkWrapperType
+  decodedTx.networkWrapperVersion = networkWrapperVersionInt
   decodedTx.blobs = blobsHex
   decodedTx.kzgCommitments = commsHex
   decodedTx.kzgProofs = proofsHex
