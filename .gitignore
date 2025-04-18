@@ -118,3 +118,5 @@ __snapshots__
 
 # CSpell
 .cspellcache
+.vercel
+.env*.local
