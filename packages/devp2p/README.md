@@ -16,7 +16,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 ## Usage
 
-All components of this library have a public `events` property containing a Node.js `EventEmitter` object
+All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
 and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
