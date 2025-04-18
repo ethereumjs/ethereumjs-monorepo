@@ -15,6 +15,7 @@ This module provides access to Ethereum genesis state for the following networks
 - Goerli
 - Sepolia
 - Holesky
+- Hoodi
 
 The package can be install with:
 
