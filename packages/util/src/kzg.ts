@@ -14,7 +14,6 @@ export interface KZG {
   // eip-7594
   computeCells(blob: string): string[]
   computeCellsAndProofs(blob: string): [string[], string[]]
-  recoverCells(indices: number[], cells: string[]): string[]
   recoverCellsAndProofs(indices: number[], cells: string[]): [string[], string[]]
   verifyCellKzgProofBatch(
     commitments: string[],
