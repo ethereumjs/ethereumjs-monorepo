@@ -153,7 +153,7 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 
 ### Module: [signature](src/signature.ts)
 
-Functionality for signing, signature validation, conversion, recovery.
+Functionality for signature validation, conversion, recovery.
 
 ```ts
 // ./examples/signature.ts
