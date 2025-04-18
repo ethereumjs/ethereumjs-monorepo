@@ -25,12 +25,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @throws If the input is not a valid 0x-prefixed hex string
  */
 export const hexToBytes = (hex: string) => {
-  if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
+  if (!isHexString('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
 
 export const unprefixedHexToBytes = (hex: string) => {
-  if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
+  if (isHexString('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
   return nobleH2B(padToEven(hex))
 }
 
