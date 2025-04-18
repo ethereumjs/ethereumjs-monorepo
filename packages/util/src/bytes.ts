@@ -24,7 +24,7 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
+export const hexToBytes = (hex: string): Uint8Array => {
   if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
