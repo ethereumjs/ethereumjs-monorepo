@@ -367,7 +367,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       this.kzgProofs === undefined
     ) {
       throw EthereumJSErrorWithoutCode(
-        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
+        'cannot serialize network wrapper without networkWrapperVersion, blobs, KZG commitments and KZG proofs provided',
       )
     }
 
@@ -467,6 +467,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
         maxFeePerBlobGas: this.maxFeePerBlobGas,
+        networkWrapperVersion: this.networkWrapperVersion,
         blobVersionedHashes: this.blobVersionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,
