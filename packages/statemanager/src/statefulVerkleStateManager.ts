@@ -758,7 +758,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
       const address = createAddressFromString(addressStr)
       await this.putAccount(address, new Account())
-      const codeBuf = hexToBytes((code as string) ?? '0x')
+      const codeBuf = hexToBytes((code ?? '0x') as PrefixedHexString)
       if (this.common.customCrypto?.keccak256 === undefined) {
         throw Error('keccak256 required')
       }

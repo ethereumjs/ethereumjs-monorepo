@@ -29,7 +29,7 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
     }
     const address = createAddressFromString(addressStr)
     await state.putAccount(address, new Account())
-    const codeBuf = hexToBytes(code ?? '0x')
+    const codeBuf = hexToBytes((code ?? '0x') as PrefixedHexString)
     if (common.customCrypto?.keccak256 === undefined) {
       throw Error('keccak256 required')
     }

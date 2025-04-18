@@ -754,7 +754,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       }
       const address = createAddressFromString(addressStr)
       await this.putAccount(address, new Account())
-      const codeBuf = hexToBytes((code as string) ?? '0x')
+      const codeBuf = hexToBytes((code ?? '0x') as PrefixedHexString)
 
       const codeHash = this.keccakFunction(codeBuf)
 
