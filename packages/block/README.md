@@ -244,15 +244,33 @@ Starting with v10 this library supports requests to the consensus layer which ha
 
 ### Consensus Types
 
-The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).
+### Proof-of-Stake
 
-Consensus format validation logic is encapsulated in the semi-private `BlockHeader._consensusFormatValidation()` method called from the constructor. If you want to add your own validation logic you can overwrite this method with your own rules.
+By default (`Hardfork.Paris` (aka: Merge) and higher) block created are created as Proof-of-Stake blocks. These blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
-Note: Starting with `v4` consensus validation itself (e.g. Ethash verification) has moved to the `Blockchain` package.
+You can instantiate a Merge/PoS block like this:
+
+```ts
+// ./examples/pos.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet })
+
+const block = createBlock(
+  {
+    // Provide your block data here or use default values
+  },
+  { common },
+)
+
+console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)
+```
 
 ### Ethash/PoW
 
-An Ethash/PoW block can be instantiated as follows:
+Blocks before the Merge or blocks on dedicated PoW chains are created as Proof-of-work blocks. An Ethash/PoW block can be instantiated as follows:
 
 ```ts
 // ./examples/pow.ts
@@ -271,7 +289,9 @@ console.log(`Old Proof-of-Work block created`)
 
 To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
-### Clique/PoA (since v3.1.0)
+### Clique/PoA
+
+Clique is a standalone Proof-of-Authority protocol which had been in use for older Ethereum testnets (like e.g. the `Goerli` testnet). This library still supports Clique/PoA so that blocks from those testnets can still be read.
 
 A clique block can be instantiated as follows:
 
@@ -297,41 +317,7 @@ const cliqueSigner = hexToBytes('PRIVATE_KEY_HEX_STRING')
 const block = createSealedCliqueBlock(blockData, cliqueSigner)
 ```
 
-Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
-
-- `BlockHeader.cliqueSigHash()`
-- `BlockHeader.cliqueIsEpochTransition(): boolean`
-- `BlockHeader.cliqueExtraVanity(): Uint8Array`
-- `BlockHeader.cliqueExtraSeal(): Uint8Array`
-- `BlockHeader.cliqueEpochTransitionSigners(): Address[]`
-- `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
-- `BlockHeader.cliqueSigner(): Address`
-
-See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
-
-### Casper/PoS (since v3.5.0)
-
-Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
-
-You can instantiate a Merge/PoS block like this:
-
-```ts
-// ./examples/pos.ts
-
-import { createBlock } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
-
-const common = new Common({ chain: Mainnet })
-
-const block = createBlock(
-  {
-    // Provide your block data here or use default values
-  },
-  { common },
-)
-
-console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)
-```
+See the API docs for detailed documentation on Clique/PoA related utility methods. Note that these methods will throw if called in a non-Clique/PoA context.
 
 ## Browser
 
