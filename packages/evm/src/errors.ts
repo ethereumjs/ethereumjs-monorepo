@@ -40,6 +40,6 @@ export class EVMError {
 
   constructor(error: EVMErrorType) {
     this.error = error
-    this.errorType = 'EvmError'
+    this.errorType = 'EVMError'
   }
 }

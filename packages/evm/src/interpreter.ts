@@ -336,7 +336,7 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
         // re-throw on non-VM errors
-        if (!('errorType' in e && e.errorType === 'EvmError')) {
+        if (!('errorType' in e && e.errorType === 'EVMError')) {
           throw e
         }
         // STOP is not an exception
