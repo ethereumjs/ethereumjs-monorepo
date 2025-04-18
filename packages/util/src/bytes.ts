@@ -24,12 +24,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: string) => {
+export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
 
-export const unprefixedHexToBytes = (hex: string) => {
+export const unprefixedHexToBytes = (hex: string): Uint8Array => {
   if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
   return nobleH2B(padToEven(hex))
 }
@@ -37,7 +37,7 @@ export const unprefixedHexToBytes = (hex: string) => {
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
   if (bytes === undefined || bytes.length === 0) return '0x'
   const unprefixedHex = bytesToUnprefixedHex(bytes)
-  return ('0x' + unprefixedHex) as PrefixedHexString
+  return `0x${unprefixedHex}`
 }
 
 // BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)
