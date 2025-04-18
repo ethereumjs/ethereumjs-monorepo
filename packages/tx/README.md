@@ -19,36 +19,6 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/tx
 ```
 
-### KZG Setup
-
-This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
-
-As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
-
-```ts
-// ./examples/initKzg.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-
-const main = async () => {
-  const kzg = new microEthKZG(trustedSetup)
-  // Instantiate `common`
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Cancun,
-    customCrypto: { kzg },
-  })
-
-  console.log(common.customCrypto.kzg) // should output the KZG API as an object
-}
-
-void main()
-```
-
-Note: We did not want to directly bundle because bundle sizes are large due to the large trusted setup inclusion (especially for the mainnet trusted setup).
-
 ## Usage
 
 ### Static Constructor Methods
@@ -356,6 +326,36 @@ The correct tx type class for instantiation will then be chosen on runtime based
 - `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction`
 - `public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {})`
 - `public static async fromJsonRpcProvider(provider: string | EthersProvider, txHash: string, txOptions?: TxOptions)`
+
+### KZG Setup
+
+This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
+
+As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
+
+```ts
+// ./examples/initKzg.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const main = async () => {
+  const kzg = new microEthKZG(trustedSetup)
+  // Instantiate `common`
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
+
+void main()
+```
+
+Note: We did not want to directly bundle because bundle sizes are large due to the large trusted setup inclusion (especially for the mainnet trusted setup).
 
 ### Sending a Transaction
 
