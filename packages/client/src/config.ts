@@ -366,7 +366,7 @@ export class Config {
   public readonly events: EventEmitter<EventParams>
 
   public static readonly CHAIN_DEFAULT = Mainnet
-  public static readonly SYNCMODE_DEFAULT = SyncMode.None
+  public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100

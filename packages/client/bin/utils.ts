@@ -199,12 +199,12 @@ export function getArgs(): ClientOpts {
       .option('rpcEthMaxPayload', {
         describe: 'Define max JSON payload size for eth/debug RPC requests',
         string: true,
-        default: '5mb',
+        default: Config.RPC_ETH_MAXPAYLOAD_DEFAULT,
       })
       .option('rpcEngineMaxPayload', {
         describe: 'Define max JSON payload size for engine RPC requests',
         string: true,
-        default: '15mb',
+        default: Config.RPC_ENGINE_MAXPAYLOAD_DEFAULT,
       })
       .option('jwtSecret', {
         describe: 'Provide a file containing a hex encoded jwt secret for Engine RPC server',
