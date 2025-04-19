@@ -5,7 +5,7 @@ import baseConfig from '../../config/vitest.config.mts'
 export default mergeConfig(
   baseConfig,
   defineConfig({
-    root: '../..',
+    //root: '../..',
     plugins: [topLevelAwait()],
     optimizeDeps: {
       exclude: ['kzg-wasm', '@noble/curves'],
@@ -17,8 +17,8 @@ export default mergeConfig(
       coverage: {
         enabled: true,
         allowExternal: true,
-        include: ['**/packages/**/src/**/*.{ts,js}', '**/node_modules/@noble/curves/**/*.{ts,js}'],
-        exclude: ['packages/ethereum-tests'],
+        include: ['**/packages/*/src/**/*.{ts,js}'],
+        exclude: ['**/packages/ethereum-tests'],
         reporter: ['text', 'html'],
       },
     },
