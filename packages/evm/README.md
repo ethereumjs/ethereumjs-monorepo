@@ -25,9 +25,7 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 
 ### Basic
 
-With the v2 release (Summer 2023) the EVM/VM packages have been further decoupled and it now possible to run the EVM package in isolation with reasonable defaults.
-
-The following is the simplest example for an EVM instantiation:
+The following is the simplest example for an EVM instantiation with reasonable defaults for state and blockchain information (like blockhashes):
 
 ```ts
 // ./examples/simple.ts
@@ -43,8 +41,6 @@ const main = async () => {
 
 void main()
 ```
-
-Note: with the switch from v2 to v3 the old direct `new EVM()` constructor usage has been deprecated and an `EVM` now has to be instantiated with the async static `EVM.create()` constructor.
 
 ### Blockchain, State and Events
 
@@ -139,7 +135,7 @@ void main()
 
 ### EIP-2537 BLS Precompiles (Prague)
 
-Starting with `v3.1.0` the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
+Starting with `v10` the EVM supports the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) in its final version introduced with the `Prague` hardfork. These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
 
 An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
 
@@ -149,17 +145,12 @@ import { EVM, MCLBLS } from '@ethereumjs/evm'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
 await mcl.init(mcl.BLS12_381)
 const mclbls = new MCLBLS(mcl)
-const evm = await EVM.create({ common, bls })
+const evm = await createEVM({ common, bls })
 ```
 
 ## Examples
 
-This projects contain the following examples:
-
-1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
-1. [./examples/runCode](./examples/runCode.ts): Show how to use this library in a browser.
-
-All of the examples have their own `README.md` explaining how to run them.
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
 
 ## Browser
 
@@ -232,8 +223,9 @@ Currently the following hardfork rules are supported:
 - `merge`
 - `shanghai` (`v2.0.0`+)
 - `cancun` (`v2.0.0`+)
+- `prague` (`v10`+)
 
-Default: `shanghai` (taken from `Common.DEFAULT_HARDFORK`)
+Default: `prague` (taken from `Common.DEFAULT_HARDFORK`)
 
 A specific hardfork EVM ruleset can be activated by passing in the hardfork
 along the `Common` instance to the outer `@ethereumjs/vm` instance.
@@ -303,22 +295,7 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ### EIP-4844 Shard Blob Transactions Support
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
-
-#### Initialization
-
-To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
-
-```ts
-// ./examples/4844.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
-```
-
-EIP-4844 comes with a new opcode `BLOBHASH` (Attention! Renamed from `DATAHASH`) and adds a new point evaluation precompile at address `0x0a`
-(moved from `0x14` at some point along spec updates).
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
 
 **Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
@@ -442,9 +419,9 @@ TODO: this section likely needs an update.
 
 ## Profiling the EVM
 
-Starting with the `v2.1.0` release the EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+The EthereumJS EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
 
-While the EVM now has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+While the EVM has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
 
 To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
 
