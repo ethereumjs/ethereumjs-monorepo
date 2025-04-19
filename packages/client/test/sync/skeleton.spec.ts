@@ -406,7 +406,7 @@ describe('[Skeleton] / setHead', async () => {
   }
 
   it(`skeleton init should throw error if merge not set`, async () => {
-    const genesis = {
+    const genesis: GethGenesis = {
       ...postMergeGethGenesis,
       config: {
         ...postMergeGethGenesis.config,
@@ -418,10 +418,11 @@ describe('[Skeleton] / setHead', async () => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const common = createCommonFromGethGenesis(genesis as GethGenesis, { chain: 'merge-not-set' })
+    const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain['_validateBlocks'] as any) = false
+    // @ts-expect-error -- Assigning to read-only property
+    chain.blockchain['_validateBlocks'] = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     } catch {

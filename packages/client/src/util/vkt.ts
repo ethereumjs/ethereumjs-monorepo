@@ -18,8 +18,8 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
   await state.checkpoint()
   for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
     const addrState = genesisState[addressStr]
-    let nonce: BigIntLike | undefined
-    let balance: BigIntLike
+    let nonce: PrefixedHexString | undefined
+    let balance: PrefixedHexString | bigint
     let code: PrefixedHexString | undefined
     let storage: StoragePair[] | undefined
     if (Array.isArray(addrState)) {
