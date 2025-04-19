@@ -71,7 +71,7 @@ describe('VM.runCode: interpreter', () => {
     } catch {
       assert.fail('should not throw error')
     }
-    assert.equal(result?.exceptionError?.errorType, 'EvmError')
+    assert.equal(result?.exceptionError?.errorType, 'EVMError')
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 

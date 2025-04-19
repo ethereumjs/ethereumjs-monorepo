@@ -1,6 +1,6 @@
-export type ERROR = (typeof ERROR)[keyof typeof ERROR]
+export type EVMErrorType = (typeof EVMErrorMessages)[keyof typeof EVMErrorMessages]
 
-export const ERROR = {
+export const EVMErrorMessages = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM: 'code size to deposit exceeds maximum code size',
@@ -34,12 +34,12 @@ export const ERROR = {
   INVALID_PROOF: 'kzg proof invalid',
 } as const
 
-export class EvmError {
-  error: ERROR
+export class EVMError {
+  error: EVMErrorType
   errorType: string
 
-  constructor(error: ERROR) {
+  constructor(error: EVMErrorType) {
     this.error = error
-    this.errorType = 'EvmError'
+    this.errorType = 'EVMError'
   }
 }

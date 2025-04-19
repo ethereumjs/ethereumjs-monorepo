@@ -1,10 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-const txData = {
+const txData: FeeMarketEIP1559TxData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: '0x02625a00',
   maxPriorityFeePerGas: '0x01',
