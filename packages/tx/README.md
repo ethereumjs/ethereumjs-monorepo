@@ -49,6 +49,7 @@ Hardforks adding features and/or tx types:
 | `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
+| `prague`         | `v10.0.0`  | `EIP-7702` Transactions                                                                                 |
 
 ### WASM Crypto Support
 
