@@ -337,10 +337,6 @@ Events emitted:
 | message |   Message received   |
 | status  | Status info received |
 
-### Reference
-
-- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
-
 ## Debugging
 
 ### Introduction
@@ -453,11 +449,6 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 - Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
 - Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
-- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto) <!-- cspell:disable-line --->
-
-### Links
-
-- [Blog article series](https://ocalog.com/post/10/) on implementing Ethereum protocol stack
 
 ## EthereumJS
 
