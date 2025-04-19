@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 
 import type { Common, GenesisState, StoragePair } from '@ethereumjs/common'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export async function generateVKTStateRoot(genesisState: GenesisState, common: Common) {
   const state = new StatefulVerkleStateManager({ common })
