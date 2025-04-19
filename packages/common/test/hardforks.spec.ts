@@ -15,7 +15,7 @@ import {
   createCustomCommon,
 } from '../src/index.ts'
 
-import type { ChainConfig, GethGenesis } from '../src/index.ts'
+import type { ChainConfig, GethGenesis, GethGenesisConfig } from '../src/index.ts'
 
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
@@ -305,12 +305,12 @@ describe('[Common]: Hardfork logic', () => {
         terminalTotalDifficulty: 0,
         shanghaiTime: 0,
         cancunTime: 0,
-      },
+      } as GethGenesisConfig,
       difficulty: '0x100',
       alloc: {},
       gasLimit: '0x5000',
       nonce: '',
-    } as GethGenesis
+    }
     const gethConfig = {
       chain: 'testnet',
       eips: [],
