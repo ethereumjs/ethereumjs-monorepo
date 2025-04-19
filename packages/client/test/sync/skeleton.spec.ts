@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import {
   Common,
+  type GethGenesis,
   Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
@@ -417,7 +418,7 @@ describe('[Skeleton] / setHead', async () => {
       extraData: '0x00000000000000000',
       difficulty: '0x1',
     }
-    const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
+    const common = createCommonFromGethGenesis(genesis as GethGenesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain['_validateBlocks'] as any) = false

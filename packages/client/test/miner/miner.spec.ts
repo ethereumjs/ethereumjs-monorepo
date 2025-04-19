@@ -1,6 +1,7 @@
 import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import {
   Common,
+  type GethGenesis,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
@@ -101,7 +102,7 @@ const consensusConfig = {
     epoch: 30000,
   },
 }
-const defaultChainData = {
+const defaultChainData: Omit<GethGenesis, 'alloc'> = {
   config: {
     chainId: 123456,
     homesteadBlock: 0,
