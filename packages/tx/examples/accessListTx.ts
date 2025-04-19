@@ -1,10 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { AccessList2930TxData } from '@ethereumjs/tx'
 import { createAccessList2930Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
-const txData = {
+const txData: AccessList2930TxData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: '0x02625a00',
   gasPrice: '0x01',
