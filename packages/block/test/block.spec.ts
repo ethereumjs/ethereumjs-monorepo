@@ -7,7 +7,7 @@ import {
   testnetMergeChainConfig,
 } from '@ethereumjs/testdata'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
+import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.ts'
