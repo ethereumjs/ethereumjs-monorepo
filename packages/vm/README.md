@@ -280,7 +280,7 @@ This library supports blocks including [EIP-7685](https://eips.ethereum.org/EIPS
 
 Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract.
 
-Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in the following Osaka hardfork.
+Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in a respective Verkle/Stateless hardfork.
 
 ### Tracing Events
 
