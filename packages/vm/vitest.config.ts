@@ -17,7 +17,7 @@ export default mergeConfig(
       coverage: {
         enabled: true,
         allowExternal: true,
-        include: ['**/packages/*/src/**/*.{ts,js}'],
+        include: ['**/packages/*/src/**/*.{ts,js}', '**/packages/noble-curves/**/*.{ts,js}'],
         exclude: ['**/packages/ethereum-tests'],
         reporter: ['text', 'html'],
       },
