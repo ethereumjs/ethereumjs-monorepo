@@ -10,18 +10,12 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusAlgorithm, ConsensusType, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import {
-  Address,
-  PrefixedHexString,
-  bytesToHex,
-  createAccount,
-  hexToBytes,
-  setLengthLeft,
-} from '@ethereumjs/util'
+import { Address, bytesToHex, createAccount, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { createVM, runBlock } from '@ethereumjs/vm'
 
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 async function setupPreConditions(vm: VM, data: any) {
