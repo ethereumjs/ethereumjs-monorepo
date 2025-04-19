@@ -32,4 +32,4 @@ export const invalidSpuriousDragonGethGenesis: GethGenesis = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   baseFeePerGas: null,
-} as GethGenesis
+} as unknown as GethGenesis

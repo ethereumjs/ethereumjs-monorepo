@@ -1,5 +1,10 @@
 import { rmSync } from 'fs'
-import { Hardfork, createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import {
+  type GethGenesis,
+  Hardfork,
+  createCommonFromGethGenesis,
+  parseGethGenesisState,
+} from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.ts'
@@ -18,7 +23,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
 
-  const defaultChainData = {
+  const defaultChainData: Omit<GethGenesis, 'alloc'> = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -45,8 +50,8 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
   }
-  const extraData = '0x' + '0'.repeat(32)
-  const chainData = {
+  const extraData = `0x${'0'.repeat(32)}`
+  const chainData: GethGenesis = {
     ...defaultChainData,
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },

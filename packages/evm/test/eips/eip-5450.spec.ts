@@ -1,4 +1,4 @@
-import { hexToBytes } from '@ethereumjs/util'
+import { type PrefixedHexString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { default as testData } from '../../../ethereum-tests/EOFTests/EIP5450/validInvalid.json' with {
@@ -22,7 +22,7 @@ describe('EIP 5450 tests', async () => {
   for (const key in testData.validInvalid.vectors) {
     it(`Container validation tests ${key}`, () => {
       const input = testData.validInvalid.vectors[key as keyof typeof testData.validInvalid.vectors]
-      const code = hexToBytes(input.code)
+      const code = hexToBytes(input.code as PrefixedHexString)
 
       const expected = input.results.Osaka.result
 

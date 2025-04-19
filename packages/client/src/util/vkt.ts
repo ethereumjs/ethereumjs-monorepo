@@ -10,15 +10,17 @@ import {
 } from '@ethereumjs/util'
 
 import type { Common, GenesisState, StoragePair } from '@ethereumjs/common'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 export async function generateVKTStateRoot(genesisState: GenesisState, common: Common) {
   const state = new StatefulVerkleStateManager({ common })
   await state['_trie'].createRootNode()
   await state.checkpoint()
-  for (const addressStr of Object.keys(genesisState)) {
+  for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
     const addrState = genesisState[addressStr]
-    let nonce, balance, code
+    let nonce: BigIntLike | undefined
+    let balance: BigIntLike
+    let code: PrefixedHexString | undefined
     let storage: StoragePair[] | undefined
     if (Array.isArray(addrState)) {
       ;[balance, code, storage, nonce] = addrState
@@ -51,8 +53,8 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
 
     // Put account data
     const account = createPartialAccount({
-      nonce: nonce as PrefixedHexString,
-      balance: balance as PrefixedHexString,
+      nonce,
+      balance,
       codeHash,
       codeSize: codeBuf.byteLength,
     })

@@ -347,7 +347,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           // add account node data to account trie
           const node = decodeMPTNode(nodeData)
           if (node instanceof LeafMPTNode) {
-            const key = bytesToUnprefixedHex(pathToHexKey(path, node.key(), 'keybyte'))
+            const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
             ops.push({
               type: 'put',
               key: hexToBytes(key),
@@ -365,9 +365,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               for (const [path, data] of pathToStorageNode) {
                 const storageNode = decodeMPTNode(data)
                 if (storageNode instanceof LeafMPTNode) {
-                  const storageKey = bytesToUnprefixedHex(
-                    pathToHexKey(path, storageNode.key(), 'keybyte'),
-                  )
+                  const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
                   storageTrieOps.push({
                     type: 'put',
                     key: hexToBytes(storageKey),

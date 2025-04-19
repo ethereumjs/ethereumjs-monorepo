@@ -1,6 +1,7 @@
 import {
   Account,
   Address,
+  type PrefixedHexString,
   bigIntToBytes,
   bytesToBigInt,
   hexToBytes,
@@ -162,9 +163,9 @@ describe('Stack', () => {
 
     for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
       // PUSHx 01
-      const code = `0x${pushN.toString(16)}01`
+      const code: PrefixedHexString = `0x${pushN.toString(16)}01`
       // PUSH 0x03 JUMP JUMPDEST < PUSHx 01 >
-      const codeWithJumps = `0x6003565B${pushN.toString(16)}01`
+      const codeWithJumps: PrefixedHexString = `0x6003565B${pushN.toString(16)}01`
 
       const expectedStack = new Stack(1024)
       expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))

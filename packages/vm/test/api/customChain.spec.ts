@@ -100,7 +100,7 @@ describe('VM initialized with custom state', () => {
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
-      data: hexToBytes(calldata),
+      data: hexToBytes(calldata as PrefixedHexString),
       caller: createAddressFromPrivateKey(privateKey),
     })
 

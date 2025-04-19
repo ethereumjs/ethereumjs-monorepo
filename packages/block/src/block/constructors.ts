@@ -31,7 +31,7 @@ import {
   executionPayloadFromBeaconPayload,
 } from '../index.ts'
 
-import type { EthersProvider, PrefixedHexString, WithdrawalBytes } from '@ethereumjs/util'
+import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 import type { BeaconPayloadJSON } from '../from-beacon-payload.ts'
 import type {
   BlockBytes,
@@ -339,7 +339,7 @@ export async function createBlockFromExecutionPayload(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = createTxFromRLP(hexToBytes(serializedTx as PrefixedHexString), {
+      const tx = createTxFromRLP(hexToBytes(serializedTx), {
         common: opts?.common,
       })
       txs.push(tx)
@@ -377,7 +377,7 @@ export async function createBlockFromExecutionPayload(
     throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
   }
   // Verify blockHash matches payload
-  if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash as PrefixedHexString))) {
+  if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
     const validationError = `Invalid blockHash, expected: ${
       payload.blockHash
     }, received: ${bytesToHex(block.hash())}`

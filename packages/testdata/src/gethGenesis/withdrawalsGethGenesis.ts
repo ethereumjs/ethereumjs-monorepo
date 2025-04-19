@@ -1,4 +1,6 @@
-export const withdrawalsGethGenesis = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const withdrawalsGethGenesis: GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,

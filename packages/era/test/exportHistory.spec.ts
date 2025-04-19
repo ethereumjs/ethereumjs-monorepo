@@ -1,9 +1,9 @@
-import { bytesToBigInt64, hexToBytes } from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToBigInt64, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { compressData, formatEntry } from '../src/index.ts'
 describe('era1', async () => {
-  const test = {
+  const test: { compressed: PrefixedHexString; decompressed: PrefixedHexString } = {
     compressed:
       '0xff060000734e6150705900cb0000ec6da9a6970410f90214a0007a010088a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794004a4200f043a0d7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0567a210004b9014a7800fe0100fe0100fe0100b6010004850401f098808213888080a011bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa82ea0120880000000000000042',
     decompressed:

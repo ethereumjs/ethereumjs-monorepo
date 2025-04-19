@@ -87,15 +87,15 @@ export interface GethGenesis {
   nonce: string
   timestamp: string
   extraData?: string
-  gasLimit: string
-  difficulty?: string
-  mixHash?: string
-  coinbase?: string
+  gasLimit: PrefixedHexString
+  difficulty?: PrefixedHexString
+  mixHash?: PrefixedHexString
+  coinbase?: PrefixedHexString
   alloc: GethGenesisAlloc
-  number?: string
-  gasUsed?: string
-  parentHash?: string
-  baseFeePerGas?: string | number | null
+  number?: PrefixedHexString
+  gasUsed?: PrefixedHexString
+  parentHash?: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString | number | null
 }
 
 /**
@@ -141,7 +141,7 @@ export type AccountState = [
  * ```
  */
 export interface GenesisState {
-  [key: string]: PrefixedHexString | AccountState
+  [key: PrefixedHexString]: PrefixedHexString | AccountState
 }
 
 /**

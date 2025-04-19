@@ -43,7 +43,7 @@ function getBlockchain(inputEnv: T8NEnv) {
       if (Number(key) === number) {
         return {
           hash() {
-            return hexToBytes(inputEnv.blockHashes[key])
+            return hexToBytes(inputEnv.blockHashes[key] as PrefixedHexString)
           },
         }
       }

@@ -1,4 +1,9 @@
-import { Hardfork, createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import {
+  type GethGenesis,
+  Hardfork,
+  createCommonFromGethGenesis,
+  parseGethGenesisState,
+} from '@ethereumjs/common'
 import { Address, bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -12,7 +17,7 @@ import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
-  const defaultChainData = {
+  const defaultChainData: Omit<GethGenesis, 'alloc'> = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,

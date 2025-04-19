@@ -52,7 +52,7 @@ import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { CustomCrypto, GenesisState } from '@ethereumjs/common'
+import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Logger } from '../src/logging.ts'
 import type { ClientOpts } from '../src/types.ts'
@@ -521,7 +521,7 @@ async function setupDevnet(prefundAddress: Address, args: ClientOpts) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
-  }
+  } as Omit<GethGenesis, 'alloc'>
   const extraData =
     args.dev === 'pow' ? '0x' + '0'.repeat(32) : '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
   const chainData = {

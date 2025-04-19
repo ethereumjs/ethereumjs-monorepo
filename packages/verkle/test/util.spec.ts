@@ -1,11 +1,11 @@
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/index.ts'
 import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
 // Values taken from verkle fixtures
-const values = [
+const values: PrefixedHexString[][] = [
   [
     '0x0365b079a274a1808d56484ce5bd97914629907d75767f51439102e22cd50d00',
     '0x00000000000000000000000000000001000000000000003635c9adc5de9ccbaa',

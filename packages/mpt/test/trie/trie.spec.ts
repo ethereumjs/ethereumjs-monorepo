@@ -4,6 +4,7 @@ import {
   BIGINT_2,
   KECCAK256_RLP,
   MapDB,
+  type PrefixedHexString,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -277,10 +278,10 @@ describe('keyHashingFunction', async () => {
 
 describe('getValueMap', async () => {
   const trie = await createMPT({})
-  const entries: [Uint8Array, string][] = [
-    [bigIntToBytes(0x01n), '0x' + '0a'.repeat(32)],
-    [bigIntToBytes(0x02n), '0x' + '0b'.repeat(32)],
-    [bigIntToBytes(0x03n), '0x' + '0c'.repeat(32)],
+  const entries: [Uint8Array, PrefixedHexString][] = [
+    [bigIntToBytes(0x01n), `0x${'0a'.repeat(32)}`],
+    [bigIntToBytes(0x02n), `0x${'0b'.repeat(32)}`],
+    [bigIntToBytes(0x03n), `0x${'0c'.repeat(32)}`],
   ]
   for (const entry of entries) {
     await trie.put(entry[0], hexToBytes(entry[1]))
@@ -348,7 +349,7 @@ describe('getValueMap', async () => {
     const KEYS = 1000
     const KEY_LEN = 3 // Keys are of equal length
     const gotKeys = new Set()
-    const entries: [Uint8Array, string][] = []
+    const entries: [Uint8Array, PrefixedHexString][] = []
     for (let i = 0; i < KEYS; i++) {
       const key = randomBytes(KEY_LEN)
       const keyBigInt = bytesToBigInt(key)
