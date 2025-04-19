@@ -13,7 +13,7 @@ const peerPort = 30304
 
 // NOTE: the `privateKey` currently cannot be 0x-prefixed in `./net/server/server.ts`
 const privateKey = 'dc6457099f127cf0bac78de8b297df04951281909db4f58b43def7c7151e765d'
-const privateKeyBytes = hexToBytes('0x' + privateKey)
+const privateKeyBytes = hexToBytes(`0x${privateKey}`)
 
 describe(method, () => {
   it('works', async () => {
