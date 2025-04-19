@@ -41,6 +41,8 @@ export async function runBlockchainTest(options: any, testData: any) {
     return
   }
 
+  console.log('Running test, description: ', testData._info?.description)
+
   // fix for BlockchainTests/GeneralStateTests/stRandom/*
   testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
 

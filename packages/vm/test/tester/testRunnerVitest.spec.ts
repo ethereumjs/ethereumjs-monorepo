@@ -1,10 +1,10 @@
+import * as path from 'path'
 /* eslint-disable no-console */
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as minimist from 'minimist'
-import * as path from 'path'
 import * as process from 'process'
 import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
@@ -60,7 +60,7 @@ const argv = {
   'stack-size': 1500,
   blockchain: true,
   fork: 'Prague',
-  dir: '../fixtures/blockchain_tests/prague/eip2537_bls_12_381_precompiles/',
+  dir: '../fixtures/blockchain_tests/prague/eip2537_bls_12_381_precompiles/bls12_g1add',
 }
 
 describe('VM tests', () => {
