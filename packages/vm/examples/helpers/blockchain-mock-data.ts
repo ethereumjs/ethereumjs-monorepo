@@ -1,4 +1,4 @@
-const blockchainMockData = {
+export const blockchainMockData = {
   _info: {
     comment: '',
     filledwith: 'cpp-1.3.0+commit.70e7d177.Linux.g++',

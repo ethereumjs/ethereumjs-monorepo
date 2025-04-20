@@ -13,6 +13,8 @@ import { Ethash } from '@ethereumjs/ethash'
 import { Address, bytesToHex, createAccount, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { createVM, runBlock } from '@ethereumjs/vm'
 
+import { blockchainMockData } from './helpers/blockchain-mock-data.ts'
+
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { PrefixedHexString } from '@ethereumjs/util'
