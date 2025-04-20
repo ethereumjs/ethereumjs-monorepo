@@ -1,7 +1,6 @@
 import {
   Account,
   Address,
-  type PrefixedHexString,
   bigIntToBytes,
   bytesToBigInt,
   hexToBytes,

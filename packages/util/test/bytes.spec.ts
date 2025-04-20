@@ -140,7 +140,7 @@ describe('bytesToHex', () => {
   it('empty Uint8Array', () => {
     const bytes = new Uint8Array()
     const hex = bytesToHex(bytes)
-    assert.equal(hex, '0x')
+    assert.strictEqual(hex, '0x')
   })
 })
 
