@@ -67,38 +67,6 @@ export const EOFError = {
   INVALID_RETURN_CONTRACT_DATA_SIZE: 'invalid RETURNCONTRACT: data size lower than expected',
 } as const
 
-export type SimpleErrors = (typeof SimpleErrors)[keyof typeof SimpleErrors]
-
-export const SimpleErrors = {
-  MIN_CONTAINER_SIZE: 'err: container size less than minimum valid size',
-  INVALID_CONTAINER_SIZE: 'err: invalid container size',
-  TYPE_SIZE: 'err: type section size invalid',
-  CODE0_MSH: 'err: computed max stack height for code section 0 does not match expect',
-  UNDERFLOW: 'err: stack underflow',
-  CODE0_IO: 'err: input and output of first code section must be 0',
-  VERIFY_UINT: 'Uint does not match expected value ',
-  VERIFY_BYTES: 'Bytes do not match expected value',
-  INVALID_TYPE_SIZE: 'err: type section invalid',
-  CODE_SIZE: 'missing code size',
-  CODE_SECTION_SIZE: 'code section should be at least one byte',
-  INVALID_CODE_SIZE: 'code size does not match type size',
-  DATA_SIZE: 'missing data size',
-  TYPE_SECTIONS: 'need to have a type section for each code section',
-  INPUTS: 'expected inputs',
-  OUTPUTS: 'expected outputs',
-  MAX_INPUTS: 'inputs exceeds 127, the maximum, got: ',
-  MAX_OUTPUTS: 'outputs exceeds 127, the maximum, got: ',
-  CODE0_INPUTS: 'first code section should have 0 inputs',
-  CODE0_OUTPUTS: 'first code section should have 0 outputs',
-  MAX_STACK_HEIGHT: 'expected maxStackHeight',
-  MAX_STACK_HEIGHT_LIMIT: 'stack height limit of 1024 exceeded: ',
-  MIN_CODE_SECTIONS: 'should have at least 1 code section',
-  MAX_CODE_SECTIONS: 'can have at most 1024 code sections',
-  CODE_SECTION: 'expected a code section',
-  DATA_SECTION: 'Expected data section',
-  DANGLING_BYTES: 'got dangling bytes in body',
-} as const
-
 export function validationErrorMsg(type: EOFError, ...args: any) {
   switch (type) {
     case EOFError.OUT_OF_BOUNDS: {
