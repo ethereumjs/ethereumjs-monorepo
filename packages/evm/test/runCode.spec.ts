@@ -57,7 +57,7 @@ describe('VM.runCode: initial program counter', () => {
 })
 
 describe('VM.runCode: interpreter', () => {
-  it('should return a EvmError as an exceptionError on the result', async () => {
+  it('should return a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
@@ -76,7 +76,7 @@ describe('VM.runCode: interpreter', () => {
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 
-  it('should throw on non-EvmError', async () => {
+  it('should throw on non-EVMError', async () => {
     const evm = await createEVM()
     // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
