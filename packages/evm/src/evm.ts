@@ -100,7 +100,7 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   }
 }
 
-export function EvmErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
+export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
