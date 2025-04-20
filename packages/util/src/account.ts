@@ -367,15 +367,13 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
     }
   }
 
-  const [nonceValue, balanceValue, storageRootValue, codeHashValue, codeSizeValue, versionValue] =
+  const [nonceRaw, balanceRaw, storageRoot, codeHash, codeSizeRaw, versionRaw] =
     values.map(handleNullIndicator)
 
-  const nonce = nonceValue === null ? null : bytesToBigInt(nonceValue)
-  const balance = balanceValue === null ? null : bytesToBigInt(balanceValue)
-  const storageRoot = storageRootValue === null ? null : storageRootValue
-  const codeHash = codeHashValue === null ? null : codeHashValue
-  const codeSize = codeSizeValue === null ? null : bytesToInt(codeSizeValue)
-  const version = versionValue === null ? null : bytesToInt(versionValue)
+  const nonce = nonceRaw === null ? null : bytesToBigInt(nonceRaw)
+  const balance = balanceRaw === null ? null : bytesToBigInt(balanceRaw)
+  const codeSize = codeSizeRaw === null ? null : bytesToInt(codeSizeRaw)
+  const version = versionRaw === null ? null : bytesToInt(versionRaw)
 
   return createPartialAccount({ balance, nonce, storageRoot, codeHash, codeSize, version })
 }
