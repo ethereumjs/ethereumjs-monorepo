@@ -47,6 +47,18 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
+    // noble‑curves throws this for inputs that map to the point at infinity
+    if (e.message === 'bad point: ZERO') {
+      // return two zeroed field elements (x & y), each the same length as the input
+      const zeroPoint = new Uint8Array(opts.data.length * 2)
+      if (opts._debug !== undefined) {
+        opts._debug(`${pName} mapping to ZERO point, returning zero-filled output`)
+      }
+      return {
+        executionGasUsed: gasUsed,
+        returnValue: zeroPoint,
+      }
+    }
     return EvmErrorResult(e, opts.gasLimit)
   }
 
