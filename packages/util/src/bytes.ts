@@ -34,8 +34,13 @@ export const unprefixedHexToBytes = (hex: string): Uint8Array => {
   return nobleH2B(padToEven(hex))
 }
 
+/**
+ * Converts a {@link Uint8Array} to a {@link PrefixedHexString}
+ * @param {Uint8Array} bytes the bytes to convert
+ * @returns {PrefixedHexString} the hex string
+ * @dev Returns `0x` if provided an empty Uint8Array
+ */
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
-  if (bytes === undefined || bytes.length === 0) return '0x'
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return `0x${unprefixedHex}`
 }
