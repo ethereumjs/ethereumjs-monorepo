@@ -97,7 +97,7 @@ export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw EthereumJSErrorWithoutCode(`Received an invalid integer type: ${i}`)
   }
-  return ('0x' + i.toString(16)) as PrefixedHexString
+  return `0x${i.toString(16)}`
 }
 
 /**
