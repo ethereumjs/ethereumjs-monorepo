@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EVMError, EVMErrorMessages } from '../errors.ts'
 import type { EVM } from '../evm.ts'
 import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { ERROR, EvmError } from '../exceptions.ts'
 
 import { leading16ZeroBytesCheck } from './bls12_381/index.ts'
 import { getPrecompileName } from './index.ts'
@@ -22,7 +22,10 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (!equalityLengthCheck(opts, 256, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EvmErrorResult(
+      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit,
+    )
   }
 
   // check if some parts of input are zero bytes.
@@ -33,7 +36,10 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
     [192, 208],
   ]
   if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
+    return EvmErrorResult(
+      new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+      opts.gasLimit,
+    )
   }
 
   let returnValue

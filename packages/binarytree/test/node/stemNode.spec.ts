@@ -7,14 +7,14 @@ import { StemBinaryNode } from '../../src/node/stemNode.ts'
 describe('StemBinaryNode', () => {
   it('should round-trip encode and decode a stem node', () => {
     // Create a 31-byte stem (for example, all 0x01 bytes)
-    const stem = hexToBytes('0x' + '01'.repeat(31))
+    const stem = hexToBytes(`0x${'01'.repeat(31)}`)
 
     // Create an array of 256 possible values (initially all null)
     const values: (Uint8Array | null)[] = new Array(256).fill(null)
     // Set a few non-null values at specific indices
-    const value3 = hexToBytes('0x' + '02'.repeat(32))
-    const value100 = hexToBytes('0x' + '03'.repeat(32))
-    const value255 = hexToBytes('0x' + '04'.repeat(32))
+    const value3 = hexToBytes(`0x${'02'.repeat(32)}`)
+    const value100 = hexToBytes(`0x${'03'.repeat(32)}`)
+    const value255 = hexToBytes(`0x${'04'.repeat(32)}`)
     values[3] = value3
     values[100] = value100
     values[255] = value255

@@ -217,7 +217,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       return true
     } catch (error) {
-      this.config.logger.error(`Error while fetching snapsync: ${error}`)
+      this.config.logger?.error(`Error while fetching snapsync: ${error}`)
       return false
     } finally {
       this.fetcherDoneFlags.syncing = false
@@ -240,7 +240,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             BIGINT_2EXP256,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `accountFetcher completed with pending range done=${fetcherProgress}%`,
           )
         }
@@ -254,7 +254,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.storageFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`,
           )
         }
@@ -269,7 +269,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.byteCodeFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`,
           )
         }

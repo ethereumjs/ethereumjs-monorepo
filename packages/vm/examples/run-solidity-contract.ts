@@ -12,7 +12,7 @@ import solc from 'solc'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.ts'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.ts'
 
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
 
 const INITIAL_GREETING = 'Hello, World!'
@@ -147,7 +147,8 @@ async function setGreeting(
 }
 
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
-  const sigHash = new Interface(['function greet()']).getFunction('greet')!.selector
+  const sigHash = new Interface(['function greet()']).getFunction('greet')!
+    .selector as PrefixedHexString
 
   const greetResult = await vm.evm.runCall({
     to: contractAddress,

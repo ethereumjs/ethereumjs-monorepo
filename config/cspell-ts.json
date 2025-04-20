@@ -24,6 +24,7 @@
     }
   ],
   "words": [
+    "unerasable",
     "bytelist",
     "bytestring",
     "binarytree",
@@ -305,6 +306,7 @@
     "MCOPY",
     "JUMPF",
     "SELFDESTRUCT",
+    "AUTHCALL",
     "triggerable",
     "RETURNDATASIZE",
     "RETURNDATACOPY",

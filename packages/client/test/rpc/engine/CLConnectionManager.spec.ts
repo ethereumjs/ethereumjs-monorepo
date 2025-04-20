@@ -7,6 +7,7 @@ import { Config } from '../../../src/index.ts'
 import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine/index.ts'
 import { Event } from '../../../src/types.ts'
 
+import { getLogger } from '../../../src/logging.ts'
 import type { ForkchoiceUpdate, NewPayload } from '../../../src/rpc/modules/engine/index.ts'
 
 const payload: NewPayload = {
@@ -87,9 +88,9 @@ describe('postmerge hardfork', () => {
 })
 
 describe('Status updates', async () => {
-  const config = new Config()
+  const config = new Config({ logger: getLogger({}) })
   const manager = new CLConnectionManager({ config })
-  config.logger.on('data', (chunk) => {
+  config.logger?.on('data', (chunk) => {
     it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
         assert.isTrue(true, 'received last fork choice message')
@@ -97,7 +98,7 @@ describe('Status updates', async () => {
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
         assert.isTrue(true, 'received last payload message')
         manager.stop()
-        config.logger.removeAllListeners()
+        config.logger?.removeAllListeners()
       }
     })
   })
@@ -116,11 +117,11 @@ describe('updates stats when a new block is processed', () => {
         number: payload.payload.blockNumber,
       },
     })
-    config.logger.on('data', (chunk) => {
+    config.logger?.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
         assert.isTrue(true, 'received last payload stats message')
         manager.stop()
-        config.logger.removeAllListeners()
+        config.logger?.removeAllListeners()
       }
     })
 
