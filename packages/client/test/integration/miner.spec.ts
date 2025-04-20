@@ -17,7 +17,7 @@ import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
-  const defaultChainData: Omit<GethGenesis, 'alloc'> = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -42,6 +42,7 @@ async function setupDevnet(prefundAddress: Address) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
   const extraData = concatBytes(new Uint8Array(32), prefundAddress.toBytes(), new Uint8Array(65))
 

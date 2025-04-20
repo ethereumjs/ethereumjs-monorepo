@@ -102,7 +102,7 @@ const consensusConfig = {
     epoch: 30000,
   },
 }
-const defaultChainData: Omit<GethGenesis, 'alloc'> = {
+const defaultChainData: GethGenesis = {
   config: {
     chainId: 123456,
     homesteadBlock: 0,
@@ -128,6 +128,7 @@ const defaultChainData: Omit<GethGenesis, 'alloc'> = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   baseFeePerGas: 7,
+  alloc: {},
 }
 const addr = A.address.toString().slice(2)
 

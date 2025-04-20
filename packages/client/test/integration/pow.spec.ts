@@ -23,7 +23,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
 
-  const defaultChainData: Omit<GethGenesis, 'alloc'> = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -49,6 +49,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
   const extraData = `0x${'0'.repeat(32)}`
   const chainData: GethGenesis = {

@@ -495,7 +495,7 @@ async function setupDevnet(prefundAddress: Address, args: ClientOpts) {
             epoch: 30000,
           },
         }
-  const defaultChainData: Omit<GethGenesis, 'alloc'> = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -521,6 +521,7 @@ async function setupDevnet(prefundAddress: Address, args: ClientOpts) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
   const extraData =
     args.dev === 'pow' ? '0x' + '0'.repeat(32) : '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
