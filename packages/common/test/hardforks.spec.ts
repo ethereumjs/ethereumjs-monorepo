@@ -15,7 +15,7 @@ import {
   createCustomCommon,
 } from '../src/index.ts'
 
-import type { ChainConfig } from '../src/index.ts'
+import type { ChainConfig, GethGenesis, GethGenesisConfig } from '../src/index.ts'
 
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
@@ -283,7 +283,7 @@ describe('[Common]: Hardfork logic', () => {
 
   it('forkHash(): should not change forkHash if timestamp is at genesis timestamp', () => {
     // Setup default config
-    const defaultConfig = {
+    const defaultConfig: GethGenesis = {
       timestamp: '10',
       config: {
         ethash: {},
@@ -305,10 +305,10 @@ describe('[Common]: Hardfork logic', () => {
         terminalTotalDifficulty: 0,
         shanghaiTime: 0,
         cancunTime: 0,
-      },
-      difficulty: '100',
+      } as GethGenesisConfig,
+      difficulty: '0x100',
       alloc: {},
-      gasLimit: '5000',
+      gasLimit: '0x5000',
       nonce: '',
     }
     const gethConfig = {

@@ -16,9 +16,11 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
   const state = new StatefulVerkleStateManager({ common })
   await state['_trie'].createRootNode()
   await state.checkpoint()
-  for (const addressStr of Object.keys(genesisState)) {
+  for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
     const addrState = genesisState[addressStr]
-    let nonce, balance, code
+    let nonce: PrefixedHexString | undefined
+    let balance: PrefixedHexString | bigint
+    let code: PrefixedHexString | undefined
     let storage: StoragePair[] | undefined
     if (Array.isArray(addrState)) {
       ;[balance, code, storage, nonce] = addrState
@@ -51,8 +53,8 @@ export async function generateVKTStateRoot(genesisState: GenesisState, common: C
 
     // Put account data
     const account = createPartialAccount({
-      nonce: nonce as PrefixedHexString,
-      balance: balance as PrefixedHexString,
+      nonce,
+      balance,
       codeHash,
       codeSize: codeBuf.byteLength,
     })

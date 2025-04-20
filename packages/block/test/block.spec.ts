@@ -2,12 +2,12 @@ import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/commo
 import { RLP } from '@ethereumjs/rlp'
 import {
   goerliChainConfig,
-  preLondonTestDataBlocks1,
-  preLondonTestDataBlocks2,
+  preLondonTestDataBlocks1RLP,
+  preLondonTestDataBlocks2RLP,
   testnetMergeChainConfig,
 } from '@ethereumjs/testdata'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
+import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.ts'
@@ -25,7 +25,7 @@ import {
 import { genesisHashesTestData } from './testdata/genesisHashesTest.ts'
 import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.ts'
 
-import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
+import type { NestedUint8Array } from '@ethereumjs/util'
 
 describe('[Block]: block functions', () => {
   it('should test block initialization', () => {
@@ -137,7 +137,7 @@ describe('[Block]: block functions', () => {
 
   it('should test block validation on pow chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = hexToBytes(preLondonTestDataBlocks1.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     try {
       createBlockFromRLP(blockRlp, { common })
       assert.isTrue(true, 'should pass')
@@ -163,7 +163,7 @@ describe('[Block]: block functions', () => {
   }
 
   it('should test transaction validation - invalid tx trie', async () => {
-    const blockRlp = hexToBytes(preLondonTestDataBlocks1.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
@@ -205,7 +205,7 @@ describe('[Block]: block functions', () => {
 
   it('should test transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const blockRlp = hexToBytes(preLondonTestDataBlocks1.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     await testTransactionValidation(block)
     // @ts-expect-error -- Assigning to read-only property
@@ -219,7 +219,7 @@ describe('[Block]: block functions', () => {
 
   it('should test uncles hash validation', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const blockRlp = hexToBytes(preLondonTestDataBlocks2.blocks[2].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks2RLP.block2RLP)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
     assert.equal(block.uncleHashIsValid(), true)
     // @ts-expect-error -- Assigning to read-only property
@@ -356,31 +356,23 @@ describe('[Block]: block functions', () => {
 
   it('should return the same block data from raw()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const block = createBlockFromRLP(
-      toBytes(preLondonTestDataBlocks2.blocks[2].rlp as PrefixedHexString),
-      {
-        common,
-      },
-    )
+    const block = createBlockFromRLP(hexToBytes(preLondonTestDataBlocks2RLP.block2RLP), {
+      common,
+    })
     const createBlockFromRaw = createBlockFromBytesArray(block.raw(), { common })
     assert.isTrue(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
   it('should test toJSON', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const block = createBlockFromRLP(
-      toBytes(preLondonTestDataBlocks2.blocks[2].rlp as PrefixedHexString),
-      {
-        common,
-      },
-    )
+    const block = createBlockFromRLP(hexToBytes(preLondonTestDataBlocks2RLP.block2RLP), {
+      common,
+    })
     assert.equal(typeof block.toJSON(), 'object')
   })
 
   it('DAO hardfork', () => {
-    const blockData = RLP.decode(
-      preLondonTestDataBlocks2.blocks[0].rlp as PrefixedHexString,
-    ) as NestedUint8Array
+    const blockData = RLP.decode(preLondonTestDataBlocks2RLP.block0RLP) as NestedUint8Array
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = hexToBytes('0x1D4C00')
 
