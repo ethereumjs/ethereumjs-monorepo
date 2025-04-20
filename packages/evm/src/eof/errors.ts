@@ -32,7 +32,6 @@ export const EOFError = {
   MAX_STACK_HEIGHT: 'expected maxStackHeight',
   MAX_STACK_HEIGHT_LIMIT: 'stack height limit of 1024 exceeded: ',
   MIN_CODE_SECTIONS: 'should have at least 1 code section',
-  MAX_CODE_SECTIONS: 'can have at most 1024 code sections',
   CODE_SECTION: 'expected a code section',
   DATA_SECTION: 'Expected data section',
   CONTAINER_SECTION: 'expected a container section',
@@ -66,7 +65,6 @@ export const EOFError = {
   RETURN_STACK_OVERFLOW: 'Return stack overflow',
   INVALID_EXTCALL_TARGET: 'invalid extcall target: address > 20 bytes',
   INVALID_RETURN_CONTRACT_DATA_SIZE: 'invalid RETURNCONTRACT: data size lower than expected',
-  INVALID_EOF_FORMAT: 'invalid EOF format',
 } as const
 
 export type SimpleErrors = (typeof SimpleErrors)[keyof typeof SimpleErrors]
