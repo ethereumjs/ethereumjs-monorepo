@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
@@ -13,12 +14,12 @@ const main = async () => {
     customCrypto: { kzg },
   })
 
-  const txData = {
+  const txData: BlobEIP4844TxData = {
     data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     gasLimit: '0x02625a00',
     maxPriorityFeePerGas: '0x01',
     maxFeePerGas: '0xff',
-    maxFeePerDataGas: '0xfff',
+    maxFeePerBlobGas: '0xfff',
     nonce: '0x00',
     to: '0xcccccccccccccccccccccccccccccccccccccccc',
     value: '0x0186a0',

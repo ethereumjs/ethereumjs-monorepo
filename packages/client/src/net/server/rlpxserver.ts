@@ -243,7 +243,7 @@ export class RlpxServer extends Server {
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
-      this.config.logger.info(
+      this.config.logger?.info(
         `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`,
       )
     })
@@ -276,7 +276,7 @@ export class RlpxServer extends Server {
         try {
           await peer.accept(rlpxPeer, this)
           this.peers.set(peer.id, peer)
-          this.config.logger.debug(`Peer connected: ${peer}`)
+          this.config.logger?.debug(`Peer connected: ${peer}`)
           this.config.events.emit(Event.PEER_CONNECTED, peer)
         } catch (error: any) {
           // Fixes a memory leak where RlpxPeer objects could not be GCed,
@@ -291,7 +291,7 @@ export class RlpxServer extends Server {
         const peer = this.peers.get(id)
         if (peer) {
           this.peers.delete(peer.id)
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`,
           )
           this.config.events.emit(Event.PEER_DISCONNECTED, peer)

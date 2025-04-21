@@ -108,7 +108,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJSON = {
     ...kaustinen2GethGenesisData,
-    config: { ...kaustinen2GethGenesisData.config, osakaTime: undefined },
+    config: { ...kaustinen2GethGenesisData.config, verkleTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJSON,
