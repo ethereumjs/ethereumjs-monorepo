@@ -2,7 +2,7 @@ export type EVMErrorType = (typeof EVMErrorMessages)[keyof typeof EVMErrorMessag
 
 export const EVMErrorTypeString = 'EVMError'
 
-export const EVMErrorMessages = {
+const EVMErrorMessages = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM: 'code size to deposit exceeds maximum code size',
@@ -36,6 +36,7 @@ export const EVMErrorMessages = {
 export class EVMError {
   error: EVMErrorType
   errorType: string
+  static errorMessages: Record<keyof typeof EVMErrorMessages, EVMErrorType> = EVMErrorMessages
 
   constructor(error: EVMErrorType) {
     this.error = error

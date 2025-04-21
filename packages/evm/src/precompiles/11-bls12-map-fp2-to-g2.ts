@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../errors.ts'
+import { EVMError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
 import { EVMErrorResult, OOGResult } from '../evm.ts'
 
@@ -23,7 +23,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   if (!equalityLengthCheck(opts, 128, pName)) {
     return EVMErrorResult(
-      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
       opts.gasLimit,
     )
   }
@@ -35,7 +35,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   ]
   if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName)) {
     return EVMErrorResult(
-      new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+      new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
       opts.gasLimit,
     )
   }

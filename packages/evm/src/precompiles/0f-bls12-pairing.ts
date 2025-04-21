@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../errors.ts'
+import { EVMError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
 import { EVMErrorResult, OOGResult } from '../evm.ts'
 
@@ -22,7 +22,10 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
-    return EVMErrorResult(new EVMError(EVMErrorMessages.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INPUT_EMPTY),
+      opts.gasLimit,
+    )
   }
 
   const gasUsedPerPair = opts.common.param('bls12381PairingPerPairGas') ?? BigInt(0)
@@ -32,7 +35,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   // check (respectively Jochem can maybe have a word) if this is something intended or not
   if (!moduloLengthCheck(opts, 384, pName)) {
     return EVMErrorResult(
-      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
       opts.gasLimit,
     )
   }
@@ -56,7 +59,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     const pairStart = 384 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
       return EVMErrorResult(
-        new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+        new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
         opts.gasLimit,
       )
     }
