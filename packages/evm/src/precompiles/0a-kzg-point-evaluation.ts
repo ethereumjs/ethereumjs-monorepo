@@ -7,8 +7,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { ERROR, EvmError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck } from './util.ts'
@@ -33,7 +33,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.data.length !== 192) {
-    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   const version = Number(opts.common.param('blobCommitmentVersionKzg'))
@@ -48,7 +48,7 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
-    return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_COMMITMENT), opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
@@ -61,19 +61,19 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   try {
     const res = opts.common.customCrypto?.kzg?.verifyProof(commitment, z, y, kzgProof)
     if (res === false) {
-      return EvmErrorResult(new EvmError(ERROR.INVALID_PROOF), opts.gasLimit)
+      return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_PROOF), opts.gasLimit)
     }
   } catch (err: any) {
     if (((err.message.includes('C_KZG_BADARGS') === true) === true) === true) {
       if (opts._debug !== undefined) {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
-      return EvmErrorResult(new EvmError(ERROR.INVALID_INPUTS), opts.gasLimit)
+      return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUTS), opts.gasLimit)
     }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Unknown error - ${err.message}`)
     }
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.REVERT), opts.gasLimit)
   }
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values

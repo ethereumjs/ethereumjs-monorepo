@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EVMError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
-import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { ERROR, EvmError } from '../exceptions.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import { leading16ZeroBytesCheck } from './bls12_381/index.ts'
 import { getPrecompileName } from './index.ts'
@@ -22,13 +22,19 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (!equalityLengthCheck(opts, 64, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit,
+    )
   }
 
   // check if some parts of input are zero bytes.
   const zeroByteRanges = [[0, 16]]
   if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+      opts.gasLimit,
+    )
   }
 
   let returnValue
@@ -38,7 +44,19 @@ export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    // noble‑curves throws this for inputs that map to the point at infinity
+    if (e.message === 'bad point: ZERO') {
+      // return two zeroed field elements (x & y), each the same length as the input
+      const zeroPoint = new Uint8Array(opts.data.length * 2)
+      if (opts._debug !== undefined) {
+        opts._debug(`${pName} mapping to ZERO point, returning zero-filled output`)
+      }
+      return {
+        executionGasUsed: gasUsed,
+        returnValue: zeroPoint,
+      }
+    }
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

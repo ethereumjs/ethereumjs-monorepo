@@ -35,11 +35,12 @@ import { createRPCServerListener, createWsRPCServerListener } from '../../src/ut
 import { mockBlockchain } from './mockBlockchain.ts'
 
 import type { AddressInfo } from 'node:net'
+import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
-import type { GenesisState } from '@ethereumjs/common'
+import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
-import type { HttpClient, HttpServer } from 'jayson/promise/index.js'
+import type { HttpClient, HttpServer, MethodLike } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../../src/client.ts'
 
 const config: any = {}
@@ -48,13 +49,13 @@ config.logger = getLogger(config)
 type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
-type createClientArgs = {
+interface CreateClientOptions {
   minerCoinbase: string
   includeVM: boolean // Instantiates the VM when creating the test client
   commonChain: Common
   enableMetaDB: boolean
   txLookupLimit: number
-  syncTargetHeight: bigint
+  syncTargetHeight: bigint | null
   noPeers: boolean
   blockchain: Blockchain
   chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
@@ -63,9 +64,16 @@ type createClientArgs = {
   genesisStateRoot: Uint8Array
   savePreimages: boolean
   statelessVerkle: boolean
+  engine: boolean
+  customCrypto: CustomCrypto
+  hardfork: string | Hardfork
 }
 export function startRPC(
-  methods: any,
+  methods?:
+    | {
+        [methodName: string]: MethodLike
+      }
+    | undefined,
   opts: StartRPCOpts = { port: 0 },
   withEngineMiddleware?: WithEngineMiddleware,
 ) {
@@ -94,7 +102,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<CreateClientOptions> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
@@ -128,7 +136,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const clientConfig = { ...defaultClientConfig, ...clientOpts }
 
   chain.getTd = async (_hash: Uint8Array, _num: bigint) => BigInt(1000)
-  if ((chain as any)._headers !== undefined) {
+  if (chain['_headers'] !== undefined) {
     chain['_headers'].latest = createBlockHeader(
       { withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined },
       { common },
@@ -145,7 +153,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     }),
   ]
 
-  config.syncTargetHeight = clientOpts.syncTargetHeight
+  config.syncTargetHeight = clientOpts.syncTargetHeight ?? undefined
 
   const synchronizer = {
     startingBlock: 0,
@@ -208,7 +216,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   return client as EthereumClient
 }
 
-export async function baseSetup(clientOpts: any = {}) {
+export async function baseSetup(clientOpts: Partial<CreateClientOptions> = {}) {
   const client = await createClient(clientOpts)
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true, true) : {}
@@ -227,8 +235,11 @@ export async function baseSetup(clientOpts: any = {}) {
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
-// TODO: Improve the params typing
-export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
+export async function setupChain(
+  genesisFile: GethGenesis,
+  chainName = 'dev',
+  clientOpts: Partial<CreateClientOptions> = {},
+) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
   const genesisStateRoot = clientOpts.genesisStateRoot
@@ -317,9 +328,9 @@ export async function runBlockWithTxs(
 }
 
 /**
- * Formats a geth genesis file and sets all hardforks to block number zero
+ * Formats a geth genesis object and sets all hardforks to block number zero
  */
-export function gethGenesisStartLondon(gethGenesis: any) {
+export function gethGenesisStartLondon(gethGenesis: GethGenesis): GethGenesis {
   const londonConfig = Object.entries(gethGenesis.config).map((p) => {
     if (p[0].endsWith('Block')) {
       p[1] = 0
@@ -331,7 +342,7 @@ export function gethGenesisStartLondon(gethGenesis: any) {
 
 /**
  * Randomly generated account for testing purposes (signing txs, etc.)
- * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
+ * This address has preallocated balance in file `testdata/geth-genesis/pow.ts`
  */
 export const dummy = {
   addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
@@ -344,7 +355,7 @@ export const dummy = {
  * @param server HttpServer
  * @param inputBlocks Array of valid ExecutionPayloadV1 data
  */
-export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
+export const batchBlocks = async (rpc: HttpClient, inputBlocks: ExecutionPayload[]) => {
   for (let i = 0; i < inputBlocks.length; i++) {
     const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
     assert.equal(res.result.status, 'VALID')
