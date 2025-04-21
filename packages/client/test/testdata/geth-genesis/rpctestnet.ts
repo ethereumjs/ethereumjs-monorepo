@@ -1,4 +1,6 @@
-export const RPCTestnetData = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const RPCTestnetData: GethGenesis = {
   config: {
     chainId: 15470,
     homesteadBlock: 0,

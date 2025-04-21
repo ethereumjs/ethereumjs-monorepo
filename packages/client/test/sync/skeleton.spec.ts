@@ -1,10 +1,12 @@
 import { createBlock } from '@ethereumjs/block'
 import {
   Common,
+  type GethGenesis,
   Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
@@ -16,7 +18,6 @@ import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'
 import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -405,10 +406,10 @@ describe('[Skeleton] / setHead', async () => {
   }
 
   it(`skeleton init should throw error if merge not set`, async () => {
-    const genesis = {
-      ...postMergeData,
+    const genesis: GethGenesis = {
+      ...postMergeGethGenesis,
       config: {
-        ...postMergeData.config,
+        ...postMergeGethGenesis.config,
         // skip the merge hardfork
         terminalTotalDifficulty: undefined,
         clique: undefined,
@@ -420,7 +421,8 @@ describe('[Skeleton] / setHead', async () => {
     const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain['_validateBlocks'] as any) = false
+    // @ts-expect-error -- Assigning to read-only property
+    chain.blockchain['_validateBlocks'] = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     } catch {

@@ -5,18 +5,15 @@ import {
   createBlockHeaderFromBytesArray,
 } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky, Mainnet, Sepolia } from '@ethereumjs/common'
+import { goerliChainConfig, mainnetBlocks, preLondonTestDataBlocks1RLP } from '@ethereumjs/testdata'
 import { MapDB, bytesToHex, equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain, createBlockchain, createBlockchainFromBlocksData } from '../src/index.ts'
 
-import { blocksMainnetData } from './testdata/blocks_mainnet.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
-import { preLondonData } from './testdata/testdata_pre-london.ts'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.ts'
 
 import type { Block, BlockOptions } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
   it('should not crash on getting head of a blockchain without a genesis', async () => {
@@ -61,7 +58,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with createBlockchainFromBlocksData()', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await createBlockchainFromBlocksData(blocksMainnetData, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -75,7 +72,7 @@ describe('blockchain test', () => {
     try {
       await createBlockchain({ common, validateConsensus: true })
       await createBlockchain({ common, validateBlocks: true })
-      common = new Common({ chain: Goerli })
+      common = new Common({ chain: goerliChainConfig })
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.instanceOf(chain, Blockchain, 'should not throw')
@@ -583,7 +580,7 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(preLondonData.genesisRLP as PrefixedHexString)
+    const genesisRlp = hexToBytes(preLondonTestDataBlocks1RLP.genesisRLP)
     const genesisBlock = createBlockFromRLP(genesisRlp, { common })
     const blockchain = await createBlockchain({
       validateBlocks: true,
@@ -591,7 +588,7 @@ describe('blockchain test', () => {
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(preLondonData.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const block = createBlockFromRLP(blockRlp, { common })
     await blockchain.putBlock(block)
   })

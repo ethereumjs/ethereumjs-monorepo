@@ -277,7 +277,9 @@ describe('[CLI]', () => {
         assert.include(message, 'engine', 'engine ws started')
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
-        ;(client as any).ws.on('open', async function () {
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- Property not present on type
+        client['ws'].on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.isTrue(res.result.length > 0, 'read from WS RPC on custom address and port')
           child.kill()
@@ -307,7 +309,9 @@ describe('[CLI]', () => {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
-        ;(client as any).ws.on('open', async function () {
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- Property not present on type
+        client['ws'].on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.isTrue(res.result.includes('EthereumJS'), 'read from WS RPC')
           child.kill()
@@ -422,6 +426,30 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  //TODO: fix with another test-catching method
+  /*it('should start client with no logger when logLevel is set to off', async () => {
+    const cliArgs = [
+      '--logFile=false',
+      '--logRotate=false',
+      '--logMaxFiles=0',
+      '--logLevelFile="debug"',
+      '--logLevel="off"',
+      '--dev=poa',
+      '--port=39671',
+    ]
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('logger turned off')) {
+        assert.isTrue(true, 'logLevel option can be used to turn off logger')
+        child.kill()
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)*/
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const cliArgs = ['--accountCache=2000', '--port=30314', '--rpc=false']

@@ -112,7 +112,8 @@ export class VMExecution extends Execution {
 
     if (this.config.vm !== undefined) {
       this.vm = this.config.vm
-      ;(this.vm as any).blockchain = this.chain.blockchain
+      // @ts-expect-error -- Assigning to read-only property
+      this.vm.blockchain = this.chain.blockchain
     }
 
     if (this.metaDB) {
@@ -158,11 +159,11 @@ export class VMExecution extends Execution {
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
 
-    this.config.logger.info(`Setting up merkleVM`)
-    this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
-    this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
-    this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
-    this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
+    this.config.logger?.info(`Setting up merkleVM`)
+    this.config.logger?.info(`Initializing account cache size=${this.config.accountCache}`)
+    this.config.logger?.info(`Initializing storage cache size=${this.config.storageCache}`)
+    this.config.logger?.info(`Initializing code cache size=${this.config.codeCache}`)
+    this.config.logger?.info(`Initializing trie cache size=${this.config.trieCache}`)
 
     const stateManager = new MerkleStateManager({
       trie,
@@ -205,12 +206,12 @@ export class VMExecution extends Execution {
       return
     }
     if (this.config.statelessVerkle) {
-      this.config.logger.info(`Setting up verkleVM for stateless verkle execution`)
+      this.config.logger?.info(`Setting up verkleVM for stateless verkle execution`)
       stateManager = new StatelessVerkleStateManager({
         common: this.config.execCommon,
       })
     } else if (this.config.statefulVerkle) {
-      this.config.logger.info(`Setting up verkleVM for stateful verkle execution`)
+      this.config.logger?.info(`Setting up verkleVM for stateful verkle execution`)
       stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
     } else
       throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
@@ -299,7 +300,7 @@ export class VMExecution extends Execution {
         await this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
-        this.config.logger.info(
+        this.config.logger?.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`,
         )
         await this.setupMerkleVM()
@@ -586,7 +587,7 @@ export class VMExecution extends Execution {
   async jumpVmHead(jumpToHash: Uint8Array, jumpToNumber?: bigint): Promise<void> {
     return this.runWithLock<void>(async () => {
       // check if the block is canonical in chain
-      this.config.logger.warn(
+      this.config.logger?.warn(
         `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`,
       )
       await this.chain.blockchain.setIteratorHead('vm', jumpToHash)
@@ -612,7 +613,7 @@ export class VMExecution extends Execution {
         await this.checkAndReset(startHeadBlock)
         let canonicalHead = await this.chain.blockchain.getCanonicalHeadBlock()
 
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`,
         )
 
@@ -652,7 +653,7 @@ export class VMExecution extends Execution {
 
                   if (reorg) {
                     clearCache = true
-                    this.config.logger.info(
+                    this.config.logger?.info(
                       `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`,
                     )
                   } else {
@@ -673,7 +674,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
+                    const wasPreVerkle = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
@@ -682,8 +683,8 @@ export class VMExecution extends Execution {
                       blockNumber: number,
                       timestamp,
                     })
-                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Verkle)
-                    if (wasPrePrague && isPostOsaka) {
+                    const isPostVerkle = this.config.execCommon.gteHardfork(Hardfork.Verkle)
+                    if (wasPreVerkle && isPostVerkle) {
                       await this.transitionToVerkle(parentState!)
                       clearCache = false
                     }
@@ -735,7 +736,7 @@ export class VMExecution extends Execution {
                     } hash=${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                       result.gasUsed
                     } time=${diffSec}secs`
-                    this.config.logger.warn(msg)
+                    this.config.logger?.warn(msg)
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
@@ -793,14 +794,14 @@ export class VMExecution extends Execution {
                   }
 
                   if (hasParentStateRoot === true && backStepToHash !== undefined) {
-                    this.config.logger.warn(
+                    this.config.logger?.warn(
                       `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na',
                       )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`,
                     )
                     await this.chain.blockchain.setIteratorHead('vm', backStepToHash)
                   } else {
-                    this.config.logger.error(
+                    this.config.logger?.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na',
                       )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
@@ -831,9 +832,9 @@ export class VMExecution extends Execution {
                       },
                     }
                     writeFileSync(file, JSON.stringify(JSONDump, null, 2))
-                    this.config.logger.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
+                    this.config.logger?.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
                   } else {
-                    this.config.logger.warn(`${errorMsg}:\n${error}`)
+                    this.config.logger?.warn(`${errorMsg}:\n${error}`)
                   }
                 }
 
@@ -846,7 +847,7 @@ export class VMExecution extends Execution {
                 )
                 return actualExecuted
               } else {
-                this.config.logger.error(`VM execution failed with error`, error)
+                this.config.logger?.error(`VM execution failed with error`, error)
                 return null
               }
             })
@@ -867,15 +868,17 @@ export class VMExecution extends Execution {
               const tdAdd = this.config.execCommon.gteHardfork(Hardfork.Paris)
                 ? ''
                 : `td=${this.chain.blocks.td} `
-              ;(this.config.execCommon.gteHardfork(Hardfork.Paris)
-                ? this.config.logger.debug
-                : this.config.logger.info)(
-                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`,
-              )
+
+              const msg = `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
+              if (this.config.execCommon.gteHardfork(Hardfork.Paris)) {
+                this.config.logger?.debug(msg)
+              } else {
+                this.config.logger?.info(msg)
+              }
 
               await this.chain.update(false)
             } else {
-              this.config.logger.debug(
+              this.config.logger?.debug(
                 `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
                   endHeadBlock.header.number
                 }`,
@@ -914,10 +917,10 @@ export class VMExecution extends Execution {
       this.config.execution &&
       vmHeadBlock.header.number < canonicalHead.header.number
     ) {
-      this.config.logger.info(`Starting execution run ${infoStr}`)
+      this.config.logger?.info(`Starting execution run ${infoStr}`)
       void this.run(true, true)
     } else {
-      this.config.logger.info(`Skipped execution run ${infoStr}`)
+      this.config.logger?.info(`Skipped execution run ${infoStr}`)
     }
     return true
   }
@@ -957,7 +960,7 @@ export class VMExecution extends Execution {
    * - Range of blocks, '5-10'
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
-    this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
+    this.config.logger?.info('Preparing for block execution (debug mode, no services started)...')
 
     const block = await this.chain.blockchain.getBlock(first)
     const startExecutionHardfork = this.config.execCommon.getHardforkBy({
@@ -965,7 +968,7 @@ export class VMExecution extends Execution {
       timestamp: block.header.timestamp,
     })
 
-    // Setup VM with verkle state manager if Osaka is active
+    // Setup VM with verkle state manager if Verkle is active
     if (
       this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle) &&
       this.config.statelessVerkle
@@ -1002,9 +1005,9 @@ export class VMExecution extends Execution {
           block.transactions.length
         } gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
-          this.config.logger.info(msg)
+          this.config.logger?.info(msg)
         } else {
-          this.config.logger.warn(msg)
+          this.config.logger?.warn(msg)
         }
       } else {
         let count = 0
@@ -1015,7 +1018,7 @@ export class VMExecution extends Execution {
           const txHash = bytesToHex(tx.hash())
           if (allTxs || txHashes.includes(txHash)) {
             const res = await runTx(vm, { block, tx })
-            this.config.logger.info(
+            this.config.logger?.info(
               `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`,
             )
             count += 1
@@ -1023,9 +1026,9 @@ export class VMExecution extends Execution {
         }
         if (count === 0) {
           if (!allTxs) {
-            this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+            this.config.logger?.warn(`Block number ${first} contains no txs with provided hashes`)
           } else {
-            this.config.logger.info(`Block has 0 transactions (no execution)`)
+            this.config.logger?.info(`Block has 0 transactions (no execution)`)
           }
         }
       }
@@ -1038,19 +1041,19 @@ export class VMExecution extends Execution {
       const deactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       stats = sm['_caches']?.account?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       stats = sm['_caches']?.storage?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       stats = sm['_caches']?.code?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       const tStats = sm['_trie'].database().stats()
-      this.config.logger.info(
+      this.config.logger?.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`,
       )

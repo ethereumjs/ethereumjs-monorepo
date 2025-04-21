@@ -13,18 +13,18 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
   getPresetChainConfig,
+  parseGethGenesisState,
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
+  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
   createAddressFromPrivateKey,
   createAddressFromString,
   ecrecover,
-  ecsign,
   hexToBytes,
-  parseGethGenesisState,
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -38,7 +38,7 @@ import {
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
@@ -52,8 +52,8 @@ import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
 
-import type { CustomCrypto } from '@ethereumjs/common'
-import type { Address, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Logger } from '../src/logging.ts'
 import type { ClientOpts } from '../src/types.ts'
 
@@ -206,7 +206,7 @@ export function getArgs(): ClientOpts {
       })
       .option('logLevel', {
         describe: 'Logging verbosity',
-        choices: ['error', 'warn', 'info', 'debug'],
+        choices: ['error', 'warn', 'info', 'debug', 'off'],
         default: 'info',
       })
       .option('logFile', {
@@ -495,7 +495,7 @@ async function setupDevnet(prefundAddress: Address, args: ClientOpts) {
             epoch: 30000,
           },
         }
-  const defaultChainData = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -521,6 +521,7 @@ async function setupDevnet(prefundAddress: Address, args: ClientOpts) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
   const extraData =
     args.dev === 'pow' ? '0x' + '0'.repeat(32) : '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
@@ -551,7 +552,9 @@ async function inputAccounts(args: ClientOpts) {
   })
 
   // Hide key input
-  ;(rl as any).input.on('keypress', function () {
+  // TODO: Investigate why type doesn't match & if this actually works
+  // @ts-expect-error -- Absent from type
+  rl['input'].on('keypress', function () {
     // get the number of characters entered so far:
     const len = (rl as any).line.length
     // move cursor back to the beginning of the input:
@@ -560,7 +563,9 @@ async function inputAccounts(args: ClientOpts) {
     readline.clearLine((rl as any).output, 1)
     // replace the original input with asterisks:
     for (let i = 0; i < len; i++) {
-      ;(rl as any).output.write('*')
+      // TODO: Investigate why type doesn't match & if this actually works
+      // @ts-expect-error -- Absent from type
+      rl['output'].write('*')
     }
   })
 
@@ -579,7 +584,9 @@ async function inputAccounts(args: ClientOpts) {
         const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`,
         )) as PrefixedHexString
-        ;(rl as any).history = (rl as any).history.slice(1)
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- -- Property not present on type
+        rl['history'] = rl['history'].slice(1)
         const privKey = hexToBytes(inputKey)
         const derivedAddress = createAddressFromPrivateKey(privKey)
         if (address.equals(derivedAddress) === true) {
@@ -620,16 +627,12 @@ function generateAccount(): Account {
   return [address, privKey]
 }
 
-export async function generateClientConfig(args: ClientOpts) {
-  // Give chainId priority over networkId
-  // Give networkId precedence over network name
-  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
-  const chain = getPresetChainConfig(chainName)
+export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
 
   const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
-  if (args.useJsCrypto === false) {
+  if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
     cryptoFunctions.ecrecover = (
@@ -648,23 +651,12 @@ export async function generateClientConfig(args: ClientOpts) {
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      if (msg.length < 32) {
-        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
-      }
       const buf = secp256k1Sign(msg, pk)
-      const r = buf.slice(0, 32)
-      const s = buf.slice(32, 64)
-      const v = BigInt(buf[64])
+      const r = bytesToBigInt(buf.slice(0, 32))
+      const s = bytesToBigInt(buf.slice(32, 64))
+      const recovery = buf[64]
 
-      return { r, s, v }
-    }
-    cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
-      const sig = secp256k1Sign(hash, pk)
-      return {
-        signature: sig.slice(0, 64),
-        recid: sig[64],
-      }
+      return { r, s, recovery }
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
@@ -673,12 +665,29 @@ export async function generateClientConfig(args: ClientOpts) {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
-    cryptoFunctions.ecsign = ecsign
-    cryptoFunctions.ecdsaSign = ecdsaSign
-    cryptoFunctions.ecdsaRecover = ecdsaRecover
+    cryptoFunctions.ecsign = secp256k1.sign
+    cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      // Adapted from @noble/curves docs
+      const sign = secp256k1.Signature.fromCompact(sig)
+      const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
+      const address = point.toRawBytes(true)
+      return address
+    }
   }
   cryptoFunctions.kzg = kzg
   cryptoFunctions.verkle = verkle
+  return cryptoFunctions
+}
+
+export async function generateClientConfig(args: ClientOpts) {
+  // Give chainId priority over networkId
+  // Give networkId precedence over network name
+  const chainName = args.chainId ?? args.networkId ?? args.network ?? Chain.Mainnet
+  const chain = getPresetChainConfig(chainName)
+
+  // `useJsCrypto` defaults to `false` in the CLI defaults
+  const cryptoFunctions = await getCryptoFunctions(args.useJsCrypto ?? false)
+
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
@@ -720,7 +729,8 @@ export async function generateClientConfig(args: ClientOpts) {
     common = createCommonFromGethGenesis(genesisFile, {
       chain: chainName,
     })
-    ;(common.customCrypto as any) = cryptoFunctions
+    // @ts-expect-error -- Assign to read-only property
+    common.customCrypto = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 
@@ -748,7 +758,7 @@ export async function generateClientConfig(args: ClientOpts) {
     args.logFile = args.logFile ? `${networkDir}/ethereumjs.log` : undefined
   }
 
-  const logger: Logger = getLogger(args)
+  const logger: Logger | undefined = getLogger(args)
   let bootnodes
   if (args.bootnodes !== undefined) {
     // File path passed, read bootnodes from disk
@@ -768,7 +778,7 @@ export async function generateClientConfig(args: ClientOpts) {
         }
       })
       bootnodes = parseMultiaddrs(nodeURLs)
-      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+      logger?.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
     } else {
       bootnodes = parseMultiaddrs(args.bootnodes)
     }
@@ -815,7 +825,7 @@ export async function generateClientConfig(args: ClientOpts) {
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics
-    logger.info(`Starting Metrics Server on port ${args.prometheusPort}`)
+    logger?.info(`Starting Metrics Server on port ${args.prometheusPort}`)
     metricsServer.listen(args.prometheusPort)
   }
 
@@ -875,12 +885,12 @@ export async function generateClientConfig(args: ClientOpts) {
       writeFileSync(`${networkDir}/${details.transport}`, details.url)
     } catch (e) {
       // In case dir is not really setup, mostly to take care of mockserver in test
-      config.logger.error(`Error writing listener details to disk: ${(e as Error).message}`)
+      config.logger?.error(`Error writing listener details to disk: ${(e as Error).message}`)
     }
   })
   if (customGenesisState !== undefined) {
     const numAccounts = Object.keys(customGenesisState).length
-    config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
+    config.logger?.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
   const customGenesisStateRoot = args.verkleGenesisStateRoot
 

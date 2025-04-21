@@ -1,11 +1,5 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  bytesToHex,
-  createAddressFromString,
-  hexToBytes,
-  parseGethGenesisState,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { bytesToHex, createAddressFromString, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
@@ -255,7 +249,7 @@ describe('simple mainnet test run', async () => {
       ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
-    for (const addressString of Object.keys(customGenesisState)) {
+    for (const addressString of Object.keys(customGenesisState) as PrefixedHexString[]) {
       const address = createAddressFromString(addressString)
       const account = await stateManager?.getAccount(address)
       assert.equal(

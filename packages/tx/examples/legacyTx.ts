@@ -1,8 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { LegacyTxData } from '@ethereumjs/tx'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const txParams = {
+const txData: LegacyTxData = {
   nonce: '0x0',
   gasPrice: '0x09184e72a000',
   gasLimit: '0x2710',
@@ -12,7 +13,7 @@ const txParams = {
 }
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-const tx = createLegacyTx(txParams, { common })
+const tx = createLegacyTx(txData, { common })
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 

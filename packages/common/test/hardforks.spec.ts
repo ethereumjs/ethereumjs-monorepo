@@ -1,3 +1,4 @@
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -14,9 +15,7 @@ import {
   createCustomCommon,
 } from '../src/index.ts'
 
-import { Goerli } from './data/goerliCommon.ts'
-
-import type { ChainConfig } from '../src/index.ts'
+import type { ChainConfig, GethGenesis, GethGenesisConfig } from '../src/index.ts'
 
 describe('[Common]: Hardfork logic', () => {
   it('Hardfork access', () => {
@@ -137,7 +136,7 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return null if next HF is not available (mainnet: prague -> osaka)'
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Prague), null, msg)
 
-    const c2 = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const c2 = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     msg = 'should return null if next HF is not available (goerli: cancun -> prague)'
     assert.equal(c2.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
@@ -218,7 +217,10 @@ describe('[Common]: Hardfork logic', () => {
   it('_calcForkHash()', () => {
     const chains: [ChainConfig, Uint8Array][] = [
       [Mainnet, hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')],
-      [Goerli, hexToBytes('0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a')],
+      [
+        goerliChainConfig,
+        hexToBytes('0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'),
+      ],
       [Sepolia, hexToBytes('0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9')],
       [Holesky, hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4')],
       [Hoodi, hexToBytes('0xbbe312868b376a3001692a646dd2d7d1e4406380dfd86b98aa8a34d1557c971b')],
@@ -281,7 +283,7 @@ describe('[Common]: Hardfork logic', () => {
 
   it('forkHash(): should not change forkHash if timestamp is at genesis timestamp', () => {
     // Setup default config
-    const defaultConfig = {
+    const defaultConfig: GethGenesis = {
       timestamp: '10',
       config: {
         ethash: {},
@@ -303,10 +305,10 @@ describe('[Common]: Hardfork logic', () => {
         terminalTotalDifficulty: 0,
         shanghaiTime: 0,
         cancunTime: 0,
-      },
-      difficulty: '100',
+      } as GethGenesisConfig,
+      difficulty: '0x100',
       alloc: {},
-      gasLimit: '5000',
+      gasLimit: '0x5000',
       nonce: '',
     }
     const gethConfig = {
@@ -346,7 +348,7 @@ describe('[Common]: Hardfork logic', () => {
   })
 
   it('HF consensus updates', () => {
-    let c = new Common({ chain: Goerli, hardfork: Hardfork.Byzantium })
+    let c = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Byzantium })
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfAuthority,
@@ -363,7 +365,7 @@ describe('[Common]: Hardfork logic', () => {
       'should provide the correct initial chain consensus configuration',
     )
 
-    c = new Common({ chain: Goerli, hardfork: Hardfork.Paris })
+    c = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Paris })
     assert.equal(
       c.consensusType(),
       ConsensusType.ProofOfStake,

@@ -451,7 +451,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.finished += jobItems.length
         cb()
       } catch (error: any) {
-        this.config.logger.warn(`Error storing received block or header result: ${error}`)
+        this.config.logger?.warn(`Error storing received block or header result: ${error}`)
         const { destroyFetcher, banPeer, stepBack } = this.processStoreError(
           error,
           jobItems[0].task,
@@ -483,7 +483,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
         cb: Function,
       ) => {
-        const items = (<Job<JobTask, JobResult, StorageItem>[]>[]).concat(
+        const items = ([] as Job<JobTask, JobResult, StorageItem>[]).concat(
           ...many.map(
             (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk,
           ),

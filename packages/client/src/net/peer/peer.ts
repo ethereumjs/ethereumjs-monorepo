@@ -121,7 +121,7 @@ export abstract class Peer extends EventEmitter {
             this.config.syncTargetHeight < latest.number)
         ) {
           this.config.syncTargetHeight = height
-          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+          this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
         }
       }
     }
@@ -170,12 +170,12 @@ export abstract class Peer extends EventEmitter {
 
       await bound!.handshake(sender)
 
-      this.eth = <BoundEthProtocol>bound
+      this.eth = bound as BoundEthProtocol
     } else if (protocol.name === 'snap') {
       bound = new BoundSnapProtocol(boundOpts)
       if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
 
-      this.snap = <BoundSnapProtocol>bound
+      this.snap = bound as BoundSnapProtocol
     } else {
       throw EthereumJSErrorWithoutCode(`addProtocol: ${protocol.name} protocol not supported`)
     }

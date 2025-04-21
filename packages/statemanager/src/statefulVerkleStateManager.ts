@@ -2,9 +2,7 @@ import { VerkleAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import type {
   Address,
-  GenesisState,
   PrefixedHexString,
-  StoragePair,
   VerkleCrypto,
   VerkleExecutionWitness,
 } from '@ethereumjs/util'
@@ -49,8 +47,10 @@ import { modifyAccountFields } from './util.ts'
 import type {
   AccountFields,
   Common,
+  GenesisState,
   StateManagerInterface,
   StorageDump,
+  StoragePair,
   StorageRange,
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
@@ -745,10 +745,12 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   async generateCanonicalGenesis(genesisState: GenesisState) {
     await this._trie.createRootNode()
     await this.checkpoint()
-    for (const addressStr of Object.keys(genesisState)) {
+    for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
       const addrState = genesisState[addressStr]
-      let nonce, balance, code
-      let storage: StoragePair[] = []
+      let nonce: PrefixedHexString | undefined
+      let balance: PrefixedHexString | bigint
+      let code: PrefixedHexString | undefined
+      let storage: StoragePair[] | undefined = []
       if (Array.isArray(addrState)) {
         ;[balance, code, storage, nonce] = addrState
       } else {
@@ -758,7 +760,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
       const address = createAddressFromString(addressStr)
       await this.putAccount(address, new Account())
-      const codeBuf = hexToBytes((code as string) ?? '0x')
+      const codeBuf = hexToBytes(code ?? '0x')
       if (this.common.customCrypto?.keccak256 === undefined) {
         throw Error('keccak256 required')
       }
@@ -780,8 +782,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       // Put account data
       const account = createPartialAccount({
-        nonce: nonce as PrefixedHexString,
-        balance: balance as PrefixedHexString,
+        nonce,
+        balance,
         codeHash,
         codeSize: codeBuf.byteLength,
       })

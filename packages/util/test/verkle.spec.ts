@@ -1,3 +1,4 @@
+import { verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
@@ -20,8 +21,6 @@ import {
   randomBytes,
   verifyVerkleProof,
 } from '../src/index.ts'
-
-import { verkleKaustinen6Block72Data } from './testdata/verkleKaustinen6Block72.ts'
 
 describe('Verkle cryptographic helpers', () => {
   it('getVerkleStem(): returns the expected stems', () => {

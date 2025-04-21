@@ -9,8 +9,6 @@
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
-Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceding release.
-
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -37,7 +35,7 @@ const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 
 ### Parameters
 
-All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Chain.Mainnet') or the `chain` together with a specific `hardfork` provided:
+All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Mainnet') or the `chain` together with a specific `hardfork` provided:
 
 ```ts
 // ./examples/common.ts#L1-L7
@@ -45,7 +43,7 @@ All parameters can be accessed through the `Common` class, instantiated with an 
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
-const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
 
 // Instantiate with the chain (and the default hardfork)
 let c = new Common({ chain: Mainnet })
@@ -53,7 +51,7 @@ let c = new Common({ chain: Mainnet })
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `Hardfork.Shanghai`
+Current `DEFAULT_HARDFORK`: `Hardfork.Prague`
 
 Here are some simple usage examples:
 
@@ -64,26 +62,18 @@ Here are some simple usage examples:
 console.log('Below are the known bootstrap nodes')
 console.log(c.bootstrapNodes()) // Array with current nodes
 
-// Instantiate with an EIP activated
-c = new Common({ chain: Mainnet, eips: [4844] })
-console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
+// Instantiate with an EIP activated (with pre-EIP hardfork)
+c = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+console.log(`EIP 7702 is active -- ${c.isActivatedEIP(7702)}`)
 
 // Instantiate common with custom chainID
 const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
-console.log(`The current chain ID is ${commonWithCustomChainId.chainId}`)
+console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
 ```
 
 ### Custom Cryptography Primitives (WASM)
 
-All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default.
-These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
-Javascript and therefore have the potential downside of being less performant than alternative cryptography modules
-written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of
-the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in
-place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper
-methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-See the implementation of this in the [`@ethereumjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
-for an example of how this is done for each available cryptographic primitive.
+All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native JavaScript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
 
 Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
 
@@ -115,9 +105,7 @@ void main()
 
 ### Example 2: KZG
 
-The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property
-and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how
-to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
+The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
 // ./examples/initKzg.ts
@@ -141,9 +129,9 @@ void main()
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primities (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -174,21 +162,9 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
-
 ## Events
 
-The `Common` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
+The `Common` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
 
 | Event             | Description                                                |
 | ----------------- | ---------------------------------------------------------- |
@@ -201,15 +177,16 @@ The `Common` class has a public property `events` which contains an `EventEmitte
 The `chain` can be set in the constructor like this:
 
 ```ts
-const c = new Common({ chain: Chain.Mainnet })
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
 ```
 
 Supported chains:
 
-- `mainnet` (`Chain.Mainnet`)
-- `goerli` (`Chain.Goerli`)
-- `sepolia` (`Chain.Sepolia`) (`v2.6.1`+)
-- `holesky` (`Chain.Holesky`) (`v4.1.0`+)
+- `mainnet` (`Mainnet`)
+- `sepolia` (`Sepolia`) (`v2.6.1`+)
+- `holesky` (`Holesky`) (`v4.1.0`+)
+- `hoodi`(`Hoodi`) (`v10+` (new versioning scheme))
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -228,40 +205,19 @@ The following chain-specific parameters are provided:
 To get an overview of the different parameters have a look at one of the chain configurations in the `chains.ts` configuration
 file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
-### Working with private/custom chains
+### Working with Private/Custom Chains
 
-There are two distinct APIs available for setting up custom(ized) chains.
-
-#### Basic Chain Customization / Predefined Custom Chains
-
-There is a dedicated `Common.custom()` static constructor which allows for an easy instantiation of a Common instance with somewhat adopted chain parameters, with the main use case to adopt on instantiating with a deviating chain ID (you can use this to adopt other chain parameters as well though). Instantiating a custom common instance with its own chain ID and inheriting all other parameters from `mainnet` can now be as easily done as:
+Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be both used to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
 
 ```ts
-// ./examples/common.ts#L25-L27
+import { createCustomCommon, Mainnet } from '@ethereumjs/common'
+ 
+createCustomCommon({chainId: 123}, Mainnet)
 ```
 
-The `custom()` method also takes a string as a first input (instead of a dictionary). This can be used in combination with the `CustomChain` enum dict which allows for the selection of predefined supported custom chains for an easier `Common` setup of these supported chains:
+See the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for how to use such a `Common` instance in the context of sending txs to L2 networks.
 
-```ts
-const common = Common.custom(CustomChain.ArbitrumRinkebyTestnet)
-```
-
-The following custom chains are currently supported:
-
-- `PolygonMainnet`
-- `PolygonMumbai`
-- `ArbitrumRinkebyTestnet`
-- `xDaiChain`
-- `OptimisticKovan`
-- `OptimisticEthereum`
-
-`Common` instances created with this simplified `custom()` constructor can't be used in all usage contexts (the HF configuration is very likely not matching the actual chain) but can be useful for specific use cases, e.g. for sending a tx with `@ethereumjs/tx` to an L2 network (see the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for a complete usage example).
-
-#### Activate with a single custom Chain setup
-
-If you want to initialize a `Common` instance with a single custom chain which is then directly activated
-you can pass a dictionary - conforming to the parameter format described above - with your custom chain
-values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
+Beyond it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
 
 ```ts
 // ./examples/customChain.ts
@@ -274,29 +230,6 @@ import myCustomChain1 from './genesisData/testnet.json'
 const common1 = createCustomCommon(myCustomChain1, Mainnet)
 console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
 ```
-
-#### Initialize using customChains Array
-
-A second way for custom chain initialization is to use the `customChains` constructor option. This
-option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on
-a common instance in addition to the already supported ones. It also allows for an activation-independent
-initialization, so you can add your chains by adding to the `customChains` array and either directly
-use the `chain` option to activate one of the custom chains passed or activate a build in chain
-(e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
-
-```ts
-// ./examples/customChain.ts
-
-import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
-
-import myCustomChain1 from './genesisData/testnet.json'
-
-// Add custom chain config
-const common1 = createCustomCommon(myCustomChain1, Mainnet)
-console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
-```
-
-Starting with v3 custom genesis states should be passed to the [Blockchain](../blockchain/) library directly.
 
 #### Initialize using Geth's genesis json
 
@@ -352,13 +285,14 @@ library supported:
 - `muirGlacier` (`Hardfork.MuirGlacier`)
 - `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
 - `london` (`Hardfork.London`) (since `v2.4.0`)
-- `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
+- `merge` (`Hardfork.Merge`) (since `v2.5.0`)
 - `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
 - `cancun` (`Hardfork.Cancun`) (since `v4.2.0`)
+- `prague` (`Hardfork.Prague`) (`DEFAULT_HARDFORK`) (since `v10`)
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Prague` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Osaka` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -375,37 +309,31 @@ See one of the hardfork configurations in the `hardforks.ts` file
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
 hardfork.
 
-The hardfork configurations above `chainstart` only contain the deltas from `chainstart` and
-shouldn't be accessed directly until you have a specific reason for it.
-
 ### EIPs
 
-Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
-and can be activated like this:
+EIPs are native citizens within the library and can be activated like this:
 
 ```ts
-const c = new Common({ chain: Chain.Mainnet, eips: [4844] })
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 ```
 
 The following EIPs are currently supported:
 
 - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) - EVM Object Format (EOF) v1 (`outdated`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
 - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`outdated`)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
@@ -418,12 +346,15 @@ The following EIPs are currently supported:
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
-- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
-- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+- [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
+- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
 
 ### Bootstrap Nodes
 

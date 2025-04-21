@@ -160,9 +160,12 @@ describe(method, () => {
       common,
       freeze: false,
     })
-    ;(tx as any).v = undefined
-    ;(tx as any).r = undefined
-    ;(tx as any).s = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.v = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.r = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.s = undefined
     const txHex = bytesToHex(tx.serialize())
     const res = await rpc.request(method, [txHex])
 
@@ -221,9 +224,9 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.ts')
+    const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },

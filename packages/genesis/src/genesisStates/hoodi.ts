@@ -1,4 +1,5 @@
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
+
 export const hoodiGenesis: GenesisState = {
   '0x0000000000000000000000000000000000000000': '0x1',
   '0x0000000000000000000000000000000000000001': '0x1',

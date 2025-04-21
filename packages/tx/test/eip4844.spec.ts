@@ -6,7 +6,6 @@ import {
   commitmentsToVersionedHashes,
   concatBytes,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   getBlobs,
   hexToBytes,
@@ -26,16 +25,17 @@ import {
   paramsTx,
 } from '../src/index.ts'
 
-import { hardfork4844Data } from './testData/4844-hardfork.ts'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
 const pk = randomBytes(32)
 const kzg = new microEthKZG(trustedSetup)
 describe('EIP4844 addSignature tests', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -67,10 +67,10 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(v, r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -86,17 +86,17 @@ describe('EIP4844 addSignature tests', () => {
     )
 
     const msgHash = tx.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privKey)
+    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(v + BigInt(27), r, s)
+      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
     })
   })
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -141,7 +141,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 })
 
 describe('fromTxData using from a json', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -210,7 +210,7 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -263,7 +263,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsTx,
@@ -530,7 +530,7 @@ describe('Network wrapper tests', () => {
 })
 
 describe('hash() and signature verification', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -577,7 +577,7 @@ describe('hash() and signature verification', () => {
 })
 
 it('getEffectivePriorityFee()', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -601,7 +601,7 @@ it('getEffectivePriorityFee()', () => {
 })
 
 describe('Network wrapper deserialization test', () => {
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsTx,

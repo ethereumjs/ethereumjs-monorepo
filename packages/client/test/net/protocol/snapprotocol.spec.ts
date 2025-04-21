@@ -16,7 +16,8 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../../src/blockchain/index.ts'
 import { Config } from '../../../src/config.ts'
 import { SnapProtocol } from '../../../src/net/protocol/index.ts'
-;(BigInt.prototype as any).toJSON = function () {
+// @ts-expect-error -- Adding a method to the BigInt prototype
+BigInt.prototype.toJSON = function () {
   return this.toString()
 }
 

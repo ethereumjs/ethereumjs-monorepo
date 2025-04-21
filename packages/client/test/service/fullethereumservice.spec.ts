@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { TransactionType, createTx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -7,7 +8,6 @@ import { Chain } from '../../src/blockchain/index.ts'
 import { Config, SyncMode } from '../../src/config.ts'
 import { RlpxServer } from '../../src/net/server/index.ts'
 import { Event } from '../../src/types.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Log } from '@ethereumjs/evm'
 import type { BeaconSynchronizer } from '../../src/sync/index.ts'
@@ -185,9 +185,12 @@ describe('should correctly handle GetBlockHeaders', async () => {
       },
     } as any,
   )
-  ;(service.chain as any)._headers = {
+
+  service.chain['_headers'] = {
     height: 5n,
+    /// @ts-expect-error -- For testing purposes
     td: null,
+    /// @ts-expect-error -- For testing purposes
     latest: 5n,
   }
 
@@ -341,7 +344,8 @@ describe('should handle GetPooledTransactions', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
 
   const tx = createTx({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
@@ -370,12 +374,10 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
-  ;(service.txPool as any).handleAnnouncedTxHashes = (
-    hashes: Uint8Array[],
-    _peer: any,
-    _pool: any,
-  ) => {
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool['handleAnnouncedTxHashes'] = (hashes: Uint8Array[], _peer: any, _pool: any) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
     })
@@ -385,10 +387,11 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
     { name: 'NewPooledTransactionHashes', data: [[1], [100], [txHash]] },
     'eth',
     {
+      /// @ts-expect-error -- Assigning simpler config for testing
       eth: {
         versions: [67, 68],
       },
-    } as any,
+    },
   )
 })
 
@@ -397,11 +400,13 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
   service.txPool.sendNewTxHashes(
     [[1], [100], [txHash]],
     [
       {
+        /// @ts-expect-error -- Assigning simpler config for testing
         eth: {
           versions: [67, 68],
           request: (data: any): any => {
@@ -410,13 +415,13 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
             })
           },
         },
-      } as any,
+      },
     ],
   )
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })

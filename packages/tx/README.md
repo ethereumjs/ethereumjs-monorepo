@@ -6,10 +6,8 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implements schema and functions related to Ethereum's transaction. |
-| ------------------------------------------------------------------ |
-
-Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceding release.
+| Implements schema and functions for the different Ethereum transaction types |
+| ---------------------------------------------------------------------------- |
 
 ## Installation
 
@@ -20,46 +18,6 @@ To obtain the latest version, simply require the project using `npm`:
 ```shell
 npm install @ethereumjs/tx
 ```
-
-### KZG Setup
-
-This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
-
-For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
-
-Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
-
-This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
-
-#### KZG Initialization
-
-As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
-
-Initialization can then be done like the following:
-
-```ts
-// ./examples/initKzg.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-
-const main = async () => {
-  const kzg = new microEthKZG(trustedSetup)
-  // Instantiate `common`
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Cancun,
-    customCrypto: { kzg },
-  })
-
-  console.log(common.customCrypto.kzg) // should output the KZG API as an object
-}
-
-void main()
-```
-
-Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
 
 ## Usage
 
@@ -77,9 +35,9 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 ### Chain and Hardfork Support
 
-The `LegacyTransaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
+To use a chain other than the default Mainnet chain, or a different hardfork than the default [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) hardfork (`Hardfork.Prague`), provide a `common` object in the constructor of the tx.
 
-Base default HF (determined by `Common`): `Hardfork.Shanghai`
+Base default HF (determined by `Common`): `Hardfork.Prague`
 
 Hardforks adding features and/or tx types:
 
@@ -91,6 +49,7 @@ Hardforks adding features and/or tx types:
 | `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
+| `prague`         | `v10.0.0`  | `EIP-7702` Transactions                                                                                 |
 
 ### WASM Crypto Support
 
@@ -100,16 +59,99 @@ This library by default uses JavaScript implementations for the basic standard c
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
-- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
-- `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
-- `EOACodeEIP7702Transaction` (experimental) ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
-- `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
-- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
-- `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+- `FeeMarketEIP1559Tx` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
+- `AccessListEIP2930Tx` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
+- `BlobEIP4844Tx` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
+- `EOACodeEIP7702Tx` ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
+- `LegacyTx`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+
+#### Gas Fee Market Transactions (EIP-1559)
+
+- Class: `FeeMarketEIP1559Tx`
+- Activation: `london`
+- Type: `2`
+
+This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
+
+```ts
+// ./examples/londonTx.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
+}
+
+const tx = createFeeMarket1559Tx(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
+```
+
+#### Access List Transactions (EIP-2930)
+
+- Class: `AccessListEIP2930Tx`
+- Activation: `berlin`
+- Type: `1`
+
+This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
+
+```ts
+// ./examples/accessListTx.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createAccessList2930Tx } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  gasPrice: '0x01',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [
+    {
+      address: '0x0000000000000000000000000000000000000101',
+      storageKeys: [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x00000000000000000000000000000000000000000000000000000000000060a7',
+      ],
+    },
+  ],
+  type: '0x01',
+}
+
+const tx = createAccessList2930Tx(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
+```
+
+For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
+on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
 #### Blob Transactions (EIP-4844)
 
-- Class: `BlobEIP4844Transaction`
+- Class: `BlobEIP4844Tx`
 - Activation: `cancun`
 - Type: `3`
 
@@ -119,7 +161,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ##### Usage
 
-See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
+See the following code snipped for an example on how to instantiate:
 
 ```ts
 // ./examples/blobTx.ts
@@ -171,52 +213,15 @@ Alternatively, you can pass a `blobsData` property with an array of strings corr
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
-#### Gas Fee Market Transactions (EIP-1559)
+#### EOA Code Transaction (EIP-7702)
 
-- Class: `FeeMarketEIP1559Transaction`
-- Activation: `london`
-- Type: `2`
-
-This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
-
-```ts
-// ./examples/londonTx.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  maxPriorityFeePerGas: '0x01',
-  maxFeePerGas: '0xff',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [],
-  type: '0x02',
-}
-
-const tx = createFeeMarket1559Tx(txData, { common })
-console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
-```
-
-#### EOA Code Transaction (EIP-7702) (outdated)
-
-- Class: `EOACodeEIP7702Transaction`
-- Activation: `prague` (or per EIP setting)
+- Class: `EOACodeEIP7702Tx`
+- Activation: `prague`
 - Type: `4`
 
-This library supports a non-final version of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) starting with `v5.4.0`. This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
 
-The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
+The following is a simple example how to use an `EOACodeEIP7702Tx` with one authorization list item:
 
 ```ts
 // ./examples/EOACodeTx.ts
@@ -250,58 +255,9 @@ console.log(
 )
 ```
 
-Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
-
-#### Access List Transactions (EIP-2930)
-
-- Class: `AccessListEIP2930Transaction`
-- Activation: `berlin`
-- Type: `1`
-
-This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
-
-```ts
-// ./examples/accessListTx.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createAccessList2930Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
-
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  gasPrice: '0x01',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [
-    {
-      address: '0x0000000000000000000000000000000000000101',
-      storageKeys: [
-        '0x0000000000000000000000000000000000000000000000000000000000000000',
-        '0x00000000000000000000000000000000000000000000000000000000000060a7',
-      ],
-    },
-  ],
-  type: '0x01',
-}
-
-const tx = createAccessList2930Tx(txData, { common })
-console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
-```
-
-For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
-on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
-
 ### Legacy Transactions
 
-- Class: `LegacyTransaction`
+- Class: `LegacyTx`
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
@@ -364,16 +320,46 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 `TransactionFactory` supports the following static constructor methods:
 
-- `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
-- `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction`
+- `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {})`
+- `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {})`
 - `public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {})`
 - `public static async fromJsonRpcProvider(provider: string | EthersProvider, txHash: string, txOptions?: TxOptions)`
+
+### KZG Setup
+
+This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
+
+As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
+
+```ts
+// ./examples/initKzg.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+
+const main = async () => {
+  const kzg = new microEthKZG(trustedSetup)
+  // Instantiate `common`
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
+
+void main()
+```
+
+Note: We did not want to directly bundle because bundle sizes are large due to the large trusted setup inclusion (especially for the mainnet trusted setup).
 
 ### Sending a Transaction
 
 #### L2 Support
 
-This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
+This library has been tested to work with various L2 networks. To set an associated chainID, use the `createCustomCommon()` constructor from our `Common` library. The following is a simple example to send a tx to the xDai chain:
 
 ```ts
 // ./examples/l2tx.ts
@@ -400,31 +386,11 @@ const signedTx = tx.sign(pk)
 console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
 
-The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
-
-|  L2 Network              |  Common name                          |  Issue                                                                  |
-| ------------------------ | ------------------------------------- | ----------------------------------------------------------------------- |
-| Arbitrum Rinkeby Testnet |  `CustomChain.ArbitrumRinkebyTestnet` |  [#1290](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1290) |
-| Polygon Mainnet          |  `CustomChain.PolygonMainnet`         |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| Polygon Mumbai Testnet   |  `CustomChain.PolygonMumbai`          |  [#1289](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1289) |
-| xDai Chain               |  `Common.xDaiChain`                   |  [#1323](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1323) |
-| Optimistic Kovan         | `Common.OptimisticKovan`              | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
-| Optimistic Ethereum      | `Common.OptimisticEthereum`           | [#1554](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1554)    |
-
-Note: For Optimistic Kovan and Optimistic Ethereum, the London hardfork has not been implemented so transactions submitted with a `baseFee` will revert.
-The London hardfork is targeted to implement on Optimism in Q1.22.
-
-For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
-
-```ts
-const common = Common.custom({ chainId: 1234 })
-```
-
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## Special Topics
 
@@ -498,18 +464,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ## EthereumJS
 

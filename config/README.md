@@ -1,107 +1,43 @@
-# EthereumJS - Monorepo and Shared Config
+# EthereumJS - Configuration Guide
 
-This folder contains documentation on monorepo setup and configuration as well as shared
-configuration settings and scripts for common modules (like a shared `tsconfig.json` TypeScript
-configuration file or `cli/coverage.sh` script).
+This guide provides an overview of the configuration systems and development tools used throughout the EthereumJS monorepo. It consolidates information that was previously spread across multiple documents to provide a single reference point.
 
-- [Monorepo](./MONOREPO.md) (separate docs)
-- [E2E Testing](./E2E_TESTING.md) (separate docs)
-- [Linting](#linting)
-- [Coverage](#coverage)
-- [TypeScript](#typescript)
-- [Documentation](#documentation)
+## Contents
 
-The cli scripts (`./config/cli`) are used in the child packages' `package.json` to ease repetitive script use.
+- [Monorepo Structure](#monorepo-structure)
+- [Development Tools](#development-tools)
+  - [TypeScript](#typescript)
+  - [Linting](#linting)
+  - [Testing](#testing)
+  - [Documentation](#documentation)
+- [Advanced Topics](#advanced-topics)
+  - [E2E Testing](#e2e-testing)
+  - [Cross-Package Development](#cross-package-development)
 
-## Dependencies
+## Monorepo Structure
 
-Shared config `devDependencies` across all packages can go in the root `package.json`. However, if a package needs access to the dependency's `bin` (e.g. `eslint` or `nyc`) then it must be defined in the child packages' `package.json`.
+The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage all the packages in our monorepo.
 
-## Linting
+### Key directories
 
-Common linting configuration utilizing:
+- `/packages` - Contains all EthereumJS packages
+- `/config` - Shared configuration files and scripts
+- `/ethereum-tests` - Git submodule with Ethereum test vectors
 
-- [ESLint](https://eslint.org/)
-- [TypeScript ESLint](https://github.com/typescript-eslint/typescript-eslint)
-- [TypeStrict](https://github.com/krzkaczor/TypeStrict)
-- [Prettier](https://prettier.io/docs/en/integrating-with-linters.html)
+## Development Tools
 
-Exposed CLI commands:
+### TypeScript
 
-- `./config/cli/lint.sh`
-- `./config/cli/lint-fix.sh`
+All packages use TypeScript with a shared base configuration.
 
-### Usage
+#### Configuration Files
 
-Add `.eslintrc.js`:
+Each package should have:
 
-```js
-module.exports = {
-  extends: '../../config/eslint.js',
-}
-```
+- `tsconfig.json` - For development and testing
+- `tsconfig.prod.json` - For building production releases
 
-In this file you can add rule adjustments or overrides for the specific package.
-
-Add `prettier.config.js`:
-
-```js
-module.exports = require('../../config/prettier.config')
-```
-
-Use CLI commands above in your `package.json`:
-
-```json
-  "scripts": {
-    "lint": "../../config/cli/lint.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
-  }
-```
-
-### Getting the most out of linting
-
-This lint package is used as git pre-push hook on with the help of [Husky](https://www.npmjs.com/package/husky).
-
-## Coverage
-
-Tool: [nyc](https://istanbul.js.org/)
-
-Exposed CLI command:
-
-- `./config/cli/coverage.sh`
-
-### Usage
-
-Add `.nycrc`:
-
-```json
-{
-  "extends": "../../config/.c8rc.json"
-}
-```
-
-Use script above in `package.json`:
-
-```json
-  "scripts": {
-    "coverage": "../../config/cli/coverage.sh"
-  }
-```
-
-## TypeScript
-
-Tool: [TypeScript](https://www.typescriptlang.org/)
-
-Exposed CLI commands:
-
-- `./config/cli/ts-build.sh`
-- `./config/cli/ts-compile.sh`
-
-### Usage
-
-The three files below compose the functionality built into `ts-build.sh` and `ts-compile.sh`. Note that the build is browser compatible with `ES2020` target.
-Add `tsconfig.json`:
-
+Example `tsconfig.json`:
 ```json
 {
   "extends": "../../config/tsconfig.json",
@@ -109,8 +45,7 @@ Add `tsconfig.json`:
 }
 ```
 
-Add `tsconfig.prod.json`:
-
+Example `tsconfig.prod.json`:
 ```json
 {
   "extends": "../../config/tsconfig.prod.json",
@@ -121,36 +56,109 @@ Add `tsconfig.prod.json`:
 }
 ```
 
-Note: the `outDir` property is mandatory to generate assets to a directory.
+#### Build Commands
 
-Use CLI commands above in your `package.json`:
+Use these commands in your package scripts:
 
 ```json
+{
   "scripts": {
-    "tsc":   "../../config/cli/ts-compile.sh",
+    "tsc": "../../config/cli/ts-compile.sh",
     "build": "../../config/cli/ts-build.sh"
   }
-```
-
-### Doing cross-package development
-
-All of our packages include a `typescript` entry in the `exports` map under the `esm` key.  This allows `node`/`tsx`/`vitest` to use
-the typescript sources directly without requiring you to recompile packages when you make changes.
-
-Vitest is already configured to use the `typescript` entry points so simply specify `npx vitest run-c ../../config/vitest.config.mts test/myTest.spec.ts` 
-when running individual tests.
-
-If running typescript scripts from the command line, you can use `tsx --conditions=typescript myScript.ts` to use the typescript sources.
-
-When running code using a bash script, you can set an environment variable `NODE_OPTIONS='--conditions=typescript'` and this will get picked by `tsx`.
-
-## Documentation
-
-Add `typedoc.js` to a package that extends the generic TypeDoc configuration:
-
-```js
-module.exports = {
-  extends: '../../config/typedoc.js',
-  // Additional directives
 }
 ```
+
+### Linting
+
+We use ESLint v9 and Biome for code style enforcement and linting.
+
+#### Configuration Files
+
+Each package includes:
+
+- `eslint.config.mjs` - package specific ESLint configuration that extends the repository wide config
+
+
+#### Lint Commands
+
+```json
+{
+  "scripts": {
+    "lint": "../../config/cli/lint.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh"
+  }
+}
+```
+
+### Testing
+
+The project uses Vitest for testing with c8 for code coverage.
+
+#### Test Commands
+
+Each package includes one or more test scripts.  To run all tests in any package, use `npm run test`.  Refer to the package.json for more specifics.
+
+To run a specific test and watch for changes:
+
+```sh
+npx vitest test/path/to/test.spec.ts
+```
+
+## Advanced Topics
+
+#### Quick Summary
+
+To test packages with an external project locally, use npm link:
+
+1. Build the package you want to test:
+```sh
+cd packages/package-name
+npm run build
+```
+
+2. Link the package globally:
+```sh
+npm link
+```
+
+3. In your test project, link to the local package:
+```sh
+cd path/to/your/project
+npm link @ethereumjs/package-name
+```
+
+4. When you make changes to your package, rebuild it for the changes to be reflected.
+
+5. When done testing, unlink:
+```sh
+# In your test project
+npm unlink --no-save @ethereumjs/package-name
+
+# In the package directory
+npm unlink
+```
+
+### Cross-Package Development
+
+All packages include a `typescript` entry in their exports map to enable direct use of TypeScript sources without recompilation:
+
+- For tests: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
+- For scripts: `tsx --conditions=typescript myScript.ts`
+- Via environment variable: `NODE_OPTIONS='--conditions=typescript'`
+
+This feature makes it easier to develop across multiple packages simultaneously.
+
+### Shared Dependencies
+
+Common development dependencies (e.g. `eslint`, `biome`) are defined in the root `package.json`. 
+
+## CLI Scripts
+
+The `./config/cli` directory contains helper scripts referenced in package.json files:
+
+- `coverage.sh` - Runs test coverage
+- `lint.sh` - Checks code style
+- `lint-fix.sh` - Automatically fixes code style issues
+- `ts-build.sh` - Builds TypeScript for production
+- `ts-compile.sh` - Compiles TypeScript for development

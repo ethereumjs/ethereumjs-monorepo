@@ -1,12 +1,17 @@
 import { rmSync } from 'fs'
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createAddressFromPrivateKey, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import {
+  type GethGenesis,
+  Hardfork,
+  createCommonFromGethGenesis,
+  parseGethGenesisState,
+} from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
-import type { Address } from '@ethereumjs/util'
+import { type Address, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import { getLogger } from '../../src/logging.ts'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = createAddressFromPrivateKey(pk)
@@ -18,7 +23,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
 
-  const defaultChainData = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -44,9 +49,10 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
-  const extraData = '0x' + '0'.repeat(32)
-  const chainData = {
+  const extraData = `0x${'0'.repeat(32)}`
+  const chainData: GethGenesis = {
     ...defaultChainData,
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
@@ -69,6 +75,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     datadir: 'devnet',
     accounts: [[minerAddress, pk]],
     mine: true,
+    logger: getLogger(),
   })
 
   const client = await createInlineClient(config, common, customGenesisState)
@@ -82,7 +89,7 @@ describe('PoW client test', async () => {
     assert.isTrue(started, 'client started successfully')
   }, 60000)
   const message: string = await new Promise((resolve) => {
-    client.config.logger.on('data', (data: any) => {
+    client.config.logger?.on('data', (data: any) => {
       if (data.message.includes('Miner: Found PoW solution') === true) {
         resolve(data.message)
       }

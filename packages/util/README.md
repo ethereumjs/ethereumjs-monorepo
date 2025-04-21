@@ -141,9 +141,9 @@ KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/
 
 Simple map DB implementation using the `DB` interface (see above).
 
-### Module: [requests](src/requests.ts)
+### Module: [request](src/request.ts)
 
-Module with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+Module with a compact generic request class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) with the possibility to set `data` and a `type` conforming to the following request types:
 
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Hardfork)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawalRequest` (Prague Hardfork)
@@ -153,7 +153,7 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 
 ### Module: [signature](src/signature.ts)
 
-Functionality for signing, signature validation, conversion, recovery.
+Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
 
 ```ts
 // ./examples/signature.ts
@@ -234,51 +234,15 @@ console.log(withdrawal.toJSON())
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
 ### Documentation
 
 Read the [API docs](docs/).
-
-### Upgrade Helpers in bytes-Module
-
-Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
-
-We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
-
-```ts
-Buffer.alloc(97) // Allocate a Buffer with length 97
-new Uint8Array(97) // Allocate a Uint8Array with length 97
-
-Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
-hexToBytes('0x342770c0') // Convert a prefixed hex string to a Uint8Array, Util.hexToBytes()
-
-`0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
-bytesToHex(myUint8Array) // Convert a Uint8Array to a prefixed hex string
-
-intToBuffer(9) // Convert an integer to a Buffer, old (removed)
-intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
-bytesToInt(myUint8Array) // Convert a Uint8Array to an integer, Util.bytesToInt()
-
-bigIntToBytes(myBigInt) // Convert a BigInt to a Uint8Array, Util.bigIntToBytes()
-bytesToBigInt(myUint8Array) // Convert a Uint8Array to a BigInt, Util.bytesToInt()
-
-utf8ToBytes(myUtf8String) // Converts a UTF-8 string to a Uint8Array, Util.utf8ToBytes()
-bytesToUtf8(myUint8Array) // Converts a Uint8Array to a UTF-8 string, Util.bytesToUtf8()
-
-toBuffer(v: ToBufferInputTypes) // Converts various byte compatible types to Buffer, old (removed)
-toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8Array, Util.toBytes()
-```
-
-Helper methods can be imported like this:
-
-```ts
-import { hexToBytes } from '@ethereumjs/util'
-```
 
 ### Hybrid CJS/ESM Builds
 
@@ -297,18 +261,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with Util v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ### ethjs-util methods
 

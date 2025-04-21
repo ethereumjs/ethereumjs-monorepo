@@ -108,7 +108,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJSON = {
     ...kaustinen2GethGenesisData,
-    config: { ...kaustinen2GethGenesisData.config, osakaTime: undefined },
+    config: { ...kaustinen2GethGenesisData.config, verkleTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJSON,
@@ -118,7 +118,8 @@ describe(`valid verkle network setup`, async () => {
       savePreimages: true,
     },
   )
-  ;(chain.blockchain as any).validateHeader = () => {}
+  /// @ts-expect-error -- Simple config for testing
+  chain.blockchain.validateHeader = () => {}
 
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
