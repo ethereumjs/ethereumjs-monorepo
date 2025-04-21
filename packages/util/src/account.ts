@@ -155,8 +155,10 @@ export class Account {
 
   /**
    * This constructor assigns and validates the values.
-   * Use the static factory methods to assist in creating an Account from varying data types.
-   * undefined get assigned with the defaults present, but null args are retained as is
+   * It is not recommended to use this constructor directly. Instead use the static
+   * factory methods to assist in creating an Account from varying data types.
+   * undefined get assigned with the defaults, but null args are retained as is
+   * @deprecated
    */
   constructor(
     nonce: bigint | null = BIGINT_0,
