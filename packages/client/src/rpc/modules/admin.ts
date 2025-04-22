@@ -96,8 +96,8 @@ export class Admin {
         protocols: {
           eth: {
             head: peer.eth?.updatedBestHeader
-              ? bytesToHex(peer.eth.updatedBestHeader?.hash())
-              : bytesToHex(peer.eth?.status.bestHash),
+              ? bytesToHex(peer.eth.updatedBestHeader?.hash() ?? new Uint8Array())
+              : bytesToHex(peer.eth?.status.bestHash ?? new Uint8Array()),
             difficulty: peer.eth?.status.td.toString(10),
             version: peer.eth?.['versions'].slice(-1)[0] ?? null,
           },
