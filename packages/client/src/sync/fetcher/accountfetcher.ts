@@ -337,8 +337,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
-    if (partialResult) {
-    }
     const origin =
       partialResult !== undefined
         ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
