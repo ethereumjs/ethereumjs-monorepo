@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '@noble/curves/bls12-381'
+import { bls12_381 } from './nbl/src/bls12-381.ts'
 
 import { EVMError } from '../../errors.ts'
 
@@ -20,9 +20,9 @@ import {
   BLS_ZERO_BUFFER,
 } from './constants.ts'
 
-import type { Fp2 } from '@noble/curves/abstract/tower'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
 import type { EVMBLSInterface } from '../../types.ts'
+import type { Fp2 } from './nbl/src/abstract/tower.ts'
+import type { AffinePoint } from './nbl/src/abstract/weierstrass.ts'
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
