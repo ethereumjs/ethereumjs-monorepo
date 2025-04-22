@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '../../../../noble-curves/bls12-381.js'
+import { bls12_381 } from './nbl/src/bls12-381.ts'
 
 import { EVMError, EVMErrorMessages } from '../../errors.ts'
 
