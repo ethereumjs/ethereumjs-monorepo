@@ -337,9 +337,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
-    const origin = partialResult
-      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
-      : bigIntToBytes(first)
+    console.log('partialResult', partialResult)
+    if (partialResult) {
+      console.log('partialResult[0].hash', partialResult?.[0]?.hash)
+      console.log(
+        'partialResult[partialResult.length - 1].hash',
+        partialResult?.[partialResult?.length - 1]?.hash,
+      )
+    }
+    console.log(
+      'partialResult[partialResult.length - 1].hash',
+      partialResult?.[partialResult?.length - 1]?.hash,
+    )
+    const origin =
+      partialResult !== undefined
+        ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
+        : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
 
@@ -470,9 +483,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const fullResult = (job.partialResult ?? []).concat(result)
 
     // update highest known hash
-    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
+    const highestReceivedhash = result.at(-1)?.hash
     if (this.highestKnownHash) {
-      if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
+      if (
+        highestReceivedhash !== undefined &&
+        compareBytes(highestReceivedhash, this.highestKnownHash) > 0
+      ) {
         this.highestKnownHash = highestReceivedhash
       }
     } else {
