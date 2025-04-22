@@ -22,7 +22,6 @@ import { defaultBlock } from '../src/evm.ts'
 import { createEVM } from '../src/index.ts'
 
 import type { EVMRunCallOpts } from '../src/types.ts'
-import { eip4844Data } from './testdata/eip4844.ts'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {

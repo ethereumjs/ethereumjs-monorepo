@@ -474,8 +474,8 @@ export class Interpreter {
     // Add immediate if present (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
     if (stackDelta[opcodeInfo.code].intermediates > 0) {
       immediate = this._runState.code.slice(
-        this._runState.programCounter,
-        this._runState.programCounter + stackDelta[opcodeInfo.code].intermediates,
+        this._runState.programCounter + 1, // immediates start "immediately" following current opcode
+        this._runState.programCounter + 1 + stackDelta[opcodeInfo.code].intermediates,
       )
     }
 

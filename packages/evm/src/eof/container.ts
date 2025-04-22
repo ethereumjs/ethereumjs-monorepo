@@ -1,4 +1,4 @@
-import { EthereumJSError, EthereumJSErrorWithoutCode } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
 import {
   CODE_MIN,

@@ -4,12 +4,16 @@ import { assert, describe, expect, it } from 'vitest'
 import { TransitionTool } from '../../t8n/t8ntool.ts'
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { validateEOF } from '@ethereumjs/evm'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
-import { Account, createAddressFromPrivateKey, hexToBytes, randomBytes } from '@ethereumjs/util'
-import { EOFContainerMode } from '../../../../evm/dist/esm/eof/container.js'
-import { ContainerSectionType } from '../../../../evm/dist/esm/eof/verify.js'
+import {
+  Account,
+  type PrefixedHexString,
+  createAddressFromPrivateKey,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
+
 import { createVM, runTx } from '../../../src/index.ts'
 import { stepTraceJSON, summaryTraceJSON } from '../../t8n/helpers.ts'
 import type { T8NOptions } from '../../t8n/types.ts'
@@ -177,7 +181,7 @@ describe('trace tests', async () => {
     // '80' - Section 0: 0 outputs (non-returning function)
     // '0001' - Section 0: max stack height 1
     // '00' - Section 1: 0 inputs
-    // '80' - Section 1: 0 outputs (non-returning function)
+    // '00' - Section 1: 0 outputs
     // '0001' - Section 1: max stack height 1
     //
     // Code section 0:
@@ -192,24 +196,16 @@ describe('trace tests', async () => {
     // '50' - POP (0x50) - Remove the address from the stack
     // 'e4' - RETF (0xE4) - Return from function call to section 0, resuming after CALLF
     const code = hexToBytes(
-      '0xef0001' +
+      ('0xef0001' +
         '010008' +
         '02' +
         '000200080003' +
         '040000' +
         '00' +
-        '0080000100080001' +
+        '0080000100000001' +
         '3050e30001600100' +
-        '3050e4',
+        '3050e4') as PrefixedHexString,
     )
-
-    const error = validateEOF(
-      code,
-      vm.evm,
-      ContainerSectionType.RuntimeCode,
-      EOFContainerMode.Default,
-    )
-    console.log(error)
 
     const pk = randomBytes(32)
     const caller = createAddressFromPrivateKey(pk)
@@ -249,9 +245,11 @@ describe('trace tests', async () => {
     // 7. PUSH1 in code section 0
     // 8. STOP in code section 0
     // Plus the summary trace
-    assert.equal(trace.length, 9, 'trace length should be 9')
+    assert.strictEqual(trace.length, 9, 'trace length should be 9')
 
     // The execution should use exactly 8 gas (one for each opcode executed)
-    assert.equal(result.execResult.executionGasUsed, BigInt(8))
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(19))
+    const immediate = JSON.parse(trace[2]).immediate
+    assert.strictEqual(immediate, '0x0001') // Verifies that CALLF immediate matches
   })
 })
