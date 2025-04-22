@@ -128,7 +128,6 @@ describe('VM events', () => {
     }).sign(privKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
-    console.log('emitted', emitted)
 
     assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
   })
