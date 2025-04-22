@@ -245,7 +245,7 @@ describe('[StorageFetcher]', async () => {
     assert.equal((results as any)[0].length, 5, 'Should return full results')
   })
 
-  it.only('should request correctly', async () => {
+  it('should request correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
