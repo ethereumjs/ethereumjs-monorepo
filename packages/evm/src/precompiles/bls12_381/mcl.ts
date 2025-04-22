@@ -7,7 +7,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../../errors.ts'
+import { EVMError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -53,12 +53,12 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
 
   mcl.verifyOrderG1(verifyOrder)
   if (verifyOrder && G1.isValidOrder() === false) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   // Check if these coordinates are actually on the curve.
   if (G1.isValid() === false) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return G1
@@ -87,10 +87,10 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
   if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
   const fp_x = new mcl.Fp()
@@ -146,11 +146,11 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
 
   mcl.verifyOrderG2(verifyOrder)
   if (verifyOrder && p.isValidOrder() === false) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   if (p.isValid() === false) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return p
@@ -190,7 +190,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
   const fp = new mcl.Fp()

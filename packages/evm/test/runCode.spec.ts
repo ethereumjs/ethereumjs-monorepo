@@ -1,6 +1,7 @@
 import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { EVMErrorTypeString } from '../src/errors.ts'
 import { createEVM } from '../src/index.ts'
 
 const PUSH1 = '60'
@@ -56,7 +57,7 @@ describe('VM.runCode: initial program counter', () => {
 })
 
 describe('VM.runCode: interpreter', () => {
-  it('should return a EvmError as an exceptionError on the result', async () => {
+  it('should return a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
@@ -71,11 +72,11 @@ describe('VM.runCode: interpreter', () => {
     } catch {
       assert.fail('should not throw error')
     }
-    assert.equal(result?.exceptionError?.errorType, 'EVMError')
+    assert.equal(result?.exceptionError?.errorType, EVMErrorTypeString)
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 
-  it('should throw on non-EvmError', async () => {
+  it('should throw on non-EVMError', async () => {
     const evm = await createEVM()
     // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
