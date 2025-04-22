@@ -4,9 +4,12 @@ import { assert, describe, expect, it } from 'vitest'
 import { TransitionTool } from '../../t8n/t8ntool.ts'
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { validateEOF } from '@ethereumjs/evm'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTx } from '@ethereumjs/tx'
 import { Account, createAddressFromPrivateKey, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { EOFContainerMode } from '../../../../evm/dist/esm/eof/container.js'
+import { ContainerSectionType } from '../../../../evm/dist/esm/eof/verify.js'
 import { createVM, runTx } from '../../../src/index.ts'
 import { stepTraceJSON, summaryTraceJSON } from '../../t8n/helpers.ts'
 import type { T8NOptions } from '../../t8n/types.ts'
@@ -146,7 +149,7 @@ describe('trace tests', async () => {
     expect(traceStepWithStorage.storage).toMatchObject([['0x0', '0x42']])
     assert.equal(JSON.parse(trace[6]).gasUsed, 43115)
   })
-  it('should execute an EOF contract with 2 code sections linked by RJUMP', async () => {
+  it.only('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
@@ -155,12 +158,58 @@ describe('trace tests', async () => {
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
 
-    // EOF contract with 2 code sections linked by RJUMP
-    // Section 1: ADDRESS, POP, RJUMP to section 2, PUSH1 1, STOP (PUSH1 and STOP are skipped) - 8 bytes
-    // Section 2: ADDRESS, POP, STOP - 3 bytes
+    // EOF bytecode structure breakdown:
+    // 'ef0001' - Magic (0xEF) and Version (0x0001)
+    //
+    // Header section with section declarations:
+    // '01' - Type section (0x01)
+    // '0008' - Type section length (8 bytes)
+    // '02' - Code section (0x02)
+    // '0002' - 2 code sections
+    // '0008' - Code section 0 length (8 bytes)
+    // '0003' - Code section 1 length (3 bytes)
+    // '04' - Data section (0x04)
+    // '0000' - Data section length (0 bytes)
+    // '00' - Header terminator
+    //
+    // Type section for code sections:
+    // '00' - Section 0: 0 inputs
+    // '80' - Section 0: 0 outputs (non-returning function)
+    // '0001' - Section 0: max stack height 1
+    // '00' - Section 1: 0 inputs
+    // '80' - Section 1: 0 outputs (non-returning function)
+    // '0001' - Section 1: max stack height 1
+    //
+    // Code section 0:
+    // '30' - ADDRESS (0x30) - Push the contract's address to the stack
+    // '50' - POP (0x50) - Remove the address from the stack
+    // 'e3' - CALLF (0xE3) - Call code section 1 (0001 is the immediate value)
+    // '6001' - PUSH1 1 (0x60) - Push value 1 to the stack (this will be executed after RETF)
+    // '00' - STOP (0x00) - End execution
+    //
+    // Code section 1:
+    // '30' - ADDRESS (0x30) - Push the contract's address to the stack
+    // '50' - POP (0x50) - Remove the address from the stack
+    // 'e4' - RETF (0xE4) - Return from function call to section 0, resuming after CALLF
     const code = hexToBytes(
-      '0xef000101000802000200080003040000000080000100080001305000e000036001003050',
+      '0xef0001' +
+        '010008' +
+        '02' +
+        '000200080003' +
+        '040000' +
+        '00' +
+        '0080000100080001' +
+        '3050e30001600100' +
+        '3050e4',
     )
+
+    const error = validateEOF(
+      code,
+      vm.evm,
+      ContainerSectionType.RuntimeCode,
+      EOFContainerMode.Default,
+    )
+    console.log(error)
 
     const pk = randomBytes(32)
     const caller = createAddressFromPrivateKey(pk)
@@ -177,7 +226,7 @@ describe('trace tests', async () => {
 
     const trace: string[] = []
     vm.evm.events!.on('step', (step) => {
-      trace.push(JSON.stringify(stepTraceJSON(step, true, true)))
+      trace.push(JSON.stringify(stepTraceJSON(step, true)))
     })
     vm.events!.on('afterTx', async (event) => {
       trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
@@ -190,16 +239,19 @@ describe('trace tests', async () => {
       skipBlockGasLimitValidation: true,
     })
 
-    // Expected trace length is 7:
-    // 1. ADDRESS in code section 1
-    // 2. POP in code section 1
-    // 3. RJUMP to code section 2
-    // 4. ADDRESS in code section 2
-    // 5. POP in code section 2
-    // 6. STOP in code section 2
+    // Expected execution flow:
+    // 1. ADDRESS in code section 0
+    // 2. POP in code section 0
+    // 3. CALLF to code section 1
+    // 4. ADDRESS in code section 1
+    // 5. POP in code section 1
+    // 6. RETF back to code section 0 (returns to the instruction after CALLF)
+    // 7. PUSH1 in code section 0
+    // 8. STOP in code section 0
     // Plus the summary trace
-    assert.equal(trace.length, 7, 'trace length should be 7')
+    assert.equal(trace.length, 9, 'trace length should be 9')
 
-    // The execution should use exactly 6 gas
+    // The execution should use exactly 8 gas (one for each opcode executed)
+    assert.equal(result.execResult.executionGasUsed, BigInt(8))
   })
 })
