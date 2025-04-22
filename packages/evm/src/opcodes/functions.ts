@@ -47,7 +47,7 @@ import {
 } from './util.ts'
 
 import type { Common } from '@ethereumjs/common'
-import { extractEVMMAXImmediateInputs } from '../evmmax/index.js'
+import { extractEVMMAXImmediateInputs } from '../evmmax/index.ts'
 import type { RunState } from '../interpreter.ts'
 
 export interface SyncOpHandler {
