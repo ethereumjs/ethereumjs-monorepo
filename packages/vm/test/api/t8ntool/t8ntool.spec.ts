@@ -112,7 +112,7 @@ describe('trace tests', async () => {
     assert.equal(result.execResult.executionGasUsed, BigInt(4))
     assert.equal(trace.length, 4)
   })
-  it('should produce a trace with storage activates', async () => {
+  it('should produce a trace with storage activated', async () => {
     const bytecode = hexToBytes('0x604260005560206000f3') // PUSH1 42 PUSH1 00 MSTORE PUSH1 20 PUSH1 00 RETURN
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
     const sm = new MerkleStateManager({ common })
@@ -145,5 +145,61 @@ describe('trace tests', async () => {
     assert.exists(traceStepWithStorage.storage)
     expect(traceStepWithStorage.storage).toMatchObject([['0x0', '0x42']])
     assert.equal(JSON.parse(trace[6]).gasUsed, 43115)
+  })
+  it('should execute an EOF contract with 2 code sections linked by RJUMP', async () => {
+    const common = new Common({
+      hardfork: Hardfork.Prague,
+      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      chain: Mainnet,
+    })
+    const sm = new MerkleStateManager({ common })
+    const vm = await createVM({ common, stateManager: sm })
+
+    // EOF contract with 2 code sections linked by RJUMP
+    // Section 1: ADDRESS, POP, RJUMP to section 2, PUSH1 1, STOP (PUSH1 and STOP are skipped) - 8 bytes
+    // Section 2: ADDRESS, POP, STOP - 3 bytes
+    const code = hexToBytes(
+      '0xef000101000802000200080003040000000080000100080001305000e000036001003050',
+    )
+
+    const pk = randomBytes(32)
+    const caller = createAddressFromPrivateKey(pk)
+    const contractAddress = createAddressFromPrivateKey(randomBytes(32))
+
+    await vm.stateManager.putCode(contractAddress, code)
+    await vm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111)))
+
+    const tx = await createTx({
+      gasLimit: BigInt(0xffff),
+      gasPrice: 0x7,
+      to: contractAddress,
+    }).sign(pk)
+
+    const trace: string[] = []
+    vm.evm.events!.on('step', (step) => {
+      trace.push(JSON.stringify(stepTraceJSON(step, true, true)))
+    })
+    vm.events!.on('afterTx', async (event) => {
+      trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
+    })
+
+    const result = await runTx(vm, {
+      tx,
+      skipBalance: true,
+      skipNonce: true,
+      skipBlockGasLimitValidation: true,
+    })
+
+    // Expected trace length is 7:
+    // 1. ADDRESS in code section 1
+    // 2. POP in code section 1
+    // 3. RJUMP to code section 2
+    // 4. ADDRESS in code section 2
+    // 5. POP in code section 2
+    // 6. STOP in code section 2
+    // Plus the summary trace
+    assert.equal(trace.length, 7, 'trace length should be 7')
+
+    // The execution should use exactly 6 gas
   })
 })
