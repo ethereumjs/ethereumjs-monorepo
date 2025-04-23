@@ -18,6 +18,23 @@ and update a blockchain state accordingly.
 
 Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Browser](#browser)
+- [API](#api)
+- [Architecture](#architecture)
+- [Setup](#setup)
+- [Supported EIPs](#supported-eips)
+- [Events](#events)
+- [Understanding the VM](#understanding-the-vm)
+- [Internal Structure](#internal-structure)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -120,7 +137,7 @@ void main()
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-## Example
+## Examples
 
 See the [examples](./examples/) folder for different meaningful examples on how to use the VM package and invoke certain aspects of it, e.g. running a complete block, a certain tx or using event listeners, among others. Some noteworthy examples to point out:
 
@@ -182,11 +199,10 @@ With `VM` v6 the previously included `StateManager` has been extracted to its ow
 
 ## Setup
 
-### Chain Support
-
+### Chains
 Beside the default Proof-of-Stake setup coming with the `Common` library default, the VM also support the execution of  both `Ethash/PoW` and `Clique/PoA` blocks and transactions to allow to re-execute blocks from older hardforks or testnets.
 
-### Hardfork Support
+### Hardforks
 
 For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
 
@@ -205,7 +221,7 @@ const main = async () => {
   const vm = await createVM({ common })
 ```
 
-### Custom Genesis State Support
+### Custom Genesis State
 
 For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
@@ -241,7 +257,7 @@ void main()
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
 
-### EIP Support
+## Supported EIPs
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
@@ -282,6 +298,8 @@ Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS
 
 Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in a respective Verkle/Stateless hardfork.
 
+## Events
+
 ### Tracing Events
 
 Our `TypeScript` VM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
@@ -312,7 +330,7 @@ vm.events.on('afterTx', (event) => {
 
 Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
-#### Asynchronous event handlers
+### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
 and prevent the VM to keep running until they finish.
@@ -326,7 +344,7 @@ handler or a function called by it, the exception will bubble into the
 VM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
-#### Synchronous event handlers
+### Synchronous event handlers
 
 If you want to perform synchronous operations, you don't need
 to receive a function as the handler's second argument, nor call it.
