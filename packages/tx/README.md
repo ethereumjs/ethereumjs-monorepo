@@ -70,17 +70,20 @@ Hardforks adding features and/or tx types:
 
 ## Transaction Types
 
+### Table of Contents
+
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
 
-- `FeeMarketEIP1559Tx` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
-- `AccessListEIP2930Tx` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
-- `BlobEIP4844Tx` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
-- `EOACodeEIP7702Tx` ([EIP-7702](https://eips.ethereum.org/EIPS/eip-7702), EOA code delegation)
-- `LegacyTx`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+- [Gas Fee Market Transactions (EIP-1559)](#gas-fee-market-transactions-eip-1559)
+- [Access List Transactions (EIP-2930)](#access-list-transactions-eip-2930)
+- [Blob Transactions (EIP-4844)](#blob-transactions-eip-4844)
+- [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
+- [Legacy Transactions](#legacy-transactions) (original Ethereum txs)
 
 ### Gas Fee Market Transactions (EIP-1559)
 
 - Class: `FeeMarketEIP1559Tx`
+- EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
 - Activation: `london`
 - Type: `2`
 
@@ -118,6 +121,7 @@ console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced3
 ### Access List Transactions (EIP-2930)
 
 - Class: `AccessListEIP2930Tx`
+- EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
 - Activation: `berlin`
 - Type: `1`
 
@@ -165,6 +169,7 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 ### Blob Transactions (EIP-4844)
 
 - Class: `BlobEIP4844Tx`
+- EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 - Activation: `cancun`
 - Type: `3`
 
@@ -227,6 +232,7 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage i
 ### EOA Code Transaction (EIP-7702)
 
 - Class: `EOACodeEIP7702Tx`
+- EIP: [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 - Activation: `prague`
 - Type: `4`
 
