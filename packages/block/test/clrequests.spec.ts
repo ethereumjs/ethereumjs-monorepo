@@ -1,11 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  CLRequestType,
-  concatBytes,
-  createCLRequest,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { CLRequestType, createCLRequest, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 

@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { CLRequestType, createCLRequest, hexToBytes } from '@ethereumjs/util'
+import { CLRequestType, bytesToHex, createCLRequest, hexToBytes } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { createBlock, genRequestsRoot } from '../src'
@@ -44,11 +44,11 @@ function createBlockWithCLRequests() {
 
   // Generate the requestsHash by hashing all the CLRequests
   const requestsHash = genRequestsRoot(requests, sha256)
-  console.log(`Generated requestsHash: 0x${Buffer.from(requestsHash).toString('hex')}`)
+  console.log(`Generated requestsHash: 0x${bytesToHex(requestsHash)}`)
 
   // Create a block with the CLRequests hash
   const block = createBlock({ header: { requestsHash } }, { common })
-  console.log(`Created block hash: 0x${Buffer.from(block.hash()).toString('hex')}`)
+  console.log(`Created block hash: 0x${bytesToHex(block.hash())}`)
 
   return block
 }

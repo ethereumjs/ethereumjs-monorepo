@@ -244,7 +244,7 @@ Starting with v10 this library supports requests to the consensus layer which ha
 // ./examples/clrequests.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createCLRequest, CLRequestType, hexToBytes } from '@ethereumjs/util'
+import { createCLRequest, CLRequestType, hexToBytes, bytesToHex } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { createBlock, genRequestsRoot } from '../src'
@@ -270,7 +270,7 @@ const requestsHash = genRequestsRoot(requests, sha256)
 
 // Create a block with the CLRequests hash
 const block = createBlock({ header: { requestsHash } }, { common })
-console.log(`Created block with CLRequests hash: 0x${Buffer.from(block.hash()).toString('hex')}`)
+console.log(`Created block with CLRequests hash: 0x${bytesToHex(block.hash())}`)
 ```
 
 ### Consensus Types
