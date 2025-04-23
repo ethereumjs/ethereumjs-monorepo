@@ -852,9 +852,7 @@ export class Eth {
     if (!this.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
     const txHashIndex = await this.txIndex.getIndex(hexToBytes(txHash))
     if (!txHashIndex) return null
-    const result = await this.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    const [blockHash, txIndex] = txHashIndex
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return toJSONRPCTx(tx, block, txIndex)
