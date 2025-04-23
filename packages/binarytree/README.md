@@ -13,6 +13,12 @@
 
 This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes. Any help in improving the package is very much welcome.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply install the project using `npm`:
