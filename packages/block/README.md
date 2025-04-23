@@ -240,6 +240,39 @@ void main()
 
 Starting with v10 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) (`Hardfork.Prague` or higher). See the `@ethereumjs/util` [Request](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-request) README section for an overview of current request types.
 
+```ts
+// ./examples/clrequests.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createCLRequest, CLRequestType, hexToBytes, bytesToHex } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
+
+import { createBlock, genRequestsRoot } from '../src'
+
+// Enable EIP-7685 to support CLRequests
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
+
+// Create the three CLRequest types (Deposit, Withdrawal, Consolidation)
+const depositData = hexToBytes('0x00...') // Deposit request data
+const depositRequest = createCLRequest(depositData)
+
+const withdrawalData = hexToBytes('0x01...') // Withdrawal request data
+const withdrawalRequest = createCLRequest(withdrawalData)
+
+const consolidationData = hexToBytes('0x02...') // Consolidation request data
+const consolidationRequest = createCLRequest(consolidationData)
+
+// CLRequests must be sorted by type (Deposit=0, Withdrawal=1, Consolidation=2)
+const requests = [depositRequest, withdrawalRequest, consolidationRequest]
+
+// Generate the requestsHash
+const requestsHash = genRequestsRoot(requests, sha256)
+
+// Create a block with the CLRequests hash
+const block = createBlock({ header: { requestsHash } }, { common })
+console.log(`Created block with CLRequests hash: 0x${bytesToHex(block.hash())}`)
+```
+
 ### Consensus Types
 
 ### Proof-of-Stake

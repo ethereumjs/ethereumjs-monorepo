@@ -129,7 +129,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(bytesToHex(emitted.createdAddress), '0x')
+    assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
   it('should emit InterpreterStep on each step', async () => {
