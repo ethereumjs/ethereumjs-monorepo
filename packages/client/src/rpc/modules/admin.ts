@@ -95,9 +95,10 @@ export class Admin {
         name: peer.rlpxPeer?.['_hello']?.clientId ?? null,
         protocols: {
           eth: {
-            head: peer.eth?.updatedBestHeader
-              ? bytesToHex(peer.eth.updatedBestHeader?.hash())
-              : bytesToHex(peer.eth?.status.bestHash),
+            head:
+              peer.eth?.updatedBestHeader !== undefined
+                ? bytesToHex(peer.eth.updatedBestHeader.hash())
+                : bytesToHex(peer.eth?.status.bestHash ?? new Uint8Array()),
             difficulty: peer.eth?.status.td.toString(10),
             version: peer.eth?.['versions'].slice(-1)[0] ?? null,
           },

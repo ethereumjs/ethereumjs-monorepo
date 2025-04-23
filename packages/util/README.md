@@ -29,7 +29,7 @@ import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 
 ### Module: [account](src/account.ts)
 
-Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion).
+Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion). It is not recommended to use this constructor directly. Instead use the static factory methods to assist in creating an Account from varying data types.
 
 ```ts
 // ./examples/account.ts
