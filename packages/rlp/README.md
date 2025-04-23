@@ -9,6 +9,16 @@
 | [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser. |
 | ----------------------------------------------------------------------------------------------------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Browser](#browser)
+- [API](#api)
+- [CLI](#cli)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
