@@ -1,3 +1,4 @@
+export const SETMODX_BASE_COST = 1
 export const STOREX_BASE_COST = 1
 export const LOADX_BASE_COST = 1
 export const MAX_ALLOC_SIZE = 96 * 256

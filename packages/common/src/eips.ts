@@ -348,7 +348,7 @@ export const eipsDict: EIPsDict = {
    * URL         : https://eips.ethereum.org/EIPS/eip-6690
    * Status      : Draft
    */
-  6990: {
+  6690: {
     minimumHardfork: Hardfork.Prague,
   },
   /**

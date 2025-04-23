@@ -870,7 +870,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [dst, src, count] = runState.stack.peek(3)
 
-        if (!isUint64(src) || src >= runState.memoryWordCount) {
+        if (!isUint64(src) || src >= runState.memory._store.length) {
           trap('src index out of bounds')
         }
         if (!isUint64(dst) || dst >= runState.evmmaxState.getActive().getNumElems()) {
@@ -880,7 +880,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap('count must be less than number of field elements in the active space')
         }
         const storeSize = count * runState.evmmaxState.getActive().getNumElems()
-        if (src + storeSize > runState.memoryWordCount) {
+        if (src + storeSize > runState.memory._store.length) {
           trap('source of copy out of bounds of EVM memory')
         }
 
@@ -890,7 +890,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           return (
             gas +
             count *
-              BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
+              BigInt(
+                MULMODX_COST[
+                  Number(Math.ceil(runState.evmmaxState.getActive().getElemSize() / 8)) - 1
+                ],
+              )
           )
         }
       },
