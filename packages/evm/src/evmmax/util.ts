@@ -312,13 +312,13 @@ export function extractEVMMAXImmediateInputs(pc: number, code: Uint8Array) {
   console.log(pc)
   console.log(code[pc])
   console.log(code[pc - 1])
-  const out = Number(code[pc + 1])
-  const outStride = Number(code[pc + 2])
-  const x = Number(code[pc + 3])
-  const xStride = Number(code[pc + 4])
-  const y = Number(code[pc + 5])
-  const yStride = Number(code[pc + 6])
-  const count = Number(code[pc + 7])
+  const out = Number(code[pc])
+  const outStride = Number(code[pc + 1])
+  const x = Number(code[pc + 2])
+  const xStride = Number(code[pc + 3])
+  const y = Number(code[pc + 4])
+  const yStride = Number(code[pc + 5])
+  const count = Number(code[pc + 6])
 
   return [out, outStride, x, xStride, y, yStride, count]
 }
