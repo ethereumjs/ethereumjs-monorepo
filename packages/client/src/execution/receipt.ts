@@ -17,6 +17,8 @@ import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { TxHashIndex, rlpTxHash } from './txIndex.ts'
+import { IndexOperation, IndexType } from './txIndex.ts'
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:
@@ -50,29 +52,10 @@ type GetLogsReturn = {
 }[]
 
 /**
- * Indexes
- */
-type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
-
-export type IndexType = (typeof IndexType)[keyof typeof IndexType]
-
-export const IndexType = {
-  TxHash: 'txhash',
-} as const
-
-export type IndexOperation = (typeof IndexOperation)[keyof typeof IndexOperation]
-
-export const IndexOperation = {
-  Save: 'save',
-  Delete: 'delete',
-} as const
-
-/**
  * Storage encodings
  */
 type rlpLog = Log
 type rlpReceipt = [postStateOrStatus: Uint8Array, cumulativeGasUsed: Uint8Array, logs: rlpLog[]]
-type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
 
 export type RlpConvert = (typeof RlpConvert)[keyof typeof RlpConvert]
 
