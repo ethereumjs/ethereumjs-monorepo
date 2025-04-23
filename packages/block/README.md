@@ -1,4 +1,4 @@
-# @ethereumjs/block
+# @ethereumjs/block `v10`
 
 [![NPM Package][block-npm-badge]][block-npm-link]
 [![GitHub Issues][block-issues-badge]][block-issues-link]

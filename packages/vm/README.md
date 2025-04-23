@@ -1,4 +1,4 @@
-# @ethereumjs/vm
+# @ethereumjs/vm `v10`
 
 [![NPM Package][vm-npm-badge]][vm-npm-link]
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]

@@ -1,4 +1,4 @@
-# @ethereumjs/common
+# @ethereumjs/common `v10`
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]

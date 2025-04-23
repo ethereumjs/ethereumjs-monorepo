@@ -1,4 +1,4 @@
-# @ethereumjs/rlp
+# @ethereumjs/rlp `v10`
 
 [![NPM Package][rlp-npm-badge]][rlp-npm-link]
 [![GitHub Issues][rlp-issues-badge]][rlp-issues-link]

@@ -1,4 +1,4 @@
-# @ethereumjs/genesis
+# @ethereumjs/genesis `v10`
 
 [![NPM Package][genesis-npm-badge]][genesis-npm-link]
 [![GitHub Issues][genesis-issues-badge]][genesis-issues-link]

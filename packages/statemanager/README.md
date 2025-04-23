@@ -1,4 +1,4 @@
-# @ethereumjs/statemanager
+# @ethereumjs/statemanager `v10`
 
 [![NPM Package][statemanager-npm-badge]][statemanager-npm-link]
 [![GitHub Issues][statemanager-issues-badge]][statemanager-issues-link]

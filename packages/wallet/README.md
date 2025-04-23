@@ -1,4 +1,4 @@
-# @ethereumjs/wallet
+# @ethereumjs/wallet `v10`
 
 [![NPM Package][npm-badge]][npm-link]
 [![Actions Status][actions-badge]][actions-link]

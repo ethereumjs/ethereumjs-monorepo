@@ -1,4 +1,4 @@
-# @ethereumjs/verkle
+# @ethereumjs/verkle `v10`
 
 [![NPM Package][verkle-npm-badge]][verkle-npm-link]
 [![GitHub Issues][verkle-issues-badge]][verkle-issues-link]

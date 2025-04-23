@@ -1,4 +1,4 @@
-# @ethereumjs/ethash
+# @ethereumjs/ethash `v10`
 
 [![NPM Package][ethash-npm-badge]][ethash-npm-link]
 [![GitHub Issues][ethash-issues-badge]][ethash-issues-link]

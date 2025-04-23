@@ -1,4 +1,4 @@
-# @ethereumjs/binarytree
+# @ethereumjs/binarytree `v10`
 
 [![NPM Package][binarytree-npm-badge]][binarytree-npm-link]
 [![GitHub Issues][binarytree-issues-badge]][binarytree-issues-link]

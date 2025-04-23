@@ -1,4 +1,4 @@
-# @ethereumjs/era
+# @ethereumjs/era `v10`
 
 [![NPM Package][era-npm-badge]][era-npm-link]
 [![GitHub Issues][era-issues-badge]][era-issues-link]

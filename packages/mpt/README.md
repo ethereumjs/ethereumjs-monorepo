@@ -1,4 +1,4 @@
-# @ethereumjs/mpt
+# @ethereumjs/mpt `v10`
 
 [![NPM Package][mpt-npm-badge]][mpt-npm-link]
 [![GitHub Issues][mpt-issues-badge]][mpt-issues-link]

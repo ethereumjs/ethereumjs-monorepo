@@ -1,4 +1,4 @@
-# @ethereumjs/util
+# @ethereumjs/util `v10`
 
 [![NPM Package][util-npm-badge]][util-npm-link]
 [![GitHub Issues][util-issues-badge]][util-issues-link]
