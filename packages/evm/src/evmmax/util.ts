@@ -1,3 +1,5 @@
+import { bytesToHex } from '@ethereumjs/util'
+
 export const MASK_64 = (1n << 64n) - 1n
 
 /**
@@ -305,6 +307,11 @@ export function madd2(a: bigint, b: bigint, c: bigint, d: bigint): [bigint, bigi
 }
 
 export function extractEVMMAXImmediateInputs(pc: number, code: Uint8Array) {
+  console.log('dbg300')
+  console.log(bytesToHex(code))
+  console.log(pc)
+  console.log(code[pc])
+  console.log(code[pc - 1])
   const out = Number(code[pc + 1])
   const outStride = Number(code[pc + 2])
   const x = Number(code[pc + 3])

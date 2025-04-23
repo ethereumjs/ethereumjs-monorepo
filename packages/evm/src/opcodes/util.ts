@@ -210,7 +210,7 @@ export function isPowerOfTwo(val: bigint): boolean {
 }
 
 export function makeEVMMAXArithGasFunc(opCosts: number[]): Function {
-  return function (runState: RunState, gas: number, common: Common) {
+  return function (runState: RunState, gas: bigint, common: Common) {
     const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
       runState.programCounter,
       runState.code,
@@ -225,7 +225,13 @@ export function makeEVMMAXArithGasFunc(opCosts: number[]): Function {
       trap('bad parameters')
     }
 
-    return gas + count * opCosts[runState.evmmaxState.getActive().modulus.length - 1]
+    // console.log('dbg200')
+    // console.log(gas)
+    // console.log(count)
+    // console.log(opCosts[runState.evmmaxState.getActive().modulus.length - 1])
+    return (
+      gas + BigInt(count) * BigInt(opCosts[runState.evmmaxState.getActive().modulus.length - 1])
+    )
   }
 }
 

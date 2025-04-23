@@ -996,23 +996,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, _common) {
       const [id, modOffset, modSize, allocCount] = runState.stack.popN(4)
       const modulus = runState.memory.read(Number(modOffset), Number(modSize))
+      // console.log('dbg600')
+      // console.log(modulus)
       runState.evmmaxState.allocAndSetActive(Number(id), modulus, allocCount)
     },
   ],
-  // 0xc1: STOREX
+  // 0xc1: LOADX
   [
     0xc1,
-    function (runState, _common) {
-      // TODO figure out if we need to use extend(), _store(), or or just write()
-      const [dest, source, count] = runState.stack.popN(3)
-      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
-      const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
-      runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
-    },
-  ],
-  // 0xc2: LOADX
-  [
-    0xc2,
     function (runState, _common) {
       const [dest, source, count] = runState.stack.popN(3)
       const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
@@ -1021,16 +1012,46 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.memory.write(Number(dest), copySize, destBuf)
     },
   ],
+  // 0xc2: STOREX
+  [
+    0xc2,
+    function (runState, _common) {
+      // TODO figure out if we need to use extend(), _store(), or or just write()
+      const [dest, source, count] = runState.stack.popN(3)
+      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
+      console.log('dbg400')
+      // console.log(dest)
+      // console.log(source)
+      // console.log(count)
+      // console.log(srcBuf)
+      // console.log(runState.memory._store)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
+      runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
+    },
+  ],
   // 0xc3: ADDMODX
   [
     0xc3,
     function (runState, _common) {
+      console.log(runState.code)
       const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
         runState.programCounter,
         runState.code,
       )
       runState.programCounter += 7
+      console.log('dbg500')
+      console.log(out)
+      console.log(outStride)
+      console.log(x)
+      console.log(xStride)
+      console.log(y)
+      console.log(yStride)
+      console.log(count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc4: SUBMODX
