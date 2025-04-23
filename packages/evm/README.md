@@ -237,7 +237,7 @@ If you want to activate an EIP not currently active on the hardfork your `common
 ```ts
 // ./examples/eips.ts
 
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 
 const main = async () => {
