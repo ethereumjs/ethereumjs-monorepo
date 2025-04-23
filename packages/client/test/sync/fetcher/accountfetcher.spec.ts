@@ -188,20 +188,19 @@ describe('[AccountFetcher]', async () => {
       address: 'random',
       latest: vi.fn(),
     }
-    const partialResult: any = [
-      [
-        {
-          hash: new Uint8Array(0),
-          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
-        },
-        {
-          hash: new Uint8Array(0),
-          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
-        },
-      ],
+    const partialResult = [
+      {
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+      {
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
     ]
     const job = { peer, partialResult, task }
-    const result = (await fetcher.request(job as any)) as any
+    const result = await fetcher.request(job as any)
+    assert.isDefined(result)
     assert.equal(
       JSON.stringify(result[0]),
       JSON.stringify({ skipped: true }),
@@ -219,17 +218,15 @@ describe('[AccountFetcher]', async () => {
       first: BigInt(1),
       count: BigInt(3),
     })
-    const partialResult: any = [
-      [
-        {
-          hash: new Uint8Array(0),
-          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
-        },
-        {
-          hash: new Uint8Array(0),
-          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
-        },
-      ],
+    const partialResult = [
+      {
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+      {
+        hash: new Uint8Array(0),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
     ]
 
     const task = { count: 3, first: BigInt(1) }

@@ -19,7 +19,7 @@ import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.ts'
 import { stripHexPrefix } from './internal.ts'
 
-import type { BigIntLike, BytesLike, PrefixedHexString } from './types.ts'
+import type { BigIntLike, BytesLike, NestedUint8Array, PrefixedHexString } from './types.ts'
 
 export interface AccountData {
   nonce?: BigIntLike
@@ -38,6 +38,35 @@ export interface PartialAccountData {
 }
 
 export type AccountBodyBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
+
+/**
+ * Handles the null indicator for RLP encoded accounts
+ * @returns {null} is the null indicator is 0
+ * @returns The unchanged value is the null indicator is 1
+ * @throws if the null indicator is > 1
+ * @throws if the length of values is < 2
+ * @param value The value to convert
+ * @returns The converted value
+ */
+function handleNullIndicator(values: NestedUint8Array | Uint8Array): Uint8Array | null {
+  // Needed if some values are not provided to the array (e.g. partial account RLP)
+  if (values[0] === undefined) {
+    return null
+  }
+
+  const nullIndicator = bytesToInt(values[0] as Uint8Array)
+
+  if (nullIndicator === 0) {
+    return null
+  }
+  if (nullIndicator > 1) {
+    throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${nullIndicator}`)
+  }
+  if (values.length < 2) {
+    throw EthereumJSErrorWithoutCode(`Invalid values length=${values.length}`)
+  }
+  return values[1] as Uint8Array
+}
 
 /**
  * Account class to load and maintain the  basic account objects.
@@ -126,8 +155,10 @@ export class Account {
 
   /**
    * This constructor assigns and validates the values.
-   * Use the static factory methods to assist in creating an Account from varying data types.
-   * undefined get assigned with the defaults present, but null args are retained as is
+   * It is not recommended to use this constructor directly. Instead use the static
+   * factory methods to assist in creating an Account from varying data types.
+   * undefined get assigned with the defaults, but null args are retained as is
+   * @deprecated
    */
   constructor(
     nonce: bigint | null = BIGINT_0,
@@ -325,91 +356,26 @@ export function createAccountFromRLP(serialized: Uint8Array) {
 }
 
 export function createPartialAccountFromRLP(serialized: Uint8Array) {
-  const values = RLP.decode(serialized) as Uint8Array[][]
+  const values = RLP.decode(serialized)
 
   if (!Array.isArray(values)) {
     throw EthereumJSErrorWithoutCode('Invalid serialized account input. Must be array')
   }
 
-  let nonce = null
-  if (!Array.isArray(values[0])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial nonce encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[0][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
-    }
-    if (isNotNullIndicator === 1) {
-      nonce = bytesToBigInt(values[0][1])
+  for (const value of values) {
+    // Ensure that each array item is an array
+    if (!Array.isArray(value)) {
+      throw EthereumJSErrorWithoutCode('Invalid partial encoding. Each item must be an array')
     }
   }
 
-  let balance = null
-  if (!Array.isArray(values[1])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial balance encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[1][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
-    }
-    if (isNotNullIndicator === 1) {
-      balance = bytesToBigInt(values[1][1])
-    }
-  }
+  const [nonceRaw, balanceRaw, storageRoot, codeHash, codeSizeRaw, versionRaw] =
+    values.map(handleNullIndicator)
 
-  let storageRoot = null
-  if (!Array.isArray(values[2])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial storageRoot encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[2][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(
-        `Invalid isNullIndicator=${isNotNullIndicator} for storageRoot`,
-      )
-    }
-    if (isNotNullIndicator === 1) {
-      storageRoot = values[2][1]
-    }
-  }
-
-  let codeHash = null
-  if (!Array.isArray(values[3])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial codeHash encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[3][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
-    }
-    if (isNotNullIndicator === 1) {
-      codeHash = values[3][1]
-    }
-  }
-
-  let codeSize = null
-  if (!Array.isArray(values[4])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial codeSize encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[4][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
-    }
-    if (isNotNullIndicator === 1) {
-      codeSize = bytesToInt(values[4][1])
-    }
-  }
-
-  let version = null
-  if (!Array.isArray(values[5])) {
-    throw EthereumJSErrorWithoutCode('Invalid partial version encoding. Must be array')
-  } else {
-    const isNotNullIndicator = bytesToInt(values[5][0])
-    if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
-      throw EthereumJSErrorWithoutCode(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
-    }
-    if (isNotNullIndicator === 1) {
-      version = bytesToInt(values[5][1])
-    }
-  }
+  const nonce = nonceRaw === null ? null : bytesToBigInt(nonceRaw)
+  const balance = balanceRaw === null ? null : bytesToBigInt(balanceRaw)
+  const codeSize = codeSizeRaw === null ? null : bytesToInt(codeSizeRaw)
+  const version = versionRaw === null ? null : bytesToInt(versionRaw)
 
   return createPartialAccount({ balance, nonce, storageRoot, codeHash, codeSize, version })
 }
