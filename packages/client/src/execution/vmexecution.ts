@@ -38,6 +38,7 @@ import { Execution } from './execution.ts'
 import { LevelDB } from './level.ts'
 import { PreimagesManager } from './preimage.ts'
 import { ReceiptsManager } from './receipt.ts'
+import { IndexOperation, IndexType, TxIndex } from './txIndex.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -71,6 +72,7 @@ export class VMExecution extends Execution {
 
   public receiptsManager?: ReceiptsManager
   public preimagesManager?: PreimagesManager
+  public txIndex?: TxIndex
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -117,6 +119,11 @@ export class VMExecution extends Execution {
     }
 
     if (this.metaDB) {
+      this.txIndex = new TxIndex({
+        metaDB: this.metaDB,
+        chain: this.chain,
+        config: this.config,
+      })
       if (this.config.saveReceipts) {
         this.receiptsManager = new ReceiptsManager({
           chain: this.chain,
