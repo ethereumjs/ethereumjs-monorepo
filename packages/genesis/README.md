@@ -16,6 +16,15 @@ This module provides access to Ethereum genesis state for the following networks
 - Holesky
 - Hoodi
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Installation
+
 The package can be install with:
 
 ```shell
