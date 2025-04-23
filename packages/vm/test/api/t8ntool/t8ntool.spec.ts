@@ -60,7 +60,7 @@ describe('trace tests', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
-    const bytecode = hexToBytes('0x604260005260206000F3') // PUSH1 42 PUSH1 00 MSTORE PUSH1 20 PUSH1 00 RETURN
+    const bytecode = hexToBytes('0x604260005260206000F3') // PUSH1 0x42 PUSH1 0x00 MSTORE PUSH1 0x20 PUSH1 0x00 RETURN
     const contractAddress = createAddressFromPrivateKey(randomBytes(32))
     await vm.stateManager.putAccount(contractAddress)
     await vm.stateManager.putCode(contractAddress, bytecode)
@@ -83,8 +83,7 @@ describe('trace tests', async () => {
   })
   it('should produce a trace of the correct length', async () => {
     const common = new Common({
-      hardfork: Hardfork.Prague,
-      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      hardfork: Hardfork.Osaka,
       chain: Mainnet,
     })
     const sm = new MerkleStateManager({ common })
@@ -153,10 +152,9 @@ describe('trace tests', async () => {
     expect(traceStepWithStorage.storage).toMatchObject([['0x0', '0x42']])
     assert.equal(JSON.parse(trace[6]).gasUsed, 43115)
   })
-  it.only('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
+  it('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({
-      hardfork: Hardfork.Prague,
-      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      hardfork: Hardfork.Osaka,
       chain: Mainnet,
     })
     const sm = new MerkleStateManager({ common })
@@ -247,7 +245,7 @@ describe('trace tests', async () => {
     // Plus the summary trace
     assert.strictEqual(trace.length, 9, 'trace length should be 9')
 
-    // The execution should use exactly 8 gas (one for each opcode executed)
+    // The execution should use exactly 19 gas (one for each opcode executed)
     assert.strictEqual(result.execResult.executionGasUsed, BigInt(19))
     const immediate = JSON.parse(trace[2]).immediate
     assert.strictEqual(immediate, '0x0001') // Verifies that CALLF immediate matches

@@ -246,6 +246,7 @@ class EOFHeader {
     // Write the start of the first code section into `codeStartPos`
     // Note: in EVM, if one would set the Program Counter to this byte, it would start executing the bytecode of the first code section
     this.codeStartPos = [relativeOffset]
+    this.getCodePosition(this.codeSizes.length - 1) // initialize code positions
   }
 
   sections() {
