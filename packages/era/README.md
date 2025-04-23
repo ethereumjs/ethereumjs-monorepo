@@ -9,6 +9,13 @@
 | A collection of utility functions for Ethereum. |
 | ----------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
