@@ -137,6 +137,7 @@ export class VMExecution extends Execution {
             // Once a block gets deleted from the chain, delete the receipts also
             for (const block of blocks) {
               await this.receiptsManager?.deleteReceipts(block)
+              void this.txIndex?.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
             }
             if (resolve !== undefined) {
               resolve()
@@ -326,7 +327,6 @@ export class VMExecution extends Execution {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }
       }
-
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()
@@ -541,6 +541,9 @@ export class VMExecution extends Execution {
           await this.receiptsManager?.saveReceipts(block, receipts)
           this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
+        if (this.txIndex) {
+          void this.txIndex.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+        }
       }
 
       // check if the head, safe and finalized are now canonical
@@ -747,6 +750,9 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
+                  if (this.txIndex) {
+                    void this.txIndex.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+                  }
                   if (this.config.savePreimages && result.preimages !== undefined) {
                     await this.savePreimages(result.preimages)
                   }

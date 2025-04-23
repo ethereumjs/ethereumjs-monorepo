@@ -1,6 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  BIGINT_0,
   EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToBigInt,
@@ -17,8 +16,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
-import type { TxHashIndex, rlpTxHash } from './txIndex.ts'
-import { IndexOperation, IndexType } from './txIndex.ts'
+import type { TxHashIndex } from './txIndex.ts'
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:
@@ -96,12 +94,10 @@ export class ReceiptsManager extends MetaDBManager {
   async saveReceipts(block: Block, receipts: TxReceipt[]) {
     const encoded = this.rlp(RlpConvert.Encode, RlpType.Receipts, receipts)
     await this.put(DBKey.Receipts, block.hash(), encoded)
-    void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
   }
 
   async deleteReceipts(block: Block) {
     await this.delete(DBKey.Receipts, block.hash())
-    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
   }
 
   /**
@@ -148,9 +144,9 @@ export class ReceiptsManager extends MetaDBManager {
    * Returns receipt by tx hash with additional metadata for the JSON RPC response, or null if not found
    * @param txHash the tx hash
    */
-  async getReceiptByTxHash(txHash: Uint8Array): Promise<GetReceiptByTxHashReturn | null> {
-    const txHashIndex = await this.getIndex(IndexType.TxHash, txHash)
-    if (!txHashIndex) return null
+  async getReceiptByTxHashIndex(
+    txHashIndex: TxHashIndex,
+  ): Promise<GetReceiptByTxHashReturn | null> {
     const [blockHash, txIndex] = txHashIndex
     const receipts = await this.getReceipts(blockHash)
     if (receipts.length === 0) return null
