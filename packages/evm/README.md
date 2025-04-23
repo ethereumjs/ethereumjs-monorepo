@@ -9,6 +9,25 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+- [Browser](#browser)
+- [API](#api)
+- [Architecture](#architecture)
+- [Supported Hardforks](#supported-hardforks)
+- [Supported EIPs](#supported-eips)
+- [Precompiles](#precompiles)
+- [Events](#events)
+- [Understanding the EVM](#understanding-the-evm)
+- [Profiling the EVM](#profiling-the-evm)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -347,11 +366,11 @@ The following loggers are currently available:
 
 | Logger                             | Description                                         |
 | ---------------------------------- | --------------------------------------------------- |
-| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
-| `evm:gas`                          |  EVM gas logger                                     |
-| `evm:precompiles`                  |  EVM precompiles logger                             |
-| `evm:journal`                      |  EVM journal logger                                 |
-| `evm:ops`                          |  Opcode traces                                      |
+| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
+| `evm:gas`                          |  EVM gas logger                                     |
+| `evm:precompiles`                  |  EVM precompiles logger                             |
+| `evm:journal`                      |  EVM journal logger                                 |
+| `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
 Here are some examples for useful logger combinations.
