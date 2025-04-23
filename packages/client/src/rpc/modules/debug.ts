@@ -449,9 +449,7 @@ export class Debug {
     if (!this.service.execution.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
     const txHashIndex = await this.service.execution.txIndex.getIndex(hexToBytes(txHash))
     if (!txHashIndex) return null
-    const result = await this.service.execution.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    const [blockHash, txIndex] = txHashIndex
     const block = await this.chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return bytesToHex(tx.serialize())
