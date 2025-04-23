@@ -10,7 +10,6 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -24,6 +23,7 @@ import { wait } from '../integration/util.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import { MemoryLevel } from 'memory-level'
 import type { FullSynchronizer } from '../../src/sync/index.ts'
 
 const A = {
@@ -360,8 +360,9 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   const service = new FullEthereumService({
     config,
     chain,
-    metaDB: new AbstractLevel({
-      encodings: { utf8: true, buffer: true },
+    metaDB: new MemoryLevel({
+      keyEncoding: 'view',
+      valueEncoding: 'view',
     }),
   })
   const miner = new Miner({ config, service, skipHardForkValidation: true })
