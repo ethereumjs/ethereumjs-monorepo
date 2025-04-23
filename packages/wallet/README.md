@@ -26,6 +26,16 @@ Features not supported:
 - signing transactions
 - managing storage (neither in node.js or the browser)
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Wallet API](#wallet-api)
+- [Thirdparty API](#thirdparty-api)
+- [HD Wallet API](#hd-wallet-api)
+- [Special Topics](#special-topics)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Wallet API
 
 For information about the Wallet's API, please go to [./docs/classes/wallet.md](./docs/classes/wallet.md).
@@ -114,17 +124,9 @@ console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum a
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
 
-## Provider Engine
+## Special Topics
 
-Provider Engine is
-[not very actively maintained](https://github.com/MetaMask/web3-provider-engine#web3-providerengine)
-and support has been removed along `v1.0.0` release, see
-issue [#115](https://github.com/ethereumjs/ethereumjs-wallet/issues/115) for context.
-
-You can use the the old `src/provider-engine.ts` code (see associated PR) as some boilerplate
-for your own integration if needed.
-
-## Remarks about `toV3`
+### Remarks about `toV3`
 
 The `options` is an optional object hash, where all the serialization parameters can be fine tuned:
 
@@ -157,7 +159,7 @@ The following settings are favoured by the Go Ethereum implementation and we def
 - `p`: `1`
 - `cipher`: `aes-128-ctr`
 
-# EthereumJS
+## EthereumJS
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
