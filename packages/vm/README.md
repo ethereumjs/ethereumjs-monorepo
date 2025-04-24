@@ -21,7 +21,7 @@ to build and run blocks and txs and update state.
 - 📬 Flexible state retrieval (Merkle, RPC,...)
 - 🔎 Passes official #Ethereum tests
 - 🛵 668KB bundle size (170KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
