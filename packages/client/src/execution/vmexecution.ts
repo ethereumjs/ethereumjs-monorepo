@@ -230,7 +230,10 @@ export class VMExecution extends Execution {
   }
 
   async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVM: boolean = true): Promise<void> {
-    if (typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') {
+    if (
+      'initVerkleExecutionWitness' in this.vm.stateManager &&
+      typeof this.vm.stateManager.initVerkleExecutionWitness === 'function'
+    ) {
       return
     }
 
@@ -430,6 +433,7 @@ export class VMExecution extends Execution {
           }
 
           const needsStatelessExecution =
+            'initVerkleExecutionWitness' in this.vm.stateManager &&
             typeof this.vm.stateManager.initVerkleExecutionWitness === 'function'
           if (needsStatelessExecution && block.executionWitness === undefined) {
             throw Error(`Verkle blocks need executionWitness for stateless execution`)
@@ -691,6 +695,7 @@ export class VMExecution extends Execution {
                   }
                   if (
                     (!this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
+                      'initVerkleExecutionWitness' in this.vm.stateManager &&
                       typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
                     (this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
                       this.vm.stateManager instanceof MerkleStateManager)

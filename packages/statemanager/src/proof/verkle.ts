@@ -2,11 +2,10 @@ import { EthereumJSErrorWithoutCode, verifyVerkleProof } from '@ethereumjs/util'
 
 import type { VerkleStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { Proof } from '../index.ts'
-import type { StatelessVerkleStateManager } from '../statelessVerkleStateManager.ts'
+import type { Proof, StatelessVerkleStateManager } from '../index.ts'
 
 export function getVerkleStateProof(
-  sm: StatelessVerkleStateManager,
+  sm: VerkleStateManagerInterface,
   _: Address,
   __: Uint8Array[] = [],
 ): Promise<Proof> {
