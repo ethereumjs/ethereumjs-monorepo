@@ -21,7 +21,6 @@ import {
   setLengthLeft,
   setLengthRight,
   short,
-  toBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'

@@ -13,7 +13,6 @@ import {
   hexToBytes,
   isHexString,
   stripHexPrefix,
-  toBytes,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
 

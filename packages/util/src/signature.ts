@@ -9,7 +9,6 @@ import {
   concatBytes,
   hexToBytes,
   setLengthLeft,
-  toBytes,
   utf8ToBytes,
 } from './bytes.ts'
 import {

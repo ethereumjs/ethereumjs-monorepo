@@ -11,7 +11,6 @@ import {
   createZeroAddress,
   equalsBytes,
   hexToBytes,
-  toBytes,
 } from '../src/index.ts'
 
 import { eip1404ExamplesData } from './testdata/eip1014Examples.ts'

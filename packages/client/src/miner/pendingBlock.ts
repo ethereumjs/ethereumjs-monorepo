@@ -9,7 +9,6 @@ import {
   concatBytes,
   createZeroAddress,
   equalsBytes,
-  toBytes,
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'

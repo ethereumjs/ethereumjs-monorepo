@@ -7,7 +7,6 @@ import {
   intToBytes,
   setLengthLeft,
   setLengthRight,
-  toBytes,
 } from './bytes.ts'
 
 import type { Account } from './account.ts'
