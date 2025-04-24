@@ -2,9 +2,8 @@ import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import {
-  StatefulBinaryTreeStateManager,
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
+  type StatefulVerkleStateManager,
+  type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
 import {
@@ -205,20 +204,20 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
 
-    if (
-      !(vm.stateManager instanceof StatefulVerkleStateManager) &&
-      !(vm.stateManager instanceof StatelessVerkleStateManager)
-    ) {
+    if (!('verifyPostState' in vm.stateManager) && !('verifyPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
-    txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+    txAccesses = new VerkleAccessWitness({
+      verkleCrypto: (vm.stateManager as StatelessVerkleStateManager | StatefulVerkleStateManager)
+        .verkleCrypto,
+    })
   } else if (vm.common.isActivatedEIP(7864)) {
     if (vm.evm.binaryTreeAccessWitness === undefined) {
       throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
     }
 
-    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+    if (!('verifyBinaryPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(
         `Binary tree State Manager needed for execution of binary tree blocks`,
       )
