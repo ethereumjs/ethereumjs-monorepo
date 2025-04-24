@@ -351,7 +351,8 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
       BigInt(bytesToHex(key)),
       this.verkleCrypto,
     )
-    const storageValue = toBytes(this._state[bytesToHex(storageKey)])
+    const rawStorageValue = this._state[bytesToHex(storageKey)]
+    const storageValue = rawStorageValue === null ? new Uint8Array() : hexToBytes(rawStorageValue)
 
     this._caches?.storage?.put(address, key, storageValue ?? hexToBytes('0x80'))
 
