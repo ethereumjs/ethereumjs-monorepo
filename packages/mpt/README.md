@@ -16,7 +16,7 @@
 - 🛢️ Flexible storage backends
 - ⚖️ `EIP-1186` Proofs
 - 🛵 176KB bundle size (48KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
