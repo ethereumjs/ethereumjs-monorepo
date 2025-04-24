@@ -16,7 +16,7 @@
 - 🔌 Unified interface (for custom SMs)
 - 🎁 3 SMs included (Merkle/Simple/RPC)
 - 🛵 233KB bundle size (for Merkle SM) (63KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
