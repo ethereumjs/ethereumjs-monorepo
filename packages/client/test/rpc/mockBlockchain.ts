@@ -4,7 +4,7 @@ import { type PrefixedHexString, equalsBytes, hexToBytes } from '@ethereumjs/uti
 
 import { dummy } from './helpers.ts'
 
-import type { JSONTx, LegacyTx, Transaction, TypedTransaction } from '@ethereumjs/tx'
+import type { JSONTx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 
 export function mockBlockchain(
   options: {

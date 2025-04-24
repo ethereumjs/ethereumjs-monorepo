@@ -7,7 +7,6 @@ import {
   equalsBytes,
   hexToBytes,
   privateToPublic,
-  toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'

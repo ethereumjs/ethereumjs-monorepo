@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { getClientVersion } from '../../util/index.ts'

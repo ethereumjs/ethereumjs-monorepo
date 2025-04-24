@@ -1,12 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import {
-  Account,
-  bytesToHex,
-  createAddressFromPrivateKey,
-  hexToBytes,
-  toBytes,
-} from '@ethereumjs/util'
+import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock, runTx } from '../../src/index.ts'
