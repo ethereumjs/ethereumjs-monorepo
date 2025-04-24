@@ -320,7 +320,7 @@ describe('[Block]: Header functions', () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const blockchain = new Mockchain()
 
-    const genesisRlp = toBytes(testDataPreLondon.genesisRLP)
+    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP)
     const block = createBlockFromRLP(genesisRlp, { common })
     await blockchain.putBlock(block)
 
