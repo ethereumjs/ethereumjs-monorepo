@@ -84,7 +84,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const genesisBlock = createBlock(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBytes(testData.genesisRLP)
+    const rlp = hexToBytes(testData.genesisRLP)
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 

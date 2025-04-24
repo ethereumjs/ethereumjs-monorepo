@@ -26,13 +26,13 @@ describe('Address', () => {
     assert.throws(() => createAddressFromString(str))
     const shortStr = '0x2f015c60e0be116b1f0cd534704db9c92118fb'
     assert.throws(() => createAddressFromString(shortStr))
-    const buf = toBytes(str)
+    const buf = hexToBytes(str)
     assert.throws(() => new Address(buf))
   })
 
   it('should generate a zero address', () => {
     const addr = createZeroAddress()
-    assert.deepEqual(addr.bytes, toBytes(ZERO_ADDR_S))
+    assert.deepEqual(addr.bytes, hexToBytes(ZERO_ADDR_S))
     assert.equal(addr.toString(), ZERO_ADDR_S)
   })
 

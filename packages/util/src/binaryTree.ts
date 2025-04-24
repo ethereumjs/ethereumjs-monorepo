@@ -173,7 +173,7 @@ export const getBinaryTreeKeyForCodeChunk = (
   hashFunction: (input: Uint8Array) => Uint8Array,
 ) => {
   const { treeIndex, subIndex } = getBinaryTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), intToBytes(subIndex))
 }
 
 // This code was written by robots based on the reference implementation in EIP-7864

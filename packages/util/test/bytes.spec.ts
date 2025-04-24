@@ -220,9 +220,9 @@ describe('toBytes', () => {
     // Array
     assert.isTrue(equalsBytes(toBytes([]), new Uint8Array()))
     // String
-    assert.isTrue(equalsBytes(hexToBytes('0x11'), Uint8Array.from([17])))
-    assert.equal(bytesToHex(hexToBytes('0x1234')), '0x1234')
-    assert.isTrue(equalsBytes(hexToBytes('0x'), Uint8Array.from([])))
+    assert.isTrue(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
+    assert.equal(bytesToHex(toBytes('0x1234')), '0x1234')
+    assert.isTrue(equalsBytes(toBytes('0x'), Uint8Array.from([])))
     // Number
     assert.isTrue(equalsBytes(toBytes(1), Uint8Array.from([1])))
     // null
@@ -251,9 +251,11 @@ describe('toBytes', () => {
   })
 
   it('should fail with non 0x-prefixed hex strings', () => {
-    assert.throws(() => toBytes('11' as any), '11')
-    assert.throws(() => toBytes('' as any))
-    assert.throws(() => hexToBytes('0xR'), '0xR')
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes('11'), '11')
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes(''))
+    assert.throws(() => toBytes('0xR'), '0xR')
   })
 
   it('should convert a TransformableToBytes like the Address class (i.e. provides a toBytes method)', () => {
