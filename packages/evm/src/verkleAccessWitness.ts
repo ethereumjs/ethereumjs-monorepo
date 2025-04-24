@@ -28,8 +28,8 @@ import type {
   VerkleAccessWitnessInterface,
   VerkleAccessedState,
   VerkleAccessedStateWithAddress,
+  VerkleStateManagerInterface,
 } from '@ethereumjs/common'
-import type { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import type {
   Address,
   PrefixedHexString,
@@ -398,11 +398,11 @@ export class VerkleAccessWitness implements VerkleAccessWitnessInterface {
  * Note: This does not provide the verkle proof, which is not implemented
  */
 export const generateExecutionWitness = async (
-  stateManager: StatefulVerkleStateManager,
+  stateManager: VerkleStateManagerInterface,
   accessWitness: VerkleAccessWitness,
   parentStateRoot: Uint8Array,
 ): Promise<VerkleExecutionWitness> => {
-  const trie = stateManager['_trie'] as VerkleTree
+  const trie = (stateManager as any)['_trie'] as VerkleTree
   await trie['_lock'].acquire()
   const postStateRoot = await stateManager.getStateRoot()
   const ew: VerkleExecutionWitness = {

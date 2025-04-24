@@ -42,6 +42,7 @@ import { modifyAccountFields } from './util.ts'
 
 import type {
   AccountFields,
+  BinaryStateManagerInterface,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedStateWithAddress,
   GenesisState,
@@ -55,7 +56,7 @@ import type { Caches } from './cache/caches.ts'
 import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-export class StatefulBinaryTreeStateManager implements StateManagerInterface {
+export class StatefulBinaryTreeStateManager implements BinaryStateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 

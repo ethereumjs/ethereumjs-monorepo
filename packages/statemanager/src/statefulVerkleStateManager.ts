@@ -54,13 +54,14 @@ import type {
   StorageRange,
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
+  VerkleStateManagerInterface,
 } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Caches } from './cache/caches.ts'
 import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-export class StatefulVerkleStateManager implements StateManagerInterface {
+export class StatefulVerkleStateManager implements VerkleStateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 

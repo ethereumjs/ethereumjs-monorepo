@@ -31,9 +31,9 @@ import { modifyAccountFields } from './util.ts'
 import type {
   AccountFields,
   Common,
-  StateManagerInterface,
   VerkleAccessWitnessInterface,
   VerkleAccessedStateWithAddress,
+  VerkleStateManagerInterface,
 } from '@ethereumjs/common'
 import type {
   Address,
@@ -66,7 +66,7 @@ const ZEROVALUE = '0x00000000000000000000000000000000000000000000000000000000000
  * to fetch data requested by the the VM.
  *
  */
-export class StatelessVerkleStateManager implements StateManagerInterface {
+export class StatelessVerkleStateManager implements VerkleStateManagerInterface {
   _cachedStateRoot?: Uint8Array
 
   originalStorageCache: OriginalStorageCache

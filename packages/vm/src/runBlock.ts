@@ -1,9 +1,14 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import type {
+  BinaryStateManagerInterface,
+  Common,
+  VerkleStateManagerInterface,
+} from '@ethereumjs/common'
 import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
+import { verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -35,7 +40,6 @@ import { runTx } from './index.ts'
 import { accumulateRequests } from './requests.ts'
 
 import type { Block } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
@@ -146,7 +150,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       verkleCrypto: vm.common.customCrypto.verkle,
     })
 
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+    if (!('initVerkleExecutionWitness' in stateManager)) {
       throw Error(`VerkleStateManager needed for execution of verkle blocks`)
     }
 
@@ -156,14 +160,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     if (clearCache) {
       stateManager.clearCaches()
     }
-
     // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+    ;(stateManager as VerkleStateManagerInterface).initVerkleExecutionWitness(
+      block.header.number,
+      block.executionWitness,
+    )
 
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    if ('initVerkleExecutionWitness' in stateManager) {
       // Update the stateRoot cache
-      await stateManager.setStateRoot(block.header.stateRoot)
-      if (verifyVerkleStateProof(stateManager) === true) {
+      await (stateManager as VerkleStateManagerInterface).setStateRoot(block.header.stateRoot)
+      if (verifyVerkleStateProof(stateManager as any) === true) {
         if (vm.DEBUG) {
           debug(`Verkle proof verification succeeded`)
         }
@@ -172,7 +178,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
   } else {
-    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
+    if ('initVerkleExecutionWitness' in stateManager) {
       throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
@@ -273,7 +279,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    if (!('initVerkleExecutionWitness' in vm.stateManager)) {
       // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
@@ -324,33 +330,61 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
 
     if (vm.common.isActivatedEIP(6800)) {
+      if (!('initVerkleExecutionWitness' in vm.stateManager)) {
+        throw Error(`VerkleStateManagerInterface required if verkle (EIP-6800) is activated`)
+      }
+
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
-      // If verkle is activated and executing statelessly, only validate the post-state
-      if (
-        (await vm['_opts'].stateManager!.verifyVerklePostState!(vm.evm.verkleAccessWitness)) ===
-        false
-      ) {
+
+      // Check if state manager has the required verification method
+      if (!('verifyPostState' in vm['_opts'].stateManager!)) {
+        throw Error(`State manager does not implement verifyPostState required for EIP-6800`)
+      }
+
+      // Now verify the verkle post state
+      const verkleStateManager = vm['_opts'].stateManager! as VerkleStateManagerInterface
+      const verificationResult = await verkleStateManager.verifyPostState(
+        vm.evm.verkleAccessWitness,
+      )
+
+      if (verificationResult === false) {
         throw EthereumJSErrorWithoutCode(
           `Verkle post state verification failed on block ${block.header.number}`,
         )
       }
+
       debug(`Verkle post state verification succeeded`)
     } else if (vm.common.isActivatedEIP(7864)) {
       if (vm.evm.binaryTreeAccessWitness === undefined) {
         throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
       }
-      // If binary tree is activated and executing statelessly, only validate the post-state
-      if (
-        (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
-          vm.evm.binaryTreeAccessWitness,
-        )) === false
-      ) {
+
+      // Check if state manager has the required verification method
+      if (!('verifyBinaryTreePostState' in vm['_opts'].stateManager!)) {
+        throw Error(
+          `State manager does not implement verifyBinaryTreePostState required for EIP-7864`,
+        )
+      }
+
+      // Now verify the binary tree post state with a temporary variable to avoid linter errors
+      const binaryStateManager = vm['_opts'].stateManager! as BinaryStateManagerInterface
+
+      // Explicitly cast both the witness and the method to bypass TypeScript errors
+      const witness = vm.evm.binaryTreeAccessWitness!
+
+      // Using any as an escape hatch for this difficult type issue
+      const verificationResult = await (binaryStateManager as any).verifyBinaryTreePostState(
+        witness,
+      )
+
+      if (verificationResult === false) {
         throw EthereumJSErrorWithoutCode(
           `Binary tree post state verification failed on block ${block.header.number}`,
         )
       }
+
       debug(`Binary tree post state verification succeeded`)
     }
   }

@@ -26,10 +26,12 @@ import { trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
 
 import type {
+  BinaryStateManagerInterface,
   BinaryTreeAccessWitnessInterface,
   Common,
   StateManagerInterface,
   VerkleAccessWitnessInterface,
+  VerkleStateManagerInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from './evm.ts'
@@ -100,7 +102,7 @@ export interface RunState {
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
   cachedPushes: { [pc: number]: bigint }
-  stateManager: StateManagerInterface
+  stateManager: StateManagerInterface | VerkleStateManagerInterface | BinaryStateManagerInterface
   blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
@@ -311,10 +313,11 @@ export class Interpreter {
         this._runState.env.chargeCodeAccesses === true
       ) {
         const contract = this._runState.interpreter.getAddress()
+        const stateManager = this._runState.stateManager as
+          | VerkleStateManagerInterface
+          | BinaryStateManagerInterface
 
-        if (
-          !(await this._runState.stateManager.checkChunkWitnessPresent!(contract, programCounter))
-        ) {
+        if (!(await stateManager.checkChunkWitnessPresent!(contract, programCounter))) {
           throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
         }
       }

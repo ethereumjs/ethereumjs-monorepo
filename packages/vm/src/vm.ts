@@ -4,7 +4,12 @@ import { EventEmitter } from 'eventemitter3'
 import { createVM } from './constructors.ts'
 import { paramsVM } from './params.ts'
 
-import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import type {
+  BinaryStateManagerInterface,
+  Common,
+  StateManagerInterface,
+  VerkleStateManagerInterface,
+} from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import type { BigIntLike } from '@ethereumjs/util'
 import type { VMEvent, VMOpts } from './types.ts'
@@ -17,7 +22,10 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: StateManagerInterface
+  readonly stateManager:
+    | StateManagerInterface
+    | VerkleStateManagerInterface
+    | BinaryStateManagerInterface
 
   /**
    * The blockchain the VM operates on

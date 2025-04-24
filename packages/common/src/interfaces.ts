@@ -226,17 +226,6 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  initVerkleExecutionWitness?(
-    blockNum: bigint,
-    executionWitness?: VerkleExecutionWitness | null,
-  ): void
-  verifyVerklePostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
-  initBinaryTreeExecutionWitness?(
-    blockNum: bigint,
-    executionWitness?: BinaryTreeExecutionWitness | null,
-  ): void
-  verifyBinaryTreePostState?(accessWitness: BinaryTreeAccessWitnessInterface): Promise<boolean>
-  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 
   /*
@@ -244,4 +233,22 @@ export interface StateManagerInterface {
    */
   clearCaches(): void
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
+}
+
+export interface VerkleStateManagerInterface extends StateManagerInterface {
+  initVerkleExecutionWitness(
+    blockNum: bigint,
+    executionWitness?: VerkleExecutionWitness | null,
+  ): void
+  verifyPostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
+}
+
+export interface BinaryStateManagerInterface extends StateManagerInterface {
+  initBinaryTreeExecutionWitness(
+    blockNum: bigint,
+    executionWitness?: BinaryTreeExecutionWitness | null,
+  ): void
+  verifyBinaryTreePostState?(accessWitness: BinaryTreeAccessWitnessInterface): Promise<boolean>
+  checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
 }

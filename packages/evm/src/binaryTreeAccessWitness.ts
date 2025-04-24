@@ -1,5 +1,6 @@
 import type {
   AccessEventFlags,
+  BinaryStateManagerInterface,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedState,
   BinaryTreeAccessedStateWithAddress,
@@ -29,7 +30,6 @@ import { ChunkCache } from './chunkCache.ts'
 import { StemCache } from './stemCache.ts'
 
 import type { BinaryTree } from '@ethereumjs/binarytree'
-import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 
 const debug = debugDefault('evm:binaryTree:aw')
@@ -389,11 +389,11 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
  * @returns The generated binary tree execution witness
  */
 export const generateBinaryExecutionWitness = async (
-  stateManager: StatefulBinaryTreeStateManager,
+  stateManager: BinaryStateManagerInterface,
   accessWitness: BinaryTreeAccessWitness,
   parentStateRoot: Uint8Array,
 ): Promise<BinaryTreeExecutionWitness> => {
-  const tree = stateManager['_tree'] as BinaryTree
+  const tree = (stateManager as any)['_tree'] as BinaryTree
   await tree['_lock'].acquire()
   const postStateRoot = await stateManager.getStateRoot()
   const ew: BinaryTreeExecutionWitness = {
