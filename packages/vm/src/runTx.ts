@@ -205,7 +205,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
 
     // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyPostState)
-    if (!('verifyPostState' in vm.stateManager) && !('verifyPostState' in vm.stateManager)) {
+    if (!('verifyPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
