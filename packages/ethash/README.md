@@ -1,4 +1,4 @@
-# @ethereumjs/ethash
+# @ethereumjs/ethash `v10`
 
 [![NPM Package][ethash-npm-badge]][ethash-npm-link]
 [![GitHub Issues][ethash-issues-badge]][ethash-issues-link]
@@ -8,6 +8,14 @@
 
 | [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
 | ------------------------------------------------------------------------------------ |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -106,7 +114,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
 
-# LICENSE
+## License
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

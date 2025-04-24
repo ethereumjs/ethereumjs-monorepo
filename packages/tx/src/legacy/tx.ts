@@ -6,6 +6,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -256,8 +257,8 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
       message.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      message.push(unpadBytes(toBytes(0)))
-      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
     }
 
     return message
