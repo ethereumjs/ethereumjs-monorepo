@@ -16,7 +16,7 @@
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
 - 🛵 324KB bundle size (81KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
