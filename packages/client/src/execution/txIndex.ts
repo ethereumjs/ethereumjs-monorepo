@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { BIGINT_0, EthereumJSErrorWithoutCode, bytesToInt, intToBytes } from '@ethereumjs/util'
+import { BIGINT_0, bytesToInt, intToBytes } from '@ethereumjs/util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager.ts'
 
 export type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
@@ -56,8 +56,6 @@ export class TxIndex extends MetaDBManager {
         }
         break
       }
-      default:
-        throw EthereumJSErrorWithoutCode('Unsupported index type')
     }
   }
 
