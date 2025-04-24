@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../errors.ts'
+import { EVMError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
-import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import {
   BLS_GAS_DISCOUNT_PAIRS_G1,
@@ -25,7 +25,10 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
-    return EvmErrorResult(new EVMError(EVMErrorMessages.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INPUT_EMPTY),
+      opts.gasLimit,
+    ) // follow Geth's implementation
   }
 
   // TODO: Double-check respectively confirm that this order is really correct that the gas check
@@ -43,14 +46,14 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Invalid input length length=${inputData.length}`)
     }
-    return EvmErrorResult(
-      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
       opts.gasLimit,
     )
   }
   if (!moduloLengthCheck(opts, 160, pName)) {
-    return EvmErrorResult(
-      new EVMError(EVMErrorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
       opts.gasLimit,
     )
   }
@@ -65,8 +68,8 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 160 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
-      return EvmErrorResult(
-        new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+      return EVMErrorResult(
+        new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
         opts.gasLimit,
       )
     }
@@ -79,7 +82,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

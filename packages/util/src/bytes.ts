@@ -24,7 +24,7 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  * @returns {Uint8Array} The converted bytes
  * @throws If the input is not a valid 0x-prefixed hex string
  */
-export const hexToBytes = (hex: string): Uint8Array => {
+export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
   return nobleH2B(padToEven(stripHexPrefix(hex)))
 }
@@ -34,8 +34,13 @@ export const unprefixedHexToBytes = (hex: string): Uint8Array => {
   return nobleH2B(padToEven(hex))
 }
 
+/**
+ * Converts a {@link Uint8Array} to a {@link PrefixedHexString}
+ * @param {Uint8Array} bytes the bytes to convert
+ * @returns {PrefixedHexString} the hex string
+ * @dev Returns `0x` if provided an empty Uint8Array
+ */
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
-  if (bytes === undefined || bytes.length === 0) return '0x'
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return `0x${unprefixedHex}`
 }
@@ -92,7 +97,7 @@ export const intToHex = (i: number): PrefixedHexString => {
   if (!Number.isSafeInteger(i) || i < 0) {
     throw EthereumJSErrorWithoutCode(`Received an invalid integer type: ${i}`)
   }
-  return ('0x' + i.toString(16)) as PrefixedHexString
+  return `0x${i.toString(16)}`
 }
 
 /**
@@ -111,7 +116,7 @@ export const intToBytes = (i: number): Uint8Array => {
  * @returns {Uint8Array}
  */
 export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
-  const bytes = toBytes(`0x${padToEven(num.toString(16))}`)
+  const bytes = hexToBytes(`0x${padToEven(num.toString(16))}`)
 
   return littleEndian ? bytes.reverse() : bytes
 }

@@ -213,7 +213,7 @@ export class PeerPool {
    * @emits {@link Event.POOL_PEER_ADDED}
    */
   add(peer?: Peer) {
-    if (peer && peer.id && !this.pool.get(peer.id)) {
+    if (peer?.id !== undefined && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       peer.pooled = true
       this.config.events.emit(Event.POOL_PEER_ADDED, peer)

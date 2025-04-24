@@ -21,7 +21,7 @@ import { EventEmitter } from 'eventemitter3'
 
 import { FORMAT } from './eof/constants.ts'
 import { isEOF } from './eof/util.ts'
-import { EVMError, EVMErrorMessages } from './errors.ts'
+import { EVMError } from './errors.ts'
 import { Interpreter } from './interpreter.ts'
 import { Journal } from './journal.ts'
 import { EVMPerformanceLogger } from './logger.ts'
@@ -64,7 +64,7 @@ export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EVMError(EVMErrorMessages.OUT_OF_GAS),
+    exceptionError: new EVMError(EVMError.errorMessages.OUT_OF_GAS),
   }
 }
 // CodeDeposit OOG Result
@@ -72,7 +72,7 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsedCreateCode,
-    exceptionError: new EVMError(EVMErrorMessages.CODESTORE_OUT_OF_GAS),
+    exceptionError: new EVMError(EVMError.errorMessages.CODESTORE_OUT_OF_GAS),
   }
 }
 
@@ -80,7 +80,7 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EVMError(EVMErrorMessages.INVALID_BYTECODE_RESULT),
+    exceptionError: new EVMError(EVMError.errorMessages.INVALID_BYTECODE_RESULT),
   }
 }
 
@@ -88,7 +88,7 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
-    exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT),
+    exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT),
   }
 }
 
@@ -96,11 +96,11 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
-    exceptionError: new EVMError(EVMErrorMessages.CODESIZE_EXCEEDS_MAXIMUM),
+    exceptionError: new EVMError(EVMError.errorMessages.CODESIZE_EXCEEDS_MAXIMUM),
   }
 }
 
-export function EvmErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
+export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasUsed,
@@ -508,7 +508,7 @@ export class EVM implements EVMInterface {
           createdAddress: message.to,
           execResult: {
             returnValue: new Uint8Array(0),
-            exceptionError: new EVMError(EVMErrorMessages.INITCODE_SIZE_VIOLATION),
+            exceptionError: new EVMError(EVMError.errorMessages.INITCODE_SIZE_VIOLATION),
             executionGasUsed: message.gasLimit,
           },
         }
@@ -567,7 +567,7 @@ export class EVM implements EVMInterface {
         createdAddress: message.to,
         execResult: {
           returnValue: new Uint8Array(0),
-          exceptionError: new EVMError(EVMErrorMessages.CREATE_COLLISION),
+          exceptionError: new EVMError(EVMError.errorMessages.CREATE_COLLISION),
           executionGasUsed: message.gasLimit,
         },
       }
@@ -871,8 +871,8 @@ export class EVM implements EVMInterface {
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
     if (interpreterRes.exceptionError) {
       if (
-        interpreterRes.exceptionError.error !== EVMErrorMessages.REVERT &&
-        interpreterRes.exceptionError.error !== EVMErrorMessages.INVALID_EOF_FORMAT
+        interpreterRes.exceptionError.error !== EVMError.errorMessages.REVERT &&
+        interpreterRes.exceptionError.error !== EVMError.errorMessages.INVALID_EOF_FORMAT
       ) {
         gasUsed = message.gasLimit
       }
@@ -1019,7 +1019,7 @@ export class EVM implements EVMInterface {
     // There is one exception: if the CODESTORE_OUT_OF_GAS error is thrown
     // (this only happens the Frontier/Chainstart fork)
     // then the error is dismissed
-    if (err && err.error !== EVMErrorMessages.CODESTORE_OUT_OF_GAS) {
+    if (err && err.error !== EVMError.errorMessages.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = new Set()
       result.execResult.createdAddresses = new Set()
       result.execResult.gasRefund = BIGINT_0
@@ -1028,7 +1028,7 @@ export class EVM implements EVMInterface {
       err &&
       !(
         this.common.hardfork() === Hardfork.Chainstart &&
-        err.error === EVMErrorMessages.CODESTORE_OUT_OF_GAS
+        err.error === EVMError.errorMessages.CODESTORE_OUT_OF_GAS
       )
     ) {
       result.execResult.logs = []
@@ -1159,7 +1159,7 @@ export class EVM implements EVMInterface {
   protected async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
     if (account.balance < BIGINT_0) {
-      throw new EVMError(EVMErrorMessages.INSUFFICIENT_BALANCE)
+      throw new EVMError(EVMError.errorMessages.INSUFFICIENT_BALANCE)
     }
     const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
@@ -1171,7 +1171,7 @@ export class EVM implements EVMInterface {
   protected async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
-      throw new EVMError(EVMErrorMessages.VALUE_OVERFLOW)
+      throw new EVMError(EVMError.errorMessages.VALUE_OVERFLOW)
     }
     toAccount.balance = newBalance
     // putAccount as the nonce may have changed for contract creation

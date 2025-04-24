@@ -203,9 +203,9 @@ describe(method, () => {
     // Expect to retrieve the blocks [2,3]
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [firstBaseFee, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
-      string,
-      string,
-      string,
+      PrefixedHexString,
+      PrefixedHexString,
+      PrefixedHexString,
     ]
     const increase =
       Number(
@@ -244,7 +244,11 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
-    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
+    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
+      PrefixedHexString,
+      PrefixedHexString,
+      PrefixedHexString,
+    ]
     const decrease =
       Number(
         (1000n *
@@ -270,7 +274,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
-    const [baseFee] = res.result.baseFeePerGas as [string]
+    const [baseFee] = res.result.baseFeePerGas as [PrefixedHexString]
 
     assert.equal(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
   })
@@ -285,7 +289,10 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
-    const [previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string]
+    const [previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
+      PrefixedHexString,
+      PrefixedHexString,
+    ]
 
     assert.equal(previousBaseFee, '0x0')
     assert.equal(nextBaseFee, '0x0')

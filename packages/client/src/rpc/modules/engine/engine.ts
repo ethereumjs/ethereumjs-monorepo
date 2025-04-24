@@ -6,7 +6,6 @@ import {
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
-  toBytes,
 } from '@ethereumjs/util'
 
 import { ExecStatus } from '../../../execution/index.ts'
@@ -911,7 +910,7 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      const head = toBytes(headBlockHash)
+      const head = hexToBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??

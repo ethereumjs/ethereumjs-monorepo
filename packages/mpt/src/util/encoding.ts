@@ -1,4 +1,4 @@
-import { concatBytes, hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import { concatBytes, hexToBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { nibblesTypeToPackedBytes } from './nibbles.ts'
 
@@ -129,12 +129,11 @@ export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
  * @returns Nibble typed nibble array
  */
 export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
-  const bKey = toBytes(key)
   const nibbles = [] as Nibbles
 
-  for (let i = 0; i < bKey.length; i++) {
+  for (let i = 0; i < key.length; i++) {
     const q = i
-    nibbles[q] = bKey[i] % 16
+    nibbles[q] = key[i] % 16
   }
 
   return nibbles
