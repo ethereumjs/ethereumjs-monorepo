@@ -17,7 +17,7 @@
 - 🚀 Build-in profiler
 - 🪢 User-friendly colored debugging
 - 🛵 422KB bundle size (110KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
