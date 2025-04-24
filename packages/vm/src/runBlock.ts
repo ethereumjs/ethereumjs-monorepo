@@ -160,6 +160,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyPostState)
     if ('verifyPostState' in stateManager) {
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
@@ -273,6 +274,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
+    // Check if statemanager is a StatelessVerkleStateManager by checking for a method only on StatelessVerkleStateManager API
     if (!('verifyPostState' in vm.stateManager)) {
       // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {

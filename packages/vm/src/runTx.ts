@@ -204,6 +204,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
 
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyPostState)
     if (!('verifyPostState' in vm.stateManager) && !('verifyPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
@@ -217,6 +218,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
     }
 
+    // Check if statemanager is a BinaryTreeStateManager by checking for a method only on BinaryTreeStateManager API
     if (!('verifyBinaryPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(
         `Binary tree State Manager needed for execution of binary tree blocks`,
