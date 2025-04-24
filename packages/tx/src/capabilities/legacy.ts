@@ -10,7 +10,7 @@ import {
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 
 import { Capability, TransactionType } from '../types.ts'
 
@@ -90,7 +90,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     throw EthereumJSErrorWithoutCode(msg)
   }
 
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak_256
 
   if (Object.isFrozen(tx)) {
     if (!tx.cache.hash) {

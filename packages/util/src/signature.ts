@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
@@ -198,5 +198,5 @@ export const isValidSignature = function (
 export const hashPersonalMessage = function (message: Uint8Array): Uint8Array {
   assertIsBytes(message)
   const prefix = utf8ToBytes(`\u0019Ethereum Signed Message:\n${message.length}`)
-  return keccak256(concatBytes(prefix, message))
+  return keccak_256(concatBytes(prefix, message))
 }

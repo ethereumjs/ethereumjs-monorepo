@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
@@ -419,7 +419,7 @@ export const toChecksumAddress = function (
   }
 
   const bytes = utf8ToBytes(prefix + address)
-  const hash = bytesToHex(keccak256(bytes)).slice(2)
+  const hash = bytesToHex(keccak_256(bytes)).slice(2)
   let ret = ''
 
   for (let i = 0; i < address.length; i++) {
@@ -457,11 +457,11 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
   if (bytesToBigInt(nonce) === BIGINT_0) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return keccak256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
+    return keccak_256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return keccak256(RLP.encode([from, nonce])).subarray(-20)
+  return keccak_256(RLP.encode([from, nonce])).subarray(-20)
 }
 
 /**
@@ -486,7 +486,7 @@ export const generateAddress2 = function (
     throw EthereumJSErrorWithoutCode('Expected salt to be of length 32')
   }
 
-  const address = keccak256(concatBytes(hexToBytes('0xff'), from, salt, keccak256(initCode)))
+  const address = keccak_256(concatBytes(hexToBytes('0xff'), from, salt, keccak_256(initCode)))
 
   return address.subarray(-20)
 }
@@ -544,7 +544,7 @@ export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = fa
     throw EthereumJSErrorWithoutCode('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return keccak256(pubKey).subarray(-20)
+  return keccak_256(pubKey).subarray(-20)
 }
 export const publicToAddress = pubToAddress
 

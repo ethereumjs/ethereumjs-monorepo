@@ -4,7 +4,7 @@ import {
   bytesToUnprefixedHex,
   randomBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 
@@ -62,7 +62,7 @@ export class DPT {
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
 
-    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak_256
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
