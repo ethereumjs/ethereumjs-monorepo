@@ -20,7 +20,7 @@ to build and run blocks and txs and update state.
 - 📲 **EIP-7702** ready
 - 📬 Flexible state retrieval (Merkle, RPC,...)
 - 🔎 Passes official #Ethereum tests
-- 🛵 689KB bundle size (178KB gzipped)
+- 🛵 668KB bundle size (170KB gzipped)
 - 🏄🏾‍♂️ WASM free default + Fully browser ready
 
 ## Table of Contents
