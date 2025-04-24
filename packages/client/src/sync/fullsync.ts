@@ -102,7 +102,7 @@ export class FullSynchronizer extends Synchronizer {
     const timestamp = this.chain.blocks.latest?.header.timestamp
     this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
         hash,
       )} hardfork=${this.config.chainCommon.hardfork()}`,
@@ -188,7 +188,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+      this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     // Start fetcher from a safe distance behind because if the previous fetcher exited
@@ -213,7 +213,7 @@ export class FullSynchronizer extends Synchronizer {
       const fetcherHeight = this.fetcher.first + this.fetcher.count - BIGINT_1
       if (height > fetcherHeight) {
         this.fetcher.count += height - fetcherHeight
-        this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
+        this.config.logger?.info(`Updated fetcher target to height=${height} peer=${peer} `)
       }
     }
     return true
@@ -226,14 +226,14 @@ export class FullSynchronizer extends Synchronizer {
     if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
-        this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
+        this.config.logger?.info('Paris (Merge) hardfork reached, stopping block fetcher')
         this.clearFetcher()
       }
     }
 
     if (blocks.length === 0) {
       if (this.fetcher !== null) {
-        this.config.logger.warn('No blocks fetched are applicable for import')
+        this.config.logger?.warn('No blocks fetched are applicable for import')
       }
       return
     }
@@ -256,7 +256,7 @@ export class FullSynchronizer extends Synchronizer {
       }
     }
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Imported blocks count=${
         blocks.length
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
@@ -319,12 +319,12 @@ export class FullSynchronizer extends Synchronizer {
     try {
       await this.chain.blockchain.validateHeader(block.header)
     } catch (err) {
-      this.config.logger.debug(
+      this.config.logger?.debug(
         `Error processing new block from peer ${
           peer ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
         } hash=${short(block.hash())}`,
       )
-      this.config.logger.debug(err)
+      this.config.logger?.debug(err)
       return
     }
     // Send NEW_BLOCK to square root of total number of peers in pool
@@ -389,7 +389,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!newSyncHeight) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
-    this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)
+    this.config.logger?.info(`New sync target height=${height} hash=${short(hash)}`)
     // Enqueue if we are close enough to chain head
     if (min < this.chain.headers.height + BigInt(3000)) {
       this.fetcher.enqueueByNumberList(blockNumberList, min, height)
@@ -406,7 +406,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight !== BIGINT_0 &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
-      this.config.logger.error(`Full sync execution trigger errored`, {}, e)
+      this.config.logger?.error(`Full sync execution trigger errored`, {}, e)
     })
   }
 

@@ -1,4 +1,4 @@
-# @ethereumjs/block
+# @ethereumjs/block `v10`
 
 [![NPM Package][block-npm-badge]][block-npm-link]
 [![GitHub Issues][block-issues-badge]][block-issues-link]
@@ -6,9 +6,20 @@
 [![Code Coverage][block-coverage-badge]][block-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implements schema and functions related to Ethereum's block. |
-| ------------------------------------------------------------ |
+| Implements schema and functions related to Ethereum blocks. |
+| ----------------------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [EIP Integrations](#eip-integrations)
+- [Consensus Types](#consensus-types)
+- [Browser](#browser)
+- [API](#api)
+- [Testing](#testing)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -20,9 +31,9 @@ npm install @ethereumjs/block
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
-## Usage
+## Getting Started
 
-### Introduction
+### Instantiation
 
 There are several standalone functions to instantiate a `Block`:
 
@@ -82,9 +93,11 @@ try {
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### EIP-1559 Blocks
+## EIP Integrations
 
-This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
+### Blocks with an EIP-1559 Fee Market
+
+By default (since `Hardfork.London`) blocks created with this library are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible.
 
 ```ts
 // ./examples/1559.ts
@@ -92,7 +105,7 @@ This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const common = new Common({ chain: Mainnet })
 
 const block = createBlock(
   {
@@ -130,7 +143,7 @@ await blockWithMatchingBaseFee.validateData()
 // failed validation throws error
 const tx = createTx(
   { type: 2, maxFeePerGas: BigInt(20) },
-  { common: new Common({ chain: Mainnet, hardfork: Hardfork.London }) },
+  { common: new Common({ chain: Mainnet }) },
 )
 blockWithMatchingBaseFee.transactions.push(tx)
 console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // invalid transaction added to block
@@ -141,11 +154,9 @@ try {
 }
 ```
 
-EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
+### Blocks with EIP-4895 Beacon Chain Withdrawals
 
-### EIP-4895 Beacon Chain Withdrawals Blocks
-
-Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a `Common` object with a hardfork set to `shanghai` (default) or higher and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
 
 ```ts
 // ./examples/withdrawals.ts
@@ -184,13 +195,9 @@ console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)
 
 Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.withdrawalsTrieIsValid()` method.
 
-### EIP-4844 Shard Blob Transaction Blocks
+### Blocks with EIP-4844 Shard Blob Transactions
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
-
-#### Initialization
-
-To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library or use a 4844-including hardfork like `Cancun`:
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
 
 ```ts
 // ./examples/4844.ts
@@ -208,7 +215,6 @@ const main = async () => {
 
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Cancun,
     customCrypto: {
       kzg,
     },
@@ -245,179 +251,70 @@ void main()
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
-Starting with v5.3.0 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) and will come into play for deposit and withdrawal requests along the upcoming [Prague](https://eips.ethereum.org/EIPS/eip-7600) hardfork.
-
-#### EIP-6110 Deposit Requests
-
-[EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) introduces deposit requests allowing beacon chain deposits being triggered from the execution layer. Starting with v5.3.0 this library supports deposit requests and a containing block can be instantiated as follows:
+Starting with v10 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) (`Hardfork.Prague` or higher). See the `@ethereumjs/util` [Request](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-request) README section for an overview of current request types.
 
 ```ts
-// ./examples/6110Requests.ts
+// ./examples/clrequests.ts
 
-import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  type CLRequest,
-  CLRequestType,
-  bytesToHex,
-  createCLRequest,
-  randomBytes,
-} from '@ethereumjs/util'
+import { createCLRequest, CLRequestType, hexToBytes, bytesToHex } from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-const main = async () => {
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Prague,
-  })
+import { createBlock, genRequestsRoot } from '../src'
 
-  const depositRequestData = {
-    pubkey: randomBytes(48),
-    withdrawalCredentials: randomBytes(32),
-    amount: randomBytes(8),
-    signature: randomBytes(96),
-    index: randomBytes(8),
-  }
-  // flatten request bytes as per EIP-7685
-  const depositRequestBytes = new Uint8Array(
-    Object.values(depositRequestData)
-      .map((arr) => Array.from(arr)) // Convert Uint8Arrays to regular arrays
-      .reduce((acc, curr) => acc.concat(curr), []), // Concatenate arrays
-  )
-  const request = createCLRequest(
-    new Uint8Array([CLRequestType.Deposit, ...depositRequestBytes]),
-  ) as CLRequest<CLRequestType.Deposit>
-  const requests = [request]
-  const requestsRoot = genRequestsRoot(requests, sha256)
+// Enable EIP-7685 to support CLRequests
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
 
-  const block = createBlock(
-    {
-      header: { requestsHash: requestsRoot },
-    },
-    { common },
-  )
-  console.log(`Instantiated block ${block}, requestsHash=${bytesToHex(block.header.requestsHash!)}`)
-}
+// Create the three CLRequest types (Deposit, Withdrawal, Consolidation)
+const depositData = hexToBytes('0x00...') // Deposit request data
+const depositRequest = createCLRequest(depositData)
 
-void main()
+const withdrawalData = hexToBytes('0x01...') // Withdrawal request data
+const withdrawalRequest = createCLRequest(withdrawalData)
+
+const consolidationData = hexToBytes('0x02...') // Consolidation request data
+const consolidationRequest = createCLRequest(consolidationData)
+
+// CLRequests must be sorted by type (Deposit=0, Withdrawal=1, Consolidation=2)
+const requests = [depositRequest, withdrawalRequest, consolidationRequest]
+
+// Generate the requestsHash
+const requestsHash = genRequestsRoot(requests, sha256)
+
+// Create a block with the CLRequests hash
+const block = createBlock({ header: { requestsHash } }, { common })
+console.log(`Created block with CLRequests hash: 0x${bytesToHex(block.hash())}`)
 ```
-
-Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
-
-#### EIP-7002 Withdrawal Requests
-
-[EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) introduces the possibility for validators to trigger exits and partial withdrawals via the execution layer. Starting with v5.3.0 this library supports withdrawal requests and a containing block can be instantiated as follows:
-
-```ts
-// ./examples/7002Requests.ts
-
-import { createBlock, genRequestsRoot } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  type CLRequest,
-  type CLRequestType,
-  bytesToBigInt,
-  createWithdrawalRequest,
-  randomBytes,
-} from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/keccak.js'
-
-const main = async () => {
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Prague,
-  })
-
-  const withdrawalRequestData = {
-    sourceAddress: randomBytes(20),
-    validatorPubkey: randomBytes(48),
-    amount: bytesToBigInt(randomBytes(8)),
-  }
-  const request = createWithdrawalRequest(withdrawalRequestData) as CLRequest<CLRequestType>
-  const requests = [request]
-  const requestsRoot = genRequestsRoot(requests, sha256)
-
-  const block = createBlock(
-    {
-      requests,
-      header: { requestsRoot },
-    },
-    { common },
-  )
-  console.log(
-    `Instantiated block with ${
-      block.requests?.length
-    } withdrawal request, requestTrieValid=${await block.requestsTrieIsValid()}`,
-  )
-}
-
-void main()
-```
-
-Have a look at the EIP for some guidance on how to use and fill in the various withdrawal request parameters.
-
-#### EIP-7251 Consolidation Requests
-
-[EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) introduces consolidation requests allowing staked ETH from more than one validator on the beacon chain to be consolidated into one validator, triggered from the execution layer. Starting with v5.3.0 this library supports consolidation requests and a containing block can be instantiated as follows:
-
-```ts
-// ./examples/7251Requests.ts
-
-import { createBlock, genRequestsRoot } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import {
-  type CLRequest,
-  type CLRequestType,
-  createConsolidationRequest,
-  randomBytes,
-} from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/keccak.js'
-
-const main = async () => {
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Prague,
-  })
-
-  const consolidationRequestData = {
-    sourceAddress: randomBytes(20),
-    sourcePubkey: randomBytes(48),
-    targetPubkey: randomBytes(48),
-  }
-  const request = createConsolidationRequest(consolidationRequestData) as CLRequest<CLRequestType>
-  const requests = [request]
-  const requestsRoot = genRequestsRoot(requests, sha256)
-
-  const block = createBlock(
-    {
-      requests,
-      header: { requestsRoot },
-    },
-    { common },
-  )
-  console.log(
-    `Instantiated block with ${
-      block.requests?.length
-    } consolidation request, requestTrieValid=${await block.requestsTrieIsValid()}`,
-  )
-}
-
-void main()
-```
-
-Have a look at the EIP for some guidance on how to use and fill in the various deposit request parameters.
 
 ### Consensus Types
 
-The block library supports the creation as well as consensus format validation of PoW `ethash` and PoA `clique` blocks (so e.g. do specific `extraData` checks on Clique/PoA blocks).
+### Proof-of-Stake
 
-Consensus format validation logic is encapsulated in the semi-private `BlockHeader._consensusFormatValidation()` method called from the constructor. If you want to add your own validation logic you can overwrite this method with your own rules.
+By default (`Hardfork.Paris` (aka: Merge) and higher) blocks are created as Proof-of-Stake blocks. These blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
 
-Note: Starting with `v4` consensus validation itself (e.g. Ethash verification) has moved to the `Blockchain` package.
+You can instantiate a Merge/PoS block like this:
+
+```ts
+// ./examples/pos.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet })
+
+const block = createBlock(
+  {
+    // Provide your block data here or use default values
+  },
+  { common },
+)
+
+console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)
+```
 
 ### Ethash/PoW
 
-An Ethash/PoW block can be instantiated as follows:
+Blocks before the Merge or blocks on dedicated PoW chains are created as Proof-of-work blocks. An Ethash/PoW block can be instantiated as follows:
 
 ```ts
 // ./examples/pow.ts
@@ -436,7 +333,9 @@ console.log(`Old Proof-of-Work block created`)
 
 To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
 
-### Clique/PoA (since v3.1.0)
+### Clique/PoA
+
+Clique is a standalone Proof-of-Authority protocol which had been in use for older Ethereum testnets (like e.g. the `Goerli` testnet). This library still supports Clique/PoA so that blocks from those testnets can still be read.
 
 A clique block can be instantiated as follows:
 
@@ -462,47 +361,13 @@ const cliqueSigner = hexToBytes('PRIVATE_KEY_HEX_STRING')
 const block = createSealedCliqueBlock(blockData, cliqueSigner)
 ```
 
-Additionally there are the following utility methods for Clique/PoA related functionality in the `BlockHeader` class:
-
-- `BlockHeader.cliqueSigHash()`
-- `BlockHeader.cliqueIsEpochTransition(): boolean`
-- `BlockHeader.cliqueExtraVanity(): Uint8Array`
-- `BlockHeader.cliqueExtraSeal(): Uint8Array`
-- `BlockHeader.cliqueEpochTransitionSigners(): Address[]`
-- `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
-- `BlockHeader.cliqueSigner(): Address`
-
-See the API docs for detailed documentation. Note that these methods will throw if called in a non-Clique/PoA context.
-
-### Casper/PoS (since v3.5.0)
-
-Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` release. Proof-of-Stake compatible execution blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
-
-You can instantiate a Merge/PoS block like this:
-
-```ts
-// ./examples/pos.ts
-
-import { createBlock } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
-
-const common = new Common({ chain: Mainnet })
-
-const block = createBlock(
-  {
-    // Provide your block data here or use default values
-  },
-  { common },
-)
-
-console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)
-```
+See the API docs for detailed documentation on Clique/PoA related utility methods. Note that these methods will throw if called in a non-Clique/PoA context.
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js specific primities (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 

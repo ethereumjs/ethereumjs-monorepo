@@ -1,4 +1,4 @@
-# @ethereumjs/blockchain
+# @ethereumjs/blockchain `v10`
 
 [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]
 [![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
@@ -8,6 +8,18 @@
 
 | A module to store and interact with blocks. |
 | ------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [EIP Integrations](#eip-integrations)
+- [Consensus Types](#consensus-types)
+- [Browser](#browser)
+- [API](#api)
+- [Testing](#testing)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -19,7 +31,7 @@ npm install @ethereumjs/blockchain
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
-## Usage
+## Getting Started
 
 ### Introduction
 
@@ -29,7 +41,7 @@ New blocks can be added to the blockchain. Validation ensures that the block for
 
 The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
 
-## Example
+## Examples
 
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
@@ -88,11 +100,15 @@ const main = async () => {
 void main()
 ```
 
-### Database Abstraction / Removed LevelDB Dependency
+More examples can be found in the [examples](./examples/) folder.
 
-With the v7 release the Blockchain library database has gotten an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669) and PR [#2673](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2673). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
+## Setup
 
-By default the blockchain package now uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+### Block Storage
+
+For storing blocks different backends can be used. The database needs to conform to the [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
+
+By default the blockchain package uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
 
 If you need a persistent data store for your use case you can consider using the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
 
@@ -169,17 +185,13 @@ The blockchain library now allows for blob transactions to be validated and incl
 
 ### EIP-7685 Requests Support
 
-This library supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
-
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
+This library supports blocks including the [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests to the consensus layer (like e.g. deposit or withdrawal requests).
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -207,7 +219,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Events
 
-The `Blockchain` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
+The `Blockchain` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
 
 | Event                    | Description                                 |
 | ------------------------ | ------------------------------------------- |

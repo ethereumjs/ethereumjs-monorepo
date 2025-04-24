@@ -1,5 +1,5 @@
 export * from './mainnetBlocks.ts'
 export * from './goerliBlocks.ts'
-export * from './preLondonTestDataBlocks1.ts'
-export * from './preLondonTestDataBlocks2.ts'
+export * from './preLondonTestDataBlocks1RLP.ts'
+export * from './preLondonTestDataBlocks2RLP.ts'
 export * from './verkleKaustinen6Block72.ts'

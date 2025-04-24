@@ -61,7 +61,7 @@ export class SnapSynchronizer extends Synchronizer {
     await this.chain.open()
     await this.pool.open()
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Opened SnapSynchronizer syncTargetHeight=${this.config.syncTargetHeight ?? 'NA'}`,
     )
   }
@@ -112,7 +112,7 @@ export class SnapSynchronizer extends Synchronizer {
     try {
       await this.sync()
     } catch (error: any) {
-      this.config.logger.error(`Snap sync error: ${error.message}`)
+      this.config.logger?.error(`Snap sync error: ${error.message}`)
       this.config.events.emit(Event.SYNC_ERROR, error)
     }
     await new Promise((resolve) => setTimeout(resolve, this.interval))
@@ -168,7 +168,7 @@ export class SnapSynchronizer extends Synchronizer {
       snapTargetRoot,
     )}  hash=${short(snapTargetHash)}`
     if (fetchingAlreadyDone) {
-      this.config.logger.debug(snapDoneMsg)
+      this.config.logger?.debug(snapDoneMsg)
     } else {
       this.config.superMsg(snapDoneMsg)
     }
@@ -188,7 +188,7 @@ export class SnapSynchronizer extends Synchronizer {
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     // if skeleton is passed we have to wait for skeleton to be updated
     if (this.skeleton?.synchronized !== true || this.fetcherDoneFlags.done) {
-      this.config.logger.info(`SnapSynchronizer - early return ${peer?.id}`)
+      this.config.logger?.info(`SnapSynchronizer - early return ${peer?.id}`)
       return false
     }
 
@@ -197,13 +197,13 @@ export class SnapSynchronizer extends Synchronizer {
       return false
     }
 
-    this.config.logger.info(`SnapSynchronizer - syncWithPeer ${peer?.id}`)
+    this.config.logger?.info(`SnapSynchronizer - syncWithPeer ${peer?.id}`)
     const stateRoot = latest.stateRoot
     const height = latest.number
     // eslint-disable-next-line eqeqeq
     if (this.config.syncTargetHeight == null || this.config.syncTargetHeight < latest.number) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
+      this.config.logger?.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
     }
 
     if (
@@ -216,7 +216,7 @@ export class SnapSynchronizer extends Synchronizer {
         this.fetcherDoneFlags.snapTargetHash = latest.hash()
       }
 
-      this.config.logger.info(
+      this.config.logger?.info(
         `syncWithPeer new AccountFetcher peer=${peer?.id} snapTargetHeight=${
           this.fetcherDoneFlags.snapTargetHeight
         } snapTargetRoot=${short(this.fetcherDoneFlags.snapTargetRoot!)}  ${

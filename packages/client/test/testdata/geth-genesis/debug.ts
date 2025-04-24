@@ -1,4 +1,6 @@
-export const debugData = {
+import type { GethGenesis } from '@ethereumjs/common'
+
+export const debugData: GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,

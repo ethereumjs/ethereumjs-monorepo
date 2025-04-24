@@ -1,4 +1,6 @@
-export const beaconData = [
+import type { ExecutionPayload } from '@ethereumjs/block'
+
+export const beaconData: ExecutionPayload[] = [
   {
     blockNumber: '0x1',
     parentHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',

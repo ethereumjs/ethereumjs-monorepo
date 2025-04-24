@@ -217,7 +217,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       return true
     } catch (error) {
-      this.config.logger.error(`Error while fetching snapsync: ${error}`)
+      this.config.logger?.error(`Error while fetching snapsync: ${error}`)
       return false
     } finally {
       this.fetcherDoneFlags.syncing = false
@@ -240,7 +240,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             BIGINT_2EXP256,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `accountFetcher completed with pending range done=${fetcherProgress}%`,
           )
         }
@@ -254,7 +254,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.storageFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`,
           )
         }
@@ -269,7 +269,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.byteCodeFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`,
           )
         }
@@ -337,9 +337,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
-    const origin = partialResult
-      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
-      : bigIntToBytes(first)
+    const origin =
+      partialResult !== undefined
+        ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
+        : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
 
@@ -470,9 +471,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const fullResult = (job.partialResult ?? []).concat(result)
 
     // update highest known hash
-    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
+    const highestReceivedhash = result.at(-1)?.hash
     if (this.highestKnownHash) {
-      if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
+      if (
+        highestReceivedhash !== undefined &&
+        compareBytes(highestReceivedhash, this.highestKnownHash) > 0
+      ) {
         this.highestKnownHash = highestReceivedhash
       }
     } else {

@@ -1,4 +1,4 @@
-# @ethereumjs/genesis
+# @ethereumjs/genesis `v10`
 
 [![NPM Package][genesis-npm-badge]][genesis-npm-link]
 [![GitHub Issues][genesis-issues-badge]][genesis-issues-link]
@@ -12,9 +12,18 @@
 This module provides access to Ethereum genesis state for the following networks:
 
 - Mainnet
-- Goerli
 - Sepolia
 - Holesky
+- Hoodi
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Installation
 
 The package can be install with:
 

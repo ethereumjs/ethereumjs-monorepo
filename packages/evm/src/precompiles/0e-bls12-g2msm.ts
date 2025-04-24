@@ -1,8 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EVMError } from '../errors.ts'
 import type { EVM } from '../evm.ts'
-import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { ERROR, EvmError } from '../exceptions.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import {
   BLS_GAS_DISCOUNT_PAIRS_G2,
@@ -23,7 +23,10 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INPUT_EMPTY),
+      opts.gasLimit,
+    ) // follow Geth's implementation
   }
 
   const numPairs = Math.floor(opts.data.length / 288)
@@ -35,7 +38,10 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (!moduloLengthCheck(opts, 288, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit,
+    )
   }
 
   // prepare pairing list and check for mandatory zero bytes
@@ -50,7 +56,10 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 288 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
-      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
+      return EVMErrorResult(
+        new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+        opts.gasLimit,
+      )
     }
   }
 
@@ -61,7 +70,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
