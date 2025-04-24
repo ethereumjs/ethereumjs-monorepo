@@ -57,9 +57,9 @@ See PR [#3524](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3524):
 See PR [#3544](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3544):
 
 - `Address.zero()` -> `createZeroAddress()`
-- `Address.fromString()` -> `createAddressFromString()`
+- `new Address(hexToBytes())` -> `createAddressFromString()`
 - `Address.fromPublicKey()` -> `createAddressFromPublicKey()`
-- `Address.fromPrivateKey()` -> `createAddressFromPrivateKey()`
+- `new Address(privateToAddress())` -> `createAddressFromPrivateKey()`
 - `Address.generate()` -> `createContractAddress()`
 - `Address.generate2()` -> `createContractAddress2()`
 - New: `createAddressFromBigInt()`
