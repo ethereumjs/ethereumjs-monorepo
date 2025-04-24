@@ -15,7 +15,7 @@
 - 🎼 Unified tx type API
 - 📲 New type for **EIP-7702** account abstraction
 - 🛵 190KB bundle size (all tx types) (47KB gzipped)
-- 🏄🏾‍♂️ WASM free default + Fully browser ready
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
