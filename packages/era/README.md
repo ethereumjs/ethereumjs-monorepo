@@ -1,4 +1,4 @@
-# @ethereumjs/era
+# @ethereumjs/era `v10`
 
 [![NPM Package][era-npm-badge]][era-npm-link]
 [![GitHub Issues][era-issues-badge]][era-issues-link]
@@ -8,6 +8,13 @@
 
 | A collection of utility functions for Ethereum. |
 | ----------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 

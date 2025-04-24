@@ -1,4 +1,4 @@
-# @ethereumjs/verkle
+# @ethereumjs/verkle `v10`
 
 [![NPM Package][verkle-npm-badge]][verkle-npm-link]
 [![GitHub Issues][verkle-issues-badge]][verkle-issues-link]
@@ -13,6 +13,18 @@
 
 This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes. Any help in improving the package is very much welcome.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Proofs](#proofs)
+- [Browser](#browser)
+- [API](#api)
+- [Debugging](#debugging)
+- [References](#references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -21,7 +33,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/verkle
 ```
 
-## Usage
+## Getting Started
 
 ### Initialization
 

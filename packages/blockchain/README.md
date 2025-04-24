@@ -1,4 +1,4 @@
-# @ethereumjs/blockchain
+# @ethereumjs/blockchain `v10`
 
 [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]
 [![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
@@ -8,6 +8,18 @@
 
 | A module to store and interact with blocks. |
 | ------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [EIP Integrations](#eip-integrations)
+- [Consensus Types](#consensus-types)
+- [Browser](#browser)
+- [API](#api)
+- [Testing](#testing)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -19,7 +31,7 @@ npm install @ethereumjs/blockchain
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
-## Usage
+## Getting Started
 
 ### Introduction
 
@@ -29,7 +41,7 @@ New blocks can be added to the blockchain. Validation ensures that the block for
 
 The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
 
-## Example
+## Examples
 
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
@@ -87,6 +99,10 @@ const main = async () => {
 }
 void main()
 ```
+
+More examples can be found in the [examples](./examples/) folder.
+
+## Setup
 
 ### Block Storage
 

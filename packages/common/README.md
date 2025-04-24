@@ -1,4 +1,4 @@
-# @ethereumjs/common
+# @ethereumjs/common `v10`
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]
@@ -9,6 +9,21 @@
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Custom Cryptography Primitives (WASM)](#custom-cryptography-primitives-wasm)
+- [Browser](#browser)
+- [API](#api)
+- [Events](#events)
+- [Chains and Genesis](#chains-and-genesis)
+- [Working with Private/Custom Chains](#working-with-privatecustom-chains)
+- [Hardfork Support and Usage](#hardfork-support-and-usage)
+- [Supported EIPs](#supported-eips)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -17,7 +32,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/common
 ```
 
-## Usage
+## Getting Started
 
 ### import / require
 
@@ -71,7 +86,7 @@ const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
 console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
 ```
 
-### Custom Cryptography Primitives (WASM)
+## Custom Cryptography Primitives (WASM)
 
 All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native JavaScript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
 
@@ -170,9 +185,7 @@ The `Common` class has a public property `events` which contains an `EventEmitte
 | ----------------- | ---------------------------------------------------------- |
 | `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
 
-## Setup
-
-### Chains
+### Chains and Genesis
 
 The `chain` can be set in the constructor like this:
 
@@ -255,7 +268,7 @@ common.setForkHashes(genesisHash)
 console.log(`The London forkhash for this custom chain is ${common.forkHash('london')}`)
 ```
 
-### Hardforks
+## Hardfork Support and Usage
 
 The `hardfork` can be set in constructor like this:
 
@@ -309,7 +322,7 @@ See one of the hardfork configurations in the `hardforks.ts` file
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
 hardfork.
 
-### EIPs
+## Supported EIPs
 
 EIPs are native citizens within the library and can be activated like this:
 
@@ -355,10 +368,6 @@ The following EIPs are currently supported:
 - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
 - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
-
-### Bootstrap Nodes
-
-You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
 ## EthereumJS
 
