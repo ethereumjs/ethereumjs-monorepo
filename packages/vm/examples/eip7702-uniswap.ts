@@ -139,7 +139,7 @@ const main = async () => {
   const privateKey = hexToBytes(
     '0x1122334455667788112233445566778811223344556677881122334455667788',
   )
-  const userAddress = new Address(Buffer.from('1234567890123456789012345678901234567890', 'hex'))
+  const userAddress = new Address(hexToBytes('0x1234567890123456789012345678901234567890'))
   console.log('User address:', userAddress.toString())
 
   // Initialize Common with EIP-7702 enabled
@@ -180,18 +180,22 @@ const main = async () => {
     gasLimit: 500000n,
     maxFeePerGas: 30000000000n, // 30 gwei
     maxPriorityFeePerGas: 3000000000n, // 3 gwei
-    to: new Address(Buffer.from(BUNDLER_CONTRACT_ADDRESS.slice(2), 'hex')),
+    to: new Address(hexToBytes(`0x${BUNDLER_CONTRACT_ADDRESS.slice(2)}` as `0x${string}`)),
     value: 0n,
     data: calldata,
     accessList: [],
     authorizationList: [
       {
         chainId: common.chainId(),
-        address: new Address(Buffer.from(BUNDLER_CONTRACT_ADDRESS.slice(2), 'hex')),
+        address: new Address(hexToBytes(`0x${BUNDLER_CONTRACT_ADDRESS.slice(2)}` as `0x${string}`)),
         nonce: 0n,
         yParity: 0n,
-        r: Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex'),
-        s: Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex'),
+        r: hexToBytes(
+          '0x1234567890123456789012345678901234567890123456789012345678901234' as `0x${string}`,
+        ),
+        s: hexToBytes(
+          '0x1234567890123456789012345678901234567890123456789012345678901234' as `0x${string}`,
+        ),
       },
     ] as any,
   }
@@ -208,9 +212,17 @@ const main = async () => {
     console.log('Running transaction simulation...')
     const result = await vm.runTx({ tx: signedTx })
 
-    console.log('Transaction simulation:', result.execResult.exceptionError ? 'Failed' : 'Success')
+    console.log(
+      'Transaction simulation:',
+      result.execResult.exceptionError !== null && result.execResult.exceptionError !== undefined
+        ? 'Failed'
+        : 'Success',
+    )
 
-    if (!result.execResult.exceptionError) {
+    if (
+      result.execResult.exceptionError === null ||
+      result.execResult.exceptionError === undefined
+    ) {
       console.log('Gas used:', result.gasUsed.toString())
 
       console.log('\nTransaction Summary:')
@@ -233,4 +245,8 @@ const main = async () => {
   }
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  if (error !== null && error !== undefined) {
+    console.error('Error:', error)
+  }
+})

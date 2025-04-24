@@ -1,7 +1,12 @@
 import { Chain, Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Capability, TransactionType, createEOACode7702Tx } from '@ethereumjs/tx'
-import { Address, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
-import { privateToAddress } from '@ethereumjs/util'
+import {
+  Address,
+  bytesToHex,
+  createAddressFromString,
+  hexToBytes,
+  privateToAddress,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 /**
@@ -69,7 +74,12 @@ const main = async () => {
   // Run the transaction to set the code of the EOA
   const result = await vm.runTx({ tx: signedTx })
 
-  console.log('Transaction processed:', result.execResult.exceptionError ? 'Failed' : 'Success')
+  console.log(
+    'Transaction processed:',
+    result.execResult.exceptionError !== null && result.execResult.exceptionError !== undefined
+      ? 'Failed'
+      : 'Success',
+  )
 
   // Check that the EOA now has code
   const account = await vm.stateManager.getAccount(senderAddress)

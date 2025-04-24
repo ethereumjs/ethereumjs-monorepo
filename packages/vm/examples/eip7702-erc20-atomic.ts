@@ -185,9 +185,17 @@ const main = async () => {
   try {
     const result = await vm.runTx({ tx: signedTx })
 
-    console.log('Transaction simulation:', result.execResult.exceptionError ? 'Failed' : 'Success')
+    console.log(
+      'Transaction simulation:',
+      result.execResult.exceptionError !== null && result.execResult.exceptionError !== undefined
+        ? 'Failed'
+        : 'Success',
+    )
 
-    if (!result.execResult.exceptionError) {
+    if (
+      result.execResult.exceptionError === null ||
+      result.execResult.exceptionError === undefined
+    ) {
       console.log('Gas used:', result.gasUsed.toString())
 
       // Check DAI allowance after the transaction
@@ -255,4 +263,8 @@ const main = async () => {
   // console.log('Serialized transaction for broadcasting:', serializedTx)
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  if (error !== null && error !== undefined) {
+    console.error('Error:', error)
+  }
+})
