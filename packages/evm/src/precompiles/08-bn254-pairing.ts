@@ -1,7 +1,7 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../errors.ts'
-import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { EVMError } from '../errors.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck, moduloLengthCheck } from './util.ts'
@@ -13,7 +13,7 @@ import type { PrecompileInput } from './types.ts'
 export function precompile08(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('08')
   if (!moduloLengthCheck(opts, 192, pName)) {
-    return EvmErrorResult(new EVMError(EVMErrorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))
@@ -31,7 +31,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   // check ecpairing success or failure by comparing the output length
