@@ -498,7 +498,10 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress with hex prefix', () => {
-    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(14))
+    const addr = generateAddress(
+      hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      toBytes(14),
+    )
     assert.equal(
       bytesToHex(addr),
       '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989',
@@ -509,7 +512,10 @@ describe('Utility Functions', () => {
   // cspell:disable
   it('generateAddress wt.testh nonce 0 (special case)', () => {
     // cspell:enable
-    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
+    const addr = generateAddress(
+      hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      toBytes(0),
+    )
     assert.equal(
       bytesToHex(addr),
       '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
@@ -535,7 +541,7 @@ describe('Utility Functions', () => {
     assert.throws(
       function () {
         generateAddress(
-          toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+          hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
           (<unknown>0) as Uint8Array,
         )
       },

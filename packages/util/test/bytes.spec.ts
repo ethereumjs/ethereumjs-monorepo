@@ -58,9 +58,9 @@ describe('is zero address', () => {
 
 describe('unpadBytes', () => {
   it('should unpad a Uint8Array', () => {
-    const bytes = toBytes('0x0000000006600')
+    const bytes = hexToBytes('0x0000000006600')
     const r = unpadBytes(bytes)
-    assert.deepEqual(r, toBytes('0x6600'))
+    assert.deepEqual(r, hexToBytes('0x6600'))
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -220,9 +220,9 @@ describe('toBytes', () => {
     // Array
     assert.isTrue(equalsBytes(toBytes([]), new Uint8Array()))
     // String
-    assert.isTrue(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
-    assert.equal(bytesToHex(toBytes('0x1234')), '0x1234')
-    assert.isTrue(equalsBytes(toBytes('0x'), Uint8Array.from([])))
+    assert.isTrue(equalsBytes(hexToBytes('0x11'), Uint8Array.from([17])))
+    assert.equal(bytesToHex(hexToBytes('0x1234')), '0x1234')
+    assert.isTrue(equalsBytes(hexToBytes('0x'), Uint8Array.from([])))
     // Number
     assert.isTrue(equalsBytes(toBytes(1), Uint8Array.from([1])))
     // null
@@ -253,7 +253,7 @@ describe('toBytes', () => {
   it('should fail with non 0x-prefixed hex strings', () => {
     assert.throws(() => toBytes('11' as any), '11')
     assert.throws(() => toBytes('' as any))
-    assert.throws(() => toBytes('0xR'), '0xR')
+    assert.throws(() => hexToBytes('0xR'), '0xR')
   })
 
   it('should convert a TransformableToBytes like the Address class (i.e. provides a toBytes method)', () => {
@@ -308,19 +308,19 @@ describe('intToBytes and intToHex', () => {
 
 describe('validateNoLeadingZeroes', () => {
   const noLeadingZeroes = {
-    a: toBytes('0x123'),
+    a: hexToBytes('0x123'),
   }
   const noLeadingZeroBytes = {
-    a: toBytes('0x01'),
+    a: hexToBytes('0x01'),
   }
   const leadingZeroBytes = {
-    a: toBytes('0x001'),
+    a: hexToBytes('0x001'),
   }
   const onlyZeroes = {
-    a: toBytes('0x0'),
+    a: hexToBytes('0x0'),
   }
   const emptyBuffer = {
-    a: toBytes('0x'),
+    a: hexToBytes('0x'),
   }
 
   const undefinedValue = {
@@ -364,7 +364,7 @@ describe('validateNoLeadingZeroes', () => {
 
 describe('bytesToBigInt', () => {
   it('should pass on correct input', () => {
-    const buf = toBytes('0x123')
+    const buf = hexToBytes('0x123')
     assert.equal(BigInt(0x123), bytesToBigInt(buf))
   })
 })
@@ -372,7 +372,7 @@ describe('bytesToBigInt', () => {
 describe('bigIntToBytes', () => {
   it('should pass on correct input', () => {
     const num = BigInt(0x123)
-    assert.deepEqual(toBytes('0x123'), bigIntToBytes(num))
+    assert.deepEqual(hexToBytes('0x123'), bigIntToBytes(num))
   })
 })
 
