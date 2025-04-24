@@ -1,9 +1,9 @@
-# @ethereumjs/era `v10`
+# @ethereumjs/e2store `v10`
 
-[![NPM Package][era-npm-badge]][era-npm-link]
-[![GitHub Issues][era-issues-badge]][era-issues-link]
-[![Actions Status][era-actions-badge]][era-actions-link]
-[![Code Coverage][era-coverage-badge]][era-coverage-link]
+[![NPM Package][e2store-npm-badge]][e2store-npm-link]
+[![GitHub Issues][e2store-issues-badge]][e2store-issues-link]
+[![Actions Status][e2store-actions-badge]][e2store-actions-link]
+[![Code Coverage][e2store-coverage-badge]][e2store-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 | A collection of utility functions for Ethereum. |
@@ -11,17 +11,22 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [EthereumJS](#ethereumjs)
-- [License](#license)
+- [@ethereumjs/e2store `v10`](#ethereumjse2store-v10)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Export History as Era1](#export-history-as-era1)
+    - [Read Era1 file](#read-era1-file)
+    - [Read Era file](#read-era-file)
+  - [EthereumJS](#ethereumjs)
+  - [License](#license)
 
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
-npm install @ethereumjs/era
+npm install @ethereumjs/e2store
 ```
 
 ## Usage
@@ -29,7 +34,7 @@ npm install @ethereumjs/era
 All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
 
 ```ts
-import { formatEntry } from "@ethereumjs/era"
+import { formatEntry } from "@ethereumjs/e2store"
 ```
 
 ### Export History as Era1
@@ -37,7 +42,7 @@ import { formatEntry } from "@ethereumjs/era"
 Export history in epochs of 8192 blocks as Era1 files
 
 ```ts
-import { exportEpochAsEra1 } from "@ethereumjs/era"
+import { exportEpochAsEra1 } from "@ethereumjs/e2store"
 
 const dataDir = PATH_TO_ETHEREUMJS_CLIENT_DB
 const epoch = 0
@@ -59,7 +64,7 @@ import {
   blockFromTuple,
   getHeaderRecords,
   EpochAccumulator,
-} from "@ethereumjs/era"
+} from "@ethereumjs/e2store"
 
 const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
 
@@ -84,7 +89,7 @@ const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
 ### Read Era file
 
 ```ts
-import { readBeaconState } from "@ethereumjs/era"
+import { readBeaconState } from "@ethereumjs/e2store"
 
 const eraFile = readBinaryFile(PATH_TO_ERA_FILE)
 
@@ -109,13 +114,13 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
-[era-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/era.svg
-[era-npm-link]: https://www.npmjs.org/package/@ethereumjs/era
-[era-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20era?label=issues
-[era-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+era"
-[era-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Era/badge.svg
-[era-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Era%22
-[era-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=era
-[era-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/era
+[e2store-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/e2store.svg
+[e2store-npm-link]: https://www.npmjs.org/package/@ethereumjs/e2store
+[e2store-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20e2store?label=issues
+[e2store-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+e2store"
+[e2store-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/E2Store/badge.svg
+[e2store-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22E2Store%22
+[e2store-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=e2store
+[e2store-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/e2store
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR

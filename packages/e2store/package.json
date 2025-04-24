@@ -1,11 +1,11 @@
 {
-  "name": "@ethereumjs/era",
+  "name": "@ethereumjs/e2store",
   "version": "10.0.0-dev-rc.1",
-  "description": "Era file support for EthereumJS",
-  "keywords": ["ethereum", "era", "era1"],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/era#readme",
+  "description": "E2Store support for EthereumJS",
+  "keywords": ["ethereum", "e2store", "e2hs", "era", "era1", "era2", "storage", "snappy"],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/e2store#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+era%22"
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+e2store%22"
   },
   "repository": {
     "type": "git",
