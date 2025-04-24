@@ -112,4 +112,4 @@ function bigIntToUnpadded(value: bigint): Uint8Array {
   return hexToBytes(hex.length % 2 === 0 ? `0x${hex}` : `0x0${hex}`)
 }
 
-main().catch(console.error)
+main()
