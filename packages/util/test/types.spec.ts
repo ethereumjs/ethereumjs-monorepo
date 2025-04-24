@@ -6,9 +6,9 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  hexToBytes,
   intToBytes,
   intToHex,
-  toBytes,
   toType,
 } from '../src/index.ts'
 
@@ -91,7 +91,7 @@ describe('toType', () => {
     assert.strictEqual(bigIntToHex(result), num)
 
     result = toType(num, TypeOutput.Uint8Array)
-    assert.deepEqual(result, toBytes(num))
+    assert.deepEqual(result, hexToBytes(num))
 
     assert.throws(() => {
       //@ts-expect-error -- Testing invalid input
