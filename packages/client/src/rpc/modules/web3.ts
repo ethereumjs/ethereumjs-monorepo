@@ -45,7 +45,7 @@ export class Web3 {
    * @param params The data to convert into a SHA3 hash
    */
   sha3(params: PrefixedHexString[]): PrefixedHexString {
-    const hexEncodedDigest = bytesToHex(keccak256(toBytes(hexToBytes(params[0]))))
+    const hexEncodedDigest = bytesToHex(keccak256(hexToBytes(params[0])))
     return hexEncodedDigest
   }
 }
