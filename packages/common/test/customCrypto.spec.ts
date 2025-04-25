@@ -75,7 +75,7 @@ describe('[Common]: Custom Crypto', () => {
     }
     const msg = Uint8Array.from([0, 1, 2, 3])
     const c = new Common({ chain: Mainnet, customCrypto })
-    assert.equal(c.customCrypto.sha256!(msg)[0], 0xff, 'used custom sha256 function')
+    assert.strictEqual(c.customCrypto.sha256!(msg)[0], 0xff, 'used custom sha256 function')
   })
 
   it('ecsign', () => {
@@ -83,6 +83,6 @@ describe('[Common]: Custom Crypto', () => {
       ecsign: customEcSign,
     }
     const c = new Common({ chain: Mainnet, customCrypto })
-    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).recovery, 0)
+    assert.strictEqual(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).recovery, 0)
   })
 })
