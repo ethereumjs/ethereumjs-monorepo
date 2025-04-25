@@ -34,7 +34,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- blockchain",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint --config ./eslint.config.mjs .",
