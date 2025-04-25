@@ -2,30 +2,18 @@
 
 ***
 
-[@ethereumjs/common](../README.md) / CommonOpts
+[@ethereumjs/common](../README.md) / BaseOpts
 
-# Interface: CommonOpts
+# Interface: BaseOpts
 
-Defined in: [types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L149)
+Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L99)
 
-Options for instantiating a [Common](../classes/Common.md) instance.
+## Extended by
 
-## Extends
-
-- [`BaseOpts`](BaseOpts.md)
+- [`CommonOpts`](CommonOpts.md)
+- [`GethConfigOpts`](GethConfigOpts.md)
 
 ## Properties
-
-### chain
-
-> **chain**: [`ChainConfig`](ChainConfig.md)
-
-Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L154)
-
-The chain configuration to be used. There are available configuration object for mainnet
-(`Mainnet`) and the currently active testnets which can be directly used.
-
-***
 
 ### customCrypto?
 
@@ -42,10 +30,6 @@ system setup to be used for sensitive/core parts of the functionality
 and a choice on the libraries to add should be handled with care
 and be made with eventual security implications considered.
 
-#### Inherited from
-
-[`BaseOpts`](BaseOpts.md).[`customCrypto`](BaseOpts.md#customcrypto)
-
 ***
 
 ### eips?
@@ -61,10 +45,6 @@ Currently supported:
 
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
 
-#### Inherited from
-
-[`BaseOpts`](BaseOpts.md).[`eips`](BaseOpts.md#eips)
-
 ***
 
 ### hardfork?
@@ -76,10 +56,6 @@ Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 String identifier ('byzantium') for hardfork or [Hardfork](../variables/Hardfork.md) enum.
 
 Default: Hardfork.London
-
-#### Inherited from
-
-[`BaseOpts`](BaseOpts.md).[`hardfork`](BaseOpts.md#hardfork)
 
 ***
 
@@ -104,7 +80,3 @@ Example Format:
   }
 }
 ```
-
-#### Inherited from
-
-[`BaseOpts`](BaseOpts.md).[`params`](BaseOpts.md#params)

@@ -1,185 +1,151 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / CustomCrypto
 
 # Interface: CustomCrypto
 
-## Table of contents
-
-### Properties
-
-- [ecdsaRecover](CustomCrypto.md#ecdsarecover)
-- [ecdsaSign](CustomCrypto.md#ecdsasign)
-- [ecrecover](CustomCrypto.md#ecrecover)
-- [ecsign](CustomCrypto.md#ecsign)
-- [keccak256](CustomCrypto.md#keccak256)
-- [kzg](CustomCrypto.md#kzg)
-- [sha256](CustomCrypto.md#sha256)
+Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
 
 ## Properties
 
-### ecdsaRecover
+### ecdsaRecover()?
 
-• `Optional` **ecdsaRecover**: (`sig`: `Uint8Array`, `recId`: `number`, `hash`: `Uint8Array`) => `Uint8Array`
+> `optional` **ecdsaRecover**: (`sig`, `recId`, `hash`) => `Uint8Array`
 
-#### Type declaration
+Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L94)
 
-▸ (`sig`, `recId`, `hash`): `Uint8Array`
+#### Parameters
 
-##### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `sig` | `Uint8Array` |
-| `recId` | `number` |
-| `hash` | `Uint8Array` |
-
-##### Returns
+##### sig
 
 `Uint8Array`
 
-#### Defined in
+##### recId
 
-[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L86)
+`number`
 
-___
-
-### ecdsaSign
-
-• `Optional` **ecdsaSign**: (`msg`: `Uint8Array`, `pk`: `Uint8Array`) => { `recid`: `number` ; `signature`: `Uint8Array`  }
-
-#### Type declaration
-
-▸ (`msg`, `pk`): `Object`
-
-##### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `msg` | `Uint8Array` |
-| `pk` | `Uint8Array` |
-
-##### Returns
-
-`Object`
-
-| Name | Type |
-| :------ | :------ |
-| `recid` | `number` |
-| `signature` | `Uint8Array` |
-
-#### Defined in
-
-[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L85)
-
-___
-
-### ecrecover
-
-• `Optional` **ecrecover**: (`msgHash`: `Uint8Array`, `v`: `bigint`, `r`: `Uint8Array`, `s`: `Uint8Array`, `chainId?`: `bigint`) => `Uint8Array`
-
-#### Type declaration
-
-▸ (`msgHash`, `v`, `r`, `s`, `chainId?`): `Uint8Array`
-
-##### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `msgHash` | `Uint8Array` |
-| `v` | `bigint` |
-| `r` | `Uint8Array` |
-| `s` | `Uint8Array` |
-| `chainId?` | `bigint` |
-
-##### Returns
+##### hash
 
 `Uint8Array`
 
-#### Defined in
+#### Returns
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+`Uint8Array`
 
-___
+***
 
-### ecsign
+### ecrecover()?
 
-• `Optional` **ecsign**: (`msg`: `Uint8Array`, `pk`: `Uint8Array`, `chainId?`: `bigint`) => `ECDSASignature`
+> `optional` **ecrecover**: (`msgHash`, `v`, `r`, `s`, `chainId?`) => `Uint8Array`
 
-#### Type declaration
+Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
 
-▸ (`msg`, `pk`, `chainId?`): `ECDSASignature`
+#### Parameters
 
-##### Parameters
+##### msgHash
 
-| Name | Type |
-| :------ | :------ |
-| `msg` | `Uint8Array` |
-| `pk` | `Uint8Array` |
-| `chainId?` | `bigint` |
+`Uint8Array`
 
-##### Returns
+##### v
 
-`ECDSASignature`
+`bigint`
 
-#### Defined in
+##### r
 
-[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L84)
+`Uint8Array`
 
-___
+##### s
 
-### keccak256
+`Uint8Array`
 
-• `Optional` **keccak256**: (`msg`: `Uint8Array`) => `Uint8Array`
+##### chainId?
 
-#### Type declaration
+`bigint`
 
-▸ (`msg`): `Uint8Array`
+#### Returns
+
+`Uint8Array`
+
+***
+
+### ecsign()?
+
+> `optional` **ecsign**: (`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`RecoveredSignatureType`, `"recovery"` \| `"r"` \| `"s"`\>
+
+Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L89)
+
+#### Parameters
+
+##### msg
+
+`Uint8Array`
+
+##### pk
+
+`Uint8Array`
+
+##### ecSignOpts?
+
+###### extraEntropy?
+
+`boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Pick`\<`RecoveredSignatureType`, `"recovery"` \| `"r"` \| `"s"`\>
+
+***
+
+### keccak256()?
+
+> `optional` **keccak256**: (`msg`) => `Uint8Array`
+
+Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
 
 Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
 
-##### Parameters
+#### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `msg` | `Uint8Array` |
-
-##### Returns
+##### msg
 
 `Uint8Array`
 
-#### Defined in
-
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L75)
-
-___
-
-### kzg
-
-• `Optional` **kzg**: `Kzg`
-
-#### Defined in
-
-[types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L87)
-
-___
-
-### sha256
-
-• `Optional` **sha256**: (`msg`: `Uint8Array`) => `Uint8Array`
-
-#### Type declaration
-
-▸ (`msg`): `Uint8Array`
-
-##### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `msg` | `Uint8Array` |
-
-##### Returns
+#### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L83)
+### kzg?
+
+> `optional` **kzg**: `KZG`
+
+Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L95)
+
+***
+
+### sha256()?
+
+> `optional` **sha256**: (`msg`) => `Uint8Array`
+
+Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L88)
+
+#### Parameters
+
+##### msg
+
+`Uint8Array`
+
+#### Returns
+
+`Uint8Array`
+
+***
+
+### verkle?
+
+> `optional` **verkle**: `VerkleCrypto`
+
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)
