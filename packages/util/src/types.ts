@@ -127,3 +127,32 @@ export function toType<T extends TypeOutput>(
       throw EthereumJSErrorWithoutCode('unknown outputType')
   }
 }
+
+/**
+ * Authorization list types
+ */
+export type AuthorizationListItemUnsigned = {
+  chainId: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString
+}
+
+export type AuthorizationListItem = {
+  yParity: PrefixedHexString
+  r: PrefixedHexString
+  s: PrefixedHexString
+} & AuthorizationListItemUnsigned
+
+// Tuple of [chain_id, address, [nonce], y_parity, r, s]
+export type AuthorizationListBytesItem = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+]
+export type AuthorizationListBytes = AuthorizationListBytesItem[]
+export type AuthorizationList = AuthorizationListItem[]
+
+export type AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]

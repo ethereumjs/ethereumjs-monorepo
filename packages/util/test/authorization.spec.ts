@@ -1,25 +1,23 @@
 import { RLP } from '@ethereumjs/rlp'
-import {
-  Address,
-  type PrefixedHexString,
-  concatBytes,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
-import { AUTHORITY_SIGNING_MAGIC } from '../../src/constants.ts'
 import {
+  AUTHORITY_SIGNING_MAGIC,
+  Address,
   type AuthorizationListBytesItemUnsigned,
   type AuthorizationListItem,
   type AuthorizationListItemUnsigned,
+  type PrefixedHexString,
   authorizationHashedMessageToSign,
   authorizationListBytesItemToJSON,
   authorizationListJSONItemToBytes,
   authorizationMessageToSign,
+  concatBytes,
+  equalsBytes,
+  hexToBytes,
   recoverAuthority,
   signAuthorization,
-} from '../../src/index.ts'
+} from '../src/index.ts'
 
 // Taken from execution-spec-tests (tests/prague/eip7702_set_code_tx/test_set_code_txs.py::test_address_from_set_code)
 const SAMPLE_AUTH = {

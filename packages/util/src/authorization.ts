@@ -1,29 +1,30 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
-import type { Common } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
+import { EthereumJSErrorWithoutCode, RLP } from '@ethereumjs/rlp'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { publicToAddress } from './account.ts'
+import { Address } from './address.ts'
 import {
-  Address,
-  EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  ecrecover,
   hexToBytes,
-  publicToAddress,
   setLengthLeft,
   unpadBytes,
-} from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
+} from './bytes.ts'
+import { ecrecover } from './signature.ts'
 import type {
   AuthorizationListBytesItem,
   AuthorizationListBytesItemUnsigned,
   AuthorizationListItem,
   AuthorizationListItemUnsigned,
-} from '../types.ts'
+} from './types.ts'
+
+/** EIP-7702 constants */
+
+export const AUTHORITY_SIGNING_MAGIC = hexToBytes('0x05')
 
 /**
  * Converts an authorization list to a JSON format
@@ -122,15 +123,20 @@ export function authorizationHashedMessageToSign(
  * To get the JSON format, use `authorizationListBytesToJSON([signed])[0] to convert it`
  * @param input
  * @param privateKey
+ * @param ecSign
  * @returns
  */
 export function signAuthorization(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
   privateKey: Uint8Array,
-  common?: Common,
+  ecSign?: (
+    msg: Uint8Array,
+    pk: Uint8Array,
+    ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
+  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>,
 ): AuthorizationListBytesItem {
   const msgHash = authorizationHashedMessageToSign(input)
-  const secp256k1Sign = common?.customCrypto.ecsign ?? secp256k1.sign
+  const secp256k1Sign = ecSign ?? secp256k1.sign
   const signed = secp256k1Sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
     ? input

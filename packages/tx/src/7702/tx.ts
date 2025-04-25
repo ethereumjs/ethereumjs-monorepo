@@ -2,6 +2,8 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
+  authorizationListBytesItemToJSON,
+  authorizationListJSONItemToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
@@ -24,12 +26,11 @@ import {
 import { createEOACode7702Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, AuthorizationListBytes } from '@ethereumjs/util'
 import type {
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  AuthorizationListBytes,
   Capability,
   JSONTx,
   TransactionCache,
@@ -37,10 +38,6 @@ import type {
   TxOptions,
 } from '../types.ts'
 import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
-import {
-  authorizationListBytesItemToJSON,
-  authorizationListJSONItemToBytes,
-} from '../util/authorization.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]

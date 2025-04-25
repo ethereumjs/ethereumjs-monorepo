@@ -5,7 +5,7 @@ import {
   type StatefulVerkleStateManager,
   type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -22,6 +22,7 @@ import {
   concatBytes,
   equalsBytes,
   hexToBytes,
+  recoverAuthority,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
