@@ -95,7 +95,9 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^10.0.0-rc.1",
-    "ethereum-cryptography": "^3.1.0"
+    "@noble/curves": "1.9.0",
+    "@noble/hashes": "1.8.0",
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.1.2",

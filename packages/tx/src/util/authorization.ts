@@ -15,8 +15,8 @@ import {
   setLengthLeft,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
 import type {
   AuthorizationListBytesItem,
@@ -114,7 +114,7 @@ export function authorizationMessageToSign(
 export function authorizationHashedMessageToSign(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
 ) {
-  return keccak256(authorizationMessageToSign(input))
+  return keccak_256(authorizationMessageToSign(input))
 }
 
 /**
