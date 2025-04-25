@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.0.0-dev - 2025-04-29
+
 ## 10.0.0-dev-rc.1 - 2025-03-24
 
 Initial development release
