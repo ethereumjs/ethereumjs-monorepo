@@ -67,6 +67,7 @@ const ZEROVALUE = '0x00000000000000000000000000000000000000000000000000000000000
  *
  */
 export class StatelessVerkleStateManager implements StateManagerInterface {
+  name = 'VERKLE_STATELESS'
   _cachedStateRoot?: Uint8Array
 
   originalStorageCache: OriginalStorageCache

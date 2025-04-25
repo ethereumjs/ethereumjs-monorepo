@@ -24,6 +24,7 @@ import type { SimpleStateManagerOpts } from './index.ts'
  * have a look at the [`@ethereumjs/statemanager` package docs](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/docs/README.md).
  */
 export class SimpleStateManager implements StateManagerInterface {
+  name = 'SIMPLE'
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
   public codeStack: Map<PrefixedHexString, Uint8Array>[] = []
   public storageStack: Map<string, Uint8Array>[] = []

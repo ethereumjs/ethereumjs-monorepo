@@ -56,6 +56,7 @@ import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './type
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulBinaryTreeStateManager implements StateManagerInterface {
+  name = 'BINARY_STATEFUL'
   protected _debug: Debugger
   protected _caches?: Caches
 

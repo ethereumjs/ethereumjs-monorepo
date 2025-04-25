@@ -61,6 +61,7 @@ import type { StatefulVerkleStateManagerOpts, VerkleState } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export class StatefulVerkleStateManager implements StateManagerInterface {
+  name = 'VERKLE_STATEFUL'
   protected _debug: Debugger
   protected _caches?: Caches
 

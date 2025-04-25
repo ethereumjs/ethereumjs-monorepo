@@ -27,6 +27,7 @@ import type { RPCStateManagerOpts } from './index.ts'
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
 export class RPCStateManager implements StateManagerInterface {
+  name = 'RPC'
   protected _provider: string
   protected _caches: Caches
   protected _blockTag: string

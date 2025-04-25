@@ -59,6 +59,7 @@ export const CODEHASH_PREFIX = utf8ToBytes('c')
  * for many basic use cases.
  */
 export class MerkleStateManager implements StateManagerInterface {
+  name = 'MERKLE'
   protected _debug: Debugger
   protected _caches?: Caches
 
