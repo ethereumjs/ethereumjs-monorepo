@@ -622,6 +622,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
+  // NOTE: Do not rename this method as we check for this function name in the VM to verify we're using a StatefulVerkleStateManager
   async verifyVerklePostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
@@ -710,7 +711,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     const verifyPassed = postFailures === 0
     this.DEBUG &&
-      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+      this._debug(`verifyVerklePostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
     return verifyPassed
   }
