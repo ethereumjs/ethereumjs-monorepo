@@ -1,115 +1,253 @@
+[**@ethereumjs/evm**](../README.md)
+
+***
+
 [@ethereumjs/evm](../README.md) / EVMInterface
 
 # Interface: EVMInterface
 
-## Table of contents
-
-### Properties
-
-- [events](EVMInterface.md#events)
-- [journal](EVMInterface.md#journal)
-- [precompiles](EVMInterface.md#precompiles)
-- [stateManager](EVMInterface.md#statemanager)
-
-### Methods
-
-- [runCall](EVMInterface.md#runcall)
-- [runCode](EVMInterface.md#runcode)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
 
 ## Properties
 
-### events
+### binaryTreeAccessWitness?
 
-• `Optional` **events**: `AsyncEventEmitter`<`EVMEvents`\>
+> `optional` **binaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-#### Defined in
+Defined in: [types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L184)
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L163)
+***
 
-___
+### common
+
+> **common**: `Common`
+
+Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
+
+***
+
+### events?
+
+> `optional` **events**: `EventEmitter`\<`EVMEvent`, `any`\>
+
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
+
+***
 
 ### journal
 
-• **journal**: `Object`
+> **journal**: `object`
 
-#### Type declaration
+Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L162)
 
-| Name | Type |
-| :------ | :------ |
-| `accessList?` | `Map`<`string`, `Set`<`string`\>\> |
-| `preimages?` | `Map`<`string`, `Uint8Array`\> |
-| `addAlwaysWarmAddress` | (`address`: `string`, `addToAccessList?`: `boolean`) => `void` |
-| `addAlwaysWarmSlot` | (`address`: `string`, `slot`: `string`, `addToAccessList?`: `boolean`) => `void` |
-| `checkpoint` | () => `Promise`<`void`\> |
-| `cleanJournal` | () => `void` |
-| `cleanup` | () => `Promise`<`void`\> |
-| `commit` | () => `Promise`<`void`\> |
-| `deleteAccount` | (`address`: `Address`) => `Promise`<`void`\> |
-| `putAccount` | (`address`: `Address`, `account`: `Account`) => `Promise`<`void`\> |
-| `revert` | () => `Promise`<`void`\> |
-| `startReportingAccessList` | () => `void` |
-| `startReportingPreimages?` | () => `void` |
+#### accessList?
 
-#### Defined in
+> `optional` **accessList**: `Map`\<`string`, `Set`\<`string`\>\>
 
-[types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L144)
+#### preimages?
 
-___
+> `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
+
+#### addAlwaysWarmAddress()
+
+> **addAlwaysWarmAddress**(`address`, `addToAccessList?`): `void`
+
+##### Parameters
+
+###### address
+
+`string`
+
+###### addToAccessList?
+
+`boolean`
+
+##### Returns
+
+`void`
+
+#### addAlwaysWarmSlot()
+
+> **addAlwaysWarmSlot**(`address`, `slot`, `addToAccessList?`): `void`
+
+##### Parameters
+
+###### address
+
+`string`
+
+###### slot
+
+`string`
+
+###### addToAccessList?
+
+`boolean`
+
+##### Returns
+
+`void`
+
+#### checkpoint()
+
+> **checkpoint**(): `Promise`\<`void`\>
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### cleanJournal()
+
+> **cleanJournal**(): `void`
+
+##### Returns
+
+`void`
+
+#### cleanup()
+
+> **cleanup**(): `Promise`\<`void`\>
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### commit()
+
+> **commit**(): `Promise`\<`void`\>
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### deleteAccount()
+
+> **deleteAccount**(`address`): `Promise`\<`void`\>
+
+##### Parameters
+
+###### address
+
+`Address`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### putAccount()
+
+> **putAccount**(`address`, `account`): `Promise`\<`void`\>
+
+##### Parameters
+
+###### address
+
+`Address`
+
+###### account
+
+`Account`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### revert()
+
+> **revert**(): `Promise`\<`void`\>
+
+##### Returns
+
+`Promise`\<`void`\>
+
+#### startReportingAccessList()
+
+> **startReportingAccessList**(): `void`
+
+##### Returns
+
+`void`
+
+#### startReportingPreimages()?
+
+> `optional` **startReportingPreimages**(): `void`
+
+##### Returns
+
+`void`
+
+***
 
 ### precompiles
 
-• **precompiles**: `Map`<`string`, `PrecompileFunc`\>
+> **precompiles**: `Map`\<`string`, `PrecompileFunc`\>
 
-#### Defined in
+Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L178)
 
-[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
-
-___
+***
 
 ### stateManager
 
-• **stateManager**: `EVMStateManagerInterface`
+> **stateManager**: `StateManagerInterface`
 
-#### Defined in
+Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L177)
 
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
+***
+
+### systemBinaryTreeAccessWitness?
+
+> `optional` **systemBinaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
+
+Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L185)
+
+***
+
+### systemVerkleAccessWitness?
+
+> `optional` **systemVerkleAccessWitness**: [`VerkleAccessWitness`](../classes/VerkleAccessWitness.md)
+
+Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L183)
+
+***
+
+### verkleAccessWitness?
+
+> `optional` **verkleAccessWitness**: [`VerkleAccessWitness`](../classes/VerkleAccessWitness.md)
+
+Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
 
 ## Methods
 
-### runCall
+### runCall()
 
-▸ **runCall**(`opts`): `Promise`<[`EVMResult`](EVMResult.md)\>
+> **runCall**(`opts`): `Promise`\<[`EVMResult`](EVMResult.md)\>
 
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `opts` | [`EVMRunCallOpts`](EVMRunCallOpts.md) |
-
-#### Returns
-
-`Promise`<[`EVMResult`](EVMResult.md)\>
-
-#### Defined in
-
-[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
-
-___
-
-### runCode
-
-▸ **runCode**(`opts`): `Promise`<[`ExecResult`](ExecResult.md)\>
+Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L179)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opts` | [`EVMRunCodeOpts`](EVMRunCodeOpts.md) |
+##### opts
+
+[`EVMRunCallOpts`](EVMRunCallOpts.md)
 
 #### Returns
 
-`Promise`<[`ExecResult`](ExecResult.md)\>
+`Promise`\<[`EVMResult`](EVMResult.md)\>
 
-#### Defined in
+***
 
-[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L162)
+### runCode()
+
+> **runCode**(`opts`): `Promise`\<[`ExecResult`](ExecResult.md)\>
+
+Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L180)
+
+#### Parameters
+
+##### opts
+
+[`EVMRunCodeOpts`](EVMRunCodeOpts.md)
+
+#### Returns
+
+`Promise`\<[`ExecResult`](ExecResult.md)\>

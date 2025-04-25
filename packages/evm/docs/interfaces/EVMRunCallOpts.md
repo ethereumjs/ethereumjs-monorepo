@@ -1,340 +1,276 @@
+[**@ethereumjs/evm**](../README.md)
+
+***
+
 [@ethereumjs/evm](../README.md) / EVMRunCallOpts
 
 # Interface: EVMRunCallOpts
 
+Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L113)
+
 Options for running a call (or create) operation with `EVM.runCall()`
 
-## Hierarchy
+## Extends
 
 - `EVMRunOpts`
 
-  ↳ **`EVMRunCallOpts`**
-
-## Table of contents
-
-### Properties
-
-- [accessWitness](EVMRunCallOpts.md#accesswitness)
-- [blobVersionedHashes](EVMRunCallOpts.md#blobversionedhashes)
-- [block](EVMRunCallOpts.md#block)
-- [caller](EVMRunCallOpts.md#caller)
-- [code](EVMRunCallOpts.md#code)
-- [createdAddresses](EVMRunCallOpts.md#createdaddresses)
-- [data](EVMRunCallOpts.md#data)
-- [delegatecall](EVMRunCallOpts.md#delegatecall)
-- [depth](EVMRunCallOpts.md#depth)
-- [gasLimit](EVMRunCallOpts.md#gaslimit)
-- [gasPrice](EVMRunCallOpts.md#gasprice)
-- [gasRefund](EVMRunCallOpts.md#gasrefund)
-- [isCompiled](EVMRunCallOpts.md#iscompiled)
-- [isStatic](EVMRunCallOpts.md#isstatic)
-- [message](EVMRunCallOpts.md#message)
-- [origin](EVMRunCallOpts.md#origin)
-- [salt](EVMRunCallOpts.md#salt)
-- [selfdestruct](EVMRunCallOpts.md#selfdestruct)
-- [skipBalance](EVMRunCallOpts.md#skipbalance)
-- [to](EVMRunCallOpts.md#to)
-- [value](EVMRunCallOpts.md#value)
-
 ## Properties
 
-### accessWitness
+### accessWitness?
 
-• `Optional` **accessWitness**: `AccessWitness`
+> `optional` **accessWitness**: `VerkleAccessWitnessInterface` \| `BinaryTreeAccessWitnessInterface`
 
-#### Defined in
+Defined in: [types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L144)
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L127)
+***
 
-___
+### blobVersionedHashes?
 
-### blobVersionedHashes
+> `optional` **blobVersionedHashes**: `` `0x${string}` ``[]
 
-• `Optional` **blobVersionedHashes**: `Uint8Array`[]
+Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L100)
 
 Versioned hashes for each blob in a blob transaction
 
 #### Inherited from
 
-EVMRunOpts.blobVersionedHashes
+`EVMRunOpts.blobVersionedHashes`
 
-#### Defined in
+***
 
-[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L83)
+### block?
 
-___
+> `optional` **block**: `Block`
 
-### block
-
-• `Optional` **block**: `Block`
+Defined in: [types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L52)
 
 The `block` the `tx` belongs to. If omitted a default blank block will be used.
 
 #### Inherited from
 
-EVMRunOpts.block
+`EVMRunOpts.block`
 
-#### Defined in
+***
 
-[types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L35)
+### caller?
 
-___
+> `optional` **caller**: `Address`
 
-### caller
-
-• `Optional` **caller**: `Address`
+Defined in: [types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L64)
 
 The address that ran this code (`msg.sender`). Defaults to the zero address.
 
 #### Inherited from
 
-EVMRunOpts.caller
+`EVMRunOpts.caller`
 
-#### Defined in
+***
 
-[types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L47)
+### code?
 
-___
+> `optional` **code**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### code
-
-• `Optional` **code**: `Uint8Array`
+Defined in: [types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L68)
 
 The EVM code to run.
 
 #### Inherited from
 
-EVMRunOpts.code
+`EVMRunOpts.code`
 
-#### Defined in
+***
 
-[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L51)
+### createdAddresses?
 
-___
+> `optional` **createdAddresses**: `Set`\<`` `0x${string}` ``\>
 
-### createdAddresses
-
-• `Optional` **createdAddresses**: `Set`<`string`\>
+Defined in: [types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L125)
 
 Created addresses in current context. Used in EIP 6780
 
-#### Defined in
+***
 
-[types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L108)
+### data?
 
-___
+> `optional` **data**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### data
-
-• `Optional` **data**: `Uint8Array`
+Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L72)
 
 The input data.
 
 #### Inherited from
 
-EVMRunOpts.data
+`EVMRunOpts.data`
 
-#### Defined in
+***
 
-[types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L55)
+### delegatecall?
 
-___
+> `optional` **delegatecall**: `boolean`
 
-### delegatecall
-
-• `Optional` **delegatecall**: `boolean`
+Defined in: [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L134)
 
 If the call is a DELEGATECALL. Defaults to false.
 
-#### Defined in
+***
 
-[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L117)
+### depth?
 
-___
+> `optional` **depth**: `number`
 
-### depth
-
-• `Optional` **depth**: `number`
+Defined in: [types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L84)
 
 The call depth. Defaults to `0`
 
 #### Inherited from
 
-EVMRunOpts.depth
+`EVMRunOpts.depth`
 
-#### Defined in
+***
 
-[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L67)
+### gasLimit?
 
-___
+> `optional` **gasLimit**: `bigint`
 
-### gasLimit
-
-• `Optional` **gasLimit**: `bigint`
+Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L76)
 
 The gas limit for the call. Defaults to `16777215` (`0xffffff`)
 
 #### Inherited from
 
-EVMRunOpts.gasLimit
+`EVMRunOpts.gasLimit`
 
-#### Defined in
+***
 
-[types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L59)
+### gasPrice?
 
-___
+> `optional` **gasPrice**: `bigint`
 
-### gasPrice
-
-• `Optional` **gasPrice**: `bigint`
+Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L56)
 
 The gas price for the call. Defaults to `0`
 
 #### Inherited from
 
-EVMRunOpts.gasPrice
+`EVMRunOpts.gasPrice`
 
-#### Defined in
+***
 
-[types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L39)
+### gasRefund?
 
-___
+> `optional` **gasRefund**: `bigint`
 
-### gasRefund
-
-• `Optional` **gasRefund**: `bigint`
+Defined in: [types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L138)
 
 Refund counter. Defaults to `0`
 
-#### Defined in
+***
 
-[types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L121)
+### isCompiled?
 
-___
+> `optional` **isCompiled**: `boolean`
 
-### isCompiled
-
-• `Optional` **isCompiled**: `boolean`
+Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L117)
 
 If the code location is a precompile.
 
-#### Defined in
+***
 
-[types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L100)
+### isStatic?
 
-___
+> `optional` **isStatic**: `boolean`
 
-### isStatic
-
-• `Optional` **isStatic**: `boolean`
+Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L88)
 
 If the call should be executed statically. Defaults to false.
 
 #### Inherited from
 
-EVMRunOpts.isStatic
+`EVMRunOpts.isStatic`
 
-#### Defined in
+***
 
-[types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L71)
+### message?
 
-___
+> `optional` **message**: [`Message`](../classes/Message.md)
 
-### message
-
-• `Optional` **message**: [`Message`](../classes/Message.md)
+Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L142)
 
 Optionally pass in an already-built message.
 
-#### Defined in
+***
 
-[types.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L125)
+### origin?
 
-___
+> `optional` **origin**: `Address`
 
-### origin
-
-• `Optional` **origin**: `Address`
+Defined in: [types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L60)
 
 The address where the call originated from. Defaults to the zero address.
 
 #### Inherited from
 
-EVMRunOpts.origin
+`EVMRunOpts.origin`
 
-#### Defined in
+***
 
-[types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L43)
+### salt?
 
-___
+> `optional` **salt**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### salt
-
-• `Optional` **salt**: `Uint8Array`
+Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L121)
 
 An optional salt to pass to CREATE2.
 
-#### Defined in
+***
 
-[types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L104)
+### selfdestruct?
 
-___
+> `optional` **selfdestruct**: `Set`\<`` `0x${string}` ``\>
 
-### selfdestruct
-
-• `Optional` **selfdestruct**: `Set`<`string`\>
+Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L92)
 
 Addresses to selfdestruct. Defaults to the empty set.
 
 #### Inherited from
 
-EVMRunOpts.selfdestruct
+`EVMRunOpts.selfdestruct`
 
-#### Defined in
+***
 
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L75)
+### skipBalance?
 
-___
+> `optional` **skipBalance**: `boolean`
 
-### skipBalance
-
-• `Optional` **skipBalance**: `boolean`
+Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L130)
 
 Skip balance checks if true. If caller balance is less than message value,
 sets balance to message value to ensure execution doesn't fail.
 
-#### Defined in
+***
 
-[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L113)
+### to?
 
-___
+> `optional` **to**: `Address`
 
-### to
-
-• `Optional` **to**: `Address`
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L96)
 
 The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
 
 #### Inherited from
 
-EVMRunOpts.to
+`EVMRunOpts.to`
 
-#### Defined in
+***
 
-[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L79)
+### value?
 
-___
+> `optional` **value**: `bigint`
 
-### value
-
-• `Optional` **value**: `bigint`
+Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L80)
 
 The value in ether that is being sent to `opts.address`. Defaults to `0`
 
 #### Inherited from
 
-EVMRunOpts.value
-
-#### Defined in
-
-[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L63)
+`EVMRunOpts.value`
