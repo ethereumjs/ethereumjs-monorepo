@@ -61,7 +61,7 @@ describe('simple mainnet test run', async () => {
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
         'latest',
       ])
-      assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+      assert.strictEqual(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
       await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
       balance = await client.request('eth_getBalance', [
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
@@ -71,7 +71,7 @@ describe('simple mainnet test run', async () => {
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
         'latest',
       ])
-      assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
+      assert.strictEqual(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
       const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
       blockHashes.push(latestBlock.result.hash)
     },

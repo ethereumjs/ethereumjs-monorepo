@@ -29,7 +29,7 @@ describe(method, () => {
     await runBlockWithTxs(chain, execution, [tx])
 
     const res = await rpc.request(method, [])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       intToHex(GAS_PRICE),
       'should return the correct suggested gas price with 1 legacy transaction',
@@ -53,7 +53,7 @@ describe(method, () => {
 
     averageGasPrice = averageGasPrice / iterations
     const res = await rpc.request(method, [])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(averageGasPrice),
       'should return the correct gas price with multiple legacy transactions',
@@ -79,7 +79,7 @@ describe(method, () => {
 
     const averageGasPrice = (G1 + G2) / 2
     const res = await rpc.request(method, [])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       intToHex(Math.trunc(averageGasPrice)),
       'should return the correct gas price with multiple legacy transactions in a block',
@@ -107,7 +107,7 @@ describe(method, () => {
     const latest = await chain.getCanonicalHeadHeader()
     const baseFee = latest.calcNextBaseFee()
     const gasPrice = BigInt(baseFee + tx.maxPriorityFeePerGas)
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(gasPrice),
       'should return the correct gas price with 1 1559 transaction',
@@ -148,7 +148,7 @@ describe(method, () => {
     const latest = await chain.getCanonicalHeadHeader()
     const baseFee = latest.calcNextBaseFee()
     const gasPrice = BigInt(baseFee + averagePriorityFee)
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(gasPrice),
       'should return the correct gas price with 1 1559 transaction',
@@ -191,10 +191,10 @@ describe(method, () => {
     const blockNumber = latest.number
 
     // Should be block number 21
-    assert.equal(blockNumber, 21n)
+    assert.strictEqual(blockNumber, 21n)
 
     const res = await rpc.request(method, [])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(gasPrice),
       'should return the correct gas price for 21 blocks',

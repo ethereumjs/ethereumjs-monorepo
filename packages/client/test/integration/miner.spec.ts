@@ -103,7 +103,11 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
     await new Promise((resolve) => {
       follower.config.events.on(Event.SYNC_SYNCHRONIZED, (chainHeight) => {
         if (chainHeight === targetHeight) {
-          assert.equal(follower.chain.blocks.height, targetHeight, 'synced blocks successfully')
+          assert.strictEqual(
+            follower.chain.blocks.height,
+            targetHeight,
+            'synced blocks successfully',
+          )
           resolve(undefined)
         }
       })

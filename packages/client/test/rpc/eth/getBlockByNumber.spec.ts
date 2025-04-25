@@ -73,7 +73,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
-    assert.equal(res.result.number, '0x0', 'should return a valid block')
+    assert.strictEqual(res.result.number, '0x0', 'should return a valid block')
   })
 
   it('call with false for second argument', async () => {
@@ -81,8 +81,8 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
-    assert.equal(res.result.number, '0x0', 'should return a valid block')
-    assert.equal(
+    assert.strictEqual(res.result.number, '0x0', 'should return a valid block')
+    assert.strictEqual(
       typeof res.result.transactions[0],
       'string',
       'should return only the hashes of the transactions',
@@ -94,7 +94,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest', false])
-    assert.equal(res.result.number, '0x0', 'should return the genesis block number')
+    assert.strictEqual(res.result.number, '0x0', 'should return the genesis block number')
   })
 
   it('call with latest param', async () => {
@@ -102,8 +102,8 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest', false])
-    assert.equal(res.result.number, '0x1', 'should return a block number')
-    assert.equal(typeof res.result.transactions[0], 'string', 'should only include tx hashes')
+    assert.strictEqual(res.result.number, '0x1', 'should return a block number')
+    assert.strictEqual(typeof res.result.transactions[0], 'string', 'should only include tx hashes')
   })
 
   it('call with unimplemented pending param', async () => {
@@ -112,7 +112,7 @@ describe(method, async () => {
 
     const res = await rpc.request(method, ['pending', true])
 
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
@@ -121,7 +121,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [10, true])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
@@ -130,7 +130,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes(
         'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
@@ -143,7 +143,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
@@ -152,7 +152,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
   })
 
   it('call with transaction objects', async () => {
@@ -160,7 +160,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest', true])
 
-    assert.equal(typeof res.result.transactions[0], 'object', 'should include tx objects')
+    assert.strictEqual(typeof res.result.transactions[0], 'object', 'should include tx objects')
   })
 
   describe('call with block with blob txs', () => {
@@ -177,7 +177,7 @@ describe(method, async () => {
       const rpc = getRPCClient(startRPC(manager.getMethods()))
       const res = await rpc.request(method, ['latest', true])
 
-      assert.equal(
+      assert.strictEqual(
         res.result.transactions[0].blobVersionedHashes.length,
         1,
         'block body contains a transaction with the blobVersionedHashes field',

@@ -87,7 +87,7 @@ describe('simple mainnet test run', async () => {
     'add some EOA transfers',
     async () => {
       let balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(
+      assert.strictEqual(
         EOATransferToBalance,
         BigInt(balance.result),
         `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`,
@@ -98,12 +98,16 @@ describe('simple mainnet test run', async () => {
       EOATransferToBalance += 1000000n
 
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer')
+      assert.strictEqual(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer')
       await runTx('', EOATransferToAccount, 1000000n)
       EOATransferToBalance += 1000000n
 
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer 2x')
+      assert.strictEqual(
+        BigInt(balance.result),
+        EOATransferToBalance,
+        'sent a simple ETH transfer 2x',
+      )
 
       balance = await client.request('eth_getBalance', [sender, 'latest'])
       assert.isDefined(balance.result, 'remaining sender balance after transfers and gas fee')
@@ -138,7 +142,7 @@ describe('simple mainnet test run', async () => {
 
       const enode = (ejsClient!.server() as RlpxServer)!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
-      assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
+      assert.strictEqual(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
@@ -164,7 +168,7 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.service.synchronizer?.sync()
           const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
-          assert.equal(
+          assert.strictEqual(
             ['SYNCED', 'VALID'].includes(syncResponse.syncState),
             true,
             'beaconSyncRelayer should have synced client',

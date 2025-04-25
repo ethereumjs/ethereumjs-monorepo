@@ -42,7 +42,7 @@ describe('[Logging]', () => {
       level: 'info',
       message: 'test key=value',
     }) as any
-    assert.equal(
+    assert.strictEqual(
       message,
       'test \x1B[38;2;0;128;0mkey\x1B[39m=value ', // cspell:disable-line
       'key=value pairs should be colorized',
