@@ -14,7 +14,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak_256, keccak_512 } from '@noble/hashes/sha3.js'
+import { keccak_256, keccak_512 } from '@noble/hashes/sha3'
 
 import {
   bytesReverse,
