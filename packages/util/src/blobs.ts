@@ -121,3 +121,25 @@ export const blobsToCells = (
 
   return [cells, indices]
 }
+
+export const blobsToCellsAndProofs = (
+  kzg: KZG,
+  blobs: PrefixedHexString[],
+): [PrefixedHexString[], PrefixedHexString[], number[]] => {
+  const blobsAndCells = blobs.reduce(
+    ([cellsAcc, proofsAcc], elem) => {
+      const blobCellsAndProofs = kzg.computeCellsAndProofs(elem) as [
+        PrefixedHexString[],
+        PrefixedHexString[],
+      ]
+      return [
+        [...cellsAcc, ...blobCellsAndProofs[0]],
+        [...proofsAcc, ...blobCellsAndProofs[1]],
+      ]
+    },
+    [[] as PrefixedHexString[], [] as PrefixedHexString[]],
+  )
+
+  const indices = Array.from({ length: CELLS_PER_EXT_BLOB }, (_, i) => i)
+  return [...blobsAndCells, indices] as [PrefixedHexString[], PrefixedHexString[], number[]]
+}
