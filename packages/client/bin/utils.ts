@@ -635,36 +635,36 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
   ckzg.loadTrustedSetup(0)
   const cKzg = {
     blobToKzgCommitment: (blob: string) => {
-      const blobBytes = hexToBytes(blob)
+      const blobBytes = hexToBytes(blob as PrefixedHexString)
       const commitmentBytes = ckzg.blobToKzgCommitment(blobBytes)
-      return bytesToHex(commitmentBytes)
+      return bytesToHex(commitmentBytes) as string
     },
     computeBlobProof: (blob: string, commitment: string) => {
-      const blobBytes = hexToBytes(blob)
-      const commitmentBytes = hexToBytes(commitment)
+      const blobBytes = hexToBytes(blob as PrefixedHexString)
+      const commitmentBytes = hexToBytes(commitment as PrefixedHexString)
       const proofBytes = ckzg.computeBlobKzgProof(blobBytes, commitmentBytes)
-      return bytesToHex(proofBytes)
+      return bytesToHex(proofBytes) as string
     },
     verifyProof: (commitment: string, z: string, y: string, proof: string) => {
-      const commitmentBytes = hexToBytes(commitment)
-      const zBytes = hexToBytes(z)
-      const yBytes = hexToBytes(y)
-      const proofBytes = hexToBytes(proof)
+      const commitmentBytes = hexToBytes(commitment as PrefixedHexString)
+      const zBytes = hexToBytes(z as PrefixedHexString)
+      const yBytes = hexToBytes(y as PrefixedHexString)
+      const proofBytes = hexToBytes(proof as PrefixedHexString)
       return ckzg.verifyKzgProof(commitmentBytes, zBytes, yBytes, proofBytes)
     },
     verifyBlobProofBatch: (blobs: string[], commitments: string[], proofs: string[]) => {
-      const blobsBytes = blobs.map((blb) => hexToBytes(blb))
-      const commitmentsBytes = commitments.map((cmt) => hexToBytes(cmt))
-      const proofsBytes = proofs.map((prf) => hexToBytes(prf))
+      const blobsBytes = blobs.map((blb) => hexToBytes(blb as PrefixedHexString))
+      const commitmentsBytes = commitments.map((cmt) => hexToBytes(cmt as PrefixedHexString))
+      const proofsBytes = proofs.map((prf) => hexToBytes(prf as PrefixedHexString))
       return ckzg.verifyBlobKzgProofBatch(blobsBytes, commitmentsBytes, proofsBytes)
     },
     computeCells: (blob: string) => {
-      const blobBytes = hexToBytes(blob)
+      const blobBytes = hexToBytes(blob as PrefixedHexString)
       const cellsBytes = ckzg.computeCells(blobBytes)
-      return cellsBytes.map((cellBytes) => bytesToHex(cellBytes))
+      return cellsBytes.map((cellBytes) => bytesToHex(cellBytes)) as string[]
     },
     computeCellsAndProofs: (blob: string) => {
-      const blobBytes = hexToBytes(blob)
+      const blobBytes = hexToBytes(blob as PrefixedHexString)
       const [cellsBytes, proofsBytes] = ckzg.computeCellsAndKzgProofs(blobBytes)
       return [
         cellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
@@ -672,7 +672,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ] as [string[], string[]]
     },
     recoverCellsAndProofs: (indices: number[], cells: string[]) => {
-      const cellsBytes = cells.map((cell) => hexToBytes(cell))
+      const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
       const [allCellsBytes, allProofsBytes] = ckzg.recoverCellsAndKzgProofs(indices, cellsBytes)
       return [
         allCellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
@@ -685,9 +685,9 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       cells: string[],
       proofs: string[],
     ) => {
-      const commitmentsBytes = commitments.map((commit) => hexToBytes(commit))
-      const cellsBytes = cells.map((cell) => hexToBytes(cell))
-      const proofsBytes = proofs.map((prf) => hexToBytes(prf))
+      const commitmentsBytes = commitments.map((commit) => hexToBytes(commit as PrefixedHexString))
+      const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
+      const proofsBytes = proofs.map((prf) => hexToBytes(prf as PrefixedHexString))
       return ckzg.verifyCellKzgProofBatch(commitmentsBytes, indices, cellsBytes, proofsBytes)
     },
   }
