@@ -1,6 +1,7 @@
 import {
   Blob4844Tx,
   Capability,
+  NetworkWrapperType,
   isAccessList2930Tx,
   isBlob4844Tx,
   isFeeMarket1559Tx,
@@ -25,7 +26,6 @@ import type { Block } from '@ethereumjs/block'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
-import { NetworkWrapperType } from '../../../tx/dist/esm/4844/tx.js'
 import type { Config } from '../config.ts'
 import type { QHeap } from '../ext/qheap.ts'
 import type { Peer } from '../net/peer/peer.ts'

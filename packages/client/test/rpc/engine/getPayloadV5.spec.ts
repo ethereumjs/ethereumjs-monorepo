@@ -15,12 +15,10 @@ import {
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { getCryptoFunctions } from '../../../bin/utils.ts'
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
@@ -89,6 +87,8 @@ describe(method, () => {
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txBlobProofs = blobsToProofs(kzg, txBlobs, txCommitments)
     const [txCells, txCellProofs, txCellIndices] = blobsToCellsAndProofs(kzg, txBlobs)
+    expect(txCells.length === txBlobs.length * CELLS_PER_EXT_BLOB)
+    expect(txCellIndices.length === CELLS_PER_EXT_BLOB)
 
     expect(() =>
       createTx(
