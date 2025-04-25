@@ -1,145 +1,135 @@
+[**@ethereumjs/blockchain**](../README.md)
+
+***
+
 [@ethereumjs/blockchain](../README.md) / Consensus
 
 # Interface: Consensus
 
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L217)
+
 Interface that a consensus class needs to implement.
-
-## Implemented by
-
-- [`CasperConsensus`](../classes/CasperConsensus.md)
-- [`CliqueConsensus`](../classes/CliqueConsensus.md)
-- [`EthashConsensus`](../classes/EthashConsensus.md)
-
-## Table of contents
-
-### Properties
-
-- [algorithm](Consensus.md#algorithm)
-
-### Methods
-
-- [genesisInit](Consensus.md#genesisinit)
-- [newBlock](Consensus.md#newblock)
-- [setup](Consensus.md#setup)
-- [validateConsensus](Consensus.md#validateconsensus)
-- [validateDifficulty](Consensus.md#validatedifficulty)
 
 ## Properties
 
 ### algorithm
 
-• **algorithm**: `string`
+> **algorithm**: `string`
 
-#### Defined in
-
-[types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L193)
+Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L218)
 
 ## Methods
 
-### genesisInit
+### genesisInit()
 
-▸ **genesisInit**(`genesisBlock`): `Promise`<`void`\>
+> **genesisInit**(`genesisBlock`): `Promise`\<`void`\>
+
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L223)
 
 Initialize genesis for consensus mechanism
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `genesisBlock` | `Block` | genesis block |
+##### genesisBlock
+
+`Block`
+
+genesis block
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L198)
+### newBlock()
 
-___
+> **newBlock**(`block`, `commonAncestor?`, `ancientHeaders?`): `Promise`\<`void`\>
 
-### newBlock
-
-▸ **newBlock**(`block`, `commonAncestor?`, `ancientHeaders?`): `Promise`<`void`\>
+Defined in: [types.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L244)
 
 Update consensus on new block
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `block` | `Block` | new block |
-| `commonAncestor?` | `BlockHeader` | common ancestor block header (optional) |
-| `ancientHeaders?` | `BlockHeader`[] | array of ancestor block headers (optional) |
+##### block
+
+`Block`
+
+new block
+
+##### commonAncestor?
+
+`BlockHeader`
+
+common ancestor block header (optional)
+
+##### ancientHeaders?
+
+`BlockHeader`[]
+
+array of ancestor block headers (optional)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L219)
+### setup()
 
-___
+> **setup**(`__namedParameters`): `Promise`\<`void`\>
 
-### setup
-
-▸ **setup**(`__namedParameters`): `Promise`<`void`\>
+Defined in: [types.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L228)
 
 Set up consensus mechanism
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `__namedParameters` | [`ConsensusOptions`](ConsensusOptions.md) |
+##### \_\_namedParameters
+
+[`ConsensusOptions`](ConsensusOptions.md)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L203)
+### validateConsensus()
 
-___
+> **validateConsensus**(`block`): `Promise`\<`void`\>
 
-### validateConsensus
-
-▸ **validateConsensus**(`block`): `Promise`<`void`\>
+Defined in: [types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L234)
 
 Validate block consensus parameters
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `block` | `Block` | block to be validated |
+##### block
+
+`Block`
+
+block to be validated
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L209)
+### validateDifficulty()
 
-___
+> **validateDifficulty**(`header`): `Promise`\<`void`\>
 
-### validateDifficulty
-
-▸ **validateDifficulty**(`header`): `Promise`<`void`\>
+Defined in: [types.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L236)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `header` | `BlockHeader` |
+##### header
+
+`BlockHeader`
 
 #### Returns
 
-`Promise`<`void`\>
-
-#### Defined in
-
-[types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L211)
+`Promise`\<`void`\>

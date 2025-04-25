@@ -1,41 +1,33 @@
-[@ethereumjs/trie](../README.md) / Path
+[**@ethereumjs/mpt**](../README.md)
+
+***
+
+[@ethereumjs/mpt](../README.md) / Path
 
 # Interface: Path
 
-## Table of contents
-
-### Properties
-
-- [node](Path.md#node)
-- [remaining](Path.md#remaining)
-- [stack](Path.md#stack)
+Defined in: [packages/mpt/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L32)
 
 ## Properties
 
 ### node
 
-• **node**: ``null`` \| [`TrieNode`](../README.md#trienode)
+> **node**: `null` \| [`MPTNode`](../type-aliases/MPTNode.md)
 
-#### Defined in
+Defined in: [packages/mpt/src/types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L33)
 
-[packages/trie/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L24)
-
-___
+***
 
 ### remaining
 
-• **remaining**: [`Nibbles`](../README.md#nibbles)
+> **remaining**: [`Nibbles`](../type-aliases/Nibbles.md)
 
-#### Defined in
+Defined in: [packages/mpt/src/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L34)
 
-[packages/trie/src/types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L25)
-
-___
+***
 
 ### stack
 
-• **stack**: [`TrieNode`](../README.md#trienode)[]
+> **stack**: [`MPTNode`](../type-aliases/MPTNode.md)[]
 
-#### Defined in
-
-[packages/trie/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L26)
+Defined in: [packages/mpt/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L35)

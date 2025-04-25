@@ -1,30 +1,25 @@
+[**@ethereumjs/verkle**](../README.md)
+
+***
+
 [@ethereumjs/verkle](../README.md) / VerkleNodeOptions
 
 # Interface: VerkleNodeOptions
 
-## Table of contents
-
-### Properties
-
-- [0](VerkleNodeOptions.md#0)
-- [1](VerkleNodeOptions.md#1)
+Defined in: [node/types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/types.ts#L52)
 
 ## Properties
 
 ### 0
 
-• **0**: `VerkleInternalNodeOptions`
+> **0**: `InternalVerkleNodeOptions`
 
-#### Defined in
+Defined in: [node/types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/types.ts#L53)
 
-[node/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/types.ts#L45)
-
-___
+***
 
 ### 1
 
-• **1**: `VerkleLeafNodeOptions`
+> **1**: `LeafVerkleNodeOptions`
 
-#### Defined in
-
-[node/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/types.ts#L46)
+Defined in: [node/types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/types.ts#L54)
