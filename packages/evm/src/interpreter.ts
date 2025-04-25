@@ -6,12 +6,10 @@ import {
   BIGINT_2,
   EthereumJSErrorWithoutCode,
   MAX_UINT64,
-  bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
-  setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -111,7 +109,6 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
-  accessedStorage: Map<PrefixedHexString, PrefixedHexString>
 }
 
 export interface InterpreterResult {
@@ -208,7 +205,6 @@ export class Interpreter {
       gasRefund: env.gasRefund,
       gasLeft,
       returnBytes: new Uint8Array(0),
-      accessedStorage: new Map(), // Maps accessed storage keys to their values (i.e. SSTOREd and SLOADed values)
     }
     this.journal = journal
     this._env = env
@@ -482,19 +478,6 @@ export class Interpreter {
       )
     }
 
-    if (opcodeInfo.name === 'SLOAD') {
-      // Store SLOADed values for recording in trace
-      const key = this._runState.stack.peek(1)
-      const value = await this.storageLoad(setLengthLeft(bigIntToBytes(key[0]), 32))
-      this._runState.accessedStorage.set(`0x${key[0].toString(16)}`, bytesToHex(value))
-    }
-
-    if (opcodeInfo.name === 'SSTORE') {
-      // Store SSTOREed values for recording in trace
-      const [key, value] = this._runState.stack.peek(2)
-      this._runState.accessedStorage.set(`0x${key.toString(16)}`, `0x${value.toString(16)}`)
-    }
-
     // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -520,7 +503,6 @@ export class Interpreter {
       error,
       eofFunctionDepth:
         this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
-      storage: Array.from(this._runState.accessedStorage.entries()),
     }
 
     if (this._evm.DEBUG) {
