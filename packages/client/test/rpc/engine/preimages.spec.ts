@@ -14,7 +14,7 @@ import {
   intToHex,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -253,7 +253,7 @@ describe(`valid verkle network setup`, async () => {
       for (const preimage of preimages) {
         const preimageBytes = hexToBytes(preimage)
         const savedPreimage = await execution.preimagesManager!.getPreimage(
-          keccak256(preimageBytes),
+          keccak_256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
         assert.isTrue(

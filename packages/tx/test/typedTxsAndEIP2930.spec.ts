@@ -26,7 +26,7 @@ import {
   paramsTx,
 } from '../src/index.ts'
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import type { TxData } from '../src/2930/tx.ts'
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.ts'
 

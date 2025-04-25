@@ -9,11 +9,11 @@ import {
   intToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1'
+import { keccak_256 } from '@noble/hashes/sha3'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { ecdh, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
@@ -96,7 +96,7 @@ export class ECIES {
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
-    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
+    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak_256
     this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
     this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
   }
