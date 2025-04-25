@@ -31,7 +31,7 @@ describe('custom crypto', () => {
       common,
       _EVM: evm,
     })
-    assert.equal(result.returnValue[0], 0xff, 'used custom sha256 hashing function')
+    assert.strictEqual(result.returnValue[0], 0xff, 'used custom sha256 hashing function')
   })
 
   it('should use custom ecrecover function', async () => {
@@ -54,7 +54,7 @@ describe('custom crypto', () => {
       common,
       _EVM: evm,
     })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(result.returnValue),
       '0x00000000000000000000000063304c5c6884567b84b18f5bc5774d829a32d25d',
       'used custom ecrecover hashing function',

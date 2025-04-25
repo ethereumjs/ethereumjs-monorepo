@@ -88,7 +88,7 @@ for (const bls of [undefined, mclbls]) {
                 bytesToHex(result.returnValue),
                 'return value should match testVectorResult',
               )
-              assert.equal(result.executionGasUsed, BigInt(data.Gas))
+              assert.strictEqual(result.executionGasUsed, BigInt(data.Gas))
             } catch (e: any) {
               assert.fail(e.message)
             }

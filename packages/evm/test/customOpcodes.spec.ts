@@ -38,7 +38,7 @@ describe('VM: custom opcodes', () => {
       gasLimit: BigInt(gas),
     })
     assert.isTrue(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.equal(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
+    assert.strictEqual(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
     assert.isTrue(correctOpcodeName, 'successfully set opcode name')
   })
 
@@ -65,7 +65,7 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x01'),
       gasLimit: BigInt(gas),
     })
-    assert.equal(res.executionGasUsed, gas, 'successfully deleted opcode')
+    assert.strictEqual(res.executionGasUsed, gas, 'successfully deleted opcode')
 
     const evmDefault = await createEVM()
 
@@ -92,8 +92,8 @@ describe('VM: custom opcodes', () => {
       code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    assert.equal(res.executionGasUsed, totalFee, 'successfully charged correct gas')
-    assert.equal(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
+    assert.strictEqual(res.executionGasUsed, totalFee, 'successfully charged correct gas')
+    assert.strictEqual(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
   })
 
   it('should pass the correct EVM options when copying the EVM', async () => {
@@ -120,12 +120,12 @@ describe('VM: custom opcodes', () => {
       'evm.shallowCopy() successfully copied customOpcodes option',
     )
 
-    assert.equal(
+    assert.strictEqual(
       evm.events.listenerCount('beforeMessage'),
       2,
       'original EVM instance should have two listeners',
     )
-    assert.equal(
+    assert.strictEqual(
       evmCopy!.events!.listenerCount('beforeMessage'),
       0,
       'copied EVM instance should have zero listeners',

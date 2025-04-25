@@ -30,7 +30,7 @@ describe('Precompiles: hardfork availability', () => {
       value: BigInt(0),
     })
 
-    assert.equal(result.execResult.executionGasUsed, BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(100000)) // check that we are using gas (if address would contain no code we use 0 gas)
 
     // Check if ECPAIR is available in future hard forks.
     const commonPetersburg = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
@@ -51,7 +51,7 @@ describe('Precompiles: hardfork availability', () => {
       value: BigInt(0),
     })
 
-    assert.equal(result.execResult.executionGasUsed, BigInt(100000))
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(100000))
 
     // Check if ECPAIR is not available in Homestead.
     const commonHomestead = new Common({ chain: Mainnet, hardfork: Hardfork.Homestead })
@@ -74,6 +74,6 @@ describe('Precompiles: hardfork availability', () => {
       value: BigInt(0),
     })
 
-    assert.equal(result.execResult.executionGasUsed, BigInt(0)) // check that we use no gas, because we are calling into an address without code.
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(0)) // check that we use no gas, because we are calling into an address without code.
   })
 })
