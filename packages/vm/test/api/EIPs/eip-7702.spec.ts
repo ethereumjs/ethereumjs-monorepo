@@ -20,8 +20,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
-import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { VM } from '../../../src/index.ts'
 

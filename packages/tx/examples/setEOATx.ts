@@ -9,19 +9,21 @@
 // It will self-delegate. Note that in a 7702-tx, you are free to include any authorization item.
 // If the authorization item is valid (it has the correct nonce, and matches the chainId (or the chainId is 0))
 // then it will delegate the code of the account **who signed that authorization item** to the address in that authority item
+import { createEOACode7702Tx } from '@ethereumjs/tx'
 import {
+  Address,
+  AuthorizationListItemUnsigned,
   authorizationListBytesItemToJSON,
-  createEOACode7702Tx,
+  privateToAddress,
   signAuthorization,
-} from '@ethereumjs/tx'
-import { Address, privateToAddress } from '@ethereumjs/util'
+} from '@ethereumjs/util'
 
 const privateKey = new Uint8Array(32).fill(0x20)
 const privateKeyOther = new Uint8Array(32).fill(0x99)
 
 const myAddress = new Address(privateToAddress(privateKey))
 
-const unsignedAuthorizationListItemSelf = {
+const unsignedAuthorizationListItemSelf: AuthorizationListItemUnsigned = {
   chainId: '0x1337', // This delegation will only work on the chain with chainId 0x1337
   address: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
   nonce: '0x01', // Since we are self-delegating we need account for the nonce being bumped of the account
@@ -30,7 +32,7 @@ const signedSelf = signAuthorization(unsignedAuthorizationListItemSelf, privateK
 // To convert the bytes array to a human-readable form, use `authorizationListBytesItemToJSON`
 console.log(authorizationListBytesItemToJSON(signedSelf))
 
-const unsignedAuthorizationListItemOther = {
+const unsignedAuthorizationListItemOther: AuthorizationListItemUnsigned = {
   chainId: '0x', // The chainId 0 is special: this authorization will work on any chain which supports EIP-7702
   address: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
   nonce: '0x',

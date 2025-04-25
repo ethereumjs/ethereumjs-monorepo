@@ -45,8 +45,13 @@ import { blockchainData } from './testdata/blockchain.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type {
+  AuthorizationListBytesItem,
+  NestedUint8Array,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
