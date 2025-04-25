@@ -19,7 +19,7 @@ export function getVerkleStateProof(
  */
 export function verifyVerkleStateProof(sm: StateManagerInterface): boolean {
   if (!(sm instanceof StatelessVerkleStateManager)) {
-    throw new Error('StatelessVerkleStateManager expected')
+    throw EthereumJSErrorWithoutCode('StatelessVerkleStateManager expected')
   }
   if (sm['_executionWitness'] === undefined) {
     sm['DEBUG'] && sm['_debug']('Missing executionWitness')
