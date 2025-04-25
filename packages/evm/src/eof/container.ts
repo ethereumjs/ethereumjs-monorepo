@@ -246,7 +246,6 @@ class EOFHeader {
     // Write the start of the first code section into `codeStartPos`
     // Note: in EVM, if one would set the Program Counter to this byte, it would start executing the bytecode of the first code section
     this.codeStartPos = [relativeOffset]
-    this.getCodePosition(this.codeSizes.length - 1) // initialize code positions
   }
 
   sections() {
@@ -280,6 +279,10 @@ class EOFHeader {
     ) {
       // If code position is outside the beginning or end of the code sections, return 0
       throw EthereumJSErrorWithoutCode('program counter out of bounds')
+    }
+
+    if (this.codeStartPos.length < this.codeSizes.length) {
+      this.getCodePosition(this.codeSizes.length - 1) // initialize code positions if uninitialized
     }
 
     for (let i = 0; i < this.codeSizes.length; i++) {
