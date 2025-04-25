@@ -1,12 +1,11 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createZeroAddress } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const vm = await createVM({ common, stateManager: new StatelessVerkleStateManager({ common }) })
+  const vm = await createVM({ common })
 
   const tx = createLegacyTx({
     gasLimit: BigInt(21000),
