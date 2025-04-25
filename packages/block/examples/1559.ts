@@ -1,5 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, Mainnet } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
 const common = new Common({ chain: Mainnet })
 

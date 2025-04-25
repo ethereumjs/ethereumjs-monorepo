@@ -7,7 +7,6 @@ import {
   intToBytes,
   setLengthLeft,
   setLengthRight,
-  toBytes,
 } from './bytes.ts'
 
 import type { Account } from './account.ts'
@@ -237,7 +236,7 @@ export const getVerkleTreeKeyForCodeChunk = async (
   verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), intToBytes(subIndex))
 }
 
 // This code was written by robots based on the reference implementation in EIP-6800
@@ -295,7 +294,7 @@ export const getVerkleTreeKeyForStorageSlot = async (
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageKey)
 
-  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), intToBytes(subIndex))
 }
 
 /**

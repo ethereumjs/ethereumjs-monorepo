@@ -1,4 +1,4 @@
-# @ethereumjs/rlp
+# @ethereumjs/rlp `v10`
 
 [![NPM Package][rlp-npm-badge]][rlp-npm-link]
 [![GitHub Issues][rlp-issues-badge]][rlp-issues-link]
@@ -8,6 +8,16 @@
 
 | [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser. |
 | ----------------------------------------------------------------------------------------------------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Browser](#browser)
+- [API](#api)
+- [CLI](#cli)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 

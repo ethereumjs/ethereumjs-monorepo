@@ -1,4 +1,4 @@
-# @ethereumjs/era
+# @ethereumjs/era `v10`
 
 [![NPM Package][era-npm-badge]][era-npm-link]
 [![GitHub Issues][era-issues-badge]][era-issues-link]
@@ -8,6 +8,13 @@
 
 | A collection of utility functions for Ethereum. |
 | ----------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -22,7 +29,7 @@ npm install @ethereumjs/era
 All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
 
 ```ts
-import { formatEntry } from "@ethereumjs/era";
+import { formatEntry } from "@ethereumjs/era"
 ```
 
 ### Export History as Era1
@@ -30,13 +37,13 @@ import { formatEntry } from "@ethereumjs/era";
 Export history in epochs of 8192 blocks as Era1 files
 
 ```ts
-import { exportEpochAsEra1 } from "@ethereumjs/era";
+import { exportEpochAsEra1 } from "@ethereumjs/era"
 
-const dataDir = PATH_TO_ETHEREUMJS_CLIENT_DB;
-const epoch = 0;
+const dataDir = PATH_TO_ETHEREUMJS_CLIENT_DB
+const epoch = 0
 
 // generates ${dataDir}/era1/epoch-0.era1
-await exportEpochAsEra1(epoch, dataDir);
+await exportEpochAsEra1(epoch, dataDir)
 ```
 
 ### Read Era1 file
@@ -52,37 +59,37 @@ import {
   blockFromTuple,
   getHeaderRecords,
   EpochAccumulator,
-} from "@ethereumjs/era";
+} from "@ethereumjs/era"
 
-const era1File = readBinaryFile(PATH_TO_ERA1_FILE);
+const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
 
 // validate era1 file
-const isValid = validateERA1(era1File);
+const isValid = validateERA1(era1File)
 
 // read blocks from era1 file
-const blocks = readERA1(era1File);
+const blocks = readERA1(era1File)
 
 for await (const blockTuple of blocks) {
-  const { header, body, receipts } = await parseBlockTuple(blockTuple);
-  const block = blockFromTuple({ header, body });
-  console.log(block.header.number);
+  const { header, body, receipts } = await parseBlockTuple(blockTuple)
+  const block = blockFromTuple({ header, body })
+  console.log(block.header.number)
 }
 
 // reconstruct epoch accumulator
-const headerRecords = await getHeaderRecords(era1File);
-const epochAccumulator = EpochAccumulator.encode(headerRecords);
-const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords);
+const headerRecords = await getHeaderRecords(era1File)
+const epochAccumulator = EpochAccumulator.encode(headerRecords)
+const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
 ```
 
 ### Read Era file
 
 ```ts
-import { readBeaconState } from "@ethereumjs/era";
+import { readBeaconState } from "@ethereumjs/era"
 
-const eraFile = readBinaryFile(PATH_TO_ERA_FILE);
+const eraFile = readBinaryFile(PATH_TO_ERA_FILE)
 
 // Extract BeaconState
-const state = await readBeaconState(eraFile);
+const state = await readBeaconState(eraFile)
 console.log(state.slot)
 
 // Read Beacon Blocks from era file

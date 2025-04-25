@@ -255,10 +255,10 @@ describe('[StorageFetcher]', async () => {
       pool,
       root: utf8ToBytes(''),
     } as StorageFetcherOptions)
-    const partialResult: any = [
+    const partialResult = [
       [
-        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
-        [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
+        { hash: utf8ToBytes(''), body: utf8ToBytes('') },
+        { hash: utf8ToBytes(''), body: utf8ToBytes('') },
       ],
     ]
 
@@ -276,7 +276,7 @@ describe('[StorageFetcher]', async () => {
         },
       ],
     }
-    const resData = RLP.decode(hexToBytes(_storageRangesRLP)) as unknown
+    const resData = RLP.decode(hexToBytes(_storageRangesRLP))
     const res = p.decode(
       p.messages.filter((message) => message.name === 'StorageRanges')[0],
       resData,

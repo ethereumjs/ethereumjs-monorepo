@@ -58,9 +58,9 @@ describe('is zero address', () => {
 
 describe('unpadBytes', () => {
   it('should unpad a Uint8Array', () => {
-    const bytes = toBytes('0x0000000006600')
+    const bytes = hexToBytes('0x0000000006600')
     const r = unpadBytes(bytes)
-    assert.deepEqual(r, toBytes('0x6600'))
+    assert.deepEqual(r, hexToBytes('0x6600'))
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -251,8 +251,10 @@ describe('toBytes', () => {
   })
 
   it('should fail with non 0x-prefixed hex strings', () => {
-    assert.throws(() => toBytes('11' as any), '11')
-    assert.throws(() => toBytes('' as any))
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes('11'), '11')
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes(''))
     assert.throws(() => toBytes('0xR'), '0xR')
   })
 
@@ -308,19 +310,19 @@ describe('intToBytes and intToHex', () => {
 
 describe('validateNoLeadingZeroes', () => {
   const noLeadingZeroes = {
-    a: toBytes('0x123'),
+    a: hexToBytes('0x123'),
   }
   const noLeadingZeroBytes = {
-    a: toBytes('0x01'),
+    a: hexToBytes('0x01'),
   }
   const leadingZeroBytes = {
-    a: toBytes('0x001'),
+    a: hexToBytes('0x001'),
   }
   const onlyZeroes = {
-    a: toBytes('0x0'),
+    a: hexToBytes('0x0'),
   }
   const emptyBuffer = {
-    a: toBytes('0x'),
+    a: hexToBytes('0x'),
   }
 
   const undefinedValue = {
@@ -364,7 +366,7 @@ describe('validateNoLeadingZeroes', () => {
 
 describe('bytesToBigInt', () => {
   it('should pass on correct input', () => {
-    const buf = toBytes('0x123')
+    const buf = hexToBytes('0x123')
     assert.equal(BigInt(0x123), bytesToBigInt(buf))
   })
 })
@@ -372,7 +374,7 @@ describe('bytesToBigInt', () => {
 describe('bigIntToBytes', () => {
   it('should pass on correct input', () => {
     const num = BigInt(0x123)
-    assert.deepEqual(toBytes('0x123'), bigIntToBytes(num))
+    assert.deepEqual(hexToBytes('0x123'), bigIntToBytes(num))
   })
 })
 
