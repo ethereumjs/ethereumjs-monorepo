@@ -21,11 +21,11 @@ describe('rust-verkle test vectors', () => {
 
     const path = await trie.findPath(key.slice(0, 31))
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(path.stack[0][0].hash()),
       '0x029b6c4c8af9001f0ac76472766c6579f41eec84a73898da06eb97ebdab80a09',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(trie.root()),
       '0x6f5e7cfc3a158a64e5718b0d2f18f564171342380f5808f3d2a82f7e7f3c2778',
     )
@@ -44,18 +44,18 @@ describe('rust-verkle test vectors', () => {
     })
     await trie.put(stem, [key[31]], [new Uint8Array(32)])
     let path = await trie.findPath(stem)
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(path.stack[0][0].hash()),
       '0x77a0747bd526d9d9af60bd5665d24d6cb421f5c8e726b1de62f914f3ff9a361c',
     )
     await trie.put(stem, [key[31]], [key])
     path = await trie.findPath(key.slice(0, 31))
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(path.stack[0][0].hash()),
       '0x029b6c4c8af9001f0ac76472766c6579f41eec84a73898da06eb97ebdab80a09',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(trie.root()),
       '0x6f5e7cfc3a158a64e5718b0d2f18f564171342380f5808f3d2a82f7e7f3c2778',
     )
