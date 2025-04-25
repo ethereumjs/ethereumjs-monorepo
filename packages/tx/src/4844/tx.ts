@@ -213,7 +213,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     if (this.networkWrapperVersion !== undefined) {
       switch (this.networkWrapperVersion) {
         case NetworkWrapperType.EIP7594:
-          if (!this.common.isActivatedEIP(7504)) {
+          if (!this.common.isActivatedEIP(7594)) {
             throw EthereumJSErrorWithoutCode(
               'EIP-7594 not enabled on Common for EIP7594 network wrapper version',
             )
