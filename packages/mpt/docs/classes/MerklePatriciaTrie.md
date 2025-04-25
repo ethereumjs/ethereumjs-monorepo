@@ -12,6 +12,11 @@ The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereu
 
 ## Constructors
 
+A trie can be created with one of the following constructor methods:
+
+* [createMPT](../functions/createMPT.md)
+* [createMPTFromProof](../functions/createMPTFromProof.md)
+
 ### Constructor
 
 > **new MerklePatriciaTrie**(`opts?`): `MerklePatriciaTrie`

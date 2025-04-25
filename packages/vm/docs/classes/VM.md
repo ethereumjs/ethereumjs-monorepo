@@ -13,6 +13,10 @@ blocks, individual transactions, or snippets of EVM bytecode.
 
 ## Constructors
 
+A VM can be created with the constructor method:
+
+* [createVM](../functions/createVM.md)
+
 ### Constructor
 
 > **new VM**(`opts`): `VM`

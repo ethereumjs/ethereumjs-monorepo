@@ -23,6 +23,11 @@ optional `consensusDict` option can be used to pass in validation objects.
 
 ## Constructors
 
+A blockchain can be created with one of the following constructor methods:
+
+* [createBlockchain](../functions/createBlockchain.md)
+* [createBlockchainFromBlocksData](../functions/createBlockchainFromBlocksData.md)
+
 ### Constructor
 
 > **new Blockchain**(`opts`): `Blockchain`

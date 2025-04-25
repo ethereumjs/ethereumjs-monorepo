@@ -12,6 +12,10 @@ The basic verkle tree interface, use with `import { VerkleTree } from '@ethereum
 
 ## Constructors
 
+A verkle tree can be created with the constructor method:
+
+* [createVerkleTree](../functions/createVerkleTree.md)
+
 ### Constructor
 
 > **new VerkleTree**(`opts`): `VerkleTree`

@@ -12,6 +12,10 @@ The basic binary tree interface, use with `import { BinaryTree } from '@ethereum
 
 ## Constructors
 
+A binary tree can be created with the constructor method:
+
+* [createBinaryTree](../functions/createBinaryTree.md)
+
 ### Constructor
 
 > **new BinaryTree**(`opts`): `BinaryTree`
