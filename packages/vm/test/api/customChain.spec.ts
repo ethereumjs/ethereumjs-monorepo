@@ -9,7 +9,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { Interface } from 'ethers'
+import { encodeFunctionData } from 'viem'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
@@ -96,7 +96,12 @@ describe('VM initialized with custom state', () => {
     common.setHardfork(Hardfork.London)
     const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
-    const calldata = new Interface(['function retrieve()']).getFunction('retrieve')!.selector
+    const calldata = encodeFunctionData({
+      abi: [
+        { type: 'function', name: 'retrieve', inputs: [], outputs: [], stateMutability: 'view' },
+      ],
+      functionName: 'retrieve',
+    })
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
