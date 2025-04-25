@@ -1,5 +1,5 @@
 import { bytesToHex, setLengthLeft } from '@ethereumjs/util'
-import { ripemd160 } from '@noble/hashes/legacy.js'
+import { ripemd160 } from '@noble/hashes/ripemd160'
 
 import { OOGResult } from '../evm.ts'
 
