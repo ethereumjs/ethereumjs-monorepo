@@ -10,8 +10,8 @@ import {
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
-import { sha256 } from '@noble/hashes/sha2.js'
-import { keccak_256 } from '@noble/hashes/sha3.js'
+import { sha256 } from '@noble/hashes/sha2'
+import { keccak_256 } from '@noble/hashes/sha3'
 
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
