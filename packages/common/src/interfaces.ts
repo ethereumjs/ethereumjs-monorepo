@@ -175,6 +175,7 @@ export interface VerkleAccessWitnessInterface {
  *
  */
 export interface StateManagerInterface {
+  name?: string
   /*
    * Core Access Functionality
    */
