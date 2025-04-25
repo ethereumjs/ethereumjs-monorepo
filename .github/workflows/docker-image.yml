@@ -39,11 +39,10 @@ jobs:
       - run: npm i
         working-directory: ${{ github.workspace }}
 
-      -
-        name: Build & Push
+      - name: Build & Push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-          tags: ghcr.io/${{ github.repository_owner }}/ethereumjs-monorepo:latest
+          tags: ghcr.io/dargon789/ethereumjs-monorepo:latest
           provenance: false
