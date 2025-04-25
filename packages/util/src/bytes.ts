@@ -116,7 +116,7 @@ export const intToBytes = (i: number): Uint8Array => {
  * @returns {Uint8Array}
  */
 export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
-  const bytes = toBytes(`0x${padToEven(num.toString(16))}`)
+  const bytes = hexToBytes(`0x${padToEven(num.toString(16))}`)
 
   return littleEndian ? bytes.reverse() : bytes
 }

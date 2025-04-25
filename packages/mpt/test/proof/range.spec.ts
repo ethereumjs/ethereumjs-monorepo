@@ -3,9 +3,9 @@ import {
   compareBytes,
   concatBytes,
   hexToBytes,
+  intToBytes,
   randomBytes,
   setLengthLeft,
-  toBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -28,8 +28,9 @@ async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
 
   if (addKey) {
     for (let i = 0; i < 100; i++) {
-      const key = setLengthLeft(toBytes(i), 32)
-      const val = toBytes(i)
+      const indexBytes = intToBytes(i)
+      const key = setLengthLeft(indexBytes, 32)
+      const val = indexBytes
       await trie.put(key, val)
       entries.push([key, val])
     }
@@ -62,7 +63,7 @@ function getRandomIntInclusive(min: number, max: number): number {
 function decreaseKey(key: Uint8Array) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] > 0) {
-      return concatBytes(key.slice(0, i), toBytes(key[i] - 1), key.slice(i + 1))
+      return concatBytes(key.slice(0, i), intToBytes(key[i] - 1), key.slice(i + 1))
     }
   }
 }
@@ -70,7 +71,7 @@ function decreaseKey(key: Uint8Array) {
 function increaseKey(key: Uint8Array) {
   for (let i = key.length - 1; i >= 0; i--) {
     if (key[i] < 255) {
-      return concatBytes(key.slice(0, i), toBytes(key[i] + 1), key.slice(i + 1))
+      return concatBytes(key.slice(0, i), intToBytes(key[i] + 1), key.slice(i + 1))
     }
   }
 }
@@ -323,8 +324,9 @@ describe('simple merkle range proofs generation and verification', () => {
     const trie = new MerklePatriciaTrie()
     const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
-      const key = setLengthLeft(toBytes(i), 32)
-      const val = toBytes(i)
+      const indexBytes = intToBytes(i)
+      const key = setLengthLeft(indexBytes, 32)
+      const val = indexBytes
       await trie.put(key, val)
       entries.push([key, val])
     }

@@ -30,7 +30,6 @@ import {
   equalsBytes,
   hexToBytes,
   privateToAddress,
-  toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -113,7 +112,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(uncleData.blocks[2].rlp as PrefixedHexString)
+    const block3Rlp = hexToBytes(uncleData.blocks[2].rlp as PrefixedHexString)
     const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
