@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": ["ethereum", "EVM", "JavaScript", "TypeScript"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",
@@ -54,11 +54,11 @@
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^10.0.0-dev-rc.1",
-    "@ethereumjs/common": "^10.0.0-rc.1",
-    "@ethereumjs/statemanager": "^10.0.0-rc.1",
-    "@ethereumjs/util": "^10.0.0-rc.1",
-    "@ethereumjs/verkle": "^10.0.0-dev-rc.1",
+    "@ethereumjs/binarytree": "^10.0.0-dev",
+    "@ethereumjs/common": "^10.0.0",
+    "@ethereumjs/statemanager": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/verkle": "^10.0.0-dev",
     "@noble/curves": "^1.9.0",
     "@types/debug": "^4.1.12",
     "debug": "^4.4.0",
