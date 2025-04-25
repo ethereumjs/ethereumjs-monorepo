@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "EthereumJS Execution Layer (EL) Client Implementation",
   "keywords": ["ethereum", "ethereumjs", "client", "blockchain", "light sync", "full sync"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#readme",
