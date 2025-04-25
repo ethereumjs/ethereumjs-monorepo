@@ -1,5 +1,5 @@
 import { EOFContainer, validateEOF } from './eof/container.ts'
-import { EVMError, EVMErrorMessages } from './errors.ts'
+import { EVMError } from './errors.ts'
 import { EVM } from './evm.ts'
 import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
@@ -47,7 +47,6 @@ export {
   EOFContainer,
   EVM,
   EVMError,
-  EVMErrorMessages,
   EVMMockBlockchain,
   getActivePrecompiles,
   getOpcodesForHF,

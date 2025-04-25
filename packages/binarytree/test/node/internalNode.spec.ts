@@ -2,17 +2,16 @@ import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BinaryNodeType, InternalBinaryNode, decodeBinaryNode } from '../../src/index.ts'
-import {} from '../../src/types.ts'
 
 describe('InternalBinaryNode', () => {
   it('should round-trip encode and decode an internal node', () => {
     // Create dummy child pointers:
     const leftCanonicalChild = {
-      hash: hexToBytes('0x' + '11'.repeat(32)),
+      hash: hexToBytes(`0x${'11'.repeat(32)}`),
       path: [0, 1, 1, 0, 1, 0],
     }
     const rightCanonicalChild = {
-      hash: hexToBytes('0x' + '22'.repeat(32)),
+      hash: hexToBytes(`0x${'22'.repeat(32)}`),
       path: [1, 1, 0, 0],
     }
     const node = InternalBinaryNode.create([leftCanonicalChild, rightCanonicalChild])

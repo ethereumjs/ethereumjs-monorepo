@@ -249,7 +249,7 @@ describe('simple mainnet test run', async () => {
       ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
-    for (const addressString of Object.keys(customGenesisState)) {
+    for (const addressString of Object.keys(customGenesisState) as PrefixedHexString[]) {
       const address = createAddressFromString(addressString)
       const account = await stateManager?.getAccount(address)
       assert.equal(

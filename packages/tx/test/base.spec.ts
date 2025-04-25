@@ -7,7 +7,6 @@ import {
   equalsBytes,
   hexToBytes,
   privateToPublic,
-  toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -186,7 +185,7 @@ describe('[BaseTransaction]', () => {
 
   it('createWithdrawalFromBytesArray()', () => {
     let rlpData: any = legacyTxs[0].raw()
-    rlpData[0] = toBytes('0x0')
+    rlpData[0] = hexToBytes('0x0')
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
@@ -196,8 +195,8 @@ describe('[BaseTransaction]', () => {
         'should throw with nonce with leading zeroes',
       )
     }
-    rlpData[0] = toBytes('0x')
-    rlpData[6] = toBytes('0x0')
+    rlpData[0] = hexToBytes('0x')
+    rlpData[6] = hexToBytes('0x0')
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
@@ -208,7 +207,7 @@ describe('[BaseTransaction]', () => {
       )
     }
     rlpData = eip2930Txs[0].raw()
-    rlpData[3] = toBytes('0x0')
+    rlpData[3] = hexToBytes('0x0')
     try {
       createAccessList2930TxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
@@ -219,7 +218,7 @@ describe('[BaseTransaction]', () => {
       )
     }
     rlpData = eip1559Txs[0].raw()
-    rlpData[2] = toBytes('0x0')
+    rlpData[2] = hexToBytes('0x0')
     try {
       create1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
@@ -414,7 +413,7 @@ describe('[BaseTransaction]', () => {
   })
 
   it('initialization with defaults', () => {
-    const bufferZero = toBytes('0x')
+    const bufferZero = hexToBytes('0x')
     const tx = createLegacyTx({
       nonce: undefined,
       gasLimit: undefined,

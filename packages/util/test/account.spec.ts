@@ -9,6 +9,7 @@ import {
   accountBodyFromSlim,
   accountBodyToRLP,
   accountBodyToSlim,
+  bigIntToBytes,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
@@ -33,7 +34,6 @@ import {
   privateToAddress,
   privateToPublic,
   publicToAddress,
-  toBytes,
   toChecksumAddress,
   utf8ToBytes,
 } from '../src/index.ts'
@@ -488,7 +488,7 @@ describe('Utility Functions', () => {
   it('generateAddress', () => {
     const addr = generateAddress(
       utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-      toBytes(14),
+      intToBytes(14),
     )
     assert.equal(
       bytesToHex(addr),
@@ -498,7 +498,10 @@ describe('Utility Functions', () => {
   })
 
   it('generateAddress with hex prefix', () => {
-    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(14))
+    const addr = generateAddress(
+      hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      intToBytes(14),
+    )
     assert.equal(
       bytesToHex(addr),
       '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989',
@@ -509,7 +512,10 @@ describe('Utility Functions', () => {
   // cspell:disable
   it('generateAddress wt.testh nonce 0 (special case)', () => {
     // cspell:enable
-    const addr = generateAddress(toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), toBytes(0))
+    const addr = generateAddress(
+      hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+      intToBytes(0),
+    )
     assert.equal(
       bytesToHex(addr),
       '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
@@ -524,7 +530,7 @@ describe('Utility Functions', () => {
       function () {
         generateAddress(
           (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Uint8Array,
-          toBytes(0),
+          intToBytes(0),
         )
       },
       undefined,
@@ -535,7 +541,7 @@ describe('Utility Functions', () => {
     assert.throws(
       function () {
         generateAddress(
-          toBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+          hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
           (<unknown>0) as Uint8Array,
         )
       },
@@ -886,7 +892,7 @@ describe('createPartialAccount', () => {
 
 describe('createPartialAccountFromRLP', () => {
   it('should throw an error for invalid serialized account input (non-array)', () => {
-    const invalidSerialized = toBytes(1n)
+    const invalidSerialized = bigIntToBytes(1n)
     assert.throws(
       () => createPartialAccountFromRLP(invalidSerialized),
       /Invalid serialized account input/,
@@ -897,12 +903,12 @@ describe('createPartialAccountFromRLP', () => {
     {
       description: 'should handle a mix of null and non-null values correctly',
       data: [
-        [toBytes(1), toBytes(1)], // Nonce: 1
-        [toBytes(0)], // Balance: null
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(0)], // CodeHash: null
-        [toBytes(1), toBytes(10)], // CodeSize: 10
-        [toBytes(0)], // Version: null
+        [intToBytes(1), intToBytes(1)], // Nonce: 1
+        [intToBytes(0)], // Balance: null
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(0)], // CodeHash: null
+        [intToBytes(1), intToBytes(10)], // CodeSize: 10
+        [intToBytes(0)], // Version: null
       ],
       shouldThrow: false,
       expected: new Account(BigInt(1), null, KECCAK256_RLP, null, 10, null),
@@ -911,12 +917,12 @@ describe('createPartialAccountFromRLP', () => {
     {
       description: 'should throw when all fields are null',
       data: [
-        [toBytes(0)], // Nonce: null
-        [toBytes(0)], // Balance: null
-        [toBytes(0)], // StorageRoot: null
-        [toBytes(0)], // CodeHash: null
-        [toBytes(0)], // CodeSize: null
-        [toBytes(0)], // Version: null
+        [intToBytes(0)], // Nonce: null
+        [intToBytes(0)], // Balance: null
+        [intToBytes(0)], // StorageRoot: null
+        [intToBytes(0)], // CodeHash: null
+        [intToBytes(0)], // CodeSize: null
+        [intToBytes(0)], // Version: null
       ],
       shouldThrow: true,
       expected: null,
@@ -925,12 +931,12 @@ describe('createPartialAccountFromRLP', () => {
     {
       description: 'should handle all non-null fields correctly',
       data: [
-        [toBytes(1), toBytes(2)], // Nonce: 2
-        [toBytes(1), toBytes(1000)], // Balance: 1000
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-        [toBytes(1), toBytes(50)], // CodeSize: 50
-        [toBytes(1), toBytes(1)], // Version: 1
+        [intToBytes(1), intToBytes(2)], // Nonce: 2
+        [intToBytes(1), intToBytes(1000)], // Balance: 1000
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [intToBytes(1), intToBytes(50)], // CodeSize: 50
+        [intToBytes(1), intToBytes(1)], // Version: 1
       ],
       shouldThrow: false,
       expected: new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
@@ -940,12 +946,12 @@ describe('createPartialAccountFromRLP', () => {
       description:
         'should return partial account with non-null fields when isNotNullIndicator is 1',
       data: [
-        [toBytes(1), toBytes(2)], // Nonce: 2
-        [toBytes(1), toBytes(1000)], // Balance: 1000
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-        [toBytes(1), toBytes(50)], // CodeSize: 50
-        [toBytes(1), toBytes(1)], // Version: 1
+        [intToBytes(1), intToBytes(2)], // Nonce: 2
+        [intToBytes(1), intToBytes(1000)], // Balance: 1000
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [intToBytes(1), intToBytes(50)], // CodeSize: 50
+        [intToBytes(1), intToBytes(1)], // Version: 1
       ],
       shouldThrow: false,
       expected: new Account(BigInt(2), BigInt(1000), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
@@ -954,12 +960,12 @@ describe('createPartialAccountFromRLP', () => {
     {
       description: 'should return a mix of null and non-null fields based on isNotNullIndicator',
       data: [
-        [toBytes(1), toBytes(2)], // Nonce: 2
-        [toBytes(0)], // Balance: null
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(0)], // CodeHash: null
-        [toBytes(1), toBytes(50)], // CodeSize: 50
-        [toBytes(0)], // Version: null
+        [intToBytes(1), intToBytes(2)], // Nonce: 2
+        [intToBytes(0)], // Balance: null
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(0)], // CodeHash: null
+        [intToBytes(1), intToBytes(50)], // CodeSize: 50
+        [intToBytes(0)], // Version: null
       ],
       shouldThrow: false,
       expected: new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null),
@@ -969,12 +975,12 @@ describe('createPartialAccountFromRLP', () => {
       description:
         'should handle cases where some fields are non-null and others are null correctly',
       data: [
-        [toBytes(1), toBytes(2)], // Nonce: 2
-        [toBytes(0)], // Balance: null
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-        [toBytes(0)], // CodeSize: null
-        [toBytes(0)], // Version: null
+        [intToBytes(1), intToBytes(2)], // Nonce: 2
+        [intToBytes(0)], // Balance: null
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [intToBytes(0)], // CodeSize: null
+        [intToBytes(0)], // Version: null
       ],
       shouldThrow: false,
       expected: new Account(BigInt(2), null, KECCAK256_RLP, KECCAK256_RLP, null, null),
@@ -984,7 +990,7 @@ describe('createPartialAccountFromRLP', () => {
       description: 'should handle fields with empty arrays (isNullIndicator=0) correctly',
       data: [
         [], // nonce -> empty array => null
-        [toBytes(1), toBytes(1000)], // balance: 1000
+        [intToBytes(1), intToBytes(1000)], // balance: 1000
         [], // storageRoot -> null
         [], // codeHash -> null
         [], // codeSize -> null
@@ -999,84 +1005,84 @@ describe('createPartialAccountFromRLP', () => {
       data: [KECCAK256_RLP, [], [], [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial nonce encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid partial balance encoding',
       data: [[], KECCAK256_RLP, [], [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial balance encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid partial storageRoot encoding',
       data: [[], [], KECCAK256_RLP, [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial storageRoot encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid partial codeHash encoding',
       data: [[], [], [], KECCAK256_RLP, [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial codeHash encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid partial codeSize encoding',
       data: [[], [], [], [], KECCAK256_RLP, []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial codeSize encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid partial version encoding',
       data: [[], [], [], [], [], KECCAK256_RLP],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid partial version encoding/,
+      errorRegex: /Invalid partial encoding. Each item must be an array/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for nonce',
-      data: [[toBytes(2)], [], [], [], [], []],
+      data: [[intToBytes(2)], [], [], [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for nonce/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for balance',
-      data: [[], [toBytes(2)], [], [], [], []],
+      data: [[], [intToBytes(2)], [], [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for balance/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for storageRoot',
-      data: [[], [], [toBytes(2)], [], [], []],
+      data: [[], [], [intToBytes(2)], [], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for storageRoot/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for codeHash',
-      data: [[], [], [], [toBytes(2)], [], []],
+      data: [[], [], [], [intToBytes(2)], [], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for codeHash/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for codeSize',
-      data: [[], [], [], [], [toBytes(2)], []],
+      data: [[], [], [], [], [intToBytes(2)], []],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for codeSize/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
     {
       description: 'should throw: invalid isNullIndicator=2 for version',
-      data: [[], [], [], [], [], [toBytes(2)]],
+      data: [[], [], [], [], [], [intToBytes(2)]],
       shouldThrow: true,
       expected: null,
-      errorRegex: /Invalid isNullIndicator=2 for version/,
+      errorRegex: /Invalid isNullIndicator=2/,
     },
   ]
 
@@ -1111,23 +1117,23 @@ describe('serializeWithPartialInfo', () => {
       description: 'should serialize all fields as non-null (isNotNullIndicator=1)',
       account: new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
       expectedDecoded: [
-        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
-        [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
-        [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
+        [intToBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [intToBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [intToBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [intToBytes(1), intToUnpaddedBytes(1)], // Version: 1
       ],
     },
     {
       description: 'should serialize mixed null and non-null fields',
       account: new Account(BigInt(2), null, KECCAK256_RLP, null, 50, null),
       expectedDecoded: [
-        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [intToBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
         [new Uint8Array()], // Balance: null
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
         [new Uint8Array()], // CodeHash: null
-        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [intToBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
         [new Uint8Array()], // Version: null
       ],
     },
@@ -1136,24 +1142,24 @@ describe('serializeWithPartialInfo', () => {
         'should correctly handle serialization of null hash for storageRoot and codeHash',
       account: new Account(BigInt(2), Units.ether(1), KECCAK256_RLP, KECCAK256_RLP, 50, 1),
       expectedDecoded: [
-        [toBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
-        [toBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
-        [toBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
-        [toBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
-        [toBytes(1), intToUnpaddedBytes(1)], // Version: 1
+        [intToBytes(1), bigIntToUnpaddedBytes(BigInt(2))], // Nonce: 2
+        [intToBytes(1), bigIntToUnpaddedBytes(Units.ether(1))], // Balance: 1000
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // CodeHash: KECCAK256_RLP
+        [intToBytes(1), intToUnpaddedBytes(50)], // CodeSize: 50
+        [intToBytes(1), intToUnpaddedBytes(1)], // Version: 1
       ],
     },
     {
       description: 'should correctly serialize when only some fields are provided',
       account: new Account(BigInt(123), null, KECCAK256_RLP, null, null, 42),
       expectedDecoded: [
-        [toBytes(1), bigIntToUnpaddedBytes(BigInt(123))], // Nonce: 123
+        [intToBytes(1), bigIntToUnpaddedBytes(BigInt(123))], // Nonce: 123
         [new Uint8Array()], // Balance: null
-        [toBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
+        [intToBytes(1), KECCAK256_RLP], // StorageRoot: KECCAK256_RLP
         [new Uint8Array()], // CodeHash: null
         [new Uint8Array()], // CodeSize: null
-        [toBytes(1), intToUnpaddedBytes(42)], // Version: 42
+        [intToBytes(1), intToUnpaddedBytes(42)], // Version: 42
       ],
     },
   ]

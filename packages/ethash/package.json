@@ -44,7 +44,7 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "test": "npx vitest run -c ../../config/vitest.config.mts",
+    "test": "npx vitest run -c ./vite.config.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

@@ -622,7 +622,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
-  async verifyPostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
+  async verifyVerklePostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
@@ -745,9 +745,11 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   async generateCanonicalGenesis(genesisState: GenesisState) {
     await this._trie.createRootNode()
     await this.checkpoint()
-    for (const addressStr of Object.keys(genesisState)) {
+    for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
       const addrState = genesisState[addressStr]
-      let nonce, balance, code
+      let nonce: PrefixedHexString | undefined
+      let balance: PrefixedHexString | bigint
+      let code: PrefixedHexString | undefined
       let storage: StoragePair[] | undefined = []
       if (Array.isArray(addrState)) {
         ;[balance, code, storage, nonce] = addrState
@@ -758,7 +760,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       }
       const address = createAddressFromString(addressStr)
       await this.putAccount(address, new Account())
-      const codeBuf = hexToBytes((code as string) ?? '0x')
+      const codeBuf = hexToBytes(code ?? '0x')
       if (this.common.customCrypto?.keccak256 === undefined) {
         throw Error('keccak256 required')
       }
@@ -780,8 +782,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
       // Put account data
       const account = createPartialAccount({
-        nonce: nonce as PrefixedHexString,
-        balance: balance as PrefixedHexString,
+        nonce,
+        balance,
         codeHash,
         codeSize: codeBuf.byteLength,
       })

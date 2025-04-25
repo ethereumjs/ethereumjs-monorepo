@@ -62,7 +62,7 @@ describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
-      let bytecode: PrefixedHexString = '0x'
+      let bytecode = '0x'
       // prepare the memory
       for (let i = 0; i < situation.pre.length / 2; i++) {
         const start = i * 2

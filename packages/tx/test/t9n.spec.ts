@@ -77,7 +77,7 @@ function runTests(filePath: string) {
 
       for (const testName in tests) {
         const test = tests[testName]
-        const txBytes = hexToBytes(test.txbytes)
+        const txBytes = hexToBytes(test.txbytes as PrefixedHexString)
 
         for (const fork in test.result) {
           it(`${testName} [${getFork(fork)}]`, () => {
