@@ -94,13 +94,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@ethereumjs/rlp": "^10.0.0-rc.1",
-    "ethereum-cryptography": "^3.2.0"
-=======
     "@ethereumjs/rlp": "^10.0.0",
     "ethereum-cryptography": "^3.2.0"
->>>>>>> 00511b35e (Remove the RC.1 version references from package.json files)
   },
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.1.2",
