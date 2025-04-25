@@ -9,6 +9,15 @@
 | Implements schema and functions related to Ethereum blocks. |
 | ----------------------------------------------------------- |
 
+- 🦄 All block features till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 🔮 `EIP-4844` Shard Blob Txs
+- 💸 `EIP-4895` Beacon Chain Withdrawals
+- 📨 `EIP-7685` Consensus Layer Requests
+- 🛵 324KB bundle size (81KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
 ## Table of Contents
 
 - [Installation](#installation)
