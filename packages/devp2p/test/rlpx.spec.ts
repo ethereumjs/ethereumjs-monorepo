@@ -148,7 +148,7 @@ describe('RLPx', () => {
       await rlpx.connect(mockPeer)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.equal(err.message, 'Already connected')
+      assert.strictEqual(err.message, 'Already connected')
     }
   })
 
@@ -162,12 +162,12 @@ describe('RLPx', () => {
     }
     const rlpx = new RLPx(privateKey, options)
 
-    assert.equal(
+    assert.strictEqual(
       rlpx['_getOpenSlots'](),
       10,
       'returns default number of open slots (i.e. `max_peers`) on startup',
     )
-    assert.equal(
+    assert.strictEqual(
       rlpx['_getOpenQueueSlots'](),
       20,
       'returns default number of open queue slots on startup',
