@@ -7,9 +7,16 @@
 [![Discord][discord-badge]][discord-link]
 
 | Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------------------------------------------------------------------------- |
 
-> The modified Merkle Patricia tree (mpt) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the mpt, and its sole requirement in terms of the protocol specification, is to provide a single 32-byte value that identifies a given set of key-value pairs.
+- 🔭 Highly scalable
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (3 external + `@Noble` crypto)
+- ⏳ Checkpoint Functionality
+- 🛢️ Flexible storage backends
+- ⚖️ `EIP-1186` Proofs
+- 🛵 176KB bundle size (48KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
