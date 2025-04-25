@@ -85,7 +85,7 @@ describe(method, () => {
     }
     const receipt = bytesToHex(encodeReceipt(rec, 2))
     const res1 = await rpc.request(method2, [bigIntToHex(block.header.number)])
-    assert.strictEqual(res1.result, receipt, 'transaction result is 1 since succeeded')
+    assert.strictEqual(res1.result[0], receipt, 'transaction result is 1 since succeeded')
   })
 
   it('call with unknown block hash', async () => {
@@ -160,7 +160,7 @@ describe(method, () => {
 
       const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
 
-      assert.strictEqual(res2.result, receipt)
+      assert.strictEqual(res2.result[0], receipt)
     }
   })
 })
