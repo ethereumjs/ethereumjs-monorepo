@@ -1,67 +1,37 @@
+[**@ethereumjs/statemanager**](../README.md)
+
+***
+
 [@ethereumjs/statemanager](../README.md) / StatelessVerkleStateManagerOpts
 
 # Interface: StatelessVerkleStateManagerOpts
 
+Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L71)
+
 Options dictionary.
 
-## Table of contents
+## Extends
 
-### Properties
-
-- [accesses](StatelessVerkleStateManagerOpts.md#accesses)
-- [accountCacheOpts](StatelessVerkleStateManagerOpts.md#accountcacheopts)
-- [codeCacheOpts](StatelessVerkleStateManagerOpts.md#codecacheopts)
-- [common](StatelessVerkleStateManagerOpts.md#common)
-- [storageCacheOpts](StatelessVerkleStateManagerOpts.md#storagecacheopts)
+- `BaseStateManagerOpts`
 
 ## Properties
 
-### accesses
+### caches?
 
-• `Optional` **accesses**: [`AccessWitness`](../classes/AccessWitness.md)
+> `optional` **caches**: [`Caches`](../classes/Caches.md)
 
-#### Defined in
+Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L73)
 
-[statelessVerkleStateManager.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L115)
-
-___
-
-### accountCacheOpts
-
-• `Optional` **accountCacheOpts**: `CacheOptions`
-
-#### Defined in
-
-[statelessVerkleStateManager.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L112)
-
-___
-
-### codeCacheOpts
-
-• `Optional` **codeCacheOpts**: `CacheOptions`
-
-#### Defined in
-
-[statelessVerkleStateManager.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L114)
-
-___
+***
 
 ### common
 
-• `Optional` **common**: `Common`
+> **common**: `Common`
+
+Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
 
 The common to use
 
-#### Defined in
+#### Overrides
 
-[statelessVerkleStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L111)
-
-___
-
-### storageCacheOpts
-
-• `Optional` **storageCacheOpts**: `CacheOptions`
-
-#### Defined in
-
-[statelessVerkleStateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L113)
+`BaseStateManagerOpts.common`

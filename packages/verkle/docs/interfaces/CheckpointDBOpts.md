@@ -1,34 +1,29 @@
+[**@ethereumjs/verkle**](../README.md)
+
+***
+
 [@ethereumjs/verkle](../README.md) / CheckpointDBOpts
 
 # Interface: CheckpointDBOpts
 
-## Table of contents
-
-### Properties
-
-- [cacheSize](CheckpointDBOpts.md#cachesize)
-- [db](CheckpointDBOpts.md#db)
+Defined in: [types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L38)
 
 ## Properties
 
-### cacheSize
+### cacheSize?
 
-• `Optional` **cacheSize**: `number`
+> `optional` **cacheSize**: `number`
+
+Defined in: [types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L47)
 
 Cache size (default: 0)
 
-#### Defined in
-
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L101)
-
-___
+***
 
 ### db
 
-• **db**: `DB`<`Uint8Array`, `Uint8Array`\>
+> **db**: `DB`\<`Uint8Array`\<`ArrayBufferLike`\>, `Uint8Array`\<`ArrayBufferLike`\>\>
+
+Defined in: [types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L42)
 
 A database instance.
-
-#### Defined in
-
-[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L96)

@@ -1,39 +1,32 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / GethConfigOpts
 
 # Interface: GethConfigOpts
 
-## Hierarchy
+Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
 
-- `BaseOpts`
+## Extends
 
-  ↳ **`GethConfigOpts`**
-
-## Table of contents
-
-### Properties
-
-- [chain](GethConfigOpts.md#chain)
-- [customCrypto](GethConfigOpts.md#customcrypto)
-- [eips](GethConfigOpts.md#eips)
-- [genesisHash](GethConfigOpts.md#genesishash)
-- [hardfork](GethConfigOpts.md#hardfork)
-- [mergeForkIdPostMerge](GethConfigOpts.md#mergeforkidpostmerge)
+- [`BaseOpts`](BaseOpts.md)
 
 ## Properties
 
-### chain
+### chain?
 
-• `Optional` **chain**: `string`
+> `optional` **chain**: `string`
 
-#### Defined in
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L158)
 
-[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L151)
+***
 
-___
+### customCrypto?
 
-### customCrypto
+> `optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
 
-• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+Defined in: [types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L143)
 
 This option can be used to replace the most common crypto primitives
 (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
@@ -46,63 +39,75 @@ and be made with eventual security implications considered.
 
 #### Inherited from
 
-BaseOpts.customCrypto
+[`BaseOpts`](BaseOpts.md).[`customCrypto`](BaseOpts.md#customcrypto)
 
-#### Defined in
+***
 
-[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
+### eips?
 
-___
+> `optional` **eips**: `number`[]
 
-### eips
-
-• `Optional` **eips**: `number`[]
+Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L114)
 
 Selected EIPs which can be activated, please use an array for instantiation
-(e.g. `eips: [ 1559, 3860 ]`)
+(e.g. `eips: [ 2537, ]`)
+
+Currently supported:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
 
 #### Inherited from
 
-BaseOpts.eips
+[`BaseOpts`](BaseOpts.md).[`eips`](BaseOpts.md#eips)
 
-#### Defined in
+***
 
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
+### genesisHash?
 
-___
+> `optional` **genesisHash**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### genesisHash
+Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L159)
 
-• `Optional` **genesisHash**: `Uint8Array`
+***
 
-#### Defined in
+### hardfork?
 
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L152)
+> `optional` **hardfork**: `string`
 
-___
+Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L105)
 
-### hardfork
-
-• `Optional` **hardfork**: `string`
-
-String identifier ('byzantium') for hardfork or [Hardfork](../enums/Hardfork.md) enum.
+String identifier ('byzantium') for hardfork or [Hardfork](../variables/Hardfork.md) enum.
 
 Default: Hardfork.London
 
 #### Inherited from
 
-BaseOpts.hardfork
+[`BaseOpts`](BaseOpts.md).[`hardfork`](BaseOpts.md#hardfork)
 
-#### Defined in
+***
 
-[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)
+### params?
 
-___
+> `optional` **params**: [`ParamsDict`](../type-aliases/ParamsDict.md)
 
-### mergeForkIdPostMerge
+Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L132)
 
-• `Optional` **mergeForkIdPostMerge**: `boolean`
+Optionally pass in an EIP params dictionary, see one of the
+EthereumJS library `params.ts` files for an example (e.g. tx, evm).
+By default parameters are set by the respective library, so this
+is only relevant if you want to use EthereumJS libraries with a
+custom parameter set.
 
-#### Defined in
+Example Format:
 
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L153)
+```ts
+{
+  1559: {
+    initialBaseFee: 1000000000,
+  }
+}
+```
+
+#### Inherited from
+
+[`BaseOpts`](BaseOpts.md).[`params`](BaseOpts.md#params)

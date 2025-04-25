@@ -1,35 +1,33 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / TxOptions
 
 # Interface: TxOptions
 
+Defined in: [types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L57)
+
 The options for initializing a [Transaction](Transaction.md).
-
-## Table of contents
-
-### Properties
-
-- [allowUnlimitedInitCodeSize](TxOptions.md#allowunlimitedinitcodesize)
-- [common](TxOptions.md#common)
-- [freeze](TxOptions.md#freeze)
 
 ## Properties
 
-### allowUnlimitedInitCodeSize
+### allowUnlimitedInitCodeSize?
 
-• `Optional` **allowUnlimitedInitCodeSize**: `boolean`
+> `optional` **allowUnlimitedInitCodeSize**: `boolean`
+
+Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L103)
 
 Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
 Gas cost for initcode size analysis will still be charged. Use with caution.
 
-#### Defined in
+***
 
-[tx/src/types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
+### common?
 
-___
+> `optional` **common**: `Common`
 
-### common
-
-• `Optional` **common**: `Common`
+Defined in: [types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L68)
 
 A Common object defining the chain and hardfork for the transaction.
 
@@ -40,15 +38,13 @@ Default: Common object set to `mainnet` and the default hardfork as defined in t
 
 Current default hardfork: `istanbul`
 
-#### Defined in
+***
 
-[tx/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L60)
+### freeze?
 
-___
+> `optional` **freeze**: `boolean`
 
-### freeze
-
-• `Optional` **freeze**: `boolean`
+Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L97)
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
@@ -60,6 +56,25 @@ within your code instead.
 
 Default: true
 
-#### Defined in
+***
 
-[tx/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L72)
+### params?
+
+> `optional` **params**: `ParamsDict`
+
+Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L85)
+
+Tx parameters sorted by EIP can be found in the exported `paramsTx` dictionary,
+which is internally passed to the associated `@ethereumjs/common` instance which
+manages parameter selection based on the hardfork and EIP settings.
+
+This option allows providing a custom set of parameters. Note that parameters
+get fully overwritten, so you need to extend the default parameter dict
+to provide the full parameter set.
+
+It is recommended to deep-clone the params object for this to avoid side effects:
+
+```ts
+const params = JSON.parse(JSON.stringify(paramsTx))
+params['1']['txGas'] = 30000 // 21000
+```
