@@ -13,7 +13,7 @@ COPY packages/blockchain/dist packages/blockchain/dist
 COPY packages/client/dist packages/client/dist
 COPY packages/common/dist packages/common/dist
 COPY packages/devp2p/dist packages/devp2p/dist
-COPY packages/era/dist packages/era/dist
+COPY packages/e2store/dist packages/e2store/dist
 COPY packages/ethash/dist packages/ethash/dist
 COPY packages/evm/dist packages/evm/dist
 COPY packages/genesis/dist packages/genesis/dist
@@ -33,7 +33,7 @@ COPY packages/blockchain/package.json packages/blockchain/package.json
 COPY packages/client/package.json packages/client/package.json
 COPY packages/common/package.json packages/common/package.json
 COPY packages/devp2p/package.json packages/devp2p/package.json
-COPY packages/era/package.json packages/era/package.json
+COPY packages/e2store/package.json packages/e2store/package.json
 COPY packages/ethash/package.json packages/ethash/package.json
 COPY packages/evm/package.json packages/evm/package.json
 COPY packages/genesis/package.json packages/genesis/package.json
