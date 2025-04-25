@@ -106,7 +106,7 @@ describe('[Header]: Clique PoA Functionality', () => {
       { common, freeze: false },
     )
 
-    assert.equal(header.extraData.length, 97)
+    assert.strictEqual(header.extraData.length, 97)
     assert.isTrue(cliqueVerifySignature(header, [A.address]), 'should verify signature')
     assert.isTrue(
       cliqueSigner(header).equals(A.address),

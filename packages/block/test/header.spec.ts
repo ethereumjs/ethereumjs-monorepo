@@ -37,11 +37,11 @@ describe('[Block]: Header functions', () => {
       assert.isTrue(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
       assert.isTrue(equalsBytes(header.receiptTrie, KECCAK256_RLP))
       assert.isTrue(equalsBytes(header.logsBloom, new Uint8Array(256)))
-      assert.equal(header.difficulty, BigInt(0))
-      assert.equal(header.number, BigInt(0))
-      assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
-      assert.equal(header.gasUsed, BigInt(0))
-      assert.equal(header.timestamp, BigInt(0))
+      assert.strictEqual(header.difficulty, BigInt(0))
+      assert.strictEqual(header.number, BigInt(0))
+      assert.strictEqual(header.gasLimit, BigInt('0xffffffffffffff'))
+      assert.strictEqual(header.gasUsed, BigInt(0))
+      assert.strictEqual(header.timestamp, BigInt(0))
       assert.isTrue(equalsBytes(header.extraData, new Uint8Array(0)))
       assert.isTrue(equalsBytes(header.mixHash, new Uint8Array(32)))
       assert.isTrue(equalsBytes(header.nonce, new Uint8Array(8)))
@@ -58,14 +58,14 @@ describe('[Block]: Header functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(undefined, { common })
     assert.isDefined(bytesToHex(header.hash()), 'genesis block should initialize')
-    assert.equal(
+    assert.strictEqual(
       header.common.hardfork(),
       'chainstart',
       'should initialize with correct HF provided',
     )
 
     common.setHardfork(Hardfork.Byzantium)
-    assert.equal(
+    assert.strictEqual(
       header.common.hardfork(),
       'chainstart',
       'should stay on correct HF if outer common HF changes',
@@ -105,7 +105,7 @@ describe('[Block]: Header functions', () => {
       ),
       { common, setHardfork: false },
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(header.hash()),
       '0xf0f936910ebf101b7b168bbe08e3f166ce1e75e16f513dd5a97af02fbe7de7c0',
       'genesis block should produce incorrect hash since default hardfork is london',
@@ -407,7 +407,7 @@ describe('[Block]: Header functions', () => {
     header = createBlockHeader(headerData, { common, cliqueSigner })
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
-      assert.equal(res, true, testCase)
+      assert.strictEqual(res, true, testCase)
     } catch (error: any) {
       assert.fail(testCase)
     }
@@ -418,7 +418,7 @@ describe('[Block]: Header functions', () => {
     header = createBlockHeader(headerData, { common, cliqueSigner })
     try {
       const res = header.validateCliqueDifficulty(poaBlockchain)
-      assert.equal(res, false, testCase)
+      assert.strictEqual(res, false, testCase)
     } catch (error: any) {
       assert.fail(testCase)
     }
@@ -443,16 +443,16 @@ describe('[Block]: Header functions', () => {
 
   it('should test isGenesis()', () => {
     const header1 = createBlockHeader({ number: 1 })
-    assert.equal(header1.isGenesis(), false)
+    assert.strictEqual(header1.isGenesis(), false)
 
     const header2 = createBlockHeader()
-    assert.equal(header2.isGenesis(), true)
+    assert.strictEqual(header2.isGenesis(), true)
   })
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(mainnetBlocks[0]['header'], { common })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
       'correct PoW hash (mainnet block 1)',
@@ -460,7 +460,7 @@ describe('[Block]: Header functions', () => {
 
     common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     header = createBlockHeader(goerliBlocks[0]['header'], { common })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
       'correct PoA clique hash (goerli block 1)',
@@ -470,8 +470,16 @@ describe('[Block]: Header functions', () => {
   it('should be able to initialize shanghai header with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const header = createBlockHeader({}, { common })
-    assert.equal(header.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
-    assert.equal(header.baseFeePerGas, BigInt(7), 'baseFeePerGas should be set to minimum default')
+    assert.strictEqual(
+      header.common.hardfork(),
+      Hardfork.Shanghai,
+      'hardfork should be set to shanghai',
+    )
+    assert.strictEqual(
+      header.baseFeePerGas,
+      BigInt(7),
+      'baseFeePerGas should be set to minimum default',
+    )
     assert.deepEqual(
       header.withdrawalsRoot,
       KECCAK256_RLP,
