@@ -30,8 +30,8 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
 
   it(`should correctly return the right storage root / account root`, async () => {
@@ -57,23 +57,23 @@ describe('ProofStateManager', () => {
     await stateManager.putAccount(address, account)
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(1)
     await stateManager.putAccount(address, account)
 
     const proof2 = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
-    assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof2.balance, '0x1', 'Balance correctly encoded')
+    assert.strictEqual(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(0)
     account.nonce = BigInt(1)
     await stateManager.putAccount(address, account)
 
     const proof3 = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
+    assert.strictEqual(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof3.nonce, '0x1', 'Nonce is correctly encoded')
   })
 
   it(`should get and verify EIP 1178 proofs`, async () => {
@@ -103,7 +103,7 @@ describe('ProofStateManager', () => {
       stateManager,
       createAddressFromPrivateKey(randomBytes(32)),
     )
-    assert.equal(
+    assert.strictEqual(
       await verifyMerkleStateProof(stateManager, nonExistenceProof),
       true,
       'verified proof of non-existence of account',
