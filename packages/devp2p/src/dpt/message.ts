@@ -16,7 +16,7 @@ import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
 import type { Common } from '@ethereumjs/common'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:server')

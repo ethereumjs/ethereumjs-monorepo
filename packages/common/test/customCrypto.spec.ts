@@ -1,5 +1,5 @@
 import { bytesToBigInt, concatBytes, randomBytes } from '@ethereumjs/util'
-import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import type { secp256k1 } from '@noble/curves/secp256k1'
 import { assert, describe, it } from 'vitest'
 
 import { Common, Mainnet, createCustomCommon } from '../src/index.ts'

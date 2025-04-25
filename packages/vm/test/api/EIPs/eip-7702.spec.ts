@@ -22,7 +22,7 @@ import { createVM, runTx } from '../../../src/index.ts'
 
 import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import type { VM } from '../../../src/index.ts'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address

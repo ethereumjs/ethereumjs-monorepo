@@ -9,6 +9,7 @@ import {
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha256 as jsSha256 } from '@noble/hashes/sha2'
 import {
   keccak256,
@@ -18,7 +19,6 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { assert, describe, it } from 'vitest'
 import { getCryptoFunctions } from '../../bin/utils.ts'
 describe('WASM crypto tests', () => {

@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
   bigIntToUnpaddedBytes,

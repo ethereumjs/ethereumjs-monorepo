@@ -28,6 +28,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha256 } from '@noble/hashes/sha2'
 import { keccak_256 } from '@noble/hashes/sha3'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
@@ -39,7 +40,6 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
 import * as promClient from 'prom-client'

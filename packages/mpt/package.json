@@ -57,8 +57,7 @@
     "@ethereumjs/util": "^10.0.0-rc.1",
     "@noble/hashes": "1.8.0",
     "debug": "^4.4.0",
-    "lru-cache": "11.0.2",
-    "ethereum-cryptography": "^3.1.0"
+    "lru-cache": "11.0.2"
   },
   "devDependencies": {
     "@ethereumjs/genesis": "^10.0.0-rc.1",
