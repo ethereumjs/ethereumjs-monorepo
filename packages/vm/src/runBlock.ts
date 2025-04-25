@@ -3,7 +3,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
+import { verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -160,7 +160,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    if (stateManager.name === 'VERKLE_STATELESS') {
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
       if (verifyVerkleStateProof(stateManager) === true) {
@@ -273,7 +273,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    if (!(vm.stateManager.name === 'VERKLE_STATELESS')) {
       // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {
