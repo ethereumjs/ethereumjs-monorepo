@@ -1,62 +1,61 @@
+[**@ethereumjs/verkle**](../README.md)
+
+***
+
 [@ethereumjs/verkle](../README.md) / VerkleTreeOpts
 
 # Interface: VerkleTreeOpts
 
-## Table of contents
-
-### Properties
-
-- [cacheSize](VerkleTreeOpts.md#cachesize)
-- [db](VerkleTreeOpts.md#db)
-- [root](VerkleTreeOpts.md#root)
-- [useRootPersistence](VerkleTreeOpts.md#userootpersistence)
+Defined in: [types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L10)
 
 ## Properties
 
 ### cacheSize
 
-• `Optional` **cacheSize**: `number`
+> **cacheSize**: `number`
+
+Defined in: [types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L35)
 
 LRU cache for tree nodes to allow for faster node retrieval.
 
 Default: 0 (deactivated)
 
-#### Defined in
-
-[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L84)
-
-___
+***
 
 ### db
 
-• `Optional` **db**: `DB`<`Uint8Array`, `Uint8Array`\>
+> **db**: `DB`\<`Uint8Array`\<`ArrayBufferLike`\>, `Uint8Array`\<`ArrayBufferLike`\>\>
+
+Defined in: [types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L18)
 
 A database instance.
 
-#### Defined in
+***
 
-[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L67)
+### root?
 
-___
+> `optional` **root**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### root
-
-• `Optional` **root**: `Uint8Array`
+Defined in: [types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L23)
 
 A `Uint8Array` for the root of a previously stored tree
 
-#### Defined in
-
-[types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L72)
-
-___
+***
 
 ### useRootPersistence
 
-• `Optional` **useRootPersistence**: `boolean`
+> **useRootPersistence**: `boolean`
+
+Defined in: [types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L28)
 
 Store the root inside the database after every `write` operation
 
-#### Defined in
+***
 
-[types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L77)
+### verkleCrypto
+
+> **verkleCrypto**: `VerkleCrypto`
+
+Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/types.ts#L14)
+
+An instantiated Verkle Cryptography interface
