@@ -16,8 +16,8 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { sha256 } from '@noble/hashes/sha2'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { sha256 } from '@noble/hashes/sha256'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes.js'
 import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'

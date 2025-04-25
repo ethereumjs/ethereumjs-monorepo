@@ -28,8 +28,8 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { sha256 } from '@noble/hashes/sha2'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { sha256 } from '@noble/hashes/sha256'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,

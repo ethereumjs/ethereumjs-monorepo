@@ -1,4 +1,4 @@
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { hexToBytes } from './bytes.ts'

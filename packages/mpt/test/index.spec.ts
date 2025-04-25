@@ -8,8 +8,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { blake2b } from '@noble/hashes/blake2b'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { assert, describe, it } from 'vitest'
 
 import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.ts'

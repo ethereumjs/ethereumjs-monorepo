@@ -68,6 +68,7 @@
     "@ethereumjs/common": "^10.0.0-rc.1",
     "@ethereumjs/rlp": "^10.0.0-rc.1",
     "@ethereumjs/util": "^10.0.0-rc.1",
+    "@noble/hashes": "1.8.0",
     "@scure/base": "^1.2.4",
     "debug": "^4.4.0",
     "ethereum-cryptography": "^3.1.0",
