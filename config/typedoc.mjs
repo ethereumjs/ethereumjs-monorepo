@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   plugin: 'typedoc-plugin-markdown',
   readme: 'none',
   gitRevision: 'master',
