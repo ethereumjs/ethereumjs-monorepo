@@ -10,7 +10,7 @@ import type { Block } from '@ethereumjs/block'
 describe('blockchain test', () => {
   it('should iterate through 24 blocks without reorg', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     let i = 0
     let reorged = 0
     const iterated = await blockchain.iterator('test', (block: Block, reorg: boolean) => {
@@ -19,14 +19,14 @@ describe('blockchain test', () => {
         i++
       }
     })
-    assert.equal(iterated, 24)
-    assert.equal(i, 24)
-    assert.equal(reorged, 0)
+    assert.strictEqual(iterated, 24)
+    assert.strictEqual(i, 24)
+    assert.strictEqual(reorged, 0)
   })
 
   it('should iterate through 24 blocks with reorg', async () => {
     const { blockchain, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     let reorged = 0
     const reorgedBlocks: Block[] = []
     let servedReorged = 0
@@ -59,18 +59,18 @@ describe('blockchain test', () => {
       undefined,
       true,
     )
-    assert.equal(reorged, 1, 'should have reorged once')
-    assert.equal(
+    assert.strictEqual(reorged, 1, 'should have reorged once')
+    assert.strictEqual(
       servedReorged,
       reorgedBlocks.length,
       'should have served all 21 reorged blocks with head resetting',
     )
-    assert.equal(iterated, 31, 'should have iterated 10 + 21 blocks in total')
+    assert.strictEqual(iterated, 31, 'should have iterated 10 + 21 blocks in total')
   })
 
   it('should iterate through maxBlocks blocks if maxBlocks parameter is provided', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     let i = 0
     const iterated = await blockchain.iterator(
       'test',
@@ -81,13 +81,13 @@ describe('blockchain test', () => {
       },
       5,
     )
-    assert.equal(iterated, 5)
-    assert.equal(i, 5)
+    assert.strictEqual(iterated, 5)
+    assert.strictEqual(i, 5)
   })
 
   it('should iterate through 0 blocks in case 0 maxBlocks parameter is provided', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     let i = 0
     const iterated = await blockchain
       .iterator(
@@ -102,13 +102,13 @@ describe('blockchain test', () => {
       .catch(() => {
         assert.fail('Promise cannot throw when running 0 blocks')
       })
-    assert.equal(iterated, 0)
-    assert.equal(i, 0)
+    assert.strictEqual(iterated, 0)
+    assert.strictEqual(i, 0)
   })
 
   it('should throw on a negative maxBlocks parameter in iterator', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     let i = 0
     await blockchain
       .iterator(
@@ -126,7 +126,7 @@ describe('blockchain test', () => {
 
   it('should test setIteratorHead method', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
 
     const headBlockIndex = 5
 
@@ -148,18 +148,18 @@ describe('blockchain test', () => {
       5,
     )
 
-    assert.equal(i, 1)
+    assert.strictEqual(i, 1)
   })
 
   it('should catch iterator func error', async () => {
     const { blockchain, error } = await generateBlockchain(25)
-    assert.equal(error, null, 'no error')
+    assert.strictEqual(error, null, 'no error')
     try {
       await blockchain.iterator('error', () => {
         throw new Error('iterator func error')
       })
     } catch (error: any) {
-      assert.equal(error?.message, 'iterator func error', 'should return correct error')
+      assert.strictEqual(error?.message, 'iterator func error', 'should return correct error')
     }
   })
 
@@ -172,7 +172,7 @@ describe('blockchain test', () => {
     const numIterated = await blockchain.iterator('test', () => {
       assert.fail('should not call iterator function')
     })
-    assert.equal(numIterated, 0, 'should finish iterating')
+    assert.strictEqual(numIterated, 0, 'should finish iterating')
   })
 
   it('should get heads', async () => {
@@ -182,7 +182,7 @@ describe('blockchain test', () => {
 
     if (typeof genesis !== 'undefined') {
       assert.deepEqual(head.hash(), genesis.hash(), 'should get head')
-      assert.equal(
+      assert.strictEqual(
         bytesToHex((blockchain as any)._heads['head0']),
         '0xabcd',
         'should get state root heads',

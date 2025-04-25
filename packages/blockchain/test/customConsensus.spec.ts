@@ -51,7 +51,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
     const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     try {
       const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
-      assert.equal(
+      assert.strictEqual(
         (blockchain.consensus as fibonacciConsensus).algorithm,
         'fibonacciConsensus',
         'consensus algorithm matches',
