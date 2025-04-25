@@ -39,7 +39,7 @@ describe('EIP 3860 tests', () => {
       { common: txCommon },
     ).sign(pkey)
     const result = await runTx(vm, { tx })
-    assert.equal(
+    assert.strictEqual(
       result.execResult.exceptionError?.error,
       'initcode exceeds max initcode size',
       'initcode exceeds max size',

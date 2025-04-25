@@ -64,7 +64,7 @@ describe('EIP 7623 calldata cost increase tests', () => {
 
     const expected = baseCost + BigInt(tx.data.length) * BigInt(4) * floorCost
 
-    assert.equal(result.totalGasSpent, expected)
+    assert.strictEqual(result.totalGasSpent, expected)
   })
   it('rejects transactions having a gas limit below the floor gas limit', async () => {
     const vm = await getVM(common)
@@ -117,6 +117,6 @@ describe('EIP 7623 calldata cost increase tests', () => {
       BigInt(2 * 3) +
       BigInt(22_100)
 
-    assert.equal(result.totalGasSpent, expected)
+    assert.strictEqual(result.totalGasSpent, expected)
   })
 })

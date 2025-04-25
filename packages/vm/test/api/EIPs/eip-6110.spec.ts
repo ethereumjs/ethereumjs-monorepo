@@ -80,11 +80,11 @@ describe('EIP-6110 runBlock tests', () => {
       { common },
     )
     const res = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
-    assert.equal(res.requests?.length, 1)
+    assert.strictEqual(res.requests?.length, 1)
     const depositRequest = res.requests![0]
-    assert.equal(depositRequest.type, CLRequestType.Deposit)
+    assert.strictEqual(depositRequest.type, CLRequestType.Deposit)
     const parsedRequest = parseDepositRequest(depositRequest.data)
-    assert.equal(bytesToHex(parsedRequest.pubkey), pubkey)
+    assert.strictEqual(bytesToHex(parsedRequest.pubkey), pubkey)
   })
 })
 
@@ -113,11 +113,11 @@ describe('EIP-7685 buildBlock tests', () => {
     const blockBuilder = await buildBlock(vm, { parentBlock: block })
     await blockBuilder.addTransaction(depositTx)
     const res = await blockBuilder.build()
-    assert.equal(res.requests?.length, 1)
+    assert.strictEqual(res.requests?.length, 1)
 
     const depositRequest = res.requests![0]
-    assert.equal(depositRequest.type, CLRequestType.Deposit)
+    assert.strictEqual(depositRequest.type, CLRequestType.Deposit)
     const parsedRequest = parseDepositRequest(depositRequest.data)
-    assert.equal(bytesToHex(parsedRequest.pubkey), pubkey)
+    assert.strictEqual(bytesToHex(parsedRequest.pubkey), pubkey)
   })
 })
