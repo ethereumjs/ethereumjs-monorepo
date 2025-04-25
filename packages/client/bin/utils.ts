@@ -29,6 +29,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
+import { sha256 } from '@noble/hashes/sha256'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
@@ -39,7 +40,6 @@ import {
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
 import * as promClient from 'prom-client'

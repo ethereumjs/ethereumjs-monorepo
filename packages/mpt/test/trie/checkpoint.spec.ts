@@ -7,7 +7,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha256'
 import { assert, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
