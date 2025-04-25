@@ -10,9 +10,9 @@
 // If the authorization item is valid (it has the correct nonce, and matches the chainId (or the chainId is 0))
 // then it will delegate the code of the account **who signed that authorization item** to the address in that authority item
 import { createEOACode7702Tx } from '@ethereumjs/tx'
+import type { AuthorizationListItemUnsigned } from '@ethereumjs/util'
 import {
   Address,
-  AuthorizationListItemUnsigned,
   authorizationListBytesItemToJSON,
   privateToAddress,
   signAuthorization,
