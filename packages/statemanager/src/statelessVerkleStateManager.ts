@@ -572,7 +572,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
     const verifyPassed = postFailures === 0
     this.DEBUG &&
-      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+      this._debug(`verifyVerklePostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
     // This is async so the stateful variant can use the same interface method
     return Promise.resolve(verifyPassed)

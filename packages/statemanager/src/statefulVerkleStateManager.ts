@@ -711,7 +711,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     const verifyPassed = postFailures === 0
     this.DEBUG &&
-      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+      this._debug(`verifyVerklePostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
     return verifyPassed
   }
