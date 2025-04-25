@@ -3,5 +3,10 @@
     "source.fixAll.eslint": "explicit"
   },
   "eslint.format.enable": true,
-  "eslint.workingDirectories": [{ "pattern": "./packages/*" }]
+  "eslint.workingDirectories": [
+    {
+      "pattern": "./packages/*"
+    }
+  ],
+  "githubPullRequests.ignoredPullRequestBranches": ["master"]
 }
