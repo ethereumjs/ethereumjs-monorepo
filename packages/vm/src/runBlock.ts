@@ -3,7 +3,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
+import { type StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -160,10 +160,11 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // Populate the execution witness
     stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    if (stateManager instanceof StatelessVerkleStateManager) {
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+    if ('verifyVerklePostState' in stateManager) {
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
-      if (verifyVerkleStateProof(stateManager) === true) {
+      if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
         if (vm.DEBUG) {
           debug(`Verkle proof verification succeeded`)
         }
@@ -273,7 +274,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (!(vm.stateManager instanceof StatelessVerkleStateManager)) {
+    // Check if statemanager is a StatelessVerkleStateManager by checking for a method only on StatelessVerkleStateManager API
+    if (!('verifyVerklePostState' in vm.stateManager)) {
       // Only validate the following headers if Stateless isn't activated
       if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
         if (vm.DEBUG) {

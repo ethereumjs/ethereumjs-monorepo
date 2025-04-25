@@ -9,14 +9,19 @@
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
-This package provides an Ethereum `mainnet` compatible execution context for the
+Ethereum `mainnet` compatible execution context for
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
-EVM implementation.
+to build and run blocks and txs and update state.
 
-So beyond bytecode processing this package allows to run or build new Ethereum blocks or single transactions
-and update a blockchain state accordingly.
-
-Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
+- 🦄 All hardforks up till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
+- 🧩 Flexible EIP on/off engine
+- 📲 **EIP-7702** ready
+- 📬 Flexible state retrieval (Merkle, RPC,...)
+- 🔎 Passes official #Ethereum tests
+- 🛵 668KB bundle size (170KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
 ## Table of Contents
 
