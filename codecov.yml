@@ -1,15 +1,32 @@
+codecov:
+  notify:
+    wait_for_ci: true
+  require_ci_to_pass: true
+comment:
+  behavior: default
+  layout: reach, flags
+  show_carryforward_flags: false
 coverage:
+  precision: 2
+  range:
+  - 60.0
+  - 80.0
+  round: down
   status:
-    project:
-      default:
-        target: auto
-        threshold: 2%
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
     patch:
       default:
         target: auto
-        threshold: 5%
-comment:
-  layout: 'reach, flags'
+        threshold: 5.0
+    project:
+      default:
+        target: auto
+        threshold: 2.0
 flags:
   rlp:
     carryforward: true
+github_checks:
+  annotations: true
+slack_app: true
