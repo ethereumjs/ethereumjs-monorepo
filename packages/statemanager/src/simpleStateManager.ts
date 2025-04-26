@@ -1,5 +1,5 @@
 import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'
@@ -92,7 +92,7 @@ export class SimpleStateManager implements StateManagerInterface {
       await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, {
-      codeHash: (this.common?.customCrypto.keccak256 ?? keccak_256)(value),
+      codeHash: (this.common?.customCrypto.keccak256 ?? keccak256)(value),
     })
   }
 

@@ -60,8 +60,7 @@
     "@ethereumjs/common": "^10.0.0-rc.1",
     "@ethereumjs/rlp": "^10.0.0-rc.1",
     "@ethereumjs/util": "^10.0.0-rc.1",
-    "@noble/hashes": "1.8.0",
-    "@noble/curves": "1.9.0"
+    "ethereum-cryptography": "^3.1.0"
   },
   "devDependencies": {
     "@ethereumjs/testdata": "1.0.0",

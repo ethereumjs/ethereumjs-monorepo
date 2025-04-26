@@ -20,7 +20,7 @@ import {
   hexToBytes,
   toType,
 } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import {
   CLIQUE_EXTRA_SEAL,
@@ -102,7 +102,7 @@ export class BlockHeader {
     }
     this.common.updateParams(opts.params ?? paramsBlock)
 
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak_256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 

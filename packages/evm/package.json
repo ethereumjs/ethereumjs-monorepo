@@ -60,10 +60,9 @@
     "@ethereumjs/util": "^10.0.0-rc.1",
     "@ethereumjs/verkle": "^10.0.0-dev-rc.1",
     "@noble/curves": "^1.9.0",
-    "@noble/hashes": "^1.8.0",
     "@types/debug": "^4.1.12",
     "debug": "^4.4.0",
-    "ethereum-cryptography": "^3.2.0",
+    "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
