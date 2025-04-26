@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  CELLS_PER_EXT_BLOB,
   EthereumJSErrorWithoutCode,
   bigIntToHex,
   blobsToCells,
@@ -56,7 +57,16 @@ const validateBlobTransactionNetworkWrapper = (
       isValid = kzg.verifyBlobProofBatch(blobs, commitments, kzgProofs)
     } else {
       const [cells, indices] = blobsToCells(kzg, blobs)
-      isValid = kzg.verifyCellKzgProofBatch(commitments, indices, cells, kzgProofs)
+      // verifyCellKzgProofBatch expected dup commitments and indices corresponding with cells and proofs
+      const dupCommitments = []
+      const dupIndices = []
+      for (let i = 0; i < blobs.length; i++) {
+        for (let j = 0; j < CELLS_PER_EXT_BLOB; j++) {
+          dupCommitments.push(commitments[i])
+          dupIndices.push(indices[j])
+        }
+      }
+      isValid = kzg.verifyCellKzgProofBatch(dupCommitments, dupIndices, cells, kzgProofs)
     }
   } catch (error) {
     throw EthereumJSErrorWithoutCode(`KZG verification of blobs fail with error=${error}`)
