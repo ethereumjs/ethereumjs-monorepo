@@ -1,30 +1,25 @@
-[@ethereumjs/trie](../README.md) / TrieShallowCopyOpts
+[**@ethereumjs/mpt**](../README.md)
+
+***
+
+[@ethereumjs/mpt](../README.md) / TrieShallowCopyOpts
 
 # Interface: TrieShallowCopyOpts
 
-## Table of contents
-
-### Properties
-
-- [cacheSize](TrieShallowCopyOpts.md#cachesize)
-- [keyPrefix](TrieShallowCopyOpts.md#keyprefix)
+Defined in: [packages/mpt/src/types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L122)
 
 ## Properties
 
-### cacheSize
+### cacheSize?
 
-• `Optional` **cacheSize**: `number`
+> `optional` **cacheSize**: `number`
 
-#### Defined in
+Defined in: [packages/mpt/src/types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L124)
 
-[packages/trie/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L115)
+***
 
-___
+### keyPrefix?
 
-### keyPrefix
+> `optional` **keyPrefix**: `Uint8Array`\<`ArrayBufferLike`\>
 
-• `Optional` **keyPrefix**: `Uint8Array`
-
-#### Defined in
-
-[packages/trie/src/types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L114)
+Defined in: [packages/mpt/src/types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L123)

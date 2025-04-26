@@ -1,83 +1,72 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / PostByzantiumTxReceipt
 
 # Interface: PostByzantiumTxReceipt
 
+Defined in: [vm/src/types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L54)
+
 Receipt type for Byzantium and beyond replacing the intermediary
 state root field with a status code field (EIP-658)
 
-## Hierarchy
+## Extends
 
 - [`BaseTxReceipt`](BaseTxReceipt.md)
 
-  ↳ **`PostByzantiumTxReceipt`**
+## Extended by
 
-  ↳↳ [`EIP4844BlobTxReceipt`](EIP4844BlobTxReceipt.md)
-
-## Table of contents
-
-### Properties
-
-- [bitvector](PostByzantiumTxReceipt.md#bitvector)
-- [cumulativeBlockGasUsed](PostByzantiumTxReceipt.md#cumulativeblockgasused)
-- [logs](PostByzantiumTxReceipt.md#logs)
-- [status](PostByzantiumTxReceipt.md#status)
+- [`EIP4844BlobTxReceipt`](EIP4844BlobTxReceipt.md)
 
 ## Properties
 
 ### bitvector
 
-• **bitvector**: `Uint8Array`
+> **bitvector**: `Uint8Array`
+
+Defined in: [vm/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L32)
 
 Bloom bitvector
 
 #### Inherited from
 
-[BaseTxReceipt](BaseTxReceipt.md).[bitvector](BaseTxReceipt.md#bitvector)
+[`BaseTxReceipt`](BaseTxReceipt.md).[`bitvector`](BaseTxReceipt.md#bitvector)
 
-#### Defined in
-
-[vm/src/types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L21)
-
-___
+***
 
 ### cumulativeBlockGasUsed
 
-• **cumulativeBlockGasUsed**: `bigint`
+> **cumulativeBlockGasUsed**: `bigint`
+
+Defined in: [vm/src/types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L28)
 
 Cumulative gas used in the block including this tx
 
 #### Inherited from
 
-[BaseTxReceipt](BaseTxReceipt.md).[cumulativeBlockGasUsed](BaseTxReceipt.md#cumulativeblockgasused)
+[`BaseTxReceipt`](BaseTxReceipt.md).[`cumulativeBlockGasUsed`](BaseTxReceipt.md#cumulativeblockgasused)
 
-#### Defined in
-
-[vm/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L17)
-
-___
+***
 
 ### logs
 
-• **logs**: `Log`[]
+> **logs**: `Log`[]
+
+Defined in: [vm/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L36)
 
 Logs emitted
 
 #### Inherited from
 
-[BaseTxReceipt](BaseTxReceipt.md).[logs](BaseTxReceipt.md#logs)
+[`BaseTxReceipt`](BaseTxReceipt.md).[`logs`](BaseTxReceipt.md#logs)
 
-#### Defined in
-
-[vm/src/types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L25)
-
-___
+***
 
 ### status
 
-• **status**: ``0`` \| ``1``
+> **status**: `0` \| `1`
+
+Defined in: [vm/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L58)
 
 Status of transaction, `1` if successful, `0` if an exception occurred
-
-#### Defined in
-
-[vm/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L47)

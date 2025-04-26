@@ -22,8 +22,8 @@ import {
   setLengthRight,
   short,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.ts'
 import { modifyAccountFields } from './util.ts'
@@ -124,7 +124,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     }
 
     this.common = opts.common
-    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak_256
     this.verkleCrypto = opts.common.customCrypto.verkle
 
     this._debug = debugDefault('statemanager:verkle:stateless')
@@ -236,7 +236,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     }
 
     this._caches?.code?.put(address, value)
-    const codeHash = keccak256(value)
+    const codeHash = keccak_256(value)
     if (KECCAK256_NULL === codeHash) {
       // If the code hash is the null hash, no code has to be stored
       return
@@ -499,6 +499,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
   }
 
   // Verifies that the witness post-state matches the computed post-state
+  // NOTE: Do not rename this method as we check for this function name in the VM to verify we're using a StatelessVerkleStateManager
   verifyVerklePostState(accessWitness: VerkleAccessWitnessInterface): Promise<boolean> {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparing against the provided poststate in the execution witness
@@ -571,7 +572,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
 
     const verifyPassed = postFailures === 0
     this.DEBUG &&
-      this._debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+      this._debug(`verifyVerklePostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
 
     // This is async so the stateful variant can use the same interface method
     return Promise.resolve(verifyPassed)

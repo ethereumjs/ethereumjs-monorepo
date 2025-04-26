@@ -26,10 +26,10 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
-import { EOFError } from '../eof/errors.ts'
+import { EOFErrorMessage } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
 import { EVMError } from '../errors.ts'
 
@@ -401,7 +401,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak256)(data)))
+      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak_256)(data)))
       runState.stack.push(r)
     },
   ],
@@ -1135,10 +1135,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFError.STACK_OVERFLOW)
+        trap(EOFErrorMessage.STACK_OVERFLOW)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFError.RETURN_STACK_OVERFLOW)
+        trap(EOFErrorMessage.RETURN_STACK_OVERFLOW)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
@@ -1157,7 +1157,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const newPc = runState.env.eof!.eofRunState.returnStack.pop()
       if (newPc === undefined) {
         // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        trap(EOFError.RETF_NO_RETURN)
+        trap(EOFErrorMessage.RETF_NO_RETURN)
       }
       runState.programCounter = newPc!
     },
@@ -1179,10 +1179,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
       if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFError.STACK_OVERFLOW)
+        trap(EOFErrorMessage.STACK_OVERFLOW)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFError.ReturnStackOverflow)
+        trap(EOFErrorMessage.ReturnStackOverflow)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)*/
 
@@ -1310,7 +1310,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
 
         if (actualSectionSize < originalDataSize) {
-          trap(EOFError.INVALID_RETURN_CONTRACT_DATA_SIZE)
+          trap(EOFErrorMessage.INVALID_RETURN_CONTRACT_DATA_SIZE)
         }
 
         if (actualSectionSize > 0xffff) {

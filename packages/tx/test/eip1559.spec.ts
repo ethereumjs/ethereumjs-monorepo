@@ -7,7 +7,7 @@ import { createFeeMarket1559Tx } from '../src/index.ts'
 
 import { eip1559Data } from './testData/eip1559.ts' // Source: Besu
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import type { JSONTx } from '../src/index.ts'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)

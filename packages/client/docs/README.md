@@ -1,18 +1,24 @@
-@ethereumjs/client
+**@ethereumjs/client**
+
+***
 
 # @ethereumjs/client
 
-## Table of contents
-
-### Enumerations
-
-- [DataDirectory](enums/DataDirectory.md)
-- [SyncMode](enums/SyncMode.md)
-
-### Classes
+## Classes
 
 - [Config](classes/Config.md)
+- [EthereumClient](classes/EthereumClient.md)
 
-### Interfaces
+## Interfaces
 
 - [ConfigOptions](interfaces/ConfigOptions.md)
+
+## Type Aliases
+
+- [DataDirectory](type-aliases/DataDirectory.md)
+- [SyncMode](type-aliases/SyncMode.md)
+
+## Variables
+
+- [DataDirectory](variables/DataDirectory.md)
+- [SyncMode](variables/SyncMode.md)
