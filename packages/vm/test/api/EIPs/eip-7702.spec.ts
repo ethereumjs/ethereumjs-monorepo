@@ -20,7 +20,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
-import type { AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1'
 import type { VM } from '../../../src/index.ts'
 
@@ -45,7 +45,7 @@ type GetAuthListOpts = {
   pkey?: Uint8Array
 }
 
-function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+function getAuthorizationListItem(opts: GetAuthListOpts): EOACode7702AuthorizationListBytesItem {
   const actualOpts = {
     ...{ chainId: 0, pkey: defaultAuthPkey },
     ...opts,

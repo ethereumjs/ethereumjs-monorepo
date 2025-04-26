@@ -2,12 +2,18 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
-  authorizationListBytesItemToJSON,
-  authorizationListJSONItemToBytes,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  eoaCode7702AuthorizationListBytesItemToJSON,
+  eoaCode7702AuthorizationListJSONItemToBytes,
+  isEOACode7702AuthorizationList,
   toBytes,
+} from '@ethereumjs/util'
+import type {
+  Address,
+  EOACode7702AuthorizationListBytesItem,
+  EOACode7702AuthorizationListItem,
 } from '@ethereumjs/util'
 
 import * as EIP1559 from '../capabilities/eip1559.ts'
@@ -15,7 +21,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as EIP7702 from '../capabilities/eip7702.ts'
 import * as Legacy from '../capabilities/legacy.ts'
-import { TransactionType, isAccessList, isAuthorizationList } from '../types.ts'
+import { TransactionType, isAccessList } from '../types.ts'
 import {
   getBaseJSON,
   sharedConstructor,
@@ -26,7 +32,7 @@ import {
 import { createEOACode7702Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
-import type { Address, AuthorizationListBytes } from '@ethereumjs/util'
+
 import type {
   AccessListBytes,
   TxData as AllTypesTxData,
@@ -58,7 +64,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   public readonly data!: Uint8Array
   public readonly to?: Address
   public readonly accessList: AccessListBytes
-  public readonly authorizationList: AuthorizationListBytes
+  public readonly authorizationList: EOACode7702AuthorizationListBytesItem[]
   public readonly chainId: bigint
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
@@ -120,8 +126,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     EIP2930.verifyAccessList(this)
 
     // Populate the authority list fields
-    this.authorizationList = isAuthorizationList(authorizationList)
-      ? authorizationList.map((item) => authorizationListJSONItemToBytes(item))
+    this.authorizationList = isEOACode7702AuthorizationList(authorizationList)
+      ? authorizationList.map((item) => eoaCode7702AuthorizationListJSONItemToBytes(item))
       : authorizationList
     // Verify the authority list format.
     EIP7702.verifyAuthorizationList(this)
@@ -356,7 +362,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
     const authorizationList = this.authorizationList.map((item) =>
-      authorizationListBytesItemToJSON(item),
+      eoaCode7702AuthorizationListBytesItemToJSON(item),
     )
 
     const baseJSON = getBaseJSON(this)

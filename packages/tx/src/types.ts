@@ -4,10 +4,10 @@ import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
   AddressLike,
-  AuthorizationList,
-  AuthorizationListBytes,
   BigIntLike,
   BytesLike,
+  EOACode7702AuthorizationList,
+  EOACode7702AuthorizationListBytes,
   PrefixedHexString,
 } from '@ethereumjs/util'
 import type { FeeMarket1559Tx } from './1559/tx.ts'
@@ -120,25 +120,6 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
-export function isAuthorizationListBytes(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationListBytes {
-  if (input.length === 0) {
-    return true
-  }
-  const firstItem = input[0]
-  if (Array.isArray(firstItem)) {
-    return true
-  }
-  return false
-}
-
-export function isAuthorizationList(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationList {
-  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
-}
-
 export interface TransactionCache {
   hash?: Uint8Array
   dataFee?: {
@@ -149,7 +130,7 @@ export interface TransactionCache {
   // TODO: re-add these cache items for the JSON
   // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3932
   //accessListJSON?: AccessList
-  //authorityListJSON?: AuthorizationList
+  //authorityListJSON?: EOACode7702AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
@@ -268,7 +249,7 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
-  readonly authorizationList: AuthorizationListBytes
+  readonly authorizationList: EOACode7702AuthorizationListBytes
 }
 
 export interface TxData {
@@ -430,7 +411,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
  * {@link EOACode7702Tx} data.
  */
 export interface EOACode7702TxData extends FeeMarketEIP1559TxData {
-  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+  authorizationList?: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList | never
 }
 
 export interface TxValuesArray {
@@ -494,7 +475,7 @@ type EOACode7702TxValuesArray = [
   Uint8Array,
   Uint8Array,
   AccessListBytes,
-  AuthorizationListBytes,
+  EOACode7702AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
@@ -549,7 +530,7 @@ export interface JSONTx {
   value?: PrefixedHexString
   chainId?: PrefixedHexString
   accessList?: JSONAccessListItem[] // TODO should this not be AccessList?
-  authorizationList?: AuthorizationList
+  authorizationList?: EOACode7702AuthorizationList
   type?: PrefixedHexString
   maxPriorityFeePerGas?: PrefixedHexString
   maxFeePerGas?: PrefixedHexString

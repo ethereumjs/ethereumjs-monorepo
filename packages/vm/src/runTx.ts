@@ -20,9 +20,9 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
-  recoverAuthority,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -512,7 +512,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to set code to
       let authority
       try {
-        authority = recoverAuthority(data)
+        authority = eoaCode7702RecoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue
