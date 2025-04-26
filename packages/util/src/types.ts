@@ -143,7 +143,7 @@ export type EOACode7702AuthorizationListItem = {
   s: PrefixedHexString
 } & EOACode7702AuthorizationListItemUnsigned
 
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
+// Tuple of [chain_id, address, nonce, y_parity, r, s]
 export type EOACode7702AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
