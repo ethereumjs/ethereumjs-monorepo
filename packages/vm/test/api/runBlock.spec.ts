@@ -47,7 +47,7 @@ import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type {
-  AuthorizationListBytesItem,
+  EOACode7702AuthorizationListBytesItem,
   NestedUint8Array,
   PrefixedHexString,
   VerkleExecutionWitness,
@@ -615,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       pkey?: Uint8Array
     }
 
-    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+    function getAuthorizationListItem(
+      opts: GetAuthListOpts,
+    ): EOACode7702AuthorizationListBytesItem {
       const actualOpts = {
         ...{ chainId: 0, pkey: defaultAuthPkey },
         ...opts,
