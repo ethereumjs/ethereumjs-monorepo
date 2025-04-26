@@ -10,11 +10,7 @@ import {
   isEOACode7702AuthorizationList,
   toBytes,
 } from '@ethereumjs/util'
-import type {
-  Address,
-  EOACode7702AuthorizationListBytesItem,
-  EOACode7702AuthorizationListItem,
-} from '@ethereumjs/util'
+import type { Address, EOACode7702AuthorizationListBytes } from '@ethereumjs/util'
 
 import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
@@ -64,7 +60,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   public readonly data!: Uint8Array
   public readonly to?: Address
   public readonly accessList: AccessListBytes
-  public readonly authorizationList: EOACode7702AuthorizationListBytesItem[]
+  public readonly authorizationList: EOACode7702AuthorizationListBytes
   public readonly chainId: bigint
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
