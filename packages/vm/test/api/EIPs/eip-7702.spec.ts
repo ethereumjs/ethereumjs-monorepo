@@ -15,13 +15,13 @@ import {
   setLengthRight,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
 import type { AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import type { VM } from '../../../src/index.ts'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
@@ -59,7 +59,7 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
   const addressBytes = address.toBytes()
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
-  const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
+  const msgToSign = keccak_256(concatBytes(new Uint8Array([5]), rlpdMsg))
   const signed = secp256k1.sign(msgToSign, pkey)
 
   return [
@@ -263,7 +263,7 @@ describe('test EIP-7702 opcodes', () => {
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
-        expectedStorage: keccak256(delegatedCode),
+        expectedStorage: keccak_256(delegatedCode),
         name: 'EXTCODEHASH',
       },
       // EXTCODECOPY

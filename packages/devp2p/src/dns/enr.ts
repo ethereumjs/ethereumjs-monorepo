@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { base32, base64url } from '@scure/base'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sscanf } from 'scanf'
 
@@ -73,7 +73,7 @@ export class ENR {
     // Validate sig
     const isVerified = ecdsaVerify(
       signature as Uint8Array,
-      (common?.customCrypto.keccak256 ?? keccak256)(RLP.encode([seq, ...kvs])),
+      (common?.customCrypto.keccak256 ?? keccak_256)(RLP.encode([seq, ...kvs])),
       obj.secp256k1,
     )
 
@@ -133,7 +133,7 @@ export class ENR {
 
     const isVerified = ecdsaVerify(
       signatureBytes,
-      (common?.customCrypto.keccak256 ?? keccak256)(signedComponentBytes),
+      (common?.customCrypto.keccak256 ?? keccak_256)(signedComponentBytes),
       keyBytes,
     )
 

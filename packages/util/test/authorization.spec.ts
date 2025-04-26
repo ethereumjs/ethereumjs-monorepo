@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
 import {
   AUTHORITY_SIGNING_MAGIC,
@@ -59,7 +59,7 @@ describe('Authorization lists', () => {
       'msg to sign ok: json',
     )
 
-    const expectedHash = keccak256(expected)
+    const expectedHash = keccak_256(expected)
     assert.isTrue(
       equalsBytes(authorizationHashedMessageToSign(unsignedBytesItem), expectedHash),
       'hashed msg to sign ok: bytes',

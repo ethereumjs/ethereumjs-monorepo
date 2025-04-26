@@ -1,8 +1,8 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
 import { EthereumJSErrorWithoutCode, RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
+import { keccak_256 } from '@noble/hashes/sha3'
 import { publicToAddress } from './account.ts'
 import { Address } from './address.ts'
 import {
@@ -21,8 +21,6 @@ import type {
   AuthorizationListItem,
   AuthorizationListItemUnsigned,
 } from './types.ts'
-
-/** EIP-7702 constants */
 
 export const AUTHORITY_SIGNING_MAGIC = hexToBytes('0x05')
 
@@ -115,7 +113,7 @@ export function authorizationMessageToSign(
 export function authorizationHashedMessageToSign(
   input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
 ) {
-  return keccak256(authorizationMessageToSign(input))
+  return keccak_256(authorizationMessageToSign(input))
 }
 
 /**
