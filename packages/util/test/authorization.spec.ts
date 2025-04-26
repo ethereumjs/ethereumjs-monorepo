@@ -1,28 +1,25 @@
 import { RLP } from '@ethereumjs/rlp'
-import {
-  Address,
-  type PrefixedHexString,
-  concatBytes,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
-import { AUTHORITY_SIGNING_MAGIC } from '../../src/constants.ts'
+import { Address } from '../src/address.ts'
 import {
-  type AuthorizationListBytesItemUnsigned,
-  type AuthorizationListItem,
-  type AuthorizationListItemUnsigned,
-  authorizationHashedMessageToSign,
-  authorizationListBytesItemToJSON,
-  authorizationListJSONItemToBytes,
-  authorizationMessageToSign,
-  recoverAuthority,
-  signAuthorization,
-} from '../../src/index.ts'
+  EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC,
+  eoaCode7702AuthorizationHashedMessageToSign,
+  eoaCode7702AuthorizationListBytesItemToJSON,
+  eoaCode7702AuthorizationListJSONItemToBytes,
+  eoaCode7702AuthorizationMessageToSign,
+  eoaCode7702RecoverAuthority,
+  eoaCode7702SignAuthorization,
+} from '../src/authorization.ts'
+import { concatBytes, equalsBytes, hexToBytes } from '../src/bytes.ts'
+import type {
+  EOACode7702AuthorizationListBytesItemUnsigned,
+  EOACode7702AuthorizationListItem,
+  EOACode7702AuthorizationListItemUnsigned,
+} from '../src/types.ts'
 
 // Taken from execution-spec-tests (tests/prague/eip7702_set_code_tx/test_set_code_txs.py::test_address_from_set_code)
-const SAMPLE_AUTH = {
+const SAMPLE_AUTH: EOACode7702AuthorizationListItem = {
   chainId: '0x',
   address: '0x0000000000000000000000000000000000001000',
   nonce: '0x',
@@ -40,40 +37,47 @@ const PRIVATE_KEY = hexToBytes('0x45A915E4D060149EB4365960E6A7A45F33439309306111
 const EXPECTED_SIGNER = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
 describe('Authorization lists', () => {
-  const item = authorizationListJSONItemToBytes(SAMPLE_AUTH as AuthorizationListItem)
+  const item = eoaCode7702AuthorizationListJSONItemToBytes(SAMPLE_AUTH)
   const [chainId, address, nonce] = item
-  const unsignedBytesItem: AuthorizationListBytesItemUnsigned = [chainId, address, nonce]
-  const unsignedJSONItem: AuthorizationListItemUnsigned = {
-    chainId: SAMPLE_AUTH.chainId as PrefixedHexString,
-    address: SAMPLE_AUTH.address as PrefixedHexString,
-    nonce: SAMPLE_AUTH.nonce as PrefixedHexString,
+  const unsignedBytesItem: EOACode7702AuthorizationListBytesItemUnsigned = [chainId, address, nonce]
+  const unsignedJSONItem: EOACode7702AuthorizationListItemUnsigned = {
+    chainId: SAMPLE_AUTH.chainId,
+    address: SAMPLE_AUTH.address,
+    nonce: SAMPLE_AUTH.nonce,
   }
 
   it('authorizationMessageToSign() / authorizationHashedMessageToSign()', () => {
-    const expected = concatBytes(AUTHORITY_SIGNING_MAGIC, RLP.encode([chainId, address, nonce]))
+    const expected = concatBytes(
+      EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC,
+      RLP.encode([chainId, address, nonce]),
+    )
 
     assert.isTrue(
-      equalsBytes(authorizationMessageToSign(unsignedBytesItem), expected),
+      equalsBytes(eoaCode7702AuthorizationMessageToSign(unsignedBytesItem), expected),
       'msg to sign ok: bytes',
     )
     assert.isTrue(
-      equalsBytes(authorizationMessageToSign(unsignedJSONItem), expected),
+      equalsBytes(eoaCode7702AuthorizationMessageToSign(unsignedJSONItem), expected),
       'msg to sign ok: json',
     )
 
     const expectedHash = keccak_256(expected)
     assert.isTrue(
-      equalsBytes(authorizationHashedMessageToSign(unsignedBytesItem), expectedHash),
+      equalsBytes(eoaCode7702AuthorizationHashedMessageToSign(unsignedBytesItem), expectedHash),
       'hashed msg to sign ok: bytes',
     )
     assert.isTrue(
-      equalsBytes(authorizationHashedMessageToSign(unsignedJSONItem), expectedHash),
+      equalsBytes(eoaCode7702AuthorizationHashedMessageToSign(unsignedJSONItem), expectedHash),
       'hashed msg to sign ok: json',
     )
 
     assert.throws(
       () => {
-        authorizationMessageToSign([new Uint8Array(), new Uint8Array(19), new Uint8Array()])
+        eoaCode7702AuthorizationMessageToSign([
+          new Uint8Array(),
+          new Uint8Array(19),
+          new Uint8Array(),
+        ])
       },
       undefined,
       undefined,
@@ -82,8 +86,8 @@ describe('Authorization lists', () => {
   })
 
   it('sign() / recoverAuthority()', () => {
-    const signedFromBytes = signAuthorization(unsignedBytesItem, PRIVATE_KEY)
-    const signedFromJSON = signAuthorization(unsignedJSONItem, PRIVATE_KEY)
+    const signedFromBytes = eoaCode7702SignAuthorization(unsignedBytesItem, PRIVATE_KEY)
+    const signedFromJSON = eoaCode7702SignAuthorization(unsignedJSONItem, PRIVATE_KEY)
 
     const signedFromBytes_RLP = RLP.encode(signedFromBytes)
     const signedFromJSON_RLP = RLP.encode(signedFromJSON)
@@ -92,13 +96,13 @@ describe('Authorization lists', () => {
     assert.isTrue(equalsBytes(signedFromJSON_RLP, EXPECTED_RLP_BYTES), 'signed ok: json')
 
     assert.deepEqual(
-      authorizationListBytesItemToJSON(signedFromBytes),
+      eoaCode7702AuthorizationListBytesItemToJSON(signedFromBytes),
       SAMPLE_AUTH,
       'json conversion matches expected json',
     )
 
-    const recoveredBytesAddress = recoverAuthority(signedFromBytes)
-    const recoveredJSONAddress = recoverAuthority(SAMPLE_AUTH as AuthorizationListItem)
+    const recoveredBytesAddress = eoaCode7702RecoverAuthority(signedFromBytes)
+    const recoveredJSONAddress = eoaCode7702RecoverAuthority(SAMPLE_AUTH)
 
     assert.isTrue(EXPECTED_SIGNER.equals(recoveredBytesAddress), 'bytes: recovered correct signer')
     assert.isTrue(EXPECTED_SIGNER.equals(recoveredJSONAddress), 'json: recovered correct signer')

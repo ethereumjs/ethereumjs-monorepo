@@ -5,7 +5,7 @@ import {
   type StatefulVerkleStateManager,
   type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -20,6 +20,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
   short,
@@ -511,7 +512,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to set code to
       let authority
       try {
-        authority = recoverAuthority(data)
+        authority = eoaCode7702RecoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue
