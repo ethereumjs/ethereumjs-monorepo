@@ -1,6 +1,6 @@
 import * as fs from 'fs'
-import { keccak_256 } from '@noble/hashes/sha3'
 import { keccak256 as keccak256WASM } from '@polkadot/wasm-crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { generateClientConfig } from '../../bin/utils.ts'
@@ -52,11 +52,7 @@ describe('generateClientConfig', () => {
       useJsCrypto: true,
     }
     const { common } = await generateClientConfig(opts)
-    assert.deepEqual(
-      common.customCrypto.keccak256,
-      keccak_256,
-      'JS keccak256 should be initialized',
-    )
+    assert.deepEqual(common.customCrypto.keccak256, keccak256, 'JS keccak256 should be initialized')
   })
 
   it('should set bootnodes correctly from a file', async () => {

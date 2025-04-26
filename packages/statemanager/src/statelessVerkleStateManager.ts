@@ -22,8 +22,8 @@ import {
   setLengthRight,
   short,
 } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.ts'
 import { modifyAccountFields } from './util.ts'
@@ -124,7 +124,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     }
 
     this.common = opts.common
-    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak_256
+    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.common.customCrypto.verkle
 
     this._debug = debugDefault('statemanager:verkle:stateless')
@@ -236,7 +236,7 @@ export class StatelessVerkleStateManager implements StateManagerInterface {
     }
 
     this._caches?.code?.put(address, value)
-    const codeHash = keccak_256(value)
+    const codeHash = keccak256(value)
     if (KECCAK256_NULL === codeHash) {
       // If the code hash is the null hash, no code has to be stored
       return

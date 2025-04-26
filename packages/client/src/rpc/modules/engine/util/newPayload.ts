@@ -7,7 +7,7 @@ import {
   bytesToHex,
   hexToBytes,
 } from '@ethereumjs/util'
-import { sha256 } from '@noble/hashes/sha2'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { short } from '../../../../util/index.ts'
 import { Status } from '../types.ts'

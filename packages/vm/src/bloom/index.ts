@@ -1,5 +1,5 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import type { Common } from '@ethereumjs/common'
 
@@ -16,7 +16,7 @@ export class Bloom {
     if (common?.customCrypto.keccak256 !== undefined) {
       this.keccakFunction = common.customCrypto.keccak256
     } else {
-      this.keccakFunction = keccak_256
+      this.keccakFunction = keccak256
     }
     if (!bitvector) {
       this.bitvector = new Uint8Array(BYTE_SIZE)
