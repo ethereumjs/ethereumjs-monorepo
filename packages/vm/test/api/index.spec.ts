@@ -232,7 +232,7 @@ describe('VM -> setHardfork, blockchain', () => {
     assert.strictEqual((vm as any)._setHardfork, true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.strictEqual((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual((vm as any)._setHardfork, 5001, 'should set setHardfork option')
   })
 
   it('should instantiate', async () => {

@@ -75,12 +75,12 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     await runTx(vm, { tx: txnWithAccessList })
     assert.strictEqual(trace[1][0], 'SLOAD')
     let gasUsed = trace[1][1] - trace[2][1]
-    assert.strictEqual(gasUsed, 100, 'charge warm sload gas')
+    assert.strictEqual(Number(gasUsed), 100, 'charge warm sload gas')
 
     trace = []
     await runTx(vm, { tx: txnWithoutAccessList, skipNonce: true })
     assert.strictEqual(trace[1][0], 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
-    assert.strictEqual(gasUsed, 2100, 'charge cold sload gas')
+    assert.strictEqual(Number(gasUsed), 2100, 'charge cold sload gas')
   })
 })

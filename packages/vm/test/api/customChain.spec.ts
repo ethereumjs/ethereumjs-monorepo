@@ -119,6 +119,6 @@ describe('VM initialized with custom state', () => {
     assert.strictEqual(vm['_setHardfork'], true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.strictEqual(vm['_setHardfork'], BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], 5001, 'should set setHardfork option')
   })
 })
