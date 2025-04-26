@@ -10,12 +10,12 @@
 // If the authorization item is valid (it has the correct nonce, and matches the chainId (or the chainId is 0))
 // then it will delegate the code of the account **who signed that authorization item** to the address in that authority item
 import { createEOACode7702Tx } from '@ethereumjs/tx'
-import type { AuthorizationListItemUnsigned } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationListItemUnsigned } from '@ethereumjs/util'
 import {
   Address,
-  authorizationListBytesItemToJSON,
+  eoaCode7702AuthorizationListBytesItemToJSON,
+  eoaCode7702SignAuthorization,
   privateToAddress,
-  signAuthorization,
 } from '@ethereumjs/util'
 
 const privateKey = new Uint8Array(32).fill(0x20)
@@ -23,21 +23,24 @@ const privateKeyOther = new Uint8Array(32).fill(0x99)
 
 const myAddress = new Address(privateToAddress(privateKey))
 
-const unsignedAuthorizationListItemSelf: AuthorizationListItemUnsigned = {
+const unsignedAuthorizationListItemSelf: EOACode7702AuthorizationListItemUnsigned = {
   chainId: '0x1337', // This delegation will only work on the chain with chainId 0x1337
   address: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
   nonce: '0x01', // Since we are self-delegating we need account for the nonce being bumped of the account
 }
-const signedSelf = signAuthorization(unsignedAuthorizationListItemSelf, privateKey)
-// To convert the bytes array to a human-readable form, use `authorizationListBytesItemToJSON`
-console.log(authorizationListBytesItemToJSON(signedSelf))
+const signedSelf = eoaCode7702SignAuthorization(unsignedAuthorizationListItemSelf, privateKey)
+// To convert the bytes array to a human-readable form, use `eoaCode7702AuthorizationListBytesItemToJSON`
+console.log(eoaCode7702AuthorizationListBytesItemToJSON(signedSelf))
 
-const unsignedAuthorizationListItemOther: AuthorizationListItemUnsigned = {
+const unsignedAuthorizationListItemOther: EOACode7702AuthorizationListItemUnsigned = {
   chainId: '0x', // The chainId 0 is special: this authorization will work on any chain which supports EIP-7702
   address: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
   nonce: '0x',
 }
-const signedOther = signAuthorization(unsignedAuthorizationListItemOther, privateKeyOther)
+const signedOther = eoaCode7702SignAuthorization(
+  unsignedAuthorizationListItemOther,
+  privateKeyOther,
+)
 
 const authorizationList = [signedSelf, signedOther]
 
