@@ -1,1 +1,0 @@
-npm run clean && npm run build && npm run test
