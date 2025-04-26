@@ -1,63 +1,41 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / HardforkTransitionConfig
 
 # Interface: HardforkTransitionConfig
 
-## Table of contents
-
-### Properties
-
-- [block](HardforkTransitionConfig.md#block)
-- [forkHash](HardforkTransitionConfig.md#forkhash)
-- [name](HardforkTransitionConfig.md#name)
-- [timestamp](HardforkTransitionConfig.md#timestamp)
-- [ttd](HardforkTransitionConfig.md#ttd)
+Defined in: [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L59)
 
 ## Properties
 
 ### block
 
-• **block**: ``null`` \| `number`
+> **block**: `null` \| `number`
 
-#### Defined in
+Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
 
-[types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L55)
+***
 
-___
+### forkHash?
 
-### forkHash
+> `optional` **forkHash**: `null` \| `` `0x${string}` ``
 
-• `Optional` **forkHash**: ``null`` \| `string`
+Defined in: [types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)
 
-#### Defined in
-
-[types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L58)
-
-___
+***
 
 ### name
 
-• **name**: `string`
+> **name**: `string`
 
-#### Defined in
+Defined in: [types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L60)
 
-[types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L54)
+***
 
-___
+### timestamp?
 
-### timestamp
+> `optional` **timestamp**: `string` \| `number`
 
-• `Optional` **timestamp**: `string` \| `number`
-
-#### Defined in
-
-[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L57)
-
-___
-
-### ttd
-
-• `Optional` **ttd**: `string` \| `bigint`
-
-#### Defined in
-
-[types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)
+Defined in: [types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)

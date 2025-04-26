@@ -1,59 +1,51 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / PutBatch
 
-# Interface: PutBatch<TKey, TValue\>
+# Interface: PutBatch\<TKey, TValue\>
 
-## Type parameters
+Defined in: [packages/util/src/db.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L29)
 
-| Name | Type |
-| :------ | :------ |
-| `TKey` | extends `Uint8Array` \| `string` \| `number` = `Uint8Array` |
-| `TValue` | extends `Uint8Array` \| `string` \| [`DBObject`](../README.md#dbobject) = `Uint8Array` |
+## Type Parameters
 
-## Table of contents
+### TKey
 
-### Properties
+`TKey` *extends* `Uint8Array` \| `string` \| `number` = `Uint8Array`
 
-- [key](PutBatch.md#key)
-- [opts](PutBatch.md#opts)
-- [type](PutBatch.md#type)
-- [value](PutBatch.md#value)
+### TValue
+
+`TValue` *extends* `Uint8Array` \| `string` \| [`DBObject`](../type-aliases/DBObject.md) = `Uint8Array`
 
 ## Properties
 
 ### key
 
-• **key**: `TKey`
+> **key**: `TKey`
 
-#### Defined in
+Defined in: [packages/util/src/db.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L34)
 
-[packages/util/src/db.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L30)
+***
 
-___
+### opts?
 
-### opts
+> `optional` **opts**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
 
-• `Optional` **opts**: [`EncodingOpts`](../README.md#encodingopts)
+Defined in: [packages/util/src/db.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L36)
 
-#### Defined in
-
-[packages/util/src/db.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L32)
-
-___
+***
 
 ### type
 
-• **type**: ``"put"``
+> **type**: `"put"`
 
-#### Defined in
+Defined in: [packages/util/src/db.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L33)
 
-[packages/util/src/db.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L29)
-
-___
+***
 
 ### value
 
-• **value**: `TValue`
+> **value**: `TValue`
 
-#### Defined in
-
-[packages/util/src/db.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L31)
+Defined in: [packages/util/src/db.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L35)

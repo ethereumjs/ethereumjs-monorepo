@@ -1,4 +1,4 @@
-import { EOFError, validationError } from './errors.ts'
+import { EOFErrorMessage, validationError } from './errors.ts'
 import { stackDelta } from './stackDelta.ts'
 
 import type { EVM } from '../evm.ts'
@@ -143,7 +143,7 @@ function validateOpcodes(
     function addJump(location: number) {
       if (intermediateBytes.has(location)) {
         // When trying to JUMP into an intermediate byte: this is invalid
-        validationError(EOFError.INVALID_RJUMP)
+        validationError(EOFErrorMessage.INVALID_RJUMP)
       }
       jumpLocations.add(location)
     }
@@ -151,7 +151,7 @@ function validateOpcodes(
     function addIntermediate(location: number) {
       if (jumpLocations.has(location)) {
         // When trying to add an intermediate to a location already JUMPed to: this is invalid
-        validationError(EOFError.INVALID_RJUMP)
+        validationError(EOFErrorMessage.INVALID_RJUMP)
       }
       intermediateBytes.add(location)
     }
@@ -194,12 +194,12 @@ function validateOpcodes(
 
       // ReachableOpcodes: this can likely be deleted after implementing the 5450 algorithm
       if (!reachableOpcodes.has(ptr)) {
-        validationError(EOFError.UNREACHABLE_CODE)
+        validationError(EOFErrorMessage.UNREACHABLE_CODE)
       }
 
       if (stackHeightMin[ptr] === undefined || stackHeightMax[ptr] === undefined) {
         // Code is either unreachable or only reachable via a backwards jump
-        validationError(EOFError.UNREACHABLE_CODE)
+        validationError(EOFErrorMessage.UNREACHABLE_CODE)
       }
 
       validJumps.add(ptr)
@@ -212,7 +212,7 @@ function validateOpcodes(
       const opcodeOutputs = stackDelta[opcode].outputs
 
       if (minStackCurrent - opcodeInputs < 0) {
-        validationError(EOFError.STACK_UNDERFLOW)
+        validationError(EOFErrorMessage.STACK_UNDERFLOW)
       }
 
       const delta = opcodeOutputs - opcodeInputs
@@ -222,23 +222,23 @@ function validateOpcodes(
 
       if (maxStackNext > 1024) {
         // TODO verify if 1023 or 1024 is the right constant
-        validationError(EOFError.STACK_OVERFLOW)
+        validationError(EOFErrorMessage.STACK_OVERFLOW)
       }
 
       if (nonReturningFunction && opcode === 0xe4) {
-        validationError(EOFError.INVALID_RETURNING_SECTION)
+        validationError(EOFErrorMessage.INVALID_RETURNING_SECTION)
       }
 
       lastOpcode = opcode
       if (!opcodeNumbers.has(opcode)) {
-        validationError(EOFError.INVALID_OPCODE)
+        validationError(EOFErrorMessage.INVALID_OPCODE)
       }
 
       if (opcode === 0xe0 || opcode === 0xe1) {
         // RJUMP / RJUMPI
         const target = readInt16(code, ptr + 1) + ptr + 3
         if (target < 0 || target >= code.length) {
-          validationError(EOFError.INVALID_RJUMP)
+          validationError(EOFErrorMessage.INVALID_RJUMP)
         }
 
         successorSet.add(target)
@@ -253,7 +253,7 @@ function validateOpcodes(
           if (!reachableOpcodes.has(ptr + 3) && ptr + 3 < code.length) {
             // Note: the final condition above ensures that the bytes after ptr are there
             // This is an edge case, if the container ends with RJUMP (which is valid)
-            validationError(EOFError.UNREACHABLE_CODE)
+            validationError(EOFErrorMessage.UNREACHABLE_CODE)
           }
         }
       } else if (opcode === 0xe2) {
@@ -261,14 +261,14 @@ function validateOpcodes(
         const tableSize = code[ptr + 1] + 1
 
         if (tableSize === undefined) {
-          validationError(EOFError.OPCODE_INTERMEDIATES_OOB)
+          validationError(EOFErrorMessage.OPCODE_INTERMEDIATES_OOB)
         } else if (tableSize === 0) {
-          validationError(EOFError.RJUMPV_TABLE_SIZE0)
+          validationError(EOFErrorMessage.RJUMPV_TABLE_SIZE0)
         }
 
         if (ptr + tableSize * 2 + 2 >= code.length) {
           // Fall-through case
-          validationError(EOFError.OPCODE_INTERMEDIATES_OOB)
+          validationError(EOFErrorMessage.OPCODE_INTERMEDIATES_OOB)
         }
 
         const newPc = ptr + 2 + tableSize * 2
@@ -280,7 +280,7 @@ function validateOpcodes(
           addIntermediate(newPtr + 1)
           const target = readInt16(code, newPtr) + newPc
           if (target < 0 || target >= code.length) {
-            validationError(EOFError.OPCODE_INTERMEDIATES_OOB)
+            validationError(EOFErrorMessage.OPCODE_INTERMEDIATES_OOB)
           }
 
           successorSet.add(target)
@@ -298,7 +298,7 @@ function validateOpcodes(
         const target = readUint16(code, ptr + 1)
         reachableSections[codeSection].add(target)
         if (target >= container.header.codeSizes.length) {
-          validationError(EOFError.INVALID_CALL_TARGET)
+          validationError(EOFErrorMessage.INVALID_CALL_TARGET)
         }
         if (opcode === 0xe3) {
           // CALLF
@@ -306,18 +306,18 @@ function validateOpcodes(
           const targetInputs = container.body.typeSections[target].inputs
           if (targetOutputs === 0x80) {
             // CALLF points to non-returning function which is not allowed
-            validationError(EOFError.INVALID_CALLF_RETURNING)
+            validationError(EOFErrorMessage.INVALID_CALLF_RETURNING)
           }
 
           if (minStackCurrent < targetInputs) {
-            validationError(EOFError.STACK_UNDERFLOW)
+            validationError(EOFErrorMessage.STACK_UNDERFLOW)
           }
 
           if (
             maxStackCurrent + container.body.typeSections[target].maxStackHeight - targetInputs >
             1024
           ) {
-            validationError(EOFError.STACK_OVERFLOW)
+            validationError(EOFErrorMessage.STACK_OVERFLOW)
           }
 
           minStackNext += targetOutputs - targetInputs
@@ -333,24 +333,24 @@ function validateOpcodes(
             // Spec rule:
             // JUMPF operand must point to a code section with equal or fewer number of outputs as
             // the section in which it resides, or to a section with 0x80 as outputs (non-returning)
-            validationError(EOFError.INVALID_JUMPF)
+            validationError(EOFErrorMessage.INVALID_JUMPF)
           }
 
           if (nonReturningFunction && targetOutputs <= 0x7f) {
             // Current function is returning, but target is not, cannot jump into this
-            validationError(EOFError.INVALID_RETURNING_SECTION)
+            validationError(EOFErrorMessage.INVALID_RETURNING_SECTION)
           }
 
           if (targetNonReturning) {
             // Target is returning
             if (minStackCurrent < targetInputs) {
-              validationError(EOFError.STACK_UNDERFLOW)
+              validationError(EOFErrorMessage.STACK_UNDERFLOW)
             }
           } else {
             // Target is returning
             const expectedStack = currentOutputs + targetInputs - targetOutputs
             if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === expectedStack)) {
-              validationError(EOFError.INVALID_STACK_HEIGHT)
+              validationError(EOFErrorMessage.INVALID_STACK_HEIGHT)
             }
             sectionHasReturningOpcode = true
           }
@@ -358,7 +358,7 @@ function validateOpcodes(
             maxStackCurrent + container.body.typeSections[target].maxStackHeight - targetInputs >
             1024
           ) {
-            validationError(EOFError.STACK_OVERFLOW)
+            validationError(EOFErrorMessage.STACK_OVERFLOW)
           }
         }
       } else if (opcode === 0xe4) {
@@ -366,20 +366,20 @@ function validateOpcodes(
         // Stack height must match the outputs of current code section
         const outputs = container.body.typeSections[codeSection].outputs
         if (!(minStackCurrent === maxStackCurrent && maxStackCurrent === outputs)) {
-          validationError(EOFError.INVALID_STACK_HEIGHT)
+          validationError(EOFErrorMessage.INVALID_STACK_HEIGHT)
         }
         sectionHasReturningOpcode = true
       } else if (opcode === 0xe6) {
         // DUPN
         const toDup = code[ptr + 1]
         if (toDup + 1 > minStackCurrent) {
-          validationError(EOFError.STACK_UNDERFLOW)
+          validationError(EOFErrorMessage.STACK_UNDERFLOW)
         }
       } else if (opcode === 0xe7) {
         // SWAPN
         const toSwap = code[ptr + 1]
         if (toSwap + 2 > minStackCurrent) {
-          validationError(EOFError.STACK_UNDERFLOW)
+          validationError(EOFErrorMessage.STACK_UNDERFLOW)
         }
       } else if (opcode === 0xe8) {
         // EXCHANGE
@@ -387,17 +387,17 @@ function validateOpcodes(
         const n = (exchangeRaw >> 4) + 1
         const m = (exchangeRaw & 0x0f) + 1
         if (n + m + 1 > minStackCurrent) {
-          validationError(EOFError.STACK_UNDERFLOW)
+          validationError(EOFErrorMessage.STACK_UNDERFLOW)
         }
       } else if (opcode === 0xec) {
         // EOFCREATE
         const target = code[ptr + 1]
         if (target >= container.header.containerSizes.length) {
-          validationError(EOFError.INVALID_EOF_CREATE_TARGET)
+          validationError(EOFErrorMessage.INVALID_EOF_CREATE_TARGET)
         }
         if (containerTypeMap.has(target)) {
           if (containerTypeMap.get(target) !== ContainerSectionType.InitCode) {
-            validationError(EOFError.CONTAINER_DOUBLE_TYPE)
+            validationError(EOFErrorMessage.CONTAINER_DOUBLE_TYPE)
           }
         }
         containerTypeMap.set(target, ContainerSectionType.InitCode)
@@ -405,16 +405,16 @@ function validateOpcodes(
         // RETURNCONTRACT
 
         if (mode !== ContainerSectionType.InitCode) {
-          validationError(EOFError.CONTAINER_TYPE_ERROR)
+          validationError(EOFErrorMessage.CONTAINER_TYPE_ERROR)
         }
 
         const target = code[ptr + 1]
         if (target >= container.header.containerSizes.length) {
-          validationError(EOFError.INVALID_RETURN_CONTRACT_TARGET)
+          validationError(EOFErrorMessage.INVALID_RETURN_CONTRACT_TARGET)
         }
         if (containerTypeMap.has(target)) {
           if (containerTypeMap.get(target) !== ContainerSectionType.DeploymentCode) {
-            validationError(EOFError.CONTAINER_DOUBLE_TYPE)
+            validationError(EOFErrorMessage.CONTAINER_DOUBLE_TYPE)
           }
         }
         containerTypeMap.set(target, ContainerSectionType.DeploymentCode)
@@ -423,13 +423,13 @@ function validateOpcodes(
         const dataTarget = readUint16(code, ptr + 1)
         const endOfSlice = dataTarget + 32
         if (container.header.dataSize < endOfSlice) {
-          validationError(EOFError.DATALOADN_OOB)
+          validationError(EOFErrorMessage.DATALOADN_OOB)
         }
       } else if (opcode === 0x00 || opcode === 0xf3) {
         // STOP / RETURN
 
         if (mode === ContainerSectionType.InitCode) {
-          validationError(EOFError.CONTAINER_TYPE_ERROR)
+          validationError(EOFErrorMessage.CONTAINER_TYPE_ERROR)
         }
       }
 
@@ -443,7 +443,7 @@ function validateOpcodes(
         ptr += intermediates // If the opcode has any intermediates, jump over it
       }
       if (ptr >= code.length) {
-        validationError(EOFError.OPCODE_INTERMEDIATES_OOB)
+        validationError(EOFErrorMessage.OPCODE_INTERMEDIATES_OOB)
       }
       ptr++ // Move to next opcode
       if (stackDelta[opcode].terminating === undefined) {
@@ -467,7 +467,7 @@ function validateOpcodes(
             stackHeightMin[successor] !== minStackNext ||
             stackHeightMax[successor] !== maxStackNext
           ) {
-            validationError(EOFError.UNSTABLE_STACK)
+            validationError(EOFErrorMessage.UNSTABLE_STACK)
           }
         }
 
@@ -486,20 +486,20 @@ function validateOpcodes(
 
     // Validate that the final opcode terminates
     if (!terminatingOpcodes.has(lastOpcode)) {
-      validationError(EOFError.INVALID_TERMINATOR)
+      validationError(EOFErrorMessage.INVALID_TERMINATOR)
     }
 
     if (container.body.typeSections[codeSection].maxStackHeight !== maxStackHeight) {
-      validationError(EOFError.MAX_STACK_HEIGHT_VIOLATION)
+      validationError(EOFErrorMessage.MAX_STACK_HEIGHT_VIOLATION)
     }
     if (maxStackHeight > 1024) {
       // TODO verify if 1023 or 1024 is the right constant
-      validationError(EOFError.MAX_STACK_HEIGHT_LIMIT)
+      validationError(EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT)
     }
 
     // Validate that if the section is returning, there is a returning opcode
     if (!sectionHasReturningOpcode && !nonReturningFunction) {
-      validationError(EOFError.RETURNING_NO_RETURN)
+      validationError(EOFErrorMessage.RETURNING_NO_RETURN)
     }
   }
 
@@ -520,11 +520,11 @@ function validateOpcodes(
   }
 
   if (sectionAccumulator.size !== container.header.codeSizes.length) {
-    validationError(EOFError.UNREACHABLE_CODE_SECTIONS)
+    validationError(EOFErrorMessage.UNREACHABLE_CODE_SECTIONS)
   }
 
   if (containerTypeMap.size !== container.header.containerSizes.length) {
-    validationError(EOFError.UNREACHABLE_CONTAINER_SECTIONS)
+    validationError(EOFErrorMessage.UNREACHABLE_CONTAINER_SECTIONS)
   }
 
   return containerTypeMap

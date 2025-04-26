@@ -36,7 +36,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- mpt",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -57,7 +57,7 @@
     "@ethereumjs/util": "^10.0.0-rc.1",
     "debug": "^4.4.0",
     "lru-cache": "11.0.2",
-    "ethereum-cryptography": "^3.1.0"
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
     "@ethereumjs/genesis": "^10.0.0-rc.1",

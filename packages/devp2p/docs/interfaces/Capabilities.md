@@ -1,52 +1,41 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / Capabilities
 
 # Interface: Capabilities
 
-## Table of contents
-
-### Properties
-
-- [constructor](Capabilities.md#constructor)
-- [length](Capabilities.md#length)
-- [name](Capabilities.md#name)
-- [version](Capabilities.md#version)
+Defined in: [packages/devp2p/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L62)
 
 ## Properties
 
 ### constructor
 
-• **constructor**: `ProtocolConstructor`
+> **constructor**: `ProtocolConstructor`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L66)
 
-[packages/devp2p/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L14)
-
-___
+***
 
 ### length
 
-• **length**: `number`
+> **length**: `number`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L65)
 
-[packages/devp2p/src/types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L13)
-
-___
+***
 
 ### name
 
-• **name**: `string`
+> **name**: `string`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L63)
 
-[packages/devp2p/src/types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L11)
-
-___
+***
 
 ### version
 
-• **version**: `number`
+> **version**: `number`
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L12)
+Defined in: [packages/devp2p/src/types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L64)

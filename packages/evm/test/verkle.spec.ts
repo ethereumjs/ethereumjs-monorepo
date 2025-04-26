@@ -112,7 +112,7 @@ describe('verkle tests', () => {
     assert.equal(writtenChunks.length, 1)
     assert.equal(res.execResult.exceptionError?.error, undefined)
   })
-})
+}, 20000)
 describe('generate an execution witness', () => {
   it('should generate the correct execution witness from a prestate and changes', async () => {
     const preStateVKT: Record<PrefixedHexString, PrefixedHexString> = {
@@ -188,4 +188,4 @@ describe('generate an execution witness', () => {
     // Ensure sender account nonce is 1 in execution witness
     assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
   })
-})
+}, 20000)

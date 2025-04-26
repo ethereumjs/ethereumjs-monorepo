@@ -1,43 +1,43 @@
+[**@ethereumjs/statemanager**](../README.md)
+
+***
+
 [@ethereumjs/statemanager](../README.md) / RPCStateManagerOpts
 
 # Interface: RPCStateManagerOpts
 
-## Table of contents
+Defined in: [types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L25)
 
-### Properties
+## Extends
 
-- [blockTag](RPCStateManagerOpts.md#blocktag)
-- [common](RPCStateManagerOpts.md#common)
-- [provider](RPCStateManagerOpts.md#provider)
+- `BaseStateManagerOpts`
 
 ## Properties
 
 ### blockTag
 
-• **blockTag**: `bigint` \| ``"earliest"``
+> **blockTag**: `bigint` \| `"earliest"`
 
-#### Defined in
+Defined in: [types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L27)
 
-[rpcStateManager.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L30)
+***
 
-___
+### common?
 
-### common
+> `optional` **common**: `Common`
 
-• `Optional` **common**: `Common`
+Defined in: [types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L15)
 
 The common to use
 
-#### Defined in
+#### Inherited from
 
-[rpcStateManager.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L35)
+`BaseStateManagerOpts.common`
 
-___
+***
 
 ### provider
 
-• **provider**: `string`
+> **provider**: `string`
 
-#### Defined in
-
-[rpcStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L29)
+Defined in: [types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L26)
