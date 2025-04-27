@@ -1,7 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Capability, createEOACode7702Tx } from '@ethereumjs/tx'
 import {
-  EOACode7702AuthorizationListItem,
+  type EOACode7702AuthorizationListItem,
   type PrefixedHexString,
   createAddressFromPrivateKey,
   randomBytes,
