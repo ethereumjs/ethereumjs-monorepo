@@ -84,9 +84,9 @@ async function run() {
 
   const txData: TxData = {
     nonce: 0n,
-    gasLimit: 300_000n,
-    maxFeePerGas: 50_000_000_000n,
-    maxPriorityFeePerGas: 5_000_000_000n,
+    gasLimit: 1_000_000n,
+    maxFeePerGas: parseUnits('10', 9), // 10 gwei
+    maxPriorityFeePerGas: parseUnits('5', 9), // 5 gwei
     to: BATCH_CONTRACT,
     value: 0n,
     data: hexToBytes(batchData),
