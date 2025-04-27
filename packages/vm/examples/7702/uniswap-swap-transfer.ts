@@ -1,16 +1,14 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { RPCStateManager } from '@ethereumjs/statemanager'
-import { EOACode7702Tx } from '@ethereumjs/tx'
+import { EOACode7702Tx, type EOACode7702TxData } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import {
-  Address,
-  PrefixedHexString,
   createAddressFromPrivateKey,
   eoaCode7702SignAuthorization,
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
-import { AbiCoder, Interface, parseEther, parseUnits } from 'ethers'
-import { TxData } from '../../../tx/dist/esm/7702/tx'
+import { Interface, parseEther, parseUnits } from 'ethers'
 
 async function run() {
   // ─── your EOA key & address ───────────────────────────────────────────
@@ -82,7 +80,7 @@ async function run() {
   // ─── build & send your single 7702 tx ───────────────────────────────
   const batchData = batchContract.encodeFunctionData('executeBatch', [calls]) as `0x${string}`
 
-  const txData: TxData = {
+  const txData: EOACode7702TxData = {
     nonce: 0n,
     gasLimit: 1_000_000n,
     maxFeePerGas: parseUnits('10', 9), // 10 gwei
