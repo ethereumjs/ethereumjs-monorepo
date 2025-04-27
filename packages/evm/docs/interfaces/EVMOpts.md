@@ -8,7 +8,7 @@
 
 Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L196)
 
-Options for instantiating a EVM.
+Options for instantiating a [EVM](../classes/EVM.md).
 
 ## Properties
 

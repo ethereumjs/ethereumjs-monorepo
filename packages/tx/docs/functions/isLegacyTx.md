@@ -8,7 +8,7 @@
 
 > **isLegacyTx**(`tx`): `tx is LegacyTx`
 
-Defined in: [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L173)
+Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
 
 ## Parameters
 

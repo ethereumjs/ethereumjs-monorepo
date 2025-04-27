@@ -8,7 +8,7 @@
 
 > **isBlob4844TxData**(`txData`): `txData is BlobEIP4844TxData`
 
-Defined in: [types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L297)
+Defined in: [types.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L280)
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **isFeeMarket1559TxData**(`txData`): `txData is FeeMarketEIP1559TxData`
 
-Defined in: [types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L292)
+Defined in: [types.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L275)
 
 ## Parameters
 

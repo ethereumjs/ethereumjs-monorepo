@@ -8,6 +8,7 @@
 
 - [BinaryTreeAccessWitness](classes/BinaryTreeAccessWitness.md)
 - [EOFContainer](classes/EOFContainer.md)
+- [EVM](classes/EVM.md)
 - [EVMError](classes/EVMError.md)
 - [EVMMockBlockchain](classes/EVMMockBlockchain.md)
 - [EVMPerformanceLogger](classes/EVMPerformanceLogger.md)

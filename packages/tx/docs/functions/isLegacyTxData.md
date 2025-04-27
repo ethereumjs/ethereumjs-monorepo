@@ -8,7 +8,7 @@
 
 > **isLegacyTxData**(`txData`): `txData is LegacyTxData`
 
-Defined in: [types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L282)
+Defined in: [types.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L265)
 
 ## Parameters
 

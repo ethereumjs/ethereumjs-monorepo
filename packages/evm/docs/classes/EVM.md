@@ -6,23 +6,27 @@
 
 # Class: EVM
 
-Defined in: [evm/src/evm.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L16)
+Defined in: [evm.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L133)
 
 The EVM (Ethereum Virtual Machine) is responsible for executing EVM bytecode, processing transactions, and managing state changes. It handles both contract calls and contract creation operations.
-
-## Constructors
 
 An EVM instance can be created with the constructor method:
 
 * [createEVM](../functions/createEVM.md)
 
+## Implements
+
+- [`EVMInterface`](../interfaces/EVMInterface.md)
+
+## Constructors
+
 ### Constructor
 
 > **new EVM**(`opts`): `EVM`
 
-Defined in: [evm/src/evm.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L16)
+Defined in: [evm.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L231)
 
-Instantiates a new EVM Object.
+Creates new EVM object
 
 #### Parameters
 
@@ -30,23 +34,49 @@ Instantiates a new EVM Object.
 
 [`EVMOpts`](../interfaces/EVMOpts.md)
 
+The EVM options
+
 #### Returns
 
 `EVM`
 
 #### Deprecated
 
-The direct usage of this constructor is discouraged since non-finalized async initialization might lead to side effects. Please use the async [createEVM](../functions/createEVM.md) constructor instead (same API).
+The direct usage of this constructor is replaced since
+non-finalized async initialization lead to side effects. Please
+use the async [createEVM](../functions/createEVM.md) constructor instead (same API).
 
 ## Properties
 
+### allowUnlimitedContractSize
+
+> `readonly` **allowUnlimitedContractSize**: `boolean`
+
+Defined in: [evm.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L178)
+
+***
+
+### allowUnlimitedInitCodeSize
+
+> `readonly` **allowUnlimitedInitCodeSize**: `boolean`
+
+Defined in: [evm.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L179)
+
+***
+
+### binaryAccessWitness?
+
+> `optional` **binaryAccessWitness**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
+
+Defined in: [evm.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L171)
+
+***
+
 ### blockchain
 
-> `readonly` **blockchain**: `EVMMockBlockchainInterface`
+> **blockchain**: [`EVMMockBlockchainInterface`](../interfaces/EVMMockBlockchainInterface.md)
 
-Defined in: [evm/src/evm.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L25)
-
-The blockchain interface used by the EVM
+Defined in: [evm.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L167)
 
 ***
 
@@ -54,39 +84,67 @@ The blockchain interface used by the EVM
 
 > `readonly` **common**: `Common`
 
-Defined in: [evm/src/evm.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L27)
+Defined in: [evm.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L163)
 
-Common configuration for the EVM
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`common`](../interfaces/EVMInterface.md#common)
 
 ***
 
 ### events
 
-> `readonly` **events**: `EventEmitter`\<[`EVMEvent`](../type-aliases/EVMEvent.md)\>
+> `readonly` **events**: `EventEmitter`\<`EVMEvent`\>
 
-Defined in: [evm/src/evm.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L29)
+Defined in: [evm.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L164)
 
-Event emitter for EVM events
+#### Implementation of
 
-***
-
-### stateManager
-
-> `readonly` **stateManager**: `StateManagerInterface`
-
-Defined in: [evm/src/evm.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L20)
-
-The StateManager used by the EVM
+[`EVMInterface`](../interfaces/EVMInterface.md).[`events`](../interfaces/EVMInterface.md#events)
 
 ***
 
 ### journal
 
-> `readonly` **journal**: `Journal`
+> **journal**: `Journal`
 
-Defined in: [evm/src/evm.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L33)
+Defined in: [evm.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L168)
 
-The journal used for tracking state changes
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`journal`](../interfaces/EVMInterface.md#journal)
+
+***
+
+### stateManager
+
+> **stateManager**: `StateManagerInterface`
+
+Defined in: [evm.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L166)
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`stateManager`](../interfaces/EVMInterface.md#statemanager)
+
+***
+
+### systemBinaryAccessWitness?
+
+> `optional` **systemBinaryAccessWitness**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
+
+Defined in: [evm.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L172)
+
+***
+
+### systemVerkleAccessWitness?
+
+> `optional` **systemVerkleAccessWitness**: [`VerkleAccessWitness`](VerkleAccessWitness.md)
+
+Defined in: [evm.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L170)
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`systemVerkleAccessWitness`](../interfaces/EVMInterface.md#systemverkleaccesswitness)
 
 ***
 
@@ -94,19 +152,131 @@ The journal used for tracking state changes
 
 > `readonly` **transientStorage**: `TransientStorage`
 
-Defined in: [evm/src/evm.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L35)
+Defined in: [evm.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L174)
 
-The transient storage used for EIP-1153
+***
+
+### verkleAccessWitness?
+
+> `optional` **verkleAccessWitness**: [`VerkleAccessWitness`](VerkleAccessWitness.md)
+
+Defined in: [evm.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L169)
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`verkleAccessWitness`](../interfaces/EVMInterface.md#verkleaccesswitness)
+
+## Accessors
+
+### opcodes
+
+#### Get Signature
+
+> **get** **opcodes**(): `OpcodeList`
+
+Defined in: [evm.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L200)
+
+##### Returns
+
+`OpcodeList`
+
+***
+
+### precompiles
+
+#### Get Signature
+
+> **get** **precompiles**(): `Map`\<`string`, `PrecompileFunc`\>
+
+Defined in: [evm.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L196)
+
+##### Returns
+
+`Map`\<`string`, `PrecompileFunc`\>
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`precompiles`](../interfaces/EVMInterface.md#precompiles)
 
 ## Methods
+
+### clearPerformanceLogs()
+
+> **clearPerformanceLogs**(): `void`
+
+Defined in: [evm.ts:1219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1219)
+
+#### Returns
+
+`void`
+
+***
+
+### getActiveOpcodes()
+
+> **getActiveOpcodes**(): `OpcodeList`
+
+Defined in: [evm.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L321)
+
+Returns a list with the currently activated opcodes
+available for EVM execution
+
+#### Returns
+
+`OpcodeList`
+
+***
+
+### getPerformanceLogs()
+
+> **getPerformanceLogs**(): `object`
+
+Defined in: [evm.ts:1215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1215)
+
+#### Returns
+
+`object`
+
+##### opcodes
+
+> **opcodes**: [`EVMPerformanceLogOutput`](../type-aliases/EVMPerformanceLogOutput.md)[]
+
+##### precompiles
+
+> **precompiles**: [`EVMPerformanceLogOutput`](../type-aliases/EVMPerformanceLogOutput.md)[]
+
+***
+
+### getPrecompile()
+
+> **getPrecompile**(`address`): `undefined` \| `PrecompileFunc`
+
+Defined in: [evm.ts:1090](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1090)
+
+Returns code for precompile at the given address, or undefined
+if no such precompile exists.
+
+#### Parameters
+
+##### address
+
+`Address`
+
+#### Returns
+
+`undefined` \| `PrecompileFunc`
+
+***
 
 ### runCall()
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](../interfaces/EVMResult.md)\>
 
-Defined in: [evm/src/evm.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L134)
+Defined in: [evm.ts:911](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L911)
 
-Executes an EVM message, determining whether it's a call or create based on the `to` address. It checkpoints the state and reverts changes if an exception happens during the message execution.
+Executes an EVM message, determining whether it's a call or create
+based on the `to` address. It checkpoints the state and reverts changes
+if an exception happens during the message execution.
 
 #### Parameters
 
@@ -118,15 +288,20 @@ Executes an EVM message, determining whether it's a call or create based on the 
 
 `Promise`\<[`EVMResult`](../interfaces/EVMResult.md)\>
 
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`runCall`](../interfaces/EVMInterface.md#runcall)
+
 ***
 
 ### runCode()
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](../interfaces/ExecResult.md)\>
 
-Defined in: [evm/src/evm.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L109)
+Defined in: [evm.ts:1062](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1062)
 
-Executes EVM bytecode directly without creating a message. This is useful for testing and debugging.
+Bound to the global VM and therefore
+shouldn't be used directly from the evm class
 
 #### Parameters
 
@@ -138,44 +313,26 @@ Executes EVM bytecode directly without creating a message. This is useful for te
 
 `Promise`\<[`ExecResult`](../interfaces/ExecResult.md)\>
 
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`runCode`](../interfaces/EVMInterface.md#runcode)
+
 ***
 
 ### shallowCopy()
 
 > **shallowCopy**(): `EVM`
 
-Defined in: [evm/src/evm.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L109)
+Defined in: [evm.ts:1201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1201)
 
-Returns a shallow copy of the EVM instance. Note that the returned copy will share the same state manager and blockchain as the original.
+This method copies the EVM, current HF and EIP settings
+and returns a new EVM instance.
+
+Note: this is only a shallow copy and both EVM instances
+will point to the same underlying state DB.
 
 #### Returns
 
 `EVM`
 
-***
-
-### getPerformanceLogs()
-
-> **getPerformanceLogs**(): `PerformanceLog[]`
-
-Defined in: [evm/src/evm.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L109)
-
-Returns the performance logs collected during EVM execution.
-
-#### Returns
-
-`PerformanceLog[]`
-
-***
-
-### clearPerformanceLogs()
-
-> **clearPerformanceLogs**(): `void`
-
-Defined in: [evm/src/evm.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L109)
-
-Clears all performance logs.
-
-#### Returns
-
-`void` 
+EVM

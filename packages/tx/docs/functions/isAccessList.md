@@ -8,7 +8,7 @@
 
 > **isAccessList**(`input`): `input is AccessList`
 
-Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L117)
+Defined in: [types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L119)
 
 ## Parameters
 

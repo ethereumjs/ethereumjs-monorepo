@@ -8,7 +8,7 @@
 
 > **isEOACode7702TxData**(`txData`): `txData is EOACode7702TxData`
 
-Defined in: [types.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L302)
+Defined in: [types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L285)
 
 ## Parameters
 

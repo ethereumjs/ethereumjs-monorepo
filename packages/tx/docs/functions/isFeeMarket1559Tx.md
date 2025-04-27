@@ -8,7 +8,7 @@
 
 > **isFeeMarket1559Tx**(`tx`): `tx is FeeMarket1559Tx`
 
-Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L181)
+Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **isAccessListBytes**(`input`): `input is AccessListBytes`
 
-Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L106)
+Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L108)
 
 ## Parameters
 

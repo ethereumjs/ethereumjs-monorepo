@@ -24,7 +24,7 @@ Full container buffer
 
 ### evm
 
-`EVM`
+[`EVM`](../classes/EVM.md)
 
 EVM, to read opcodes from
 

@@ -8,7 +8,7 @@
 
 > **Capability**: `object`
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L16)
+Defined in: [types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L18)
 
 Can be used in conjunction with [\[TransactionType\].supports](../interfaces/Transaction.md)
 to query on tx capabilities

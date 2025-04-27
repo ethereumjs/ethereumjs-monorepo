@@ -8,7 +8,7 @@
 
 Defined in: [types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L402)
 
-Result of executing a call via the EVM.
+Result of executing a call via the [EVM](../classes/EVM.md).
 
 ## Properties
 
