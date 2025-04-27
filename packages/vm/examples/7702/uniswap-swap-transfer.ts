@@ -49,29 +49,32 @@ async function run() {
 
   // ─── trade parameters ────────────────────────────────────────────────
   const amountIn = parseUnits('10000', 18) // 10000 DAI
-  const amountOutMin = parseEther('4') // expect at least 4 WETH
+  const amountOut = parseEther('4') // expect at least 4 WETH
 
-  // ─── encode your two sub-calls ───────────────────────────────────────
+  // ─── encode your underlying swap data ───────────────────────────────────
+  const uniswapV3SwapPayload = `0xYourSwapCallDataHere`
+
+  // ─── encode your three sub-calls ───────────────────────────────────────
+  // 1) DAI approve
   const callApprove = erc20.encodeFunctionData('approve', [
     UNISWAP_V3_ROUTER,
     amountIn,
   ]) as PrefixedHexString
 
-  // ─── encode your swap call data ───────────────────────────────────
-  const uniswapV3SwapCallData = `0xYourSwapCallDataHere`
-
+  // 2) Uniswap V3 swapExactInput
   const callSwap = router.encodeFunctionData('exactInput', [
-    uniswapV3SwapCallData,
+    uniswapV3SwapPayload,
   ]) as PrefixedHexString
 
-  const callTransfer = router.encodeFunctionData('transfer', [
+  // 3) sweep WETH to cold wallet
+  const callTransfer = erc20.encodeFunctionData('transfer', [
     COLD_WALLET,
-    amountOutMin,
+    amountOut,
   ]) as PrefixedHexString
 
   const calls = [callApprove, callSwap, callTransfer].map(hexToBytes)
 
-  // ─── sign one authorization each for DAI approve & router swap ──────
+  // ─── sign authorization for each ──────
   const targets: PrefixedHexString[] = [DAI, UNISWAP_V3_ROUTER, WETH]
   const auths = targets.map((address, i) =>
     eoaCode7702SignAuthorization({ chainId: '0x1', address, nonce: `0x${i}` }, privateKey),
