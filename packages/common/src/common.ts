@@ -38,9 +38,10 @@ import type {
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
  *
- * Use the {@link Common.custom} static constructor for creating simple
- * custom chain {@link Common} objects (more complete custom chain setups
- * can be created via the main constructor).
+ * A `Common` object can be created with one of the following constructor methods:
+ *
+ * * [createCustomCommon](../functions/createCustomCommon.md)
+ * * [createCommonFromGethGenesis](../functions/createCommonFromGethGenesis.md)
  */
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork

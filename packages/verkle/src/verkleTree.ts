@@ -27,6 +27,10 @@ interface Path {
 
 /**
  * The basic verkle tree interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
+ *
+ * A verkle tree can be created with the constructor method:
+ *
+ * * [createVerkleTree](../functions/createVerkleTree.md)
  */
 export class VerkleTree {
   _opts: VerkleTreeOpts

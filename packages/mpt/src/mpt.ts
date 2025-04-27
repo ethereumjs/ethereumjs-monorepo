@@ -51,6 +51,10 @@ import type { OnFound } from './util/asyncWalk.ts'
 
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
+ * A trie can be created with one of the following constructor methods:
+ *
+ * * [createMPT](../functions/createMPT.md)
+ * * [createMPTFromProof](../functions/createMPTFromProof.md)
  */
 export class MerklePatriciaTrie {
   protected readonly _opts: MPTOptsWithDefaults = {

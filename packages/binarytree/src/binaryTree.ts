@@ -30,6 +30,10 @@ interface Path {
 
 /**
  * The basic binary tree interface, use with `import { BinaryTree } from '@ethereumjs/binarytree'`.
+ *
+ * A binary tree can be created with the constructor method:
+ *
+ * * [createBinaryTree](../functions/createBinaryTree.md)
  */
 export class BinaryTree {
   /** The options for instantiating the binary tree */
