@@ -82,7 +82,7 @@ async function run() {
 
   // ─── sign authorization for Batch Contract ──────
   const authorizationListItem = eoaCode7702SignAuthorization(
-    { chainId: '0x1', address: BATCH_CONTRACT, nonce: `0x$1` },
+    { chainId: '0x1', address: BATCH_CONTRACT, nonce: `0x1` },
     privateKey,
   )
 
