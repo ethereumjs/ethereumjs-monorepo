@@ -20,8 +20,7 @@ async function run() {
   // ─── set up EthereumJS VM with EIP-7702 enabled ───────────────────────
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Cancun,
-    eips: [7702],
+    hardfork: Hardfork.Prague,
   })
   const stateManager = new RPCStateManager({
     provider: 'YourProviderURLHere',
@@ -34,18 +33,21 @@ async function run() {
   const UNISWAP_V3_ROUTER = '0xE592427A0AEce92De3Edee1F18E0157C05861564'
   const WETH = '0xC02aaa39b223FE8D0A0e5c4F27EaD9083C756Cc2'
   const COLD_WALLET = `0x${'42'.repeat(20)}`
-  const BATCH_CONTRACT = '0xYourBatchContractAddressHere'
 
   const erc20Abi = [
     'function approve(address _spender, uint256 _amount) external returns (bool success)',
     'function transfer(address _to, uint256 _value) public returns (bool success)',
   ]
   const routerAbi = ['function exactInput(bytes)']
-  const batchAbi = ['function executeBatch(bytes[] calldata) external']
+
+  // This Batch contract is a placeholder. Replace with your actual batch contract address.
+  // This contract is responsible for executing multiple calls in a single TX.
+  const BATCH_CONTRACT = '0xYourBatchContractAddressHere'
+  const batchAbi = ['function executeBatch(bytes[] calldata, address[] targets) external']
 
   const erc20 = new Interface(erc20Abi)
   const router = new Interface(routerAbi)
-  const batchContract = new Interface(batchAbi)
+  const batch = new Interface(batchAbi)
 
   // ─── trade parameters ────────────────────────────────────────────────
   const amountIn = parseUnits('10000', 18) // 10000 DAI
@@ -72,27 +74,28 @@ async function run() {
     amountOut,
   ]) as PrefixedHexString
 
+  const targets: PrefixedHexString[] = [DAI, UNISWAP_V3_ROUTER, WETH]
   const calls = [callApprove, callSwap, callTransfer].map(hexToBytes)
 
-  // ─── sign authorization for each ──────
-  const targets: PrefixedHexString[] = [DAI, UNISWAP_V3_ROUTER, WETH]
-  const auths = targets.map((address, i) =>
-    eoaCode7702SignAuthorization({ chainId: '0x1', address, nonce: `0x${i}` }, privateKey),
-  )
-
   // ─── build & send your single 7702 tx ───────────────────────────────
-  const batchData = batchContract.encodeFunctionData('executeBatch', [calls]) as `0x${string}`
+  const batchData = batch.encodeFunctionData('executeBatch', [calls, targets]) as `0x${string}`
+
+  // ─── sign authorization for Batch Contract ──────
+  const authorizationListItem = eoaCode7702SignAuthorization(
+    { chainId: '0x1', address: BATCH_CONTRACT, nonce: `0x$1` },
+    privateKey,
+  )
 
   const txData: EOACode7702TxData = {
     nonce: 0n,
     gasLimit: 1_000_000n,
     maxFeePerGas: parseUnits('10', 9), // 10 gwei
     maxPriorityFeePerGas: parseUnits('5', 9), // 5 gwei
-    to: BATCH_CONTRACT,
+    to: userAddress, // Using our own wallet, which will be acting as the BATCH_CONTRACT smart contract
     value: 0n,
     data: hexToBytes(batchData),
     accessList: [],
-    authorizationList: auths,
+    authorizationList: [authorizationListItem],
   }
 
   const tx = new EOACode7702Tx(txData, { common }).sign(privateKey)
