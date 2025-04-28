@@ -1,4 +1,4 @@
-# @ethereumjs/binarytree `v10`
+# @ethereumjs/binarytree `v10` (EXPERIMENTAL)
 
 [![NPM Package][binarytree-npm-badge]][binarytree-npm-link]
 [![GitHub Issues][binarytree-issues-badge]][binarytree-issues-link]
@@ -11,7 +11,7 @@
 
 > Binary Trees are a novel cryptographic data structure proposed for use in Ethereum to optimize state storage and proof verification. Unlike Merkle Patricia Tries, Binary Trees use a strict binary branching structure, allowing smaller proof sizes. By reducing storage overhead and improving proof efficiency, Binary Trees aim to enhance Ethereum’s scalability while maintaining robust security guarantees.
 
-This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes. Any help in improving the package is very much welcome.
+**Note:** This library is in an **experimental** stage and should not be used in production!
 
 ## Table of Contents
 

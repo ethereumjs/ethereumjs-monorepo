@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/verkle",
-  "version": "10.0.0-dev",
+  "version": "10.0.0",
   "description": "Implementation of verkle trees as used in Ethereum.",
   "keywords": ["verkle", "tree", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle#readme",
