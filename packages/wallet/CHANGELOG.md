@@ -27,10 +27,6 @@ So: **All libraries now work in the browser "out of the box"**.
 
 Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
 
-### Changes since `RC.1`
-
-- `EIP-6110` log layout check fix, PR [#3977](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3977)
-
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.

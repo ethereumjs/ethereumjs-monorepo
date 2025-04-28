@@ -29,6 +29,7 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
+- `EIP-6110` log layout check fix, PR [#3977](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3977)
 - Convert `StatelessVerkleStateManager` usage to type (bundle optimizations) and small Verkle interface adjustment, PRs [#4021](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4021) and [#4022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4022)
 
 ## 10.0.0-rc.1 - 2025-03-24
