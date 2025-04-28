@@ -358,7 +358,7 @@ export const dummy = {
 export const batchBlocks = async (rpc: HttpClient, inputBlocks: ExecutionPayload[]) => {
   for (let i = 0; i < inputBlocks.length; i++) {
     const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   }
 }
 

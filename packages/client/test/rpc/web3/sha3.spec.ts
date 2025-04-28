@@ -5,7 +5,7 @@ import { baseSetup } from '../helpers.ts'
 const method = 'web3_sha3'
 
 function compareErrorCode(error: any, errorCode: any) {
-  assert.equal(
+  assert.strictEqual(
     error.code,
     errorCode,
     `should return the correct error code (expected: ${errorCode}, received: ${error.code})`,
@@ -13,7 +13,7 @@ function compareErrorCode(error: any, errorCode: any) {
 }
 
 function compareErrorMsg(error: any, errorMsg: any) {
-  assert.equal(error.message, errorMsg, `should return "${errorMsg}" error message`)
+  assert.strictEqual(error.message, errorMsg, `should return "${errorMsg}" error message`)
 }
 
 describe(method, () => {
@@ -23,7 +23,7 @@ describe(method, () => {
     const res = await rpc.request(method, ['0x68656c6c6f20776f726c64'])
     const { result } = res
     assert.notEqual(result.length, 0, 'result string should not be empty')
-    assert.equal(
+    assert.strictEqual(
       result,
       '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad',
       'should return the correct hash value',

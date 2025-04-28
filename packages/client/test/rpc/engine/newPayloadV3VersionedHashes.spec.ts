@@ -39,8 +39,8 @@ describe(`${method}: Cancun validations`, () => {
     ]
     let res = await rpc.request(method, blockDataExtraVersionedHashes)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
       'Error assembling block from payload: Error verifying blobVersionedHashes: expected=0 received=2',
     )
@@ -64,7 +64,7 @@ describe(`${method}: Cancun validations`, () => {
       },
     ]
     res = await rpc.request(method, blockDataNoneHashes)
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes('missing value for required argument blobVersionedHashes'),
     )
@@ -83,7 +83,7 @@ describe(`${method}: Cancun validations`, () => {
       txVersionedHashesString,
     ]
     res = await rpc.request(method, blockDataMissingParentBeaconRoot)
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes('missing value for required argument parentBeaconBlockRoot'),
     )
@@ -104,8 +104,8 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataExtraMissingHashes1)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
       'Error assembling block from payload: Error verifying blobVersionedHashes: expected=2 received=1',
     )
@@ -126,8 +126,8 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataExtraMisMatchingHashes1)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
       'Error assembling block from payload: Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
     )
@@ -147,6 +147,6 @@ describe(`${method}: Cancun validations`, () => {
       parentBeaconBlockRoot,
     ]
     res = await rpc.request(method, blockDataMatchingVersionedHashes)
-    assert.equal(res.result.status, 'ACCEPTED')
+    assert.strictEqual(res.result.status, 'ACCEPTED')
   })
 })

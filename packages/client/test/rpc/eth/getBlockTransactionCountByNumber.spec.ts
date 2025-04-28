@@ -61,7 +61,7 @@ describe(method, () => {
 
     // verify that the transaction count is 1
     const res = await rpc.request(method, ['latest'])
-    assert.equal(res.result, '0x1', 'should return the correct block transaction count(1)')
+    assert.strictEqual(res.result, '0x1', 'should return the correct block transaction count(1)')
   })
 
   it('call with valid arguments (multiple transactions)', async () => {
@@ -120,7 +120,7 @@ describe(method, () => {
     // verify that the transaction count is 3
     // specify the block number instead of using latest
     const res = await rpc.request(method, ['0x1'])
-    assert.equal(res.result, '0x3', 'should return the correct block transaction count(3)')
+    assert.strictEqual(res.result, '0x3', 'should return the correct block transaction count(3)')
   })
 
   it('call with unsupported block argument', async () => {
@@ -131,7 +131,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

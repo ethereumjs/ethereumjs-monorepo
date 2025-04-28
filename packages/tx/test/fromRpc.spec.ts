@@ -58,7 +58,11 @@ describe('[fromJSONRPCProvider]', () => {
 
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
     const tx = await createTxFromJSONRPCProvider(provider, txHash, { common })
-    assert.equal(bytesToHex(tx.hash()), txHash, 'generated correct tx from transaction RPC data')
+    assert.strictEqual(
+      bytesToHex(tx.hash()),
+      txHash,
+      'generated correct tx from transaction RPC data',
+    )
     try {
       await createTxFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
@@ -77,8 +81,8 @@ describe('[normalizeTxParams]', () => {
   it('should work', () => {
     const normedTx = normalizeTxParams(rpcTxData)
     const tx = createTx(normedTx)
-    assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
-    assert.equal(
+    assert.strictEqual(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
+    assert.strictEqual(
       bytesToHex(tx.hash()),
       rpcTxData.hash,
       'converted normed tx data to transaction object',

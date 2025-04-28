@@ -13,7 +13,7 @@ describe('Snap sync simulator tests', () => {
   it('SNAP: send valid message', () => {
     const opts: any = {}
     opts.sendMessage = function (rlpxs: any, snap: any) {
-      assert.equal(snap.getVersion(), 1, 'should use snap1 as protocol version')
+      assert.strictEqual(snap.getVersion(), 1, 'should use snap1 as protocol version')
       snap.sendMessage(devp2p.SnapMessageCodes.GET_ACCOUNT_RANGE, [1, [437000, 1, 0, 0]])
       assert.isTrue(true, 'should send GET_ACCOUNT_RANGE message')
     }
@@ -33,7 +33,7 @@ describe('Snap sync simulator tests', () => {
         snap.sendMessage(0x55, [1, []])
       } catch (err: any) {
         const msg = 'Error: Unknown code 85'
-        assert.equal(err.toString(), msg, `should emit error: ${msg}`)
+        assert.strictEqual(err.toString(), msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
       }
     }

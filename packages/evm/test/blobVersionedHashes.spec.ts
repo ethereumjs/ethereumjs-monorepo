@@ -36,7 +36,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
     }
     const res = await evm.runCall(runCallArgs)
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
       '0xab',
       'retrieved correct versionedHash from runState',
@@ -85,7 +85,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       }
       const res = await evm.runCall(runCallArgs)
 
-      assert.equal(
+      assert.strictEqual(
         bytesToHex(unpadBytes(res.execResult.returnValue)),
         '0xab',
         `retrieved correct versionedHash from runState through callCode=${callCode}`,
@@ -141,7 +141,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       const address = createAddressFromString(bytesToHex(res.execResult.returnValue.slice(12)))
       const code = await evm.stateManager.getCode(address)
 
-      assert.equal(
+      assert.strictEqual(
         bytesToHex(code),
         '0x' + 'ab'.padStart(64, '0'), // have to padStart here, since `BLOBHASH` will push 32 bytes on stack
         `retrieved correct versionedHash from runState through createOP=${createOP}`,

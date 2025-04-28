@@ -98,7 +98,7 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-    assert.equal(res.result, null, 'should return null')
+    assert.strictEqual(res.result, null, 'should return null')
   })
 
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
@@ -147,8 +147,8 @@ describe(method, () => {
 
       const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
-      assert.equal(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
-      assert.equal(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
+      assert.strictEqual(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
+      assert.strictEqual(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
 
       const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
 

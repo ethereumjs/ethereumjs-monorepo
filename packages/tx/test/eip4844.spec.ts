@@ -110,19 +110,19 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       to: createZeroAddress(),
     }
     const tx = createBlob4844Tx(txData, { common })
-    assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
+    assert.strictEqual(tx.type, 3, 'successfully instantiated a blob transaction from txData')
     const factoryTx = createTx(txData, { common })
-    assert.equal(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
+    assert.strictEqual(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
 
     const serializedTx = tx.serialize()
-    assert.equal(serializedTx[0], 3, 'successfully serialized a blob tx')
+    assert.strictEqual(serializedTx[0], 3, 'successfully serialized a blob tx')
     const deserializedTx = createBlob4844TxFromRLP(serializedTx, { common })
-    assert.equal(deserializedTx.type, 3, 'deserialized a blob tx')
+    assert.strictEqual(deserializedTx.type, 3, 'deserialized a blob tx')
 
     const signedTx = tx.sign(pk)
     const sender = signedTx.getSenderAddress().toString()
     const decodedTx = createBlob4844TxFromRLP(signedTx.serialize(), { common })
-    assert.equal(
+    assert.strictEqual(
       decodedTx.getSenderAddress().toString(),
       sender,
       'signature and sender were deserialized correctly',
@@ -181,10 +181,14 @@ describe('fromTxData using from a json', () => {
       const tx = createBlob4844Tx(txData as BlobEIP4844TxData, { common: c })
       assert.isTrue(true, 'Should be able to parse a json data and hash it')
 
-      assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
-      assert.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
+      assert.strictEqual(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
+      assert.strictEqual(
+        bytesToHex(tx.serialize()),
+        txMeta.serialized,
+        'serialization should match',
+      )
       // TODO: fix the hash
-      assert.equal(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
+      assert.strictEqual(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
 
       const jsonData = tx.toJSON()
       // override few fields with equivalent values to have a match
@@ -198,7 +202,7 @@ describe('fromTxData using from a json', () => {
         hexToBytes(txMeta.serialized as PrefixedHexString),
         { common: c },
       )
-      assert.equal(
+      assert.strictEqual(
         bytesToHex(fromSerializedTx.hash()),
         txMeta.hash,
         'fromSerializedTx hash should match',
@@ -293,13 +297,13 @@ describe('Network wrapper tests', () => {
     const wrapper = signedTx.serializeNetworkWrapper()
 
     const jsonData = blobTxNetworkWrapperToJSON(wrapper, { common })
-    assert.equal(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
+    assert.strictEqual(jsonData.blobs?.length, blobs.length, 'contains the correct number of blobs')
     for (let i = 0; i < jsonData.blobs.length; i++) {
       const b1 = jsonData.blobs[i]
       const b2 = signedTx.blobs![i]
-      assert.equal(b1, b2, 'contains the same blobs')
+      assert.strictEqual(b1, b2, 'contains the same blobs')
     }
-    assert.equal(
+    assert.strictEqual(
       jsonData.kzgCommitments.length,
       signedTx.kzgCommitments!.length,
       'contains the correct number of commitments',
@@ -307,9 +311,9 @@ describe('Network wrapper tests', () => {
     for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
       const c1 = jsonData.kzgCommitments[i]
       const c2 = signedTx.kzgCommitments![i]
-      assert.equal(c1, c2, 'contains the same commitments')
+      assert.strictEqual(c1, c2, 'contains the same commitments')
     }
-    assert.equal(
+    assert.strictEqual(
       jsonData.kzgProofs?.length,
       signedTx.kzgProofs!.length,
       'contains the correct number of proofs',
@@ -317,20 +321,24 @@ describe('Network wrapper tests', () => {
     for (let i = 0; i < jsonData.kzgProofs.length; i++) {
       const p1 = jsonData.kzgProofs[i]
       const p2 = signedTx.kzgProofs![i]
-      assert.equal(p1, p2, 'contains the same proofs')
+      assert.strictEqual(p1, p2, 'contains the same proofs')
     }
 
     const deserializedTx = createBlob4844TxFromSerializedNetworkWrapper(wrapper, {
       common,
     })
 
-    assert.equal(
+    assert.strictEqual(
       deserializedTx.type,
       0x03,
       'successfully deserialized a blob transaction network wrapper',
     )
-    assert.equal(deserializedTx.blobs?.length, blobs.length, 'contains the correct number of blobs')
-    assert.equal(
+    assert.strictEqual(
+      deserializedTx.blobs?.length,
+      blobs.length,
+      'contains the correct number of blobs',
+    )
+    assert.strictEqual(
       deserializedTx.getSenderAddress().toString(),
       sender,
       'decoded sender address correctly',
@@ -352,7 +360,7 @@ describe('Network wrapper tests', () => {
       { common },
     )
 
-    assert.equal(
+    assert.strictEqual(
       unsignedTx.blobVersionedHashes[0],
       simpleBlobTx.blobVersionedHashes[0],
       'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes',
@@ -558,7 +566,7 @@ describe('hash() and signature verification', () => {
       },
       { common },
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(unsignedTx.getHashedMessageToSign()),
       '0x02560c5173b0d793ce019cfa515ece6a04a4b3f3d67eab67fbca78dd92d4ed76',
       'produced the correct transaction hash',
@@ -567,7 +575,7 @@ describe('hash() and signature verification', () => {
       hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'),
     )
 
-    assert.equal(
+    assert.strictEqual(
       signedTx.getSenderAddress().toString(),
       '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
       'was able to recover sender address',
@@ -591,12 +599,12 @@ it('getEffectivePriorityFee()', () => {
     },
     { common },
   )
-  assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
-  assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
-  assert.equal(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
-  assert.equal(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
-  assert.equal(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
-  assert.equal(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
+  assert.strictEqual(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
   assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
 })
 
@@ -651,17 +659,25 @@ describe('Network wrapper deserialization test', () => {
     const jsonData = deserializedTx.toJSON()
     assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
 
-    assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-    assert.equal(deserializedTx.blobs![0], blobs[0], 'blobs should match')
-    assert.equal(deserializedTx.kzgCommitments![0], commitments[0], 'commitments should match')
-    assert.equal(deserializedTx.kzgProofs![0], proofs[0], 'proofs should match')
+    assert.strictEqual(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
+    assert.strictEqual(deserializedTx.blobs![0], blobs[0], 'blobs should match')
+    assert.strictEqual(
+      deserializedTx.kzgCommitments![0],
+      commitments[0],
+      'commitments should match',
+    )
+    assert.strictEqual(deserializedTx.kzgProofs![0], proofs[0], 'proofs should match')
 
     const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
     const hash = bytesToHex(deserializedTx.hash())
     const networkSerialized = bytesToHex(deserializedTx.serializeNetworkWrapper())
     const serialized = bytesToHex(deserializedTx.serialize())
     const sender = deserializedTx.getSenderAddress().toString()
-    assert.equal(networkSerialized, serialized4844TxData.tx, 'network serialization should match')
+    assert.strictEqual(
+      networkSerialized,
+      serialized4844TxData.tx,
+      'network serialization should match',
+    )
 
     assert.deepEqual(
       txMeta,

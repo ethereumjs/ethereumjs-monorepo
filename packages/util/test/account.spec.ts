@@ -48,14 +48,14 @@ const _0n = BigInt(0)
 describe('Account', () => {
   it('empty constructor', () => {
     const account = new Account()
-    assert.equal(account.nonce, _0n, 'should have zero nonce')
-    assert.equal(account.balance, _0n, 'should have zero balance')
-    assert.equal(
+    assert.strictEqual(account.nonce, _0n, 'should have zero nonce')
+    assert.strictEqual(account.balance, _0n, 'should have zero balance')
+    assert.strictEqual(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have storageRoot equal to KECCAK256_RLP',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have codeHash equal to KECCAK256_NULL',
@@ -71,14 +71,14 @@ describe('Account', () => {
     ]
     const account = createAccountFromBytesArray(raw.map((el) => hexToBytes(el)))
 
-    assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
-    assert.equal(account.balance, BigInt(900), 'should have correct balance')
-    assert.equal(
+    assert.strictEqual(account.nonce, BigInt(2), 'should have correct nonce')
+    assert.strictEqual(account.balance, BigInt(900), 'should have correct balance')
+    assert.strictEqual(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash',
@@ -93,14 +93,14 @@ describe('Account', () => {
       codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = createAccount(raw)
-    assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
-    assert.equal(account.balance, BigInt(900), 'should have correct balance')
-    assert.equal(
+    assert.strictEqual(account.nonce, BigInt(2), 'should have correct nonce')
+    assert.strictEqual(account.balance, BigInt(900), 'should have correct balance')
+    assert.strictEqual(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash',
@@ -112,14 +112,14 @@ describe('Account', () => {
       '0xf84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
     const account = createAccountFromRLP(accountRlp)
-    assert.equal(account.nonce, BigInt(2), 'should have correct nonce')
-    assert.equal(account.balance, BigInt(900), 'should have correct balance')
-    assert.equal(
+    assert.strictEqual(account.nonce, BigInt(2), 'should have correct nonce')
+    assert.strictEqual(account.balance, BigInt(900), 'should have correct balance')
+    assert.strictEqual(
       bytesToHex(account.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(account.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash',
@@ -336,7 +336,7 @@ describe('Utility Functions', () => {
     const pubKey =
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(
         importPublic(
           hexToBytes(
@@ -348,7 +348,7 @@ describe('Utility Functions', () => {
       'should work wt.testh an Ethereum public key', // cspell:disable-line
     )
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(
         importPublic(
           hexToBytes(
@@ -360,7 +360,7 @@ describe('Utility Functions', () => {
       'should work wt.testh uncompressed SEC1 keys', // cspell:disable-line
     )
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(
         importPublic(
           hexToBytes('0x033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a'),
@@ -386,14 +386,14 @@ describe('Utility Functions', () => {
     )
     let address = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     let r = publicToAddress(pubKey)
-    assert.equal(bytesToHex(r), address, 'should produce an address given a public key')
+    assert.strictEqual(bytesToHex(r), address, 'should produce an address given a public key')
 
     pubKey = hexToBytes(
       '0x043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
     )
     address = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     r = publicToAddress(pubKey, true)
-    assert.equal(bytesToHex(r), address, 'should produce an address given a SEC1 public key')
+    assert.strictEqual(bytesToHex(r), address, 'should produce an address given a SEC1 public key')
 
     pubKey = hexToBytes(
       '0x023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
@@ -438,7 +438,7 @@ describe('Utility Functions', () => {
       '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
     )
     const r = privateToPublic(privateKey)
-    assert.equal(bytesToHex(r), pubKey, 'should produce a public key given a private key')
+    assert.strictEqual(bytesToHex(r), pubKey, 'should produce a public key given a private key')
 
     privateKey = hexToBytes('0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f2a')
     assert.throws(
@@ -482,7 +482,7 @@ describe('Utility Functions', () => {
       '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f',
     )
     const r = privateToAddress(privateKey)
-    assert.equal(bytesToHex(r), address, 'should produce an address given a private key')
+    assert.strictEqual(bytesToHex(r), address, 'should produce an address given a private key')
   })
 
   it('generateAddress', () => {
@@ -490,7 +490,7 @@ describe('Utility Functions', () => {
       utf8ToBytes('990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       intToBytes(14),
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(addr),
       '0x936a4295d8d74e310c0c95f0a63e53737b998d12',
       'should produce an address given a public key',
@@ -502,7 +502,7 @@ describe('Utility Functions', () => {
       hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       intToBytes(14),
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(addr),
       '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989',
       'should produce an address given a public key',
@@ -516,7 +516,7 @@ describe('Utility Functions', () => {
       hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
       intToBytes(0),
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(addr),
       '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
       'should produce an address given a public key',
@@ -559,7 +559,11 @@ describe('Utility Functions', () => {
         hexToBytes(salt as PrefixedHexString),
         hexToBytes(initCode as PrefixedHexString),
       )
-      assert.equal(bytesToHex(addr), result, `${comment}: should generate the addresses provided`)
+      assert.strictEqual(
+        bytesToHex(addr),
+        result,
+        `${comment}: should generate the addresses provided`,
+      )
     }
   })
 
@@ -663,7 +667,7 @@ describe('Utility Functions', () => {
     it('EIP55', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         const tmp = eip55ChecksumAddresses[i]
-        assert.equal(toChecksumAddress(tmp.toLowerCase()).toLowerCase(), tmp.toLowerCase())
+        assert.strictEqual(toChecksumAddress(tmp.toLowerCase()).toLowerCase(), tmp.toLowerCase())
       }
     })
 
@@ -671,19 +675,19 @@ describe('Utility Functions', () => {
       it('Should encode the example addresses correctly', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
-            assert.equal(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
-            assert.equal(
+            assert.strictEqual(toChecksumAddress(addr.toLowerCase(), Number(chainId)), addr)
+            assert.strictEqual(
               toChecksumAddress(
                 addr.toLowerCase(),
                 hexToBytes(`0x${padToEven(chainId)}`),
               ).toLowerCase(),
               addr.toLowerCase(),
             )
-            assert.equal(
+            assert.strictEqual(
               toChecksumAddress(addr.toLowerCase(), BigInt(chainId)).toLowerCase(),
               addr.toLowerCase(),
             )
-            assert.equal(
+            assert.strictEqual(
               toChecksumAddress(addr.toLowerCase(), `0x${padToEven(chainId)}`).toLowerCase(),
               addr.toLowerCase(),
             )
@@ -693,9 +697,9 @@ describe('Utility Functions', () => {
       it('Should encode large chain ids greater than MAX_INTEGER correctly', () => {
         const addr = '0x88021160C5C792225E4E5452585947470010289D'
         const chainIDBytes = hexToBytes('0x796f6c6f763378')
-        assert.equal(toChecksumAddress(addr.toLowerCase(), chainIDBytes), addr)
-        assert.equal(toChecksumAddress(addr.toLowerCase(), bytesToBigInt(chainIDBytes)), addr)
-        assert.equal(toChecksumAddress(addr.toLowerCase(), bytesToHex(chainIDBytes)), addr)
+        assert.strictEqual(toChecksumAddress(addr.toLowerCase(), chainIDBytes), addr)
+        assert.strictEqual(toChecksumAddress(addr.toLowerCase(), bytesToBigInt(chainIDBytes)), addr)
+        assert.strictEqual(toChecksumAddress(addr.toLowerCase(), bytesToHex(chainIDBytes)), addr)
       })
     })
 
@@ -787,13 +791,13 @@ describe('Utility Functions', () => {
       new Uint8Array(0),
     ]
     const result = accountBodyFromSlim(body)
-    assert.equal(result.length, 4)
-    assert.equal(
+    assert.strictEqual(result.length, 4)
+    assert.strictEqual(
       JSON.stringify(result[2]),
       JSON.stringify(KECCAK256_RLP),
       'Empty storageRoot should be changed to hash of RLP of null',
     )
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(result[3]),
       JSON.stringify(KECCAK256_NULL),
       'Empty codeRoot should be changed to hash of RLP of null',
@@ -808,9 +812,9 @@ describe('Utility Functions', () => {
       KECCAK256_NULL,
     ]
     const result = accountBodyToSlim(body)
-    assert.equal(result.length, 4)
-    assert.equal(JSON.stringify(result[2]), JSON.stringify(new Uint8Array(0)))
-    assert.equal(JSON.stringify(result[3]), JSON.stringify(new Uint8Array(0)))
+    assert.strictEqual(result.length, 4)
+    assert.strictEqual(JSON.stringify(result[2]), JSON.stringify(new Uint8Array(0)))
+    assert.strictEqual(JSON.stringify(result[3]), JSON.stringify(new Uint8Array(0)))
   })
 
   it('should convert account body to RLP', () => {
@@ -821,7 +825,7 @@ describe('Utility Functions', () => {
       KECCAK256_NULL,
     ]
     const result = accountBodyToRLP(body)
-    assert.equal(JSON.stringify(result), JSON.stringify(RLP.encode(body)))
+    assert.strictEqual(JSON.stringify(result), JSON.stringify(RLP.encode(body)))
   })
 })
 

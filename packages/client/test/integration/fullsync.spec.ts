@@ -12,7 +12,7 @@ describe('should sync blocks', async () => {
   // await localService.synchronizer.sync()
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync', () => {
-      assert.equal(localService.chain.blocks.height, BigInt(20), 'synced')
+      assert.strictEqual(localService.chain.blocks.height, BigInt(20), 'synced')
     })
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)

@@ -100,23 +100,23 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    assert.equal(res.error.code, 3, 'should return the correct error code')
-    assert.equal(
+    assert.strictEqual(res.error.code, 3, 'should return the correct error code')
+    assert.strictEqual(
       res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
-    assert.equal(res.error.code, 3, 'should return the correct error code')
-    assert.equal(
+    assert.strictEqual(res.error.code, 3, 'should return the correct error code')
+    assert.strictEqual(
       res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value with no gas limit provided',
     )
 
     res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(result.results[0].execResult.returnValue),
       `should let run call without 'to' for contract creation`,
@@ -145,7 +145,7 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'pending',
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
@@ -169,7 +169,7 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
   })
 })

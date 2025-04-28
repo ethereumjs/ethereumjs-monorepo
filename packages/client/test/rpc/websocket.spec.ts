@@ -33,7 +33,7 @@ describe('JSON-RPC call', () => {
     }
     try {
       const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-      assert.equal(res.error.code, METHOD_NOT_FOUND)
+      assert.strictEqual(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }
@@ -67,7 +67,7 @@ describe('JSON-RPC call', () => {
     }
     try {
       const res = await rpc.request('METHOD_DOES_NOT_EXIST', ['0x1', true])
-      assert.equal(res.error.code, METHOD_NOT_FOUND)
+      assert.strictEqual(res.error.code, METHOD_NOT_FOUND)
     } catch (err: any) {
       assert.fail(err)
     }

@@ -25,13 +25,13 @@ describe('[Peer]', () => {
   })
 
   it('should convert to string', () => {
-    assert.equal(
+    assert.strictEqual(
       peer.toString(true),
       'id=0123456789abcdef address=address0 transport=transport0 inbound=true',
       'correct full id string',
     )
     peer.inbound = false
-    assert.equal(
+    assert.strictEqual(
       peer.toString(),
       'id=01234567 address=address0 transport=transport0 inbound=false',
       'correct short id string',

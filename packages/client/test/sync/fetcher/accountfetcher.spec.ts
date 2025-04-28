@@ -53,7 +53,7 @@ describe('[AccountFetcher]', async () => {
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal(fetcher['in'].length, 1, 'added 1 tasks')
+    assert.strictEqual(fetcher['in'].length, 1, 'added 1 tasks')
     await wait(100)
     assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
@@ -155,9 +155,9 @@ describe('[AccountFetcher]', async () => {
     fetcher.enqueueTask(task)
     const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, accountDataResponse)
-    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
 
     const remainingAccountData: any = [
       {
@@ -167,7 +167,7 @@ describe('[AccountFetcher]', async () => {
     ]
     remainingAccountData.completed = true
     results = fetcher.process(job as any, remainingAccountData)
-    assert.equal(results?.length, 3, 'Should return full results')
+    assert.strictEqual(results?.length, 3, 'Should return full results')
   })
 
   it('should skip job with limit lower than highest known hash', async () => {
@@ -201,7 +201,7 @@ describe('[AccountFetcher]', async () => {
     const job = { peer, partialResult, task }
     const result = await fetcher.request(job as any)
     assert.isDefined(result)
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(result[0]),
       JSON.stringify({ skipped: true }),
       'skipped fetching task with limit lower than highest known key hash',
@@ -405,6 +405,6 @@ describe('[AccountFetcher]', async () => {
       first: BigInt(1),
       count: BigInt(10),
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 })
