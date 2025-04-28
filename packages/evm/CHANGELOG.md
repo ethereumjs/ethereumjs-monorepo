@@ -29,7 +29,14 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
-- 
+- Fix inconsistent memory expansion behavior along `step` event, PR [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953)
+- Error related renamings for consistency reasons, PRs [#3968](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3968), [#3994](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3994) and [#4033](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4033):
+  - `ERROR` -> `EVMErrorMessage` (Error messages)
+  - `EvmError` -> `EVMError` (Error class)
+  - EOF related error renamings
+- Upgrade `@noble/curves` to `1.9.0`, PR [#4018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4018)
+- Add JSON tracing to `t8n` in compliance with `EIP-7756`, PRs [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953) and [#4027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4027)
+
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.

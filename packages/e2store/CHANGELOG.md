@@ -29,7 +29,9 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
-- 
+- New package name `@ethereumjs/e2store`, add support for `E2HS` file format, PR [#3954](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3954)
+
+
 ## 10.0.0-dev-rc.1 - 2025-03-24
 
 Initial development release

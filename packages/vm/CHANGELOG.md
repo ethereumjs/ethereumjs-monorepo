@@ -29,7 +29,8 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
-- 
+- Convert `StatelessVerkleStateManager` usage to type (bundle optimizations) and small Verkle interface adjustment, PRs [#4021](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4021) and [#4022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4022)
+
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.

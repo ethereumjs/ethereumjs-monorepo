@@ -29,7 +29,8 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
-- 
+- Remove `totalDifficulty` from `JSONRPCBlock` type required fields, PR [#3939](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3939)
+- New `EIP-7685` `CLRequests` test, example, and docs (thanks ❤️ @avdheshcharjan), PR [#4008](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4008) 
 
 ## 10.0.0-rc.1 - 2025-03-24
 

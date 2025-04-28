@@ -15,6 +15,7 @@
 - [Getting Started](#getting-started)
 - [Module: [account]](#module-account)
 - [Module: [address]](#module-address)
+- [Module: [authorization]](#module-authorization)
 - [Module: [blobs]](#module-blobs)
 - [Module: [bytes]](#module-bytes)
 - [Module: [constants]](#module-constants)
@@ -95,6 +96,10 @@ import { createAddressFromString } from '@ethereumjs/util'
 const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
 console.log(`Ethereum address ${address.toString()} created`)
 ```
+
+## Module: [authorization](src/authorization.ts)
+
+Module with `EIP-7702` authorization list signing utilities.
 
 ## Module: [blobs](src/blobs.ts)
 

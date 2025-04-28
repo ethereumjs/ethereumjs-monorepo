@@ -6,10 +6,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 10.x.x - UNPUBLISHED
-
-Update transaction test runner to correctly report tests and fix edge case of invalid 7702 txs with nested lists inside the authority list, PR[3942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3942)
-
 ## 10.0.0 - 2025-04-29
 
 ### Overview
@@ -33,7 +29,9 @@ Major release notes for this release can be found in the `alpha.1` release notes
 
 ### Changes since `RC.1`
 
-- 
+- Fix for the `EIP-7702` gas calculation, PR [#3935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3935)
+- Update transaction test runner to correctly report tests and fix edge case of invalid 7702 txs with nested lists inside the authority list, PR[3942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3942)
+
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.
