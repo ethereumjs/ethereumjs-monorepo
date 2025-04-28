@@ -2,6 +2,10 @@
   "name": "root",
   "private": true,
   "workspaces": ["packages/*"],
+  "overrides": {
+    "@noble/curves": "1.9.x",
+    "@noble/hashes": "1.8.x"
+  },
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
