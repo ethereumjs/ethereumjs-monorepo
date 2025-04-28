@@ -6,9 +6,9 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import { secp256k1 } from '@noble/curves/secp256k1'
 import debug from 'debug'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { EthStatusMsg } from './protocol/eth.ts'
 

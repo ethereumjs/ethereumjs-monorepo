@@ -26,8 +26,8 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { sha256 } from '@noble/hashes/sha2'
 import debugDefault from 'debug'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { Bloom } from './bloom/index.ts'
 import { emitEVMProfile } from './emitEVMProfile.ts'

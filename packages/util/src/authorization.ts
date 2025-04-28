@@ -1,38 +1,37 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
-import type { Common } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
+import { EthereumJSErrorWithoutCode, RLP } from '@ethereumjs/rlp'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { publicToAddress } from './account.ts'
+import { Address } from './address.ts'
 import {
-  Address,
-  EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  ecrecover,
   hexToBytes,
-  publicToAddress,
   setLengthLeft,
   unpadBytes,
-} from '@ethereumjs/util'
-import { secp256k1 } from '@noble/curves/secp256k1'
-import { keccak_256 } from '@noble/hashes/sha3'
-import { AUTHORITY_SIGNING_MAGIC } from '../constants.ts'
+} from './bytes.ts'
+import { ecrecover } from './signature.ts'
 import type {
-  AuthorizationListBytesItem,
-  AuthorizationListBytesItemUnsigned,
-  AuthorizationListItem,
-  AuthorizationListItemUnsigned,
-} from '../types.ts'
+  EOACode7702AuthorizationListBytesItem,
+  EOACode7702AuthorizationListBytesItemUnsigned,
+  EOACode7702AuthorizationListItem,
+  EOACode7702AuthorizationListItemUnsigned,
+} from './types.ts'
+
+export const EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC = hexToBytes('0x05')
 
 /**
  * Converts an authorization list to a JSON format
  * @param authorizationList
  * @returns authorizationList in JSON format
  */
-export function authorizationListBytesItemToJSON(
-  authorizationList: AuthorizationListBytesItem,
-): AuthorizationListItem {
+export function eoaCode7702AuthorizationListBytesItemToJSON(
+  authorizationList: EOACode7702AuthorizationListBytesItem,
+): EOACode7702AuthorizationListItem {
   const [chainId, address, nonce, yParity, r, s] = authorizationList
   return {
     chainId: bytesToHex(chainId),
@@ -49,9 +48,9 @@ export function authorizationListBytesItemToJSON(
  * @param authorizationList
  * @returns bytes format of the authority list
  */
-export function authorizationListJSONItemToBytes(
-  authorizationList: AuthorizationListItem,
-): AuthorizationListBytesItem {
+export function eoaCode7702AuthorizationListJSONItemToBytes(
+  authorizationList: EOACode7702AuthorizationListItem,
+): EOACode7702AuthorizationListBytesItem {
   const requiredFields = ['chainId', 'address', 'nonce', 'yParity', 'r', 's'] as const
 
   // Validate all required fields are present
@@ -74,7 +73,7 @@ export function authorizationListJSONItemToBytes(
 }
 
 /** Authorization signing utility methods */
-function unsignedAuthorizationListToBytes(input: AuthorizationListItemUnsigned) {
+function unsignedAuthorizationListToBytes(input: EOACode7702AuthorizationListItemUnsigned) {
   const { chainId: chainIdHex, address: addressHex, nonce: nonceHex } = input
   const chainId = hexToBytes(chainIdHex)
   const address = setLengthLeft(hexToBytes(addressHex), 20)
@@ -87,8 +86,8 @@ function unsignedAuthorizationListToBytes(input: AuthorizationListItemUnsigned) 
  * @param input Either the bytes or the object format of the authorization list item
  * @returns
  */
-export function authorizationMessageToSign(
-  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+export function eoaCode7702AuthorizationMessageToSign(
+  input: EOACode7702AuthorizationListItemUnsigned | EOACode7702AuthorizationListBytesItemUnsigned,
 ) {
   if (Array.isArray(input)) {
     // The address is validated, the chainId and nonce will be `unpadBytes` such that these are valid
@@ -97,12 +96,12 @@ export function authorizationMessageToSign(
       throw EthereumJSErrorWithoutCode('Cannot sign authority: address length should be 20 bytes')
     }
     return concatBytes(
-      AUTHORITY_SIGNING_MAGIC,
+      EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC,
       RLP.encode([unpadBytes(chainId), address, unpadBytes(nonce)]),
     )
   } else {
     const [chainId, address, nonce] = unsignedAuthorizationListToBytes(input)
-    return concatBytes(AUTHORITY_SIGNING_MAGIC, RLP.encode([chainId, address, nonce]))
+    return concatBytes(EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC, RLP.encode([chainId, address, nonce]))
   }
 }
 
@@ -111,10 +110,10 @@ export function authorizationMessageToSign(
  * @param input
  * @returns
  */
-export function authorizationHashedMessageToSign(
-  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+export function eoaCode7702AuthorizationHashedMessageToSign(
+  input: EOACode7702AuthorizationListItemUnsigned | EOACode7702AuthorizationListBytesItemUnsigned,
 ) {
-  return keccak_256(authorizationMessageToSign(input))
+  return keccak256(eoaCode7702AuthorizationMessageToSign(input))
 }
 
 /**
@@ -122,15 +121,20 @@ export function authorizationHashedMessageToSign(
  * To get the JSON format, use `authorizationListBytesToJSON([signed])[0] to convert it`
  * @param input
  * @param privateKey
+ * @param ecSign
  * @returns
  */
-export function signAuthorization(
-  input: AuthorizationListItemUnsigned | AuthorizationListBytesItemUnsigned,
+export function eoaCode7702SignAuthorization(
+  input: EOACode7702AuthorizationListItemUnsigned | EOACode7702AuthorizationListBytesItemUnsigned,
   privateKey: Uint8Array,
-  common?: Common,
-): AuthorizationListBytesItem {
-  const msgHash = authorizationHashedMessageToSign(input)
-  const secp256k1Sign = common?.customCrypto.ecsign ?? secp256k1.sign
+  ecSign?: (
+    msg: Uint8Array,
+    pk: Uint8Array,
+    ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
+  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>,
+): EOACode7702AuthorizationListBytesItem {
+  const msgHash = eoaCode7702AuthorizationHashedMessageToSign(input)
+  const secp256k1Sign = ecSign ?? secp256k1.sign
   const signed = secp256k1Sign(msgHash, privateKey)
   const [chainId, address, nonce] = Array.isArray(input)
     ? input
@@ -146,12 +150,14 @@ export function signAuthorization(
   ]
 }
 
-export function recoverAuthority(
-  input: AuthorizationListItem | AuthorizationListBytesItem,
+export function eoaCode7702RecoverAuthority(
+  input: EOACode7702AuthorizationListItem | EOACode7702AuthorizationListBytesItem,
 ): Address {
-  const inputBytes = Array.isArray(input) ? input : authorizationListJSONItemToBytes(input)
+  const inputBytes = Array.isArray(input)
+    ? input
+    : eoaCode7702AuthorizationListJSONItemToBytes(input)
   const [chainId, address, nonce, yParity, r, s] = inputBytes
-  const msgHash = authorizationHashedMessageToSign([chainId, address, nonce])
+  const msgHash = eoaCode7702AuthorizationHashedMessageToSign([chainId, address, nonce])
   const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
   return new Address(publicToAddress(pubKey))
 }

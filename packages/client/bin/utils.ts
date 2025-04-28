@@ -28,9 +28,6 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { secp256k1 } from '@noble/curves/secp256k1'
-import { sha256 } from '@noble/hashes/sha2'
-import { keccak_256 } from '@noble/hashes/sha3'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
@@ -40,6 +37,9 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import * as verkle from 'micro-eth-signer/verkle'
 import * as promClient from 'prom-client'
@@ -662,7 +662,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       return secp256k1Recover(hash, sig, recId)
     }
   } else {
-    cryptoFunctions.keccak256 = keccak_256
+    cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign

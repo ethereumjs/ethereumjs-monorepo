@@ -13,9 +13,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createEOACode7702Tx } from '../src/index.ts'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationListItem, PrefixedHexString } from '@ethereumjs/util'
 import type { TxData } from '../src/7702/tx.ts'
-import type { AuthorizationListItem } from '../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
@@ -24,8 +23,8 @@ const addr = createAddressFromPrivateKey(pkey)
 
 const ones32: PrefixedHexString = `0x${'01'.repeat(32)}`
 
-function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
-  const validAuthorizationList: AuthorizationListItem = {
+function getTxData(override: Partial<EOACode7702AuthorizationListItem> = {}): TxData {
+  const validAuthorizationList: EOACode7702AuthorizationListItem = {
     chainId: '0x',
     address: `0x${'20'.repeat(20)}`,
     nonce: '0x1',
@@ -78,7 +77,7 @@ describe('[EOACode7702Transaction]', () => {
   })
 
   it('valid and invalid authorizationList values', () => {
-    const tests: [Partial<AuthorizationListItem>, string][] = [
+    const tests: [Partial<EOACode7702AuthorizationListItem>, string][] = [
       [
         {
           address: `0x${'20'.repeat(21)}`,

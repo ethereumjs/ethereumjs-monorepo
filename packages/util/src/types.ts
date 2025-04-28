@@ -127,3 +127,51 @@ export function toType<T extends TypeOutput>(
       throw EthereumJSErrorWithoutCode('unknown outputType')
   }
 }
+
+/**
+ * EIP-7702 Authorization list types
+ */
+export type EOACode7702AuthorizationListItemUnsigned = {
+  chainId: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString
+}
+
+export type EOACode7702AuthorizationListItem = {
+  yParity: PrefixedHexString
+  r: PrefixedHexString
+  s: PrefixedHexString
+} & EOACode7702AuthorizationListItemUnsigned
+
+// Tuple of [chain_id, address, nonce, y_parity, r, s]
+export type EOACode7702AuthorizationListBytesItem = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+]
+export type EOACode7702AuthorizationListBytes = EOACode7702AuthorizationListBytesItem[]
+export type EOACode7702AuthorizationList = EOACode7702AuthorizationListItem[]
+
+export type EOACode7702AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]
+
+export function isEOACode7702AuthorizationListBytes(
+  input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
+): input is EOACode7702AuthorizationListBytes {
+  if (input.length === 0) {
+    return true
+  }
+  const firstItem = input[0]
+  if (Array.isArray(firstItem)) {
+    return true
+  }
+  return false
+}
+
+export function isEOACode7702AuthorizationList(
+  input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
+): input is EOACode7702AuthorizationList {
+  return !isEOACode7702AuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
+}

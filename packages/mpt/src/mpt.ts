@@ -17,8 +17,8 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
 import debug from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/checkpointDB.ts'
 import {
@@ -55,7 +55,7 @@ import type { OnFound } from './util/asyncWalk.ts'
 export class MerklePatriciaTrie {
   protected readonly _opts: MPTOptsWithDefaults = {
     useKeyHashing: false,
-    useKeyHashingFunction: keccak_256,
+    useKeyHashingFunction: keccak256,
     keyPrefix: undefined,
     useRootPersistence: false,
     useNodePruning: false,
@@ -93,7 +93,7 @@ export class MerklePatriciaTrie {
       }
       this._opts = { ...this._opts, ...opts }
       this._opts.useKeyHashingFunction =
-        opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak_256
+        opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
         opts.db !== undefined ? (opts.valueEncoding ?? ValueEncoding.String) : ValueEncoding.Bytes

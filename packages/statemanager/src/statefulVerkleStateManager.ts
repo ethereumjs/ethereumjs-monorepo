@@ -38,8 +38,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
-import { keccak_256 } from '@noble/hashes/sha3'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'
@@ -118,7 +118,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._debug = debugDefault('statemanager:verkle:stateful')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
-    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak_256
+    this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.common.customCrypto.verkle
     this.preStateRoot = new Uint8Array(32) // Initial state root is zeroes
   }
@@ -283,7 +283,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     this._caches?.code?.put(address, value)
 
-    const codeHash = keccak_256(value)
+    const codeHash = keccak256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       // If the code hash is the null hash, no code has to be stored
       return

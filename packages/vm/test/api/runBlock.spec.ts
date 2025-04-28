@@ -33,8 +33,8 @@ import {
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { secp256k1 } from '@noble/curves/secp256k1'
-import { keccak_256 } from '@noble/hashes/sha3'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
@@ -45,8 +45,13 @@ import { blockchainData } from './testdata/blockchain.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type {
+  EOACode7702AuthorizationListBytesItem,
+  NestedUint8Array,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
@@ -610,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       pkey?: Uint8Array
     }
 
-    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+    function getAuthorizationListItem(
+      opts: GetAuthListOpts,
+    ): EOACode7702AuthorizationListBytesItem {
       const actualOpts = {
         ...{ chainId: 0, pkey: defaultAuthPkey },
         ...opts,
@@ -624,7 +631,7 @@ describe('runBlock() -> tx types', async () => {
       const addressBytes = address.toBytes()
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
-      const msgToSign = keccak_256(concatBytes(new Uint8Array([5]), rlpdMsg))
+      const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
       const signed = secp256k1.sign(msgToSign, pkey)
 
       const yParity = signed.recovery === 0 ? new Uint8Array() : new Uint8Array([1])
