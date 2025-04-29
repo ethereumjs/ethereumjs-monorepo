@@ -21,6 +21,7 @@
       - [Format E2HS](#format-e2hs)
       - [Read Tuples from E2HS](#read-tuples-from-e2hs)
       - [Read E2HS Tuple at Index](#read-e2hs-tuple-at-index)
+      - [E2HS Helper Functions](#e2hs-helper-functions)
     - [Era1](#era1)
       - [Export History as Era1](#export-history-as-era1)
       - [Read Era1 file](#read-era1-file)
@@ -65,29 +66,29 @@ const e2hs = await formatE2HS(data)
 #### Read Tuples from E2HS
 
 ```ts
-import { readTuplesFromE2HS, parseEH2SBlockTuple } from "@ethereumjs/e2store"
-
-// Read all tuples from an E2HS file
-const tuples = await readTuplesFromE2HS(filePath)
-for await (const tuple of tuples) {
-  const { headerWithProof, body, receipts } = parseEH2SBlockTuple(tuple)
-  console.log(headerWithProof)
-  console.log(body)
-  console.log(receipts)
-}
+// ./examples/e2hs.ts#L29-L32
 ```
 
 #### Read E2HS Tuple at Index
 
 ```ts
-import { readE2HSTupleAtIndex, parseEH2SBlockTuple } from "@ethereumjs/e2store"
+// ./examples/e2hs.ts#L46-L49
 
-// Read a specific tuple by index
-const tuple = await readE2HSTupleAtIndex(filePath, index)
-const { headerWithProof, body, receipts } = parseEH2SBlockTuple(tuple)
-console.log(headerWithProof)
-console.log(body)
-console.log(receipts)
+```
+
+#### E2HS Helper Functions
+
+`getBlockIndex` returns the index of the block in the e2hs file:
+`readBlockIndex` returns the starting number and offsets of the blocks in the e2hs file:
+```ts
+// ./examples/e2hs.ts#L18-L28
+```
+
+`decompressE2HSTuple` decompresses a block tuple:
+`parseEH2SBlockTuple` parses a block tuple:
+
+```ts
+// ./examples/e2hs.ts#L35-L39
 ```
 
 ### Era1
