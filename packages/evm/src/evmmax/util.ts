@@ -307,18 +307,23 @@ export function madd2(a: bigint, b: bigint, c: bigint, d: bigint): [bigint, bigi
 }
 
 export function extractEVMMAXImmediateInputs(pc: number, code: Uint8Array) {
-  console.log('dbg300')
-  console.log(bytesToHex(code))
+  const out = code[pc + 1]
+  const outStride = code[pc + 2]
+  const x = code[pc + 3]
+  const xStride = code[pc + 4]
+  const y = code[pc + 5]
+  const yStride = code[pc + 6]
+  const count = code[pc + 7]
+
+  console.log('dbg600')
   console.log(pc)
-  console.log(code[pc])
-  console.log(code[pc - 1])
-  const out = Number(code[pc])
-  const outStride = Number(code[pc + 1])
-  const x = Number(code[pc + 2])
-  const xStride = Number(code[pc + 3])
-  const y = Number(code[pc + 4])
-  const yStride = Number(code[pc + 5])
-  const count = Number(code[pc + 6])
+  console.log(out)
+  console.log(outStride)
+  console.log(x)
+  console.log(xStride)
+  console.log(y)
+  console.log(yStride)
+  console.log(count)
 
   return [out, outStride, x, xStride, y, yStride, count]
 }
