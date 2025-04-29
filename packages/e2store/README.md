@@ -143,29 +143,33 @@ await exportEpochAsEra1(epoch, dataDir)
 // ./examples/era1.ts#L53-L58
 ```
 
-
 ### Era
 
-Era files are used to store beacon chain data, including beacon states and blocks.
+Era files are used to store beacon chain data, including beacon states and blocks. 
 
 #### Read Era file
 
+`readBeaconState` reads the beacon state from an era file:
+
 ```ts
-import { readBeaconState, readBlocksFromEra } from "@ethereumjs/e2store"
+// ./examples/era.ts#L18-L24
+```
 
-const eraFile = readBinaryFile(PATH_TO_ERA_FILE)
+`readBeaconBlock` reads a specific beacon block from an era file:
 
-// Extract BeaconState
-const state = await readBeaconState(eraFile)
-console.log(`Current slot: ${state.slot}`)
+```ts
+// ./examples/era.ts#L25-L30
+```
 
-// Read Beacon Blocks from era file
-let count = 0
-for await (const block of readBlocksFromEra(eraFile)) {
-  console.log(`Block slot: ${block.message.slot}`)
-  count++
-  if (count > 10) break
-}
+`readBlocksFromEra` returns an async iterator of beacon blocks:
+
+```ts
+// ./examples/era.ts#L32-L37
+```
+
+`readSlotIndex` reads the slot index from an era file:
+```ts
+// ./examples/era.ts#L10-L16
 ```
 
 ## Common Use Cases
