@@ -4,7 +4,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { readBeaconBlock, readBeaconState, readBlocksFromEra, readSlotIndex } from '../src/index.ts'
 
 // Reference file downloaded from era.nimbus.team
-const PATH_TO_ERA_FILE = './test/mainnet-01339-75d1c621.era'
+const PATH_TO_ERA_FILE = './test/mainnet-00001-40cf2f3c.era'
 const eraFile = new Uint8Array(readFileSync(PATH_TO_ERA_FILE))
 
 // Read slot index from era file
