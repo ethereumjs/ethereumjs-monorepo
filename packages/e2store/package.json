@@ -55,7 +55,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/snappy-stream": "^5.1.2",
+    "@scottypoi/ts-snappy-stream": "^1.0.0",
     "@ethereumjs/block": "^10.0.0",
     "@ethereumjs/blockchain": "^10.0.0",
     "@ethereumjs/rlp": "^10.0.0",
