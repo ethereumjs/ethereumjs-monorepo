@@ -23,7 +23,9 @@
       - [Read E2HS Tuple at Index](#read-e2hs-tuple-at-index)
     - [Era1](#era1)
       - [Export History as Era1](#export-history-as-era1)
-    - [Read Era1 file](#read-era1-file)
+      - [Read Era1 file](#read-era1-file)
+      - [Validate Era1 file](#validate-era1-file)
+      - [Era1 Helper Functions](#era1-helper-functions)
     - [Era](#era)
       - [Read Era file](#read-era-file)
   - [Common Use Cases](#common-use-cases)
@@ -106,44 +108,40 @@ const epoch = 0
 await exportEpochAsEra1(epoch, dataDir)
 ```
 
-### Read Era1 file
+#### Read Era1 file
 
 `readERA1` returns an async iterator of block tuples (header + body + receipts + totalDifficulty):
 
 ```ts
-import {
-  readBinaryFile,
-  validateERA1,
-  readERA1,
-  parseBlockTuple,
-  blockFromTuple,
-  getHeaderRecords,
-  EpochAccumulator,
-} from "@ethereumjs/e2store"
-
-const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
-
-// Validate era1 file
-// Rebuilds epoch accumulator and validates the accumulator root
-const isValid = validateERA1(era1File)
-if (!isValid) {
-  throw new Error('Invalid Era1 file')
-}
-
-// Read blocks from era1 file
-const blocks = readERA1(era1File)
-
-for await (const blockTuple of blocks) {
-  const { header, body, receipts } = await parseBlockTuple(blockTuple)
-  const block = blockFromTuple({ header, body })
-  console.log(`Block number: ${block.header.number}`)
-}
-
-// Reconstruct epoch accumulator
-const headerRecords = await getHeaderRecords(era1File)
-const epochAccumulator = EpochAccumulator.encode(headerRecords)
-const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
+// ./examples/era1.ts#L48-L50
 ```
+
+#### Validate Era1 file
+
+`validateERA1` validates the era1 file by reconstructing the epoch accumulator and validating the accumulator root:
+
+```ts
+// ./examples/era1.ts#L60-L61
+```
+
+#### Era1 Helper Functions
+
+`getBlockIndex` returns the index of the block in the era1 file:
+`readBlockIndex` returns the starting number and offsets of the blocks in the era1 file:
+`readOtherEntries` returns the accumulator root and other entries of the era1 file:
+`getHeaderRecords` returns the header records of the era1 file:
+
+```ts
+// ./examples/era1.ts#L21-L45
+```
+
+`parseBlockTuple` parses a block tuple:
+`blockFromTuple` converts a block tuple to a block:
+
+```ts
+// ./examples/era1.ts#L53-L58
+```
+
 
 ### Era
 
