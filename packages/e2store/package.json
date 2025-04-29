@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/e2store",
-  "version": "10.0.0-dev-rc.1",
+  "version": "10.0.0",
   "description": "E2Store support for EthereumJS",
   "keywords": ["ethereum", "e2store", "e2hs", "era", "era1", "era2", "storage", "snappy"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/e2store#readme",
@@ -56,10 +56,10 @@
   },
   "dependencies": {
     "@chainsafe/snappy-stream": "^5.1.2",
-    "@ethereumjs/block": "^10.0.0-rc.1",
-    "@ethereumjs/blockchain": "^10.0.0-rc.1",
-    "@ethereumjs/rlp": "^10.0.0-rc.1",
-    "@ethereumjs/util": "^10.0.0-rc.1",
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/blockchain": "^10.0.0",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
     "level": "^9.0.0",
     "micro-eth-signer": "^0.14.0"
   },
