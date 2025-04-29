@@ -1,125 +1,106 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / KBucketOptions
 
 # Interface: KBucketOptions
 
-## Table of contents
-
-### Properties
-
-- [arbiter](KBucketOptions.md#arbiter)
-- [distance](KBucketOptions.md#distance)
-- [localNodeId](KBucketOptions.md#localnodeid)
-- [metadata](KBucketOptions.md#metadata)
-- [numberOfNodesPerKBucket](KBucketOptions.md#numberofnodesperkbucket)
-- [numberOfNodesToPing](KBucketOptions.md#numberofnodestoping)
+Defined in: [packages/devp2p/src/types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L230)
 
 ## Properties
 
-### arbiter
+### arbiter()?
 
-• `Optional` **arbiter**: (`incumbent`: [`Contact`](Contact.md), `candidate`: [`Contact`](Contact.md)) => [`Contact`](Contact.md)
+> `optional` **arbiter**: (`incumbent`, `candidate`) => [`Contact`](Contact.md)
 
-#### Type declaration
-
-▸ (`incumbent`, `candidate`): [`Contact`](Contact.md)
+Defined in: [packages/devp2p/src/types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L256)
 
 An optional arbiter function that given two `contact` objects with the same `id`,
 returns the desired object to be used for updating the k-bucket.
 Defaults to vectorClock arbiter function.
 
-##### Parameters
+#### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `incumbent` | [`Contact`](Contact.md) |
-| `candidate` | [`Contact`](Contact.md) |
-
-##### Returns
+##### incumbent
 
 [`Contact`](Contact.md)
 
-#### Defined in
+##### candidate
 
-[packages/devp2p/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L162)
+[`Contact`](Contact.md)
 
-___
+#### Returns
 
-### distance
+[`Contact`](Contact.md)
 
-• `Optional` **distance**: (`firstId`: `Uint8Array`, `secondId`: `Uint8Array`) => `number`
+***
 
-#### Type declaration
+### distance()?
 
-▸ (`firstId`, `secondId`): `number`
+> `optional` **distance**: (`firstId`, `secondId`) => `number`
+
+Defined in: [packages/devp2p/src/types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L250)
 
 An optional distance function that gets two id Uint8Arrays and return distance between them as a number.
 
-##### Parameters
+#### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `firstId` | `Uint8Array` |
-| `secondId` | `Uint8Array` |
+##### firstId
 
-##### Returns
+`Uint8Array`
+
+##### secondId
+
+`Uint8Array`
+
+#### Returns
 
 `number`
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L156)
+### localNodeId?
 
-___
+> `optional` **localNodeId**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### localNodeId
-
-• `Optional` **localNodeId**: `Uint8Array`
+Defined in: [packages/devp2p/src/types.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L235)
 
 An optional Uint8Array representing the local node id.
 If not provided, a local node id will be created via `randomBytes(20)`.
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L141)
+### metadata?
 
-___
+> `optional` **metadata**: `object`
 
-### metadata
-
-• `Optional` **metadata**: `object`
+Defined in: [packages/devp2p/src/types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L263)
 
 Optional satellite data to include
 with the k-bucket. `metadata` property is guaranteed not be altered by,
 it is provided as an explicit container for users of k-bucket to store
 implementation-specific data.
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L169)
+### numberOfNodesPerKBucket?
 
-___
+> `optional` **numberOfNodesPerKBucket**: `number`
 
-### numberOfNodesPerKBucket
-
-• `Optional` **numberOfNodesPerKBucket**: `number`
+Defined in: [packages/devp2p/src/types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L240)
 
 The number of nodes that a k-bucket can contain before being full or split.
 Defaults to 20.
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L146)
+### numberOfNodesToPing?
 
-___
+> `optional` **numberOfNodesToPing**: `number`
 
-### numberOfNodesToPing
-
-• `Optional` **numberOfNodesToPing**: `number`
+Defined in: [packages/devp2p/src/types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L246)
 
 The number of nodes to ping when a bucket that should not be split becomes full.
 KBucket will emit a `ping` event that contains `numberOfNodesToPing` nodes that have not been contacted the longest.
 Defaults to 3.
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L152)

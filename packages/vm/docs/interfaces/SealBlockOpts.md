@@ -1,38 +1,33 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / SealBlockOpts
 
 # Interface: SealBlockOpts
 
+Defined in: [vm/src/types.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L235)
+
 Options for sealing a block.
-
-## Table of contents
-
-### Properties
-
-- [mixHash](SealBlockOpts.md#mixhash)
-- [nonce](SealBlockOpts.md#nonce)
 
 ## Properties
 
-### mixHash
+### mixHash?
 
-• `Optional` **mixHash**: `Uint8Array`
+> `optional` **mixHash**: `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [vm/src/types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L246)
 
 For PoW, the mixHash.
 Overrides the value passed in the constructor.
 
-#### Defined in
+***
 
-[vm/src/types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L210)
+### nonce?
 
-___
+> `optional` **nonce**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### nonce
-
-• `Optional` **nonce**: `Uint8Array`
+Defined in: [vm/src/types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L240)
 
 For PoW, the nonce.
 Overrides the value passed in the constructor.
-
-#### Defined in
-
-[vm/src/types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L204)

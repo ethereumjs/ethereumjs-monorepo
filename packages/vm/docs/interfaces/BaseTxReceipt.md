@@ -1,57 +1,46 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / BaseTxReceipt
 
 # Interface: BaseTxReceipt
 
+Defined in: [vm/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L24)
+
 Abstract interface with common transaction receipt fields
 
-## Hierarchy
+## Extended by
 
-- **`BaseTxReceipt`**
-
-  ↳ [`PreByzantiumTxReceipt`](PreByzantiumTxReceipt.md)
-
-  ↳ [`PostByzantiumTxReceipt`](PostByzantiumTxReceipt.md)
-
-## Table of contents
-
-### Properties
-
-- [bitvector](BaseTxReceipt.md#bitvector)
-- [cumulativeBlockGasUsed](BaseTxReceipt.md#cumulativeblockgasused)
-- [logs](BaseTxReceipt.md#logs)
+- [`PreByzantiumTxReceipt`](PreByzantiumTxReceipt.md)
+- [`PostByzantiumTxReceipt`](PostByzantiumTxReceipt.md)
 
 ## Properties
 
 ### bitvector
 
-• **bitvector**: `Uint8Array`
+> **bitvector**: `Uint8Array`
+
+Defined in: [vm/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L32)
 
 Bloom bitvector
 
-#### Defined in
-
-[vm/src/types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L21)
-
-___
+***
 
 ### cumulativeBlockGasUsed
 
-• **cumulativeBlockGasUsed**: `bigint`
+> **cumulativeBlockGasUsed**: `bigint`
+
+Defined in: [vm/src/types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L28)
 
 Cumulative gas used in the block including this tx
 
-#### Defined in
-
-[vm/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L17)
-
-___
+***
 
 ### logs
 
-• **logs**: `Log`[]
+> **logs**: `Log`[]
+
+Defined in: [vm/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L36)
 
 Logs emitted
-
-#### Defined in
-
-[vm/src/types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L25)

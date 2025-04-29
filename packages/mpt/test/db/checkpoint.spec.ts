@@ -23,7 +23,7 @@ describe('DB tests', () => {
 
   it('should add a checkpoint', () => {
     db.checkpoint(new Uint8Array())
-    assert.equal(db.checkpoints.length, 1)
+    assert.strictEqual(db.checkpoints.length, 1)
   })
 
   it('should commit the latest checkpoint', async () => {
@@ -36,7 +36,7 @@ describe('DB tests', () => {
 
     // Ensure that the checkpoint is removed and the data is committed
     assert.isEmpty(db.checkpoints)
-    assert.equal(db._stats.db.writes, 1)
+    assert.strictEqual(db._stats.db.writes, 1)
   })
 
   it('should revert the latest checkpoint', async () => {
@@ -50,7 +50,7 @@ describe('DB tests', () => {
 
     // Ensure that the latest checkpoint is removed and the root is returned
     assert.isEmpty(db.checkpoints)
-    assert.equal(actualRoot, expectedRoot, 'roots should match')
+    assert.strictEqual(actualRoot, expectedRoot, 'roots should match')
   })
 
   it('should get a value', async () => {

@@ -90,7 +90,7 @@ describe('EIP3198 tests', () => {
     })
     const txBaseFee = block.transactions[0].getIntrinsicGas()
     const gasUsed = results.totalGasSpent - txBaseFee
-    assert.equal(gasUsed, BigInt(2), 'gas used correct')
-    assert.equal(stack[0], fee, 'right item pushed on stack')
+    assert.strictEqual(gasUsed, BigInt(2), 'gas used correct')
+    assert.strictEqual(stack[0], fee, 'right item pushed on stack')
   })
 })

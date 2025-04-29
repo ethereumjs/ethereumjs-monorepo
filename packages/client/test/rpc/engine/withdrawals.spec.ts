@@ -107,7 +107,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     const computedWithdrawalsRoot = bytesToHex(
       await genWithdrawalsTrieRoot(withdrawals.map(createWithdrawal), new MerklePatriciaTrie()),
     )
-    assert.equal(
+    assert.strictEqual(
       withdrawalsRoot,
       computedWithdrawalsRoot,
       'withdrawalsRoot computation should match',
@@ -118,7 +118,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       validForkChoiceState,
       validPayloadAttributes,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated'),
     )
@@ -128,25 +128,25 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       validPayloadAttributesWithWithdrawals,
     ])
 
-    assert.equal(res.result.payloadId !== undefined, true)
+    assert.strictEqual(res.result.payloadId !== undefined, true)
     const payloadId = res.result.payloadId
 
     let payload: ExecutionPayload | undefined = undefined
     res = await rpc.request('engine_getPayloadV2', [payloadId])
 
     const { executionPayload, blockValue } = res.result
-    assert.equal(executionPayload!.blockNumber, '0x1')
-    assert.equal(
+    assert.strictEqual(executionPayload!.blockNumber, '0x1')
+    assert.strictEqual(
       executionPayload!.withdrawals!.length,
       withdrawals.length,
       'withdrawals should match',
     )
-    assert.equal(blockValue, '0x0', 'No value should be returned')
+    assert.strictEqual(blockValue, '0x0', 'No value should be returned')
     payload = executionPayload
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
-      assert.equal(
+      assert.strictEqual(
         payload!.stateRoot,
         '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
         'stateRoot should match',
@@ -155,7 +155,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
 
     res = await rpc.request('engine_newPayloadV2', [payload])
 
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV2', [
       {
@@ -164,6 +164,6 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       },
     ])
 
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
   })
 }

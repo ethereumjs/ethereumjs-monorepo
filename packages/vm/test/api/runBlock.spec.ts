@@ -30,7 +30,6 @@ import {
   equalsBytes,
   hexToBytes,
   privateToAddress,
-  toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -46,8 +45,13 @@ import { blockchainData } from './testdata/blockchain.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type {
+  EOACode7702AuthorizationListBytesItem,
+  NestedUint8Array,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
@@ -81,7 +85,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    assert.equal(
+    assert.strictEqual(
       res.results[0].totalGasSpent.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed',
@@ -113,7 +117,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(uncleData.blocks[2].rlp as PrefixedHexString)
+    const block3Rlp = hexToBytes(uncleData.blocks[2].rlp as PrefixedHexString)
     const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
@@ -127,7 +131,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       createAddressFromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
     ))!.balance.toString(16)
 
-    assert.equal(
+    assert.strictEqual(
       `0x${uncleReward}`,
       uncleData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance',
@@ -210,12 +214,12 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipBlockValidation: true,
       generate: true,
     })
-    assert.equal(
+    assert.strictEqual(
       txResultChainstart.results[0].totalGasSpent,
       BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork',
     )
-    assert.equal(
+    assert.strictEqual(
       txResultMuirGlacier.results[0].totalGasSpent,
       BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork',
@@ -283,7 +287,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     try {
       await runBlock(vm, { block })
     } catch (err: any) {
-      assert.equal(
+      assert.strictEqual(
         err.message,
         'cannot validate header: blockchain has no `validateHeader` method',
         'should error',
@@ -353,16 +357,16 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const DAOFundedContractAccount1 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress1)) ?? new Account()
-    assert.equal(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.strictEqual(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress2)) ?? new Account()
-    assert.equal(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.strictEqual(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await vm.stateManager.getAccount(DAORefundAddress)
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    assert.equal(DAORefundAccount!.balance, BigInt(0x7777), msg)
+    assert.strictEqual(DAORefundAccount!.balance, BigInt(0x7777), msg)
   })
 
   it('should allocate to correct clique beneficiary', async () => {
@@ -406,7 +410,7 @@ describe('runBlock() -> runtime behavior', async () => {
       generate: true,
     })
     const account = await vm.stateManager.getAccount(signer.address)
-    assert.equal(
+    assert.strictEqual(
       account!.balance,
       BigInt(42000),
       'beneficiary balance should equal the cost of the txs',
@@ -459,7 +463,7 @@ it('should correctly reflect generated fields', async () => {
 
   assert.deepEqual(results.block.header.receiptTrie, KECCAK256_RLP)
   assert.deepEqual(results.block.header.transactionsTrie, KECCAK256_RLP)
-  assert.equal(results.block.header.gasUsed, BigInt(0))
+  assert.strictEqual(results.block.header.gasUsed, BigInt(0))
 })
 
 async function runWithHf(hardfork: string) {
@@ -483,7 +487,7 @@ async function runWithHf(hardfork: string) {
 describe('runBlock() -> API return values', () => {
   it('should return correct HF receipts', async () => {
     let res = await runWithHf('byzantium')
-    assert.equal(
+    assert.strictEqual(
       (res.receipts[0] as PostByzantiumTxReceipt).status,
       1,
       'should return correct post-Byzantium receipt format',
@@ -521,7 +525,7 @@ describe('runBlock() -> tx types', async () => {
       generate: true,
     })
 
-    assert.equal(
+    assert.strictEqual(
       res.gasUsed,
       res.receipts
         .map((r) => r.cumulativeBlockGasUsed)
@@ -611,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       pkey?: Uint8Array
     }
 
-    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+    function getAuthorizationListItem(
+      opts: GetAuthListOpts,
+    ): EOACode7702AuthorizationListBytesItem {
       const actualOpts = {
         ...{ chainId: 0, pkey: defaultAuthPkey },
         ...opts,
@@ -739,8 +745,8 @@ describe.skip('run a verkle block', () => {
       } as VerkleExecutionWitness
 
       vm.stateManager.initVerkleExecutionWitness?.(block.header.number, witness)
-      assert.equal(bytesToHex(genesisBlock.hash()), verkleJSON.genesisBlockHeader.hash)
-      assert.equal(
+      assert.strictEqual(bytesToHex(genesisBlock.hash()), verkleJSON.genesisBlockHeader.hash)
+      assert.strictEqual(
         bytesToHex(await vm.stateManager.getStateRoot()),
         verkleJSON.genesisBlockHeader.stateRoot,
         'genesis state root matches',

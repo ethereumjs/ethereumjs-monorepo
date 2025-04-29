@@ -30,12 +30,12 @@ describe('should open', async () => {
   const [server, pool] = await setup()
   pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) => {
     it('should remove peer', () => {
-      assert.equal(peer.id, 'peer0', 'removed peer')
+      assert.strictEqual(peer.id, 'peer0', 'removed peer')
     })
   })
   const peer0 = await server.accept('peer0')
@@ -49,12 +49,12 @@ describe('should ban peer', async () => {
   const [server, pool] = await setup()
   pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) => {
     it('should ban peer', () => {
-      assert.equal(peer.id, 'peer0', 'banned peer')
+      assert.strictEqual(peer.id, 'peer0', 'banned peer')
     })
   })
   pool.add(await server.accept('peer0'))
@@ -80,7 +80,7 @@ describe('should handle peer messages', async () => {
   const [server, pool] = await setup(protocols)
   config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     }),
   )
   config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {

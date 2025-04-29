@@ -59,13 +59,13 @@ describe('BlockBuilder', () => {
 
     await blockBuilder.addTransaction(tx)
     const { block } = await blockBuilder.build()
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       1,
       'should have the correct number of tx receipts',
     )
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
@@ -93,7 +93,7 @@ describe('BlockBuilder', () => {
         assert.fail('wrong error thrown')
       }
     }
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       0,
       'should have the correct number of tx receipts',
@@ -265,7 +265,7 @@ describe('BlockBuilder', () => {
 
     try {
       await blockBuilder.revert()
-      assert.equal(
+      assert.strictEqual(
         blockBuilder.getStatus().status,
         'reverted',
         'block should be in reverted status',
@@ -286,7 +286,7 @@ describe('BlockBuilder', () => {
 
     try {
       await blockBuilder.revert()
-      assert.equal(
+      assert.strictEqual(
         blockBuilder.getStatus().status,
         'reverted',
         'block should be in reverted status',
@@ -312,7 +312,7 @@ describe('BlockBuilder', () => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
@@ -372,20 +372,20 @@ describe('BlockBuilder', () => {
     }
 
     const { block } = await blockBuilder.build()
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       2,
       'should have the correct number of tx receipts',
     )
 
-    assert.equal(
+    assert.strictEqual(
       block.header.baseFeePerGas,
       genesisBlock.header.calcNextBaseFee(),
       "baseFeePerGas should equal parentHeader's calcNextBaseFee",
     )
 
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)

@@ -21,6 +21,6 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, bigIntToHex(mockBlockNumber))
+    assert.strictEqual(res.result, bigIntToHex(mockBlockNumber))
   })
 })

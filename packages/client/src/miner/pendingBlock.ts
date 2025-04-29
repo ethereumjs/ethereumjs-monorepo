@@ -9,7 +9,6 @@ import {
   concatBytes,
   createZeroAddress,
   equalsBytes,
-  toBytes,
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
@@ -145,19 +144,18 @@ export class PendingBlock {
 
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    const payloadIdBytes = toBytes(
-      keccakFunction(
-        concatBytes(
-          parentBlock.hash(),
-          mixHashBuf,
-          timestampBuf,
-          gasLimitBuf,
-          parentBeaconBlockRootBuf,
-          coinbaseBuf,
-          withdrawalsBuf,
-        ),
-      ).subarray(0, 8),
-    )
+    const payloadIdBytes = keccakFunction(
+      concatBytes(
+        parentBlock.hash(),
+        mixHashBuf,
+        timestampBuf,
+        gasLimitBuf,
+        parentBeaconBlockRootBuf,
+        coinbaseBuf,
+        withdrawalsBuf,
+      ),
+    ).subarray(0, 8)
+
     const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid

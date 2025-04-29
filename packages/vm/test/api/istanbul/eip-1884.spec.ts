@@ -35,10 +35,10 @@ describe('Istanbul: EIP-1884', () => {
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
         if (testCase.err !== undefined) {
-          assert.equal(res.exceptionError?.error, testCase.err)
+          assert.strictEqual(res.exceptionError?.error, testCase.err)
         } else {
           assert.isTrue(res.exceptionError === undefined)
-          assert.equal(BigInt(testCase.selfbalance!), bytesToBigInt(res.returnValue))
+          assert.strictEqual(BigInt(testCase.selfbalance!), bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         assert.fail(e.message)

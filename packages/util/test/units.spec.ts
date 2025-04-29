@@ -16,7 +16,7 @@ describe('formatBigDecimal', function () {
   ]
   for (const [numerator, denominator, decimalFactor, expectedString] of testCases) {
     it(`format ${numerator} / ${denominator} correctly to ${expectedString}`, () => {
-      assert.equal(formatBigDecimal(numerator, denominator, decimalFactor), expectedString)
+      assert.strictEqual(formatBigDecimal(numerator, denominator, decimalFactor), expectedString)
     })
   }
 })
@@ -25,17 +25,17 @@ describe('Units', () => {
   describe('ether()', () => {
     it('should convert 1 ether to wei', () => {
       const result = Units.ether(1)
-      assert.equal(result, BigInt(10 ** 18))
+      assert.strictEqual(result, BigInt(10 ** 18))
     })
 
     it('should convert 0 ether to wei', () => {
       const result = Units.ether(0)
-      assert.equal(result, BigInt(0))
+      assert.strictEqual(result, BigInt(0))
     })
 
     it('should convert a large number of ether to wei', () => {
       const result = Units.ether(1000000)
-      assert.equal(result, BigInt(1000000) * BigInt(10 ** 18))
+      assert.strictEqual(result, BigInt(1000000) * BigInt(10 ** 18))
     })
 
     it('should throw error when a non-integer number is used', () => {
@@ -52,24 +52,24 @@ describe('Units', () => {
 
     it('should convert a bigint amount of ether to wei', () => {
       const result = Units.ether(BigInt(2))
-      assert.equal(result, BigInt(2) * BigInt(10 ** 18))
+      assert.strictEqual(result, BigInt(2) * BigInt(10 ** 18))
     })
   })
 
   describe('gwei()', () => {
     it('should convert 1 gwei to wei', () => {
       const result = Units.gwei(1)
-      assert.equal(result, BigInt(10 ** 9))
+      assert.strictEqual(result, BigInt(10 ** 9))
     })
 
     it('should convert 0 gwei to wei', () => {
       const result = Units.gwei(0)
-      assert.equal(result, BigInt(0))
+      assert.strictEqual(result, BigInt(0))
     })
 
     it('should convert a large number of gwei to wei', () => {
       const result = Units.gwei(1000000)
-      assert.equal(result, BigInt(1000000) * BigInt(10 ** 9))
+      assert.strictEqual(result, BigInt(1000000) * BigInt(10 ** 9))
     })
 
     it('should throw error when a non-integer number is used', () => {
@@ -86,7 +86,7 @@ describe('Units', () => {
 
     it('should convert a bigint amount of gwei to wei', () => {
       const result = Units.gwei(BigInt(2))
-      assert.equal(result, BigInt(2) * BigInt(10 ** 9))
+      assert.strictEqual(result, BigInt(2) * BigInt(10 ** 9))
     })
   })
 })

@@ -118,15 +118,15 @@ describe('EIP-7002 tests', () => {
     })
 
     // Ensure the request is generated
-    assert.equal(runBlockResults.requests!.length, 1)
-    assert.equal(
+    assert.strictEqual(runBlockResults.requests!.length, 1)
+    assert.strictEqual(
       generatedBlock!.transactions.length,
       1,
       'withdrawal transaction should be included',
     )
 
     const withdrawalRequest = runBlockResults.requests![0]
-    assert.equal(
+    assert.strictEqual(
       withdrawalRequest.type,
       CLRequestType.Withdrawal,
       'make sure its withdrawal request',
@@ -169,8 +169,8 @@ describe('EIP-7002 tests', () => {
 
     // Note: generatedBlock is now overridden with the new generated block (this is thus block number 3)
     // Ensure there are 2 requests
-    assert.equal(runBlockResults.requests!.length, 1)
-    assert.equal(
+    assert.strictEqual(runBlockResults.requests!.length, 1)
+    assert.strictEqual(
       generatedBlock!.transactions.length,
       2,
       'withdrawal transactions should be included',

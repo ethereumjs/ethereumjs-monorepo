@@ -173,14 +173,14 @@ describe('EIP 2935: historical block hashes', () => {
 
       const deployTx = createLegacyTx(deployContractTxData)
       const txSender = createAddressFromPublicKey(deployTx.getSenderPublicKey()).toString()
-      assert.equal(toChecksumAddress(txSender), deploymentSender, 'tx sender should match')
+      assert.strictEqual(toChecksumAddress(txSender), deploymentSender, 'tx sender should match')
 
       const txHash = bytesToHex(deployTx.hash())
-      assert.equal(txHash, deploymentTxHash, 'tx hash should match')
+      assert.strictEqual(txHash, deploymentTxHash, 'tx hash should match')
 
       // tx sender is a random address with likely no tx history
       const txToAddress = bytesToHex(generateAddress(hexToBytes(txSender), bigIntToBytes(BIGINT_0)))
-      assert.equal(
+      assert.strictEqual(
         toChecksumAddress(txToAddress),
         deployedToAddress,
         'deployment address should match',

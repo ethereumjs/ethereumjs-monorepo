@@ -26,7 +26,7 @@ describe(method, () => {
       tooManyHashes.push(bytesToHex(randomBytes(32)))
     }
     const res = await rpc.request(method, [tooManyHashes])
-    assert.equal(res.error.code, TOO_LARGE_REQUEST)
+    assert.strictEqual(res.error.code, TOO_LARGE_REQUEST)
     assert.isTrue(res.error.message.includes('More than 32 execution payload bodies requested'))
   })
 
@@ -99,13 +99,17 @@ describe(method, () => {
       [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
 
-    assert.equal(
+    assert.strictEqual(
       res.result[0].transactions[0],
       bytesToHex(tx.serialize()),
       'got expected transaction from first payload',
     )
-    assert.equal(res.result[1], null, 'got null for block not found in chain')
-    assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
+    assert.strictEqual(res.result[1], null, 'got null for block not found in chain')
+    assert.strictEqual(
+      res.result.length,
+      3,
+      'length of response matches number of block hashes sent',
+    )
 
     // Restore setStateRoot
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
@@ -185,7 +189,7 @@ describe(method, () => {
       [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
 
-    assert.equal(
+    assert.strictEqual(
       res.result[0].withdrawals,
       null,
       'got null for withdrawals field on pre-Shanghai block',

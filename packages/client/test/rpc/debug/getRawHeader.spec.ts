@@ -72,7 +72,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
       'should return a valid block',
@@ -84,7 +84,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
       'should return the genesis block as earliest',
@@ -96,14 +96,18 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest'])
-    assert.equal(res.result, bytesToHex(block.header.serialize()), 'should return block 1 RLP')
+    assert.strictEqual(
+      res.result,
+      bytesToHex(block.header.serialize()),
+      'should return block 1 RLP',
+    )
   })
 
   it('call with unimplemented pending param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
@@ -111,7 +115,7 @@ describe(method, async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, [10])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
@@ -119,7 +123,7 @@ describe(method, async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes(
         'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
@@ -141,7 +145,7 @@ describe('call with block with blob txs', () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest'])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(block1.header.serialize()),
       'block body contains a transaction with the blobVersionedHashes field',

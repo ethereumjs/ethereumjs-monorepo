@@ -41,7 +41,7 @@ describe('EIP4895 tests', () => {
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       createWithdrawalFromBytesArray(wa),
     )
-    assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
+    assert.strictEqual(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWithdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
       await genWithdrawalsTrieRoot(withdrawals),
