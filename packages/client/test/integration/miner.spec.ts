@@ -8,7 +8,6 @@ import { Address, bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 import { parseMultiaddrs } from '../../src/util/parse.ts'
@@ -75,7 +74,6 @@ async function minerSetup(): Promise<EthereumClient[]> {
     storageCache: 1000,
     mine: true,
     accounts,
-    logger: getLogger({ logLevel: 'debug' }),
   })
 
   const miner = await createInlineClient(config1, common, customGenesisState, '', true)
@@ -86,7 +84,6 @@ async function minerSetup(): Promise<EthereumClient[]> {
     storageCache: 1000,
     bootnodes: parseMultiaddrs(miner.config.server!.getRlpxInfo().enode as string),
     accounts,
-    logger: getLogger({ logLevel: 'info' }),
     port: 30304,
     mine: false,
   })
