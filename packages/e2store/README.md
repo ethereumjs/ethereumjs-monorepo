@@ -66,14 +66,21 @@ const e2hs = await formatE2HS(data)
 #### Read Tuples from E2HS
 
 ```ts
-// ./examples/e2hs.ts#L29-L32
+// ./examples/e2hs.ts#L30-L32
+
+const tuples = readTuplesFromE2HS(e2hsFile)
+
+const tuple = (await tuples.next()).value
 ```
 
 #### Read E2HS Tuple at Index
 
 ```ts
-// ./examples/e2hs.ts#L46-L49
+// ./examples/e2hs.ts#L47-L49
 
+const targetIndex = 1234
+const tupleAtIndex = await readE2HSTupleAtIndex(e2hsFile, targetIndex)
+console.log('tuple at index 1234', tupleAtIndex)
 ```
 
 #### E2HS Helper Functions
@@ -82,6 +89,18 @@ const e2hs = await formatE2HS(data)
 `readBlockIndex` returns the starting number and offsets of the blocks in the e2hs file:
 ```ts
 // ./examples/e2hs.ts#L18-L28
+
+const blockIndex = getBlockIndex(e2hsFile)
+console.log('blockIndex', {
+  type: blockIndex.type,
+  count: blockIndex.count,
+  recordStart: blockIndex.recordStart,
+  data: blockIndex.data.length + ' bytes',
+})
+
+const { startingNumber, offsets } = readBlockIndex(blockIndex.data, blockIndex.count)
+console.log('startingNumber', startingNumber)
+console.log('offsets', offsets.length)
 ```
 
 `decompressE2HSTuple` decompresses a block tuple:
@@ -89,6 +108,12 @@ const e2hs = await formatE2HS(data)
 
 ```ts
 // ./examples/e2hs.ts#L35-L39
+
+const decompressedTuple = await decompressE2HSTuple(tuple!)
+console.log('decompressedTuple', decompressedTuple)
+
+const parsedTuple = parseEH2SBlockTuple(decompressedTuple)
+console.log('parsedTuple', parsedTuple)
 ```
 
 ### Era1
@@ -115,6 +140,10 @@ await exportEpochAsEra1(epoch, dataDir)
 
 ```ts
 // ./examples/era1.ts#L48-L50
+
+const tuples = await readERA1(era1File)
+const tupleEntry = await tuples.next()
+console.log('tupleEntry', tupleEntry.value!)
 ```
 
 #### Validate Era1 file
@@ -122,7 +151,10 @@ await exportEpochAsEra1(epoch, dataDir)
 `validateERA1` validates the era1 file by reconstructing the epoch accumulator and validating the accumulator root:
 
 ```ts
-// ./examples/era1.ts#L60-L61
+// ./examples/era1.ts#L57-L59
+
+const valid = await validateERA1(era1File)
+console.log('valid', valid)
 ```
 
 #### Era1 Helper Functions
@@ -134,6 +166,32 @@ await exportEpochAsEra1(epoch, dataDir)
 
 ```ts
 // ./examples/era1.ts#L21-L45
+
+const blockIndex = getBlockIndex(era1File)
+console.log('blockIndex', {
+  type: blockIndex.type,
+  count: blockIndex.count,
+  recordStart: blockIndex.recordStart,
+  data: blockIndex.data.length + ' bytes',
+})
+
+const { startingNumber, offsets } = readBlockIndex(blockIndex.data, blockIndex.count)
+console.log('startingNumber', startingNumber)
+console.log('offsets', offsets.length)
+
+const { accumulatorRoot, otherEntries } = await readOtherEntries(era1File)
+console.log('accumulatorRoot', bytesToHex(accumulatorRoot))
+console.log('otherEntries', otherEntries.length)
+
+const headerRecords = await getHeaderRecords(era1File)
+const epochAccumulator = EpochAccumulator.encode(headerRecords)
+const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
+
+console.log('epochAccumulator', epochAccumulator.length + ' bytes')
+console.log('epochAccumulatorRoot', bytesToHex(epochAccumulatorRoot))
+console.log(
+  'Reconstructed root matches encoded root',
+  bytesToHex(epochAccumulatorRoot) === bytesToHex(accumulatorRoot),
 ```
 
 `parseBlockTuple` parses a block tuple:
@@ -141,6 +199,13 @@ await exportEpochAsEra1(epoch, dataDir)
 
 ```ts
 // ./examples/era1.ts#L53-L58
+
+console.log('parsed tuple', tuple)
+
+const block = blockFromTuple(tuple)
+console.log('block', block)
+
+const valid = await validateERA1(era1File)
 ```
 
 ### Era
@@ -153,23 +218,53 @@ Era files are used to store beacon chain data, including beacon states and block
 
 ```ts
 // ./examples/era.ts#L18-L24
+
+// Read beacon state from era file
+const state = await readBeaconState(eraFile)
+console.log('beaconState', {
+  slot: state.slot,
+  validators: state.validators.length,
+})
+
 ```
 
 `readBeaconBlock` reads a specific beacon block from an era file:
 
 ```ts
 // ./examples/era.ts#L25-L30
+
+// Read a specific beacon block
+const block = await readBeaconBlock(eraFile, 0)
+console.log('beaconBlock', {
+  slot: block.message.slot,
+  proposer_index: block.message.proposer_index,
+})
 ```
 
 `readBlocksFromEra` returns an async iterator of beacon blocks:
 
 ```ts
 // ./examples/era.ts#L32-L37
+
+// Read blocks from era file
+const blocks = readBlocksFromEra(eraFile)
+
+const firstBlock = (await blocks.next()).value!
+
+console.log(`Block`, firstBlock)
 ```
 
 `readSlotIndex` reads the slot index from an era file:
 ```ts
 // ./examples/era.ts#L10-L16
+
+// Read slot index from era file
+const slotIndex = readSlotIndex(eraFile)
+console.log('slotIndex', {
+  startSlot: slotIndex.startSlot,
+  recordStart: slotIndex.recordStart,
+  slotOffsets: slotIndex.slotOffsets.length + ' slots',
+})
 ```
 
 ## Common Use Cases
