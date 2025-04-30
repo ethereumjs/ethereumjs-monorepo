@@ -1027,39 +1027,19 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [dest, source, count] = runState.stack.popN(3)
       const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
       const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
-      console.log('dbg400')
-      // console.log(dest)
-      // console.log(source)
-      // console.log(count)
-      // console.log(srcBuf)
-      // console.log(runState.memory._store)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc3: ADDMODX
   [
     0xc3,
     function (runState, _common) {
-      console.log('dbg100')
-      console.log(runState.code)
       const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
         runState.programCounter - 1,
         runState.code,
       )
       runState.programCounter += 7
-      // console.log('dbg500')
-      // console.log(out)
-      // console.log(outStride)
-      // console.log(x)
-      // console.log(xStride)
-      // console.log(y)
-      // console.log(yStride)
-      // console.log(count)
-      // console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
-      // console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc4: SUBMODX
@@ -1071,10 +1051,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.code,
       )
       runState.programCounter += 7
-      console.log('dbg701')
-      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().subM(out, outStride, x, xStride, y, yStride, count)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc5: MULMODX
@@ -1086,10 +1063,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.code,
       )
       runState.programCounter += 7
-      console.log('dbg700')
-      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().mulM(out, outStride, x, xStride, y, yStride, count)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xd0: DATALOAD
