@@ -14,7 +14,7 @@ on:
         required: false
 
 env:
-  cwd: ${{github.workspace}}/packages/rlp # This doesn't appear to matter since code coverage finds all of the reports
+  cwd: ${{github.workspace}}/packages/ethash # This doesn't appear to matter since code coverage finds all of the reports
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-ethash
