@@ -150,9 +150,30 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  static:
+  ethash:
     needs: build
-    uses: ./.github/workflows/static-build.yml
+    uses: ./.github/workflows/ethash-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+  genesis:
+    needs: build
+    uses: ./.github/workflows/genesis-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      
+  rlp:
+    needs: build
+    uses: ./.github/workflows/rlp-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+  wallet:
+    needs: build
+    uses: ./.github/workflows/wallet-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
