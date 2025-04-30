@@ -178,12 +178,6 @@ function montMulMod192(
   let C = 0n
   const res = [0n, 0n, 0n]
 
-  console.log('dbg100')
-  console.log(`t ${t}`)
-  console.log(`C ${C}`)
-  console.log(`D ${D}`)
-  console.log(`m ${m}`)
-
   // --------------------------------------------
   // First outer block (j = 0)
   {
