@@ -11,6 +11,7 @@ import { Config } from '../../src/index.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
 import { type Address, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import { getLogger } from '../../src/logging.ts'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = createAddressFromPrivateKey(pk)
@@ -74,6 +75,7 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
     datadir: 'devnet',
     accounts: [[minerAddress, pk]],
     mine: true,
+    logger: getLogger(),
   })
 
   const client = await createInlineClient(config, common, customGenesisState)
