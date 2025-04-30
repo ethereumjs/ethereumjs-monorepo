@@ -1,4 +1,4 @@
-name: Static Packages Build
+name: Ethash Packages Build
 on:
   workflow_call:
     inputs:
@@ -17,11 +17,11 @@ env:
   cwd: ${{github.workspace}}/packages/rlp # This doesn't appear to matter since code coverage finds all of the reports
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-static
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-ethash
   cancel-in-progress: true
 
 jobs:
-  test-static:
+  test-ethash:
     runs-on: ubuntu-latest
 
     steps:
@@ -48,25 +48,14 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      # Run coverage for rlp
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/rlp
-
-      # Run coverage for genesis
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/genesis
-
       # Run coverage for ethash
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/ethash
 
-      # Run coverage for wallet
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/wallet
-        # Upload code coverage for all jobs
+      # Upload code coverage for all jobs
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
-          flags: static
+          flags: ethash
 
