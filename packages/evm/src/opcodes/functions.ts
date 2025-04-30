@@ -1005,11 +1005,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xc1,
     function (runState, _common) {
+      console.log('dbg900')
       const [dest, source, count] = runState.stack.popN(3)
       const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
       const destBuf = new Uint8Array(copySize)
       runState.evmmaxState.getActive()?.load(destBuf, Number(source), Number(count))
+      console.log(copySize)
+      console.log(count)
+      console.log(runState.evmmaxState.getActive()?.getElemSize())
+      console.log(destBuf)
+      console.log(runState.memory._store)
       runState.memory.write(Number(dest), copySize, destBuf)
+      console.log(runState.memory._store)
     },
   ],
   // 0xc2: STOREX
@@ -1035,23 +1042,24 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xc3,
     function (runState, _common) {
+      console.log('dbg100')
       console.log(runState.code)
       const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
-        runState.programCounter,
+        runState.programCounter - 1,
         runState.code,
       )
       runState.programCounter += 7
-      console.log('dbg500')
-      console.log(out)
-      console.log(outStride)
-      console.log(x)
-      console.log(xStride)
-      console.log(y)
-      console.log(yStride)
-      console.log(count)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
+      // console.log('dbg500')
+      // console.log(out)
+      // console.log(outStride)
+      // console.log(x)
+      // console.log(xStride)
+      // console.log(y)
+      // console.log(yStride)
+      // console.log(count)
+      // console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
-      console.log(runState.evmmaxState.getActive().scratchSpace)
+      // console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc4: SUBMODX
@@ -1059,11 +1067,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xc4,
     function (runState, _common) {
       const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
-        runState.programCounter,
+        runState.programCounter - 1,
         runState.code,
       )
       runState.programCounter += 7
+      console.log('dbg701')
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().subM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc5: MULMODX
@@ -1071,11 +1082,14 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xc5,
     function (runState, _common) {
       const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
-        runState.programCounter,
+        runState.programCounter - 1,
         runState.code,
       )
       runState.programCounter += 7
+      console.log('dbg700')
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().mulM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xd0: DATALOAD
