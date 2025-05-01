@@ -39,8 +39,14 @@ describe('encoding', () => {
 
     for (let i = 0; i < tests.length; i++) {
       const test = tests[i]
-      assert.equal(JSON.stringify(nibblesToCompactBytes(test.hex)), JSON.stringify(test.compact))
-      assert.equal(JSON.stringify(compactBytesToNibbles(test.compact)), JSON.stringify(test.hex))
+      assert.strictEqual(
+        JSON.stringify(nibblesToCompactBytes(test.hex)),
+        JSON.stringify(test.compact),
+      )
+      assert.strictEqual(
+        JSON.stringify(compactBytesToNibbles(test.compact)),
+        JSON.stringify(test.hex),
+      )
     }
   })
 
@@ -64,7 +70,7 @@ describe('encoding', () => {
 
     for (let i = 0; i < tests.length; i++) {
       const test = tests[i]
-      assert.equal(JSON.stringify(bytesToNibbles(test.key)), JSON.stringify(test.hexOut))
+      assert.strictEqual(JSON.stringify(bytesToNibbles(test.key)), JSON.stringify(test.hexOut))
     }
   })
 
@@ -119,7 +125,7 @@ describe('encoding', () => {
     const pathStrings = ['0a', '0a/0b', '0a/0c', '0a/0d', '0e', '0e/0a', '0f']
     const paths = mergeAndFormatKeyPaths(pathStrings)
 
-    assert.equal(
+    assert.strictEqual(
       paths.reduce((count, subArray) => count + subArray.length, 0),
       pathStrings.length,
       'should have correct number of paths',

@@ -20,18 +20,18 @@ const common = new Common({
 function validateMergeHeader(header: BlockHeader) {
   assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)), 'parentHash')
   assert.isTrue(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY), 'uncleHash')
-  assert.ok(header.coinbase.equals(createZeroAddress()), 'coinbase')
+  assert.isTrue(header.coinbase.equals(createZeroAddress()), 'coinbase')
   assert.isTrue(equalsBytes(header.stateRoot, new Uint8Array(32)), 'stateRoot')
   assert.isTrue(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
   assert.isTrue(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
   assert.isTrue(equalsBytes(header.logsBloom, new Uint8Array(256)), 'logsBloom')
-  assert.equal(header.difficulty, BigInt(0), 'difficulty')
-  assert.equal(header.number, BigInt(0), 'number')
-  assert.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
-  assert.equal(header.gasUsed, BigInt(0), 'gasUsed')
-  assert.equal(header.timestamp, BigInt(0), 'timestamp')
-  assert.ok(header.extraData.length <= 32, 'extraData')
-  assert.equal(header.mixHash.length, 32, 'mixHash')
+  assert.strictEqual(header.difficulty, BigInt(0), 'difficulty')
+  assert.strictEqual(header.number, BigInt(0), 'number')
+  assert.strictEqual(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
+  assert.strictEqual(header.gasUsed, BigInt(0), 'gasUsed')
+  assert.strictEqual(header.timestamp, BigInt(0), 'timestamp')
+  assert.isTrue(header.extraData.length <= 32, 'extraData')
+  assert.strictEqual(header.mixHash.length, 32, 'mixHash')
   assert.isTrue(equalsBytes(header.nonce, new Uint8Array(8)), 'nonce')
 }
 
@@ -45,76 +45,44 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
   })
 
   it('should throw if non merge-conforming PoS constants are provided', () => {
-    // Building a header with random values for constants
-    try {
-      const headerData = {
-        uncleHash: hexToBytes('0x123abc'),
-      }
+    assert.throws(() => {
+      const headerData = { uncleHash: hexToBytes('0x123abc') }
       createBlockHeader(headerData, { common })
-      assert.fail('should throw')
-    } catch {
-      assert.isTrue(true, 'should throw on wrong uncleHash')
-    }
+    }, 'Invalid PoS block: , uncleHash: 0x123abc')
 
-    try {
-      const headerData = {
-        difficulty: BigInt(123456),
-        number: 1n,
-      }
+    assert.throws(() => {
+      const headerData = { difficulty: BigInt(123456), number: 1n }
       createBlockHeader(headerData, { common })
-      assert.fail('should throw')
-    } catch {
-      assert.isTrue(true, 'should throw on wrong difficulty')
-    }
+    }, 'Invalid PoS block: , difficulty: 123456')
 
-    try {
-      const headerData = {
-        extraData: new Uint8Array(33).fill(1),
-        number: 1n,
-      }
+    assert.throws(() => {
+      const headerData = { extraData: new Uint8Array(33).fill(1), number: 1n }
       createBlockHeader(headerData, { common })
-      assert.fail('should throw')
-    } catch {
-      assert.isTrue(true, 'should throw on invalid extraData length')
-    }
+    }, 'cannot exceed 32 bytes length')
 
-    try {
-      const headerData = {
-        mixHash: new Uint8Array(30).fill(1),
-      }
+    assert.throws(() => {
+      const headerData = { mixHash: new Uint8Array(30).fill(1) }
       createBlockHeader(headerData, { common })
-      assert.fail('should throw')
-    } catch {
-      assert.isTrue(true, 'should throw on invalid mixHash length')
-    }
+    }, 'mixHash must be 32 bytes, received 30 bytes')
 
-    try {
-      const headerData = {
-        nonce: new Uint8Array(8).fill(1),
-        number: 1n,
-      }
+    assert.throws(() => {
+      const headerData = { nonce: new Uint8Array(8).fill(1), number: 1n }
       createBlockHeader(headerData, { common })
-      assert.fail('should throw')
-    } catch {
-      assert.isTrue(true, 'should throw on wrong nonce')
-    }
+    }, 'Invalid PoS block: , nonce: 0x0101010101010101')
   })
 
   it('test that a PoS block with uncles cannot be produced', () => {
-    try {
+    assert.throws(() => {
       new Block(undefined, undefined, [createBlockHeader(undefined, { common })], undefined, {
         common,
       })
-      assert.fail('should have thrown')
-    } catch {
-      assert.isTrue(true, 'should throw')
-    }
+    }, 'Block initialization with uncleHeaders on a PoS network is not allowed')
   })
 
   it('EIP-4399: prevRandao should return mixHash value', () => {
     const mixHash = new Uint8Array(32).fill(3)
     let block = createBlock({ header: { mixHash } }, { common })
-    assert.ok(
+    assert.isTrue(
       equalsBytes(block.header.prevRandao, mixHash),
       'prevRandao should return mixHash value',
     )
@@ -122,11 +90,11 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     const commonLondon = common.copy()
     commonLondon.setHardfork(Hardfork.London)
     block = createBlock({ header: { mixHash } }, { common: commonLondon })
-    try {
-      block.header.prevRandao
-      assert.fail('should have thrown')
-    } catch {
-      assert.isTrue(true, 'prevRandao should throw if EIP-4399 is not activated')
-    }
+    assert.throw(
+      () => block.header.prevRandao,
+      'The prevRandao parameter can only be accessed when EIP-4399 is activated',
+      undefined,
+      'prevRandao should throw if EIP-4399 is not activated',
+    )
   })
 })

@@ -8,8 +8,8 @@ import {
   createBlockHeaderFromRPC,
 } from '../src/index.ts'
 
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { alchemy14151203Data } from './testdata/alchemy14151203.ts'
-import { Goerli } from './testdata/goerliCommon.ts'
 import { infuraGoerliBlock10536893Data } from './testdata/infura-goerli-block-10536893.ts'
 import { infura2000004withTransactionsData } from './testdata/infura2000004withTransactions.ts'
 import { infura2000004withoutTransactionsData } from './testdata/infura2000004withoutTransactions.ts'
@@ -31,7 +31,7 @@ describe('[fromRPC]: block #2924874', () => {
   it('should create a block with transactions with valid signatures', () => {
     const block = createBlockFromRPC(testdataFromRPCData, [], { common })
     const allValid = block.transactions.every((tx) => tx.verifySignature())
-    assert.equal(allValid, true, 'all transaction signatures are valid')
+    assert.strictEqual(allValid, true, 'all transaction signatures are valid')
   })
 
   it('should create a block header with the correct hash', () => {
@@ -52,7 +52,7 @@ describe('[fromRPC]:', () => {
       undefined,
       { common },
     )
-    assert.equal(
+    assert.strictEqual(
       createBlockFromTransactionValueAsInteger.transactions[0].value.toString(),
       valueAsIntegerString,
     )
@@ -69,7 +69,7 @@ describe('[fromRPC]:', () => {
       undefined,
       { common },
     )
-    assert.equal(
+    assert.strictEqual(
       (createBlockFromTransactionGasPriceAsInteger.transactions[0] as LegacyTx).gasPrice.toString(),
       gasPriceAsIntegerString,
     )
@@ -84,20 +84,20 @@ describe('[fromRPC]:', () => {
         common,
       },
     )
-    assert.equal(
+    assert.strictEqual(
       blockDifficultyAsInteger.header.difficulty.toString(),
       testdataFromRPCDifficultyAsIntegerData.difficulty,
     )
   })
 
   it('should create a block from london hardfork', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
     const block = createBlockFromRPC(testdataFromRPCGoerliLondonData, [], { common })
-    assert.equal(
+    assert.strictEqual(
       `0x${block.header.baseFeePerGas?.toString(16)}`,
       testdataFromRPCGoerliLondonData.baseFeePerGas,
     )
-    assert.equal(bytesToHex(block.hash()), testdataFromRPCGoerliLondonData.hash)
+    assert.strictEqual(bytesToHex(block.hash()), testdataFromRPCGoerliLondonData.hash)
   })
 
   it('should create a block with uncles', () => {
@@ -122,7 +122,7 @@ describe('[fromRPC]:', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlockHeaderFromRPC(testdataFromRPCWithWithdrawalsData, { common })
     const hash = testdataFromRPCWithWithdrawalsData.hash
-    assert.equal(bytesToHex(block.hash()), hash)
+    assert.strictEqual(bytesToHex(block.hash()), hash)
   })
 })
 
@@ -130,7 +130,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre merge block from Alchemy API response to eth_getBlockByHash', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRPC(alchemy14151203Data, [], { common })
-    assert.equal(bytesToHex(block.hash()), alchemy14151203Data.hash)
+    assert.strictEqual(bytesToHex(block.hash()), alchemy14151203Data.hash)
   })
 
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
@@ -139,13 +139,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       common,
       setHardfork: true,
     })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.hash()),
       infura2000004withoutTransactionsData.hash,
       'created premerge block w/o txns',
     )
     block = createBlockFromRPC(infura2000004withTransactionsData, [], { common, setHardfork: true })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.hash()),
       infura2000004withTransactionsData.hash,
       'created premerge block with txns',
@@ -154,7 +154,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       common,
       setHardfork: true,
     })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.hash()),
       infura15571241Data.hash,
       'created post merge block without txns',
@@ -164,7 +164,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       common,
       setHardfork: true,
     })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.hash()),
       infura15571241withTransactionsData.hash,
       'created post merge block with txns',
@@ -172,7 +172,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   })
 
   it('should correctly parse a cancun block over rpc', () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Cancun })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Cancun })
     const block = createBlockHeaderFromRPC(infuraGoerliBlock10536893Data, { common }) // cspell:disable-line
     const hash = hexToBytes(infuraGoerliBlock10536893Data.hash)
     assert.isTrue(equalsBytes(block.hash(), hash))
@@ -216,7 +216,7 @@ describe('[fromJSONRPCProvider]', () => {
 
     const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
     const block = await createBlockFromJSONRPCProvider(provider, blockHash, { common })
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.hash()),
       blockHash,
       'assembled a block from blockdata from a provider',

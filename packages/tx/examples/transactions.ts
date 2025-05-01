@@ -3,7 +3,8 @@
 // Install the dependencies and run `npx tsx examples/transactions.ts`
 
 import { createLegacyTx, createLegacyTxFromBytesArray } from '@ethereumjs/tx'
-import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
@@ -38,7 +39,7 @@ console.log('--------------------')
 // If you got it directly from the network it will be rlp encoded.
 // You can decode it with the rlp module.
 // After that you should have something like:
-const rawTx = [
+const rawTx: PrefixedHexString[] = [
   '0x',
   '0x09184e72a000',
   '0x2710',
@@ -50,7 +51,7 @@ const rawTx = [
   '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
 ]
 
-const tx2 = createLegacyTxFromBytesArray(rawTx.map(toBytes)) // This is also a mainnet transaction
+const tx2 = createLegacyTxFromBytesArray(rawTx.map(hexToBytes)) // This is also a mainnet transaction
 
 // So assuming that you were able to parse the transaction, we will now get the sender's address.
 

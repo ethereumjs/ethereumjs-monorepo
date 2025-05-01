@@ -17,13 +17,14 @@ const config = new Config({
 })
 
 // attach server to centralized event bus
-;(config.server!.config as any).events = config.events
+/// @ts-expect-error -- Overwriting events
+config.server.config.events = config.events
 const client = await EthereumClient.create({ config })
 
 describe('client should start/stop/error', async () => {
   client.config.events.on(Event.SERVER_ERROR, (err) => {
     it('should get error', () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     })
   })
   client.config.events.on(Event.SERVER_LISTENING, (details: any) => {
@@ -35,7 +36,7 @@ describe('client should start/stop/error', async () => {
   client.service.interval = 100
   client.config.events.emit(Event.SERVER_ERROR, new Error('err0'), client.config.server!)
   await client.start()
-  assert.ok(client.service!.synchronizer!.running, 'sync running')
+  assert.isTrue(client.service?.synchronizer?.running, 'sync running')
   await client.stop()
   it('should stop', () => {
     assert.isTrue(true, 'client stopped')

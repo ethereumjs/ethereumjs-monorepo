@@ -1,4 +1,4 @@
-/** EIP4844 constants */
+/** EIP-4844 constants */
 
 export const MAX_CALLDATA_SIZE = 16777216 // 2 ** 24
 export const MAX_ACCESS_LIST_SIZE = 16777216 // 2 ** 24

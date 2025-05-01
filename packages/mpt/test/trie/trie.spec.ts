@@ -4,6 +4,7 @@ import {
   BIGINT_2,
   KECCAK256_RLP,
   MapDB,
+  type PrefixedHexString,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -78,11 +79,11 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: true,
       })
 
-      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
+      assert.strictEqual(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
     })
 
     it('persist the root if the `root` option is given', async () => {
@@ -107,17 +108,17 @@ for (const { constructor, defaults, title } of [
         useRootPersistence: false,
       })
 
-      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_with_db'), utf8ToBytes('bar'))
 
-      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('persists the root if the `db` option is not provided', async () => {
       const trie = await createMPT({ ...defaults, useRootPersistence: true })
 
-      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
 
       await trie.put(utf8ToBytes('do_not_persist_without_db'), utf8ToBytes('bar'))
 
@@ -128,13 +129,13 @@ for (const { constructor, defaults, title } of [
       const db = new MapDB<string, string>()
 
       const trie = await createMPT({ ...defaults, db, useRootPersistence: true })
-      assert.equal(await trie['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await trie['_db'].get(ROOT_DB_KEY), undefined)
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
-      assert.equal(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
+      assert.strictEqual(bytesToHex((await trie['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // Using the same database as `trie` so we should have restored the root
       const copy = await createMPT({ ...defaults, db, useRootPersistence: true })
-      assert.equal(bytesToHex((await copy['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
+      assert.strictEqual(bytesToHex((await copy['_db'].get(ROOT_DB_KEY))!), EXPECTED_ROOTS)
 
       // New trie with a new database so we shouldn't find a root to restore
       const empty = await createMPT({
@@ -142,7 +143,7 @@ for (const { constructor, defaults, title } of [
         db: new MapDB(),
         useRootPersistence: true,
       })
-      assert.equal(await empty['_db'].get(ROOT_DB_KEY), undefined)
+      assert.strictEqual(await empty['_db'].get(ROOT_DB_KEY), undefined)
     })
 
     it('put fails if the key is the ROOT_DB_KEY', async () => {
@@ -152,7 +153,7 @@ for (const { constructor, defaults, title } of [
         await trie.put(BASE_DB_KEY, utf8ToBytes('bar'))
         assert.fail("Attempting to set '__root__' should fail but it did not.")
       } catch ({ message }: any) {
-        assert.equal(message, "Attempted to set '__root__' key but it is not allowed.")
+        assert.strictEqual(message, "Attempted to set '__root__' key but it is not allowed.")
       }
     })
   })
@@ -170,7 +171,7 @@ for (const { constructor, defaults, title } of [
     for await (const { key, value } of keyvals) {
       await trie.put(key, value)
     }
-    const roots = [...(<any>trie.database().db)._database.keys()]
+    const roots = [...(trie.database().db as any)._database.keys()]
     it('should return true for all nodes in the trie', async () => {
       assert.isTrue(await trie.checkRoot(trie.root()), 'Should return true for root node')
       for (const root of roots) {
@@ -243,12 +244,12 @@ describe('keyHashingFunction', async () => {
     const trieWithHashFunction = await createMPT({ useKeyHashingFunction: keyHashingFunction })
     const trieWithCommon = await createMPT({ common: c })
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(trieWithHashFunction.root()),
       '0x8001',
       'used hash function from customKeyHashingFunction',
     )
-    assert.equal(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
+    assert.strictEqual(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
   })
 
   it('shallow copy uses correct hash function', async () => {
@@ -266,21 +267,25 @@ describe('keyHashingFunction', async () => {
     const trieWithCommon = await createMPT({ common: c })
     const trieWithCommonCopy = trieWithCommon.shallowCopy()
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(trieWithHashFunctionCopy.root()),
       '0x8001',
       'used hash function from customKeyHashingFunction',
     )
-    assert.equal(bytesToHex(trieWithCommonCopy.root()), '0x80', 'used hash function from common')
+    assert.strictEqual(
+      bytesToHex(trieWithCommonCopy.root()),
+      '0x80',
+      'used hash function from common',
+    )
   })
 })
 
 describe('getValueMap', async () => {
   const trie = await createMPT({})
-  const entries: [Uint8Array, string][] = [
-    [bigIntToBytes(0x01n), '0x' + '0a'.repeat(32)],
-    [bigIntToBytes(0x02n), '0x' + '0b'.repeat(32)],
-    [bigIntToBytes(0x03n), '0x' + '0c'.repeat(32)],
+  const entries: [Uint8Array, PrefixedHexString][] = [
+    [bigIntToBytes(0x01n), `0x${'0a'.repeat(32)}`],
+    [bigIntToBytes(0x02n), `0x${'0b'.repeat(32)}`],
+    [bigIntToBytes(0x03n), `0x${'0c'.repeat(32)}`],
   ]
   for (const entry of entries) {
     await trie.put(entry[0], hexToBytes(entry[1]))
@@ -288,7 +293,7 @@ describe('getValueMap', async () => {
   const dump = await trie.getValueMap()
 
   it('should return a map with the correct number of entries', async () => {
-    assert.equal(Object.entries(dump.values).length, entries.length)
+    assert.strictEqual(Object.entries(dump.values).length, entries.length)
   })
 
   it('should return a map of all hashed keys and values', async () => {
@@ -296,10 +301,10 @@ describe('getValueMap', async () => {
     for (const entry of entries) {
       const key = bytesToHex(entry[0])
       const value = entry[1]
-      assert.equal(dump.values[key], value)
+      assert.strictEqual(dump.values[key], value)
     }
 
-    assert.equal(dump.nextKey, null)
+    assert.strictEqual(dump.nextKey, null)
   })
 
   it('should enforce the startKey / limit rules', async () => {
@@ -337,8 +342,8 @@ describe('getValueMap', async () => {
 
     for (const test of tests) {
       const result = await trie.getValueMap(test.startKey, test.limit)
-      assert.equal(Object.entries(result.values).length, test.reportedValues)
-      assert.equal(result.nextKey, test.nextKey)
+      assert.strictEqual(Object.entries(result.values).length, test.reportedValues)
+      assert.strictEqual(result.nextKey, test.nextKey)
     }
   })
 
@@ -348,7 +353,7 @@ describe('getValueMap', async () => {
     const KEYS = 1000
     const KEY_LEN = 3 // Keys are of equal length
     const gotKeys = new Set()
-    const entries: [Uint8Array, string][] = []
+    const entries: [Uint8Array, PrefixedHexString][] = []
     for (let i = 0; i < KEYS; i++) {
       const key = randomBytes(KEY_LEN)
       const keyBigInt = bytesToBigInt(key)
@@ -368,11 +373,11 @@ describe('getValueMap', async () => {
     for (const entry of entries) {
       const key = bytesToHex(entry[0])
       const value = entry[1]
-      assert.equal(dump.values[key], value)
+      assert.strictEqual(dump.values[key], value)
     }
 
-    assert.equal(dump.nextKey, null)
+    assert.strictEqual(dump.nextKey, null)
 
-    assert.equal(Object.entries(dump.values).length, entries.length)
+    assert.strictEqual(Object.entries(dump.values).length, entries.length)
   })
 })

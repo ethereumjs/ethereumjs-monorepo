@@ -1,4 +1,4 @@
-# @ethereumjs/devp2p
+# @ethereumjs/devp2p `v10`
 
 [![NPM Status][devp2p-npm-badge]][devp2p-npm-link]
 [![GitHub Issues][devp2p-issues-badge]][devp2p-issues-link]
@@ -6,17 +6,29 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-## Introduction
-
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH/68)
 
-## Usage
+## Table of Contents
 
-All components of this library have a public `events` property containing a Node.js `EventEmitter` object
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+- [API](#api)
+- [Distributed Peer Table (DPT) / Node Discovery](#distributed-peer-table-dpt--node-discovery)
+- [RLPx Transport Protocol](#rlpx-transport-protocol)
+- [Ethereum Wire Protocol (ETH)](#ethereum-wire-protocol-eth)
+- [Debugging](#debugging)
+- [Developer](#developer)
+- [General References](#general-references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Getting Started
+
+All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
 and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
@@ -43,7 +55,7 @@ Run an example with:
 DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
 ```
 
-## Docs
+## API
 
 For a complete API reference see the generated [documentation](./docs).
 
@@ -328,18 +340,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
-
 ### Events
 
 Events emitted:
@@ -348,10 +348,6 @@ Events emitted:
 | ------- | :------------------: |
 | message |   Message received   |
 | status  | Status info received |
-
-### Reference
-
-- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
 
 ## Debugging
 
@@ -465,11 +461,6 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 - Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
 - Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
-- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto) <!-- cspell:disable-line --->
-
-### Links
-
-- [Blog article series](https://ocalog.com/post/10/) on implementing Ethereum protocol stack
 
 ## EthereumJS
 

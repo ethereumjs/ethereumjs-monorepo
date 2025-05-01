@@ -93,12 +93,12 @@ export class Miner {
 
     if (solution) {
       if (this.block) {
-        const data = <BlockData>this.block.toJSON()
+        const data = this.block.toJSON() as BlockData
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
         return createBlock(data, { common: this.block.common })
       } else {
-        const data = <HeaderData>this.blockHeader.toJSON()
+        const data = this.blockHeader.toJSON() as HeaderData
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
         return createBlockHeader(data, { common: this.blockHeader.common })

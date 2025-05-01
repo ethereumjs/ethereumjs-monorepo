@@ -30,8 +30,8 @@ describe('ProofStateManager', () => {
     const stateManager = new MerkleStateManager()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
 
   it(`should correctly return the right storage root / account root`, async () => {
@@ -45,7 +45,7 @@ describe('ProofStateManager', () => {
     await stateManager.putStorage(address, key, new Uint8Array([10]))
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
+    assert.isFalse(equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
@@ -57,23 +57,23 @@ describe('ProofStateManager', () => {
     await stateManager.putAccount(address, account)
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(1)
     await stateManager.putAccount(address, account)
 
     const proof2 = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
-    assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    assert.strictEqual(proof2.balance, '0x1', 'Balance correctly encoded')
+    assert.strictEqual(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(0)
     account.nonce = BigInt(1)
     await stateManager.putAccount(address, account)
 
     const proof3 = await getMerkleStateProof(stateManager, address, [key])
-    assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
+    assert.strictEqual(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof3.nonce, '0x1', 'Nonce is correctly encoded')
   })
 
   it(`should get and verify EIP 1178 proofs`, async () => {
@@ -98,12 +98,12 @@ describe('ProofStateManager', () => {
     await stateManager.flush()
 
     const proof = await getMerkleStateProof(stateManager, address, [key])
-    assert.ok(await verifyMerkleStateProof(stateManager, proof))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, proof))
     const nonExistenceProof = await getMerkleStateProof(
       stateManager,
       createAddressFromPrivateKey(randomBytes(32)),
     )
-    assert.equal(
+    assert.strictEqual(
       await verifyMerkleStateProof(stateManager, nonExistenceProof),
       true,
       'verified proof of non-existence of account',
@@ -131,7 +131,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
     const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenValidAccountData, proof)
-    assert.ok(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -155,7 +155,7 @@ describe('ProofStateManager', () => {
     trie.root(stateRoot!)
     const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenNonexistentAccountData, proof)
-    assert.ok(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {

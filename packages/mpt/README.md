@@ -1,4 +1,4 @@
-# @ethereumjs/mpt
+# @ethereumjs/mpt `v10`
 
 [![NPM Package][mpt-npm-badge]][mpt-npm-link]
 [![GitHub Issues][mpt-issues-badge]][mpt-issues-link]
@@ -7,9 +7,32 @@
 [![Discord][discord-badge]][discord-link]
 
 | Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------------------------------------------------------------------------- |
 
-> The modified Merkle Patricia tree (mpt) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the mpt, and its sole requirement in terms of the protocol specification, is to provide a single 32-byte value that identifies a given set of key-value pairs.
+- 🔭 Highly scalable
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (3 external + `@Noble` crypto)
+- ⏳ Checkpoint Functionality
+- 🛢️ Flexible storage backends
+- ⚖️ `EIP-1186` Proofs
+- 🛵 176KB bundle size (48KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Merkle Patricia Tries](#merkle-patricia-tries)
+- [Proofs](#proofs)
+- [Examples](#examples)
+- [Browser](#browser)
+- [API](#api)
+- [Benchmarking](#benchmarking)
+- [Debugging](#debugging)
+- [References](#references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 
 ## Installation
 
@@ -19,7 +42,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/mpt
 ```
 
-## Usage
+## Getting Started
 
 This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
@@ -158,9 +181,9 @@ async function main() {
 void main()
 ```
 
-### `MerklePatriciaTrie` Configuration Options
+## Merkle Patricia Tries
 
-#### Database Options
+### Database Options
 
 The `DB` opt in the `MPTOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
 
@@ -168,7 +191,7 @@ If no `db` option is provided, an in-memory database powered by [a Javascript Ma
 
 If you want to use an alternative database, you can integrate your own by writing a DB wrapper that conforms to the [`DB` interface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) (in `@ethereumjs/util`). The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement.
 
-##### LevelDB
+#### LevelDB
 
 As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
@@ -182,11 +205,11 @@ async function main() {
   console.log(trie.database().db) // LevelDB { ...
 ```
 
-#### Node Deletion (Pruning)
+### Node Deletion (Pruning)
 
 By default, the deletion of trie nodes from the underlying database does not occur in order to avoid corrupting older trie states (as of `v4.2.0`). Should you only wish to work with the latest state of a trie, you can switch to a delete behavior (for example, if you wish to save disk space) by using the `useNodePruning` constructor option (see related release notes in the changelog for further details).
 
-#### Root Persistence
+### Root Persistence
 
 You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `createMPT` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
@@ -271,9 +294,9 @@ You can find additional examples complete with detailed explanations [here](./ex
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -298,18 +321,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-With the 5.0.0 release, [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) takes the place of [BN.js](https://github.com/indutny/bn.js/).
-
-BigInt is a primitive that is used to represent and manipulate primitive `bigint` values that the number primitive is incapable of representing as a result of their magnitude. `ES2020` saw the introduction of this particular feature. Note that this version update resulted in the altering of number-related API signatures and that the minimal build target is now set to `ES2020`.
 
 ## Benchmarking
 

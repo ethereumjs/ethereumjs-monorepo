@@ -7,7 +7,6 @@ import {
   intToBytes,
   setLengthLeft,
   setLengthRight,
-  toBytes,
 } from './bytes.ts'
 
 import type { Account } from './account.ts'
@@ -71,7 +70,7 @@ export interface BinaryTreeExecutionWitness {
    * The proof for the block.
    * Proves that the provided stateDiff belongs to the canonical binary tree.
    */
-  proof: any
+  proof: BinaryTreeProof
 }
 
 export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]
@@ -173,7 +172,7 @@ export const getBinaryTreeKeyForCodeChunk = (
   hashFunction: (input: Uint8Array) => Uint8Array,
 ) => {
   const { treeIndex, subIndex } = getBinaryTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), intToBytes(subIndex))
 }
 
 // This code was written by robots based on the reference implementation in EIP-7864

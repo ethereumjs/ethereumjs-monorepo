@@ -1,13 +1,7 @@
 import { BinaryTree } from '@ethereumjs/binarytree'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type {
-  Address,
-  BinaryTreeExecutionWitness,
-  GenesisState,
-  PrefixedHexString,
-  StoragePair,
-} from '@ethereumjs/util'
+import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 import {
   Account,
   BINARY_TREE_CODE_CHUNK_SIZE,
@@ -50,8 +44,10 @@ import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedStateWithAddress,
+  GenesisState,
   StateManagerInterface,
   StorageDump,
+  StoragePair,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
@@ -745,10 +741,12 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
   async generateCanonicalGenesis(genesisState: GenesisState) {
     await this._tree.createRootNode()
     await this.checkpoint()
-    for (const addressStr of Object.keys(genesisState)) {
+    for (const addressStr of Object.keys(genesisState) as PrefixedHexString[]) {
       const addrState = genesisState[addressStr]
-      let nonce, balance, code
-      let storage: StoragePair[] = []
+      let nonce: PrefixedHexString | undefined
+      let balance: PrefixedHexString | bigint
+      let code: PrefixedHexString | undefined
+      let storage: StoragePair[] | undefined = []
       if (Array.isArray(addrState)) {
         ;[balance, code, storage, nonce] = addrState
       } else {
@@ -758,7 +756,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       }
       const address = createAddressFromString(addressStr)
       await this.putAccount(address, new Account())
-      const codeBuf = hexToBytes((code as string) ?? '0x')
+      const codeBuf = hexToBytes(code ?? '0x')
 
       const codeHash = this.keccakFunction(codeBuf)
 
@@ -778,8 +776,8 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
       // Put account data
       const account = createPartialAccount({
-        nonce: nonce as PrefixedHexString,
-        balance: balance as PrefixedHexString,
+        nonce,
+        balance,
         codeHash,
         codeSize: codeBuf.byteLength,
       })

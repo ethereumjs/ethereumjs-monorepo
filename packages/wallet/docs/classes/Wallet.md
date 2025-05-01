@@ -1,58 +1,42 @@
+[**@ethereumjs/wallet**](../README.md)
+
+***
+
 [@ethereumjs/wallet](../README.md) / Wallet
 
 # Class: Wallet
 
-## Table of contents
-
-### Constructors
-
-- [constructor](Wallet.md#constructor)
-
-### Methods
-
-- [getAddress](Wallet.md#getaddress)
-- [getAddressString](Wallet.md#getaddressstring)
-- [getChecksumAddressString](Wallet.md#getchecksumaddressstring)
-- [getPrivateKey](Wallet.md#getprivatekey)
-- [getPrivateKeyString](Wallet.md#getprivatekeystring)
-- [getPublicKey](Wallet.md#getpublickey)
-- [getPublicKeyString](Wallet.md#getpublickeystring)
-- [getV3Filename](Wallet.md#getv3filename)
-- [toV3](Wallet.md#tov3)
-- [toV3String](Wallet.md#tov3string)
-- [verifyPublicKey](Wallet.md#verifypublickey)
-- [fromEthSale](Wallet.md#fromethsale)
-- [fromExtendedPrivateKey](Wallet.md#fromextendedprivatekey)
-- [fromExtendedPublicKey](Wallet.md#fromextendedpublickey)
-- [fromPrivateKey](Wallet.md#fromprivatekey)
-- [fromPublicKey](Wallet.md#frompublickey)
-- [fromV1](Wallet.md#fromv1)
-- [fromV3](Wallet.md#fromv3)
-- [generate](Wallet.md#generate)
-- [generateVanityAddress](Wallet.md#generatevanityaddress)
+Defined in: [wallet.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L273)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new Wallet**(`privateKey?`, `publicKey?`)
+> **new Wallet**(`privateKey?`, `publicKey?`): `Wallet`
+
+Defined in: [wallet.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L277)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `privateKey?` | `Uint8Array` | `undefined` |
-| `publicKey` | `undefined` \| `Uint8Array` | `undefined` |
+##### privateKey?
 
-#### Defined in
+`Uint8Array`\<`ArrayBufferLike`\>
 
-[wallet.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L266)
+##### publicKey?
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Wallet`
 
 ## Methods
 
-### getAddress
+### getAddress()
 
-▸ **getAddress**(): `Uint8Array`
+> **getAddress**(): `Uint8Array`
+
+Defined in: [wallet.ts:562](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L562)
 
 Returns the wallet's address.
 
@@ -60,48 +44,42 @@ Returns the wallet's address.
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[wallet.ts:548](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L548)
+### getAddressString()
 
-___
+> **getAddressString**(): `` `0x${string}` ``
 
-### getAddressString
-
-▸ **getAddressString**(): `string`
+Defined in: [wallet.ts:569](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L569)
 
 Returns the wallet's address as a "0x" prefixed hex string
 
 #### Returns
 
-`string`
+`` `0x${string}` ``
 
-#### Defined in
+***
 
-[wallet.ts:555](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L555)
+### getChecksumAddressString()
 
-___
+> **getChecksumAddressString**(): `` `0x${string}` ``
 
-### getChecksumAddressString
-
-▸ **getChecksumAddressString**(): `string`
+Defined in: [wallet.ts:577](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L577)
 
 Returns the wallet's private key as a "0x" prefixed hex string checksummed
 according to [EIP 55](https://github.com/ethereum/EIPs/issues/55).
 
 #### Returns
 
-`string`
+`` `0x${string}` ``
 
-#### Defined in
+***
 
-[wallet.ts:563](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L563)
+### getPrivateKey()
 
-___
+> **getPrivateKey**(): `Uint8Array`
 
-### getPrivateKey
-
-▸ **getPrivateKey**(): `Uint8Array`
+Defined in: [wallet.ts:537](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L537)
 
 Returns the wallet's private key.
 
@@ -109,29 +87,25 @@ Returns the wallet's private key.
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[wallet.ts:523](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L523)
+### getPrivateKeyString()
 
-___
+> **getPrivateKeyString**(): `` `0x${string}` ``
 
-### getPrivateKeyString
-
-▸ **getPrivateKeyString**(): `string`
+Defined in: [wallet.ts:541](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L541)
 
 #### Returns
 
-`string`
+`` `0x${string}` ``
 
-#### Defined in
+***
 
-[wallet.ts:527](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L527)
+### getPublicKey()
 
-___
+> **getPublicKey**(): `Uint8Array`
 
-### getPublicKey
-
-▸ **getPublicKey**(): `Uint8Array`
+Defined in: [wallet.ts:548](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L548)
 
 Returns the wallet's public key.
 
@@ -139,206 +113,201 @@ Returns the wallet's public key.
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[wallet.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L534)
+### getPublicKeyString()
 
-___
+> **getPublicKeyString**(): `` `0x${string}` ``
 
-### getPublicKeyString
-
-▸ **getPublicKeyString**(): `string`
+Defined in: [wallet.ts:555](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L555)
 
 Returns the wallet's public key as a "0x" prefixed hex string
 
 #### Returns
 
-`string`
+`` `0x${string}` ``
 
-#### Defined in
+***
 
-[wallet.ts:541](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L541)
+### getV3Filename()
 
-___
+> **getV3Filename**(`timestamp?`): `string`
 
-### getV3Filename
-
-▸ **getV3Filename**(`timestamp?`): `string`
+Defined in: [wallet.ts:647](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L647)
 
 Return the suggested filename for V3 keystores.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `timestamp?` | `number` |
+##### timestamp?
+
+`number`
 
 #### Returns
 
 `string`
 
-#### Defined in
+***
 
-[wallet.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L633)
+### toV3()
 
-___
+> **toV3**(`password`, `opts?`): `Promise`\<`V3Keystore`\>
 
-### toV3
+Defined in: [wallet.ts:587](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L587)
 
-▸ **toV3**(`password`, `opts?`): `Promise`<`V3Keystore`\>
-
-Returns an Etherem Version 3 Keystore Format object representing the wallet
+Returns an Ethereum Version 3 Keystore Format object representing the wallet
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `password` | `string` | The password used to encrypt the Keystore. |
-| `opts?` | `Partial`<`V3Params`\> | The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info. |
+##### password
+
+`string`
+
+The password used to encrypt the Keystore.
+
+##### opts?
+
+`Partial`\<`V3Params`\>
+
+The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info.
 
 #### Returns
 
-`Promise`<`V3Keystore`\>
+`Promise`\<`V3Keystore`\>
 
-#### Defined in
+***
 
-[wallet.ts:573](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L573)
+### toV3String()
 
-___
+> **toV3String**(`password`, `opts?`): `Promise`\<`string`\>
 
-### toV3String
-
-▸ **toV3String**(`password`, `opts?`): `Promise`<`string`\>
+Defined in: [wallet.ts:668](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L668)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `password` | `string` |
-| `opts?` | `Partial`<`V3Params`\> |
+##### password
+
+`string`
+
+##### opts?
+
+`Partial`\<`V3Params`\>
 
 #### Returns
 
-`Promise`<`string`\>
+`Promise`\<`string`\>
 
-#### Defined in
+***
 
-[wallet.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L654)
+### verifyPublicKey()
 
-___
+> **verifyPublicKey**(`publicKey`): `boolean`
 
-### verifyPublicKey
-
-▸ **verifyPublicKey**(`publicKey`): `boolean`
+Defined in: [wallet.ts:677](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L677)
 
 Verify the publicKey, privateKey pair
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `publicKey` | `Uint8Array` | the public key to verify against the private key of the wallet |
+##### publicKey
+
+`Uint8Array`
+
+the public key to verify against the private key of the wallet
 
 #### Returns
 
 `boolean`
 
-#### Defined in
+***
 
-[wallet.ts:663](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L663)
+### fromEthSale()
 
-___
+> `static` **fromEthSale**(`input`, `password`): `Promise`\<`Wallet`\>
 
-### fromEthSale
-
-▸ `Static` **fromEthSale**(`input`, `password`): `Promise`<[`Wallet`](Wallet.md)\>
+Defined in: [wallet.ts:479](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L479)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `input` | `string` \| `EthSaleKeystore` |
-| `password` | `string` |
+##### input
+
+`string` | `EthSaleKeystore`
+
+##### password
+
+`string`
 
 #### Returns
 
-`Promise`<[`Wallet`](Wallet.md)\>
+`Promise`\<`Wallet`\>
 
-#### Defined in
+***
 
-[wallet.ts:465](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L465)
+### fromExtendedPrivateKey()
 
-___
+> `static` **fromExtendedPrivateKey**(`extendedPrivateKey`): `Wallet`
 
-### fromExtendedPrivateKey
-
-▸ `Static` **fromExtendedPrivateKey**(`extendedPrivateKey`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L371)
 
 Create an instance based on a BIP32 extended private key (xprv)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `extendedPrivateKey` | `string` |
+##### extendedPrivateKey
+
+`string`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
+`Wallet`
 
-#### Defined in
+***
 
-[wallet.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L357)
+### fromExtendedPublicKey()
 
-___
+> `static` **fromExtendedPublicKey**(`extendedPublicKey`): `Wallet`
 
-### fromExtendedPublicKey
-
-▸ `Static` **fromExtendedPublicKey**(`extendedPublicKey`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L352)
 
 Create an instance based on a BIP32 extended public key (xpub)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `extendedPublicKey` | `string` |
+##### extendedPublicKey
+
+`string`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
+`Wallet`
 
-#### Defined in
+***
 
-[wallet.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L338)
+### fromPrivateKey()
 
-___
+> `static` **fromPrivateKey**(`privateKey`): `Wallet`
 
-### fromPrivateKey
-
-▸ `Static` **fromPrivateKey**(`privateKey`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L364)
 
 Create an instance based on a raw private key
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
+##### privateKey
+
+`Uint8Array`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
+`Wallet`
 
-#### Defined in
+***
 
-[wallet.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L350)
+### fromPublicKey()
 
-___
+> `static` **fromPublicKey**(`publicKey`, `nonStrict`): `Wallet`
 
-### fromPublicKey
-
-▸ `Static` **fromPublicKey**(`publicKey`, `nonStrict?`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:342](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L342)
 
 Create an instance based on a public key (certain methods will not be available)
 
@@ -347,106 +316,116 @@ the `nonStrict` flag is set to true.
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `publicKey` | `Uint8Array` | `undefined` |
-| `nonStrict` | `boolean` | `false` |
+##### publicKey
+
+`Uint8Array`
+
+##### nonStrict
+
+`boolean` = `false`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
+`Wallet`
 
-#### Defined in
+***
 
-[wallet.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L328)
+### fromV1()
 
-___
+> `static` **fromV1**(`input`, `password`): `Promise`\<`Wallet`\>
 
-### fromV1
-
-▸ `Static` **fromV1**(`input`, `password`): `Promise`<[`Wallet`](Wallet.md)\>
+Defined in: [wallet.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L388)
 
 Import a wallet (Version 1 of the Ethereum wallet format).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `input` | `string` \| `V1Keystore` | A JSON serialized string, or an object representing V1 Keystore. |
-| `password` | `string` | The keystore password. |
+##### input
+
+A JSON serialized string, or an object representing V1 Keystore.
+
+`string` | `V1Keystore`
+
+##### password
+
+`string`
+
+The keystore password.
 
 #### Returns
 
-`Promise`<[`Wallet`](Wallet.md)\>
+`Promise`\<`Wallet`\>
 
-#### Defined in
+***
 
-[wallet.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L374)
+### fromV3()
 
-___
+> `static` **fromV3**(`input`, `password`, `nonStrict`): `Promise`\<`Wallet`\>
 
-### fromV3
-
-▸ `Static` **fromV3**(`input`, `password`, `nonStrict?`): `Promise`<[`Wallet`](Wallet.md)\>
+Defined in: [wallet.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L421)
 
 Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `input` | `string` \| `V3Keystore` | `undefined` | A JSON serialized string, or an object representing V3 Keystore. |
-| `password` | `string` | `undefined` | The keystore password. |
-| `nonStrict` | `boolean` | `false` | - |
+##### input
+
+A JSON serialized string, or an object representing V3 Keystore.
+
+`string` | `V3Keystore`
+
+##### password
+
+`string`
+
+The keystore password.
+
+##### nonStrict
+
+`boolean` = `false`
 
 #### Returns
 
-`Promise`<[`Wallet`](Wallet.md)\>
+`Promise`\<`Wallet`\>
 
-#### Defined in
+***
 
-[wallet.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L407)
+### generate()
 
-___
+> `static` **generate**(`icapDirect`): `Wallet`
 
-### generate
-
-▸ `Static` **generate**(`icapDirect?`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L304)
 
 Create an instance based on a new random key.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `icapDirect` | `boolean` | `false` | setting this to `true` will generate an address suitable for the `ICAP Direct mode` |
+##### icapDirect
+
+`boolean` = `false`
+
+setting this to `true` will generate an address suitable for the `ICAP Direct mode`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
+`Wallet`
 
-#### Defined in
+***
 
-[wallet.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L290)
+### generateVanityAddress()
 
-___
+> `static` **generateVanityAddress**(`pattern`): `Wallet`
 
-### generateVanityAddress
-
-▸ `Static` **generateVanityAddress**(`pattern`): [`Wallet`](Wallet.md)
+Defined in: [wallet.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L322)
 
 Create an instance where the address is valid against the supplied pattern (**this will be very slow**)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `pattern` | `string` \| `RegExp` |
+##### pattern
+
+`string` | `RegExp`
 
 #### Returns
 
-[`Wallet`](Wallet.md)
-
-#### Defined in
-
-[wallet.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L308)
+`Wallet`

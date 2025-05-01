@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { TransactionType, createTx } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
@@ -7,7 +8,6 @@ import { Chain } from '../../src/blockchain/index.ts'
 import { Config, SyncMode } from '../../src/config.ts'
 import { RlpxServer } from '../../src/net/server/index.ts'
 import { Event } from '../../src/types.ts'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.ts'
 
 import type { Log } from '@ethereumjs/evm'
 import type { BeaconSynchronizer } from '../../src/sync/index.ts'
@@ -61,19 +61,28 @@ describe('initialize', async () => {
   const service = new FullEthereumService({ config, chain })
 
   it('should initialize correctly', async () => {
-    assert.equal('full', service.synchronizer?.type, 'full mode')
-    assert.equal(service.name, 'eth', 'got name')
+    assert.strictEqual('full', service.synchronizer?.type, 'full mode')
+    assert.strictEqual(service.name, 'eth', 'got name')
   })
 
   it('should get protocols', async () => {
     let config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
-    assert.notOk(service.protocols.filter((p) => p.name === 'les').length > 0, 'no light protocol')
+    assert.isNotEmpty(
+      service.protocols.filter((p) => p.name === 'eth'),
+      'full protocol',
+    )
+    assert.isEmpty(
+      service.protocols.filter((p) => p.name === 'les'),
+      'no light protocol',
+    )
     config = new Config({})
     service = new FullEthereumService({ config, chain })
-    assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
+    assert.isNotEmpty(
+      service.protocols.filter((p) => p.name === 'eth'),
+      'full protocol',
+    )
   })
 })
 
@@ -88,24 +97,48 @@ describe('should open', async () => {
   await service.open()
   expect(service.synchronizer!.open).toBeCalled()
   expect(server.addProtocols).toBeCalled()
-  service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
-    it('should synchronize', () => {
-      assert.ok('synchronized')
-    })
+
+  it('should synchronize', async () => {
+    assert.isTrue(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SYNC_SYNCHRONIZED, () => {
+          resolve(true)
+        })
+        service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
+        resolve(false)
+      }),
+      'synchronized',
+    )
   })
-  service.config.events.on(Event.SYNC_ERROR, (err) => {
-    it('should get error', () => {
-      assert.equal(err.message, 'error0', 'got error 1')
-    })
+
+  it('should get sync error', async () => {
+    assert.strictEqual(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SYNC_ERROR, (err) => {
+          resolve(err.message)
+        })
+        service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
+        resolve(false)
+      }),
+      'error0',
+      'sync error received',
+    )
   })
-  service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
-  service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
-  service.config.events.on(Event.SERVER_ERROR, (err) => {
-    it('should get error', () => {
-      assert.equal(err.message, 'error1')
-    })
+
+  it('should get server error', async () => {
+    assert.strictEqual(
+      await new Promise((resolve) => {
+        service.config.events.on(Event.SERVER_ERROR, (err) => {
+          resolve(err.message)
+        })
+        service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+        resolve(false)
+      }),
+      'error1',
+      'server error received',
+    )
   })
-  service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+
   await service.close()
 })
 
@@ -119,10 +152,10 @@ describe('should start/stop', async () => {
     await service.start()
 
     expect(service.synchronizer!.start).toBeCalled()
-    assert.notOk(await service.start(), 'already started')
+    assert.isFalse(await service.start(), 'already started')
     await service.stop()
     expect(service.synchronizer!.stop).toBeCalled()
-    assert.notOk(await service.stop(), 'already stopped')
+    assert.isFalse(await service.stop(), 'already stopped')
   })
 })
 
@@ -143,18 +176,21 @@ describe('should correctly handle GetBlockHeaders', async () => {
       eth: {
         send: (title: string, msg: any) => {
           it('should send empty headers', () => {
-            assert.ok(
+            assert.isTrue(
               title === 'BlockHeaders' && msg.headers.length === 0,
               'sent empty headers when block height is too high',
             )
           })
         },
-      } as any,
+      },
     } as any,
   )
-  ;(service.chain as any)._headers = {
+
+  service.chain['_headers'] = {
     height: 5n,
+    /// @ts-expect-error -- For testing purposes
     td: null,
+    /// @ts-expect-error -- For testing purposes
     latest: 5n,
   }
 
@@ -168,13 +204,13 @@ describe('should correctly handle GetBlockHeaders', async () => {
       eth: {
         send: (title: string, msg: any) => {
           it('should send 1 header', () => {
-            assert.ok(
+            assert.isTrue(
               title === 'BlockHeaders' && msg.headers.length === 1,
               'sent 1 header when requested',
             )
           })
         },
-      } as any,
+      },
     } as any,
   )
 })
@@ -195,11 +231,12 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
   // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
   it('should switch to beacon sync', async () => {
     await service.switchToBeaconSync()
-    assert.ok(
-      (service.synchronizer as BeaconSynchronizer).type === 'beacon',
+    assert.strictEqual(
+      (service.synchronizer as BeaconSynchronizer).type,
+      'beacon',
       'switched to BeaconSynchronizer',
     )
-    assert.ok(service.beaconSync, 'can access BeaconSynchronizer')
+    assert.isDefined(service.beaconSync, 'can access BeaconSynchronizer')
   })
 })
 
@@ -307,7 +344,8 @@ describe('should handle GetPooledTransactions', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
 
   const tx = createTx({ type: 2 }).sign(randomBytes(32))
   await service.txPool.add(tx)
@@ -336,12 +374,10 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
-  ;(service.txPool as any).handleAnnouncedTxHashes = (
-    hashes: Uint8Array[],
-    _peer: any,
-    _pool: any,
-  ) => {
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool['handleAnnouncedTxHashes'] = (hashes: Uint8Array[], _peer: any, _pool: any) => {
     it('should get correct tx hash from eth68 message', () => {
       assert.deepEqual(hashes[0], txHash)
     })
@@ -351,10 +387,11 @@ describe('should handle decoding NewPooledTransactionHashes with eth/68 message 
     { name: 'NewPooledTransactionHashes', data: [[1], [100], [txHash]] },
     'eth',
     {
+      /// @ts-expect-error -- Assigning simpler config for testing
       eth: {
         versions: [67, 68],
       },
-    } as any,
+    },
   )
 })
 
@@ -363,11 +400,13 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
   const service = new FullEthereumService({ config, chain })
-  ;(service.txPool as any).validate = () => {}
+  /// @ts-expect-error -- Assigning simpler config for testing
+  service.txPool.validate = () => {}
   service.txPool.sendNewTxHashes(
     [[1], [100], [txHash]],
     [
       {
+        /// @ts-expect-error -- Assigning simpler config for testing
         eth: {
           versions: [67, 68],
           request: (data: any): any => {
@@ -376,23 +415,23 @@ describe.skip('should handle structuring NewPooledTransactionHashes with eth/68 
             })
           },
         },
-      } as any,
+      },
     ],
   )
 })
 
 describe('should start on beacon sync when past merge', async () => {
-  const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0) })
   const config = new Config({ accountCache: 10000, storageCache: 1000, common })
   const chain = await Chain.create({ config })
   it('should be available', () => {
     const service = new FullEthereumService({ config, chain })
-    assert.ok(service.beaconSync, 'beacon sync should be available')
+    assert.isDefined(service.beaconSync, 'beacon sync should be available')
   })
   it('should not be available', () => {
     const configDisableBeaconSync = new Config({ common, syncmode: SyncMode.None })
     const service = new FullEthereumService({ config: configDisableBeaconSync, chain })
-    assert.notOk(service.beaconSync, 'beacon sync should not be available')
+    assert.isUndefined(service.beaconSync, 'beacon sync should not be available')
   })
 })

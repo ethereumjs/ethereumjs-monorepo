@@ -1,10 +1,10 @@
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import { Units, bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
 import { beaconData } from '../../testdata/blocks/beacon.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV4'
@@ -129,9 +129,9 @@ function readyPragueGenesis() {
   const pragueTime = 1689945325
   // add shanghai and cancun to genesis
   const pragueGenesis = {
-    ...postMergeData,
+    ...postMergeGethGenesis,
     config: {
-      ...postMergeData.config,
+      ...postMergeGethGenesis.config,
       shanghaiTime: pragueTime,
       cancunTime: pragueTime,
       pragueTime,
@@ -150,7 +150,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
     let res
 
     res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
-    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
+    assert.strictEqual(res.result.hash, validForkChoiceState.headBlockHash)
 
     const validBlock = {
       ...blockData,
@@ -174,16 +174,19 @@ describe(`${method}: call with executionPayloadV4`, () => {
       const expectedError = expectedErrors[index]
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.strictEqual(res.error.code, INVALID_PARAMS)
       assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
-    assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
+    assert.isTrue(
+      payloadId !== undefined && payloadId !== null,
+      'valid payloadId should be received',
+    )
 
     // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
     const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
@@ -200,20 +203,19 @@ describe(`${method}: call with executionPayloadV4`, () => {
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload, executionRequests } = res.result
 
-    assert.ok(
-      executionRequests?.length === 1,
+    assert.strictEqual(
+      executionRequests?.length,
+      1,
       'executionRequests should have the deposit request, and should exclude the other requests (these are empty)',
     )
 
     const depositRequestBytes = hexToBytes(executionRequests[0])
-    assert.ok(
-      depositRequestBytes[0] === 0x00,
+    assert.strictEqual(
+      depositRequestBytes[0],
+      0x00,
       'deposit request byte 0 is the deposit request identifier byte (0x00)',
     )
-    assert.ok(
-      depositRequestBytes.length > 1,
-      'deposit request includes data (and is thus not empty)',
-    )
+    assert.isNotEmpty(depositRequestBytes, 'deposit request includes data (and is thus not empty)')
 
     res = await rpc.request(method, [
       executionPayload,
@@ -221,7 +223,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       parentBeaconBlockRoot,
       executionRequests,
     ])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     const newBlockHashHex = executionPayload.blockHash
     // add this block to the blockchain
@@ -233,6 +235,6 @@ describe(`${method}: call with executionPayloadV4`, () => {
       },
       null,
     ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
   })
 })

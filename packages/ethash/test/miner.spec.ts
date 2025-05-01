@@ -28,11 +28,15 @@ describe('Miner', () => {
     assert.isFalse(await e.verifyPOW(block), 'should be invalid')
 
     const miner = e.getMiner(block.header)
-    assert.equal(await miner.iterate(1), undefined, 'iterations can return undefined')
+    assert.strictEqual(await miner.iterate(1), undefined, 'iterations can return undefined')
 
-    assert.equal((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
+    assert.strictEqual((miner as any).currentNonce, BigInt(1), 'miner saves current nonce')
     await miner.iterate(1)
-    assert.equal((miner as any).currentNonce, BigInt(2), 'miner successfully iterates over nonces')
+    assert.strictEqual(
+      (miner as any).currentNonce,
+      BigInt(2),
+      'miner successfully iterates over nonces',
+    )
 
     const solution = await miner.iterate(-1)
 
@@ -49,7 +53,7 @@ describe('Miner', () => {
     )
 
     assert.isTrue(await e.verifyPOW(validBlock), 'successfully mined block')
-    assert.exists(miner.solution, 'cached the solution')
+    assert.isDefined(miner.solution, 'cached the solution')
   }, 200000)
 
   it('Check if it is possible to mine Blocks and BlockHeaders', async () => {
@@ -65,7 +69,7 @@ describe('Miner', () => {
       { common },
     )
     const miner = e.getMiner(block.header)
-    const solution = <BlockHeader>await miner.mine(-1)
+    const solution = (await miner.mine(-1)) as BlockHeader
 
     assert.isTrue(
       await e.verifyPOW(createBlock({ header: solution.toJSON() }, { common })),
@@ -73,9 +77,9 @@ describe('Miner', () => {
     )
 
     const blockMiner = e.getMiner(block)
-    const blockSolution = <Block>await blockMiner.mine(-1)
+    const blockSolution = (await blockMiner.mine(-1)) as Block
 
-    assert.isTrue(e.verifyPOW(blockSolution))
+    assert.isTrue(await e.verifyPOW(blockSolution))
   }, 60000)
 
   it('Check if it is possible to stop the miner', async () => {
@@ -129,15 +133,19 @@ describe('Miner', () => {
     )
 
     const miner = e.getMiner(block.header)
-    const solution = <BlockHeader>await miner.mine(-1)
+    const solution = (await miner.mine(-1)) as BlockHeader
 
-    assert.equal(solution.common.hardfork(), Hardfork.Petersburg, 'hardfork did not change')
-    assert.equal(solution.common.chainName(), 'mainnet', 'chain name did not change')
+    assert.strictEqual(solution.common.hardfork(), Hardfork.Petersburg, 'hardfork did not change')
+    assert.strictEqual(solution.common.chainName(), 'mainnet', 'chain name did not change')
 
     const blockMiner = e.getMiner(block)
-    const blockSolution = <Block>await blockMiner.mine(-1)
+    const blockSolution = (await blockMiner.mine(-1)) as Block
 
-    assert.equal(blockSolution.common.hardfork(), Hardfork.Petersburg, 'hardfork did not change')
-    assert.equal(blockSolution.common.chainName(), 'mainnet', 'chain name did not change')
+    assert.strictEqual(
+      blockSolution.common.hardfork(),
+      Hardfork.Petersburg,
+      'hardfork did not change',
+    )
+    assert.strictEqual(blockSolution.common.chainName(), 'mainnet', 'chain name did not change')
   }, 60000)
 })

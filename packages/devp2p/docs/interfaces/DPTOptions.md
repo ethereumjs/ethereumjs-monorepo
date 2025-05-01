@@ -1,143 +1,144 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / DPTOptions
 
 # Interface: DPTOptions
 
-## Table of contents
-
-### Properties
-
-- [createSocket](DPTOptions.md#createsocket)
-- [dnsAddr](DPTOptions.md#dnsaddr)
-- [dnsNetworks](DPTOptions.md#dnsnetworks)
-- [dnsRefreshQuantity](DPTOptions.md#dnsrefreshquantity)
-- [endpoint](DPTOptions.md#endpoint)
-- [refreshInterval](DPTOptions.md#refreshinterval)
-- [shouldFindNeighbours](DPTOptions.md#shouldfindneighbours)
-- [shouldGetDnsPeers](DPTOptions.md#shouldgetdnspeers)
-- [timeout](DPTOptions.md#timeout)
+Defined in: [packages/devp2p/src/types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L113)
 
 ## Properties
 
-### createSocket
+### common?
 
-• `Optional` **createSocket**: `Function`
+> `optional` **common**: `Common`
+
+Defined in: [packages/devp2p/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L192)
+
+Common instance to allow for crypto primitive (e.g. keccak) replacement
+
+***
+
+### createSocket?
+
+> `optional` **createSocket**: `Function`
+
+Defined in: [packages/devp2p/src/types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L133)
 
 Function for socket creation
 
 Default: dgram-created socket
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L62)
+### dnsAddr?
 
-___
+> `optional` **dnsAddr**: `string`
 
-### dnsAddr
-
-• `Optional` **dnsAddr**: `string`
+Defined in: [packages/devp2p/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L187)
 
 DNS server to query DNS TXT records from for peer discovery
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L104)
+### dnsNetworks?
 
-___
+> `optional` **dnsNetworks**: `string`[]
 
-### dnsNetworks
-
-• `Optional` **dnsNetworks**: `string`[]
+Defined in: [packages/devp2p/src/types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L182)
 
 EIP-1459 ENR tree urls to query for peer discovery
 
 Default: (network dependent)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L99)
+### dnsRefreshQuantity?
 
-___
+> `optional` **dnsRefreshQuantity**: `number`
 
-### dnsRefreshQuantity
-
-• `Optional` **dnsRefreshQuantity**: `number`
+Defined in: [packages/devp2p/src/types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L175)
 
 Max number of candidate peers to retrieve from DNS records when
 attempting to discover new nodes
 
 Default: 25
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L92)
+### endpoint?
 
-___
+> `optional` **endpoint**: [`PeerInfo`](PeerInfo.md)
 
-### endpoint
-
-• `Optional` **endpoint**: [`PeerInfo`](PeerInfo.md)
+Defined in: [packages/devp2p/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L126)
 
 Network info to send a long a request
 
 Default: 0.0.0.0, no UDP or TCP port provided
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L55)
+### onlyConfirmed?
 
-___
+> `optional` **onlyConfirmed**: `boolean`
 
-### refreshInterval
+Defined in: [packages/devp2p/src/types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L160)
 
-• `Optional` **refreshInterval**: `number`
+Send findNeighbour requests to and only answer with respective peers
+being confirmed by calling the `confirmPeer()` method
+
+(allows for a more selective and noise reduced discovery)
+
+Note: Bootstrap nodes are confirmed by default.
+
+Default: false
+
+***
+
+### refreshInterval?
+
+> `optional` **refreshInterval**: `number`
+
+Defined in: [packages/devp2p/src/types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L140)
 
 Interval for peer table refresh
 
 Default: 60s
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L69)
+### shouldFindNeighbours?
 
-___
+> `optional` **shouldFindNeighbours**: `boolean`
 
-### shouldFindNeighbours
-
-• `Optional` **shouldFindNeighbours**: `boolean`
+Defined in: [packages/devp2p/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L148)
 
 Toggles whether or not peers should be queried with 'findNeighbours'
 to discover more peers
 
 Default: true
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L77)
+### shouldGetDnsPeers?
 
-___
+> `optional` **shouldGetDnsPeers**: `boolean`
 
-### shouldGetDnsPeers
-
-• `Optional` **shouldGetDnsPeers**: `boolean`
+Defined in: [packages/devp2p/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L167)
 
 Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
 
 Default: false
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L84)
+### timeout?
 
-___
+> `optional` **timeout**: `number`
 
-### timeout
-
-• `Optional` **timeout**: `number`
+Defined in: [packages/devp2p/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L119)
 
 Timeout for peer requests
 
 Default: 10s
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L48)

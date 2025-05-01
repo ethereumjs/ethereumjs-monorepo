@@ -7,12 +7,10 @@ import {
   equalsBytes,
   hexToBytes,
   privateToPublic,
-  toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { valueBoundaryCheck } from '../src/features/util.ts'
 import {
   AccessList2930Tx,
   Capability,
@@ -30,6 +28,7 @@ import {
   createLegacyTxFromRLP,
   paramsTx,
 } from '../src/index.ts'
+import { valueBoundaryCheck } from '../src/util/internal.ts'
 
 import { eip1559TxsData } from './testData/eip1559txs.ts'
 import { eip2930TxsData } from './testData/eip2930txs.ts'
@@ -117,41 +116,45 @@ describe('[BaseTransaction]', () => {
   it('Initialization', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
-      assert.equal(
+      assert.strictEqual(
         tx.common.hardfork(),
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       const initCommon = new Common({
         chain: Mainnet,
         hardfork: Hardfork.London,
       })
       tx = txType.create.txData({}, { common: initCommon })
-      assert.equal(
+      assert.strictEqual(
         tx.common.hardfork(),
         'london',
         `${txType.name}: should initialize with correct HF provided`,
       )
 
       initCommon.setHardfork(Hardfork.Byzantium)
-      assert.equal(
+      assert.strictEqual(
         tx.common.hardfork(),
         'london',
         `${txType.name}: should stay on correct HF if outer common HF changes`,
       )
 
       tx = txType.create.txData({}, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       const params = JSON.parse(JSON.stringify(paramsTx))
       params['1']['txGas'] = 30000 // 21000
       tx = txType.create.txData({}, { common, params })
-      assert.equal(tx.common.param('txGas'), BigInt(30000), 'should use custom parameters provided')
+      assert.strictEqual(
+        tx.common.param('txGas'),
+        BigInt(30000),
+        'should use custom parameters provided',
+      )
 
       // Perform the same test as above, but now using a different construction method. This also implies that passing on the
       // options object works as expected.
@@ -159,26 +162,26 @@ describe('[BaseTransaction]', () => {
       const rlpData = tx.serialize()
 
       tx = txType.create.rlp(rlpData, { common })
-      assert.equal(
+      assert.strictEqual(
         tx.type,
         txType.type,
         `${txType.name}: fromSerializedTx() -> should initialize correctly`,
       )
 
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.rlp(rlpData, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
       tx = txType.create.bytesArray(txType.values as any, { common })
-      assert.isTrue(Object.isFrozen(tx), `${txType.name}: tx should be frozen by default`)
+      assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
       tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
-      assert.ok(
-        !Object.isFrozen(tx),
+      assert.isNotFrozen(
+        tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
     }
@@ -186,7 +189,7 @@ describe('[BaseTransaction]', () => {
 
   it('createWithdrawalFromBytesArray()', () => {
     let rlpData: any = legacyTxs[0].raw()
-    rlpData[0] = toBytes('0x0')
+    rlpData[0] = hexToBytes('0x0')
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
@@ -196,8 +199,8 @@ describe('[BaseTransaction]', () => {
         'should throw with nonce with leading zeroes',
       )
     }
-    rlpData[0] = toBytes('0x')
-    rlpData[6] = toBytes('0x0')
+    rlpData[0] = hexToBytes('0x')
+    rlpData[6] = hexToBytes('0x0')
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
@@ -208,7 +211,7 @@ describe('[BaseTransaction]', () => {
       )
     }
     rlpData = eip2930Txs[0].raw()
-    rlpData[3] = toBytes('0x0')
+    rlpData[3] = hexToBytes('0x0')
     try {
       createAccessList2930TxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
@@ -219,7 +222,7 @@ describe('[BaseTransaction]', () => {
       )
     }
     rlpData = eip1559Txs[0].raw()
-    rlpData[2] = toBytes('0x0')
+    rlpData[2] = hexToBytes('0x0')
     try {
       create1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
@@ -234,11 +237,11 @@ describe('[BaseTransaction]', () => {
   it('serialize()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.exists(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
-        assert.exists(
+        assert.isDefined(
           txType.create.rlp(tx.serialize(), { common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
@@ -250,13 +253,13 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
-          assert.exists(
+          assert.isDefined(
             tx.supports(activeCapability),
             `${txType.name}: should recognize all supported capabilities`,
           )
         }
         for (const notActiveCapability of txType.notActiveCapabilities) {
-          assert.notOk(
+          assert.isFalse(
             tx.supports(notActiveCapability),
             `${txType.name}: should reject non-active existing and not existing capabilities`,
           )
@@ -268,7 +271,7 @@ describe('[BaseTransaction]', () => {
   it('raw()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.exists(
+        assert.isDefined(
           txType.create.bytesArray(tx.raw() as any, { common }),
           `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
         )
@@ -279,7 +282,7 @@ describe('[BaseTransaction]', () => {
   it('verifySignature()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
-        assert.equal(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
+        assert.strictEqual(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
       }
     }
   })
@@ -290,12 +293,17 @@ describe('[BaseTransaction]', () => {
         // set `s` to a single zero
         txFixture.data.s = '0x' + '0'
         const tx = txType.create.txData((txFixture as any).data, { common })
-        assert.equal(tx.verifySignature(), false, `${txType.name}: signature should not be valid`)
-        assert.ok(
-          tx.getValidationErrors().includes('Invalid Signature'),
+        assert.strictEqual(
+          tx.verifySignature(),
+          false,
+          `${txType.name}: signature should not be valid`,
+        )
+        assert.include(
+          tx.getValidationErrors(),
+          'Invalid Signature',
           `${txType.name}: should return an error string about not verifying signatures`,
         )
-        assert.notOk(tx.isValid(), `${txType.name}: should not validate correctly`)
+        assert.isFalse(tx.isValid(), `${txType.name}: should not validate correctly`)
       }
     }
   })
@@ -305,7 +313,7 @@ describe('[BaseTransaction]', () => {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          assert.exists(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
+          assert.isDefined(tx.sign(hexToBytes(`0x${privateKey}`)), `${txType.name}: should sign tx`)
         }
 
         assert.throws(
@@ -334,7 +342,7 @@ describe('[BaseTransaction]', () => {
         ),
       ]
       for (const tx of txs) {
-        assert.equal(
+        assert.strictEqual(
           tx.isSigned(),
           tx.v !== undefined && tx.r !== undefined && tx.s !== undefined,
           'isSigned() returns correctly',
@@ -349,7 +357,7 @@ describe('[BaseTransaction]', () => {
         const { privateKey, sendersAddress } = txType.fixtures[i]
         if (privateKey !== undefined) {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
-          assert.equal(
+          assert.strictEqual(
             signedTx.getSenderAddress().toString(),
             `0x${sendersAddress}`,
             `${txType.name}: should get sender's address after signing it`,
@@ -367,7 +375,7 @@ describe('[BaseTransaction]', () => {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           const txPubKey = signedTx.getSenderPublicKey()
           const pubKeyFromPriv = privateToPublic(hexToBytes(`0x${privateKey}`))
-          assert.ok(
+          assert.isTrue(
             equalsBytes(txPubKey, pubKeyFromPriv),
             `${txType.name}: should get sender's public key after signing it`,
           )
@@ -385,7 +393,8 @@ describe('[BaseTransaction]', () => {
         if (privateKey !== undefined) {
           let signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
           signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
-          ;(signedTx as any).s = SECP256K1_ORDER + BigInt(1)
+          // @ts-expect-error -- Assign to read-only property
+          signedTx.s = SECP256K1_ORDER + BigInt(1)
           assert.throws(
             () => {
               signedTx.getSenderPublicKey()
@@ -405,14 +414,14 @@ describe('[BaseTransaction]', () => {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
           const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
-          assert.ok(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
+          assert.isTrue(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
     }
   })
 
   it('initialization with defaults', () => {
-    const bufferZero = toBytes('0x')
+    const bufferZero = hexToBytes('0x')
     const tx = createLegacyTx({
       nonce: undefined,
       gasLimit: undefined,
@@ -424,15 +433,15 @@ describe('[BaseTransaction]', () => {
       r: undefined,
       s: undefined,
     })
-    assert.equal(tx.v, undefined)
-    assert.equal(tx.r, undefined)
-    assert.equal(tx.s, undefined)
+    assert.strictEqual(tx.v, undefined)
+    assert.strictEqual(tx.r, undefined)
+    assert.strictEqual(tx.s, undefined)
     assert.deepEqual(tx.to, undefined)
-    assert.equal(tx.value, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.value, bytesToBigInt(bufferZero))
     assert.deepEqual(tx.data, bufferZero)
-    assert.equal(tx.gasPrice, bytesToBigInt(bufferZero))
-    assert.equal(tx.gasLimit, bytesToBigInt(bufferZero))
-    assert.equal(tx.nonce, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.gasPrice, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.gasLimit, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.nonce, bytesToBigInt(bufferZero))
   })
 
   // TODO: move this to a different file (not part of base transaction anymore)

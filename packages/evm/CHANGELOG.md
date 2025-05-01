@@ -6,7 +6,96 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 4.0.0-alpha.1 - [ UNPUBLISHED ]
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- Fix inconsistent memory expansion behavior along `step` event, PR [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953)
+- Error related renamings for consistency reasons, PRs [#3968](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3968), [#3994](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3994) and [#4033](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4033):
+  - `ERROR` -> `EVMErrorMessage` (Error messages)
+  - `EvmError` -> `EVMError` (Error class)
+  - EOF related error renamings
+- Upgrade `@noble/curves` to `1.9.0`, PR [#4018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4018)
+- Add JSON tracing to `t8n` in compliance with `EIP-7756`, PRs [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953) and [#4027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4027)
+
+## 10.0.0-rc.1 - 2025-03-24
+
+This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.
+
+### New Versioning Scheme
+
+This breaking release round will come with a new versioning scheme (thanks to paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
+
+As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
+
+### Native Node.js EventEmitter Replacement
+
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
+
+The new package is meant to be more performant while remaining almost entirely API compatible with native Node.js event emitters.
+
+If you directly import the Node.js event emitter, you need to switch your imports to:
+
+```ts
+import { EventEmitter } from 'events' // old
+import { EventEmitter } from 'eventemitter3' // new
+```
+
+The new event emitter package also made it possible to remove/replace the separate async event emitter custom integration and use the new package here as well.
+
+For listening to async EVM events like `step` or VM events like `newContract` or `afterTx` API slightly changed and it is now needed to take the `resolve` parameter in on listening and explicitly call at the end of the event handling:
+
+```ts
+evm.events.on('beforeMessage', (event) => {
+  console.log('synchronous listener to beforeMessage', event)
+})
+evm.events.on('afterMessage', (event, resolve) => {
+  console.log('asynchronous listener to beforeMessage', event)
+  // we need to call resolve() to avoid the event listener hanging
+  resolve?.()
+})
+```
+
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
+### Verkle Updates (experimental)
+
+- New method to generate a verkle execution witness, PR [#3864](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3864)
+- Migrate verkle `AccessWitness` from StateManager to EVM (experimental), PR [#3770](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3770)
+- Simplify/rename verkle access witness methods, PR [#3830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3830)
+- Verkle updates, PR [#3832](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3832)
+
+### Other Changes
+
+- Various EOF fixes and spec updates, PR [#3568](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3568)
+- Fix `PUSHN` non-compliance issue, PR [#3863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3863)
+- Remove unused params from common, PR [#3836](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3836)
+- Update `ethereum-cryptography` from `3.0.0` -> `3.1.0` (also for other packages), PR [#3859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3859)
+
+## 4.0.0-alpha.1 - 2024-10-17
 
 This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
 

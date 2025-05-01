@@ -1,61 +1,50 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / BuildBlockOpts
 
 # Interface: BuildBlockOpts
 
+Defined in: [vm/src/types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L213)
+
 Options for building a block.
-
-## Table of contents
-
-### Properties
-
-- [blockOpts](BuildBlockOpts.md#blockopts)
-- [headerData](BuildBlockOpts.md#headerdata)
-- [parentBlock](BuildBlockOpts.md#parentblock)
-- [withdrawals](BuildBlockOpts.md#withdrawals)
 
 ## Properties
 
-### blockOpts
+### blockOpts?
 
-• `Optional` **blockOpts**: [`BuilderOpts`](BuilderOpts.md)
+> `optional` **blockOpts**: [`BuilderOpts`](BuilderOpts.md)
+
+Defined in: [vm/src/types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L229)
 
 The block and builder options to use.
 
-#### Defined in
+***
 
-[vm/src/types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L193)
+### headerData?
 
-___
+> `optional` **headerData**: `HeaderData`
 
-### headerData
-
-• `Optional` **headerData**: `HeaderData`
+Defined in: [vm/src/types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L223)
 
 The block header data to use.
 Defaults used for any values not provided.
 
-#### Defined in
-
-[vm/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L187)
-
-___
+***
 
 ### parentBlock
 
-• **parentBlock**: `Block`
+> **parentBlock**: `Block`
+
+Defined in: [vm/src/types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L217)
 
 The parent block
 
-#### Defined in
+***
 
-[vm/src/types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L181)
+### withdrawals?
 
-___
+> `optional` **withdrawals**: `WithdrawalData`[]
 
-### withdrawals
-
-• `Optional` **withdrawals**: `WithdrawalData`[]
-
-#### Defined in
-
-[vm/src/types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L189)
+Defined in: [vm/src/types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L225)

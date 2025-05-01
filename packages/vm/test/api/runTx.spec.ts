@@ -29,7 +29,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
 
-import { Goerli } from './testdata/goerliCommon.ts'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.ts'
 
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
@@ -76,7 +76,7 @@ describe('runTx() -> successful API parameter usage', async () => {
     let vm = await createVM({ common })
     await simpleRun(vm, 'mainnet (PoW), london HF, default SM - should run without errors')
 
-    common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+    common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
     vm = await createVM({
       common,
       blockchain: await createBlockchain({ validateConsensus: false, validateBlocks: false }),
@@ -116,7 +116,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       await runTx(vm, { tx, block })
       assert.fail('vm/block mismatched hardfork should have failed')
     } catch (e) {
-      assert.equal(
+      assert.strictEqual(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
         'block has a different hardfork than the vm',
@@ -130,7 +130,7 @@ describe('runTx() -> successful API parameter usage', async () => {
       await runTx(vm, { tx, block })
       assert.fail('vm/tx mismatched hardfork should have failed')
     } catch (e) {
-      assert.equal(
+      assert.strictEqual(
         (e as Error).message.includes('block has a different hardfork than the vm'),
         true,
         'block has a different hardfork than the vm',
@@ -154,7 +154,7 @@ describe('runTx() -> successful API parameter usage', async () => {
 
     const blockGasUsed = BigInt(1000)
     const res = await runTx(vm, { tx, blockGasUsed })
-    assert.equal(
+    assert.strictEqual(
       res.receipt.cumulativeBlockGasUsed,
       blockGasUsed + res.totalGasSpent,
       'receipt.gasUsed should equal block gas used + tx gas used',
@@ -241,13 +241,13 @@ describe('runTx() -> successful API parameter usage', async () => {
         ? result.totalGasSpent * inclusionFeePerGas
         : result.amountSpent
 
-      assert.equal(
+      assert.strictEqual(
         coinbaseAccount!.balance,
         expectedCoinbaseBalance,
         `should use custom block (${txType.name})`,
       )
 
-      assert.equal(
+      assert.strictEqual(
         result.execResult.exceptionError,
         undefined,
         `should run ${txType.name} without errors`,
@@ -310,8 +310,11 @@ describe('runTx() -> API parameter usage/data errors', () => {
     const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
 
     const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
-
-    assert.ok(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
+    assert.isDefined(retrievedPreimage, 'preimage should be defined')
+    assert.isTrue(
+      equalsBytes(retrievedPreimage, caller.bytes),
+      'preimage should be the caller address',
+    )
   })
 
   it('run without signature', async () => {
@@ -368,7 +371,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     // set sufficient balance
     await vm.stateManager.putAccount(address, createAccountWithDefaults(BigInt(0), maxCost))
     const res = await runTx(vm, { tx })
-    assert.exists(res, 'should pass if balance is sufficient')
+    assert.isDefined(res, 'should pass if balance is sufficient')
   })
 
   it('run with insufficient eip1559 funds', async () => {
@@ -467,8 +470,8 @@ describe('runTx() -> runtime behavior', () => {
 
       await runTx(vm, { tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
-      assert.equal(
-        (<any>vm.stateManager).originalStorageCache.map.size,
+      assert.strictEqual(
+        (vm.stateManager.originalStorageCache as any).map.size,
         0,
         `should clear storage cache after every ${txType.name}`,
       )
@@ -491,13 +494,13 @@ describe('runTx() -> runtime errors', () => {
 
       const res = await runTx(vm, { tx })
 
-      assert.equal(
+      assert.strictEqual(
         res.execResult!.exceptionError!.error,
         'value overflow',
         `result should have 'value overflow' error set (${txType.name})`,
       )
-      assert.equal(
-        (<any>vm.stateManager)._checkpointCount,
+      assert.strictEqual(
+        (vm.stateManager as any)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`,
       )
@@ -519,13 +522,13 @@ describe('runTx() -> runtime errors', () => {
 
       const res = await runTx(vm, { tx })
 
-      assert.equal(
+      assert.strictEqual(
         res.execResult!.exceptionError!.error,
         'value overflow',
         `result should have 'value overflow' error set (${txType.name})`,
       )
-      assert.equal(
-        (<any>vm.stateManager)._checkpointCount,
+      assert.strictEqual(
+        (vm.stateManager as any)._checkpointCount,
         0,
         `checkpoint count should be 0 (${txType.name})`,
       )
@@ -545,12 +548,12 @@ describe('runTx() -> API return values', () => {
       await vm.stateManager.putAccount(caller, acc)
 
       const res = await runTx(vm, { tx })
-      assert.equal(
+      assert.strictEqual(
         res.execResult.executionGasUsed,
         BigInt(0),
         `execution result -> gasUsed -> 0 (${txType.name})`,
       )
-      assert.equal(
+      assert.strictEqual(
         res.execResult.exceptionError,
         undefined,
         `execution result -> exception error -> undefined (${txType.name})`,
@@ -560,7 +563,7 @@ describe('runTx() -> API return values', () => {
         Uint8Array.from([]),
         `execution result -> return value -> empty Uint8Array (${txType.name})`,
       )
-      assert.equal(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
+      assert.strictEqual(res.gasRefund, BigInt(0), `gasRefund -> 0 (${txType.name})`)
     }
   })
 
@@ -575,7 +578,7 @@ describe('runTx() -> API return values', () => {
 
       const res = await runTx(vm, { tx })
 
-      assert.equal(
+      assert.strictEqual(
         res.totalGasSpent,
         tx.getIntrinsicGas(),
         `runTx result -> gasUsed -> tx.getIntrinsicGas() (${txType.name})`,
@@ -587,15 +590,15 @@ describe('runTx() -> API return values', () => {
             ? tx.maxPriorityFeePerGas
             : tx.maxFeePerGas - baseFee
         const gasPrice = inclusionFeePerGas + baseFee
-        assert.equal(
+        assert.strictEqual(
           res.amountSpent,
           res.totalGasSpent * gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       } else {
-        assert.equal(
+        assert.strictEqual(
           res.amountSpent,
-          res.totalGasSpent * (<LegacyTx>tx).gasPrice,
+          res.totalGasSpent * (tx as LegacyTx).gasPrice,
           `runTx result -> amountSpent -> gasUsed * gasPrice (${txType.name})`,
         )
       }
@@ -605,7 +608,7 @@ describe('runTx() -> API return values', () => {
         hexToBytes(`0x${'00'.repeat(256)}`),
         `runTx result -> bloom.bitvector -> should be empty (${txType.name})`,
       )
-      assert.equal(
+      assert.strictEqual(
         res.receipt.cumulativeBlockGasUsed,
         res.totalGasSpent,
         `runTx result -> receipt.gasUsed -> result.gasUsed (${txType.name})`,
@@ -661,7 +664,7 @@ describe('runTx() -> consensus bugs', () => {
     await runTx(vm, { tx })
 
     const newBalance = (await vm.stateManager.getAccount(addr))!.balance
-    assert.equal(newBalance, afterBalance)
+    assert.strictEqual(newBalance, afterBalance)
   })
 
   it('validate REVERT opcode does not consume all gas', async () => {
@@ -699,7 +702,7 @@ describe('runTx() -> consensus bugs', () => {
     const block = createBlock({ header: { baseFeePerGas: 0x0c } }, { common })
     const result = await runTx(vm, { tx, block })
 
-    assert.equal(
+    assert.strictEqual(
       result.totalGasSpent,
       BigInt(66382),
       'should use the right amount of gas and not consume all',
@@ -754,12 +757,16 @@ it('runTx() -> skipBalance behavior', async () => {
     const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
     assert.isTrue(true, 'runTx should not throw with no balance and skipBalance')
     const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
-    assert.equal(
+    assert.strictEqual(
       afterTxBalance,
       balance !== undefined ? balance - 1n : BigInt(0),
       `sender balance should be >= 0 after transaction with skipBalance`,
     )
-    assert.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
+    assert.strictEqual(
+      res.execResult.exceptionError,
+      undefined,
+      'no exceptionError with skipBalance',
+    )
   }
 })
 
@@ -820,7 +827,7 @@ it('Validate CALL does not charge new account gas when calling CALLER and caller
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
   await vm.stateManager.putAccount(addr, acc!)
-  assert.equal(
+  assert.strictEqual(
     (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(27818),
     'did not charge callNewAccount',
@@ -851,7 +858,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   const acc = await vm.stateManager.getAccount(addr)
   acc!.balance = BigInt(tx.gasLimit * tx.gasPrice + tx.value)
   await vm.stateManager.putAccount(addr, acc!)
-  assert.equal(
+  assert.strictEqual(
     (await runTx(vm, { tx, skipHardForkValidation: true })).totalGasSpent,
     BigInt(13001),
     'did not charge callNewAccount',
@@ -861,8 +868,8 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 describe('EIP 4844 transaction tests', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should work', async () => {
-    const { hardfork4844Data } = await import('./testdata/4844-hardfork.ts')
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -920,7 +927,7 @@ describe('EIP 4844 transaction tests', () => {
     )
     const res = await runTx(vm, { tx, block, skipBalance: true })
     assert.isTrue(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-    assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
+    assert.strictEqual(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
     Blockchain.prototype.getBlock = oldGetBlockFunction
   })
-})
+}, 20000)

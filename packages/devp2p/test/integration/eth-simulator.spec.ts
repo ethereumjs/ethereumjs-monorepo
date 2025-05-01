@@ -66,7 +66,7 @@ describe('ETH simulator tests', () => {
                 protocol.sendStatus(status)
                 assert.fail('should have thrown')
               } catch (err: any) {
-                assert.equal(err.message, 'NetworkId mismatch: 0xaa36a7 / 0x01')
+                assert.strictEqual(err.message, 'NetworkId mismatch: 0xaa36a7 / 0x01')
               }
               util.destroyRLPXs(rlpxs)
               resolve(undefined)
@@ -96,7 +96,7 @@ describe('ETH simulator tests', () => {
                 protocol.sendStatus(status1)
                 assert.fail('should have thrown')
               } catch (err: any) {
-                assert.equal(
+                assert.strictEqual(
                   err.message,
                   'Genesis block mismatch: 0x0000000000000000000000000000000000000000000000000000000000000000 / 0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
                 )
@@ -120,7 +120,7 @@ describe('ETH simulator tests', () => {
         protocol.events.on('message', (code) => {
           switch (code) {
             case EthMessageCodes.STATUS:
-              assert.equal(protocol.getVersion(), 68)
+              assert.strictEqual(protocol.getVersion(), 68)
               util.destroyRLPXs(rlpxs)
               resolve(undefined)
           }
@@ -206,7 +206,7 @@ describe('ETH simulator tests', () => {
 
       rlpxs[0].events.on('peer:added', (peer: Peer) => {
         ;(rlpxs[0].getPeers()[0] as Peer).events.on('error', (err: Error) => {
-          assert.equal(err.message, 'Remote is advertising a future fork that passed locally')
+          assert.strictEqual(err.message, 'Remote is advertising a future fork that passed locally')
           util.destroyRLPXs(rlpxs)
           resolve(undefined)
         })
@@ -231,7 +231,8 @@ describe('ETH simulator tests', () => {
           switch (code) {
             case EthMessageCodes.STATUS:
               protocol.sendStatus(status)
-              assert.throws(() => protocol.sendMessage(<any>0x55, []), /Unknown code 85/)
+              // @ts-expect-error -- Testing unknown code
+              assert.throws(() => protocol.sendMessage(0x55, []), /Unknown code 85/)
               util.destroyRLPXs(rlpxs)
               resolve(undefined)
           }
@@ -291,7 +292,7 @@ describe('ETH simulator tests', () => {
           }
         })
         peer.events.once('error', (err) => {
-          assert.equal(
+          assert.strictEqual(
             err.message,
             'Invalid Snappy bitstream',
             'unable to process snappy compressed message',

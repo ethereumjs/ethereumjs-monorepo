@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, createZeroAddress, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
@@ -64,7 +64,7 @@ describe('EIP 7623 calldata cost increase tests', () => {
 
     const expected = baseCost + BigInt(tx.data.length) * BigInt(4) * floorCost
 
-    assert.equal(result.totalGasSpent, expected)
+    assert.strictEqual(result.totalGasSpent, expected)
   })
   it('rejects transactions having a gas limit below the floor gas limit', async () => {
     const vm = await getVM(common)
@@ -78,16 +78,13 @@ describe('EIP 7623 calldata cost increase tests', () => {
       },
       { common },
     ).sign(pkey)
-    try {
-      await runTx(vm, {
+    await expect(async () =>
+      runTx(vm, {
         block,
         tx,
         skipHardForkValidation: true,
-      })
-      assert.fail('runTx should throw')
-    } catch {
-      assert.ok('Successfully failed')
-    }
+      }),
+    ).rejects.toThrow(/is lower than the minimum gas limit of/)
   })
   it('correctly charges execution gas instead of floor gas when execution gas exceeds the floor gas', async () => {
     const vm = await getVM(common)
@@ -120,6 +117,6 @@ describe('EIP 7623 calldata cost increase tests', () => {
       BigInt(2 * 3) +
       BigInt(22_100)
 
-    assert.equal(result.totalGasSpent, expected)
+    assert.strictEqual(result.totalGasSpent, expected)
   })
 })

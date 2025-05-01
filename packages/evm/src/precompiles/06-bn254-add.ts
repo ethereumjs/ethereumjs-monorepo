@@ -1,6 +1,6 @@
 import { bytesToHex, setLengthRight } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck } from './util.ts'
@@ -27,7 +27,7 @@ export function precompile06(opts: PrecompileInput): ExecResult {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   // check ecadd success or failure by comparing the output length

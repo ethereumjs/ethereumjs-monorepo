@@ -1,11 +1,9 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
-import { RLP } from '@ethereumjs/rlp'
 import {
-  StatefulBinaryTreeStateManager,
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
+  type StatefulVerkleStateManager,
+  type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
@@ -22,14 +20,12 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  ecrecover,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
-  publicToAddress,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Bloom } from './bloom/index.ts'
 import { emitEVMProfile } from './emitEVMProfile.ts'
@@ -153,12 +149,15 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw EthereumJSErrorWithoutCode(msg)
     }
 
-    const castedTx = <AccessList2930Tx>opts.tx
+    const castedTx = opts.tx as AccessList2930Tx
 
-    for (const accessListItem of castedTx.AccessListJSON) {
-      vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
-      for (const storageKey of accessListItem.storageKeys) {
-        vm.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
+    for (const accessListItem of castedTx.accessList) {
+      const [addressBytes, slotBytesList] = accessListItem
+      const address = bytesToUnprefixedHex(addressBytes)
+      // Note: in here, the 0x is stripped, so immediately do this here
+      vm.evm.journal.addAlwaysWarmAddress(address, true)
+      for (const storageKey of slotBytesList) {
+        vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
       }
     }
   }
@@ -184,14 +183,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (enableProfiler) {
       // eslint-disable-next-line no-console
       console.timeEnd(entireTxLabel)
-      const logs = (<EVM>vm.evm).getPerformanceLogs()
+      const logs = (vm.evm as EVM).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
         // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-      ;(<EVM>vm.evm).clearPerformanceLogs()
+      ;(vm.evm as EVM).clearPerformanceLogs()
     }
   }
 }
@@ -206,20 +205,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
 
-    if (
-      !(vm.stateManager instanceof StatefulVerkleStateManager) &&
-      !(vm.stateManager instanceof StatelessVerkleStateManager)
-    ) {
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+    if (!('verifyVerklePostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
-    txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+    txAccesses = new VerkleAccessWitness({
+      verkleCrypto: (vm.stateManager as StatelessVerkleStateManager | StatefulVerkleStateManager)
+        .verkleCrypto,
+    })
   } else if (vm.common.isActivatedEIP(7864)) {
     if (vm.evm.binaryTreeAccessWitness === undefined) {
       throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
     }
 
-    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+    // Check if statemanager is a BinaryTreeStateManager by checking for a method only on BinaryTreeStateManager API
+    if (!('verifyBinaryPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(
         `Binary tree State Manager needed for execution of binary tree blocks`,
       )
@@ -450,10 +451,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<LegacyTx>tx).gasPrice
+    gasPrice = (tx as LegacyTx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
       const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
-      inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
+      inclusionFeePerGas = (tx as LegacyTx).gasPrice - baseFee
     }
   }
 
@@ -477,8 +478,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
-    const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
-    const MAGIC = new Uint8Array([5])
+    const authorizationList = (tx as EIP7702CompatibleTx).authorizationList
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i]
@@ -509,19 +509,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         continue
       }
 
-      const r = data[4]
-
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
-      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      let pubKey
+      // Address to set code to
+      let authority
       try {
-        pubKey = ecrecover(toSign, yParity, r, s)
+        authority = eoaCode7702RecoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue
       }
-      // Address to set code to
-      const authority = new Address(publicToAddress(pubKey))
       const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
       const accountExists = accountMaybeUndefined !== undefined
       const account = accountMaybeUndefined ?? new Account()

@@ -8,7 +8,7 @@ import {
   createTxFromJSONRPCProvider,
   createTxFromRPC,
 } from '../src/index.ts'
-import { normalizeTxParams } from '../src/util.ts'
+import { normalizeTxParams } from '../src/util/general.ts'
 
 import { optimismTxData } from './testData/optimismTx.ts'
 import { rpcTxData } from './testData/rpcTx.ts'
@@ -58,7 +58,11 @@ describe('[fromJSONRPCProvider]', () => {
 
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
     const tx = await createTxFromJSONRPCProvider(provider, txHash, { common })
-    assert.equal(bytesToHex(tx.hash()), txHash, 'generated correct tx from transaction RPC data')
+    assert.strictEqual(
+      bytesToHex(tx.hash()),
+      txHash,
+      'generated correct tx from transaction RPC data',
+    )
     try {
       await createTxFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
@@ -77,8 +81,8 @@ describe('[normalizeTxParams]', () => {
   it('should work', () => {
     const normedTx = normalizeTxParams(rpcTxData)
     const tx = createTx(normedTx)
-    assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
-    assert.equal(
+    assert.strictEqual(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
+    assert.strictEqual(
       bytesToHex(tx.hash()),
       rpcTxData.hash,
       'converted normed tx data to transaction object',
@@ -90,9 +94,9 @@ describe('fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism syste
   it('should work', async () => {
     for (const txType of txTypes) {
       const tx = await createTxFromRPC({ ...optimismTxData, type: txType } as TypedTxData)
-      assert.ok(tx.v === undefined)
-      assert.ok(tx.s === undefined)
-      assert.ok(tx.r === undefined)
+      assert.isUndefined(tx.v)
+      assert.isUndefined(tx.s)
+      assert.isUndefined(tx.r)
     }
   })
 })
@@ -109,7 +113,7 @@ describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => 
       }
       const common = createCustomCommon({ chainId: 0x10f2c }, Mainnet)
       const tx = await createTxFromRPC({ ...v0txData, type: txType } as TypedTxData, { common })
-      assert.ok(tx.isSigned())
+      assert.isTrue(tx.isSigned())
     }
   })
 })

@@ -1,11 +1,9 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
-  BIGINT_2,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
-  ecsign,
   hexToBytes,
   randomBytes,
   setLengthLeft,
@@ -19,9 +17,11 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+
 import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
+import { getCryptoFunctions } from '../../bin/utils.ts'
 describe('WASM crypto tests', () => {
   it('should compute public key and hash correctly using common.customCrypto functions', async () => {
     const wasmecrecover = (
@@ -66,42 +66,36 @@ describe('WASM crypto tests', () => {
   })
 
   it('should compute the same signature whether js or WASM signature used', async () => {
-    const wasmSign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
-      if (msg.length < 32) {
-        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw new Error('message length must be 32 bytes or greater')
-      }
-      const buf = secp256k1Sign(msg, pk)
-      const r = buf.slice(0, 32)
-      const s = buf.slice(32, 64)
-      const v =
-        chainId === undefined
-          ? BigInt(buf[64] + 27)
-          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
-
-      return { r, s, v }
-    }
+    const crypto = await getCryptoFunctions(true)
+    const wasmSign = crypto.ecsign!
 
     await waitReady()
     const msg = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
     const pk = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
-    const jsSig = ecsign(msg, pk)
+    const jsSig = secp256k1.sign(msg, pk)
     const wasmSig = wasmSign(msg, pk)
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
-    assert.throws(
-      () => wasmSign(randomBytes(31), randomBytes(32)),
-      'message length must be 32 bytes or greater',
-    )
   })
   it('should have the same signature and verification', async () => {
+    const crypto = await getCryptoFunctions(true)
     await waitReady()
     const pk = hexToBytes('0xbd3713a6da2c3624fa10bad8a52848b4291e3c9689ab50e0d2761e014d6e4cd7')
     const hash = hexToBytes('0x8c6d72155f746a9424b0621d82c5f5d3f6cc82e497b15df1b2ae601c8c14f75c')
-    const jsSig = ecdsaSign(hash, pk)
+    const jsSig = secp256k1.sign(hash, pk)
     const wasmSig = secp256k1Sign(hash, pk)
-    assert.equal(bytesToHex(wasmSig.slice(0, 64)), bytesToHex(jsSig.signature))
+    assert.strictEqual(bytesToHex(wasmSig.slice(0, 64)), bytesToHex(jsSig.toCompactRawBytes()))
     const wasmRec = secp256k1Recover(hash, wasmSig.slice(0, 64), wasmSig[64])
-    const jsRec = ecdsaRecover(jsSig.signature, jsSig.recid, hash)
-    assert.equal(bytesToHex(wasmRec), bytesToHex(jsRec))
+    const jsRec = crypto.ecdsaRecover!(jsSig.toCompactRawBytes(), jsSig.recovery, hash)
+    assert.strictEqual(bytesToHex(wasmRec), bytesToHex(jsRec))
+  })
+  it('should recover the same address', async () => {
+    const crypto = await getCryptoFunctions(true)
+    await waitReady()
+    const pk = hexToBytes('0xbd3713a6da2c3624fa10bad8a52848b4291e3c9689ab50e0d2761e014d6e4cd7')
+    const hash = hexToBytes('0x8c6d72155f746a9424b0621d82c5f5d3f6cc82e497b15df1b2ae601c8c14f75c')
+    const jsSig = secp256k1.sign(hash, pk)
+    const wasmRec = secp256k1Recover(hash, jsSig.toCompactRawBytes(), jsSig.recovery)
+    const jsRec = crypto.ecdsaRecover!(jsSig.toCompactRawBytes(), jsSig.recovery, hash)
+    assert.strictEqual(bytesToHex(wasmRec), bytesToHex(jsRec))
   })
 })

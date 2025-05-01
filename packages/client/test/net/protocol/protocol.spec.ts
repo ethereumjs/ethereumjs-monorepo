@@ -48,7 +48,7 @@ describe('[Protocol]', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     await p.open()
-    assert.ok(p.opened, 'is open')
+    assert.isTrue(p.opened, 'is open')
   })
 
   it('should perform handshake (status now)', async () => {
@@ -82,20 +82,20 @@ describe('[Protocol]', () => {
     try {
       await p.handshake(sender)
     } catch (e: any) {
-      assert.ok(/timed out/.test(e.message), 'got timeout error')
+      assert.isTrue(/timed out/.test(e.message), 'got timeout error')
     }
   })
 
   it('should encode message', () => {
     const p = new TestProtocol()
-    assert.equal(p.encode(testMessage, 1234), '1234', 'encoded')
-    assert.equal(p.encode({} as any, 1234), 1234, 'encode not defined')
+    assert.strictEqual(p.encode(testMessage, 1234), '1234', 'encoded')
+    assert.strictEqual(p.encode({} as any, 1234), 1234, 'encode not defined')
   })
 
   it('should decode message', () => {
     const p = new TestProtocol()
-    assert.equal(p.decode(testMessage, '1234'), 1234, 'decoded')
-    assert.equal(p.decode({} as any, 1234), 1234, 'decode not defined')
+    assert.strictEqual(p.decode(testMessage, '1234'), 1234, 'decoded')
+    assert.strictEqual(p.decode({} as any, 1234), 1234, 'decode not defined')
   })
 
   it('should bind to peer', async () => {
@@ -107,7 +107,7 @@ describe('[Protocol]', () => {
 
     const bound = new BoundProtocol({ peer, sender, protocol: p, config: p.config })
 
-    assert.ok(bound instanceof BoundProtocol, 'correct bound protocol')
+    assert.instanceOf(bound, BoundProtocol, 'correct bound protocol')
   })
 
   td.reset()

@@ -21,9 +21,9 @@ const BLS_MODULUS = BigInt(
 
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
-    const { eip4844Data } = await import('../testdata/eip4844.ts')
+    const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -59,7 +59,7 @@ describe('Precompiles: point evaluation', () => {
     }
 
     let res = await pointEvaluation(opts)
-    assert.equal(
+    assert.strictEqual(
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output',

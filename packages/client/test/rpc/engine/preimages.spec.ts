@@ -100,7 +100,7 @@ async function runBlock(
   const executeBlock = createBlock(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
-  assert.equal(res.result.status, 'VALID', 'valid status should be received')
+  assert.strictEqual(res.result.status, 'VALID', 'valid status should be received')
   return executePayload
 }
 
@@ -108,7 +108,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJSON = {
     ...kaustinen2GethGenesisData,
-    config: { ...kaustinen2GethGenesisData.config, osakaTime: undefined },
+    config: { ...kaustinen2GethGenesisData.config, verkleTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJSON,
@@ -118,15 +118,16 @@ describe(`valid verkle network setup`, async () => {
       savePreimages: true,
     },
   )
-  ;(chain.blockchain as any).validateHeader = () => {}
+  /// @ts-expect-error -- Simple config for testing
+  chain.blockchain.validateHeader = () => {}
 
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
     const block0 = res.result
-    assert.equal(block0.hash, genesisBlockHash)
-    assert.equal(block0.stateRoot, genesisStateRoot)
+    assert.strictEqual(block0.hash, genesisBlockHash)
+    assert.strictEqual(block0.stateRoot, genesisStateRoot)
   })
 
   // build some testcases uses some transactions from kaustinen2 which have
@@ -255,7 +256,7 @@ describe(`valid verkle network setup`, async () => {
           keccak256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
-        assert.ok(
+        assert.isTrue(
           savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
           `Incorrect preimage for ${preimage}`,
         )

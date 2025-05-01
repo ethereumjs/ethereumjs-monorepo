@@ -7,9 +7,6 @@
     "biome:fix": "npx @biomejs/biome check --write",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
-    "cspell": "npm run cspell:ts && npm run cspell:md",
-    "cspell:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
-    "cspell:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
@@ -23,10 +20,14 @@
     "test:node": "npm run test:node --workspaces --if-present",
     "test:browser": "npm run test:browser --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces",
+    "postinstall": "npm run build --workspaces --if-present",
     "prepare": "git config --local core.hooksPath .githooks",
+    "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.0.8"
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -36,9 +37,10 @@
     "@types/tape": "5.8.1",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
-    "@vitest/coverage-istanbul": "^3.0.8",
-    "@vitest/coverage-v8": "^3.0.8",
-    "@vitest/ui": "^3.0.8",
+    "@vitest/browser": "3.0.8",
+    "@vitest/coverage-istanbul": "3.0.8",
+    "@vitest/coverage-v8": "3.0.8",
+    "@vitest/ui": "3.0.8",
     "cspell": "^8.17.5",
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
@@ -48,31 +50,16 @@
     "sort-package-json": "3.0.0",
     "tape": "5.9.0",
     "tsx": "^4.19.3",
-    "typedoc": "^0.28.0",
-    "typedoc-plugin-markdown": "^4.5.0",
+    "typedoc": "^0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "^3.0.8"
+    "vitest": "3.0.8"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
-  },
-  "peerDependencies": {
-    "@vitest/browser": "^3.0.8",
-    "webdriverio": "^9.8.0"
-  },
-  "peerDependenciesMeta": {
-    "playwright": {
-      "optional": true
-    },
-    "webdriverio": {
-      "optional": true
-    },
-    "@vitest/browser": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=18",

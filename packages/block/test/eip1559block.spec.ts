@@ -94,7 +94,8 @@ describe('EIP1559 tests', () => {
           freeze: false,
         },
       )
-      ;(header as any).baseFeePerGas = undefined
+      // @ts-expect-error -- Assigning to read-only property
+      header.baseFeePerGas = undefined
       await (header as any)._genericFormatValidation()
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
@@ -452,8 +453,9 @@ describe('EIP1559 tests', () => {
     )
 
     const errs = block.getTransactionsValidationErrors()
-    assert.ok(
-      errs[0].includes('unable to pay base fee'),
+    assert.include(
+      errs[0],
+      'unable to pay base fee',
       'should throw if transaction is unable to pay base fee',
     )
   })
@@ -470,7 +472,7 @@ describe('EIP1559 tests', () => {
         { common },
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
-      assert.equal(expected, result, 'base fee correct')
+      assert.strictEqual(expected, result, 'base fee correct')
     }
   })
 
@@ -487,6 +489,6 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    assert.equal(header.toJSON().baseFeePerGas, '0x5')
+    assert.strictEqual(header.toJSON().baseFeePerGas, '0x5')
   })
 })

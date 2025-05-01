@@ -62,7 +62,7 @@ describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
-      let bytecode: PrefixedHexString = '0x'
+      let bytecode = '0x'
       // prepare the memory
       for (let i = 0; i < situation.pre.length / 2; i++) {
         const start = i * 2
@@ -94,7 +94,7 @@ describe('should test mcopy', () => {
       evm.events.on('step', (e) => {
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
-          assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
+          assert.strictEqual(currentMem, '0x' + situation.post, 'post-memory correct')
         }
       })
 

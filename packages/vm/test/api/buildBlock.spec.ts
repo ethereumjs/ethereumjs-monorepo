@@ -8,6 +8,7 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
   ConsensusAlgorithm,
+  type GethGenesis,
   Hardfork,
   Mainnet,
   createCommonFromGethGenesis,
@@ -22,7 +23,7 @@ import {
   createZeroAddress,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
@@ -58,13 +59,13 @@ describe('BlockBuilder', () => {
 
     await blockBuilder.addTransaction(tx)
     const { block } = await blockBuilder.build()
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       1,
       'should have the correct number of tx receipts',
     )
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
@@ -92,7 +93,7 @@ describe('BlockBuilder', () => {
         assert.fail('wrong error thrown')
       }
     }
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       0,
       'should have the correct number of tx receipts',
@@ -157,7 +158,7 @@ describe('BlockBuilder', () => {
         epoch: 30000,
       },
     }
-    const defaultChainData = {
+    const defaultChainData: GethGenesis = {
       config: {
         chainId: 123456,
         homesteadBlock: 0,
@@ -183,6 +184,7 @@ describe('BlockBuilder', () => {
       gasUsed: '0x0',
       parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       baseFeePerGas: 7,
+      alloc: {},
     }
 
     const A = {
@@ -191,7 +193,7 @@ describe('BlockBuilder', () => {
     }
     const addr = A.address.toString().slice(2)
 
-    const extraData2 = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+    const extraData2 = `0x${'0'.repeat(64)}${addr}${'0'.repeat(130)}`
     const chainData = {
       ...defaultChainData,
       extraData: extraData2,
@@ -232,7 +234,7 @@ describe('BlockBuilder', () => {
 
     const { block } = await blockBuilder.build()
 
-    assert.ok(cliqueVerifySignature(block.header, [signer.address]), 'should verify signature')
+    assert.isTrue(cliqueVerifySignature(block.header, [signer.address]), 'should verify signature')
     assert.deepEqual(
       cliqueSigner(block.header),
       signer.address,
@@ -263,7 +265,7 @@ describe('BlockBuilder', () => {
 
     try {
       await blockBuilder.revert()
-      assert.equal(
+      assert.strictEqual(
         blockBuilder.getStatus().status,
         'reverted',
         'block should be in reverted status',
@@ -284,7 +286,7 @@ describe('BlockBuilder', () => {
 
     try {
       await blockBuilder.revert()
-      assert.equal(
+      assert.strictEqual(
         blockBuilder.getStatus().status,
         'reverted',
         'block should be in reverted status',
@@ -310,7 +312,7 @@ describe('BlockBuilder', () => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
@@ -347,15 +349,10 @@ describe('BlockBuilder', () => {
     ).sign(privateKey)
 
     for (const tx of [tx1, tx2]) {
-      try {
+      await expect(async () => {
         await blockBuilder.addTransaction(tx)
         assert.fail('should throw error')
-      } catch (error: any) {
-        assert.ok(
-          (error.message as string).includes("is less than the block's baseFeePerGas"),
-          'should fail with appropriate error',
-        )
-      }
+      }).rejects.toThrow(/is less than the block's baseFeePerGas/)
     }
 
     // Set up correctly priced txs
@@ -371,23 +368,24 @@ describe('BlockBuilder', () => {
 
     for (const tx of [tx3, tx4]) {
       await blockBuilder.addTransaction(tx)
-      assert.ok('should pass')
+      assert.isTrue(true, 'should pass')
     }
 
     const { block } = await blockBuilder.build()
-    assert.equal(
+    assert.strictEqual(
       blockBuilder.transactionReceipts.length,
       2,
       'should have the correct number of tx receipts',
     )
 
-    assert.ok(
-      block.header.baseFeePerGas! === genesisBlock.header.calcNextBaseFee(),
+    assert.strictEqual(
+      block.header.baseFeePerGas,
+      genesisBlock.header.calcNextBaseFee(),
       "baseFeePerGas should equal parentHeader's calcNextBaseFee",
     )
 
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)

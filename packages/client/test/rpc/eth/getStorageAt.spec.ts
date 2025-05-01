@@ -20,7 +20,11 @@ describe(method, async () => {
     const { execution, common, server, chain } = await setupChain(powData, 'pow')
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, [address.toString(), '0x0', 'latest'])
-    assert.equal(res.result, emptySlotStr, 'should return the empty slot for nonexistent account')
+    assert.strictEqual(
+      res.result,
+      emptySlotStr,
+      'should return the empty slot for nonexistent account',
+    )
 
     // sample contract from https://ethereum.stackexchange.com/a/70791
     const data =
@@ -58,11 +62,11 @@ describe(method, async () => {
 
     // call with 'latest tag to see if account storage reflects newly put storage value
     res = await rpc.request(method, [createdAddress!.toString(), '0x0', 'latest'])
-    assert.equal(res.result, expectedSlotValue, 'should return the correct slot value')
+    assert.strictEqual(res.result, expectedSlotValue, 'should return the correct slot value')
 
     // call with 'earliest' tag to see if getStorageAt allows addressing blocks that are older than the latest block by tag
     res = await rpc.request(method, [createdAddress!.toString(), '0x0', 'earliest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       emptySlotStr,
       'should not have new slot value for block that is addressed by "earliest" tag and is older than latest',
@@ -70,7 +74,7 @@ describe(method, async () => {
 
     // call with integer for block number to see if getStorageAt allows addressing blocks by number index
     res = await rpc.request(method, [createdAddress!.toString(), '0x0', '0x1'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       expectedSlotValue,
       'should return the correct slot value when addressing the latest block by integer index',
@@ -78,7 +82,7 @@ describe(method, async () => {
 
     // call with unsupported block argument
     res = await rpc.request(method, [address.toString(), '0x0', 'pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

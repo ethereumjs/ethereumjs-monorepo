@@ -34,8 +34,8 @@ describe('should receive status', async () => {
   const sender = new RlpxSender(rlpxProtocol as never as Devp2pETH)
   sender.on('status', (status: any) => {
     it('status received', () => {
-      assert.equal(status.id, 5, 'status received')
-      assert.equal(sender.status.id, 5, 'status getter')
+      assert.strictEqual(status.id, 5, 'status received')
+      assert.strictEqual(sender.status.id, 5, 'status getter')
     })
   })
   rlpxProtocol.events.emit('status', { id: 5 })
@@ -46,8 +46,8 @@ describe('should receive message', async () => {
   const sender = new RlpxSender(rlpxProtocol as any)
   sender.on('message', (message: any) => {
     it('message received', () => {
-      assert.equal(message.code, 1, 'message received (code)')
-      assert.equal(message.payload, 5, 'message received (payload)')
+      assert.strictEqual(message.code, 1, 'message received (code)')
+      assert.strictEqual(message.payload, 5, 'message received (payload)')
     })
   })
   rlpxProtocol.events.emit('message', 1, 5)

@@ -1,21 +1,21 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
-  BIGINT_8,
   EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import * as Legacy from '../capabilities/legacy.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../features/util.ts'
 import { paramsTx } from '../index.ts'
 import { Capability, TransactionType } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
 
 import { createLegacyTx } from './constructors.ts'
 
@@ -257,8 +257,8 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
       message.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      message.push(unpadBytes(toBytes(0)))
-      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
     }
 
     return message
@@ -336,12 +336,19 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
+    // convertV is `true` when called from `sign`
+    // This is used to convert the `v` output from `ecsign` (0 or 1) to the values used for legacy txs:
+    // 27 or 28 for non-EIP-155 protected txs
+    // 35 or 36 + chainId * 2 for EIP-155 protected txs
+    // See: https://eips.ethereum.org/EIPS/eip-155
     convertV: boolean = false,
   ): LegacyTx {
     r = toBytes(r)
     s = toBytes(s)
     if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BIGINT_2 + BIGINT_8
+      v += BigInt(35) + this.common.chainId() * BIGINT_2
+    } else if (convertV) {
+      v += BigInt(27)
     }
 
     const opts = { ...this.txOptions, common: this.common }
@@ -391,7 +398,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   }
 
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
-    return <LegacyTx>Legacy.sign(this, privateKey, extraEntropy)
+    return Legacy.sign(this, privateKey, extraEntropy) as LegacyTx
   }
 
   /**

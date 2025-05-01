@@ -27,7 +27,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(created!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // Test if we can put a valid contract
 
@@ -43,7 +43,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(created!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
 
     // check if we can deposit a contract on non-EIP3541 chains
 
@@ -58,7 +58,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(created!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 
   it('deploy contracts starting with 0xEF using CREATE', async () => {
@@ -81,7 +81,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(address!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = createLegacyTx({
@@ -94,7 +94,7 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(address!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 
   it('deploy contracts starting with 0xEF using CREATE2', async () => {
@@ -117,7 +117,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(address!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = createLegacyTx({
@@ -130,6 +130,6 @@ describe('EIP 3541 tests', () => {
 
     code = await vm.stateManager.getCode(address!)
 
-    assert.ok(code.length > 0, 'did deposit code')
+    assert.isNotEmpty(code, 'did deposit code')
   })
 })

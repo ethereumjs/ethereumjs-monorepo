@@ -18,7 +18,7 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { powData } from '../../testdata/geth-genesis/pow.ts'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
@@ -203,9 +203,9 @@ describe(method, () => {
     // Expect to retrieve the blocks [2,3]
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [firstBaseFee, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
-      string,
-      string,
-      string,
+      PrefixedHexString,
+      PrefixedHexString,
+      PrefixedHexString,
     ]
     const increase =
       Number(
@@ -215,22 +215,22 @@ describe(method, () => {
       ) / 1000
 
     // Note: this also ensures that block 2,3 are returned, since gas of block 0 -> 1 and 1 -> 2 does not change
-    assert.equal(increase, 0.125)
+    assert.strictEqual(increase, 0.125)
     // Sanity check
-    assert.equal(firstBaseFee, previousBaseFee)
+    assert.strictEqual(firstBaseFee, previousBaseFee)
     // 2 blocks are requested, but the next baseFee is able to be calculated from the latest block
     // Per spec, also return this. So return 3 baseFeePerGas
-    assert.equal(res.result.baseFeePerGas.length, 3)
+    assert.strictEqual(res.result.baseFeePerGas.length, 3)
 
     // Check that the expected gasRatios of the blocks are correct
-    assert.equal(res.result.gasUsedRatio[0], 0.5) // Block 2
-    assert.equal(res.result.gasUsedRatio[1], 1) // Block 3
+    assert.strictEqual(res.result.gasUsedRatio[0], 0.5) // Block 2
+    assert.strictEqual(res.result.gasUsedRatio[1], 1) // Block 3
 
     // No ratios were requested
     assert.deepEqual(res.result.reward, [[], []])
 
     // oldestBlock is correct
-    assert.equal(res.result.oldestBlock, '0x2')
+    assert.strictEqual(res.result.oldestBlock, '0x2')
   })
 
   it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {
@@ -244,7 +244,11 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
-    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
+    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
+      PrefixedHexString,
+      PrefixedHexString,
+      PrefixedHexString,
+    ]
     const decrease =
       Number(
         (1000n *
@@ -252,7 +256,7 @@ describe(method, () => {
           bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
-    assert.equal(decrease, -0.125)
+    assert.strictEqual(decrease, -0.125)
   })
 
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
@@ -270,9 +274,9 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
-    const [baseFee] = res.result.baseFeePerGas as [string]
+    const [baseFee] = res.result.baseFeePerGas as [PrefixedHexString]
 
-    assert.equal(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
+    assert.strictEqual(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
   })
 
   it(`${method}: should return 0x0 for base fees requested before eip-1559`, async () => {
@@ -285,10 +289,13 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', 'latest', []])
 
-    const [previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string]
+    const [previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
+      PrefixedHexString,
+      PrefixedHexString,
+    ]
 
-    assert.equal(previousBaseFee, '0x0')
-    assert.equal(nextBaseFee, '0x0')
+    assert.strictEqual(previousBaseFee, '0x0')
+    assert.strictEqual(nextBaseFee, '0x0')
   })
 
   it(`${method}: should return correct gas used ratios`, async () => {
@@ -306,8 +313,8 @@ describe(method, () => {
 
     const [genesisGasUsedRatio, nextGasUsedRatio] = res.result.gasUsedRatio as [number, number]
 
-    assert.equal(genesisGasUsedRatio, 0)
-    assert.equal(nextGasUsedRatio, 0.5)
+    assert.strictEqual(genesisGasUsedRatio, 0)
+    assert.strictEqual(nextGasUsedRatio, 0.5)
   })
 
   it(`${method}: should throw error if block count is below 1`, async () => {
@@ -316,7 +323,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x0', 'latest', []])
-    assert.ok(req.error !== undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should throw error if block count is above 1024`, async () => {
@@ -325,7 +332,7 @@ describe(method, () => {
     const rpc = getRPCClient(server)
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
-    assert.ok(req.error !== undefined)
+    assert.isDefined(req.error, undefined)
   })
 
   it(`${method}: should generate reward percentiles with 0s`, async () => {
@@ -337,12 +344,12 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50, 60]])
-    assert.equal(
+    assert.strictEqual(
       parseInt(res.result.reward[0][0]),
       0,
       'Should return 0 for empty block reward percentiles',
     )
-    assert.equal(
+    assert.strictEqual(
       res.result.reward[0][1],
       '0x0',
       'Should return 0 for empty block reward percentiles',
@@ -357,7 +364,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles`, async () => {
@@ -369,7 +376,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
   })
 
   it(`${method}: should generate reward percentiles - sorted check`, async () => {
@@ -383,7 +390,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
     const expected = priorityFees.map(bigIntToHex)
     assert.deepEqual(res.result.reward[0], expected)
 
@@ -392,7 +399,7 @@ describe(method, () => {
     await produceBlockWithTx(execution, chain, priorityFees.reverse(), gasUsed.reverse())
 
     const res2 = await rpc.request(method, ['0x1', 'latest', [40, 100]])
-    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.isNotEmpty(res.result.reward[0], 'Produced at least one rewards percentile')
     assert.deepEqual(res2.result.reward[0], expected)
   })
 
@@ -429,7 +436,7 @@ describe(method, () => {
   it(
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
-      const { chain, execution, server } = await setupChain(eip4844Data, 'post-merge', {
+      const { chain, execution, server } = await setupChain(eip4844GethGenesis, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,
         customCrypto: {

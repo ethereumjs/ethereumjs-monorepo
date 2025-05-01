@@ -37,7 +37,7 @@ describe(method, () => {
     const genesisBalance = BigInt(0x15ac56edc4d12c0000)
     let res = await rpc.request(method, [address.toString(), 'latest'])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(genesisBalance),
       'should return the correct genesis balance',
@@ -57,7 +57,7 @@ describe(method, () => {
     // verify balance is genesis amount minus amountSpent
     const expectedNewBalance = genesisBalance - amountSpent
     res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(expectedNewBalance),
       'should return the correct balance after a tx',
@@ -65,7 +65,7 @@ describe(method, () => {
 
     // verify we can query with "earliest"
     res = await rpc.request(method, [address.toString(), 'earliest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(genesisBalance),
       "should return the correct balance with 'earliest'",
@@ -73,7 +73,7 @@ describe(method, () => {
 
     // verify we can query with a past block number
     res = await rpc.request(method, [address.toString(), '0x0'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bigIntToHex(genesisBalance),
       'should return the correct balance with a past block number',
@@ -81,12 +81,12 @@ describe(method, () => {
 
     // call with height that exceeds chain height
     res = await rpc.request(method, [address.toString(), '0x1'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('specified block greater than current height'))
 
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
+    assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
   })
 
   it('call with unsupported block argument', async () => {
@@ -97,7 +97,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

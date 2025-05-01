@@ -1,11 +1,11 @@
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { EVM, createEVM } from '@ethereumjs/evm'
+import { testnetMergeChainConfig } from '@ethereumjs/testdata'
 import { Account, KECCAK256_RLP, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { type VMOpts, createVM, paramsVM } from '../../src/index.ts'
 
-import { testnetMergeData } from './testdata/testnetMerge.ts'
 import { setupVM } from './utils.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
@@ -28,13 +28,13 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
 describe('VM -> basic instantiation / boolean switches', () => {
   it('should instantiate without params', async () => {
     const vm = await createVM()
-    assert.exists(vm.stateManager)
+    assert.isDefined(vm.stateManager)
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie',
     )
-    assert.equal(vm.common.hardfork(), Hardfork.Prague, 'it has correct default HF')
+    assert.strictEqual(vm.common.hardfork(), Hardfork.Prague, 'it has correct default HF')
   })
 
   it('should be able to activate precompiles', async () => {
@@ -58,7 +58,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
     } catch {
-      assert.ok('correctly thrown')
+      assert.isTrue(true, 'correctly thrown')
     }
   })
 
@@ -75,10 +75,14 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   it('Default EVM should use VM common', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await createVM({ common })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from VM common')
+    assert.strictEqual(
+      (vm.evm as EVM).common.hardfork(),
+      'byzantium',
+      'use modified HF from VM common',
+    )
 
     const copiedVM = await vm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
       'use modified HF from VM common (for shallowCopied VM)',
@@ -88,10 +92,14 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   it('Default EVM should prefer common from evmOpts if provided (same logic for blockchain, statemanager)', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await createVM({ evmOpts: { common } })
-    assert.equal((vm.evm as EVM).common.hardfork(), 'byzantium', 'use modified HF from evmOpts')
+    assert.strictEqual(
+      (vm.evm as EVM).common.hardfork(),
+      'byzantium',
+      'use modified HF from evmOpts',
+    )
 
     const copiedVM = await vm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       (copiedVM.evm as EVM).common.hardfork(),
       'byzantium',
       'use modified HF from evmOpts (for shallowCopied VM)',
@@ -134,12 +142,12 @@ describe('VM -> supportedHardforks', () => {
   it('should succeed when common is set to a supported hardfork', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await createVM({ common })
-    assert.equal(vm.common.hardfork(), Hardfork.Byzantium)
+    assert.strictEqual(vm.common.hardfork(), Hardfork.Byzantium)
   })
 
   it('should overwrite parameters when param option is used', async () => {
     let vm = await createVM()
-    assert.equal(
+    assert.strictEqual(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
       'should use correct default EVM parameters',
@@ -148,14 +156,14 @@ describe('VM -> supportedHardforks', () => {
     const params = JSON.parse(JSON.stringify(paramsVM))
     params['1559']['elasticityMultiplier'] = 10 // 2
     vm = await createVM({ params })
-    assert.equal(
+    assert.strictEqual(
       vm.common.param('elasticityMultiplier'),
       BigInt(10),
       'should use custom parameters provided',
     )
 
     vm = await createVM()
-    assert.equal(
+    assert.strictEqual(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
       'should again use the correct default EVM parameters',
@@ -168,10 +176,10 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     let vm = await createVM({ common })
-    assert.equal(vm.common, common)
+    assert.strictEqual(vm.common, common)
 
     vm = await createVM()
-    assert.equal(
+    assert.strictEqual(
       vm.common.param('elasticityMultiplier'),
       BigInt(2),
       'should use correct default EVM parameters',
@@ -182,7 +190,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await createVM({ common })
-    assert.equal(vm.common.param('bn254AddGas'), BigInt(500))
+    assert.strictEqual(vm.common.param('bn254AddGas'), BigInt(500))
 
     try {
       common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
@@ -210,21 +218,21 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     })
 
     const vm = await createVM({ common })
-    assert.equal(vm.common, common)
+    assert.strictEqual(vm.common, common)
   })
 })
 
 describe('VM -> setHardfork, blockchain', () => {
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMergeData, Mainnet, {
+    const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
     let vm = await createVM({ common, setHardfork: true })
-    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
+    assert.strictEqual((vm as any)._setHardfork, true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual((vm as any)._setHardfork, 5001, 'should set setHardfork option')
   })
 
   it('should instantiate', async () => {
@@ -241,12 +249,12 @@ describe('VM -> setHardfork, blockchain', () => {
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium }),
     })
 
-    assert.equal(vm.common.chainName(), 'mainnet')
-    assert.equal(vm.common.hardfork(), 'byzantium')
+    assert.strictEqual(vm.common.chainName(), 'mainnet')
+    assert.strictEqual(vm.common.hardfork(), 'byzantium')
 
     const copiedVM = await vm.shallowCopy()
-    assert.equal(copiedVM.common.chainName(), 'mainnet')
-    assert.equal(copiedVM.common.hardfork(), 'byzantium')
+    assert.strictEqual(copiedVM.common.chainName(), 'mainnet')
+    assert.strictEqual(copiedVM.common.hardfork(), 'byzantium')
   })
 
   it('should pass the correct VM options when copying the VM', async () => {
@@ -329,7 +337,7 @@ describe('VM -> setHardfork, blockchain', () => {
         resultNotActivated.execResult.executionGasUsed - resultActivated.execResult.executionGasUsed
       const expected = common.param('callNewAccountGas')
 
-      assert.equal(diff, expected, 'precompiles are activated')
+      assert.strictEqual(diff, expected, 'precompiles are activated')
     })
   })
 })

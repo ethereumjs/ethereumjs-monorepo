@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "6.0.0-alpha.1",
+  "version": "10.0.0",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
@@ -26,7 +26,10 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
@@ -38,24 +41,29 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
-    "test:node": "npx vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^5.0.0-alpha.1",
-    "@ethereumjs/rlp": "^6.0.0-alpha.1",
-    "@ethereumjs/util": "^10.0.0-alpha.1",
-    "ethereum-cryptography": "^3.1.0"
+    "@ethereumjs/common": "^10.0.0",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
+    "@ethereumjs/testdata": "1.0.0",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "@paulmillr/trusted-setups": "^0.1.2",

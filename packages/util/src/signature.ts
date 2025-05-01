@@ -2,12 +2,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
+  bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
   concatBytes,
+  hexToBytes,
   setLengthLeft,
-  toBytes,
   utf8ToBytes,
 } from './bytes.ts'
 import {
@@ -21,64 +22,7 @@ import {
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsBytes } from './helpers.ts'
 
-import type { PrefixedHexString } from './types.js'
-
-export interface ECDSASignature {
-  v: bigint
-  r: Uint8Array
-  s: Uint8Array
-}
-
-export interface ECSignOpts {
-  chainId?: bigint
-  extraEntropy?: Uint8Array | boolean
-}
-
-/**
- * Returns the ECDSA signature of a message hash.
- *
- * If {@link ECSignOpts.chainId} is provided assume an EIP-155-style signature and calculate the `v` value
- * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
- *
- * {@link ECSignOpts.extraEntropy} defaults to `false`. If set to `true`, this will create a "hedged signature"
- * which is non-deterministic and provides additional protections against private key extraction attack vectors,
- * as described in https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801. It will yield a
- * different, random signature each time `ecsign` is called on the same `msgHash` and `privateKey`.
- * In particular: each time a transaction is signed, this will thus yield a different, random
- * transaction hash.
- * Additionally, a `Uint8Array` can be passed to `extraEntropy` to provide custom entropy, which
- * will then still create a
- * To use this feature, pass `true` or a `Uint8Array` to `extraEntropy`.
- * For more information, see: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3801
- */
-export function ecsign(
-  msgHash: Uint8Array,
-  privateKey: Uint8Array,
-  ecSignOpts: { chainId?: bigint; extraEntropy?: Uint8Array | boolean } = { extraEntropy: false },
-): ECDSASignature {
-  const { chainId, extraEntropy } = ecSignOpts
-  const sig = secp256k1.sign(msgHash, privateKey, { extraEntropy: extraEntropy ?? false })
-  const buf = sig.toCompactRawBytes()
-  const r = buf.slice(0, 32)
-  const s = buf.slice(32, 64)
-
-  if ([2, 3].includes(sig.recovery)) {
-    // From the yellow paper:
-    /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates
-       of the curve point for which r is the x-value; this value is in the range of [0, 3],
-       however we declare the upper two possibilities, representing infinite values, invalid. */
-    throw EthereumJSErrorWithoutCode(
-      `Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`,
-    )
-  }
-
-  const v =
-    chainId === undefined
-      ? BigInt(sig.recovery! + 27)
-      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BIGINT_2
-
-  return { r, s, v }
-}
+import type { PrefixedHexString } from './types.ts'
 
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
@@ -134,7 +78,7 @@ export const toRPCSig = function (
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
 
-  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)))
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), bigIntToBytes(v)))
 }
 
 /**
@@ -169,8 +113,12 @@ export const toCompactSig = function (
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
-  const bytes: Uint8Array = toBytes(sig)
+export const fromRPCSig = function (sig: PrefixedHexString): {
+  v: bigint
+  r: Uint8Array
+  s: Uint8Array
+} {
+  const bytes: Uint8Array = hexToBytes(sig)
 
   let r: Uint8Array
   let s: Uint8Array
@@ -191,6 +139,7 @@ export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
 
   // support both versions of `eth_sign` responses
   if (v < 27) {
+    // TODO: verify this behavior, and verify in which context this method (`fromRPCSig`) is used
     v = v + BIGINT_27
   }
 

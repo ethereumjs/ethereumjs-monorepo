@@ -25,6 +25,8 @@
   ],
   "words": [
     "prestateroot",
+    "immediates",
+    "unerasable",
     "bytelist",
     "bytestring",
     "binarytree",
@@ -306,6 +308,7 @@
     "MCOPY",
     "JUMPF",
     "SELFDESTRUCT",
+    "AUTHCALL",
     "triggerable",
     "RETURNDATASIZE",
     "RETURNDATACOPY",
@@ -636,6 +639,7 @@
     "ethportal",
     "bytevector",
     "blobschedule",
-    "hoodi"
+    "hoodi",
+    "peerdas"
   ]
 }

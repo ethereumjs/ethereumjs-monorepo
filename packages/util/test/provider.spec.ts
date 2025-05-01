@@ -14,14 +14,19 @@ const fakeEthersProvider = {
 
 describe('getProvider', () => {
   it('should work', () => {
-    assert.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
-    assert.equal(
+    assert.strictEqual(
+      getProvider(providerUrl),
+      providerUrl,
+      'returned correct provider url string',
+    )
+    assert.strictEqual(
       getProvider(fakeEthersProvider),
       fakeEthersProvider._getConnection().url,
       'returned correct provider url string',
     )
     assert.throws(
-      () => getProvider(<any>1),
+      // @ts-expect-error -- Testing wrong input
+      () => getProvider(1),
       'Must provide valid provider URL or Web3Provider',
       undefined,
       'throws correct error',
@@ -48,7 +53,7 @@ describe('fetchFromProvider', () => {
       method: 'eth_getBalance',
       params: ['0xabcd'],
     })
-    assert.equal(res, '0x1', 'returned correct response')
+    assert.strictEqual(res, '0x1', 'returned correct response')
     vi.unstubAllGlobals()
   })
 

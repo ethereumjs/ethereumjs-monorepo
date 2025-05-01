@@ -1,9 +1,9 @@
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.ts'
 import { beaconData } from '../../testdata/blocks/beacon.ts'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.ts'
 import { batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV3'
@@ -13,7 +13,7 @@ const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2b
 
 describe(`${method}: call with executionPayloadV3`, () => {
   it('invalid call before Cancun', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', {
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', {
       engine: true,
     })
     const rpc = getRPCClient(server)
@@ -26,7 +26,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     }
 
     const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    assert.equal(res.error.code, UNSUPPORTED_FORK)
+    assert.strictEqual(res.error.code, UNSUPPORTED_FORK)
     assert.isTrue(
       res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated'),
     )
@@ -36,7 +36,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
-    const cancunJSON = JSON.parse(JSON.stringify(postMergeData))
+    const cancunJSON = JSON.parse(JSON.stringify(postMergeGethGenesis))
     cancunJSON.config.shanghaiTime = cancunTime
     cancunJSON.config.cancunTime = cancunTime
     const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
@@ -62,19 +62,19 @@ describe(`${method}: call with executionPayloadV3`, () => {
       const expectedError = expectedErrors[index]
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.strictEqual(res.error.code, INVALID_PARAMS)
       assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
     // get the genesis JSON with late enough date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy JSON and add shanghai and cancun to genesis to avoid contamination
-    const cancunJSON = JSON.parse(JSON.stringify(postMergeData))
+    const cancunJSON = JSON.parse(JSON.stringify(postMergeGethGenesis))
     cancunJSON.config.shanghaiTime = cancunTime
     cancunJSON.config.cancunTime = cancunTime
     const { server } = await setupChain(cancunJSON, 'post-merge', { engine: true })
@@ -89,11 +89,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
         safeBlockHash: beaconData[2].blockHash,
       },
     ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
 
     // use new payload v1 as beaconData all belong to pre-shanghai
     res = await rpc.request('engine_newPayloadV1', [blockData])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('call with executionPayloadV2', () => {

@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   BIGINT_0,
@@ -15,7 +16,6 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -91,7 +91,7 @@ const produceBlockWith4844Tx = async (
 
 describe(method, () => {
   it('call', async () => {
-    const { server } = await setupChain(eip4844Data, 'post-merge', {
+    const { server } = await setupChain(eip4844GethGenesis, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -101,11 +101,11 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
-    assert.equal(res.result, '0x1')
+    assert.strictEqual(res.result, '0x1')
   })
 
   it('call with more realistic blockchain', async () => {
-    const { server, execution, chain } = await setupChain(eip4844Data, 'post-merge', {
+    const { server, execution, chain } = await setupChain(eip4844GethGenesis, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -118,6 +118,6 @@ describe(method, () => {
     }
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
-    assert.equal(res.result, '0x3')
+    assert.strictEqual(res.result, '0x3')
   })
 })

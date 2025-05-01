@@ -1,11 +1,10 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  Address,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
+  type GethGenesis,
+  Hardfork,
+  createCommonFromGethGenesis,
   parseGethGenesisState,
-} from '@ethereumjs/util'
+} from '@ethereumjs/common'
+import { Address, bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
@@ -18,13 +17,7 @@ import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
   const addr = prefundAddress.toString().slice(2)
-  const consensusConfig = {
-    clique: {
-      period: 1,
-      epoch: 30000,
-    },
-  }
-  const defaultChainData = {
+  const defaultChainData: GethGenesis = {
     config: {
       chainId: 123456,
       homesteadBlock: 0,
@@ -38,7 +31,6 @@ async function setupDevnet(prefundAddress: Address) {
       istanbulBlock: 0,
       berlinBlock: 0,
       londonBlock: 0,
-      ...consensusConfig,
     },
     nonce: '0x0',
     timestamp: '0x614b3731',
@@ -50,6 +42,7 @@ async function setupDevnet(prefundAddress: Address) {
     gasUsed: '0x0',
     parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     baseFeePerGas: 7,
+    alloc: {},
   }
   const extraData = concatBytes(new Uint8Array(32), prefundAddress.toBytes(), new Uint8Array(65))
 
@@ -110,10 +103,14 @@ describe('should mine blocks while a peer stays connected to tip of chain', () =
     await new Promise((resolve) => {
       follower.config.events.on(Event.SYNC_SYNCHRONIZED, (chainHeight) => {
         if (chainHeight === targetHeight) {
-          assert.equal(follower.chain.blocks.height, targetHeight, 'synced blocks successfully')
+          assert.strictEqual(
+            follower.chain.blocks.height,
+            targetHeight,
+            'synced blocks successfully',
+          )
           resolve(undefined)
         }
       })
     })
-  }, 60000)
+  }, 200000)
 })

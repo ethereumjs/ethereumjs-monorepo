@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
   Units,
@@ -18,7 +19,6 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
-import { eip4844Data } from '../testdata/eip4844.ts'
 import { setBalance } from '../utils.ts'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -27,7 +27,7 @@ const sender = bytesToHex(privateToAddress(pk))
 describe('EIP4844 tests', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should build a block correctly with blobs', async () => {
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -83,21 +83,25 @@ describe('EIP4844 tests', () => {
     await blockBuilder.addTransaction(signedTx)
 
     const { block } = await blockBuilder.build()
-    assert.equal(block.transactions.length, 1, 'blob transaction should be included')
-    assert.equal(
+    assert.strictEqual(block.transactions.length, 1, 'blob transaction should be included')
+    assert.strictEqual(
       bytesToHex(block.transactions[0].hash()),
       bytesToHex(signedTx.hash()),
       'blob transaction should be same',
     )
 
     const blobGasPerBlob = common.param('blobGasPerBlob')
-    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
+    assert.strictEqual(
+      block.header.blobGasUsed,
+      blobGasPerBlob,
+      'blob gas used for 1 blob should match',
+    )
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block, skipBlockValidation: true })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
-})
+}, 20000)

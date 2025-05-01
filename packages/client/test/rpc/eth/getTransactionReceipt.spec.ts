@@ -42,7 +42,11 @@ describe(method, () => {
 
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
+    assert.strictEqual(
+      res.result.transactionHash,
+      bytesToHex(tx.hash()),
+      'should return the correct tx',
+    )
   })
 
   it('call with 1559 tx', async () => {
@@ -67,8 +71,12 @@ describe(method, () => {
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
-    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
-    assert.equal(res.result.status, '0x1', 'transaction result is 1 since succeeded')
+    assert.strictEqual(
+      res.result.transactionHash,
+      bytesToHex(tx.hash()),
+      'should return the correct tx',
+    )
+    assert.strictEqual(res.result.status, '0x1', 'transaction result is 1 since succeeded')
   })
 
   it('call with unknown tx hash', async () => {
@@ -78,7 +86,7 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-    assert.equal(res.result, null, 'should return null')
+    assert.strictEqual(res.result, null, 'should return null')
   })
 
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
@@ -86,16 +94,16 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.isTrue(true)
     } else {
-      const { hardfork4844Data } = await import('../../testdata/blocks/4844-hardfork.ts')
+      const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-      const common = createCommonFromGethGenesis(hardfork4844Data, {
+      const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(hardfork4844Data, 'customChain', {
+      const { chain, execution, server } = await setupChain(eip4844GethGenesis, 'customChain', {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)
@@ -127,8 +135,8 @@ describe(method, () => {
 
       const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
-      assert.equal(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
-      assert.equal(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
+      assert.strictEqual(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
+      assert.strictEqual(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
     }
   })
 })

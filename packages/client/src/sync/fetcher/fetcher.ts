@@ -65,11 +65,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected destroyWhenDone: boolean // Destroy the fetcher once we are finished processing each task.
   syncErrored?: Error
 
-  private _readableState?: {
-    // This property is inherited from Readable. We only need `length`.
-    length: number
-  }
-
   private writer: Writable | null = null
 
   /**
@@ -352,10 +347,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const jobStr = this.jobStr(job)
-    if (this._readableState === undefined || this._readableState!.length > this.maxQueue) {
+    if (
+      (this as any)._readableState === undefined ||
+      (this as any)._readableState!.length > this.maxQueue
+    ) {
       this.DEBUG &&
         this.debug(
-          `Readable state length=${this._readableState!.length} exceeds max queue size=${
+          `Readable state length=${(this as any)._readableState!.length} exceeds max queue size=${
             this.maxQueue
           }, skip job ${jobStr} execution.`,
         )
@@ -453,7 +451,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         this.finished += jobItems.length
         cb()
       } catch (error: any) {
-        this.config.logger.warn(`Error storing received block or header result: ${error}`)
+        this.config.logger?.warn(`Error storing received block or header result: ${error}`)
         const { destroyFetcher, banPeer, stepBack } = this.processStoreError(
           error,
           jobItems[0].task,
@@ -485,7 +483,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         many: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }[],
         cb: Function,
       ) => {
-        const items = (<Job<JobTask, JobResult, StorageItem>[]>[]).concat(
+        const items = ([] as Job<JobTask, JobResult, StorageItem>[]).concat(
           ...many.map(
             (x: { chunk: Job<JobTask, JobResult, StorageItem>; encoding: string }) => x.chunk,
           ),

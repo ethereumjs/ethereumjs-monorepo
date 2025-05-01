@@ -9,7 +9,7 @@ describe('Account Cache: initialization', () => {
     it(`should initialize`, async () => {
       const cache = new AccountCache({ size: 100, type })
 
-      assert.equal(cache._checkpoints, 0, 'initializes given trie')
+      assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
     })
   }
 })
@@ -35,7 +35,7 @@ describe('Account Cache: put and get account', () => {
 
     it(`should flush`, async () => {
       const items = cache.flush()
-      assert.equal(items.length, 1)
+      assert.strictEqual(items.length, 1)
     })
 
     it(`should delete account from cache`, async () => {
@@ -64,7 +64,7 @@ describe('Account Cache: checkpointing', () => {
       cache.put(addr, updatedAcc)
 
       let elem = cache.get(addr)
-      assert.ok(
+      assert.isTrue(
         elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
@@ -85,14 +85,14 @@ describe('Account Cache: checkpointing', () => {
       cache.commit()
       cache.revert()
       const accCmp = cache.get(addr)
-      assert.ok(accCmp === undefined)
+      assert.isUndefined(accCmp)
     })
 
     it(`cache clearing`, async () => {
       const cache = new AccountCache({ size: 100, type: CacheType.LRU })
       cache.put(addr, acc)
       cache.clear()
-      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+      assert.strictEqual(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

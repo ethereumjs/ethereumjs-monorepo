@@ -35,11 +35,11 @@ describe('[ReverseBlockFetcher]', async () => {
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal(fetcher['in'].length, 3, 'added 2 tasks')
+    assert.strictEqual(fetcher['in'].length, 3, 'added 2 tasks')
     await wait(100)
     assert.isTrue(fetcher['running'], 'started')
-    assert.equal(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
-    assert.equal(fetcher.count, BigInt(0), 'pending tasks count should be reduced')
+    assert.strictEqual(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
+    assert.strictEqual(fetcher.count, BigInt(0), 'pending tasks count should be reduced')
     fetcher.destroy()
     await wait(100)
     assert.isFalse(fetcher['running'], 'stopped')
@@ -62,11 +62,15 @@ describe('[ReverseBlockFetcher]', async () => {
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal(fetcher['in'].length, 10, 'added max 10 tasks')
+    assert.strictEqual(fetcher['in'].length, 10, 'added max 10 tasks')
     await wait(100)
     assert.isTrue(fetcher['running'], 'started')
-    assert.equal(fetcher.first, BigInt(6), 'pending tasks first tracking should be by maximum')
-    assert.equal(fetcher.count, BigInt(3), 'pending tasks count should be reduced by maximum')
+    assert.strictEqual(
+      fetcher.first,
+      BigInt(6),
+      'pending tasks first tracking should be by maximum',
+    )
+    assert.strictEqual(fetcher.count, BigInt(3), 'pending tasks count should be reduced by maximum')
     fetcher.destroy()
     await wait(100)
     assert.isFalse(fetcher['running'], 'stopped')
@@ -87,7 +91,7 @@ describe('[ReverseBlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 2 } }, { header: { number: 1 } }]
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
-    assert.notOk(
+    assert.isUndefined(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
       'bad results',
     )
@@ -112,13 +116,13 @@ describe('[ReverseBlockFetcher]', async () => {
     fetcher.enqueueTask(task)
     const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, blocks)
-    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
 
     const remainingBlocks: any = [{ header: { number: 1 } }]
     results = fetcher.process(job as any, remainingBlocks)
-    assert.equal(results?.length, 3, 'Should return full results')
+    assert.strictEqual(results?.length, 3, 'Should return full results')
   })
 
   it('should find a fetchable peer', async () => {
@@ -136,7 +140,7 @@ describe('[ReverseBlockFetcher]', async () => {
       count: BigInt(2),
     })
     // td.when(fetcher['pool'].idle(td.matchers.anything())).thenReturn('peer0')
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
@@ -230,15 +234,19 @@ describe('[ReverseBlockFetcher]', async () => {
     await skeleton['putBlock'](block47)
     await skeleton['putBlock'](block5)
     await fetcher.store([block49, block48])
-    assert.equal(skeleton['status'].progress.subchains.length, 1, 'subchains should be merged')
-    assert.equal(
+    assert.strictEqual(
+      skeleton['status'].progress.subchains.length,
+      1,
+      'subchains should be merged',
+    )
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0].tail,
       BigInt(5),
       'subchain tail should be next segment',
     )
     assert.isFalse(fetcher['running'], 'fetcher should stop')
-    assert.equal(fetcher['in'].length, 0, 'fetcher in should be cleared')
-    assert.equal(fetcher['out'].length, 0, 'fetcher out should be cleared')
+    assert.strictEqual(fetcher['in'].length, 0, 'fetcher in should be cleared')
+    assert.strictEqual(fetcher['out'].length, 0, 'fetcher out should be cleared')
   })
 })
 describe('store()', async () => {
@@ -263,7 +271,7 @@ describe('store()', async () => {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
     } catch (err: any) {
-      assert.equal(
+      assert.strictEqual(
         err.message,
         `Blocks don't extend canonical subchain`,
         'store() threw on invalid block',
@@ -272,8 +280,8 @@ describe('store()', async () => {
         first: BigInt(10),
         count: 10,
       })
-      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
-      assert.equal(banPeer, true, 'peer should be banned on this error')
+      assert.strictEqual(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      assert.strictEqual(banPeer, true, 'peer should be banned on this error')
     }
   })
   skeleton.putBlocks = vi.fn().mockResolvedValueOnce(1)

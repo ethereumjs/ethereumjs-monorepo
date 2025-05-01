@@ -47,15 +47,24 @@ describe('RPC State Manager initialization tests', async () => {
 
   it('should work', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
-    assert.ok(state instanceof RPCStateManager, 'was able to instantiate state manager')
-    assert.equal(state['_blockTag'], '0x1', 'State manager starts with default block tag of 1')
+    assert.instanceOf(state, RPCStateManager, 'was able to instantiate state manager')
+    assert.strictEqual(
+      state['_blockTag'],
+      '0x1',
+      'State manager starts with default block tag of 1',
+    )
 
     state = new RPCStateManager({ provider, blockTag: 1n })
-    assert.equal(state['_blockTag'], '0x1', 'State Manager instantiated with predefined blocktag')
+    assert.strictEqual(
+      state['_blockTag'],
+      '0x1',
+      'State Manager instantiated with predefined blocktag',
+    )
 
     state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
-    assert.ok(
-      state instanceof RPCStateManager,
+    assert.instanceOf(
+      state,
+      RPCStateManager,
       'was able to instantiate state manager with valid url',
     )
 
@@ -75,7 +84,7 @@ describe('RPC State Manager API tests', () => {
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
 
-    assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
+    assert.isTrue(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
     await state.putAccount(vitalikDotEth, account!)
 
@@ -83,26 +92,26 @@ describe('RPC State Manager API tests', () => {
       state['_caches'].account!.get(vitalikDotEth)!.accountRLP!,
     )
 
-    assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
+    assert.isTrue(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
     const address = createAddressFromString('0xccAfdD642118E5536024675e776d32413728DD07')
     const proof = await getRPCStateProof(state, address)
     const proofBuf = proof.accountProof.map((proofNode) => hexToBytes(proofNode))
     const doesThisAccountExist = await verifyMerkleProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
-    assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
+    assert.isNull(doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
-    assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
+    assert.isDefined(state.getAccount(vitalikDotEth), 'vitalik.eth does exist')
 
     const UniswapERC20ContractAddress = createAddressFromString(
       '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
     )
     const UNIContractCode = await state.getCode(UniswapERC20ContractAddress)
-    assert.ok(UNIContractCode.length > 0, 'was able to retrieve UNI contract code')
+    assert.isNotEmpty(UNIContractCode, 'was able to retrieve UNI contract code')
 
     await state.putCode(UniswapERC20ContractAddress, UNIContractCode)
-    assert.ok(
-      state['_caches'].code?.get(UniswapERC20ContractAddress) !== undefined,
+    assert.isDefined(
+      state['_caches'].code?.get(UniswapERC20ContractAddress),
       'UNI ERC20 contract code was found in cache',
     )
 
@@ -110,7 +119,7 @@ describe('RPC State Manager API tests', () => {
       UniswapERC20ContractAddress,
       setLengthLeft(bigIntToBytes(1n), 32),
     )
-    assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+    assert.isNotEmpty(storageSlot, 'was able to retrieve storage slot 1 for the UNI contract')
 
     await expect(async () => {
       await state.getStorage(UniswapERC20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
@@ -147,7 +156,7 @@ describe('RPC State Manager API tests', () => {
     )
 
     await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
-    assert.equal(
+    assert.strictEqual(
       (await state.getAccount(vitalikDotEth))?.nonce,
       39n,
       'modified account fields successfully',
@@ -169,16 +178,16 @@ describe('RPC State Manager API tests', () => {
       setLengthLeft(bigIntToBytes(2n), 32),
     )
 
-    assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
+    assert.strictEqual(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
-    assert.ok(
-      (await state.getAccount(vitalikDotEth)) === undefined,
+    assert.isUndefined(
+      await state.getAccount(vitalikDotEth),
       'account should not exist after being deleted',
     )
 
     await state.revert()
-    assert.exists(
+    assert.isDefined(
       await state.getAccount(vitalikDotEth),
       'account deleted since last checkpoint should exist after revert called',
     )
@@ -188,14 +197,14 @@ describe('RPC State Manager API tests', () => {
       setLengthLeft(bigIntToBytes(2n), 32),
     )
 
-    assert.equal(
+    assert.strictEqual(
       deletedSlotAfterRevert.length,
       4,
       'slot deleted since last checkpoint should exist in storage cache after revert',
     )
 
     const cacheStorage = await state.dumpStorage(UniswapERC20ContractAddress)
-    assert.equal(
+    assert.strictEqual(
       2,
       Object.keys(cacheStorage).length,
       'should have 2 storage slots in cache before clear',
@@ -214,17 +223,17 @@ describe('RPC State Manager API tests', () => {
       )
     }
 
-    assert.equal(
+    assert.strictEqual(
       state['_caches'].account?.get(UniswapERC20ContractAddress),
       undefined,
       'should not have any code for contract after cache is reverted',
     )
 
-    assert.equal(state['_blockTag'], '0x1', 'blockTag defaults to 1')
+    assert.strictEqual(state['_blockTag'], '0x1', 'blockTag defaults to 1')
     state.setBlockTag(5n)
-    assert.equal(state['_blockTag'], '0x5', 'blockTag set to 0x5')
+    assert.strictEqual(state['_blockTag'], '0x5', 'blockTag set to 0x5')
     state.setBlockTag('earliest')
-    assert.equal(state['_blockTag'], 'earliest', 'blockTag set to earliest')
+    assert.strictEqual(state['_blockTag'], 'earliest', 'blockTag set to earliest')
 
     await state.checkpoint()
   })
@@ -235,7 +244,7 @@ describe('runTx custom transaction test', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
-    const vm = await createVM({ common, stateManager: <any>state }) // TODO fix the type MerkleStateManager back to StateManagerInterface in VM
+    const vm = await createVM({ common, stateManager: state })
 
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const privateKey = hexToBytes(
@@ -252,7 +261,7 @@ describe('runTx custom transaction test', () => {
       tx,
     })
 
-    assert.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
+    assert.strictEqual(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
   })
 })
 
@@ -270,7 +279,7 @@ describe('runTx test: replay mainnet transactions', () => {
     })
     const vm = await createVM({ common, stateManager: state })
     const res = await runTx(vm, { tx })
-    assert.equal(
+    assert.strictEqual(
       res.totalGasSpent,
       21000n,
       'calculated correct total gas spent for simple transfer',
@@ -301,7 +310,7 @@ describe('runBlock test', () => {
         generate: true,
         skipHeaderValidation: true,
       })
-      assert.equal(
+      assert.strictEqual(
         res.gasUsed,
         block.header.gasUsed,
         'should compute correct cumulative gas for block',
@@ -335,9 +344,9 @@ describe('blockchain', () =>
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.ok(
+    assert.strictEqual(
       bytesToHex(res.execResult.returnValue),
-      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6',
+      '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d84',
     )
   }))
 
@@ -348,7 +357,7 @@ describe('Should return same value as MerkleStateManager when account does not e
 
     const account0 = await rpcState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     const account1 = await defaultState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
-    assert.equal(
+    assert.strictEqual(
       account0,
       account1,
       'Should return same value as MerkleStateManager when account does not exist',

@@ -33,8 +33,8 @@ function verifyAccount(
     storageRoot: Uint8Array
   },
 ) {
-  assert.equal(account.balance, state.balance)
-  assert.equal(account.nonce, state.nonce)
+  assert.strictEqual(account.balance, state.balance)
+  assert.strictEqual(account.nonce, state.nonce)
   assert.isTrue(equalsBytes(account.codeHash, state.codeHash))
   assert.isTrue(equalsBytes(account.storageRoot, state.storageRoot))
 }
@@ -71,11 +71,15 @@ describe('StateManager -> General', () => {
     await sm.putStorage(contractAddress, storageKey, storedData)
 
     let storage = await sm.getStorage(contractAddress, storageKey)
-    assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
+    assert.strictEqual(
+      JSON.stringify(storage),
+      JSON.stringify(storedData),
+      'contract storage updated',
+    )
 
     await sm.clearStorage(contractAddress)
     storage = await sm.getStorage(contractAddress, storageKey)
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(storage),
       JSON.stringify(new Uint8Array()),
       'clears contract storage',
@@ -90,7 +94,7 @@ describe('StateManager -> General', () => {
     })
 
     let smCopy = sm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       smCopy['_prefixCodeHashes'],
       sm['_prefixCodeHashes'],
       'should retain non-default values',
@@ -109,30 +113,30 @@ describe('StateManager -> General', () => {
     })
 
     smCopy = sm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
     )
-    assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
+    assert.strictEqual(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
 
     smCopy = sm.shallowCopy(false)
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.account.type,
       CacheType.LRU,
       'should retain account cache type when deactivate cache downleveling',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.storage.type,
       CacheType.LRU,
       'should retain storage cache type when deactivate cache downleveling',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_trie']['_opts'].cacheSize,
       1000,
       'should retain trie cache size when deactivate cache downleveling',
@@ -221,18 +225,15 @@ describe('StateManager -> General', () => {
     const proof1 = await getMerkleStateProof(stateManager, address1)
 
     const partialStateManager = await fromMerkleStateProof(proof1)
-    let account1 = await partialStateManager.getAccount(address1)!
 
-    verifyAccount(account1!, state1)
+    verifyAccount((await partialStateManager.getAccount(address1))!, state1)
 
     const proof2 = await getMerkleStateProof(stateManager, address2)
     await addMerkleStateProofData(partialStateManager, proof2)
 
-    let account2 = await partialStateManager.getAccount(address2)
-    verifyAccount(account2!, state2)
+    verifyAccount((await partialStateManager.getAccount(address2))!, state2)
 
-    let account3 = await partialStateManager.getAccount(address3)
-    assert.ok(account3 === undefined)
+    assert.isUndefined(await partialStateManager.getAccount(address3))
 
     // Input proofs
     const stProof = await getMerkleStateProof(stateManager, address1, [
@@ -254,14 +255,11 @@ describe('StateManager -> General', () => {
     const newPartialStateManager = await fromMerkleStateProof([proof2, stProof])
 
     async function postVerify(sm: MerkleStateManager) {
-      account1 = await sm.getAccount(address1)
-      verifyAccount(account1!, state1)
+      verifyAccount((await sm.getAccount(address1))!, state1)
 
-      account2 = await sm.getAccount(address2)
-      verifyAccount(account2!, state2)
+      verifyAccount((await sm.getAccount(address2))!, state2)
 
-      account3 = await sm.getAccount(address3)
-      assert.ok(account3 === undefined)
+      assert.isUndefined(await sm.getAccount(address3))
 
       stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
       assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
@@ -282,7 +280,7 @@ describe('StateManager -> General', () => {
       await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
+      assert.include(e.message, 'proof does not have the expected trie root')
     }
 
     await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
@@ -303,11 +301,11 @@ describe('StateManager -> General', () => {
     await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)
 
     let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount === undefined)
+    assert.isUndefined(zeroAccount)
 
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
     zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount!.nonce === zeroAddressNonce)
+    assert.strictEqual(zeroAccount?.nonce, zeroAddressNonce)
   })
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
@@ -338,24 +336,24 @@ describe('StateManager -> General', () => {
       const partialSM = await fromMerkleStateProof([proof, proof2], true, {
         trie: newTrie,
       })
-      assert.equal(
+      assert.strictEqual(
         partialSM['_trie']['_opts'].useKeyHashing,
         false,
         'trie opts are preserved in new sm',
       )
       assert.deepEqual(intToBytes(32), await partialSM.getStorage(address, hexToBytes(keys[0])))
-      assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
+      assert.strictEqual((await partialSM.getAccount(address2))?.balance, 100n)
       const partialSM2 = await fromMerkleStateProof(proof, true, {
         trie: newTrie,
       })
       await addMerkleStateProofData(partialSM2, proof2, true)
-      assert.equal(
+      assert.strictEqual(
         partialSM2['_trie']['_opts'].useKeyHashing,
         false,
         'trie opts are preserved in new sm',
       )
       assert.deepEqual(intToBytes(32), await partialSM2.getStorage(address, hexToBytes(keys[0])))
-      assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
+      assert.strictEqual((await partialSM2.getAccount(address2))?.balance, 100n)
     },
   )
 })

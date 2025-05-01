@@ -35,20 +35,20 @@ export class StateTracker {
 
     vm.stateManager.putAccount = async function (...args: [Address, Account?]) {
       const address = args[0]
-      ;(self as any).addAddress(address.toString())
+      self['addAddress'](address.toString())
       await originalPutAccount.apply(this, args)
     }
 
     vm.stateManager.putCode = async function (...args: [Address, Uint8Array]) {
       const address = args[0]
-      ;(self as any).addAddress(address.toString())
+      self['addAddress'](address.toString())
       return originalPutCode.apply(this, args)
     }
 
     vm.stateManager.putStorage = async function (...args: [Address, Uint8Array, Uint8Array]) {
       const address = args[0]
       const key = args[1]
-      ;(self as any).addStorage(address.toString(), <PrefixedHexString>bytesToHex(key))
+      self['addStorage'](address.toString(), bytesToHex(key))
       return originalPutStorage.apply(this, args)
     }
   }
@@ -86,11 +86,11 @@ export class StateTracker {
       outputAlloc[addressString].balance = bigIntToHex(account.balance)
       outputAlloc[addressString].code = bytesToHex(await this.vm.stateManager.getCode(address))
 
-      const storage = this.allocTracker[addressString].storage
+      const storage = this.allocTracker[addressString].storage as PrefixedHexString[]
       outputAlloc[addressString].storage = outputAlloc[addressString].storage ?? {}
 
       for (const key of storage) {
-        const keyBytes = hexToBytes(<PrefixedHexString>key)
+        const keyBytes = hexToBytes(key)
         let storageKeyTrimmed = bytesToHex(unpadBytes(keyBytes))
         if (storageKeyTrimmed === '0x') {
           storageKeyTrimmed = '0x00'

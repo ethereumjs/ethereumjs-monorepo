@@ -57,7 +57,7 @@ describe('walk the tries from official tests', async () => {
         })
       }
       it(`should have root ${expect}`, async () => {
-        assert.equal(bytesToHex(trie.root()), expect)
+        assert.strictEqual(bytesToHex(trie.root()), expect)
       })
     })
   }
@@ -82,13 +82,13 @@ describe('walk a sparse trie', async () => {
   }
   // Check the root
   it(`should have root ${expect}`, async () => {
-    assert.equal(bytesToHex(trie.root()), expect)
+    assert.strictEqual(bytesToHex(trie.root()), expect)
   })
   // Generate a proof for inputs[0]
   const rawProofKey = inputs[0][0] as string
   const proofKey = isHexString(rawProofKey) ? hexToBytes(rawProofKey) : utf8ToBytes(rawProofKey)
   const proof = await createMerkleProof(trie, proofKey)
-  assert.ok(await verifyMerkleProof(proofKey, proof))
+  assert.isNotNull(await verifyMerkleProof(proofKey, proof))
 
   // Build a sparse trie from the proof
   const fromProof = await createMPTFromProof(proof, { root: trie.root() })
@@ -114,7 +114,11 @@ describe('walk a sparse trie', async () => {
     // Count the nodes...nodes from the proof should be only nodes in the trie
     found++
   }
-  assert.equal(found, proof.length, `found: ${found} should equal proof length: ${proof.length}`)
+  assert.strictEqual(
+    found,
+    proof.length,
+    `found: ${found} should equal proof length: ${proof.length}`,
+  )
   assert.isTrue(true, 'Walking sparse trie should not throw error')
 
   // Walk the same sparse trie with WalkController
@@ -124,6 +128,6 @@ describe('walk a sparse trie', async () => {
     })
     assert.fail('Will throw when it meets a missing node in a sparse trie')
   } catch (err) {
-    assert.equal((err as any).message, 'Missing node in DB')
+    assert.strictEqual((err as any).message, 'Missing node in DB')
   }
 })

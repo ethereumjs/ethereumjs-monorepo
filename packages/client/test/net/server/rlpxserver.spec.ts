@@ -60,7 +60,7 @@ describe('[RlpxServer]', async () => {
       bootnodes: '10.0.0.1:1234,enode://abcd@10.0.0.2:1234',
       key: 'abcd',
     })
-    assert.equal(server.name, 'rlpx', 'get name')
+    assert.strictEqual(server.name, 'rlpx', 'get name')
     assert.isTrue(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
     assert.deepEqual(
       server.bootnodes,
@@ -94,18 +94,18 @@ describe('[RlpxServer]', async () => {
     } as any
     server.rlpx = { destroy: vi.fn() } as any
     server.config.events.on(Event.PEER_ERROR, (err: any) =>
-      assert.equal(err.message, 'err0', 'got error'),
+      assert.strictEqual(err.message, 'err0', 'got error'),
     )
     await server.start()
     expect(server['initDpt']).toHaveBeenCalled()
     expect(server['initRlpx']).toHaveBeenCalled()
-    assert.ok(server.running, 'started')
-    assert.notOk(await server.start(), 'already started')
+    assert.isTrue(server.running, 'started')
+    assert.isFalse(await server.start(), 'already started')
     await server.stop()
     expect(server.dpt!.destroy).toHaveBeenCalled()
     expect(server.rlpx!.destroy).toHaveBeenCalled()
-    assert.notOk(server.running, 'stopped')
-    assert.notOk(await server.stop(), 'already stopped')
+    assert.isFalse(server.running, 'stopped')
+    assert.isFalse(await server.stop(), 'already stopped')
   })
 
   it('should bootstrap with dns acquired peers', async () => {
@@ -210,14 +210,15 @@ describe('should return rlpx server info with ip6', async () => {
         throw new Error('err0')
     }),
   } as any
-  ;(server as any).rlpx = { destroy: vi.fn() }
+  /// @ts-expect-error -- Simple config for testing
+  server.rlpx = { destroy: vi.fn() }
 
   //@ts-expect-error -- Assigning to read-only property
   server.rlpx!.id = hexToBytes(`0x${mockId}`)
 
   config.events.on(Event.SERVER_ERROR, (err) => {
     it('should error', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     })
   })
   await server.start()
@@ -252,13 +253,13 @@ describe('should handle errors', () => {
   server['error'](new Error('err0'))
   server['error'](new Error('err1'))
   it('should count errors', async () => {
-    assert.equal(count, 2, 'ignored error')
+    assert.strictEqual(count, 2, 'ignored error')
   })
 })
 describe('should ban peer', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
-  assert.notOk(server.ban('123'), 'not started')
+  assert.isFalse(server.ban('123'), 'not started')
   server.started = true
   server.dpt = {
     destroy: vi.fn(),
@@ -266,12 +267,13 @@ describe('should ban peer', async () => {
     bootstrap: vi.fn(),
     banPeer: vi.fn((peerId, maxAge) => {
       it('should ban correct beer', () => {
-        assert.equal(peerId, '112233', 'banned correct peer')
-        assert.equal(maxAge, 1234, 'got correct maxAge')
+        assert.strictEqual(peerId, '112233', 'banned correct peer')
+        assert.strictEqual(maxAge, 1234, 'got correct maxAge')
       })
     }),
   } as any
-  ;(server as any).rlpx = { destroy: vi.fn(), disconnect: vi.fn() }
+  /// @ts-expect-error -- Simple config for testing
+  server.rlpx = { destroy: vi.fn(), disconnect: vi.fn() }
   server.ban('112233', 1234)
 })
 describe('should init dpt', async () => {
@@ -282,7 +284,7 @@ describe('should init dpt', async () => {
   })
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     }),
   )
   server['dpt']?.events.emit('error', new Error('err0'))
@@ -304,7 +306,7 @@ describe('should handles errors from id-less peers', async () => {
   })
   config.events.on(Event.SERVER_ERROR, (err) => {
     it('should throw', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     })
   })
   server.rlpx!.events.emit('peer:error', rlpxPeer as any, new Error('err0'))
@@ -332,12 +334,12 @@ describe('should init rlpx', async () => {
   )
   config.events.on(Event.PEER_DISCONNECTED, (peer) =>
     it('should disconnect', async () => {
-      assert.equal(peer.id, '01', 'disconnected')
+      assert.strictEqual(peer.id, '01', 'disconnected')
     }),
   )
   config.events.on(Event.SERVER_ERROR, (err) =>
     it('should throw error', async () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     }),
   )
   config.events.on(Event.SERVER_LISTENING, (info) =>

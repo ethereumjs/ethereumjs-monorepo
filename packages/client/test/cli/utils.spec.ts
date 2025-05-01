@@ -15,7 +15,7 @@ describe('generateClientConfig', () => {
       network: 'mainnet',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainId(), 11155111n)
+    assert.strictEqual(common.chainId(), 11155111n)
   })
 
   it('should fall back to networkId if chainId is not provided', async () => {
@@ -24,7 +24,7 @@ describe('generateClientConfig', () => {
       network: 'mainnet',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainId(), 11155111n)
+    assert.strictEqual(common.chainId(), 11155111n)
   })
 
   it('should fall back to network name if both chainId and networkId are missing', async () => {
@@ -32,7 +32,7 @@ describe('generateClientConfig', () => {
       network: 'sepolia',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainName(), 'sepolia')
+    assert.strictEqual(common.chainName(), 'sepolia')
   })
 
   it('should initialize WASM crypto when useJsCrypto is false', async () => {
@@ -78,7 +78,7 @@ describe('generateClientConfig', () => {
       bootnodes: [`./${dir}/bootnodes.txt`],
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(Array.isArray(config.bootnodes), 'Bootnodes should be an array')
+    assert.isArray(config.bootnodes, 'Bootnodes should be an array')
   })
 
   it('should require an unlocked account when mining', async () => {
@@ -99,7 +99,7 @@ describe('generateClientConfig', () => {
       dev: true,
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(config.mine, 'Mining should be enabled')
+    assert.isTrue(config.mine, 'Mining should be enabled')
   })
 
   it('should properly configure Prometheus when enabled', async () => {
@@ -108,7 +108,10 @@ describe('generateClientConfig', () => {
       prometheusPort: 9090,
     }
     const { metricsServer } = await generateClientConfig(opts)
-    assert.ok(metricsServer, 'Prometheus should be enabled and metrics server should be started')
+    assert.isDefined(
+      metricsServer,
+      'Prometheus should be enabled and metrics server should be started',
+    )
   })
 
   it('should correctly handle dev mode initialization', async () => {
@@ -117,8 +120,8 @@ describe('generateClientConfig', () => {
       dataDir: './test-data',
     }
     const { config } = await generateClientConfig(opts)
-    assert.ok(config.mine, 'Mining should be enabled in dev mode')
-    assert.ok(config.isSingleNode, 'Single node mode should be enabled')
+    assert.isTrue(config.mine, 'Mining should be enabled in dev mode')
+    assert.isTrue(config.isSingleNode, 'Single node mode should be enabled')
   })
 
   it('should properly set logging options', async () => {
@@ -126,6 +129,6 @@ describe('generateClientConfig', () => {
       logLevel: 'debug',
     }
     const { config } = await generateClientConfig(opts)
-    assert.equal(config.logger.level, 'debug', 'Log level should be set to debug')
+    assert.strictEqual(config.logger?.level, 'debug', 'Log level should be set to debug')
   })
 })

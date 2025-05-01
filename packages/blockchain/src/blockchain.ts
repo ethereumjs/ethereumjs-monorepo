@@ -30,14 +30,8 @@ import { DBManager } from './db/manager.ts'
 import { DBTarget } from './db/operation.ts'
 
 import type { HeaderData } from '@ethereumjs/block'
-import type { CliqueConfig } from '@ethereumjs/common'
-import type {
-  BigIntLike,
-  DB,
-  DBObject,
-  GenesisState,
-  VerkleExecutionWitness,
-} from '@ethereumjs/util'
+import type { CliqueConfig, GenesisState } from '@ethereumjs/common'
+import type { BigIntLike, DB, DBObject, VerkleExecutionWitness } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type {
   BlockchainEvent,
@@ -57,6 +51,10 @@ import type {
  * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
  * If consensus validation is desired for Ethash or Clique blockchains the
  * optional `consensusDict` option can be used to pass in validation objects.
+ *
+ * A Blockchain object can be created with the constructor method:
+ *
+ * - {@link createBlockchain}
  */
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>

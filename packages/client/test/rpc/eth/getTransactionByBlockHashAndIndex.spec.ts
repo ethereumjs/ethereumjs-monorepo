@@ -41,14 +41,14 @@ describe(method, async () => {
 
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
 
-    assert.equal(res.result.hash, mockTxHash, 'should return the correct tx hash')
+    assert.strictEqual(res.result.hash, mockTxHash, 'should return the correct tx hash')
   })
 
   it('call with no argument', async () => {
     const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('missing value for required argument 0'))
   })
 
@@ -59,7 +59,7 @@ describe(method, async () => {
     const mockTxIndex = '0x1'
 
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('not found in DB'))
   })
 
@@ -70,7 +70,7 @@ describe(method, async () => {
     const mockTxIndex = '0x1'
 
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
   })
 
@@ -80,7 +80,7 @@ describe(method, async () => {
     const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
 
     const res = await rpc.request(method, [mockBlockHash])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('missing value for required argument 1'))
   })
 
@@ -91,7 +91,7 @@ describe(method, async () => {
     const mockTxIndex = 'INVALID_TXINDEX'
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
 
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 1: hex string without 0x prefix'))
   })
 
@@ -102,6 +102,6 @@ describe(method, async () => {
     const mockTxIndex = '0x10'
     const res = await rpc.request(method, [mockBlockHash, mockTxIndex])
 
-    assert.equal(res.result, null, 'should return null')
+    assert.strictEqual(res.result, null, 'should return null')
   })
 })

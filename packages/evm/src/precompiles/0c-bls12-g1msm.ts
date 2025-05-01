@@ -1,7 +1,8 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EvmErrorResult, OOGResult } from '../evm.ts'
-import { ERROR, EvmError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
+import type { EVM } from '../evm.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import {
   BLS_GAS_DISCOUNT_PAIRS_G1,
@@ -11,12 +12,12 @@ import {
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck, moduloLengthCheck } from './util.ts'
 
-import type { EVMBLSInterface, ExecResult } from '../types.ts'
+import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
 export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0d')
-  const bls = (<any>opts._EVM)._bls! as EVMBLSInterface
+  const bls = (opts._EVM as EVM)['_bls']!
 
   const inputData = opts.data
 
@@ -24,7 +25,10 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Empty input`)
     }
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geth's implementation
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INPUT_EMPTY),
+      opts.gasLimit,
+    ) // follow Geth's implementation
   }
 
   // TODO: Double-check respectively confirm that this order is really correct that the gas check
@@ -42,10 +46,16 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Invalid input length length=${inputData.length}`)
     }
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit,
+    )
   }
   if (!moduloLengthCheck(opts, 160, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(
+      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit,
+    )
   }
 
   // prepare pairing list and check for mandatory zero bytes
@@ -58,7 +68,10 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     // zero bytes check
     const pairStart = 160 * k
     if (!leading16ZeroBytesCheck(opts, zeroByteRanges, pName, pairStart)) {
-      return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
+      return EVMErrorResult(
+        new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE),
+        opts.gasLimit,
+      )
     }
   }
 
@@ -69,7 +82,7 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }
-    return EvmErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(e, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

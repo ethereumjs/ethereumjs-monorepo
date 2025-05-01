@@ -30,8 +30,8 @@ describe('[RlpxPeer]', async () => {
       host: '10.0.0.1',
       port: 1234,
     })
-    assert.equal(peer.address, '10.0.0.1:1234', 'address correct')
-    assert.notOk(peer.connected, 'not connected')
+    assert.strictEqual(peer.address, '10.0.0.1:1234', 'address correct')
+    assert.isFalse(peer.connected, 'not connected')
   })
 
   it('should compute capabilities', async () => {
@@ -66,7 +66,7 @@ describe('[RlpxPeer]', async () => {
     })
     proto0.open = vi.fn().mockResolvedValue(null)
     await peer.connect()
-    assert.ok('connected successfully')
+    assert.isTrue(true, 'connected successfully')
     expect(peer.rlpx!.connect).toBeCalled()
   })
 
@@ -79,7 +79,7 @@ describe('[RlpxPeer]', async () => {
       port: 1234,
     })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
-    ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
+    peer['bindProtocols'] = vi.fn().mockResolvedValue(undefined)
     peer.rlpxPeer = rlpxPeer
 
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: any) => {
@@ -93,15 +93,15 @@ describe('[RlpxPeer]', async () => {
     })
 
     peer.config.events.on(Event.PEER_CONNECTED, (peer) =>
-      assert.equal(peer.id, 'abcdef0123', 'got connected'),
+      assert.strictEqual(peer.id, 'abcdef0123', 'got connected'),
     )
     peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
-      assert.equal(rlpxPeer.pooled, false, 'got disconnected'),
+      assert.strictEqual(rlpxPeer.pooled, false, 'got disconnected'),
     )
     peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
     peer.rlpx!.events.emit('peer:added', rlpxPeer)
     peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason', true)
-    ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
+    peer['bindProtocols'] = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
     })
@@ -130,7 +130,7 @@ describe('[RlpxPeer]', async () => {
     //@ts-expect-error -- Assigning a simple string as peer for testing
     await peer.accept('rlpxpeer', 'server')
     //@ts-expect-error -- Testing that same string
-    assert.equal(peer.server, 'server', 'server set')
+    assert.strictEqual(peer.server, 'server', 'server set')
   })
 
   it('should bind protocols', async () => {
@@ -158,6 +158,6 @@ describe('[RlpxPeer]', async () => {
 
     await peer['bindProtocols'](rlpxPeer as any)
     expect(peer.addProtocol).toBeCalled()
-    assert.ok(peer.connected, 'connected set to true')
+    assert.isTrue(peer.connected, 'connected set to true')
   })
 })

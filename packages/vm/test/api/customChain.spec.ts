@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { customChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -13,10 +14,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
 
-import { testnetData } from './testdata/testnet.ts'
-import { testnetMergeData } from './testdata/testnetMerge.ts'
-
-import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { AccountState, GenesisState } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
   [
@@ -48,7 +47,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = createCustomCommon(testnetData, Mainnet, {
+const common = createCustomCommon(customChainConfig, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -88,8 +87,8 @@ describe('VM initialized with custom state', () => {
     const toAddress = createAddressFromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
-    assert.equal(result.totalGasSpent.toString(), '21000')
-    assert.equal(receiverAddress!.balance.toString(), '1')
+    assert.strictEqual(result.totalGasSpent.toString(), '21000')
+    assert.strictEqual(receiverAddress!.balance.toString(), '1')
   })
 
   it('should retrieve value from storage', async () => {
@@ -101,25 +100,25 @@ describe('VM initialized with custom state', () => {
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
-      data: hexToBytes(calldata),
+      data: hexToBytes(calldata as PrefixedHexString),
       caller: createAddressFromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
+    assert.strictEqual(bytesToHex(callResult.execResult.returnValue), storage?.[0][1])
   })
 
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMergeData, Mainnet, {
+    const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
     let vm = await createVM({ common, setHardfork: true })
-    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], 5001, 'should set setHardfork option')
   })
 })

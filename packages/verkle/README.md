@@ -1,4 +1,4 @@
-# @ethereumjs/verkle
+# @ethereumjs/verkle `v10` (EXPERIMENTAL)
 
 [![NPM Package][verkle-npm-badge]][verkle-npm-link]
 [![GitHub Issues][verkle-issues-badge]][verkle-issues-link]
@@ -11,7 +11,19 @@
 
 > Verkle trees are a cryptographic data structure proposed for use in Ethereum to optimize storage and transaction verification. They combine features of Merkle Patricia Tries and Vector Commitment Trees to offer efficient data verification with smaller proof sizes. The goal is to improve scalability and efficiency in Ethereum's network operations.
 
-This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes. Any help in improving the package is very much welcome.
+**Note:** This library is in an **experimental** stage and should not be used in production!
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Proofs](#proofs)
+- [Browser](#browser)
+- [API](#api)
+- [Debugging](#debugging)
+- [References](#references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -21,7 +33,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/verkle
 ```
 
-## Usage
+## Getting Started
 
 ### Initialization
 
@@ -103,9 +115,9 @@ The EthereumJS Verkle package is still in development and verkle proof generatio
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 

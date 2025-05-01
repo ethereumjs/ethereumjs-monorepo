@@ -6,8 +6,7 @@ import { createInlineClient } from '../src/util/index.ts'
 import { startRPCServers } from './startRPC.ts'
 import { generateClientConfig, getArgs } from './utils.ts'
 
-import type { Common } from '@ethereumjs/common'
-import type { GenesisState } from '@ethereumjs/util'
+import type { Common, GenesisState } from '@ethereumjs/common'
 import type { Config } from '../src/config.ts'
 import type { EthereumClient } from '../src/index.ts'
 import type { ClientOpts } from '../src/types.ts'
@@ -84,7 +83,12 @@ const activateRPCMethods = async (replServer: repl.REPLServer, allRPCMethods: an
     action(params) {
       const level = params
       if (['debug', 'info', 'warn', 'error'].includes(level)) {
-        for (const transport of (replServer.context.client as EthereumClient).config.logger
+        const logger = (replServer.context.client as EthereumClient).config.logger
+        if (logger === undefined) {
+          this.displayPrompt()
+          return
+        }
+        for (const transport of (replServer.context.client as EthereumClient).config.logger!
           .transports) {
           transport.level = level
         }

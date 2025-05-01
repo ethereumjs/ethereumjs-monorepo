@@ -27,16 +27,13 @@ describe('verkle node - leaf', () => {
       verkleCrypto: verkle,
     })
 
-    assert.ok(isLeafVerkleNode(node), 'typeguard should return true')
-    assert.equal(node.type, VerkleNodeType.Leaf, 'type should be set')
-    assert.ok(
-      equalsBytes(node.commitment as unknown as Uint8Array, commitment),
-      'commitment should be set',
-    )
-    assert.isTrue(equalsBytes(node.c1 as unknown as Uint8Array, c1), 'c1 should be set')
-    assert.isTrue(equalsBytes(node.c2 as unknown as Uint8Array, c2), 'c2 should be set')
+    assert.isTrue(isLeafVerkleNode(node), 'typeguard should return true')
+    assert.strictEqual(node.type, VerkleNodeType.Leaf, 'type should be set')
+    assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
+    assert.isTrue(equalsBytes(node.c1!, c1), 'c1 should be set')
+    assert.isTrue(equalsBytes(node.c2!, c2), 'c2 should be set')
     assert.isTrue(equalsBytes(node.stem, stem), 'stem should be set')
-    assert.ok(
+    assert.isTrue(
       values.every((value, index) => equalsBytes(value, node.values[index] as Uint8Array)),
       'values should be set',
     )
@@ -49,14 +46,14 @@ describe('verkle node - leaf', () => {
     values[2] = value
     const stem = key.slice(0, 31)
     const node = await LeafVerkleNode.create(stem, verkle, values)
-    assert.ok(node instanceof LeafVerkleNode)
+    assert.instanceOf(node, LeafVerkleNode)
   })
 
   it('should create a leafnode with default values', async () => {
     const key = randomBytes(32)
     const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
-    assert.ok(node instanceof LeafVerkleNode)
-    assert.equal(node.getValue(0), undefined)
+    assert.instanceOf(node, LeafVerkleNode)
+    assert.strictEqual(node.getValue(0), undefined)
     node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
     assert.deepEqual(node.getValue(0), setLengthRight(Uint8Array.from([5]), 32))
     node.setValue(0, LeafVerkleNodeValue.Deleted)
@@ -68,7 +65,7 @@ describe('verkle node - leaf', () => {
     const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
     node.setValue(0, LeafVerkleNodeValue.Deleted)
     const c1Values = createCValues(node.values.slice(0, 128))
-    assert.equal(c1Values[0][16], 1)
+    assert.strictEqual(c1Values[0][16], 1)
   })
 
   it('should update a commitment when setting a value', async () => {

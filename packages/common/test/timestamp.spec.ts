@@ -1,3 +1,4 @@
+import { shanghaiTimeGethGenesis } from '@ethereumjs/testdata'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -9,24 +10,22 @@ import {
   createCustomCommon,
 } from '../src/index.ts'
 
-import { shanghaiTimeData } from './data/shanghai-time.ts'
-
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {
-    const c = createCommonFromGethGenesis(shanghaiTimeData, {
+    const c = createCommonFromGethGenesis(shanghaiTimeGethGenesis, {
       chain: 'withdrawals',
     })
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
       'should match the HF',
     )
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
       'should match the HF',
@@ -34,19 +33,19 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding on shanghai-time', () => {
-    const config = Object.assign({}, shanghaiTimeData.config, {
-      cancunTime: shanghaiTimeData.config.shanghaiTime,
+    const config = Object.assign({}, shanghaiTimeGethGenesis.config, {
+      cancunTime: shanghaiTimeGethGenesis.config.shanghaiTime,
     })
-    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const modifiedJSON = Object.assign({}, shanghaiTimeGethGenesis, { config })
     const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
-    assert.equal(
+    assert.strictEqual(
       c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai),
       null,
       'should give null on next Hardfork block',
@@ -54,26 +53,26 @@ describe('[Common]: Timestamp Hardfork logic', () => {
   })
 
   it('schedule sharding post shanghai-time', () => {
-    const config = Object.assign({}, shanghaiTimeData.config, {
-      cancunTime: shanghaiTimeData.config.shanghaiTime + 1000,
+    const config = Object.assign({}, shanghaiTimeGethGenesis.config, {
+      cancunTime: shanghaiTimeGethGenesis.config.shanghaiTime! + 1000,
     })
-    const modifiedJSON = Object.assign({}, shanghaiTimeData, { config })
+    const modifiedJSON = Object.assign({}, shanghaiTimeGethGenesis, { config })
     const c = createCommonFromGethGenesis(modifiedJSON, {
       chain: 'modified',
     })
 
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 0n }),
       Hardfork.MergeNetsplitBlock,
       'should match the HF',
     )
     // Should give the shanghai as sharding is schedule a bit post shanghai
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699476n }),
       Hardfork.Shanghai,
       'should match the HF',
     )
-    assert.equal(
+    assert.strictEqual(
       c.getHardforkBy({ blockNumber: 1n, timestamp: 1668699576n }),
       Hardfork.Shanghai,
       'should match the HF',
@@ -107,16 +106,16 @@ describe('[Common]: Timestamp Hardfork logic', () => {
     for (const hf of c.hardforks()) {
       if (typeof hf.forkHash === 'string') {
         const msg = `Verify forkHash calculation for: ${hf.name}`
-        assert.equal(c['_calcForkHash'](hf.name, mainnetGenesisHash), hf.forkHash, msg)
+        assert.strictEqual(c['_calcForkHash'](hf.name, mainnetGenesisHash), hf.forkHash, msg)
       }
     }
 
     c.setHardfork(Hardfork.MergeNetsplitBlock)
-    assert.equal(c.nextHardforkBlockOrTimestamp(), BigInt(1668000000), 'Next hf shanghai')
+    assert.strictEqual(c.nextHardforkBlockOrTimestamp(), BigInt(1668000000), 'Next hf shanghai')
 
     c.setHardfork(Hardfork.Shanghai)
-    assert.equal(c.forkHash(), '0xc1fdf181', 'Shanghai forkHash should match')
-    assert.equal(
+    assert.strictEqual(c.forkHash(), '0xc1fdf181', 'Shanghai forkHash should match')
+    assert.strictEqual(
       c.hardforkForForkHash('0xc1fdf181')?.name,
       Hardfork.Shanghai,
       'Should be able to get Shanghai from forkHash',
@@ -152,7 +151,7 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       }
       return acc
     }, 0)
-    assert.equal(noForkHashes, 2, 'missing forkhashes')
+    assert.strictEqual(noForkHashes, 2, 'missing forkhashes')
 
     c.setForkHashes(mainnetGenesisHash)
     noForkHashes = c.hardforks().reduce((acc, hf) => {
@@ -161,7 +160,11 @@ describe('[Common]: Timestamp Hardfork logic', () => {
       }
       return acc
     }, 0)
-    assert.equal(noForkHashes, 0, 'all forkhashes should be set')
-    assert.equal(c.forkHash(Hardfork.Shanghai), '0xc1fdf181', 'Shanghai forkHash should match')
+    assert.strictEqual(noForkHashes, 0, 'all forkhashes should be set')
+    assert.strictEqual(
+      c.forkHash(Hardfork.Shanghai),
+      '0xc1fdf181',
+      'Shanghai forkHash should match',
+    )
   })
 })

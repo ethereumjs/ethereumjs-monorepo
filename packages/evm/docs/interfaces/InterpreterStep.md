@@ -1,160 +1,165 @@
+[**@ethereumjs/evm**](../README.md)
+
+***
+
 [@ethereumjs/evm](../README.md) / InterpreterStep
 
 # Interface: InterpreterStep
 
-## Table of contents
-
-### Properties
-
-- [account](InterpreterStep.md#account)
-- [address](InterpreterStep.md#address)
-- [codeAddress](InterpreterStep.md#codeaddress)
-- [depth](InterpreterStep.md#depth)
-- [gasLeft](InterpreterStep.md#gasleft)
-- [gasRefund](InterpreterStep.md#gasrefund)
-- [memory](InterpreterStep.md#memory)
-- [memoryWordCount](InterpreterStep.md#memorywordcount)
-- [opcode](InterpreterStep.md#opcode)
-- [pc](InterpreterStep.md#pc)
-- [returnStack](InterpreterStep.md#returnstack)
-- [stack](InterpreterStep.md#stack)
-- [stateManager](InterpreterStep.md#statemanager)
+Defined in: [interpreter.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L119)
 
 ## Properties
 
 ### account
 
-• **account**: `Account`
+> **account**: `Account`
 
-#### Defined in
+Defined in: [interpreter.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L133)
 
-[interpreter.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L118)
-
-___
+***
 
 ### address
 
-• **address**: `Address`
+> **address**: `Address`
 
-#### Defined in
+Defined in: [interpreter.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L134)
 
-[interpreter.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L119)
-
-___
+***
 
 ### codeAddress
 
-• **codeAddress**: `Address`
+> **codeAddress**: `Address`
 
-#### Defined in
+Defined in: [interpreter.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L137)
 
-[interpreter.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L122)
-
-___
+***
 
 ### depth
 
-• **depth**: `number`
+> **depth**: `number`
 
-#### Defined in
+Defined in: [interpreter.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L125)
 
-[interpreter.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L111)
+***
 
-___
+### eofFunctionDepth?
+
+> `optional` **eofFunctionDepth**: `number`
+
+Defined in: [interpreter.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L140)
+
+***
+
+### eofSection?
+
+> `optional` **eofSection**: `number`
+
+Defined in: [interpreter.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L138)
+
+***
+
+### error?
+
+> `optional` **error**: `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [interpreter.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L141)
+
+***
 
 ### gasLeft
 
-• **gasLeft**: `bigint`
+> **gasLeft**: `bigint`
 
-#### Defined in
+Defined in: [interpreter.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L120)
 
-[interpreter.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L105)
-
-___
+***
 
 ### gasRefund
 
-• **gasRefund**: `bigint`
+> **gasRefund**: `bigint`
 
-#### Defined in
+Defined in: [interpreter.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L121)
 
-[interpreter.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L106)
+***
 
-___
+### immediate?
+
+> `optional` **immediate**: `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [interpreter.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L139)
+
+***
 
 ### memory
 
-• **memory**: `Uint8Array`
+> **memory**: `Uint8Array`
 
-#### Defined in
+Defined in: [interpreter.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L135)
 
-[interpreter.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L120)
-
-___
+***
 
 ### memoryWordCount
 
-• **memoryWordCount**: `bigint`
+> **memoryWordCount**: `bigint`
 
-#### Defined in
+Defined in: [interpreter.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L136)
 
-[interpreter.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L121)
-
-___
+***
 
 ### opcode
 
-• **opcode**: `Object`
+> **opcode**: `object`
 
-#### Type declaration
+Defined in: [interpreter.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L126)
 
-| Name | Type |
-| :------ | :------ |
-| `dynamicFee?` | `bigint` |
-| `fee` | `number` |
-| `isAsync` | `boolean` |
-| `name` | `string` |
+#### code
 
-#### Defined in
+> **code**: `number`
 
-[interpreter.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L112)
+#### dynamicFee?
 
-___
+> `optional` **dynamicFee**: `bigint`
+
+#### fee
+
+> **fee**: `number`
+
+#### isAsync
+
+> **isAsync**: `boolean`
+
+#### name
+
+> **name**: `string`
+
+***
 
 ### pc
 
-• **pc**: `number`
+> **pc**: `number`
 
-#### Defined in
+Defined in: [interpreter.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L124)
 
-[interpreter.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L110)
-
-___
-
-### returnStack
-
-• **returnStack**: `bigint`[]
-
-#### Defined in
-
-[interpreter.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L109)
-
-___
+***
 
 ### stack
 
-• **stack**: `bigint`[]
+> **stack**: `bigint`[]
 
-#### Defined in
+Defined in: [interpreter.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L123)
 
-[interpreter.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L108)
-
-___
+***
 
 ### stateManager
 
-• **stateManager**: `EVMStateManagerInterface`
+> **stateManager**: `StateManagerInterface`
 
-#### Defined in
+Defined in: [interpreter.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L122)
 
-[interpreter.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L107)
+***
+
+### storage?
+
+> `optional` **storage**: \[`` `0x${string}` ``, `` `0x${string}` ``\][]
+
+Defined in: [interpreter.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L142)

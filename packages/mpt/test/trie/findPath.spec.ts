@@ -31,7 +31,7 @@ describe('TRIE > findPath', async () => {
         assert.isNotNull(pathFromPartial.node)
         assert.deepEqual(pathFromPartial.stack[0], rootNode)
         assert.deepEqual(pathFromPartial.node?.value(), Uint8Array.from([idx, idx]))
-        assert.equal(path.stack.length, pathFromPartial.stack.length)
+        assert.strictEqual(path.stack.length, pathFromPartial.stack.length)
       })
     }
   }
@@ -63,7 +63,7 @@ describe('TRIE (secure) > findPath', async () => {
         assert.isNotNull(pathFromPartial.node)
         assert.deepEqual(pathFromPartial.stack[0], rootNode)
         assert.deepEqual(pathFromPartial.node?.value(), Uint8Array.from([idx, idx]))
-        assert.equal(path.stack.length, pathFromPartial.stack.length)
+        assert.strictEqual(path.stack.length, pathFromPartial.stack.length)
       })
     }
   }

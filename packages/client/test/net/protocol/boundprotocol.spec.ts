@@ -36,7 +36,7 @@ describe('[BoundProtocol]', () => {
       sender,
     })
 
-    assert.equal(bound['protocol'].messages[0].name, 'TestMessage')
+    assert.strictEqual(bound['protocol'].messages[0].name, 'TestMessage')
   })
 
   it('should get/set status', () => {
@@ -77,15 +77,15 @@ describe('[BoundProtocol]', () => {
       sender,
     })
     bound.config.events.once(Event.PROTOCOL_ERROR, (err) => {
-      assert.ok(/error0/.test(err.message), 'decode error')
+      assert.isTrue(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
-    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '1' })
+    bound['handle']({ name: 'TestMessage', code: 0x01, payload: '1' })
     bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
       assert.deepEqual(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
-    ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '2' })
+    bound['handle']({ name: 'TestMessage', code: 0x01, payload: '2' })
   })
 
   it('should perform send', () => {
@@ -122,12 +122,12 @@ describe('[BoundProtocol]', () => {
       }, 100)
     })
     const response = await bound.request('TestMessage', 1)
-    assert.equal(response, 2, 'got response')
+    assert.strictEqual(response, 2, 'got response')
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
       await bound.request('TestMessage', 1)
     } catch (err: any) {
-      assert.ok(/error1/.test(err.message), 'got error')
+      assert.isTrue(/error1/.test(err.message), 'got error')
     }
   })
 
@@ -143,7 +143,7 @@ describe('[BoundProtocol]', () => {
     try {
       await bound.request('TestMessage', {})
     } catch (err: any) {
-      assert.ok(/timed out/.test(err.message), 'got error')
+      assert.isTrue(/timed out/.test(err.message), 'got error')
     }
   })
 

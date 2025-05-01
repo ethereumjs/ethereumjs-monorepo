@@ -51,6 +51,14 @@ import type { OnFound } from './util/asyncWalk.ts'
 
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
+ *
+ * A MerklePatriciaTrie object can be created with the constructor method:
+ *
+ * - {@link createMPT}
+ *
+ * A sparse MerklePatriciaTrie object can be created from a merkle proof:
+ *
+ * - {@link createMPTFromProof}
  */
 export class MerklePatriciaTrie {
   protected readonly _opts: MPTOptsWithDefaults = {
@@ -333,7 +341,7 @@ export class MerklePatriciaTrie {
     let progress = 0
     for (let i = 0; i < partialPath.stack.length - 1; i++) {
       stack[i] = partialPath.stack[i]
-      progress += stack[i] instanceof BranchMPTNode ? 1 : (<ExtensionMPTNode>stack[i]).keyLength()
+      progress += stack[i] instanceof BranchMPTNode ? 1 : (stack[i] as ExtensionMPTNode).keyLength()
     }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
@@ -892,7 +900,7 @@ export class MerklePatriciaTrie {
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
     ]
-    for (const dbkey of (<any>this)._db.db._database.keys()) {
+    for (const dbkey of (this._db.db as any)._database.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph

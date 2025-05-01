@@ -1,7 +1,7 @@
 import { createBlockchainFromBlocksData } from '@ethereumjs/blockchain'
+import { mainnetBlocks } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { mainnetData } from '../../testdata/blocks/mainnet.ts'
 import { createClient, createManager, getRPCClient, startRPC, testSetup } from '../helpers.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
@@ -10,7 +10,7 @@ const method = 'debug_setHead'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -18,7 +18,7 @@ describe(method, async () => {
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
-    assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
+    assert.strictEqual(newHead.header.number, BigInt(mainnetBlocks.length), 'should run all blocks')
 
     const client = await createClient({ blockchain })
     await client.service.skeleton?.open()
@@ -26,7 +26,7 @@ describe(method, async () => {
 
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
-    assert.equal(
+    assert.strictEqual(
       await client.service.skeleton?.headHash(),
       undefined,
       'should return undefined when head is not set',
@@ -47,7 +47,7 @@ describe(method, async () => {
   })
 
   it('should return error for pending block', async () => {
-    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
@@ -57,19 +57,19 @@ describe(method, async () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const result = await rpc.request(method, ['pending'])
-    assert.equal(result.error.code, -32602)
-    assert.equal(result.error.message, '"pending" is not supported')
+    assert.strictEqual(result.error.code, -32602)
+    assert.strictEqual(result.error.message, '"pending" is not supported')
   })
 
   it('should handle internal errors', async () => {
-    const blockchain = await createBlockchainFromBlocksData(mainnetData, {
+    const blockchain = await createBlockchainFromBlocksData(mainnetBlocks, {
       validateBlocks: true,
       validateConsensus: false,
     })
     const exec = await testSetup(blockchain)
     await exec.run()
     const newHead = await (exec.vm.blockchain as Blockchain).getIteratorHead!()
-    assert.equal(newHead.header.number, BigInt(mainnetData.length), 'should run all blocks')
+    assert.strictEqual(newHead.header.number, BigInt(mainnetBlocks.length), 'should run all blocks')
 
     const client = await createClient({ blockchain })
     ;(client.service.skeleton as any) = {
@@ -82,7 +82,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const result = await rpc.request(method, ['0x1'])
-    assert.equal(result.error.code, -32603)
-    assert.equal(result.error.message, 'Internal error')
+    assert.strictEqual(result.error.code, -32603)
+    assert.strictEqual(result.error.message, 'Internal error')
   })
 })

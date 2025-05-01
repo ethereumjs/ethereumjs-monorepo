@@ -31,11 +31,11 @@ describe('Binary Tree API tests', () => {
     const account = createAccount({ nonce: 3n, balance: 0xfffn })
     await sm.putAccount(address, account)
     const retrievedAccount = await sm.getAccount(address)
-    assert.equal(retrievedAccount?.balance, account.balance)
-    assert.equal(retrievedAccount?.nonce, account.nonce)
+    assert.strictEqual(retrievedAccount?.balance, account.balance)
+    assert.strictEqual(retrievedAccount?.nonce, account.nonce)
     await sm.deleteAccount(address)
     const deletedAccount = await sm.getAccount(address)
-    assert.equal(deletedAccount, undefined)
+    assert.strictEqual(deletedAccount, undefined)
   })
 
   it('should put and get code', async () => {
@@ -63,7 +63,7 @@ describe('Binary Tree API tests', () => {
     await sm.putCode(address, reallyBigByteCode)
     const retrievedReallyBigByteCode = await sm.getCode(address)
 
-    assert.equal(
+    assert.strictEqual(
       matchingBytesLength(retrievedReallyBigByteCode, reallyBigByteCode),
       reallyBigByteCode.length,
     )
@@ -105,7 +105,7 @@ describe('caching functionality works', () => {
       BinaryTreeLeafType.BasicData,
       BinaryTreeLeafType.CodeHash,
     ])
-    assert.equal(accountData[0], undefined, 'account does not exist in trie')
+    assert.strictEqual(accountData[0], undefined, 'account does not exist in trie')
 
     // Confirm account exists in cache
     const cachedAccount = sm['_caches']?.account?.get(address)
@@ -116,7 +116,7 @@ describe('caching functionality works', () => {
     await sm.commit()
     await sm.flush()
     const retrievedAccount = await sm.getAccount(address)
-    assert.equal(retrievedAccount?.balance, account.balance)
+    assert.strictEqual(retrievedAccount?.balance, account.balance)
 
     // Delete account
     await sm.deleteAccount(address)
@@ -124,6 +124,6 @@ describe('caching functionality works', () => {
     await sm.commit()
     await sm.flush()
     const deletedAccount = await sm.getAccount(address)
-    assert.equal(deletedAccount, undefined)
+    assert.strictEqual(deletedAccount, undefined)
   })
 })

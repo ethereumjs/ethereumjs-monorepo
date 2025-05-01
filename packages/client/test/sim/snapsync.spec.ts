@@ -1,11 +1,5 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import {
-  bytesToHex,
-  createAddressFromString,
-  hexToBytes,
-  parseGethGenesisState,
-  privateToAddress,
-} from '@ethereumjs/util'
+import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { bytesToHex, createAddressFromString, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
@@ -31,6 +25,7 @@ import type { EthereumClient } from '../../src/client.ts'
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
+
 const networkJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(networkJSON, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJSON)
@@ -116,7 +111,7 @@ describe('simple mainnet test run', async () => {
   }
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
-  assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+  assert.isDefined(nodeInfo.enode, 'fetched enode for peering')
 
   console.log(`Waiting for network to start...`)
   try {
@@ -132,7 +127,7 @@ describe('simple mainnet test run', async () => {
     'add some EOA transfers',
     async () => {
       let balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(
+      assert.strictEqual(
         EOATransferToBalance,
         BigInt(balance.result),
         `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`,
@@ -143,18 +138,19 @@ describe('simple mainnet test run', async () => {
       EOATransferToBalance += 1000000n
 
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer')
+      assert.strictEqual(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer')
       await runTx('', EOATransferToAccount, 1000000n)
       EOATransferToBalance += 1000000n
 
       balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
-      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer 2x')
+      assert.strictEqual(
+        BigInt(balance.result),
+        EOATransferToBalance,
+        'sent a simple ETH transfer 2x',
+      )
 
       balance = await client.request('eth_getBalance', [sender, 'latest'])
-      assert.ok(
-        balance.result !== undefined,
-        'remaining sender balance after transfers and gas fee',
-      )
+      assert.isDefined(balance.result, 'remaining sender balance after transfers and gas fee')
       senderBalance = BigInt(balance.result)
     },
     2 * 60_000,
@@ -193,7 +189,7 @@ describe('simple mainnet test run', async () => {
 
       const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
-      assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
+      assert.strictEqual(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
       const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
       try {
@@ -237,7 +233,7 @@ describe('simple mainnet test run', async () => {
         const peerLatest = (await client.request('eth_getBlockByNumber', ['latest', false])).result
         const snapRootsMatch =
           syncedSnapRoot !== undefined && bytesToHex(syncedSnapRoot) === peerLatest.stateRoot
-        assert.ok(snapRootsMatch, 'synced stateRoot should match with peer')
+        assert.isTrue(snapRootsMatch, 'synced stateRoot should match with peer')
       } else {
         assert.fail('ethereumjs client not setup properly for snap sync')
       }
@@ -257,10 +253,10 @@ describe('simple mainnet test run', async () => {
       ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
-    for (const addressString of Object.keys(customGenesisState)) {
+    for (const addressString of Object.keys(customGenesisState) as PrefixedHexString[]) {
       const address = createAddressFromString(addressString)
       const account = await stateManager?.getAccount(address)
-      assert.equal(
+      assert.strictEqual(
         account?.balance,
         BigInt(customGenesisState[addressString][0]),
         `${addressString} balance should match`,

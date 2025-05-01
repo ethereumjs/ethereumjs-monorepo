@@ -19,19 +19,19 @@ describe('[Peer]', () => {
   })
 
   it('should get/set idle state', () => {
-    assert.ok(peer.idle, 'is initially idle')
+    assert.isTrue(peer.idle, 'is initially idle')
     peer.idle = false
-    assert.notOk(peer.idle, 'idle set to false')
+    assert.isFalse(peer.idle, 'idle set to false')
   })
 
   it('should convert to string', () => {
-    assert.equal(
+    assert.strictEqual(
       peer.toString(true),
       'id=0123456789abcdef address=address0 transport=transport0 inbound=true',
       'correct full id string',
     )
     peer.inbound = false
-    assert.equal(
+    assert.strictEqual(
       peer.toString(),
       'id=01234567 address=address0 transport=transport0 inbound=false',
       'correct short id string',

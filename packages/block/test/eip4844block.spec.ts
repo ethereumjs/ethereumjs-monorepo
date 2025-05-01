@@ -14,14 +14,14 @@ import { fakeExponential, getNumBlobs } from '../src/helpers.ts'
 import { createBlock, createBlockHeader } from '../src/index.ts'
 import { paramsBlock } from '../src/params.ts'
 
-import { hardfork4844Data } from './testdata/4844-hardfork.ts'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 describe('EIP4844 header tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -66,7 +66,7 @@ describe('EIP4844 header tests', () => {
       {},
       { common, skipConsensusFormatValidation: true },
     ).excessBlobGas
-    assert.equal(
+    assert.strictEqual(
       excessBlobGas,
       0n,
       'instantiates block with reasonable default excess blob gas value when not provided',
@@ -89,14 +89,18 @@ describe('EIP4844 header tests', () => {
       },
       { common, skipConsensusFormatValidation: true },
     )
-    assert.equal(block.toJSON().header?.excessBlobGas, '0x0', 'JSON output includes excessBlobGas')
+    assert.strictEqual(
+      block.toJSON().header?.excessBlobGas,
+      '0x0',
+      'JSON output includes excessBlobGas',
+    )
   })
 })
 
 describe('blob gas tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsBlock,
@@ -111,7 +115,7 @@ describe('blob gas tests', () => {
     )
 
     let excessBlobGas = preShardingHeader.calcNextExcessBlobGas(common)
-    assert.equal(
+    assert.strictEqual(
       excessBlobGas,
       0n,
       'excess blob gas where 4844 is not active on header should be 0',
@@ -131,30 +135,38 @@ describe('blob gas tests', () => {
 
     excessBlobGas = lowGasHeader.calcNextExcessBlobGas(common)
     let blobGasPrice = lowGasHeader.getBlobGasPrice()
-    assert.equal(excessBlobGas, 0n, 'excess blob gas should be 0 for small parent header blob gas')
-    assert.equal(blobGasPrice, 1n, 'blob gas price should be 1n when low or no excess blob gas')
+    assert.strictEqual(
+      excessBlobGas,
+      0n,
+      'excess blob gas should be 0 for small parent header blob gas',
+    )
+    assert.strictEqual(
+      blobGasPrice,
+      1n,
+      'blob gas price should be 1n when low or no excess blob gas',
+    )
     const highGasHeader = createBlockHeader(
       { number: 1, excessBlobGas: 6291456, blobGasUsed: BigInt(6) * blobGasPerBlob },
       { common, skipConsensusFormatValidation: true },
     )
     excessBlobGas = highGasHeader.calcNextExcessBlobGas(common)
     blobGasPrice = highGasHeader.getBlobGasPrice()
-    assert.equal(excessBlobGas, 6684672n)
-    assert.equal(blobGasPrice, 6n, 'computed correct blob gas price')
+    assert.strictEqual(excessBlobGas, 6684672n)
+    assert.strictEqual(blobGasPrice, 6n, 'computed correct blob gas price')
 
-    assert.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
-    assert.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
-    assert.equal(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
+    assert.strictEqual(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
+    assert.strictEqual(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
+    assert.strictEqual(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
 
     const nextBlobGas = highGasHeader.calcNextBlobGasPrice(common)
-    assert.equal(nextBlobGas, BigInt(7)) // TODO verify that this is correct
+    assert.strictEqual(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
 })
 
 describe('transaction validation tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  const common = createCommonFromGethGenesis(hardfork4844Data, {
+  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     params: paramsBlock,
@@ -254,11 +266,9 @@ describe('transaction validation tests', () => {
       'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee',
     )
 
-    assert.ok(
-      blockWithTooManyBlobs
-        .getTransactionsValidationErrors()
-        .join(' ')
-        .includes('exceed maximum blob gas per block'),
+    assert.include(
+      blockWithTooManyBlobs.getTransactionsValidationErrors().join(' '),
+      'exceed maximum blob gas per block',
       'tx errors includes correct error message when too many blobs in a block',
     )
   })
@@ -284,7 +294,7 @@ describe('fake exponential', () => {
       [2, 5, 2, 23],
     ]
     for (const input of testInputs) {
-      assert.equal(
+      assert.strictEqual(
         fakeExponential(BigInt(input[0]), BigInt(input[1]), BigInt(input[2])),
         BigInt(input[3]),
         'fake exponential produced expected output',

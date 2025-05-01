@@ -9,7 +9,6 @@ import {
   concatBytes,
   createZeroAddress,
   equalsBytes,
-  toBytes,
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
@@ -145,19 +144,18 @@ export class PendingBlock {
 
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    const payloadIdBytes = toBytes(
-      keccakFunction(
-        concatBytes(
-          parentBlock.hash(),
-          mixHashBuf,
-          timestampBuf,
-          gasLimitBuf,
-          parentBeaconBlockRootBuf,
-          coinbaseBuf,
-          withdrawalsBuf,
-        ),
-      ).subarray(0, 8),
-    )
+    const payloadIdBytes = keccakFunction(
+      concatBytes(
+        parentBlock.hash(),
+        mixHashBuf,
+        timestampBuf,
+        gasLimitBuf,
+        parentBeaconBlockRootBuf,
+        coinbaseBuf,
+        withdrawalsBuf,
+      ),
+    ).subarray(0, 8)
+
     const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
@@ -205,12 +203,12 @@ export class PendingBlock {
       baseFee: baseFeePerGas,
       allowedBlobs,
     })
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
     )
 
     const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`,
     )
 
@@ -304,7 +302,7 @@ export class PendingBlock {
     const withdrawalsStr =
       block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''
     const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
       }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
@@ -316,7 +314,7 @@ export class PendingBlock {
   }
 
   private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {
-    this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
+    this.config.logger?.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
@@ -361,7 +359,7 @@ export class PendingBlock {
       if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
         if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
           // If block has less than 21000 gas remaining, consider it full
-          this.config.logger.info(`Pending: Assembled block full`)
+          this.config.logger?.info(`Pending: Assembled block full`)
           addTxResult = AddTxResult.BlockFull
         } else {
           addTxResult = AddTxResult.SkippedByGasLimit
@@ -369,13 +367,13 @@ export class PendingBlock {
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
-        this.config.logger.error(
+        this.config.logger?.error(
           `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`,
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Pending: Skipping tx ${bytesToHex(
             tx.hash(),
           )}, error encountered when trying to add tx:\n${error}`,

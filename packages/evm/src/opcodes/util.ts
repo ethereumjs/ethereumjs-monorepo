@@ -15,11 +15,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions.ts'
+import { EVMError } from '../errors.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { ERROR } from '../exceptions.ts'
+import type { EVMErrorType } from '../errors.ts'
 import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
@@ -85,11 +85,11 @@ export function setLengthLeftStorage(value: Uint8Array) {
 }
 
 /**
- * Wraps error message as EvmError
+ * Wraps error message as EVMError
  */
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
-  throw new EvmError(err as ERROR)
+  throw new EVMError(err as EVMErrorType)
 }
 
 /**

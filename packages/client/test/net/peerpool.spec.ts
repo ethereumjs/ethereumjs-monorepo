@@ -11,8 +11,8 @@ describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   it('should open/close', async () => {
-    assert.notOk((pool as any).pool.size, 'empty pool')
-    assert.notOk((pool as any).opened, 'not open')
+    assert.strictEqual(pool['pool'].size, 0, 'empty pool')
+    assert.isFalse(pool['opened'], 'not open')
     const peer = new MockPeer({
       id: 'peer',
       location: 'abc',
@@ -29,9 +29,9 @@ describe('should initialize', () => {
     })
     pool.add(peer)
     pool.remove(peer)
-    assert.equal(await pool.open(), false, 'already opened')
+    assert.strictEqual(await pool.open(), false, 'already opened')
     await pool.close()
-    assert.notOk((pool as any).opened, 'closed')
+    assert.isFalse(pool['opened'], 'closed')
   })
 })
 
@@ -39,18 +39,18 @@ describe('should connect/disconnect peer', () => {
   const peer = new EventEmitter() as any
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  ;(peer as any).id = 'abc'
-  ;(peer as any).handleMessageQueue = vi.fn()
-  ;(pool as any).connected(peer)
+  peer.id = 'abc'
+  peer.handleMessageQueue = vi.fn()
+  pool['connected'](peer)
   pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
     it('should get message', () => {
-      assert.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
+      assert.isTrue(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
   })
   config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', peer)
   pool.config.events.emit(Event.PEER_ERROR, new Error('err0'), peer)
-  ;(pool as any).disconnected(peer)
-  assert.notOk((pool as any).pool.get('abc'), 'peer removed')
+  pool['disconnected'](peer)
+  assert.isUndefined(pool['pool'].get('abc'), 'peer removed')
 })
 
 class Peer {
@@ -67,7 +67,7 @@ describe('should check contains', () => {
   const pool = new PeerPool({ config })
   it('should add peer', () => {
     pool.add(peer as any)
-    assert.ok(pool.contains(peer.id), 'found peer')
+    assert.isTrue(pool.contains(peer.id), 'found peer')
   })
 })
 
@@ -75,13 +75,14 @@ describe('should get idle peers', () => {
   const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
-  ;(peers[1] as any).idle = true
+  /// @ts-expect-error -- Create new property
+  peers[1].idle = true
   it('should add peers', () => {
     for (const p of peers) {
       pool.add(p as any)
     }
-    assert.equal(pool.idle(), peers[1], 'correct idle peer')
-    assert.equal(
+    assert.strictEqual(pool.idle(), peers[1], 'correct idle peer')
+    assert.strictEqual(
       pool.idle((p: any) => p.id > 1),
       peers[1],
       'correct idle peer with filter',
@@ -95,13 +96,13 @@ describe('should ban peer', () => {
   const pool = new PeerPool({ config })
   pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => {
     it('should ban peer', () => {
-      assert.equal(peer, peers[1] as any, 'banned peer')
+      assert.strictEqual(peer, peers[1] as any, 'banned peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) => {
     it('should remove peer', () => {
-      assert.equal(peer, peers[1] as any, 'removed peer')
-      assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
+      assert.strictEqual(peer, peers[1] as any, 'removed peer')
+      assert.strictEqual(pool.peers[0], peers[0] as any, 'outbound peer not banned')
     })
   })
   for (const p of peers as any) {

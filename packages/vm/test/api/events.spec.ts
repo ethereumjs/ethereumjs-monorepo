@@ -1,12 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import { Account, bytesToHex, createAddressFromPrivateKey, toBytes } from '@ethereumjs/util'
+import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock, runTx } from '../../src/index.ts'
 
 describe('VM events', () => {
-  const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
+  const privKey = hexToBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
 
   it('should emit the Block before running it', async () => {
     const vm = await createVM()
@@ -24,7 +24,7 @@ describe('VM events', () => {
       skipBlockValidation: true,
     })
 
-    assert.equal(emitted, block)
+    assert.strictEqual(emitted, block)
   })
 
   it('should emit a RunBlockResult after running a block', async () => {
@@ -63,7 +63,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(emitted, tx)
+    assert.strictEqual(emitted, tx)
   })
 
   it('should emit RunTxResult after running a tx', async () => {
@@ -84,7 +84,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
+    assert.strictEqual(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
   it('should emit the Message before running it', async () => {
@@ -106,8 +106,8 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
-    assert.equal(bytesToHex(emitted.code), '0x')
+    assert.strictEqual(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
+    assert.strictEqual(bytesToHex(emitted.code), '0x')
   })
 
   it('should emit EVMResult after running a message', async () => {
@@ -129,7 +129,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(bytesToHex(emitted.createdAddress), '0x')
+    assert.strictEqual(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
   it('should emit InterpreterStep on each step', async () => {
@@ -152,7 +152,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(lastEmitted.opcode.name, 'RETURN')
+    assert.strictEqual(lastEmitted.opcode.name, 'RETURN')
   })
 
   it('should emit a NewContractEvent on new contracts', async () => {
@@ -175,7 +175,7 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(emitted.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     )

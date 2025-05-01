@@ -7,7 +7,6 @@ import {
   bigIntToUnpaddedBytes,
   bytesToHex,
   ecrecover,
-  ecsign,
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -15,6 +14,8 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Capability, TransactionType } from '../types.ts'
 
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
@@ -33,7 +34,7 @@ export function isSigned(tx: LegacyTxInterface): boolean {
 /**
  * The amount of gas paid for the data in this tx
  */
-export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
+export function getDataGas(tx: LegacyTxInterface): bigint {
   if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
     return tx.cache.dataFee.value
   }
@@ -41,7 +42,7 @@ export function getDataGas(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   const txDataZero = tx.common.param('txDataZeroGas')
   const txDataNonZero = tx.common.param('txDataNonZeroGas')
 
-  let cost = extraCost ?? BIGINT_0
+  let cost = BIGINT_0
   for (let i = 0; i < tx.data.length; i++) {
     tx.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
   }
@@ -250,23 +251,20 @@ export function sign(
     tx.common.gteHardfork('spuriousDragon') &&
     !tx.supports(Capability.EIP155ReplayProtection)
   ) {
-    // cast as any to edit the protected `activeCapabilities`
-    ;(tx as any).activeCapabilities.push(Capability.EIP155ReplayProtection)
+    ;(tx as LegacyTx)['activeCapabilities'].push(Capability.EIP155ReplayProtection)
     hackApplied = true
   }
 
   const msgHash = tx.getHashedMessageToSign()
-  const ecSignFunction = tx.common.customCrypto?.ecsign ?? ecsign
-  const { v, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
-  const signedTx = tx.addSignature(v, r, s, true)
+  const ecSignFunction = tx.common.customCrypto?.ecsign ?? secp256k1.sign
+  const { recovery, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
+  const signedTx = tx.addSignature(BigInt(recovery), r, s, true)
 
   // Hack part 2
   if (hackApplied) {
-    // cast as any to edit the protected `activeCapabilities`
-    const index = (<any>tx).activeCapabilities.indexOf(Capability.EIP155ReplayProtection)
+    const index = (tx as LegacyTx)['activeCapabilities'].indexOf(Capability.EIP155ReplayProtection)
     if (index > -1) {
-      // cast as any to edit the protected `activeCapabilities`
-      ;(<any>tx).activeCapabilities.splice(index, 1)
+      ;(tx as LegacyTx)['activeCapabilities'].splice(index, 1)
     }
   }
 

@@ -22,13 +22,13 @@ describe(method, () => {
     // lowest level; e.g. only show errors
     const levelError = 0
     res = await rpc.request(method, [levelError])
-    assert.equal(res.result, 'level: error', 'verbosity level successfully lowered')
-    assert.equal(client.config.logger.level, logLevels[levelError])
+    assert.strictEqual(res.result, 'level: error', 'verbosity level successfully lowered')
+    assert.strictEqual(client.config.logger?.level, logLevels[levelError])
 
     // highest level; e.g. be very verbose and show even debug logs
     const levelDebug = 3
     res = await rpc.request(method, [levelDebug])
-    assert.equal(res.result, 'level: debug', 'verbosity level successfully increased')
-    assert.equal(client.config.logger.level, logLevels[levelDebug])
+    assert.strictEqual(res.result, 'level: debug', 'verbosity level successfully increased')
+    assert.strictEqual(client.config.logger?.level, logLevels[levelDebug])
   })
 })

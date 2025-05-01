@@ -165,7 +165,7 @@ export class CheckpointDB implements DB {
       value !== undefined
         ? value instanceof Uint8Array
           ? value
-          : unprefixedHexToBytes(<string>value)
+          : unprefixedHexToBytes(value as string)
         : undefined
     this._cache?.set(keyHex, returnValue)
     if (this.hasCheckpoints()) {
@@ -188,7 +188,7 @@ export class CheckpointDB implements DB {
     } else {
       const valuePut =
         this.valueEncoding === ValueEncoding.Bytes ? value : bytesToUnprefixedHex(value)
-      await this.db.put(keyHex, <any>valuePut, {
+      await this.db.put(keyHex, valuePut, {
         keyEncoding: KeyEncoding.String,
         valueEncoding: this.valueEncoding,
       })
@@ -250,11 +250,11 @@ export class CheckpointDB implements DB {
         }
         this._stats.db.writes += 1
         if (op.type === 'put' && this.valueEncoding === ValueEncoding.String) {
-          convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
+          convertedOp.value = bytesToUnprefixedHex(convertedOp.value as Uint8Array)
         }
         return convertedOp
       })
-      await this.db.batch(<any>convertedOps)
+      await this.db.batch(convertedOps as any)
     }
   }
 
