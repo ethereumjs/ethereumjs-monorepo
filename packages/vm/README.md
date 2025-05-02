@@ -433,7 +433,7 @@ The VM processes state changes at several levels:
   - Transfers gas fees to the fee recipient (recipient receives all pre EIP-1559, base fee is burned post EIP-1559).
   - Generates a transaction receipt.
   - Manages state checkpoints and commits/reverts changes for the transaction.
-- **[`vm.evm.runCall`](../../evm/src/evm.ts)** (within `@ethereumjs/evm`): Executes the EVM code for a transaction (message call or contract creation).
+- **[`vm.evm.runCall`](../evm/src/evm.ts)** (within `@ethereumjs/evm`): Executes the EVM code for a transaction (message call or contract creation).
   - Steps through EVM opcodes.
   - Manages memory, stack, and storage changes.
   - Handles exceptions and gas consumption during execution.
