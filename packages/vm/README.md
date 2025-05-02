@@ -430,7 +430,7 @@ The VM processes state changes at several levels:
   - Pays intrinsic gas cost.
   - Executes the transaction code using `vm.evm.runCall` (or specific logic for contract creation).
   - Calculates gas used and refunds remaining gas.
-  - Transfers gas fees to the beneficiary (miner pre-Merge, burn post-Merge/EIP-1559).
+  - Transfers gas fees to the fee recipient (recipient receives all pre EIP-1559, base fee is burned post EIP-1559).
   - Generates a transaction receipt.
   - Manages state checkpoints and commits/reverts changes for the transaction.
 - **`vm.evm.runCall` (within `@ethereumjs/evm`)**: Executes the EVM code for a transaction (message call or contract creation).
