@@ -20,9 +20,8 @@ import {
   createEVM,
   generateBinaryExecutionWitness,
   getActivePrecompiles,
-} from '../../src/index.js'
-import { stateWitnessJSONToSSZ, traceContainer } from '../../src/precompiles/12-execute.js'
-
+} from '../../src/index.ts'
+import { stateWitnessJSONToSSZ, traceContainer } from '../../src/precompiles/12-execute.ts'
 describe('Precompiles: EXECUTE', () => {
   it('should execute a trace', async () => {
     const common = new Common({

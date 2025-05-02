@@ -1,6 +1,7 @@
 import { binaryTreeFromProof, decodeBinaryNode } from '@ethereumjs/binarytree'
 import { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
 import {
+  type PrefixedHexString,
   bytesToBigInt,
   bytesToHex,
   createAddressFromString,
@@ -12,21 +13,19 @@ import * as ssz from 'micro-eth-signer/ssz'
 import {
   BinaryTreeAccessWitness,
   type generateBinaryExecutionWitness,
-} from '../binaryTreeAccessWitness.js'
-import { createEVM } from '../constructors.js'
-import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
+} from '../binaryTreeAccessWitness.ts'
+import { createEVM } from '../constructors.ts'
+import { EVMErrorResult, OOGResult } from '../evm.ts'
 
-import { gasLimitCheck } from './util.js'
+import { gasLimitCheck } from './util.ts'
 
-import { getPrecompileName } from './index.js'
+import { getPrecompileName } from './index.ts'
 
-import type {} from '../binaryTreeAccessWitness.js'
-
-import type { EVM } from '../evm.js'
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
 import type { BinaryNode } from '@ethereumjs/binarytree'
+import { EVMError } from '../errors.ts'
+import type { EVM } from '../evm.ts'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 // For suffix diffs in state diff
 const SuffixDiff = ssz.container({
@@ -89,7 +88,7 @@ export const stateWitnessJSONToSSZ = (
     })),
     parentStateRoot: hexToBytes(witness.parentStateRoot),
     proof: Object.entries(witness.proof).map(([stem, proof]) => ({
-      stem: hexToBytes(stem),
+      stem: hexToBytes(stem as PrefixedHexString),
       proofData: proof,
     })),
   }
@@ -104,19 +103,19 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
   if (data.length !== 128) {
-    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
   const _preStateRoot = data.subarray(0, 32) // prestateroot for L2 state
   const postStateRoot = data.subarray(32, 64) // post state root for L2 state
   const traceBlob = evm['executionBlobs'].get(bytesToHex(data.subarray(64, 96))) // reference to state access and transactions
   if (traceBlob === undefined) {
     opts._debug?.(`${pName} error - trace not found`)
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.REVERT), opts.gasLimit)
   }
   const decodedTrace = traceContainer.decode(traceBlob)
   if (decodedTrace.txs === undefined || decodedTrace.witness === undefined) {
     opts._debug?.(`${pName} error - trace is invalid`)
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    return EVMErrorResult(new EVMError(EVMError.errorMessages.REVERT), opts.gasLimit)
   }
   const executeGasUsed = bytesToBigInt(data.subarray(96))
 
