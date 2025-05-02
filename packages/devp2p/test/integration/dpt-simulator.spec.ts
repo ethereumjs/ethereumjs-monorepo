@@ -9,7 +9,7 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(41622)
 
     dpts[0].events.on('peer:new', async (peer) => {
-      assert.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
+      assert.strictEqual(peer.address, '127.0.0.1', 'should have added peer on peer:new')
       await util.delay(500)
       util.destroyDPTs(dpts)
     })
@@ -19,7 +19,11 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42622)
 
     dpts[0].events.on('peer:added', async () => {
-      assert.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
+      assert.strictEqual(
+        dpts[0].getPeers().length,
+        1,
+        'should have added peer to k-bucket on peer:added',
+      )
       await util.delay(500)
       util.destroyDPTs(dpts)
     })
@@ -34,7 +38,7 @@ describe('DPT simulator tests', () => {
         dpts[0].removePeer(peer)
       })
       dpts[0].events.on('peer:removed', async () => {
-        assert.equal(
+        assert.strictEqual(
           dpts[0].getPeers().length,
           0,
           'should have removed peer from k-bucket on peer:removed',
@@ -56,8 +60,8 @@ describe('DPT simulator tests', () => {
         dpts[0].banPeer(peer)
       })
       dpts[0].events.once('peer:removed', async (peer) => {
-        assert.equal(dpts[0]['_banlist'].has(peer), true, 'ban-list should contain peer')
-        assert.equal(
+        assert.strictEqual(dpts[0]['_banlist'].has(peer), true, 'ban-list should contain peer')
+        assert.strictEqual(
           dpts[0].getPeers().length,
           0,
           'should have removed peer from k-bucket on peer:removed',
@@ -77,7 +81,7 @@ describe('DPT simulator tests', () => {
       dpts[0].events.once('peer:added', async (peer) => {
         dpts[0]._onKBucketPing([peer], peer)
         await util.delay(400)
-        assert.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
+        assert.strictEqual(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
         await util.delay(400)
         util.destroyDPTs(dpts)
       })
@@ -91,7 +95,11 @@ describe('DPT simulator tests', () => {
     const peer = { address: util.localhost, udpPort: 19218 }
 
     await dpts[0].addPeer(peer).catch(async (e: Error) => {
-      assert.equal(e.message, 'Timeout error: ping 127.0.0.1:19218', 'should throw Timeout error')
+      assert.strictEqual(
+        e.message,
+        'Timeout error: ping 127.0.0.1:19218',
+        'should throw Timeout error',
+      )
       await util.delay(400)
       util.destroyDPTs(dpts)
     })
@@ -122,7 +130,7 @@ describe('DPT simulator tests', () => {
     await util.delay(500)
 
     for (const dpt of dpts) {
-      assert.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
+      assert.strictEqual(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
     }
     await util.delay(1000)
 

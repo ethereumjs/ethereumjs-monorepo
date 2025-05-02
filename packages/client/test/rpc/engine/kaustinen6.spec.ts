@@ -75,7 +75,7 @@ async function runBlock(
   if (res.result.status === 'ACCEPTED') {
     context.skip()
   }
-  assert.equal(res.result.status, 'VALID', 'valid status should be received')
+  assert.strictEqual(res.result.status, 'VALID', 'valid status should be received')
 }
 
 describe.skip(`valid verkle network setup`, async () => {
@@ -90,8 +90,8 @@ describe.skip(`valid verkle network setup`, async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
     const block0 = res.result
-    assert.equal(block0.hash, genesisVerkleBlockHash)
-    assert.equal(block0.stateRoot, genesisVerkleStateRoot)
+    assert.strictEqual(block0.hash, genesisVerkleBlockHash)
+    assert.strictEqual(block0.stateRoot, genesisVerkleStateRoot)
   })
 
   // currently it seems the the blocks can't be played one after another as it seems

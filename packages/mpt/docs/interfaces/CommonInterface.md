@@ -1,25 +1,31 @@
-[@ethereumjs/trie](../README.md) / CommonInterface
+[**@ethereumjs/mpt**](../README.md)
+
+***
+
+[@ethereumjs/mpt](../README.md) / CommonInterface
 
 # Interface: CommonInterface
 
-## Table of contents
-
-### Properties
-
-- [customCrypto](CommonInterface.md#customcrypto)
+Defined in: [packages/mpt/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L26)
 
 ## Properties
 
 ### customCrypto
 
-• **customCrypto**: `Object`
+> **customCrypto**: `object`
 
-#### Type declaration
+Defined in: [packages/mpt/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L27)
 
-| Name | Type |
-| :------ | :------ |
-| `keccak256?` | (`msg`: `Uint8Array`) => `Uint8Array` |
+#### keccak256()?
 
-#### Defined in
+> `optional` **keccak256**: (`msg`) => `Uint8Array`
 
-[packages/trie/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L18)
+##### Parameters
+
+###### msg
+
+`Uint8Array`
+
+##### Returns
+
+`Uint8Array`

@@ -29,7 +29,7 @@ describe('EIP 1153: transient storage', () => {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
-      assert.equal(
+      assert.strictEqual(
         step.opcode.name,
         test.steps[i].expectedOpcode,
         `Expected Opcode: ${test.steps[i].expectedOpcode}`,
@@ -43,7 +43,7 @@ describe('EIP 1153: transient storage', () => {
 
       if (i > 0) {
         const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-        assert.equal(
+        assert.strictEqual(
           gasUsed,
           expectedGasUsed,
           `Opcode: ${
@@ -101,7 +101,7 @@ describe('EIP 1153: transient storage', () => {
 
     const result = await runTest(test)
     assert.deepEqual(returndata, result[0].execResult.returnValue)
-    assert.equal(undefined, result[0].execResult.exceptionError)
+    assert.strictEqual(undefined, result[0].execResult.exceptionError)
   })
 
   it('should clear between transactions', async () => {
@@ -165,8 +165,8 @@ describe('EIP 1153: transient storage', () => {
     }
 
     const [result1, result2] = await runTest(test)
-    assert.equal(result1.execResult.exceptionError, undefined)
-    assert.equal(bytesToInt(result2.execResult.returnValue), 0)
+    assert.strictEqual(result1.execResult.exceptionError, undefined)
+    assert.strictEqual(bytesToInt(result2.execResult.returnValue), 0)
   })
 
   it('tload should not keep reverted changes', async () => {
@@ -660,6 +660,6 @@ describe('EIP 1153: transient storage', () => {
     }
 
     const [result] = await runTest(test)
-    assert.equal(bytesToInt(result.execResult.returnValue), 0xaa)
+    assert.strictEqual(bytesToInt(result.execResult.returnValue), 0xaa)
   })
 })

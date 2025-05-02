@@ -19,7 +19,7 @@ describe('InternalBinaryNode', () => {
     const decoded = decodeBinaryNode(serialized)
 
     // Verify the type
-    assert.equal(decoded.type, BinaryNodeType.Internal)
+    assert.strictEqual(decoded.type, BinaryNodeType.Internal)
     const [leftRecoveredChild, rightRecoveredChild] = (decoded as InternalBinaryNode).children
     assert.isDefined(leftRecoveredChild, 'Left child should exist')
     assert.isDefined(rightRecoveredChild, 'Right child should exist')

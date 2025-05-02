@@ -51,6 +51,10 @@ import type {
  * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
  * If consensus validation is desired for Ethash or Clique blockchains the
  * optional `consensusDict` option can be used to pass in validation objects.
+ *
+ * A Blockchain object can be created with the constructor method:
+ *
+ * - {@link createBlockchain}
  */
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>

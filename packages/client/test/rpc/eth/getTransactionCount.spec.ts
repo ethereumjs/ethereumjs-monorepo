@@ -46,7 +46,7 @@ describe(method, () => {
 
     // verify nonce is 0
     let res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x0', 'should return the correct nonce (0)')
+    assert.strictEqual(res.result, '0x0', 'should return the correct nonce (0)')
 
     // construct block with tx
     const tx = createLegacyTx({ gasLimit: 53000 }, { common, freeze: false })
@@ -73,11 +73,11 @@ describe(method, () => {
 
     // verify nonce increments after a tx
     res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x1', 'should return the correct nonce (1)')
+    assert.strictEqual(res.result, '0x1', 'should return the correct nonce (1)')
 
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
+    assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
   })
 
   it('call with pending block argument', async () => {
@@ -108,6 +108,6 @@ describe(method, () => {
     await service.txPool.add(tx, true)
 
     const res = await rpc.request(method, [address.toString(), 'pending'])
-    assert.equal(res.result, '0x1')
+    assert.strictEqual(res.result, '0x1')
   })
 })

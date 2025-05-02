@@ -27,7 +27,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(created!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // Test if we can put a valid contract
 
@@ -81,7 +81,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(address!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = createLegacyTx({
@@ -117,7 +117,7 @@ describe('EIP 3541 tests', () => {
 
     let code = await vm.stateManager.getCode(address!)
 
-    assert.equal(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
     // put 0xFF contract
     const tx1 = createLegacyTx({

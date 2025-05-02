@@ -1,64 +1,37 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / CommonOpts
 
 # Interface: CommonOpts
 
+Defined in: [types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L149)
+
 Options for instantiating a [Common](../classes/Common.md) instance.
 
-## Hierarchy
+## Extends
 
-- `BaseOpts`
-
-  ↳ **`CommonOpts`**
-
-## Table of contents
-
-### Properties
-
-- [chain](CommonOpts.md#chain)
-- [customChains](CommonOpts.md#customchains)
-- [customCrypto](CommonOpts.md#customcrypto)
-- [eips](CommonOpts.md#eips)
-- [hardfork](CommonOpts.md#hardfork)
+- [`BaseOpts`](BaseOpts.md)
 
 ## Properties
 
 ### chain
 
-• **chain**: `string` \| `number` \| `bigint` \| `object`
+> **chain**: [`ChainConfig`](ChainConfig.md)
 
-Chain name ('mainnet'), id (1), or [Chain](../enums/Chain.md) enum,
-either from a chain directly supported or a custom chain
-passed in via [customChains](CommonOpts.md#customchains).
+Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L154)
 
-#### Defined in
+The chain configuration to be used. There are available configuration object for mainnet
+(`Mainnet`) and the currently active testnets which can be directly used.
 
-[types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L124)
+***
 
-___
+### customCrypto?
 
-### customChains
+> `optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
 
-• `Optional` **customChains**: [`ChainConfig`](ChainConfig.md)[]
-
-Initialize (in addition to the supported chains) with the selected
-custom chains. Custom genesis state should be passed to the Blockchain class if used.
-
-Usage (directly with the respective chain initialization via the [chain](CommonOpts.md#chain) option):
-
-```javascript
-import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
-```
-
-#### Defined in
-
-[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L136)
-
-___
-
-### customCrypto
-
-• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+Defined in: [types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L143)
 
 This option can be used to replace the most common crypto primitives
 (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
@@ -71,43 +44,67 @@ and be made with eventual security implications considered.
 
 #### Inherited from
 
-BaseOpts.customCrypto
+[`BaseOpts`](BaseOpts.md).[`customCrypto`](BaseOpts.md#customcrypto)
 
-#### Defined in
+***
 
-[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
+### eips?
 
-___
+> `optional` **eips**: `number`[]
 
-### eips
-
-• `Optional` **eips**: `number`[]
+Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L114)
 
 Selected EIPs which can be activated, please use an array for instantiation
-(e.g. `eips: [ 1559, 3860 ]`)
+(e.g. `eips: [ 2537, ]`)
+
+Currently supported:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
 
 #### Inherited from
 
-BaseOpts.eips
+[`BaseOpts`](BaseOpts.md).[`eips`](BaseOpts.md#eips)
 
-#### Defined in
+***
 
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
+### hardfork?
 
-___
+> `optional` **hardfork**: `string`
 
-### hardfork
+Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L105)
 
-• `Optional` **hardfork**: `string`
-
-String identifier ('byzantium') for hardfork or [Hardfork](../enums/Hardfork.md) enum.
+String identifier ('byzantium') for hardfork or [Hardfork](../variables/Hardfork.md) enum.
 
 Default: Hardfork.London
 
 #### Inherited from
 
-BaseOpts.hardfork
+[`BaseOpts`](BaseOpts.md).[`hardfork`](BaseOpts.md#hardfork)
 
-#### Defined in
+***
 
-[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)
+### params?
+
+> `optional` **params**: [`ParamsDict`](../type-aliases/ParamsDict.md)
+
+Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L132)
+
+Optionally pass in an EIP params dictionary, see one of the
+EthereumJS library `params.ts` files for an example (e.g. tx, evm).
+By default parameters are set by the respective library, so this
+is only relevant if you want to use EthereumJS libraries with a
+custom parameter set.
+
+Example Format:
+
+```ts
+{
+  1559: {
+    initialBaseFee: 1000000000,
+  }
+}
+```
+
+#### Inherited from
+
+[`BaseOpts`](BaseOpts.md).[`params`](BaseOpts.md#params)

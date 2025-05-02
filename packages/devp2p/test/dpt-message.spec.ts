@@ -13,8 +13,8 @@ describe('DPT message tests', () => {
     )
     const msg = message.decode(bytes)
 
-    assert.equal(msg.typename, 'ping')
-    assert.equal(msg.data.version, 4)
+    assert.strictEqual(msg.typename, 'ping')
+    assert.strictEqual(msg.data.version, 4)
     assert.deepEqual(msg.publicKey, publicKey)
   })
 
@@ -24,8 +24,8 @@ describe('DPT message tests', () => {
     )
     const msg = message.decode(bytes)
 
-    assert.equal(msg.typename, 'ping')
-    assert.equal(msg.data.version, 555)
+    assert.strictEqual(msg.typename, 'ping')
+    assert.strictEqual(msg.data.version, 555)
     assert.deepEqual(msg.publicKey, publicKey)
   })
 
@@ -35,7 +35,7 @@ describe('DPT message tests', () => {
     )
     const msg = message.decode(bytes)
 
-    assert.equal(msg.typename, 'pong')
+    assert.strictEqual(msg.typename, 'pong')
     assert.deepEqual(msg.publicKey, publicKey)
   })
 
@@ -45,7 +45,7 @@ describe('DPT message tests', () => {
     )
     const msg = message.decode(bytes)
 
-    assert.equal(msg.typename, 'findneighbours')
+    assert.strictEqual(msg.typename, 'findneighbours')
     assert.deepEqual(msg.publicKey, publicKey)
   })
 
@@ -55,7 +55,7 @@ describe('DPT message tests', () => {
     )
     const msg = message.decode(bytes)
 
-    assert.equal(msg.typename, 'neighbours')
+    assert.strictEqual(msg.typename, 'neighbours')
     assert.deepEqual(msg.publicKey, publicKey)
   })
 })

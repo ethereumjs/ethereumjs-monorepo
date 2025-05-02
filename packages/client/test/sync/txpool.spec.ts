@@ -18,7 +18,6 @@ import * as promClient from 'prom-client'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { PeerPool } from '../../src/net/peerpool.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 
@@ -96,7 +95,6 @@ const setup = () => {
     prometheusMetrics,
     accountCache: 10000,
     storageCache: 1000,
-    logger: getLogger({ loglevel: 'info' }),
   })
   const pool = new TxPool({ config, service })
   return { pool, metricsServer }
@@ -191,7 +189,7 @@ describe('[TxPool]', async () => {
 
   it('should initialize correctly', () => {
     const { pool } = setup()
-    assert.equal(pool.pool.size, 0, 'pool empty')
+    assert.strictEqual(pool.pool.size, 0, 'pool empty')
     assert.isFalse(pool['opened'], 'pool not opened yet')
     pool.open()
     assert.isTrue(pool['opened'], 'pool opened')
@@ -209,7 +207,7 @@ describe('[TxPool]', async () => {
     pool.open()
     pool.start()
     assert.isTrue(pool['opened'], 'pool opened')
-    assert.equal(pool.open(), false, 'already opened')
+    assert.strictEqual(pool.open(), false, 'already opened')
     pool.stop()
     pool.close()
     assert.isFalse(pool['opened'], 'closed')
@@ -244,11 +242,11 @@ describe('[TxPool]', async () => {
         versions: [66],
         send: () => {
           sentToPeer2++
-          assert.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+          assert.strictEqual(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
         request: () => {
           sentToPeer2++
-          assert.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
+          assert.strictEqual(sentToPeer2, 1, 'should send once to non-announcing peer')
         },
       },
     }
@@ -257,21 +255,25 @@ describe('[TxPool]', async () => {
     peerPool.add(peer2)
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 1, 'pool size 1')
-    assert.equal(pool['pending'].length, 0, 'cleared pending txs')
-    assert.equal(pool['handled'].size, 1, 'added to handled txs')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool['pending'].length, 0, 'cleared pending txs')
+    assert.strictEqual(pool['handled'].size, 1, 'added to handled txs')
 
-    assert.equal(pool['knownByPeer'].size, 2, 'known tx hashes size 2 (entries for both peers)')
-    assert.equal(pool['knownByPeer'].get(peer.id)?.length, 1, 'one tx added for peer 1')
-    assert.equal(
+    assert.strictEqual(
+      pool['knownByPeer'].size,
+      2,
+      'known tx hashes size 2 (entries for both peers)',
+    )
+    assert.strictEqual(pool['knownByPeer'].get(peer.id)?.length, 1, 'one tx added for peer 1')
+    assert.strictEqual(
       pool['knownByPeer'].get(peer.id)?.[0].hash,
       bytesToUnprefixedHex(txA01.hash()),
       'new known tx hashes entry for announcing peer',
     )
 
     const txs = pool.getByHash([txA01.hash()])
-    assert.equal(txs.length, 1, 'should get correct number of txs by hash')
-    assert.equal(
+    assert.strictEqual(txs.length, 1, 'should get correct number of txs by hash')
+    assert.strictEqual(
       bytesToHex(txs[0].serialize()),
       bytesToHex(txA01.serialize()),
       'should get correct tx by hash',
@@ -289,7 +291,7 @@ describe('[TxPool]', async () => {
       }
     }
 
-    assert.equal(
+    assert.strictEqual(
       feeMarketEip1559TransactionCountInPool,
       pool.pool.size,
       'pool should contain single eip 1559 transaction',
@@ -297,13 +299,17 @@ describe('[TxPool]', async () => {
 
     pool.pool.clear()
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 0, 'should not add a once handled tx')
-    assert.equal(
+    assert.strictEqual(pool.pool.size, 0, 'should not add a once handled tx')
+    assert.strictEqual(
       pool['knownByPeer'].get(peer.id)?.length,
       1,
       'should add tx only once to known tx hashes',
     )
-    assert.equal(pool['knownByPeer'].size, 2, 'known tx hashes size 2 (entries for both peers)')
+    assert.strictEqual(
+      pool['knownByPeer'].size,
+      2,
+      'known tx hashes size 2 (entries for both peers)',
+    )
 
     pool.stop()
     pool.close()
@@ -320,7 +326,7 @@ describe('[TxPool]', async () => {
       eth: {
         versions: [66],
         getPooledTransactions: (res: any) => {
-          assert.equal(
+          assert.strictEqual(
             res['hashes'].length,
             TX_RETRIEVAL_LIMIT,
             'should limit to TX_RETRIEVAL_LIMIT',
@@ -358,7 +364,7 @@ describe('[TxPool]', async () => {
     const peerPool = new PeerPool({ config })
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txB01.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 2, 'pool size 2')
+    assert.strictEqual(pool.pool.size, 2, 'pool size 2')
     pool.stop()
     pool.close()
   })
@@ -379,10 +385,10 @@ describe('[TxPool]', async () => {
     const peerPool = new PeerPool({ config })
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 1, 'only one tx')
+    assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
     pool.stop()
     pool.close()
@@ -428,25 +434,25 @@ describe('[TxPool]', async () => {
         'successfully failed adding underpriced txn',
       )
       const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
-      assert.equal(poolObject?.error, e, 'should have an errored poolObject')
+      assert.strictEqual(poolObject?.error, e, 'should have an errored poolObject')
       const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
-      assert.equal(poolTxs.length, 0, `should not be added in pool`)
+      assert.strictEqual(poolTxs.length, 0, `should not be added in pool`)
     }
-    assert.equal(pool.pool.size, 1, 'pool size 1')
-    assert.equal(sentToPeer2, 1, 'broadcast attempt to the peer')
-    assert.equal(pool['knownByPeer'].get(peer2.id)?.length, 1, 'known send objects')
-    assert.equal(
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(sentToPeer2, 1, 'broadcast attempt to the peer')
+    assert.strictEqual(pool['knownByPeer'].get(peer2.id)?.length, 1, 'known send objects')
+    assert.strictEqual(
       pool['knownByPeer'].get(peer2.id)?.[0]?.error?.message,
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast',
     )
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 1, 'only one tx')
+    assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
     // Another attempt to add tx which should not be broadcasted to peer2
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
-    assert.equal(sentToPeer2, 1, 'no new broadcast attempt to the peer')
+    assert.strictEqual(sentToPeer2, 1, 'no new broadcast attempt to the peer')
     // Just to enhance logging coverage, assign peerPool for stats collection
     pool['service'].pool = peerPool
     pool._logPoolStats()
@@ -471,10 +477,10 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 1, 'only one tx')
+    assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
     pool.stop()
     pool.close()
@@ -733,10 +739,10 @@ describe('[TxPool]', async () => {
     const peerPool = new PeerPool({ config })
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
     const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 1, 'one tx')
+    assert.strictEqual(poolContent.length, 1, 'one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
     pool.stop()
     pool.close()
@@ -757,17 +763,17 @@ describe('[TxPool]', async () => {
     const peerPool = new PeerPool({ config })
 
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx not in pool
     let block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
 
     // Craft block with tx in pool
     block = createBlock({ transactions: [txA01] }, { common })
     pool.removeNewBlockTxs([block])
-    assert.equal(pool.pool.size, 0, 'pool should be empty')
+    assert.strictEqual(pool.pool.size, 0, 'pool should be empty')
 
     peer = {
       eth: {
@@ -777,28 +783,28 @@ describe('[TxPool]', async () => {
       },
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
     const address = bytesToUnprefixedHex(B.address)
     let poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 2, 'two txs')
+    assert.strictEqual(poolContent.length, 2, 'two txs')
 
     // Craft block with tx not in pool
     block = createBlock({ transactions: [txA02] }, { common })
     pool.removeNewBlockTxs([block])
-    assert.equal(pool.pool.size, 1, 'pool size 1')
+    assert.strictEqual(pool.pool.size, 1, 'pool size 1')
     poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 2, 'two txs')
+    assert.strictEqual(poolContent.length, 2, 'two txs')
 
     // Craft block with tx in pool
     block = createBlock({ transactions: [txB01] }, { common })
     pool.removeNewBlockTxs([block])
     poolContent = pool.pool.get(address)!
-    assert.equal(poolContent.length, 1, 'only one tx')
+    assert.strictEqual(poolContent.length, 1, 'only one tx')
 
     // Craft block with tx in pool
     block = createBlock({ transactions: [txB02] }, { common })
     pool.removeNewBlockTxs([block])
-    assert.equal(pool.pool.size, 0, 'pool size 0')
+    assert.strictEqual(pool.pool.size, 0, 'pool size 0')
 
     pool.stop()
     pool.close()
@@ -821,23 +827,23 @@ describe('[TxPool]', async () => {
     peerPool.add(peer)
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txB01.hash()], peer, peerPool)
-    assert.equal(pool.pool.size, 2, 'pool size 2')
-    assert.equal(pool['handled'].size, 2, 'handled size 2')
-    assert.equal(pool['knownByPeer'].size, 1, 'known by peer size 1')
-    assert.equal(pool['knownByPeer'].get(peer.id)!.length, 2, '2 known txs')
+    assert.strictEqual(pool.pool.size, 2, 'pool size 2')
+    assert.strictEqual(pool['handled'].size, 2, 'handled size 2')
+    assert.strictEqual(pool['knownByPeer'].size, 1, 'known by peer size 1')
+    assert.strictEqual(pool['knownByPeer'].get(peer.id)!.length, 2, '2 known txs')
 
     pool.cleanup()
-    assert.equal(
+    assert.strictEqual(
       pool.pool.size,
       2,
       'should not remove txs from pool (POOLED_STORAGE_TIME_LIMIT within range)',
     )
-    assert.equal(
+    assert.strictEqual(
       pool['knownByPeer'].size,
       1,
       'should not remove txs from known by peer map (POOLED_STORAGE_TIME_LIMIT within range)',
     )
-    assert.equal(
+    assert.strictEqual(
       pool['handled'].size,
       2,
       'should not remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT within range)',
@@ -859,17 +865,17 @@ describe('[TxPool]', async () => {
     pool['handled'].set(hash, handledObj)
 
     pool.cleanup()
-    assert.equal(
+    assert.strictEqual(
       pool.pool.size,
       1,
       'should remove txs from pool (POOLED_STORAGE_TIME_LIMIT before range)',
     )
-    assert.equal(
+    assert.strictEqual(
       pool['knownByPeer'].get(peer.id)!.length,
       1,
       'should remove one tx from known by peer map (POOLED_STORAGE_TIME_LIMIT before range)',
     )
-    assert.equal(
+    assert.strictEqual(
       pool['handled'].size,
       1,
       'should remove txs from handled (HANDLED_CLEANUP_TIME_LIMIT before range)',

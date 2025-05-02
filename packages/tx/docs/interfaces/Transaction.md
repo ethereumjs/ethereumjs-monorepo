@@ -1,52 +1,49 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / Transaction
 
 # Interface: Transaction
 
-## Table of contents
-
-### Properties
-
-- [0](Transaction.md#0)
-- [1](Transaction.md#1)
-- [2](Transaction.md#2)
-- [3](Transaction.md#3)
+Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
 
 ## Properties
 
 ### 0
 
-• **0**: [`LegacyTransaction`](../classes/LegacyTransaction.md)
+> **0**: [`LegacyTx`](../classes/LegacyTx.md)
 
-#### Defined in
+Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
 
-[tx/src/types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L116)
-
-___
+***
 
 ### 1
 
-• **1**: [`AccessListEIP2930Transaction`](../classes/AccessListEIP2930Transaction.md)
+> **1**: [`AccessList2930Tx`](../classes/AccessList2930Tx.md)
 
-#### Defined in
+Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L166)
 
-[tx/src/types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L118)
-
-___
+***
 
 ### 2
 
-• **2**: [`FeeMarketEIP1559Transaction`](../classes/FeeMarketEIP1559Transaction.md)
+> **2**: [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md)
 
-#### Defined in
+Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
 
-[tx/src/types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L117)
-
-___
+***
 
 ### 3
 
-• **3**: [`BlobEIP4844Transaction`](../classes/BlobEIP4844Transaction.md)
+> **3**: [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-#### Defined in
+Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)
 
-[tx/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L119)
+***
+
+### 4
+
+> **4**: [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+
+Defined in: [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)

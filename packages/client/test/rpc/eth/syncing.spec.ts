@@ -15,12 +15,12 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
     client.config.synchronized = true
-    assert.equal(client.config.synchronized, true, 'synchronized')
+    assert.strictEqual(client.config.synchronized, true, 'synchronized')
 
     const res = await rpc.request(method, [])
-    assert.equal(res.result, false, 'should return false')
+    assert.strictEqual(res.result, false, 'should return false')
   })
 
   it('should return no peer available error', async () => {
@@ -29,11 +29,11 @@ describe(method, () => {
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('no peer available for synchronization'))
   })
 
@@ -51,11 +51,11 @@ describe(method, () => {
     } as any)
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('highest block header unavailable'))
   })
 
@@ -76,7 +76,7 @@ describe(method, () => {
     } as any)
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 

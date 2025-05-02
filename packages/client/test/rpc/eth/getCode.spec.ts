@@ -34,7 +34,7 @@ describe(method, () => {
 
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x', 'should return the correct code')
+    assert.strictEqual(res.result, '0x', 'should return the correct code')
   })
 
   it('ensure returns correct code', async () => {
@@ -95,7 +95,7 @@ describe(method, () => {
 
     // verify contract has code
     const res = await rpc.request(method, [expectedContractAddress.toString(), 'latest'])
-    assert.equal(res.result, code, 'should return the correct code')
+    assert.strictEqual(res.result, code, 'should return the correct code')
   })
 
   it('call with unsupported block argument', async () => {
@@ -106,7 +106,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

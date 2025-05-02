@@ -1,32 +1,26 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / BuilderOpts
 
 # Interface: BuilderOpts
 
+Defined in: [vm/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L192)
+
 Options for the block builder.
 
-## Hierarchy
+## Extends
 
 - `BlockOptions`
 
-  ↳ **`BuilderOpts`**
-
-## Table of contents
-
-### Properties
-
-- [calcDifficultyFromHeader](BuilderOpts.md#calcdifficultyfromheader)
-- [cliqueSigner](BuilderOpts.md#cliquesigner)
-- [common](BuilderOpts.md#common)
-- [freeze](BuilderOpts.md#freeze)
-- [putBlockIntoBlockchain](BuilderOpts.md#putblockintoblockchain)
-- [setHardfork](BuilderOpts.md#sethardfork)
-- [skipConsensusFormatValidation](BuilderOpts.md#skipconsensusformatvalidation)
-
 ## Properties
 
-### calcDifficultyFromHeader
+### calcDifficultyFromHeader?
 
-• `Optional` **calcDifficultyFromHeader**: `BlockHeader`
+> `optional` **calcDifficultyFromHeader**: `BlockHeader`
+
+Defined in: block/dist/esm/types.d.ts:55
 
 If a preceding BlockHeader (usually the parent header) is given the preceding
 header will be used to calculate the difficulty for this block and the calculated
@@ -37,34 +31,26 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 #### Inherited from
 
-BlockOptions.calcDifficultyFromHeader
+`BlockOptions.calcDifficultyFromHeader`
 
-#### Defined in
+***
 
-block/dist/cjs/types.d.ts:41
+### cliqueSigner?
 
-___
+> `optional` **cliqueSigner**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### cliqueSigner
-
-• `Optional` **cliqueSigner**: `Uint8Array`
+Defined in: [vm/src/types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L207)
 
 Provide a clique signer's privateKey to seal this block.
 Will throw if provided on a non-PoA chain.
 
-#### Inherited from
+***
 
-BlockOptions.cliqueSigner
+### common?
 
-#### Defined in
+> `optional` **common**: `Common`
 
-block/dist/cjs/types.d.ts:58
-
-___
-
-### common
-
-• `Optional` **common**: `Common`
+Defined in: block/dist/esm/types.d.ts:22
 
 A Common object defining the chain and the hardfork a block/block header belongs to.
 
@@ -78,17 +64,27 @@ Current default hardfork: `merge`
 
 #### Inherited from
 
-BlockOptions.common
+`BlockOptions.common`
 
-#### Defined in
+***
 
-block/dist/cjs/types.d.ts:22
+### executionWitness?
 
-___
+> `optional` **executionWitness**: `VerkleExecutionWitness`
 
-### freeze
+Defined in: block/dist/esm/types.d.ts:72
 
-• `Optional` **freeze**: `boolean`
+#### Inherited from
+
+`BlockOptions.executionWitness`
+
+***
+
+### freeze?
+
+> `optional` **freeze**: `boolean`
+
+Defined in: block/dist/esm/types.d.ts:67
 
 A block object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the block parameters.
@@ -102,17 +98,42 @@ Default: true
 
 #### Inherited from
 
-BlockOptions.freeze
+`BlockOptions.freeze`
 
-#### Defined in
+***
 
-block/dist/cjs/types.d.ts:53
+### params?
 
-___
+> `optional` **params**: `ParamsDict`
 
-### putBlockIntoBlockchain
+Defined in: block/dist/esm/types.d.ts:46
 
-• `Optional` **putBlockIntoBlockchain**: `boolean`
+Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
+which is internally passed to the associated `@ethereumjs/common` instance which
+manages parameter selection based on the hardfork and EIP settings.
+
+This option allows providing a custom set of parameters. Note that parameters
+get fully overwritten, so you need to extend the default parameter dict
+to provide the full parameter set.
+
+It is recommended to deep-clone the params object for this to avoid side effects:
+
+```ts
+const params = JSON.parse(JSON.stringify(paramsBlock))
+params['1']['minGasLimit'] = 3000 // 5000
+```
+
+#### Inherited from
+
+`BlockOptions.params`
+
+***
+
+### putBlockIntoBlockchain?
+
+> `optional` **putBlockIntoBlockchain**: `boolean`
+
+Defined in: [vm/src/types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L202)
 
 Whether to put the block into the vm's blockchain after building it.
 This is useful for completing a full cycle when building a block so
@@ -122,44 +143,33 @@ the underlying blockchain.
 
 Default: true
 
-#### Defined in
+***
 
-[vm/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L171)
+### setHardfork?
 
-___
+> `optional` **setHardfork**: `boolean`
 
-### setHardfork
-
-• `Optional` **setHardfork**: `boolean` \| `BigIntLike`
+Defined in: block/dist/esm/types.d.ts:29
 
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
-
-Additionally it is possible to pass in a specific TD value to support live-Merge-HF
-transitions. Note that this should only be needed in very rare and specific scenarios.
 
 Default: `false` (HF is set to whatever default HF is set by the Common instance)
 
 #### Inherited from
 
-BlockOptions.setHardfork
+`BlockOptions.setHardfork`
 
-#### Defined in
+***
 
-block/dist/cjs/types.d.ts:32
+### skipConsensusFormatValidation?
 
-___
+> `optional` **skipConsensusFormatValidation**: `boolean`
 
-### skipConsensusFormatValidation
-
-• `Optional` **skipConsensusFormatValidation**: `boolean`
+Defined in: block/dist/esm/types.d.ts:71
 
 Skip consensus format validation checks on header if set. Defaults to false.
 
 #### Inherited from
 
-BlockOptions.skipConsensusFormatValidation
-
-#### Defined in
-
-block/dist/cjs/types.d.ts:62
+`BlockOptions.skipConsensusFormatValidation`

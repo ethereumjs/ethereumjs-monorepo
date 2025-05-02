@@ -10,7 +10,7 @@ describe('MapDB: get', () => {
 
     const result = await mapDB.get('key1')
 
-    assert.equal(result, 'value1', 'should return the value')
+    assert.strictEqual(result, 'value1', 'should return the value')
   })
 
   it('should return undefined for a non-existing key', async () => {
@@ -18,7 +18,7 @@ describe('MapDB: get', () => {
 
     const result = await mapDB.get('nonExistingKey')
 
-    assert.equal(result, undefined, 'should return undefined')
+    assert.strictEqual(result, undefined, 'should return undefined')
   })
 })
 
@@ -29,7 +29,7 @@ describe('MapDB: put', () => {
     await mapDB.put('key1', 'value1')
     const result = await mapDB.get('key1')
 
-    assert.equal(result, 'value1', 'should add the key-value pair')
+    assert.strictEqual(result, 'value1', 'should add the key-value pair')
   })
 })
 
@@ -42,7 +42,7 @@ describe('MapDB: del', () => {
     await mapDB.del('key1')
     const result = await mapDB.get('key1')
 
-    assert.equal(result, undefined, 'should remove the key-value pair')
+    assert.strictEqual(result, undefined, 'should remove the key-value pair')
   })
 })
 
@@ -61,8 +61,8 @@ describe('MapDB: batch', () => {
     const result1 = await mapDB.get('key1')
     const result2 = await mapDB.get('key2')
 
-    assert.equal(result1, undefined, 'should remove key1')
-    assert.equal(result2, 'value2', 'should add key2')
+    assert.strictEqual(result1, undefined, 'should remove key1')
+    assert.strictEqual(result2, 'value2', 'should add key2')
   })
 })
 
@@ -76,7 +76,11 @@ describe('MapDB: shallowCopy', () => {
     database.delete('key1')
 
     const result = await shallowCopyDB.get('key1')
-    assert.equal(result, undefined, 'should reuse underlying database in case of a shallowCopy')
+    assert.strictEqual(
+      result,
+      undefined,
+      'should reuse underlying database in case of a shallowCopy',
+    )
   })
 })
 
@@ -86,6 +90,6 @@ describe('MapDB: open', () => {
 
     const promise = await mapDB.open()
 
-    assert.equal(promise, undefined, 'should return undefined since this is a stub function')
+    assert.strictEqual(promise, undefined, 'should return undefined since this is a stub function')
   })
 })

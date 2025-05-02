@@ -27,7 +27,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         const trie = new MerklePatriciaTrie({ root, keyPrefix })
         const value = await trie.get(utf8ToBytes('test'))
-        assert.equal(value, null)
+        assert.strictEqual(value, null)
       })
 
       const trie = new MerklePatriciaTrie({ cacheSize })
@@ -38,14 +38,14 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
       it('should get a value', async () => {
         const value = await trie.get(utf8ToBytes('test'))
-        assert.equal(bytesToUtf8(value!), 'one')
+        assert.strictEqual(bytesToUtf8(value!), 'one')
       })
 
       it('should update a value', async () => {
         await trie.put(utf8ToBytes('test'), utf8ToBytes('two'))
         const value = await trie.get(utf8ToBytes('test'))
 
-        assert.equal(bytesToUtf8(value!), 'two')
+        assert.strictEqual(bytesToUtf8(value!), 'two')
       })
 
       it('should delete a value', async () => {
@@ -60,12 +60,12 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
       it('should get updated a value', async () => {
         const value = await trie.get(utf8ToBytes('test'))
-        assert.equal(bytesToUtf8(value!), 'one')
+        assert.strictEqual(bytesToUtf8(value!), 'one')
       })
 
       it('should create a branch here', async () => {
         await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-        assert.equal(
+        assert.strictEqual(
           '0xde8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
           bytesToHex(trie.root()),
         )
@@ -73,13 +73,13 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
       it('should get a value that is in a branch', async () => {
         const value = await trie.get(utf8ToBytes('doge'))
-        assert.equal(bytesToUtf8(value!), 'coin')
+        assert.strictEqual(bytesToUtf8(value!), 'coin')
       })
 
       it('should delete from a branch', async () => {
         await trie.del(utf8ToBytes('doge'))
         const value = await trie.get(utf8ToBytes('doge'))
-        assert.equal(value, null)
+        assert.strictEqual(value, null)
       })
 
       describe('storing longer values', () => {
@@ -90,12 +90,12 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         it('should store a longer string', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
           await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-          assert.equal('0x' + longStringRoot, bytesToHex(trie.root()))
+          assert.strictEqual('0x' + longStringRoot, bytesToHex(trie.root()))
         })
 
         it('should retrieve a longer value', async () => {
           const value = await trie.get(utf8ToBytes('done'))
-          assert.equal(bytesToUtf8(value!), longString)
+          assert.strictEqual(bytesToUtf8(value!), longString)
         })
 
         it('should when being modified delete the old value', async () => {
@@ -112,7 +112,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         it('should create extension to store this value', async () => {
           await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
-          assert.equal(
+          assert.strictEqual(
             '0xf803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
             bytesToHex(trie.root()),
           )
@@ -120,7 +120,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         it('should store this value under the extension', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
-          assert.equal(
+          assert.strictEqual(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
             bytesToHex(trie.root()),
           )
@@ -140,7 +140,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         it('should store this value under the extension', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
-          assert.equal(
+          assert.strictEqual(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
             bytesToHex(trie.root()),
           )
@@ -167,7 +167,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
         const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
-        assert.equal(null, val, trieSetup.msg)
+        assert.strictEqual(null, val, trieSetup.msg)
       })
 
       it('should delete from a branch->branch-extension', async () => {
@@ -187,7 +187,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         await trieSetup.trie.del(new Uint8Array([12, 22, 22]))
         const val = await trieSetup.trie.get(new Uint8Array([12, 22, 22]))
-        assert.equal(null, val, trieSetup.msg)
+        assert.strictEqual(null, val, trieSetup.msg)
       })
 
       it('should delete from a extension->branch-extension', async () => {
@@ -208,7 +208,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         // delete the middle branch
         await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
         const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
-        assert.equal(null, val, trieSetup.msg)
+        assert.strictEqual(null, val, trieSetup.msg)
       })
 
       it('should delete from a extension->branch-branch', async () => {
@@ -228,7 +228,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         // delete the middle branch
         await trieSetup.trie.del(new Uint8Array([11, 11, 11]))
         const val = await trieSetup.trie.get(new Uint8Array([11, 11, 11]))
-        assert.equal(null, val, trieSetup.msg)
+        assert.strictEqual(null, val, trieSetup.msg)
       })
     })
 
@@ -257,7 +257,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         path = await trie.findPath(utf8ToBytes('aaa'))
 
         assert.isNull(path.node, 'findPath should not return a node now')
-        assert.equal(
+        assert.strictEqual(
           path.stack.length,
           1,
           'findPath should find the first extension node which is still in the DB',
@@ -286,13 +286,13 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         const genesisStateRoot =
           '0x2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
-        assert.equal(cppRlp, bytesToHex(rlpAccount))
+        assert.strictEqual(cppRlp, bytesToHex(rlpAccount))
 
         await trie4.put(g, rlpAccount)
         await trie4.put(j, rlpAccount)
         await trie4.put(v, rlpAccount)
         await trie4.put(a, rlpAccount)
-        assert.equal(bytesToHex(trie4.root()), genesisStateRoot)
+        assert.strictEqual(bytesToHex(trie4.root()), genesisStateRoot)
       })
     })
 
@@ -321,7 +321,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trieSetup.trie.put(k1, v1)
         await trieSetup.trie.put(k2, v2)
         await trieSetup.trie.del(k1)
-        assert.equal(
+        assert.strictEqual(
           await trieSetup.trie.get(k1),
           null,
           'should return null on latest state root independently from deleteFromDB setting',
@@ -350,7 +350,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
 
         const trie = new MerklePatriciaTrie({ useKeyHashingFunction, cacheSize })
         await trie.put(k, v)
-        assert.equal(bytesToHex(trie.root()), bytesToHex(expectedRoot))
+        assert.strictEqual(bytesToHex(trie.root()), bytesToHex(expectedRoot))
       })
     })
 
@@ -362,7 +362,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         })
         await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-        assert.equal(
+        assert.strictEqual(
           bytesToHex(trie.root()),
           '0xe118db4e01512253df38daafa16fc1d69e03e755595b5847d275d7404ebdc74a',
         )
@@ -373,7 +373,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       it('should work', async () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
-        assert.equal(bytesToHex(trie.root()), KECCAK256_RLP_S)
+        assert.strictEqual(bytesToHex(trie.root()), KECCAK256_RLP_S)
       })
     })
   }

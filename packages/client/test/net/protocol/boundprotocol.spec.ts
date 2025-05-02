@@ -36,7 +36,7 @@ describe('[BoundProtocol]', () => {
       sender,
     })
 
-    assert.equal(bound['protocol'].messages[0].name, 'TestMessage')
+    assert.strictEqual(bound['protocol'].messages[0].name, 'TestMessage')
   })
 
   it('should get/set status', () => {
@@ -122,7 +122,7 @@ describe('[BoundProtocol]', () => {
       }, 100)
     })
     const response = await bound.request('TestMessage', 1)
-    assert.equal(response, 2, 'got response')
+    assert.strictEqual(response, 2, 'got response')
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
       await bound.request('TestMessage', 1)

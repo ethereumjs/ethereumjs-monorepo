@@ -1,4 +1,4 @@
-# @ethereumjs/verkle `v10`
+# @ethereumjs/verkle `v10` (EXPERIMENTAL)
 
 [![NPM Package][verkle-npm-badge]][verkle-npm-link]
 [![GitHub Issues][verkle-issues-badge]][verkle-issues-link]
@@ -11,7 +11,7 @@
 
 > Verkle trees are a cryptographic data structure proposed for use in Ethereum to optimize storage and transaction verification. They combine features of Merkle Patricia Tries and Vector Commitment Trees to offer efficient data verification with smaller proof sizes. The goal is to improve scalability and efficiency in Ethereum's network operations.
 
-This package is currently in early alpha and is a work in progress. It is not intended for use in production environments, but rather for research and development purposes. Any help in improving the package is very much welcome.
+**Note:** This library is in an **experimental** stage and should not be used in production!
 
 ## Table of Contents
 

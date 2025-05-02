@@ -31,7 +31,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x1'])
-    assert.equal(res.result, mockUncleCount, 'should return the correct number')
+    assert.strictEqual(res.result, mockUncleCount, 'should return the correct number')
   })
 
   it('call with invalid block number', async () => {
@@ -40,7 +40,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x5a'])
 
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('specified block greater than current height'))
   })
 })

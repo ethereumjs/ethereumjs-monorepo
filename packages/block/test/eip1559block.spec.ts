@@ -472,7 +472,7 @@ describe('EIP1559 tests', () => {
         { common },
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
-      assert.equal(expected, result, 'base fee correct')
+      assert.strictEqual(expected, result, 'base fee correct')
     }
   })
 
@@ -489,6 +489,6 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    assert.equal(header.toJSON().baseFeePerGas, '0x5')
+    assert.strictEqual(header.toJSON().baseFeePerGas, '0x5')
   })
 })

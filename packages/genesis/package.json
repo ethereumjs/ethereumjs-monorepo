@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0",
   "description": "A module to provide genesis states of well known networks",
   "keywords": ["ethereum", "genesis"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis#readme",
@@ -64,7 +64,7 @@
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
@@ -78,8 +78,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0-rc.1",
-    "@ethereumjs/util": "^10.0.0-rc.1"
+    "@ethereumjs/common": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0"
   },
   "engines": {
     "node": ">=18"

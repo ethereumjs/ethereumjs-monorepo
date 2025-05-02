@@ -36,7 +36,7 @@ describe('EOF: should run a simple contract', async () => {
 
     // The code which is being ran should run ADDRESS POP STOP
     // This costs 4 gas
-    assert.equal(result.execResult.executionGasUsed, BigInt(4))
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
   })
   it('should initialize code positions correctly', async () => {
     const code = hexToBytes(

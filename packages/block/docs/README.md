@@ -1,188 +1,64 @@
-@ethereumjs/block
+**@ethereumjs/block**
+
+***
 
 # @ethereumjs/block
 
-## Table of contents
-
-### Classes
+## Classes
 
 - [Block](classes/Block.md)
 - [BlockHeader](classes/BlockHeader.md)
 
-### Interfaces
+## Interfaces
 
 - [BlockData](interfaces/BlockData.md)
 - [BlockOptions](interfaces/BlockOptions.md)
 - [HeaderData](interfaces/HeaderData.md)
-- [JsonBlock](interfaces/JsonBlock.md)
-- [JsonHeader](interfaces/JsonHeader.md)
-- [JsonRpcBlock](interfaces/JsonRpcBlock.md)
-- [VerkleExecutionWitness](interfaces/VerkleExecutionWitness.md)
-- [VerkleProof](interfaces/VerkleProof.md)
-- [VerkleStateDiff](interfaces/VerkleStateDiff.md)
-
-### Type Aliases
-
-- [BlockBodyBytes](README.md#blockbodybytes)
-- [BlockBytes](README.md#blockbytes)
-- [BlockHeaderBytes](README.md#blockheaderbytes)
-- [ExecutionPayload](README.md#executionpayload)
-- [ExecutionWitnessBytes](README.md#executionwitnessbytes)
-- [TransactionsBytes](README.md#transactionsbytes)
-- [UncleHeadersBytes](README.md#uncleheadersbytes)
-- [WithdrawalV1](README.md#withdrawalv1)
-- [WithdrawalsBytes](README.md#withdrawalsbytes)
-
-### Functions
-
-- [executionPayloadFromBeaconPayload](README.md#executionpayloadfrombeaconpayload)
+- [JSONBlock](interfaces/JSONBlock.md)
+- [JSONHeader](interfaces/JSONHeader.md)
+- [JSONRPCBlock](interfaces/JSONRPCBlock.md)
 
 ## Type Aliases
 
-### BlockBodyBytes
+- [BeaconPayloadJSON](type-aliases/BeaconPayloadJSON.md)
+- [BlockBodyBytes](type-aliases/BlockBodyBytes.md)
+- [BlockBytes](type-aliases/BlockBytes.md)
+- [BlockHeaderBytes](type-aliases/BlockHeaderBytes.md)
+- [ExecutionPayload](type-aliases/ExecutionPayload.md)
+- [ExecutionWitnessBytes](type-aliases/ExecutionWitnessBytes.md)
+- [TransactionsBytes](type-aliases/TransactionsBytes.md)
+- [UncleHeadersBytes](type-aliases/UncleHeadersBytes.md)
+- [WithdrawalsBytes](type-aliases/WithdrawalsBytes.md)
+- [WithdrawalV1](type-aliases/WithdrawalV1.md)
 
-Ƭ **BlockBodyBytes**: [[`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), WithdrawalsBytes?]
+## Variables
 
-#### Defined in
-
-[types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L174)
-
-___
-
-### BlockBytes
-
-Ƭ **BlockBytes**: [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes), [`ExecutionWitnessBytes`](README.md#executionwitnessbytes)]
-
-#### Defined in
-
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
-
-___
-
-### BlockHeaderBytes
-
-Ƭ **BlockHeaderBytes**: `Uint8Array`[]
-
-BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
-
-#### Defined in
-
-[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L173)
-
-___
-
-### ExecutionPayload
-
-Ƭ **ExecutionPayload**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `baseFeePerGas` | `PrefixedHexString` |
-| `blobGasUsed?` | `PrefixedHexString` |
-| `blockHash` | `PrefixedHexString` |
-| `blockNumber` | `PrefixedHexString` |
-| `excessBlobGas?` | `PrefixedHexString` |
-| `executionWitness?` | [`VerkleExecutionWitness`](interfaces/VerkleExecutionWitness.md) \| ``null`` |
-| `extraData` | `PrefixedHexString` |
-| `feeRecipient` | `PrefixedHexString` |
-| `gasLimit` | `PrefixedHexString` |
-| `gasUsed` | `PrefixedHexString` |
-| `logsBloom` | `PrefixedHexString` |
-| `parentBeaconBlockRoot?` | `PrefixedHexString` |
-| `parentHash` | `PrefixedHexString` |
-| `prevRandao` | `PrefixedHexString` |
-| `receiptsRoot` | `PrefixedHexString` |
-| `stateRoot` | `PrefixedHexString` |
-| `timestamp` | `PrefixedHexString` |
-| `transactions` | `PrefixedHexString`[] |
-| `withdrawals?` | [`WithdrawalV1`](README.md#withdrawalv1)[] |
-
-#### Defined in
-
-[types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L263)
-
-___
-
-### ExecutionWitnessBytes
-
-Ƭ **ExecutionWitnessBytes**: `Uint8Array`
-
-#### Defined in
-
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L157)
-
-___
-
-### TransactionsBytes
-
-Ƭ **TransactionsBytes**: `Uint8Array`[][] \| `Uint8Array`[]
-
-TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
-
-#### Defined in
-
-[types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L178)
-
-___
-
-### UncleHeadersBytes
-
-Ƭ **UncleHeadersBytes**: `Uint8Array`[][]
-
-#### Defined in
-
-[types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L179)
-
-___
-
-### WithdrawalV1
-
-Ƭ **WithdrawalV1**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `address` | `PrefixedHexString` |
-| `amount` | `PrefixedHexString` |
-| `index` | `PrefixedHexString` |
-| `validatorIndex` | `PrefixedHexString` |
-
-#### Defined in
-
-[types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L255)
-
-___
-
-### WithdrawalsBytes
-
-Ƭ **WithdrawalsBytes**: `WithdrawalBytes`[]
-
-#### Defined in
-
-[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L156)
+- [CLIQUE\_EXTRA\_SEAL](variables/CLIQUE_EXTRA_SEAL.md)
+- [CLIQUE\_EXTRA\_VANITY](variables/CLIQUE_EXTRA_VANITY.md)
+- [paramsBlock](variables/paramsBlock.md)
 
 ## Functions
 
-### executionPayloadFromBeaconPayload
-
-▸ **executionPayloadFromBeaconPayload**(`payload`): [`ExecutionPayload`](README.md#executionpayload)
-
-Converts a beacon block execution payload JSON object BeaconPayloadJson to the [ExecutionPayload](README.md#executionpayload) data needed to construct a [Block](classes/Block.md).
-The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `payload` | `BeaconPayloadJson` |
-
-#### Returns
-
-[`ExecutionPayload`](README.md#executionpayload)
-
-#### Defined in
-
-[from-beacon-payload.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L41)
+- [cliqueEpochTransitionSigners](functions/cliqueEpochTransitionSigners.md)
+- [cliqueExtraSeal](functions/cliqueExtraSeal.md)
+- [cliqueExtraVanity](functions/cliqueExtraVanity.md)
+- [cliqueIsEpochTransition](functions/cliqueIsEpochTransition.md)
+- [cliqueSigHash](functions/cliqueSigHash.md)
+- [cliqueSigner](functions/cliqueSigner.md)
+- [cliqueVerifySignature](functions/cliqueVerifySignature.md)
+- [createBlock](functions/createBlock.md)
+- [createBlockFromBeaconPayloadJSON](functions/createBlockFromBeaconPayloadJSON.md)
+- [createBlockFromBytesArray](functions/createBlockFromBytesArray.md)
+- [createBlockFromExecutionPayload](functions/createBlockFromExecutionPayload.md)
+- [createBlockFromJSONRPCProvider](functions/createBlockFromJSONRPCProvider.md)
+- [createBlockFromRLP](functions/createBlockFromRLP.md)
+- [createBlockFromRPC](functions/createBlockFromRPC.md)
+- [createBlockHeader](functions/createBlockHeader.md)
+- [createBlockHeaderFromBytesArray](functions/createBlockHeaderFromBytesArray.md)
+- [createBlockHeaderFromRLP](functions/createBlockHeaderFromRLP.md)
+- [createBlockHeaderFromRPC](functions/createBlockHeaderFromRPC.md)
+- [createEmptyBlock](functions/createEmptyBlock.md)
+- [createSealedCliqueBlock](functions/createSealedCliqueBlock.md)
+- [createSealedCliqueBlockHeader](functions/createSealedCliqueBlockHeader.md)
+- [ethashCanonicalDifficulty](functions/ethashCanonicalDifficulty.md)
+- [executionPayloadFromBeaconPayload](functions/executionPayloadFromBeaconPayload.md)

@@ -23,7 +23,7 @@ describe('EIP 2929: gas cost tests', () => {
       currentGas = step.gasLeft
 
       if (test.steps.length > 0) {
-        assert.equal(
+        assert.strictEqual(
           step.opcode.name,
           test.steps[i].expectedOpcode,
           `Expected Opcode: ${test.steps[i].expectedOpcode}`,
@@ -35,7 +35,7 @@ describe('EIP 2929: gas cost tests', () => {
         // (ex: PUSH) and the last opcode is always STOP
         if (i > 0) {
           const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-          assert.equal(
+          assert.strictEqual(
             true,
             gasUsed === expectedGasUsed,
             `Opcode: ${
@@ -60,7 +60,7 @@ describe('EIP 2929: gas cost tests', () => {
     const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
-    assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
+    assert.strictEqual(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
     return result
   }
 
@@ -96,7 +96,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
-    assert.equal(result.totalGasSpent, expectedGasUsed)
+    assert.strictEqual(result.totalGasSpent, expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
@@ -145,7 +145,7 @@ describe('EIP 2929: gas cost tests', () => {
     }
 
     const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
+    assert.strictEqual(undefined, result.execResult.exceptionError)
   })
 
   // Checks `extcodecopy( 0xff,0,0,0,0)` twice, (should be expensive first time),
@@ -175,7 +175,7 @@ describe('EIP 2929: gas cost tests', () => {
     }
 
     const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
+    assert.strictEqual(undefined, result.execResult.exceptionError)
   })
 
   // Checks `sload( 0x1)` followed by `sstore(loc: 0x01, val:0x11)`,
@@ -206,7 +206,7 @@ describe('EIP 2929: gas cost tests', () => {
     }
 
     const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
+    assert.strictEqual(undefined, result.execResult.exceptionError)
   })
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
@@ -248,7 +248,7 @@ describe('EIP 2929: gas cost tests', () => {
     }
 
     const result = await runTest(test)
-    assert.equal(undefined, result.execResult.exceptionError)
+    assert.strictEqual(undefined, result.execResult.exceptionError)
   })
 
   it('ensure warm addresses/slots are tracked transaction-wide', async () => {

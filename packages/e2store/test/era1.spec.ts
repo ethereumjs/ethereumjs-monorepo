@@ -41,7 +41,7 @@ describe('Read Era1', async () => {
   })
   const { accumulatorRoot, otherEntries } = await readOtherEntries(era1File)
   it('should read accumulator root', () => {
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(accumulatorRoot),
       '0x5ec1ffb8c3b146f42606c74ced973dc16ec5a107c0345858c343fc94780b4218',
     )

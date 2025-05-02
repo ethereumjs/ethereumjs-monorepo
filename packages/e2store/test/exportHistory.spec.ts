@@ -32,7 +32,7 @@ describe('era1', async () => {
     assert.deepEqual(lengthBytes, Uint8Array.from([217, 0, 0, 0, 0, 0]))
   })
   it(`length bytes should equal: ${compressedHeader.length}`, () => {
-    assert.equal(Number(compressedHeaderLength), compressedHeader.length)
+    assert.strictEqual(Number(compressedHeaderLength), compressedHeader.length)
   })
   it('first 8 bytes should match test', () => {
     assert.deepEqual(headerEntry.slice(0, 8), Uint8Array.from([3, 0, 217, 0, 0, 0, 0, 0]))

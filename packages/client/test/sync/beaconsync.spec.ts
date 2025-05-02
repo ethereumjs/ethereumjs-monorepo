@@ -40,7 +40,7 @@ describe('[BeaconSynchronizer]', async () => {
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    assert.equal(sync.type, 'beacon', 'beacon type')
+    assert.strictEqual(sync.type, 'beacon', 'beacon type')
   })
 
   it('should open', async () => {
@@ -77,7 +77,7 @@ describe('[BeaconSynchronizer]', async () => {
     const headers = [{ number: BigInt(5) }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
     const latest = await peer.latest()
-    assert.equal(latest?.number, BigInt(5), 'got height')
+    assert.strictEqual(latest?.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
   })
@@ -120,7 +120,7 @@ describe('[BeaconSynchronizer]', async () => {
     /// @ts-expect-error -- Assigning simpler config for testing
     sync.pool = { peers }
     sync['forceSync'] = true
-    assert.equal(await sync.best(), peers[1] as any, 'found best')
+    assert.strictEqual(await sync.best(), peers[1] as any, 'found best')
     await sync.stop()
     await sync.close()
   })
@@ -245,7 +245,7 @@ describe('[BeaconSynchronizer]', async () => {
     })
     assert.isTrue(await sync.extendChain(block), 'should extend chain successfully')
     assert.isTrue(await sync.setHead(block), 'should set head successfully')
-    assert.equal(skeleton.bounds().head, BigInt(16), 'head should be updated')
+    assert.strictEqual(skeleton.bounds().head, BigInt(16), 'head should be updated')
 
     const gapBlock = createBlock({ header: { number: BigInt(18) } })
     assert.isFalse(await sync.extendChain(gapBlock), 'should not extend chain with gapped block')
@@ -253,7 +253,7 @@ describe('[BeaconSynchronizer]', async () => {
       await sync.setHead(gapBlock),
       'should be able to set and update head with gapped block',
     )
-    assert.equal(skeleton.bounds().head, BigInt(18), 'head should update with gapped block')
+    assert.strictEqual(skeleton.bounds().head, BigInt(18), 'head should update with gapped block')
     await sync.stop()
     await sync.close()
   })
@@ -266,7 +266,7 @@ describe('[BeaconSynchronizer]', async () => {
     skeleton.isLinked = () => true // stub
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     await sync.open()
-    assert.equal(
+    assert.strictEqual(
       await sync.syncWithPeer({} as any),
       false,
       `syncWithPeer should return false as nothing to sync`,
