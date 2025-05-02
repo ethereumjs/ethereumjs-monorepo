@@ -409,4 +409,13 @@ export const paramsEVM: ParamsDict = {
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
+  /**
+   * Meter Contract Code Size And Increase Limit
+   */
+  7907: {
+    // Maximum length of contract code
+    maxCodeSize: 262144, // 256 × 1024 = 262,144 bytes (0x40000)
+    // Maximum length of initialization code when creating a contract
+    maxInitCodeSize: 524288, // 512 × 1024 = 524,288 bytes (0x80000)
+  },
 }

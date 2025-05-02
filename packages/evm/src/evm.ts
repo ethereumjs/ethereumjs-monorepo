@@ -251,7 +251,7 @@ export class EVM implements EVMInterface {
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
       3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
+      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709, 7907,
     ]
 
     for (const eip of this.common.eips()) {
@@ -500,7 +500,7 @@ export class EVM implements EVMInterface {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
-    if (this.common.isActivatedEIP(3860)) {
+    if (this.common.isActivatedEIP(3860) || this.common.isActivatedEIP(7907)) {
       if (
         message.data.length > Number(this.common.param('maxInitCodeSize')) &&
         !this.allowUnlimitedInitCodeSize
@@ -670,7 +670,7 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // Check for SpuriousDragon EIP-170 code size limit
+    // Check for SpuriousDragon EIP-170 or Osaka EIP-7907 code size limit
     let allowedCodeSize = true
     if (
       !result.exceptionError &&
@@ -707,7 +707,15 @@ export class EVM implements EVMInterface {
       if (this.common.gteHardfork(Hardfork.Homestead)) {
         if (!allowedCodeSize) {
           if (this.DEBUG) {
-            debug(`Code size exceeds maximum code size (>= SpuriousDragon)`)
+            if (this.common.isActivatedEIP(7907)) {
+              debug(
+                `Code size exceeds maximum code size ${this.common.param('maxCodeSize')}KB (>= Osaka)`,
+              )
+            } else {
+              debug(
+                `Code size exceeds maximum code size ${this.common.param('maxCodeSize')}KB (>= SpuriousDragon)`,
+              )
+            }
           }
           result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
         } else {
