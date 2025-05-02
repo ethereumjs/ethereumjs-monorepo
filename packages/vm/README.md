@@ -373,8 +373,8 @@ The following loggers are currently available:
 | Logger      | Description                                                        |
 | ----------- | ------------------------------------------------------------------ |
 | `vm:block`  | Block operations (run txs, generating receipts, block rewards,...) |
-| `vm:tx`     |  Transaction operations (account updates, checkpointing,...)       |
-| `vm:tx:gas` |  Transaction gas logger                                            |
+| `vm:tx`     |  Transaction operations (account updates, checkpointing,...)       |
+| `vm:tx:gas` |  Transaction gas logger                                            |
 | `vm:state`  | StateManager logger                                                |
 
 Note that there are additional EVM-specific loggers in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
@@ -415,7 +415,7 @@ DEBUG=ethjs,vm:tx,vm:evm,vm:ops:sstore,vm:*:gas tsx test.ts
 
 The VM processes state changes at several levels:
 
-- **`runBlock` (within `packages/vm/src/runBlock.ts`)**: Processes a single block.
+- **[`runBlock`](./src/runBlock.ts)**: Processes a single block.
   - Performs initial setup: Validates hardfork compatibility, sets the state root (if provided), applies DAO fork logic if necessary.
   - Manages state checkpoints before and after processing.
   - Iterates through transactions within the block:
@@ -424,7 +424,7 @@ The VM processes state changes at several levels:
   - Calculates and assigns block rewards to the miner (and uncles, pre-Merge).
   - Finalizes the block state (state root, receipts root, logs bloom).
   - Commits or reverts state changes based on success.
-- **`runTx` (within `packages/vm/src/runTx.ts`)**: Processes a single transaction.
+- **[`runTx`](./src/runTx.ts)**: Processes a single transaction.
   - Performs pre-execution checks: Sender balance sufficient for gas+value, sender nonce validity, transaction gas limit against block gas limit, EIP activations (e.g., 2930 Access Lists, 1559 Fee Market, 4844 Blobs).
   - Warms up state access based on Access Lists (EIP-2929/2930).
   - Pays intrinsic gas cost.
@@ -433,7 +433,7 @@ The VM processes state changes at several levels:
   - Transfers gas fees to the fee recipient (recipient receives all pre EIP-1559, base fee is burned post EIP-1559).
   - Generates a transaction receipt.
   - Manages state checkpoints and commits/reverts changes for the transaction.
-- **`vm.evm.runCall` (within `@ethereumjs/evm`)**: Executes the EVM code for a transaction (message call or contract creation).
+- **[`vm.evm.runCall`](../../evm/src/evm.ts)** (within `@ethereumjs/evm`): Executes the EVM code for a transaction (message call or contract creation).
   - Steps through EVM opcodes.
   - Manages memory, stack, and storage changes.
   - Handles exceptions and gas consumption during execution.
