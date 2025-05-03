@@ -9,8 +9,7 @@ const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Shanghai,
-    eips: [4844],
+    hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
