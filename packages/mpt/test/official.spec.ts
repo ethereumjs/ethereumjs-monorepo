@@ -25,7 +25,7 @@ describe('official tests', () => {
 
         await trie.put(processedInput[0], processedInput[1])
       }
-      assert.equal(bytesToHex(trie.root()), expect)
+      assert.strictEqual(bytesToHex(trie.root()), expect)
       trie = new MerklePatriciaTrie()
     }
   })
@@ -57,7 +57,7 @@ describe('official tests any order', async () => {
 
         await trie.put(key, value)
       }
-      assert.equal(bytesToHex(trie.root()), test.root)
+      assert.strictEqual(bytesToHex(trie.root()), test.root)
       trie = new MerklePatriciaTrie()
     }
   })

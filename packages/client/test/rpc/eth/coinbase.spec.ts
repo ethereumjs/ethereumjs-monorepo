@@ -12,7 +12,11 @@ describe(method, () => {
     })
 
     const res = await rpc.request(method, [])
-    assert.equal(typeof res.result, 'string', 'coinbase address should be a string')
-    assert.equal(res.result, coinbase, "coinbase address should be same as value it's been set to")
+    assert.strictEqual(typeof res.result, 'string', 'coinbase address should be a string')
+    assert.strictEqual(
+      res.result,
+      coinbase,
+      "coinbase address should be same as value it's been set to",
+    )
   })
 })

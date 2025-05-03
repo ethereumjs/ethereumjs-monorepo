@@ -88,14 +88,14 @@ describe('[Protocol]', () => {
 
   it('should encode message', () => {
     const p = new TestProtocol()
-    assert.equal(p.encode(testMessage, 1234), '1234', 'encoded')
-    assert.equal(p.encode({} as any, 1234), 1234, 'encode not defined')
+    assert.strictEqual(p.encode(testMessage, 1234), '1234', 'encoded')
+    assert.strictEqual(p.encode({} as any, 1234), 1234, 'encode not defined')
   })
 
   it('should decode message', () => {
     const p = new TestProtocol()
-    assert.equal(p.decode(testMessage, '1234'), 1234, 'decoded')
-    assert.equal(p.decode({} as any, 1234), 1234, 'decode not defined')
+    assert.strictEqual(p.decode(testMessage, '1234'), 1234, 'decoded')
+    assert.strictEqual(p.decode({} as any, 1234), 1234, 'decode not defined')
   })
 
   it('should bind to peer', async () => {

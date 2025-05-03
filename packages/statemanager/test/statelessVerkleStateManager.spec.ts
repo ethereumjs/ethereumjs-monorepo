@@ -54,10 +54,10 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       createAddressFromString('0x6177843db3138ae69679a54b95cf345ed759450d'),
     )
 
-    assert.equal(account!.balance, 288610978528114322n, 'should have correct balance')
-    assert.equal(account!.nonce, 300n, 'should have correct nonce')
-    assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
-    assert.equal(
+    assert.strictEqual(account!.balance, 288610978528114322n, 'should have correct balance')
+    assert.strictEqual(account!.nonce, 300n, 'should have correct nonce')
+    assert.strictEqual(account!._storageRoot, null, 'stateroot should have not been set')
+    assert.strictEqual(
       bytesToHex(account!.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash',
@@ -78,7 +78,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       await stateManager.getAccount(address)
       assert.fail('should throw on getting account that is not found in witness')
     } catch (e: any) {
-      assert.equal(
+      assert.strictEqual(
         e.message.slice(0, 25),
         'No witness bundled for ad',
         'should throw on getting account that does not exist in cache and witness',
@@ -133,9 +133,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     const account = await stateManager.getAccount(address)
 
-    assert.equal(account!.balance, basicData.balance, 'should have correct balance')
-    assert.equal(account!.nonce, basicData.nonce, 'should have correct nonce')
-    assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
+    assert.strictEqual(account!.balance, basicData.balance, 'should have correct balance')
+    assert.strictEqual(account!.nonce, basicData.nonce, 'should have correct nonce')
+    assert.strictEqual(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
 
   it(`copy()`, async () => {
@@ -155,12 +155,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     const stateManagerCopy = stateManager.shallowCopy()
 
-    assert.equal(
+    assert.strictEqual(
       stateManagerCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
-    assert.equal(
+    assert.strictEqual(
       stateManagerCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
@@ -179,11 +179,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     await stateManager.putStorage(contractAddress, hexToBytes(storageKey), hexToBytes(storageValue))
     let contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
-    assert.equal(bytesToHex(contractStorage), storageValue)
+    assert.strictEqual(bytesToHex(contractStorage), storageValue)
 
     await stateManager.clearStorage(contractAddress)
     contractStorage = await stateManager.getStorage(contractAddress, hexToBytes(storageKey))
 
-    assert.equal(bytesToHex(contractStorage), bytesToHex(new Uint8Array()))
+    assert.strictEqual(bytesToHex(contractStorage), bytesToHex(new Uint8Array()))
   })
 })

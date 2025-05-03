@@ -95,7 +95,7 @@ describe('[FullSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
-    assert.equal(sync.type, 'full', 'full type')
+    assert.strictEqual(sync.type, 'full', 'full type')
   })
 
   it('should open', async () => {
@@ -139,7 +139,7 @@ describe('[FullSynchronizer]', async () => {
       },
     }
     const latest = await peer.latest()
-    assert.equal(latest!.number, BigInt(5), 'got height')
+    assert.strictEqual(latest!.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
   })
@@ -174,7 +174,7 @@ describe('[FullSynchronizer]', async () => {
       /// @ts-expect-error -- Assigning simpler config for testing
       sync.pool = { peers }
       sync['forceSync'] = true
-      assert.equal(await sync.best(), peers[1] as any, 'found best')
+      assert.strictEqual(await sync.best(), peers[1] as any, 'found best')
       await sync.stop()
       await sync.close()
     })
@@ -231,7 +231,7 @@ describe('[FullSynchronizer]', async () => {
     try {
       await sync.sync()
     } catch (err: any) {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()
     }
@@ -252,9 +252,17 @@ describe('[FullSynchronizer]', async () => {
     /// @ts-expect-error -- Assigning simpler config for testing
     sync['_fetcher'] = {
       enqueueByNumberList: (blockNumberList: bigint[], min: bigint) => {
-        assert.equal(blockNumberList[0], BigInt(0), 'enqueueing the correct block in the Fetcher')
-        assert.equal(blockNumberList.length, 1, 'correct number of blocks enqueued in Fetcher')
-        assert.equal(min, BigInt(0), 'correct start block number in Fetcher')
+        assert.strictEqual(
+          blockNumberList[0],
+          BigInt(0),
+          'enqueueing the correct block in the Fetcher',
+        )
+        assert.strictEqual(
+          blockNumberList.length,
+          1,
+          'correct number of blocks enqueued in Fetcher',
+        )
+        assert.strictEqual(min, BigInt(0), 'correct start block number in Fetcher')
       },
     }
     Object.defineProperty(sync, 'fetcher', {
@@ -270,7 +278,7 @@ describe('[FullSynchronizer]', async () => {
         eth: {
           status: { td: BigInt(1) },
           send(name: string) {
-            assert.equal(name, 'NewBlock', 'sent NewBlock to Peer 1')
+            assert.strictEqual(name, 'NewBlock', 'sent NewBlock to Peer 1')
           },
         },
         inbound: false,
@@ -280,7 +288,7 @@ describe('[FullSynchronizer]', async () => {
         eth: {
           status: { td: BigInt(2) },
           send(name: string) {
-            assert.equal(name, 'NewBlockHashes', 'sent NewBlockHashes to Peer 2')
+            assert.strictEqual(name, 'NewBlockHashes', 'sent NewBlockHashes to Peer 2')
             timesSentToPeer2++
           },
         },
@@ -310,7 +318,7 @@ describe('[FullSynchronizer]', async () => {
     })
     chain.getCanonicalHeadBlock = vi.fn()
     chain.putBlocks = vi.fn((input) => {
-      assert.equal(
+      assert.strictEqual(
         JSON.stringify(input),
         JSON.stringify([newBlock]),
         'putBlocks is called as expected',
@@ -319,9 +327,9 @@ describe('[FullSynchronizer]', async () => {
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
 
-    assert.equal(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
+    assert.strictEqual(config.syncTargetHeight, BigInt(0), 'sync target height should be set to 0')
     await sync.handleNewBlock(newBlock)
-    assert.equal(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
+    assert.strictEqual(timesSentToPeer2, 1, 'sent NewBlockHashes to Peer 2 once')
     assert.isTrue(true, 'did not send NewBlock to Peer 3')
     /// @ts-expect-error -- Assigning simpler config for testing
     sync['chain']._blocks = {

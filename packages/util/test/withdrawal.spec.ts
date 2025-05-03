@@ -82,7 +82,11 @@ describe('Withdrawal', () => {
     )
     const withdrawalstoBytesArr = withdrawals.map((wt) => wt.raw())
     const withdrawalsToRlp = bytesToHex(encode(withdrawalstoBytesArr))
-    assert.equal(gethWithdrawalsRlp, withdrawalsToRlp, 'The withdrawals to buffer should match')
+    assert.strictEqual(
+      gethWithdrawalsRlp,
+      withdrawalsToRlp,
+      'The withdrawals to buffer should match',
+    )
   })
 
   it('withdrawalToBytesArray from withdrawalData', () => {
@@ -90,7 +94,11 @@ describe('Withdrawal', () => {
       withdrawalToBytesArray(withdrawal as WithdrawalData),
     )
     const withdrawalsDataToRlp = bytesToHex(encode(withdrawalsDataToBytesArr))
-    assert.equal(gethWithdrawalsRlp, withdrawalsDataToRlp, 'The withdrawals to buffer should match')
+    assert.strictEqual(
+      gethWithdrawalsRlp,
+      withdrawalsDataToRlp,
+      'The withdrawals to buffer should match',
+    )
   })
 
   it('createWithdrawalFromBytesArray, toJSON and toValue', () => {

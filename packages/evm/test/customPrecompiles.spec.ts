@@ -43,7 +43,7 @@ describe('EVM -> custom precompiles', () => {
     })
 
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
-    assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
   it('should override existing precompiles', async () => {
     const EVMOverride = await createEVM({
@@ -62,7 +62,7 @@ describe('EVM -> custom precompiles', () => {
     })
 
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
-    assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
 
   it('should delete existing precompiles', async () => {
@@ -80,7 +80,7 @@ describe('EVM -> custom precompiles', () => {
       caller: sender,
     })
     assert.deepEqual(result.execResult.returnValue, utf8ToBytes(''), 'return value is correct')
-    assert.equal(result.execResult.executionGasUsed, BigInt(0), 'gas used is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(0), 'gas used is correct')
   })
 
   it('should add precompiles', async () => {
@@ -99,7 +99,7 @@ describe('EVM -> custom precompiles', () => {
       caller: sender,
     })
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
-    assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
 
   it('should not persist changes to precompiles', async () => {
@@ -126,7 +126,7 @@ describe('EVM -> custom precompiles', () => {
     })
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
-    assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
     EVMSha = await createEVM()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
@@ -139,7 +139,7 @@ describe('EVM -> custom precompiles', () => {
       shaResult2.execResult.returnValue,
       'restored sha precompile - returndata correct',
     )
-    assert.equal(
+    assert.strictEqual(
       shaResult.execResult.executionGasUsed,
       shaResult2.execResult.executionGasUsed,
       'restored sha precompile - gas correct',

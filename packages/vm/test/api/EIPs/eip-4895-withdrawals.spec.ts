@@ -123,7 +123,7 @@ describe('EIP4895 tests', () => {
       const address = new Address(hexToBytes(`0x${addresses[i]}`))
       const amount = amounts[i]
       const balance = (await vm.stateManager.getAccount(address))!.balance
-      assert.equal(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
+      assert.strictEqual(BigInt(amount) * GWEI_TO_WEI, balance, 'balance ok')
     }
 
     assert.deepEqual(new Uint8Array(32), result!, 'withdrawals happen after transactions')
@@ -138,7 +138,7 @@ describe('EIP4895 tests', () => {
 
     await vm.stateManager.generateCanonicalGenesis!(parseGethGenesisState(withdrawalsGethGenesis))
     const preState = bytesToHex(await vm.stateManager.getStateRoot())
-    assert.equal(
+    assert.strictEqual(
       preState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
       'preState should be correct',
@@ -148,7 +148,7 @@ describe('EIP4895 tests', () => {
     const withdrawals = (gethBlockBufferArray[3] as WithdrawalBytes[]).map((wa) =>
       createWithdrawalFromBytesArray(wa),
     )
-    assert.equal(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
+    assert.strictEqual(withdrawals[0].amount, BigInt(0), 'withdrawal 0 should have 0 amount')
     let block: Block
     let postState: string
 
@@ -168,7 +168,7 @@ describe('EIP4895 tests', () => {
     postState = bytesToHex(await vm.stateManager.getStateRoot())
 
     await runBlock(vm, { block, generate: true })
-    assert.equal(
+    assert.strictEqual(
       postState,
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
       'post state should not change',
@@ -189,7 +189,7 @@ describe('EIP4895 tests', () => {
     )
     await runBlock(vm, { block, generate: true })
     postState = bytesToHex(await vm.stateManager.getStateRoot())
-    assert.equal(
+    assert.strictEqual(
       postState,
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
       'post state should match',
@@ -208,7 +208,7 @@ describe('EIP4895 tests', () => {
       hardforkByHeadBlockNumber: true,
     })
     const genesisBlock = blockchain.genesisBlock
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(genesisBlock.header.stateRoot),
       '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
       'correct state root should be generated',
@@ -233,7 +233,7 @@ describe('EIP4895 tests', () => {
 
     const { block } = await blockBuilder.build()
 
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(block.header.stateRoot),
       '0x23eadd91fca55c0e14034e4d63b2b3ed43f2e807b6bf4d276b784ac245e7fa3f',
       'correct state root should be generated',
@@ -241,7 +241,7 @@ describe('EIP4895 tests', () => {
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)

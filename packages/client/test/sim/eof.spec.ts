@@ -55,13 +55,13 @@ describe('EOF ephemeral hardfork tests', async () => {
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
-    assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+    assert.strictEqual(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
     balance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
-    assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
+    assert.strictEqual(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
   })
 
   // ------------EIP 3670 tests-------------------------------
@@ -70,7 +70,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     const res = await runTx(data)
     assert.isDefined(res.contractAddress, 'created contract')
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
-    assert.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
+    assert.strictEqual(code.result, '0x', 'no code was deposited for invalid EOF code')
   })
   // ------------EIP 3540 tests-------------------------------
   it('EIP 3540 tests', async () => {
@@ -85,7 +85,7 @@ describe('EOF ephemeral hardfork tests', async () => {
 
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
-    assert.equal(
+    assert.strictEqual(
       code.result,
       '0XEF00010100010200010000AA'.toLowerCase(),
       'deposited valid EOF1 code',
@@ -98,7 +98,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     const res = await runTx(data)
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
-    assert.equal(code.result, '0x', 'no code deposited with invalid init code')
+    assert.strictEqual(code.result, '0x', 'no code deposited with invalid init code')
   })
   // ------------EIP 3855 tests-------------------------------
   it('EIP 3855 tests', async () => {

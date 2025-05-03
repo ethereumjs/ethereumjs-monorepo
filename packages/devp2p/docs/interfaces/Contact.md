@@ -1,89 +1,73 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / Contact
 
 # Interface: Contact
 
-## Hierarchy
+Defined in: [packages/devp2p/src/types.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L274)
+
+## Extends
 
 - [`PeerInfo`](PeerInfo.md)
 
-  ↳ **`Contact`**
-
-## Table of contents
-
-### Properties
-
-- [address](Contact.md#address)
-- [id](Contact.md#id)
-- [tcpPort](Contact.md#tcpport)
-- [udpPort](Contact.md#udpport)
-- [vectorClock](Contact.md#vectorclock)
-
 ## Properties
 
-### address
+### address?
 
-• `Optional` **address**: `string`
+> `optional` **address**: `string`
+
+Defined in: [packages/devp2p/src/types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L268)
 
 #### Inherited from
 
-[PeerInfo](PeerInfo.md).[address](PeerInfo.md#address)
+[`PeerInfo`](PeerInfo.md).[`address`](PeerInfo.md#address)
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L174)
-
-___
+***
 
 ### id
 
-• **id**: `Uint8Array`
+> **id**: `Uint8Array`
+
+Defined in: [packages/devp2p/src/types.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L275)
 
 #### Overrides
 
-[PeerInfo](PeerInfo.md).[id](PeerInfo.md#id)
+[`PeerInfo`](PeerInfo.md).[`id`](PeerInfo.md#id)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L181)
+### tcpPort?
 
-___
+> `optional` **tcpPort**: `null` \| `number`
 
-### tcpPort
-
-• `Optional` **tcpPort**: ``null`` \| `number`
+Defined in: [packages/devp2p/src/types.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L270)
 
 #### Inherited from
 
-[PeerInfo](PeerInfo.md).[tcpPort](PeerInfo.md#tcpport)
+[`PeerInfo`](PeerInfo.md).[`tcpPort`](PeerInfo.md#tcpport)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L176)
+### udpPort?
 
-___
+> `optional` **udpPort**: `null` \| `number`
 
-### udpPort
-
-• `Optional` **udpPort**: ``null`` \| `number`
+Defined in: [packages/devp2p/src/types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L269)
 
 #### Inherited from
 
-[PeerInfo](PeerInfo.md).[udpPort](PeerInfo.md#udpport)
+[`PeerInfo`](PeerInfo.md).[`udpPort`](PeerInfo.md#udpport)
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L175)
-
-___
+***
 
 ### vectorClock
 
-• **vectorClock**: `number`
+> **vectorClock**: `number`
+
+Defined in: [packages/devp2p/src/types.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L276)
 
 #### Overrides
 
-[PeerInfo](PeerInfo.md).[vectorClock](PeerInfo.md#vectorclock)
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L182)
+[`PeerInfo`](PeerInfo.md).[`vectorClock`](PeerInfo.md#vectorclock)

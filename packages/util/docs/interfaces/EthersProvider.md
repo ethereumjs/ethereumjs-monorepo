@@ -1,35 +1,29 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / EthersProvider
 
 # Interface: EthersProvider
 
-A partial interface for an `ethers` `JsonRpcProvider`
+Defined in: [packages/util/src/provider.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L81)
+
+A partial interface for an `ethers` `JSONRPCProvider`
 We only use the url string since we do raw `fetch` calls to
 retrieve the necessary data
 
-## Table of contents
-
-### Properties
-
-- [\_getConnection](EthersProvider.md#_getconnection)
-
 ## Properties
 
-### \_getConnection
+### \_getConnection()
 
-• **\_getConnection**: () => { `url`: `string`  }
+> **\_getConnection**: () => `object`
 
-#### Type declaration
+Defined in: [packages/util/src/provider.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L82)
 
-▸ (): `Object`
+#### Returns
 
-##### Returns
+`object`
 
-`Object`
+##### url
 
-| Name | Type |
-| :------ | :------ |
-| `url` | `string` |
-
-#### Defined in
-
-[packages/util/src/provider.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L79)
+> **url**: `string`

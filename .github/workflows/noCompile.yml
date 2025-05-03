@@ -21,16 +21,17 @@ jobs:
     # Set default values for cache keys when triggered by push
     env:
       DEP_CACHE_KEY: ${{ github.event_name == 'push' && 'none' || inputs.dep-cache-key }}
-    
+
     steps:
+      - uses: actions/checkout@v4
       # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: env.DEP_CACHE_KEY != 'none' 
+      - if: env.DEP_CACHE_KEY != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ env.DEP_CACHE_KEY }}
-  
+
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -39,8 +40,8 @@ jobs:
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm i --ignore-scripts  
+        run: npm i --ignore-scripts
         working-directory: ${{ github.workspace }}
-    
+
       - run: node --conditions=typescript --experimental-strip-types scripts/inlineClient.ts
         working-directory: ${{ github.workspace }}/packages/client

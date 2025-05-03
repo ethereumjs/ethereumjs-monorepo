@@ -32,14 +32,14 @@ describe('[ByteCodeFetcher]', async () => {
     })
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
-    assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
-    assert.equal(fetcher['hashes'].length, 1, 'one codehash have been added')
+    assert.strictEqual(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.strictEqual(fetcher['hashes'].length, 1, 'one codehash have been added')
     fetcher.enqueueByByteCodeRequestList([
       hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc'),
     ])
-    assert.equal(fetcher['in'].length, 1, 'A new task has been queued')
+    assert.strictEqual(fetcher['in'].length, 1, 'A new task has been queued')
     const job = fetcher['in'].peek()
-    assert.equal(job!.task.hashes.length, 2, 'two storageRequests are added to job')
+    assert.strictEqual(job!.task.hashes.length, 2, 'two storageRequests are added to job')
 
     void fetcher.fetch()
     await wait(100)
@@ -94,13 +94,13 @@ describe('[ByteCodeFetcher]', async () => {
     fetcher.enqueueTask(task)
     const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, ByteCodeResponse)
-    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
     const remainingBytesCodeData: any = [utf8ToBytes(''), utf8ToBytes(''), utf8ToBytes('')]
     remainingBytesCodeData.completed = true
     results = fetcher.process(job as any, remainingBytesCodeData)
-    assert.equal((results as any).length, 5, 'Should return full results')
+    assert.strictEqual((results as any).length, 5, 'Should return full results')
   })
 
   it('should request correctly', async () => {
@@ -144,7 +144,7 @@ describe('[ByteCodeFetcher]', async () => {
     const job = { peer, task }
     const results = await fetcher.request(job as any)
     assert.isTrue(results?.completed === true, 'response processed and matched properly')
-    assert.equal((results![0] as any).size, 5, 'matched code in the response')
+    assert.strictEqual((results![0] as any).size, 5, 'matched code in the response')
 
     try {
       await fetcher.store(results! as any)
@@ -165,6 +165,6 @@ describe('[ByteCodeFetcher]', async () => {
       pool,
       hashes: [utf8ToBytes('')],
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 })

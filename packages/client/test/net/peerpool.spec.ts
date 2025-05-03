@@ -11,7 +11,7 @@ describe('should initialize', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const pool = new PeerPool({ config })
   it('should open/close', async () => {
-    assert.equal(pool['pool'].size, 0, 'empty pool')
+    assert.strictEqual(pool['pool'].size, 0, 'empty pool')
     assert.isFalse(pool['opened'], 'not open')
     const peer = new MockPeer({
       id: 'peer',
@@ -29,7 +29,7 @@ describe('should initialize', () => {
     })
     pool.add(peer)
     pool.remove(peer)
-    assert.equal(await pool.open(), false, 'already opened')
+    assert.strictEqual(await pool.open(), false, 'already opened')
     await pool.close()
     assert.isFalse(pool['opened'], 'closed')
   })
@@ -81,8 +81,8 @@ describe('should get idle peers', () => {
     for (const p of peers) {
       pool.add(p as any)
     }
-    assert.equal(pool.idle(), peers[1], 'correct idle peer')
-    assert.equal(
+    assert.strictEqual(pool.idle(), peers[1], 'correct idle peer')
+    assert.strictEqual(
       pool.idle((p: any) => p.id > 1),
       peers[1],
       'correct idle peer with filter',
@@ -96,13 +96,13 @@ describe('should ban peer', () => {
   const pool = new PeerPool({ config })
   pool.config.events.on(Event.POOL_PEER_BANNED, (peer) => {
     it('should ban peer', () => {
-      assert.equal(peer, peers[1] as any, 'banned peer')
+      assert.strictEqual(peer, peers[1] as any, 'banned peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) => {
     it('should remove peer', () => {
-      assert.equal(peer, peers[1] as any, 'removed peer')
-      assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
+      assert.strictEqual(peer, peers[1] as any, 'removed peer')
+      assert.strictEqual(pool.peers[0], peers[0] as any, 'outbound peer not banned')
     })
   })
   for (const p of peers as any) {

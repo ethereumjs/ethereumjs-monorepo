@@ -24,7 +24,6 @@ import { assert } from 'vitest'
 import { Chain } from '../../src/blockchain/chain.ts'
 import { Config } from '../../src/config.ts'
 import { VMExecution } from '../../src/execution/index.ts'
-import { getLogger } from '../../src/logging.ts'
 import { RlpxServer } from '../../src/net/server/rlpxserver.ts'
 import { RPCManager as Manager } from '../../src/rpc/index.ts'
 import { Skeleton } from '../../src/service/skeleton.ts'
@@ -42,9 +41,6 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer, MethodLike } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../../src/client.ts'
-
-const config: any = {}
-config.logger = getLogger(config)
 
 type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
@@ -116,7 +112,6 @@ export async function createClient(clientOpts: Partial<CreateClientOptions> = {}
     accountCache: 10000,
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
-    logger: getLogger({}),
     statelessVerkle: clientOpts.statelessVerkle,
   })
   const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
@@ -358,7 +353,7 @@ export const dummy = {
 export const batchBlocks = async (rpc: HttpClient, inputBlocks: ExecutionPayload[]) => {
   for (let i = 0; i < inputBlocks.length; i++) {
     const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   }
 }
 
