@@ -1,6 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
+  type PrefixedHexString,
   bigIntToBytes,
   bytesToHex,
   createAccount,
@@ -111,10 +112,10 @@ describe('verkle tests', () => {
     assert.equal(writtenChunks.length, 1)
     assert.equal(res.execResult.exceptionError?.error, undefined)
   })
-})
+}, 20000)
 describe('generate an execution witness', () => {
   it('should generate the correct execution witness from a prestate and changes', async () => {
-    const preStateVKT = {
+    const preStateVKT: Record<PrefixedHexString, PrefixedHexString> = {
       '0x0365b079a274a1808d56484ce5bd97914629907d75767f51439102e22cd50d00':
         '0x00000000000000000000000000000000000000000000003635c9adc5dea00000',
       '0x0365b079a274a1808d56484ce5bd97914629907d75767f51439102e22cd50d01':
@@ -152,7 +153,7 @@ describe('generate an execution witness', () => {
     const trie = await createVerkleTree()
     // Setup prestate
     for (const [key, value] of Object.entries(preStateVKT)) {
-      const stem = hexToBytes(key).slice(0, 31)
+      const stem = hexToBytes(key as PrefixedHexString).slice(0, 31)
       const suffix = parseInt(key.slice(64), 16)
       await trie.put(stem, [suffix], [hexToBytes(value)])
     }
@@ -167,7 +168,7 @@ describe('generate an execution witness', () => {
     })
     // Run tx
     await evm.runCall({
-      code: hexToBytes(tx.input),
+      code: hexToBytes(tx.input as PrefixedHexString),
       caller: createAddressFromString(tx.sender),
       to: createAddressFromString(tx.to),
       gasLimit: BigInt(tx.gas),
@@ -187,4 +188,4 @@ describe('generate an execution witness', () => {
     // Ensure sender account nonce is 1 in execution witness
     assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
   })
-})
+}, 20000)

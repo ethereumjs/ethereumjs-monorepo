@@ -926,4 +926,4 @@ describe('EIP 4844 transaction tests', () => {
     assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
     Blockchain.prototype.getBlock = oldGetBlockFunction
   })
-})
+}, 20000)

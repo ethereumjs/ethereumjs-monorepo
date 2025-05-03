@@ -14,7 +14,7 @@ import { rewardAccount } from '../../src/runBlock.ts'
 import { getCommon } from '../tester/config.ts'
 import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../util.ts'
 
-import { normalizeNumbers } from './helpers.ts'
+import { normalizeNumbers, stepTraceJSON, summaryTraceJSON } from './helpers.ts'
 import { StateTracker } from './stateTracker.ts'
 
 import type { Block } from '@ethereumjs/block'
@@ -43,7 +43,7 @@ function getBlockchain(inputEnv: T8NEnv) {
       if (Number(key) === number) {
         return {
           hash() {
-            return hexToBytes(inputEnv.blockHashes[key])
+            return hexToBytes(inputEnv.blockHashes[key] as PrefixedHexString)
           },
         }
       }
@@ -111,6 +111,8 @@ export class TransitionTool {
   public txsData: TypedTxData[]
   public inputEnv: T8NEnv
 
+  // [txHash, trace]
+  private traces: [string, string[]][] = []
   public common!: Common
   public vm!: VM
 
@@ -164,6 +166,57 @@ export class TransitionTool {
 
     let index = 0
 
+    let trace: any[] = []
+    // Tracing
+    if (args.trace === true) {
+      this.vm.events.on('beforeTx', () => {
+        trace = []
+      })
+      this.vm.evm.events?.on('step', (e) => {
+        const opTrace = stepTraceJSON(e)
+        trace.push(JSON.stringify(opTrace))
+      })
+
+      this.vm.events.on('afterTx', async (event) => {
+        const summary = await summaryTraceJSON(event, this.vm)
+        trace.push(JSON.stringify(summary))
+        this.traces[index] = [bytesToHex(event.transaction.hash()), trace]
+        this.afterTx(event, index, builder)
+      })
+
+      for (const txData of this.txsData) {
+        try {
+          const tx = createTx(txData, { common: this.common })
+          if (!tx.isValid()) {
+            throw new Error(tx.getValidationErrors().join(', '))
+          }
+          // Set `allowNoBlobs` to `true`, since the test might not have the blob
+          // The 4844-tx at this should still be valid, since it has the `blobHashes` field
+          await builder.addTransaction(tx, { allowNoBlobs: true })
+        } catch (e: any) {
+          this.rejected.push({
+            index,
+            error: e.message,
+          })
+        }
+        index++
+      }
+
+      // Reward miner
+
+      if (args.state.reward !== BigInt(-1)) {
+        await rewardAccount(this.vm.evm, block.header.coinbase, args.state.reward, this.vm.common)
+        await this.vm.evm.journal.cleanup()
+      }
+
+      const result = await builder.build()
+
+      const convertedOutput = this.getOutput(result.block, result.requests)
+      const alloc = await this.stateTracker.dumpAlloc()
+
+      this.writeOutput(args, convertedOutput, alloc)
+    }
+
     this.vm.events.on('afterTx', (event) => {
       this.afterTx(event, index, builder)
     })
@@ -200,7 +253,6 @@ export class TransitionTool {
 
     this.writeOutput(args, convertedOutput, alloc)
   }
-
   private async setup(args: T8NOptions) {
     this.common = getCommon(args.state.fork, kzg)
 
@@ -324,8 +376,13 @@ export class TransitionTool {
   private writeOutput(args: T8NOptions, output: T8NOutput, outputAlloc: T8NAlloc) {
     const outputResultFilePath = join(args.output.basedir, args.output.result)
     const outputAllocFilePath = join(args.output.basedir, args.output.alloc)
-
     writeFileSync(outputResultFilePath, JSON.stringify(output))
     writeFileSync(outputAllocFilePath, JSON.stringify(outputAlloc))
+    if (args.trace === true) {
+      for (let i = 0; i < this.traces.length; i++) {
+        const tracePath = join(args.output.basedir, `trace-${i}-${this.traces[i][0]}.jsonl`)
+        writeFileSync(tracePath, `${this.traces[i][1].join('\n')}`)
+      }
+    }
   }
 }

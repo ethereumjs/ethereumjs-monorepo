@@ -1,47 +1,46 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / Lock
 
 # Class: Lock
 
-## Table of contents
-
-### Constructors
-
-- [constructor](Lock.md#constructor)
-
-### Methods
-
-- [acquire](Lock.md#acquire)
-- [release](Lock.md#release)
+Defined in: [packages/util/src/lock.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/lock.ts#L2)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new Lock**()
+> **new Lock**(): `Lock`
+
+#### Returns
+
+`Lock`
 
 ## Methods
 
-### acquire
+### acquire()
 
-▸ **acquire**(): `Promise`<`boolean`\>
+> **acquire**(): `Promise`\<`boolean`\>
+
+Defined in: [packages/util/src/lock.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/lock.ts#L10)
 
 Returns a promise used to wait for a permit to become available. This method should be awaited on.
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`\<`boolean`\>
 
 A promise that gets resolved when execution is allowed to proceed.
 
-#### Defined in
+***
 
-[packages/util/src/lock.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/lock.ts#L10)
+### release()
 
-___
+> **release**(): `void`
 
-### release
-
-▸ **release**(): `void`
+Defined in: [packages/util/src/lock.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/lock.ts#L25)
 
 Increases the number of permits by one. If there are other functions waiting, one of them will
 continue to execute in a future iteration of the event loop.
@@ -49,7 +48,3 @@ continue to execute in a future iteration of the event loop.
 #### Returns
 
 `void`
-
-#### Defined in
-
-[packages/util/src/lock.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/lock.ts#L25)

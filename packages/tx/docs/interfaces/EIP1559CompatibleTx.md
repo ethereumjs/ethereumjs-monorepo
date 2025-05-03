@@ -1,286 +1,253 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / EIP1559CompatibleTx
 
-# Interface: EIP1559CompatibleTx<T\>
+# Interface: EIP1559CompatibleTx\<T\>
 
-## Type parameters
+Defined in: [types.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L249)
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`TransactionType`](../enums/TransactionType.md) = [`TransactionType`](../enums/TransactionType.md) |
+## Extends
 
-## Hierarchy
+- [`EIP2930CompatibleTx`](EIP2930CompatibleTx.md)\<`T`\>
 
-- [`EIP2930CompatibleTx`](EIP2930CompatibleTx.md)<`T`\>
+## Extended by
 
-  ↳ **`EIP1559CompatibleTx`**
+- [`EIP4844CompatibleTx`](EIP4844CompatibleTx.md)
+- [`EIP7702CompatibleTx`](EIP7702CompatibleTx.md)
 
-  ↳↳ [`EIP4844CompatibleTx`](EIP4844CompatibleTx.md)
+## Type Parameters
 
-## Table of contents
+### T
 
-### Properties
-
-- [AccessListJSON](EIP1559CompatibleTx.md#accesslistjson)
-- [accessList](EIP1559CompatibleTx.md#accesslist)
-- [cache](EIP1559CompatibleTx.md#cache)
-- [chainId](EIP1559CompatibleTx.md#chainid)
-- [common](EIP1559CompatibleTx.md#common)
-- [data](EIP1559CompatibleTx.md#data)
-- [gasLimit](EIP1559CompatibleTx.md#gaslimit)
-- [maxFeePerGas](EIP1559CompatibleTx.md#maxfeepergas)
-- [maxPriorityFeePerGas](EIP1559CompatibleTx.md#maxpriorityfeepergas)
-- [nonce](EIP1559CompatibleTx.md#nonce)
-- [r](EIP1559CompatibleTx.md#r)
-- [s](EIP1559CompatibleTx.md#s)
-- [to](EIP1559CompatibleTx.md#to)
-- [type](EIP1559CompatibleTx.md#type)
-- [v](EIP1559CompatibleTx.md#v)
-- [value](EIP1559CompatibleTx.md#value)
-
-### Methods
-
-- [errorStr](EIP1559CompatibleTx.md#errorstr)
-- [getBaseFee](EIP1559CompatibleTx.md#getbasefee)
-- [getDataFee](EIP1559CompatibleTx.md#getdatafee)
-- [getHashedMessageToSign](EIP1559CompatibleTx.md#gethashedmessagetosign)
-- [getMessageToSign](EIP1559CompatibleTx.md#getmessagetosign)
-- [getMessageToVerifySignature](EIP1559CompatibleTx.md#getmessagetoverifysignature)
-- [getSenderAddress](EIP1559CompatibleTx.md#getsenderaddress)
-- [getSenderPublicKey](EIP1559CompatibleTx.md#getsenderpublickey)
-- [getUpfrontCost](EIP1559CompatibleTx.md#getupfrontcost)
-- [getValidationErrors](EIP1559CompatibleTx.md#getvalidationerrors)
-- [hash](EIP1559CompatibleTx.md#hash)
-- [isSigned](EIP1559CompatibleTx.md#issigned)
-- [isValid](EIP1559CompatibleTx.md#isvalid)
-- [raw](EIP1559CompatibleTx.md#raw)
-- [serialize](EIP1559CompatibleTx.md#serialize)
-- [sign](EIP1559CompatibleTx.md#sign)
-- [supports](EIP1559CompatibleTx.md#supports)
-- [toCreationAddress](EIP1559CompatibleTx.md#tocreationaddress)
-- [toJSON](EIP1559CompatibleTx.md#tojson)
-- [verifySignature](EIP1559CompatibleTx.md#verifysignature)
+`T` *extends* [`TransactionType`](../type-aliases/TransactionType.md) = [`TransactionType`](../type-aliases/TransactionType.md)
 
 ## Properties
 
-### AccessListJSON
-
-• `Readonly` **AccessListJSON**: [`AccessList`](../README.md#accesslist)
-
-#### Inherited from
-
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[AccessListJSON](EIP2930CompatibleTx.md#accesslistjson)
-
-#### Defined in
-
-[tx/src/types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L186)
-
-___
-
 ### accessList
 
-• `Readonly` **accessList**: [`AccessListBytes`](../README.md#accesslistbytes)
+> `readonly` **accessList**: [`AccessListBytes`](../type-aliases/AccessListBytes.md)
+
+Defined in: [types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L246)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[accessList](EIP2930CompatibleTx.md#accesslist)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`accessList`](EIP2930CompatibleTx.md#accesslist)
 
-#### Defined in
-
-[tx/src/types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L185)
-
-___
+***
 
 ### cache
 
-• `Readonly` **cache**: [`TransactionCache`](TransactionCache.md)
+> `readonly` **cache**: [`TransactionCache`](TransactionCache.md)
+
+Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L203)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[cache](EIP2930CompatibleTx.md#cache)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`cache`](EIP2930CompatibleTx.md#cache)
 
-#### Defined in
-
-[tx/src/types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L150)
-
-___
+***
 
 ### chainId
 
-• `Readonly` **chainId**: `bigint`
+> `readonly` **chainId**: `bigint`
+
+Defined in: [types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L240)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[chainId](EIP2930CompatibleTx.md#chainid)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`chainId`](EIP2930CompatibleTx.md#chainid)
 
-#### Defined in
-
-[tx/src/types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
-
-___
+***
 
 ### common
 
-• `Readonly` **common**: `Common`
+> `readonly` **common**: `Common`
+
+Defined in: [types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L194)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[common](EIP2930CompatibleTx.md#common)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`common`](EIP2930CompatibleTx.md#common)
 
-#### Defined in
-
-[tx/src/types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
-
-___
+***
 
 ### data
 
-• `Readonly` **data**: `Uint8Array`
+> `readonly` **data**: `Uint8Array`
+
+Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L199)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[data](EIP2930CompatibleTx.md#data)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`data`](EIP2930CompatibleTx.md#data)
 
-#### Defined in
-
-[tx/src/types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)
-
-___
+***
 
 ### gasLimit
 
-• `Readonly` **gasLimit**: `bigint`
+> `readonly` **gasLimit**: `bigint`
+
+Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L196)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[gasLimit](EIP2930CompatibleTx.md#gaslimit)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`gasLimit`](EIP2930CompatibleTx.md#gaslimit)
 
-#### Defined in
-
-[tx/src/types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L143)
-
-___
+***
 
 ### maxFeePerGas
 
-• `Readonly` **maxFeePerGas**: `bigint`
+> `readonly` **maxFeePerGas**: `bigint`
 
-#### Defined in
+Defined in: [types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
 
-[tx/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L192)
-
-___
+***
 
 ### maxPriorityFeePerGas
 
-• `Readonly` **maxPriorityFeePerGas**: `bigint`
+> `readonly` **maxPriorityFeePerGas**: `bigint`
 
-#### Defined in
+Defined in: [types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L251)
 
-[tx/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L191)
-
-___
+***
 
 ### nonce
 
-• `Readonly` **nonce**: `bigint`
+> `readonly` **nonce**: `bigint`
+
+Defined in: [types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L195)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[nonce](EIP2930CompatibleTx.md#nonce)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`nonce`](EIP2930CompatibleTx.md#nonce)
 
-#### Defined in
+***
 
-[tx/src/types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+### r?
 
-___
+> `readonly` `optional` **r**: `bigint`
 
-### r
-
-• `Optional` `Readonly` **r**: `bigint`
+Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L201)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[r](EIP2930CompatibleTx.md#r)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`r`](EIP2930CompatibleTx.md#r)
 
-#### Defined in
+***
 
-[tx/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L148)
+### s?
 
-___
+> `readonly` `optional` **s**: `bigint`
 
-### s
-
-• `Optional` `Readonly` **s**: `bigint`
+Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L202)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[s](EIP2930CompatibleTx.md#s)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`s`](EIP2930CompatibleTx.md#s)
 
-#### Defined in
+***
 
-[tx/src/types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L149)
+### to?
 
-___
+> `readonly` `optional` **to**: `Address`
 
-### to
-
-• `Optional` `Readonly` **to**: `Address`
+Defined in: [types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L197)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[to](EIP2930CompatibleTx.md#to)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`to`](EIP2930CompatibleTx.md#to)
 
-#### Defined in
+***
 
-[tx/src/types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L144)
+### txOptions
 
-___
+> **txOptions**: [`TxOptions`](TxOptions.md)
+
+Defined in: [types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L206)
+
+#### Inherited from
+
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`txOptions`](EIP2930CompatibleTx.md#txoptions)
+
+***
 
 ### type
 
-• **type**: [`TransactionType`](../enums/TransactionType.md)
+> **type**: [`TransactionType`](../type-aliases/TransactionType.md)
+
+Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L205)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[type](EIP2930CompatibleTx.md#type)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`type`](EIP2930CompatibleTx.md#type)
 
-#### Defined in
+***
 
-[tx/src/types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L152)
+### v?
 
-___
+> `readonly` `optional` **v**: `bigint`
 
-### v
-
-• `Optional` `Readonly` **v**: `bigint`
+Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L200)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[v](EIP2930CompatibleTx.md#v)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`v`](EIP2930CompatibleTx.md#v)
 
-#### Defined in
-
-[tx/src/types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
-
-___
+***
 
 ### value
 
-• `Readonly` **value**: `bigint`
+> `readonly` **value**: `bigint`
+
+Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L198)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[value](EIP2930CompatibleTx.md#value)
-
-#### Defined in
-
-[tx/src/types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L145)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`value`](EIP2930CompatibleTx.md#value)
 
 ## Methods
 
-### errorStr
+### addSignature()
 
-▸ **errorStr**(): `string`
+> **addSignature**(`v`, `r`, `s`, `convertV?`): [`Transaction`](Transaction.md)\[`T`\]
+
+Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L227)
+
+#### Parameters
+
+##### v
+
+`bigint`
+
+##### r
+
+`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+
+##### s
+
+`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+
+##### convertV?
+
+`boolean`
+
+#### Returns
+
+[`Transaction`](Transaction.md)\[`T`\]
+
+#### Inherited from
+
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`addSignature`](EIP2930CompatibleTx.md#addsignature)
+
+***
+
+### errorStr()
+
+> **errorStr**(): `string`
+
+Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
 #### Returns
 
@@ -288,17 +255,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[errorStr](EIP2930CompatibleTx.md#errorstr)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`errorStr`](EIP2930CompatibleTx.md#errorstr)
 
-#### Defined in
+***
 
-[tx/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L171)
+### getDataGas()
 
-___
+> **getDataGas**(): `bigint`
 
-### getBaseFee
-
-▸ **getBaseFee**(): `bigint`
+Defined in: [types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L208)
 
 #### Returns
 
@@ -306,17 +271,31 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getBaseFee](EIP2930CompatibleTx.md#getbasefee)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getDataGas`](EIP2930CompatibleTx.md#getdatagas)
 
-#### Defined in
+***
 
-[tx/src/types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
+### getHashedMessageToSign()
 
-___
+> **getHashedMessageToSign**(): `Uint8Array`
 
-### getDataFee
+Defined in: [types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L214)
 
-▸ **getDataFee**(): `bigint`
+#### Returns
+
+`Uint8Array`
+
+#### Inherited from
+
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getHashedMessageToSign`](EIP2930CompatibleTx.md#gethashedmessagetosign)
+
+***
+
+### getIntrinsicGas()
+
+> **getIntrinsicGas**(): `bigint`
+
+Defined in: [types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L207)
 
 #### Returns
 
@@ -324,17 +303,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getDataFee](EIP2930CompatibleTx.md#getdatafee)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getIntrinsicGas`](EIP2930CompatibleTx.md#getintrinsicgas)
 
-#### Defined in
+***
 
-[tx/src/types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L154)
+### getMessageToSign()
 
-___
+> **getMessageToSign**(): `Uint8Array`
 
-### getHashedMessageToSign
-
-▸ **getHashedMessageToSign**(): `Uint8Array`
+Defined in: [types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L241)
 
 #### Returns
 
@@ -342,17 +319,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getHashedMessageToSign](EIP2930CompatibleTx.md#gethashedmessagetosign)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getMessageToSign`](EIP2930CompatibleTx.md#getmessagetosign)
 
-#### Defined in
+***
 
-[tx/src/types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L160)
+### getMessageToVerifySignature()
 
-___
+> **getMessageToVerifySignature**(): `Uint8Array`
 
-### getMessageToSign
-
-▸ **getMessageToSign**(): `Uint8Array`
+Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
 
 #### Returns
 
@@ -360,35 +335,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getMessageToSign](EIP2930CompatibleTx.md#getmessagetosign)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getMessageToVerifySignature`](EIP2930CompatibleTx.md#getmessagetoverifysignature)
 
-#### Defined in
+***
 
-[tx/src/types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L180)
+### getSenderAddress()
 
-___
+> **getSenderAddress**(): `Address`
 
-### getMessageToVerifySignature
-
-▸ **getMessageToVerifySignature**(): `Uint8Array`
-
-#### Returns
-
-`Uint8Array`
-
-#### Inherited from
-
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getMessageToVerifySignature](EIP2930CompatibleTx.md#getmessagetoverifysignature)
-
-#### Defined in
-
-[tx/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
-
-___
-
-### getSenderAddress
-
-▸ **getSenderAddress**(): `Address`
+Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
 
 #### Returns
 
@@ -396,17 +351,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getSenderAddress](EIP2930CompatibleTx.md#getsenderaddress)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getSenderAddress`](EIP2930CompatibleTx.md#getsenderaddress)
 
-#### Defined in
+***
 
-[tx/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)
+### getSenderPublicKey()
 
-___
+> **getSenderPublicKey**(): `Uint8Array`
 
-### getSenderPublicKey
-
-▸ **getSenderPublicKey**(): `Uint8Array`
+Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L222)
 
 #### Returns
 
@@ -414,17 +367,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getSenderPublicKey](EIP2930CompatibleTx.md#getsenderpublickey)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getSenderPublicKey`](EIP2930CompatibleTx.md#getsenderpublickey)
 
-#### Defined in
+***
 
-[tx/src/types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)
+### getUpfrontCost()
 
-___
+> **getUpfrontCost**(): `bigint`
 
-### getUpfrontCost
-
-▸ **getUpfrontCost**(): `bigint`
+Defined in: [types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L209)
 
 #### Returns
 
@@ -432,17 +383,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getUpfrontCost](EIP2930CompatibleTx.md#getupfrontcost)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getUpfrontCost`](EIP2930CompatibleTx.md#getupfrontcost)
 
-#### Defined in
+***
 
-[tx/src/types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L155)
+### getValidationErrors()
 
-___
+> **getValidationErrors**(): `string`[]
 
-### getValidationErrors
-
-▸ **getValidationErrors**(): `string`[]
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L217)
 
 #### Returns
 
@@ -450,17 +399,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[getValidationErrors](EIP2930CompatibleTx.md#getvalidationerrors)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`getValidationErrors`](EIP2930CompatibleTx.md#getvalidationerrors)
 
-#### Defined in
+***
 
-[tx/src/types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+### hash()
 
-___
+> **hash**(): `Uint8Array`
 
-### hash
-
-▸ **hash**(): `Uint8Array`
+Defined in: [types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L215)
 
 #### Returns
 
@@ -468,17 +415,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[hash](EIP2930CompatibleTx.md#hash)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`hash`](EIP2930CompatibleTx.md#hash)
 
-#### Defined in
+***
 
-[tx/src/types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)
+### isSigned()
 
-___
+> **isSigned**(): `boolean`
 
-### isSigned
-
-▸ **isSigned**(): `boolean`
+Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L218)
 
 #### Returns
 
@@ -486,17 +431,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[isSigned](EIP2930CompatibleTx.md#issigned)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`isSigned`](EIP2930CompatibleTx.md#issigned)
 
-#### Defined in
+***
 
-[tx/src/types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
+### isValid()
 
-___
+> **isValid**(): `boolean`
 
-### isValid
-
-▸ **isValid**(): `boolean`
+Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L219)
 
 #### Returns
 
@@ -504,35 +447,31 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[isValid](EIP2930CompatibleTx.md#isvalid)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`isValid`](EIP2930CompatibleTx.md#isvalid)
 
-#### Defined in
+***
 
-[tx/src/types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
+### raw()
 
-___
+> **raw**(): [`TxValuesArray`](TxValuesArray.md)\[`T`\]
 
-### raw
-
-▸ **raw**(): [`TxValuesArray`](TxValuesArray.md)[`T`]
+Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L211)
 
 #### Returns
 
-[`TxValuesArray`](TxValuesArray.md)[`T`]
+[`TxValuesArray`](TxValuesArray.md)\[`T`\]
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[raw](EIP2930CompatibleTx.md#raw)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`raw`](EIP2930CompatibleTx.md#raw)
 
-#### Defined in
+***
 
-[tx/src/types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
+### serialize()
 
-___
+> **serialize**(): `Uint8Array`
 
-### serialize
-
-▸ **serialize**(): `Uint8Array`
+Defined in: [types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L212)
 
 #### Returns
 
@@ -540,47 +479,47 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[serialize](EIP2930CompatibleTx.md#serialize)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`serialize`](EIP2930CompatibleTx.md#serialize)
 
-#### Defined in
+***
 
-[tx/src/types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
+### sign()
 
-___
+> **sign**(`privateKey`, `extraEntropy?`): [`Transaction`](Transaction.md)\[`T`\]
 
-### sign
-
-▸ **sign**(`privateKey`): [`Transaction`](Transaction.md)[`T`]
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
+##### privateKey
+
+`Uint8Array`
+
+##### extraEntropy?
+
+`boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
-[`Transaction`](Transaction.md)[`T`]
+[`Transaction`](Transaction.md)\[`T`\]
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[sign](EIP2930CompatibleTx.md#sign)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`sign`](EIP2930CompatibleTx.md#sign)
 
-#### Defined in
+***
 
-[tx/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
+### supports()
 
-___
+> **supports**(`capability`): `boolean`
 
-### supports
-
-▸ **supports**(`capability`): `boolean`
+Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L204)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `capability` | [`Capability`](../enums/Capability.md) |
+##### capability
+
+`number`
 
 #### Returns
 
@@ -588,17 +527,15 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[supports](EIP2930CompatibleTx.md#supports)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`supports`](EIP2930CompatibleTx.md#supports)
 
-#### Defined in
+***
 
-[tx/src/types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L151)
+### toCreationAddress()
 
-___
+> **toCreationAddress**(): `boolean`
 
-### toCreationAddress
-
-▸ **toCreationAddress**(): `boolean`
+Defined in: [types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L210)
 
 #### Returns
 
@@ -606,35 +543,31 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[toCreationAddress](EIP2930CompatibleTx.md#tocreationaddress)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`toCreationAddress`](EIP2930CompatibleTx.md#tocreationaddress)
 
-#### Defined in
+***
 
-[tx/src/types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
+### toJSON()
 
-___
+> **toJSON**(): [`JSONTx`](JSONTx.md)
 
-### toJSON
-
-▸ **toJSON**(): [`JsonTx`](JsonTx.md)
+Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L224)
 
 #### Returns
 
-[`JsonTx`](JsonTx.md)
+[`JSONTx`](JSONTx.md)
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[toJSON](EIP2930CompatibleTx.md#tojson)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`toJSON`](EIP2930CompatibleTx.md#tojson)
 
-#### Defined in
+***
 
-[tx/src/types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L170)
+### verifySignature()
 
-___
+> **verifySignature**(): `boolean`
 
-### verifySignature
-
-▸ **verifySignature**(): `boolean`
+Defined in: [types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
 
 #### Returns
 
@@ -642,8 +575,4 @@ ___
 
 #### Inherited from
 
-[EIP2930CompatibleTx](EIP2930CompatibleTx.md).[verifySignature](EIP2930CompatibleTx.md#verifysignature)
-
-#### Defined in
-
-[tx/src/types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L166)
+[`EIP2930CompatibleTx`](EIP2930CompatibleTx.md).[`verifySignature`](EIP2930CompatibleTx.md#verifysignature)

@@ -86,7 +86,7 @@ export class StateTracker {
       outputAlloc[addressString].balance = bigIntToHex(account.balance)
       outputAlloc[addressString].code = bytesToHex(await this.vm.stateManager.getCode(address))
 
-      const storage = this.allocTracker[addressString].storage
+      const storage = this.allocTracker[addressString].storage as PrefixedHexString[]
       outputAlloc[addressString].storage = outputAlloc[addressString].storage ?? {}
 
       for (const key of storage) {

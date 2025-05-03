@@ -30,7 +30,6 @@ import {
   equalsBytes,
   hexToBytes,
   privateToAddress,
-  toBytes,
   unpadBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -46,8 +45,13 @@ import { blockchainData } from './testdata/blockchain.ts'
 import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
 import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type {
+  EOACode7702AuthorizationListBytesItem,
+  NestedUint8Array,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
@@ -113,7 +117,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(uncleData.blocks[2].rlp as PrefixedHexString)
+    const block3Rlp = hexToBytes(uncleData.blocks[2].rlp as PrefixedHexString)
     const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
@@ -611,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       pkey?: Uint8Array
     }
 
-    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+    function getAuthorizationListItem(
+      opts: GetAuthListOpts,
+    ): EOACode7702AuthorizationListBytesItem {
       const actualOpts = {
         ...{ chainId: 0, pkey: defaultAuthPkey },
         ...opts,

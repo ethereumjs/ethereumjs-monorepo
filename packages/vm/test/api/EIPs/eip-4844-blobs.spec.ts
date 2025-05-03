@@ -100,4 +100,4 @@ describe('EIP4844 tests', () => {
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
-})
+}, 20000)

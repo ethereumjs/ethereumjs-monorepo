@@ -1,26 +1,24 @@
+[**@ethereumjs/blockchain**](../README.md)
+
+***
+
 [@ethereumjs/blockchain](../README.md) / GenesisOptions
 
 # Interface: GenesisOptions
 
-## Hierarchy
+Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L94)
 
-- **`GenesisOptions`**
+## Extended by
 
-  ↳ [`BlockchainOptions`](BlockchainOptions.md)
-
-## Table of contents
-
-### Properties
-
-- [genesisBlock](GenesisOptions.md#genesisblock)
-- [genesisState](GenesisOptions.md#genesisstate)
-- [genesisStateRoot](GenesisOptions.md#genesisstateroot)
+- [`BlockchainOptions`](BlockchainOptions.md)
 
 ## Properties
 
-### genesisBlock
+### genesisBlock?
 
-• `Optional` **genesisBlock**: `Block`
+> `optional` **genesisBlock**: `Block`
+
+Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L102)
 
 The blockchain only initializes successfully if it has a genesis block. If
 there is no block available in the DB and a `genesisBlock` is provided,
@@ -28,15 +26,13 @@ then the provided `genesisBlock` will be used as genesis. If no block is
 present in the DB and no block is provided, then the genesis block as
 provided from the `common` will be used.
 
-#### Defined in
+***
 
-[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L101)
+### genesisState?
 
-___
+> `optional` **genesisState**: `GenesisState`
 
-### genesisState
-
-• `Optional` **genesisState**: `GenesisState`
+Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L128)
 
 If you are using a custom chain Common, pass the genesis state.
 
@@ -61,18 +57,12 @@ A complex genesis state with Contract and EoA states would have the following fo
 }
 ```
 
-#### Defined in
+***
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L127)
+### genesisStateRoot?
 
-___
+> `optional` **genesisStateRoot**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### genesisStateRoot
-
-• `Optional` **genesisStateRoot**: `Uint8Array`
+Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L133)
 
 State root of the genesis state
-
-#### Defined in
-
-[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L132)

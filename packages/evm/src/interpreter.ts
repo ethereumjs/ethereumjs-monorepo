@@ -18,7 +18,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
-import { EVMError, EVMErrorMessages } from './errors.ts'
+import { EVMError, EVMErrorTypeString } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
@@ -32,6 +32,7 @@ import type {
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
@@ -127,12 +128,18 @@ export interface InterpreterStep {
     fee: number
     dynamicFee?: bigint
     isAsync: boolean
+    code: number // The hexadecimal representation of the opcode (e.g. 0x60 for PUSH1)
   }
   account: Account
   address: Address
   memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
+  eofSection?: number // Current EOF section being executed
+  immediate?: Uint8Array // Immediate argument of the opcode
+  eofFunctionDepth?: number // Depth of CALLF return stack
+  error?: Uint8Array // Error bytes returned if revert occurs
+  storage?: [PrefixedHexString, PrefixedHexString][]
 }
 
 /**
@@ -219,14 +226,14 @@ export class Interpreter {
         // Bytecode contains invalid EOF magic byte
         return {
           runState: this._runState,
-          exceptionError: new EVMError(EVMErrorMessages.INVALID_BYTECODE_RESULT),
+          exceptionError: new EVMError(EVMError.errorMessages.INVALID_BYTECODE_RESULT),
         }
       }
       if (code[2] !== VERSION) {
         // Bytecode contains invalid EOF version number
         return {
           runState: this._runState,
-          exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT),
+          exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT),
         }
       }
       this._runState.code = code
@@ -239,7 +246,7 @@ export class Interpreter {
       } catch {
         return {
           runState: this._runState,
-          exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+          exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
         }
       }
 
@@ -256,7 +263,7 @@ export class Interpreter {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,
-            exceptionError: new EVMError(EVMErrorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
+            exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
           }
         }
       }
@@ -283,7 +290,7 @@ export class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const programCounter = this._runState.programCounter
       let opCode: number
-      let opCodeObj: OpcodeMapEntry
+      let opCodeObj: OpcodeMapEntry | undefined
       if (doJumpAnalysis) {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
@@ -319,13 +326,13 @@ export class Interpreter {
         }
       }
 
-      this._runState.opCode = opCode!
+      this._runState.opCode = opCode
 
       try {
         if (overheadTimer !== undefined) {
           this.performanceLogger.pauseTimer()
         }
-        await this.runStep(opCodeObj!)
+        await this.runStep(opCodeObj)
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -336,11 +343,11 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
         // re-throw on non-VM errors
-        if (!('errorType' in e && e.errorType === 'EVMError')) {
+        if (!('errorType' in e && e.errorType === EVMErrorTypeString)) {
           throw e
         }
         // STOP is not an exception
-        if (e.error !== EVMErrorMessages.STOP) {
+        if (e.error !== EVMError.errorMessages.STOP) {
           err = e
         }
         break
@@ -374,6 +381,9 @@ export class Interpreter {
 
     let gas = opInfo.feeBigInt
 
+    // Cache pre-gas memory size if doing tracing (EIP-7756)
+    const memorySizeCache = this._runState.memoryWordCount
+
     try {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
@@ -384,7 +394,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft())
+        await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
       }
 
       if (
@@ -403,7 +413,7 @@ export class Interpreter {
 
       // Check for invalid opcode
       if (opInfo.isInvalid) {
-        throw new EVMError(EVMErrorMessages.INVALID_OPCODE)
+        throw new EVMError(EVMError.errorMessages.INVALID_OPCODE)
       }
 
       // Reduce opcode's base fee
@@ -441,27 +451,58 @@ export class Interpreter {
     return this._evm['_opcodeMap'][op]
   }
 
-  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
-    const opcode = opcodeInfo.opcodeInfo
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode).opcodeInfo
+    const section = this._env.eof?.container.header.getSectionFromProgramCounter(
+      this._runState.programCounter,
+    )
+    let error = undefined
+    let immediate = undefined
+    if (opcodeInfo.code === 0xfd) {
+      // If opcode is REVERT, read error data and return in trace
+      const [offset, length] = this._runState.stack.peek(2)
+      error = new Uint8Array(0)
+      if (length !== BIGINT_0) {
+        error = this._runState.memory.read(Number(offset), Number(length))
+      }
+    }
+
+    // Add immediate if present (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
+    if (
+      stackDelta[opcodeInfo.code] !== undefined &&
+      stackDelta[opcodeInfo.code].intermediates > 0
+    ) {
+      immediate = this._runState.code.slice(
+        this._runState.programCounter + 1, // immediates start "immediately" following current opcode
+        this._runState.programCounter + 1 + stackDelta[opcodeInfo.code].intermediates,
+      )
+    }
+
+    // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
       gasRefund: this._runState.gasRefund,
       opcode: {
-        name: opcode.fullName,
-        fee: opcode.fee,
+        name: opcodeInfo.fullName,
+        fee: opcodeInfo.fee,
         dynamicFee,
-        isAsync: opcode.isAsync,
+        isAsync: opcodeInfo.isAsync,
+        code: opcodeInfo.code,
       },
       stack: this._runState.stack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
-      memoryWordCount: this._runState.memoryWordCount,
+      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
+      eofSection: section,
+      immediate,
+      error,
+      eofFunctionDepth:
+        this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
     }
 
     if (this._evm.DEBUG) {
@@ -499,6 +540,7 @@ export class Interpreter {
      * @property {fee}        opcode.number Base fee of the opcode
      * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
      * @property {boolean}    opcode.isAsync opcode is async
+     * @property {number}     opcode.code opcode code
      * @property {BigInt} gasLeft amount of gasLeft
      * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance
@@ -510,6 +552,11 @@ export class Interpreter {
      * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
+     * @property {number} eofSection the current EOF code section referenced by the PC
+     * @property {Uint8Array} immediate the immediate argument of the opcode
+     * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
+     * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
+     * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
      */
     await this._evm['_emit']('step', eventObj)
   }
@@ -563,7 +610,7 @@ export class Interpreter {
     }
     if (this._runState.gasLeft < BIGINT_0) {
       this._runState.gasLeft = BIGINT_0
-      trap(EVMErrorMessages.OUT_OF_GAS)
+      trap(EVMError.errorMessages.OUT_OF_GAS)
     }
   }
 
@@ -599,7 +646,7 @@ export class Interpreter {
     this._runState.gasRefund -= amount
     if (this._runState.gasRefund < BIGINT_0) {
       this._runState.gasRefund = BIGINT_0
-      trap(EVMErrorMessages.REFUND_EXHAUSTED)
+      trap(EVMError.errorMessages.REFUND_EXHAUSTED)
     }
   }
 
@@ -681,7 +728,7 @@ export class Interpreter {
    */
   finish(returnData: Uint8Array): void {
     this._result.returnValue = returnData
-    trap(EVMErrorMessages.STOP)
+    trap(EVMError.errorMessages.STOP)
   }
 
   /**
@@ -691,7 +738,7 @@ export class Interpreter {
    */
   revert(returnData: Uint8Array): void {
     this._result.returnValue = returnData
-    trap(EVMErrorMessages.REVERT)
+    trap(EVMError.errorMessages.REVERT)
   }
 
   /**
@@ -1016,7 +1063,7 @@ export class Interpreter {
     if (
       results.execResult.returnValue !== undefined &&
       (!results.execResult.exceptionError ||
-        results.execResult.exceptionError.error === EVMErrorMessages.REVERT)
+        results.execResult.exceptionError.error === EVMError.errorMessages.REVERT)
     ) {
       this._runState.returnBytes = results.execResult.returnValue
     }
@@ -1117,14 +1164,14 @@ export class Interpreter {
     // Set return buffer in case revert happened
     if (
       results.execResult.exceptionError &&
-      results.execResult.exceptionError.error === EVMErrorMessages.REVERT
+      results.execResult.exceptionError.error === EVMError.errorMessages.REVERT
     ) {
       this._runState.returnBytes = results.execResult.returnValue
     }
 
     if (
       !results.execResult.exceptionError ||
-      results.execResult.exceptionError.error === EVMErrorMessages.CODESTORE_OUT_OF_GAS
+      results.execResult.exceptionError.error === EVMError.errorMessages.CODESTORE_OUT_OF_GAS
     ) {
       for (const addressToSelfdestructHex of selfdestruct) {
         this._result.selfdestruct.add(addressToSelfdestructHex)
@@ -1230,7 +1277,7 @@ export class Interpreter {
       })
     }
 
-    trap(EVMErrorMessages.STOP)
+    trap(EVMError.errorMessages.STOP)
   }
 
   /**
@@ -1238,11 +1285,11 @@ export class Interpreter {
    */
   log(data: Uint8Array, numberOfTopics: number, topics: Uint8Array[]): void {
     if (numberOfTopics < 0 || numberOfTopics > 4) {
-      trap(EVMErrorMessages.OUT_OF_RANGE)
+      trap(EVMError.errorMessages.OUT_OF_RANGE)
     }
 
     if (topics.length !== numberOfTopics) {
-      trap(EVMErrorMessages.INTERNAL_ERROR)
+      trap(EVMError.errorMessages.INTERNAL_ERROR)
     }
 
     const log: Log = [this._env.address.bytes, topics, data]
@@ -1259,7 +1306,7 @@ export class Interpreter {
     } else {
       // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
       if (results.execResult.exceptionError !== undefined) {
-        if (results.execResult.exceptionError.error === EVMErrorMessages.REVERT) {
+        if (results.execResult.exceptionError.error === EVMError.errorMessages.REVERT) {
           // Revert
           return BIGINT_1
         } else {

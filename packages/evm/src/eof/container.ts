@@ -22,7 +22,7 @@ import {
   TYPE_MIN,
   VERSION,
 } from './constants.ts'
-import { EOFError, validationError } from './errors.ts'
+import { EOFErrorMessage, validationError } from './errors.ts'
 import { ContainerSectionType, verifyCode } from './verify.ts'
 
 import type { EVM } from '../evm.ts'
@@ -64,7 +64,7 @@ class StreamReader {
   readBytes(amount: number, errorStr?: string) {
     const end = this.ptr + amount
     if (end > this.data.length) {
-      validationError(EOFError.OUT_OF_BOUNDS, this.ptr, errorStr)
+      validationError(EOFErrorMessage.OUT_OF_BOUNDS, this.ptr, errorStr)
     }
     const ptr = this.ptr
     this.ptr += amount
@@ -78,7 +78,7 @@ class StreamReader {
    */
   readUint(errorStr?: string) {
     if (this.ptr >= this.data.length) {
-      validationError(EOFError.OUT_OF_BOUNDS, this.ptr, errorStr)
+      validationError(EOFErrorMessage.OUT_OF_BOUNDS, this.ptr, errorStr)
     }
     return this.data[this.ptr++]
   }
@@ -91,7 +91,7 @@ class StreamReader {
    */
   verifyUint(expect: number, errorStr?: string) {
     if (this.readUint() !== expect) {
-      validationError(EOFError.VERIFY_UINT, this.ptr - 1, errorStr)
+      validationError(EOFErrorMessage.VERIFY_UINT, this.ptr - 1, errorStr)
     }
   }
 
@@ -103,7 +103,7 @@ class StreamReader {
   readUint16(errorStr?: string) {
     const end = this.ptr + 2
     if (end > this.data.length) {
-      validationError(EOFError.OUT_OF_BOUNDS, this.ptr, errorStr)
+      validationError(EOFErrorMessage.OUT_OF_BOUNDS, this.ptr, errorStr)
     }
     const ptr = this.ptr
     this.ptr += 2
@@ -155,20 +155,20 @@ class EOFHeader {
     }
     const stream = new StreamReader(input)
     // Verify that the header starts with 0xEF0001
-    stream.verifyUint(FORMAT, EOFError.FORMAT)
-    stream.verifyUint(MAGIC, EOFError.MAGIC)
-    stream.verifyUint(VERSION, EOFError.VERSION)
+    stream.verifyUint(FORMAT, EOFErrorMessage.FORMAT)
+    stream.verifyUint(MAGIC, EOFErrorMessage.MAGIC)
+    stream.verifyUint(VERSION, EOFErrorMessage.VERSION)
     if (input.length < 15) {
       throw EthereumJSErrorWithoutCode('err: container size less than minimum valid size')
     }
     // Verify that the types section is present and its length is valid
-    stream.verifyUint(KIND_TYPE, EOFError.KIND_TYPE)
-    const typeSize = stream.readUint16(EOFError.TYPE_SIZE)
+    stream.verifyUint(KIND_TYPE, EOFErrorMessage.KIND_TYPE)
+    const typeSize = stream.readUint16(EOFErrorMessage.TYPE_SIZE)
     if (typeSize < TYPE_MIN) {
-      validationError(EOFError.INVALID_TYPE_SIZE, typeSize)
+      validationError(EOFErrorMessage.INVALID_TYPE_SIZE, typeSize)
     }
     if (typeSize % TYPE_DIVISOR !== 0) {
-      validationError(EOFError.INVALID_TYPE_SIZE, typeSize)
+      validationError(EOFErrorMessage.INVALID_TYPE_SIZE, typeSize)
     }
     if (typeSize > TYPE_MAX) {
       throw EthereumJSErrorWithoutCode(
@@ -176,20 +176,20 @@ class EOFHeader {
       )
     }
     // Verify that the code section is present and its size is valid
-    stream.verifyUint(KIND_CODE, EOFError.KIND_CODE)
-    const codeSize = stream.readUint16(EOFError.CODE_SIZE)
+    stream.verifyUint(KIND_CODE, EOFErrorMessage.KIND_CODE)
+    const codeSize = stream.readUint16(EOFErrorMessage.CODE_SIZE)
     if (codeSize < CODE_MIN) {
-      validationError(EOFError.MIN_CODE_SECTIONS)
+      validationError(EOFErrorMessage.MIN_CODE_SECTIONS)
     }
     if (codeSize !== typeSize / TYPE_DIVISOR) {
-      validationError(EOFError.TYPE_SECTIONS, typeSize / TYPE_DIVISOR, codeSize)
+      validationError(EOFErrorMessage.TYPE_SECTIONS, typeSize / TYPE_DIVISOR, codeSize)
     }
     // Read the actual code sizes in the code section and verify that each section has the minimum size
     const codeSizes = []
     for (let i = 0; i < codeSize; i++) {
-      const codeSectionSize = stream.readUint16(EOFError.CODE_SECTION)
+      const codeSectionSize = stream.readUint16(EOFErrorMessage.CODE_SECTION)
       if (codeSectionSize < CODE_SIZE_MIN) {
-        validationError(EOFError.CODE_SECTION_SIZE)
+        validationError(EOFErrorMessage.CODE_SECTION_SIZE)
       }
       codeSizes.push(codeSectionSize)
     }
@@ -199,21 +199,21 @@ class EOFHeader {
     const containerSizes: number[] = []
     if (nextSection === KIND_CONTAINER) {
       // The optional container section is present, validate that the size is within bounds
-      const containerSectionSize = stream.readUint16(EOFError.CONTAINER_SIZE)
+      const containerSectionSize = stream.readUint16(EOFErrorMessage.CONTAINER_SIZE)
 
       if (containerSectionSize < CONTAINER_MIN) {
-        validationError(EOFError.CONTAINER_SECTION_SIZE)
+        validationError(EOFErrorMessage.CONTAINER_SECTION_SIZE)
       }
       if (containerSectionSize > CONTAINER_MAX) {
-        validationError(EOFError.CONTAINER_SECTION_SIZE)
+        validationError(EOFErrorMessage.CONTAINER_SECTION_SIZE)
       }
 
       // Read the actual container sections and validate that each section has the minimum size
       for (let i = 0; i < containerSectionSize; i++) {
-        const containerSize = stream.readUint16(EOFError.CONTAINER_SECTION)
+        const containerSize = stream.readUint16(EOFErrorMessage.CONTAINER_SECTION)
 
         if (containerSize < CONTAINER_SIZE_MIN) {
-          validationError(EOFError.CONTAINER_SECTION_MIN)
+          validationError(EOFErrorMessage.CONTAINER_SECTION_MIN)
         }
 
         containerSizes.push(containerSize)
@@ -224,15 +224,15 @@ class EOFHeader {
 
     // Verify that the next section is of the data type
     if (nextSection !== KIND_DATA) {
-      validationError(EOFError.KIND_DATA)
+      validationError(EOFErrorMessage.KIND_DATA)
     }
 
     this.dataSizePtr = stream.getPtr()
 
-    const dataSize = stream.readUint16(EOFError.DATA_SIZE)
+    const dataSize = stream.readUint16(EOFErrorMessage.DATA_SIZE)
 
     // Verify that the header ends with the TERMINATOR byte
-    stream.verifyUint(TERMINATOR, EOFError.TERMINATOR)
+    stream.verifyUint(TERMINATOR, EOFErrorMessage.TERMINATOR)
 
     // Write all values to the header object
     this.typeSize = typeSize
@@ -269,6 +269,31 @@ class EOFHeader {
     }
     return offset
   }
+
+  // Returns the code section for a given program counter position
+  getSectionFromProgramCounter(programCounter: number) {
+    if (
+      programCounter < 0 ||
+      programCounter >
+        this.codeStartPos[this.codeStartPos.lastIndex] + this.codeSizes[this.codeSizes.lastIndex]
+    ) {
+      // If code position is outside the beginning or end of the code sections, return 0
+      throw EthereumJSErrorWithoutCode('program counter out of bounds')
+    }
+
+    if (this.codeStartPos.length < this.codeSizes.length) {
+      this.getCodePosition(this.codeSizes.length - 1) // initialize code positions if uninitialized
+    }
+
+    for (let i = 0; i < this.codeSizes.length; i++) {
+      if (programCounter < this.codeStartPos[i] + this.codeSizes[i]) {
+        // We've found our section if the code position is less than the end of the current code section
+        return i
+      }
+    }
+    // This shouldn't happen so just error
+    throw EthereumJSErrorWithoutCode(`Invalid program counter value: ${programCounter}`)
+  }
 }
 
 export interface TypeSection {
@@ -302,25 +327,25 @@ class EOFBody {
     const typeSections: TypeSection[] = []
     // Read and parse each type section, and validate that the type section values are within valid bounds
     for (let i = 0; i < header.typeSize / 4; i++) {
-      const inputs = stream.readUint(EOFError.INPUTS)
-      const outputs = stream.readUint(EOFError.OUTPUTS)
-      const maxStackHeight = stream.readUint16(EOFError.MAX_STACK_HEIGHT)
+      const inputs = stream.readUint(EOFErrorMessage.INPUTS)
+      const outputs = stream.readUint(EOFErrorMessage.OUTPUTS)
+      const maxStackHeight = stream.readUint16(EOFErrorMessage.MAX_STACK_HEIGHT)
       if (i === 0) {
         if (inputs !== 0) {
-          validationError(EOFError.CODE0_INPUTS)
+          validationError(EOFErrorMessage.CODE0_INPUTS)
         }
         if (outputs !== 0x80) {
-          validationError(EOFError.CODE0_OUTPUTS)
+          validationError(EOFErrorMessage.CODE0_OUTPUTS)
         }
       }
       if (inputs > INPUTS_MAX) {
-        validationError(EOFError.MAX_INPUTS, i, inputs)
+        validationError(EOFErrorMessage.MAX_INPUTS, i, inputs)
       }
       if (outputs > OUTPUTS_MAX) {
-        validationError(EOFError.MAX_OUTPUTS, i, outputs)
+        validationError(EOFErrorMessage.MAX_OUTPUTS, i, outputs)
       }
       if (maxStackHeight > MAX_STACK_HEIGHT) {
-        validationError(EOFError.MAX_STACK_HEIGHT_LIMIT, i, maxStackHeight)
+        validationError(EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT, i, maxStackHeight)
       }
       typeSections.push({
         inputs,
@@ -336,7 +361,7 @@ class EOFBody {
         const code = stream.readBytes(codeSize)
         codes.push(code)
       } catch {
-        validationError(EOFError.CODE_SECTION, i)
+        validationError(EOFErrorMessage.CODE_SECTION, i)
       }
     }
     // Write the entire code section to the entireCodeSection
@@ -349,7 +374,7 @@ class EOFBody {
         const container = stream.readBytes(containerSize)
         containers.push(container)
       } catch {
-        validationError(EOFError.CONTAINER_SECTION, i)
+        validationError(EOFErrorMessage.CONTAINER_SECTION, i)
       }
     }
 
@@ -361,12 +386,12 @@ class EOFBody {
 
     // Edge case: deployment code validation
     if (eofMode !== EOFContainerMode.Initmode && !dataSectionAllowedSmaller) {
-      dataSection = stream.readBytes(header.dataSize, EOFError.DATA_SECTION)
+      dataSection = stream.readBytes(header.dataSize, EOFErrorMessage.DATA_SECTION)
 
       if (eofMode === EOFContainerMode.Default) {
         if (!stream.isAtEnd()) {
           // If there are dangling bytes in default container mode, this is invalid
-          validationError(EOFError.DANGLING_BYTES)
+          validationError(EOFErrorMessage.DANGLING_BYTES)
         }
       } else {
         // Tx init mode: the remaining bytes (if any) are used as CALLDATA in the EVM, in case of a Tx init
@@ -376,7 +401,7 @@ class EOFBody {
       dataSection = stream.readRemainder()
 
       if (dataSection.length > header.dataSize) {
-        validationError(EOFError.DANGLING_BYTES)
+        validationError(EOFErrorMessage.DANGLING_BYTES)
       }
     }
 

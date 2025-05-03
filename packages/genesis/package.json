@@ -64,7 +64,7 @@
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
     "examples:build": "npx embedme README.md",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",

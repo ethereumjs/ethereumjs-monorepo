@@ -1,6 +1,8 @@
-export type EVMErrorType = (typeof EVMErrorMessages)[keyof typeof EVMErrorMessages]
+export type EVMErrorType = (typeof EVMErrorMessage)[keyof typeof EVMErrorMessage]
 
-export const EVMErrorMessages = {
+export const EVMErrorTypeString = 'EVMError'
+
+const EVMErrorMessage = {
   OUT_OF_GAS: 'out of gas',
   CODESTORE_OUT_OF_GAS: 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM: 'code size to deposit exceeds maximum code size',
@@ -17,9 +19,6 @@ export const EVMErrorMessages = {
   REFUND_EXHAUSTED: 'refund exhausted',
   VALUE_OVERFLOW: 'value overflow',
   INSUFFICIENT_BALANCE: 'insufficient balance',
-  INVALID_BEGINSUB: 'invalid BEGINSUB',
-  INVALID_RETURNSUB: 'invalid RETURNSUB',
-  INVALID_JUMPSUB: 'invalid JUMPSUB',
   INVALID_BYTECODE_RESULT: 'invalid bytecode deployed',
   INITCODE_SIZE_VIOLATION: 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH: 'invalid input length',
@@ -37,9 +36,10 @@ export const EVMErrorMessages = {
 export class EVMError {
   error: EVMErrorType
   errorType: string
+  static errorMessages: Record<keyof typeof EVMErrorMessage, EVMErrorType> = EVMErrorMessage
 
   constructor(error: EVMErrorType) {
     this.error = error
-    this.errorType = 'EVMError'
+    this.errorType = EVMErrorTypeString
   }
 }

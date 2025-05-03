@@ -8,6 +8,7 @@ import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
   ConsensusAlgorithm,
+  type GethGenesis,
   Hardfork,
   Mainnet,
   createCommonFromGethGenesis,
@@ -157,7 +158,7 @@ describe('BlockBuilder', () => {
         epoch: 30000,
       },
     }
-    const defaultChainData = {
+    const defaultChainData: GethGenesis = {
       config: {
         chainId: 123456,
         homesteadBlock: 0,
@@ -183,6 +184,7 @@ describe('BlockBuilder', () => {
       gasUsed: '0x0',
       parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       baseFeePerGas: 7,
+      alloc: {},
     }
 
     const A = {
@@ -191,7 +193,7 @@ describe('BlockBuilder', () => {
     }
     const addr = A.address.toString().slice(2)
 
-    const extraData2 = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+    const extraData2 = `0x${'0'.repeat(64)}${addr}${'0'.repeat(130)}`
     const chainData = {
       ...defaultChainData,
       extraData: extraData2,

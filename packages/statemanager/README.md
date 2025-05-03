@@ -1,4 +1,4 @@
-# @ethereumjs/statemanager
+# @ethereumjs/statemanager `v10`
 
 [![NPM Package][statemanager-npm-badge]][statemanager-npm-link]
 [![GitHub Issues][statemanager-issues-badge]][statemanager-issues-link]
@@ -9,6 +9,30 @@
 | Library to provide high level access to Ethereum State |
 | ------------------------------------------------------ |
 
+- 🫧 Transparent state access from EVM/VM
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (5 external + `@Noble` crypto)
+- ⏳ Checkpoints + Diff-based Caches
+- 🔌 Unified interface (for custom SMs)
+- 🎁 3 SMs included (Merkle/Simple/RPC)
+- 🛵 233KB bundle size (for Merkle SM) (63KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [MerkleStateManager](#merklestatemanager)
+- [SimpleStateManager](#simplestatemanager)
+- [RPCStateManager](#rpcstatemanager)
+- [Verkle (experimental)](#verkle-state-managers-experimental)
+- [Browser](#browser)
+- [API](#api)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -17,9 +41,9 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/statemanager
 ```
 
-## Usage
+## Getting Started
 
-### Introduction
+### Overview
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
@@ -33,9 +57,13 @@ This library includes several different implementations that all implement the `
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
 
-### `MerkleStateManager`
+### WASM Crypto Support
 
-#### Usage example
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for underlying trie keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
+## `MerkleStateManager`
+
+### Usage example
 
 ```ts
 // ./examples/basicUsage.ts
@@ -62,7 +90,7 @@ const main = async () => {
 void main()
 ```
 
-#### Account, Storage and Code Caches
+### Account, Storage and Code Caches
 
 Starting with the v2 release and complemented by the v2.1 release the StateManager comes with a significantly more elaborate caching mechanism for account, storage and code caches.
 
@@ -72,34 +100,7 @@ Caches now "survive" a flush operation and especially long-lived usage scenarios
 
 Have a look at the extended `CacheOptions` on how to use and leverage the new cache system.
 
-### `SimpleStateManager`
-
-The `SimpleStateManager` is a dependency-minimized simple state manager implementation. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
-
-This state manager can be instantiated and used as follows:
-
-```ts
-// ./examples/simple.ts
-
-import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
-
-import { SimpleStateManager } from '../src/index.ts'
-
-const main = async () => {
-  const sm = new SimpleStateManager()
-  const address = createAddressFromPrivateKey(randomBytes(32))
-  const account = new Account(0n, 0xfffffn)
-  await sm.putAccount(address, account)
-  console.log(await sm.getAccount(address))
-}
-
-void main()
-
-```
-
-### `MerkleStateManager` -> Proofs
-
-#### Instantiating from a Proof
+### Instantiating from Proofs
 
 The `MerkleStateManager` has a standalone constructor function `fromMerkleStateProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `MerkleStateManager` with a partial trie containing the state provided by the proof(s). Be aware that this constructor accepts the `StateManagerOpts` dictionary as a third parameter (i.e. `fromMerkleStateProof(proof, safe, opts)`).
 
@@ -168,7 +169,32 @@ const main = async () => {
 void main()
 ```
 
-### `RPCStateManager`
+## `SimpleStateManager`
+
+The `SimpleStateManager` is a dependency-minimized simple state manager implementation. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
+
+This state manager can be instantiated and used as follows:
+
+```ts
+// ./examples/simple.ts
+
+import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+import { SimpleStateManager } from '../src/index.ts'
+
+const main = async () => {
+  const sm = new SimpleStateManager()
+  const address = createAddressFromPrivateKey(randomBytes(32))
+  const account = new Account(0n, 0xfffffn)
+  await sm.putAccount(address, account)
+  console.log(await sm.getAccount(address))
+}
+
+void main()
+
+```
+
+## `RPCStateManager`
 
 The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
@@ -196,9 +222,9 @@ void main()
 
 **Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with a JSON-RPC provider connecting to a third-party API service like Infura!
 
-#### Points on `RPCStateManager` usage
+### Points on `RPCStateManager` usage
 
-##### Instantiating the EVM
+#### Instantiating the EVM
 
 In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initializing your EVM instance as below:
 
@@ -224,36 +250,32 @@ void main()
 
 Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM means that the `BLOCKHASH` opcode will fail to work correctly during EVM execution.
 
-##### Provider selection
+#### Provider selection
 
 - The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
 - Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
 
-##### Block Tag selection
+#### Block Tag selection
 
 - You have to pass a block number or `earliest` in the constructor that specifies the block height you want to pull state from.
 - The `latest`/`pending` values supported by the Ethereum JSON-RPC are not supported as longer running scripts run the risk of state values changing as blocks are mined while your script is running.
 - If using a very recent block as your block tag, be aware that reorgs could occur and potentially alter the state you are interacting with.
 - If you want to rerun transactions from block X or run block X, you need to specify the block tag as X-1 in the state manager constructor to ensure you are pulling the state values at the point in time the transactions or block was run.
 
-##### Potential gotchas
+#### Potential gotchas
 
 - The RPC State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
 - If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
 
-##### Further reference
+#### Further reference
 
 Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-### `StatefulVerkleStateManager`/`StatelessVerkleStateManager` (experimental)
+## Verkle (experimental)
 
 There are two new verkle related state managers integrated into the code base. These state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
 
 See [PRs around Verkle](https://github.com/search?q=repo%3Aethereumjs%2Fethereumjs-monorepo+verkle&type=pullrequests) in our monorepo for an entrypoint if you are interested in our current Verkle related work.
-
-### WASM Crypto Support
-
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for underlying trie keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ## Browser
 

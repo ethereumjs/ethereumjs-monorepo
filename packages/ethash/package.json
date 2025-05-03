@@ -34,7 +34,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- ethash",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -44,7 +44,7 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "test": "npx vitest run -c ../../config/vitest.config.mts",
+    "test": "npx vitest run -c ./vite.config.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
     "@ethereumjs/rlp": "^10.0.0-rc.1",
     "@ethereumjs/util": "^10.0.0-rc.1",
     "bigint-crypto-utils": "^3.3.0",
-    "ethereum-cryptography": "^3.1.0"
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
     "@ethereumjs/common": "^10.0.0-rc.1"

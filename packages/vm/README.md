@@ -1,4 +1,4 @@
-# @ethereumjs/vm
+# @ethereumjs/vm `v10`
 
 [![NPM Package][vm-npm-badge]][vm-npm-link]
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]
@@ -9,14 +9,36 @@
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
-This package provides an Ethereum `mainnet` compatible execution context for the
+Ethereum `mainnet` compatible execution context for
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
-EVM implementation.
+to build and run blocks and txs and update state.
 
-So beyond bytecode processing this package allows to run or build new Ethereum blocks or single transactions
-and update a blockchain state accordingly.
+- 🦄 All hardforks up till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
+- 🧩 Flexible EIP on/off engine
+- 📲 **EIP-7702** ready
+- 📬 Flexible state retrieval (Merkle, RPC,...)
+- 🔎 Passes official #Ethereum tests
+- 🛵 668KB bundle size (170KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
-Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Browser](#browser)
+- [API](#api)
+- [Architecture](#architecture)
+- [Setup](#setup)
+- [Supported EIPs](#supported-eips)
+- [Events](#events)
+- [Understanding the VM](#understanding-the-vm)
+- [Internal Structure](#internal-structure)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -26,7 +48,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/vm
 ```
 
-**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality will become an integrated part of the EVM functionality with the activation of the point evaluation precompile. It is therefore strongly recommended to _always_ run the EVM with a KZG library installed and initialized, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KGZ library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ## Usage
 
@@ -61,8 +83,6 @@ void main()
 ```
 
 Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
-
-Note: with the switch from v7 to v8 the old direct `new VM()` constructor usage has been fully deprecated and a `VM` can now solely be instantiated with the async static `VM.create()` constructor. This also goes for the underlying `EVM` if you use a custom `EVM`.
 
 ### Building a Block
 
@@ -122,14 +142,12 @@ void main()
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-## Example
+## Examples
 
-This projects contain the following examples:
+See the [examples](./examples/) folder for different meaningful examples on how to use the VM package and invoke certain aspects of it, e.g. running a complete block, a certain tx or using event listeners, among others. Some noteworthy examples to point out:
 
 1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
-
-All of the examples have their own `README.md` explaining how to run them.
+2. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
 
 ## Browser
 
@@ -186,44 +204,10 @@ With `VM` v6 the previously included `StateManager` has been extracted to its ow
 
 ## Setup
 
-### Chain Support
+### Chains
+Beside the default Proof-of-Stake setup coming with the `Common` library default, the VM also support the execution of  both `Ethash/PoW` and `Clique/PoA` blocks and transactions to allow to re-execute blocks from older hardforks or testnets.
 
-Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA` blocks and transactions. Clique support has been added along the work on PR [#1032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1032) and follow-up PRs and (block) validation checks and the switch of the execution context now happens correctly.
-
-### Ethash/PoW Chains
-
-`@ethereumjs/blockchain` validates the PoW algorithm with `@ethereumjs/ethash` and validates blocks' difficulty to match their canonical difficulty.
-
-### Clique/PoA Chains
-
-The following is a simple example for a block run on `Goerli`:
-
-```ts
-// ./examples/runGoerliBlock.ts
-
-import { createBlockFromRPC } from '@ethereumjs/block'
-import { Common } from '@ethereumjs/common'
-import { bytesToHex } from '@ethereumjs/util'
-
-import { createVM, runBlock } from '../src/index.ts'
-import { Goerli } from '../test/api/testdata/goerliCommon.ts'
-
-import goerliBlock2 from './testData/goerliBlock2.json'
-
-const main = async () => {
-  const common = new Common({ chain: Goerli, hardfork: 'london' })
-  const vm = await createVM({ common, setHardfork: true })
-
-  const block = createBlockFromRPC(goerliBlock2, undefined, { common })
-  const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
-  console.log(`The state root for Goerli block 2 is ${bytesToHex(result.stateRoot)}`)
-}
-
-void main()
-
-```
-
-### Hardfork Support
+### Hardforks
 
 For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
 
@@ -242,13 +226,7 @@ const main = async () => {
   const vm = await createVM({ common })
 ```
 
-### Custom genesis state support
-
-#### Genesis in v7 (removed genesis dependency)
-
-Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
-
-Starting with the v7 release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+### Custom Genesis State
 
 For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
@@ -284,13 +262,7 @@ void main()
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
 
-#### Genesis in v6
-
-For the v6 release responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
-
-A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
-
-### EIP Support
+## Supported EIPs
 
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
@@ -298,67 +270,40 @@ with the respective EIPs, e.g.:
 ```ts
 // ./examples/vmWithEIPs.ts
 
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createVM } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, eips: [7702] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
   const vm = await createVM({ common })
-  console.log(`EIP 7702 is active in the VM - ${vm.common.isActivatedEIP(7702)}`)
+  console.log(`EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`)
 }
 void main()
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
 
-### EIP-4844 Shard Blob Transactions Support
+### EIP-4844 Shard Blob Transactions Support (Cancun)
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
 
-### EIP-7702 EAO Code Transactions Support (outdated)
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-This library support the execution of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation) with `runTx()` or the wrapping `runBlock()` execution methods starting with `v3.1.0`, see [this test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-7702.spec.ts) for a more complete example setup on how to run code from an EOA.
+### EIP-7702 EAO Code Transactions Support (Prague)
 
-Note: Things move fast with `EIP-7702` and the currently released implementation is based on [this](https://github.com/ethereum/EIPs/blob/14400434e1199c57d912082127b1d22643788d11/EIPS/eip-7702.md) commit and therefore already outdated. An up-to-date version will be released along our breaking release round planned for early September 2024.
+This library support the execution of [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (see tx library for full documentation) with `runTx()` or the wrapping `runBlock()` execution methods, see [this test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-7702.spec.ts) for a more complete example setup on how to run code from an EOA.
 
-### EIP-7685 Requests Support
+### EIP-7685 Requests Support (Prague)
 
-This library supports blocks including the following [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests:
-
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Deposit Requests (`v7.3.0`+)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Withdrawal Requests (`v7.3.0`+)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Consolidation Requests (`v7.3.0`+)
+This library supports blocks including [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests to the consensus layer.
 
 ### EIP-2935 Serve Historical Block Hashes from State (Prague)
 
-Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract, see PR [#3475](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3475) as the major integration PR (while work on this has already been done in previous PRs).
+Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract.
 
-This EIP will be activated along the Prague hardfork. Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in the following Osaka hardfork.
+Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in a respective Verkle/Stateless hardfork.
 
-#### Initialization
-
-To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the associated `@ethereumjs/common` library:
-
-```ts
-// ./examples/vmWith4844.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-
-import { createVM } from '../src/index.ts'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
-  const vm = await createVM({ common })
-  console.log(`4844 is active in the VM - ${vm.common.isActivatedEIP(4844)}`)
-}
-
-void main()
-
-```
-
-EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
-
-**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+## Events
 
 ### Tracing Events
 
@@ -390,7 +335,7 @@ vm.events.on('afterTx', (event) => {
 
 Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
 
-#### Asynchronous event handlers
+### Asynchronous event handlers
 
 You can perform asynchronous operations from within an event handler
 and prevent the VM to keep running until they finish.
@@ -404,7 +349,7 @@ handler or a function called by it, the exception will bubble into the
 VM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
-#### Synchronous event handlers
+### Synchronous event handlers
 
 If you want to perform synchronous operations, you don't need
 to receive a function as the handler's second argument, nor call it.
