@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0",
   "description": "Utilities for handling Ethereum keys",
   "keywords": ["ethereum", "wallets", "keys"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
@@ -34,7 +34,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "npx typedoc --options typedoc.cjs",
+    "docs:build": "npx typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -50,9 +50,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.0.0-rc.1",
+    "@ethereumjs/util": "^10.0.0",
     "@scure/base": "^1.2.4",
-    "ethereum-cryptography": "^3.1.0",
+    "ethereum-cryptography": "^3.2.0",
     "js-md5": "^0.8.3",
     "uuid": "^11.1.0"
   },

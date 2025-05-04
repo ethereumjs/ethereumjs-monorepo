@@ -46,7 +46,7 @@ describe('[SnapSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain } as any)
-    assert.equal(sync.type, 'snap', 'snap type')
+    assert.strictEqual(sync.type, 'snap', 'snap type')
   })
 
   it('should open', async () => {
@@ -109,6 +109,6 @@ describe('[SnapSynchronizer]', async () => {
     /// @ts-expect-error -- Assigning simpler config for testing
     sync['pool'] = { peers }
     sync['forceSync'] = true
-    assert.equal(await sync.best(), peers[1] as any, 'found best')
+    assert.strictEqual(await sync.best(), peers[1] as any, 'found best')
   })
 })

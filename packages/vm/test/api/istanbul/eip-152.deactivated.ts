@@ -100,7 +100,7 @@ describe('Istanbul: EIP-152', () => {
         common: common,
         _EVM: vm.evm,
       })
-      assert.equal(res.exceptionError?.error, testCase.err)
+      assert.strictEqual(res.exceptionError?.error, testCase.err)
     }
 
     for (const testCase of testCases) {
@@ -111,7 +111,7 @@ describe('Istanbul: EIP-152', () => {
         common: common,
         _EVM: vm.evm,
       })
-      assert.equal(bytesToHex(res.returnValue), '0x' + testCase.expected)
+      assert.strictEqual(bytesToHex(res.returnValue), '0x' + testCase.expected)
     }
 
       })

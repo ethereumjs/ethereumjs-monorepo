@@ -1,109 +1,61 @@
+[**@ethereumjs/verkle**](../README.md)
+
+***
+
 [@ethereumjs/verkle](../README.md) / BaseVerkleNode
 
-# Class: BaseVerkleNode<T\>
+# Class: `abstract` BaseVerkleNode\<T\>
 
-## Type parameters
+Defined in: [node/baseVerkleNode.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L7)
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`VerkleNodeType`](../enums/VerkleNodeType.md) |
+## Extended by
 
-## Hierarchy
+- [`InternalVerkleNode`](InternalVerkleNode.md)
+- [`LeafVerkleNode`](LeafVerkleNode.md)
 
-- **`BaseVerkleNode`**
+## Type Parameters
 
-  ↳ [`InternalNode`](InternalNode.md)
+### T
 
-  ↳ [`LeafNode`](LeafNode.md)
+`T` *extends* [`VerkleNodeType`](../type-aliases/VerkleNodeType.md)
 
 ## Implements
 
 - [`VerkleNodeInterface`](../interfaces/VerkleNodeInterface.md)
 
-## Table of contents
-
-### Constructors
-
-- [constructor](BaseVerkleNode.md#constructor)
-
-### Properties
-
-- [commitment](BaseVerkleNode.md#commitment)
-- [depth](BaseVerkleNode.md#depth)
-
-### Methods
-
-- [commit](BaseVerkleNode.md#commit)
-- [hash](BaseVerkleNode.md#hash)
-- [insert](BaseVerkleNode.md#insert)
-- [raw](BaseVerkleNode.md#raw)
-- [serialize](BaseVerkleNode.md#serialize)
-
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new BaseVerkleNode**<`T`\>(`options`)
+> **new BaseVerkleNode**\<`T`\>(`options`): `BaseVerkleNode`\<`T`\>
 
-#### Type parameters
-
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`VerkleNodeType`](../enums/VerkleNodeType.md) |
+Defined in: [node/baseVerkleNode.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L10)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | [`VerkleNodeOptions`](../interfaces/VerkleNodeOptions.md)[`T`] |
+##### options
 
-#### Defined in
+[`VerkleNodeOptions`](../interfaces/VerkleNodeOptions.md)\[`T`\]
 
-[node/baseVerkleNode.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L11)
+#### Returns
+
+`BaseVerkleNode`\<`T`\>
 
 ## Properties
 
 ### commitment
 
-• **commitment**: [`Point`](../interfaces/Point.md)
+> **commitment**: `Uint8Array`
 
-#### Defined in
-
-[node/baseVerkleNode.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L8)
-
-___
-
-### depth
-
-• **depth**: `number`
-
-#### Defined in
-
-[node/baseVerkleNode.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L9)
+Defined in: [node/baseVerkleNode.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L8)
 
 ## Methods
 
-### commit
+### hash()
 
-▸ `Abstract` **commit**(): [`Point`](../interfaces/Point.md)
+> **hash**(): `Uint8Array`
 
-#### Returns
-
-[`Point`](../interfaces/Point.md)
-
-#### Implementation of
-
-[VerkleNodeInterface](../interfaces/VerkleNodeInterface.md).[commit](../interfaces/VerkleNodeInterface.md#commit)
-
-#### Defined in
-
-[node/baseVerkleNode.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L16)
-
-___
-
-### hash
-
-▸ **hash**(): `Uint8Array`
+Defined in: [node/baseVerkleNode.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L16)
 
 #### Returns
 
@@ -111,53 +63,27 @@ ___
 
 #### Implementation of
 
-[VerkleNodeInterface](../interfaces/VerkleNodeInterface.md).[hash](../interfaces/VerkleNodeInterface.md#hash)
+[`VerkleNodeInterface`](../interfaces/VerkleNodeInterface.md).[`hash`](../interfaces/VerkleNodeInterface.md#hash)
 
-#### Defined in
+***
 
-[node/baseVerkleNode.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L19)
+### raw()
 
-___
+> `abstract` **raw**(): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-### insert
-
-▸ `Abstract` **insert**(`key`, `value`, `nodeResolverFn`): `void`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `key` | `Uint8Array` |
-| `value` | `Uint8Array` |
-| `nodeResolverFn` | () => `void` |
+Defined in: [node/baseVerkleNode.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L21)
 
 #### Returns
 
-`void`
+`Uint8Array`\<`ArrayBufferLike`\>[]
 
-#### Defined in
+***
 
-[node/baseVerkleNode.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L23)
+### serialize()
 
-___
+> **serialize**(): `Uint8Array`
 
-### raw
-
-▸ `Abstract` **raw**(): `Uint8Array`[]
-
-#### Returns
-
-`Uint8Array`[]
-
-#### Defined in
-
-[node/baseVerkleNode.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L25)
-
-___
-
-### serialize
-
-▸ **serialize**(): `Uint8Array`
+Defined in: [node/baseVerkleNode.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L26)
 
 #### Returns
 
@@ -167,8 +93,4 @@ the RLP serialized node
 
 #### Implementation of
 
-[VerkleNodeInterface](../interfaces/VerkleNodeInterface.md).[serialize](../interfaces/VerkleNodeInterface.md#serialize)
-
-#### Defined in
-
-[node/baseVerkleNode.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/node/baseVerkleNode.ts#L30)
+[`VerkleNodeInterface`](../interfaces/VerkleNodeInterface.md).[`serialize`](../interfaces/VerkleNodeInterface.md#serialize)

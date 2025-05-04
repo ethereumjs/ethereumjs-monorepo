@@ -1,162 +1,137 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / KBucket
 
 # Class: KBucket
 
-## Table of contents
-
-### Constructors
-
-- [constructor](KBucket.md#constructor)
-
-### Properties
-
-- [events](KBucket.md#events)
-
-### Methods
-
-- [add](KBucket.md#add)
-- [closest](KBucket.md#closest)
-- [get](KBucket.md#get)
-- [getAll](KBucket.md#getall)
-- [remove](KBucket.md#remove)
-- [getKeys](KBucket.md#getkeys)
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L11)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new KBucket**(`localNodeId`)
+> **new KBucket**(`localNodeId`): `KBucket`
+
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L15)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `localNodeId` | `Uint8Array` |
+##### localNodeId
 
-#### Defined in
+`Uint8Array`
 
-[packages/devp2p/src/dpt/kbucket.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L15)
+#### Returns
+
+`KBucket`
 
 ## Properties
 
 ### events
 
-• **events**: `EventEmitter`
+> **events**: `EventEmitter`
 
-#### Defined in
-
-[packages/devp2p/src/dpt/kbucket.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L12)
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L12)
 
 ## Methods
 
-### add
+### add()
 
-▸ **add**(`peer`): `void` \| `KBucket`
+> **add**(`peer`): `void` \| `KBucket`
+
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L53)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `peer` | [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### peer
+
+[`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 
 `void` \| `KBucket`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/kbucket.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L53)
+### closest()
 
-___
+> **closest**(`id`): [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-### closest
-
-▸ **closest**(`id`): [`PeerInfo`](../interfaces/PeerInfo.md)[]
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L71)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `id` | `Uint8Array` |
+##### id
+
+`Uint8Array`
 
 #### Returns
 
 [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/kbucket.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L71)
+### get()
 
-___
+> **get**(`obj`): `null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
-### get
-
-▸ **get**(`obj`): ``null`` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L58)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
-``null`` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+`null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/kbucket.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L58)
+### getAll()
 
-___
+> **getAll**(): [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-### getAll
-
-▸ **getAll**(): [`PeerInfo`](../interfaces/PeerInfo.md)[]
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L67)
 
 #### Returns
 
 [`PeerInfo`](../interfaces/PeerInfo.md)[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/kbucket.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L67)
+### remove()
 
-___
+> **remove**(`obj`): `void`
 
-### remove
-
-▸ **remove**(`obj`): `void`
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L75)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/kbucket.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L75)
+### getKeys()
 
-___
+> `static` **getKeys**(`obj`): `string`[]
 
-### getKeys
-
-▸ `Static` **getKeys**(`obj`): `string`[]
+Defined in: [packages/devp2p/src/dpt/kbucket.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L42)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `string`[]
-
-#### Defined in
-
-[packages/devp2p/src/dpt/kbucket.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L42)

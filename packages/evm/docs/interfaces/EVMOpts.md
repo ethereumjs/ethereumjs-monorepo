@@ -1,65 +1,165 @@
+[**@ethereumjs/evm**](../README.md)
+
+***
+
 [@ethereumjs/evm](../README.md) / EVMOpts
 
 # Interface: EVMOpts
 
+Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L196)
+
 Options for instantiating a EVM.
-
-## Table of contents
-
-### Properties
-
-- [allowUnlimitedContractSize](EVMOpts.md#allowunlimitedcontractsize)
-- [allowUnlimitedInitCodeSize](EVMOpts.md#allowunlimitedinitcodesize)
-- [blockchain](EVMOpts.md#blockchain)
-- [common](EVMOpts.md#common)
-- [customOpcodes](EVMOpts.md#customopcodes)
-- [customPrecompiles](EVMOpts.md#customprecompiles)
-- [profiler](EVMOpts.md#profiler)
-- [stateManager](EVMOpts.md#statemanager)
 
 ## Properties
 
-### allowUnlimitedContractSize
+### allowUnlimitedContractSize?
 
-• `Optional` **allowUnlimitedContractSize**: `boolean`
+> `optional` **allowUnlimitedContractSize**: `boolean`
+
+Defined in: [types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L251)
 
 Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
 contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
 
 Default: `false` [ONLY set to `true` during debugging]
 
-#### Defined in
+***
 
-[types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L223)
+### allowUnlimitedInitCodeSize?
 
-___
+> `optional` **allowUnlimitedInitCodeSize**: `boolean`
 
-### allowUnlimitedInitCodeSize
-
-• `Optional` **allowUnlimitedInitCodeSize**: `boolean`
+Defined in: [types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L257)
 
 Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
 Gas cost for initcode size analysis will still be charged. Use with caution.
 
-#### Defined in
+***
 
-[types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L229)
+### blockchain?
 
-___
+> `optional` **blockchain**: [`EVMMockBlockchainInterface`](EVMMockBlockchainInterface.md)
 
-### blockchain
+Defined in: [types.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L370)
 
-• `Optional` **blockchain**: `Blockchain`
+The EVM comes with a basic mock blockchain interface and implementation for
+non-block containing use cases.
 
-#### Defined in
+For block-containing setups use the full blockchain implementation from the
+`@ethereumjs/blockchain package.
 
-[types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L269)
+***
 
-___
+### bls?
 
-### common
+> `optional` **bls**: [`EVMBLSInterface`](../type-aliases/EVMBLSInterface.md)
 
-• `Optional` **common**: `Common`
+Defined in: [types.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L327)
+
+For the EIP-2537 BLS Precompiles, the native JS `ethereum-cryptography` (`@noble/curves`)
+https://github.com/ethereum/js-ethereum-cryptography BLS12-381 curve implementation
+is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
+
+To use an alternative implementation this option can be used by passing
+in a wrapper implementation integrating the desired library and adhering
+to the `EVMBLSInterface` specification.
+
+An interface for the MCL WASM implementation https://github.com/herumi/mcl-wasm
+is shipped with this library which can be used as follows (with `mcl-wasm` being
+explicitly added to the set of dependencies):
+
+```ts
+import * as mcl from 'mcl-wasm'
+
+await mcl.init(mcl.BLS12_381)
+const evm = await createEVM({ bls: new MCLBLS(mcl) })
+```
+
+***
+
+### bn254?
+
+> `optional` **bn254**: [`EVMBN254Interface`](../type-aliases/EVMBN254Interface.md)
+
+Defined in: [types.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L350)
+
+For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `ethereum-cryptography`
+(`@noble/curves`) https://github.com/ethereum/js-ethereum-cryptography BN254 curve implementation
+is used (see `noble.ts` file in the `precompiles/bn254/` folder).
+
+To use an alternative implementation this option can be used by passing
+in a wrapper implementation integrating the desired library and adhering
+to the `EVMBN254Interface` specification.
+
+An interface for a WASM wrapper https://github.com/ethereumjs/rustbn.js around the
+Parity fork of the Zcash bn pairing cryptography library is shipped with this library
+which can be used as follows (with `rustbn.js` being explicitly added to the set of
+dependencies):
+
+```ts
+import { initRustBN } from 'rustbn-wasm'
+
+const bn254 = await initRustBN()
+const evm = await createEVM({ bn254: new RustBN254(bn254) })
+```
+
+***
+
+### cliqueSigner()?
+
+> `optional` **cliqueSigner**: (`header`) => `Address`
+
+Defined in: [types.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L382)
+
+When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
+must be provided along with a `BlockHeader` so that the coinbase can be correctly retrieved when the
+`Interpreter.getBlockCoinbase` method is called.
+
+#### Parameters
+
+##### header
+
+###### baseFeePerGas?
+
+`bigint`
+
+###### coinbase
+
+`Address`
+
+###### difficulty
+
+`bigint`
+
+###### gasLimit
+
+`bigint`
+
+###### number
+
+`bigint`
+
+###### prevRandao
+
+`Uint8Array`
+
+###### timestamp
+
+`bigint`
+
+###### getBlobGasPrice
+
+#### Returns
+
+`Address`
+
+***
+
+### common?
+
+> `optional` **common**: `Common`
+
+Defined in: [types.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L243)
 
 Use a Common instance for EVM instantiation.
 
@@ -67,21 +167,19 @@ Use a Common instance for EVM instantiation.
 
 - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565) - Transaction Types
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transaction Envelope
 - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
 - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`outdated`)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
@@ -92,28 +190,29 @@ Use a Common instance for EVM instantiation.
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
 - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-5656) - Supply validator deposits on chain (Prague)
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
-- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
-- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+- [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
+- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
 
 *Annotations:*
 
 - `experimental`: behaviour can change on patch versions
 
-#### Defined in
+***
 
-[types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L215)
+### customOpcodes?
 
-___
+> `optional` **customOpcodes**: `CustomOpcode`[]
 
-### customOpcodes
-
-• `Optional` **customOpcodes**: `CustomOpcode`[]
+Defined in: [types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L297)
 
 Override or add custom opcodes to the EVM instruction set
 These custom opcodes are EIP-agnostic and are always statically added
@@ -134,36 +233,49 @@ To add an opcode, add an entry of the following format:
 }
 Note: gasFunction and logicFunction can both be async or synchronous functions
 
-#### Defined in
+***
 
-[types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L251)
+### customPrecompiles?
 
-___
+> `optional` **customPrecompiles**: `CustomPrecompile`[]
 
-### customPrecompiles
+Defined in: [types.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L305)
 
-• `Optional` **customPrecompiles**: `CustomPrecompile`[]
+***
 
-#### Defined in
+### params?
 
-[types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L259)
+> `optional` **params**: `ParamsDict`
 
-___
+Defined in: [types.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L275)
 
-### profiler
+EVM parameters sorted by EIP can be found in the exported `paramsEVM` dictionary,
+which is internally passed to the associated `@ethereumjs/common` instance which
+manages parameter selection based on the hardfork and EIP settings.
 
-• `Optional` **profiler**: `EVMProfilerOpts`
+This option allows providing a custom set of parameters. Note that parameters
+get fully overwritten, so you need to extend the default parameter dict
+to provide the full parameter set.
 
-#### Defined in
+It is recommended to deep-clone the params object for this to avoid side effects:
 
-[types.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L274)
+```ts
+const params = JSON.parse(JSON.stringify(paramsEVM))
+params['1679']['bn254AddGas'] = 100 // 150
+```
 
-___
+***
 
-### stateManager
+### profiler?
 
-• `Optional` **stateManager**: `EVMStateManagerInterface`
+> `optional` **profiler**: `EVMProfilerOpts`
 
-#### Defined in
+Defined in: [types.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L375)
 
-[types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L264)
+***
+
+### stateManager?
+
+> `optional` **stateManager**: `StateManagerInterface`
+
+Defined in: [types.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L361)

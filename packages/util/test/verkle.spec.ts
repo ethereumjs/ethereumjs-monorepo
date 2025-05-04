@@ -25,7 +25,7 @@ import {
 describe('Verkle cryptographic helpers', () => {
   it('getVerkleStem(): returns the expected stems', () => {
     // Empty address
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(
         getVerkleStem(
           verkle,
@@ -36,7 +36,7 @@ describe('Verkle cryptographic helpers', () => {
     )
 
     // Non-empty address
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(
         getVerkleStem(
           verkle,
@@ -76,7 +76,7 @@ describe('should generate valid tree keys', () => {
     const stem = hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d')
     for (const leaf of [VerkleLeafType.BasicData, VerkleLeafType.CodeHash]) {
       const key = getVerkleKey(stem, leaf)
-      assert.equal(key.length, 32)
+      assert.strictEqual(key.length, 32)
       assert.deepEqual(key, concatBytes(stem, intToBytes(leaf)))
     }
   })
@@ -86,15 +86,15 @@ describe('should encode and decode basic data values', () => {
   const account = new Account(2n, 123n)
   it('should encode basicData to 32 bytes', () => {
     const basicDataBytes = encodeVerkleLeafBasicData(account)
-    assert.equal(basicDataBytes.length, 32)
-    assert.equal(
+    assert.strictEqual(basicDataBytes.length, 32)
+    assert.strictEqual(
       basicDataBytes.slice(8, 16)[7],
       2,
       'confirm that last byte of nonce slice is equal to nonce (i.e. coded as bigEndian)',
     )
     const decodedData = decodeVerkleLeafBasicData(basicDataBytes)
-    assert.equal(decodedData.balance, 123n)
-    assert.equal(decodedData.nonce, 2n)
+    assert.strictEqual(decodedData.balance, 123n)
+    assert.strictEqual(decodedData.nonce, 2n)
   })
 })
 
@@ -104,8 +104,8 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
       '0x7faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ) // PUSH32 aa.....
     const chunkifiedCode = chunkifyCode(byteCode)
-    assert.equal(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
-    assert.equal(
+    assert.strictEqual(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
+    assert.strictEqual(
       chunkifiedCode[1][0],
       2,
       'second chunk should have a 2 in first position (for 2 bytes of PUSHDATA overflow from previous chunk)',
@@ -116,8 +116,8 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
       '0x70aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ) // PUSH17 aa.....
     const chunkifiedCode = chunkifyCode(byteCode)
-    assert.equal(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
-    assert.equal(
+    assert.strictEqual(chunkifiedCode.length, 2, 'bytecode of length 33 should be in 2 chunks')
+    assert.strictEqual(
       chunkifiedCode[1][0],
       0,
       'second chunk should have a 0 in first position (for 0 bytes of PUSHDATA overflow from previous chunk)',
@@ -129,8 +129,8 @@ describe('should chunkify code, accounting for leading PUSHDATA bytes', () => {
     for (const [idx, size] of codeSizes.entries()) {
       const suffixes = generateChunkSuffixes(size)
       const chunks = chunkifyCode(randomBytes(size))
-      assert.equal(suffixes.length, expectedSuffixes[idx])
-      assert.equal(Math.ceil(size / VERKLE_CODE_CHUNK_SIZE), chunks.length)
+      assert.strictEqual(suffixes.length, expectedSuffixes[idx])
+      assert.strictEqual(Math.ceil(size / VERKLE_CODE_CHUNK_SIZE), chunks.length)
       for (const suffix of suffixes) {
         if (suffix > 255 || suffix < 0) assert.fail(`suffix must in range 0-255, got ${suffix}`)
       }

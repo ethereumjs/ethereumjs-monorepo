@@ -7,7 +7,7 @@ const CONTAINER_SIZE = 8192
 describe('Memory', () => {
   const m = new Memory()
   it('should have CONTAINER_SIZE capacity initially', () => {
-    assert.equal(m._store.length, CONTAINER_SIZE)
+    assert.strictEqual(m._store.length, CONTAINER_SIZE)
   })
 
   it('should return zeros from empty memory', () => {
@@ -16,7 +16,7 @@ describe('Memory', () => {
 
   it('should extend capacity to CONTAINER_SIZE + CONTAINER_SIZE bytes', () => {
     m.extend(CONTAINER_SIZE, 3)
-    assert.equal(m._store.length, CONTAINER_SIZE * 2)
+    assert.strictEqual(m._store.length, CONTAINER_SIZE * 2)
   })
 
   it('should return zeros before writing', () => {
@@ -35,13 +35,13 @@ describe('Memory', () => {
   it('should expand by container (8192 bytes) properly when writing to previously untouched location', () => {
     const memory = new Memory()
     memory.write(0, CONTAINER_SIZE, new Uint8Array(CONTAINER_SIZE))
-    assert.equal(
+    assert.strictEqual(
       memory._store.length,
       CONTAINER_SIZE,
       'memory should remain in CONTAINER_SIZE length',
     )
     memory.write(CONTAINER_SIZE, 1, Uint8Array.from([1]))
-    assert.equal(
+    assert.strictEqual(
       memory._store.length,
       8192 * 2,
       'memory buffer length expanded by CONTAINER_SIZE bytes',
@@ -52,9 +52,9 @@ describe('Memory', () => {
     const memory = new Memory()
     memory.write(0, CONTAINER_SIZE, new Uint8Array(CONTAINER_SIZE))
     memory.read(CONTAINER_SIZE, 8)
-    assert.equal(memory._store.length, CONTAINER_SIZE * 2)
+    assert.strictEqual(memory._store.length, CONTAINER_SIZE * 2)
 
     memory.read(CONTAINER_SIZE - 2, 8193)
-    assert.equal(memory._store.length, 16384)
+    assert.strictEqual(memory._store.length, 16384)
   })
 })

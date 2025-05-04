@@ -1,4 +1,4 @@
-# @ethereumjs/genesis
+# @ethereumjs/genesis `v10`
 
 [![NPM Package][genesis-npm-badge]][genesis-npm-link]
 [![GitHub Issues][genesis-issues-badge]][genesis-issues-link]
@@ -15,6 +15,15 @@ This module provides access to Ethereum genesis state for the following networks
 - Sepolia
 - Holesky
 - Hoodi
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Installation
 
 The package can be install with:
 
@@ -52,7 +61,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 [genesis-npm-link]: https://www.npmjs.com/package/@ethereumjs/genesis
 [genesis-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20genesis?label=issues
 [genesis-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+genesis"
-[genesis-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Genesis/badge.svg
+[genesis-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/actions/workflows/static-build.yml/badge.svg
 [genesis-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Genesis%22
 [genesis-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=genesis
 [genesis-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis

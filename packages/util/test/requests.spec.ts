@@ -49,7 +49,7 @@ describe('Requests', () => {
         concatBytes(new Uint8Array([requestType]), depositRequestBytes),
       ) as CLRequest<CLRequestType>
 
-      assert.equal(requestObject.type, requestType)
+      assert.strictEqual(requestObject.type, requestType)
       assert.deepEqual(requestObject.data, depositRequestBytes)
     })
   }

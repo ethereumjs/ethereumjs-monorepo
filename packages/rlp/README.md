@@ -1,4 +1,4 @@
-# @ethereumjs/rlp
+# @ethereumjs/rlp `v10`
 
 [![NPM Package][rlp-npm-badge]][rlp-npm-link]
 [![GitHub Issues][rlp-issues-badge]][rlp-issues-link]
@@ -8,6 +8,16 @@
 
 | [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser. |
 | ----------------------------------------------------------------------------------------------------------------------------------------- |
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Browser](#browser)
+- [API](#api)
+- [CLI](#cli)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -72,7 +82,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 [rlp-npm-link]: https://www.npmjs.com/package/@ethereumjs/rlp
 [rlp-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20rlp?label=issues
 [rlp-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+rlp"
-[rlp-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/rlp/badge.svg
+[rlp-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/actions/workflows/static-build.yml/badge.svg
 [rlp-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22rlp%22
 [rlp-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=rlp
 [rlp-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp

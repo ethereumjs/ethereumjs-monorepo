@@ -50,9 +50,9 @@ describe('DNS', () => {
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
 
-    assert.equal(peers.length, 1, 'returns single peer')
-    assert.equal(peers[0].address, '45.77.40.127', 'peer has correct address')
-    assert.equal(peers[0].tcpPort, 30303, 'peer has correct port')
+    assert.strictEqual(peers.length, 1, 'returns single peer')
+    assert.strictEqual(peers[0].address, '45.77.40.127', 'peer has correct address')
+    assert.strictEqual(peers[0].tcpPort, 30303, 'peer has correct port')
   })
 
   it('retrieves all peers (2) when maxQuantity larger than DNS tree size', async () => {
@@ -63,7 +63,7 @@ describe('DNS', () => {
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
-    assert.equal(peers.length, 2, 'returns two peers')
+    assert.strictEqual(peers.length, 2, 'returns two peers')
     assert.notEqual(peers[0].address, peers[1].address, 'peer addresses are different')
   })
 
@@ -78,7 +78,7 @@ describe('DNS', () => {
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
 
-    assert.equal(peers.length, 3, 'returns three peers')
+    assert.strictEqual(peers.length, 3, 'returns three peers')
     assert.notEqual(peers[0].address, peers[1].address, 'peer 0 is not peer 1')
     assert.notEqual(peers[0].address, peers[2].address, 'peer 0 is not peer 2')
     assert.notEqual(peers[1].address, peers[2].address, 'peer 1 is not peer 2')
@@ -92,7 +92,7 @@ describe('DNS', () => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peers.length, 0, 'method resolves (zero peers)')
+    assert.strictEqual(peers.length, 0, 'method resolves (zero peers)')
   })
 
   it('recovers when dns.resolve returns empty', async () => {
@@ -103,13 +103,13 @@ describe('DNS', () => {
 
     initializeDns()
     let peers = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
+    assert.strictEqual(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
 
     // No TXT records case
     td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[]])
 
     peers = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
+    assert.strictEqual(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
   })
 
   it('ignores domain fetching errors', async () => {
@@ -118,7 +118,7 @@ describe('DNS', () => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peers.length, 0, 'method resolves (zero peers)')
+    assert.strictEqual(peers.length, 0, 'method resolves (zero peers)')
   })
 
   it('ignores unrecognized TXT record formats', async () => {
@@ -128,7 +128,7 @@ describe('DNS', () => {
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peers.length, 0, 'method resolves (zero peers)')
+    assert.strictEqual(peers.length, 0, 'method resolves (zero peers)')
   })
 
   it('caches peers it previously fetched', async () => {
@@ -138,15 +138,19 @@ describe('DNS', () => {
     // Run initial fetch...
     initializeDns()
     const peersA = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peersA.length, 1, 'returns a  network fetched peer')
+    assert.strictEqual(peersA.length, 1, 'returns a  network fetched peer')
 
     // Specify that a subsequent network call retrieving the same peer should throw.
     // This test passes only if the peer is fetched from cache
     td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenThrow(new Error('failure'))
 
     const peersB = await dns.getPeers(1, [mockData.enrTree])
-    assert.equal(peersB.length, 1, 'returns a cached peer')
-    assert.equal(peersA[0].address, peersB[0].address, 'network fetched and cached peers are same')
+    assert.strictEqual(peersB.length, 1, 'returns a cached peer')
+    assert.strictEqual(
+      peersA[0].address,
+      peersB[0].address,
+      'network fetched and cached peers are same',
+    )
   })
 
   it('should reset td', () => {
@@ -167,7 +171,7 @@ describe('DNS: (integration)', () => {
       const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
       const peers = await dns.getPeers(5, [enrTree])
 
-      assert.equal(peers.length, 5, 'returns 5 peers')
+      assert.strictEqual(peers.length, 5, 'returns 5 peers')
 
       const seen: string[] = []
       for (const peer of peers) {

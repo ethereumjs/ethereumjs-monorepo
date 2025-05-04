@@ -60,7 +60,7 @@ describe('EIP4788 header tests', () => {
       },
       { common, skipConsensusFormatValidation: true },
     )
-    assert.equal(
+    assert.strictEqual(
       block.toJSON().header?.parentBeaconBlockRoot,
       bytesToHex(new Uint8Array(32)),
       'JSON output includes excessBlobGas',

@@ -1,4 +1,4 @@
-# @ethereumjs/block
+# @ethereumjs/block `v10`
 
 [![NPM Package][block-npm-badge]][block-npm-link]
 [![GitHub Issues][block-issues-badge]][block-issues-link]
@@ -9,6 +9,26 @@
 | Implements schema and functions related to Ethereum blocks. |
 | ----------------------------------------------------------- |
 
+- 🦄 All block features till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 🔮 `EIP-4844` Shard Blob Txs
+- 💸 `EIP-4895` Beacon Chain Withdrawals
+- 📨 `EIP-7685` Consensus Layer Requests
+- 🛵 324KB bundle size (81KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [EIP Integrations](#eip-integrations)
+- [Consensus Types](#consensus-types)
+- [Browser](#browser)
+- [API](#api)
+- [Testing](#testing)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -20,9 +40,9 @@ npm install @ethereumjs/block
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
-## Usage
+## Getting Started
 
-### Introduction
+### Instantiation
 
 There are several standalone functions to instantiate a `Block`:
 
@@ -82,7 +102,9 @@ try {
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### EIP-1559 Blocks
+## EIP Integrations
+
+### Blocks with an EIP-1559 Fee Market
 
 By default (since `Hardfork.London`) blocks created with this library are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible.
 
@@ -141,7 +163,7 @@ try {
 }
 ```
 
-### EIP-4895 Beacon Chain Withdrawals Blocks
+### Blocks with EIP-4895 Beacon Chain Withdrawals
 
 Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
 
@@ -182,7 +204,7 @@ console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)
 
 Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.withdrawalsTrieIsValid()` method.
 
-### EIP-4844 Shard Blob Transaction Blocks
+### Blocks with EIP-4844 Shard Blob Transactions
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
 
@@ -239,6 +261,39 @@ void main()
 ### Blocks with EIP-7685 Consensus Layer Requests
 
 Starting with v10 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) (`Hardfork.Prague` or higher). See the `@ethereumjs/util` [Request](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-request) README section for an overview of current request types.
+
+```ts
+// ./examples/clrequests.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createCLRequest, CLRequestType, hexToBytes, bytesToHex } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
+
+import { createBlock, genRequestsRoot } from '../src'
+
+// Enable EIP-7685 to support CLRequests
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
+
+// Create the three CLRequest types (Deposit, Withdrawal, Consolidation)
+const depositData = hexToBytes('0x00...') // Deposit request data
+const depositRequest = createCLRequest(depositData)
+
+const withdrawalData = hexToBytes('0x01...') // Withdrawal request data
+const withdrawalRequest = createCLRequest(withdrawalData)
+
+const consolidationData = hexToBytes('0x02...') // Consolidation request data
+const consolidationRequest = createCLRequest(consolidationData)
+
+// CLRequests must be sorted by type (Deposit=0, Withdrawal=1, Consolidation=2)
+const requests = [depositRequest, withdrawalRequest, consolidationRequest]
+
+// Generate the requestsHash
+const requestsHash = genRequestsRoot(requests, sha256)
+
+// Create a block with the CLRequests hash
+const block = createBlock({ header: { requestsHash } }, { common })
+console.log(`Created block with CLRequests hash: 0x${bytesToHex(block.hash())}`)
+```
 
 ### Consensus Types
 

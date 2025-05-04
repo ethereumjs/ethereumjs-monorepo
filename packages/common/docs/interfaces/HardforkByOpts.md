@@ -1,41 +1,25 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / HardforkByOpts
 
 # Interface: HardforkByOpts
 
-## Table of contents
-
-### Properties
-
-- [blockNumber](HardforkByOpts.md#blocknumber)
-- [td](HardforkByOpts.md#td)
-- [timestamp](HardforkByOpts.md#timestamp)
+Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L162)
 
 ## Properties
 
-### blockNumber
+### blockNumber?
 
-• `Optional` **blockNumber**: `BigIntLike`
+> `optional` **blockNumber**: `BigIntLike`
 
-#### Defined in
+Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L163)
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+***
 
-___
+### timestamp?
 
-### td
+> `optional` **timestamp**: `BigIntLike`
 
-• `Optional` **td**: `BigIntLike`
-
-#### Defined in
-
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L159)
-
-___
-
-### timestamp
-
-• `Optional` **timestamp**: `BigIntLike`
-
-#### Defined in
-
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L158)
+Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L164)

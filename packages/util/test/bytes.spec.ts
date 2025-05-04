@@ -37,30 +37,30 @@ import {
 
 describe('zero address', () => {
   it('should generate a zero address', () => {
-    assert.equal(zeroAddress(), '0x0000000000000000000000000000000000000000')
+    assert.strictEqual(zeroAddress(), '0x0000000000000000000000000000000000000000')
   })
 })
 
 describe('is zero address', () => {
   it('should return true when a zero address is passed', () => {
-    assert.equal(isZeroAddress('0x0000000000000000000000000000000000000000'), true)
+    assert.strictEqual(isZeroAddress('0x0000000000000000000000000000000000000000'), true)
   })
 
   it('should return false when the address is not equal to zero', () => {
     const nonZeroAddress = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    assert.equal(isZeroAddress(nonZeroAddress), false)
+    assert.strictEqual(isZeroAddress(nonZeroAddress), false)
   })
 
   it('should return false when address is not hex-prefixed', () => {
-    assert.equal(isZeroAddress('0000000000000000000000000000000000000000'), false)
+    assert.strictEqual(isZeroAddress('0000000000000000000000000000000000000000'), false)
   })
 })
 
 describe('unpadBytes', () => {
   it('should unpad a Uint8Array', () => {
-    const bytes = toBytes('0x0000000006600')
+    const bytes = hexToBytes('0x0000000006600')
     const r = unpadBytes(bytes)
-    assert.deepEqual(r, toBytes('0x6600'))
+    assert.deepEqual(r, hexToBytes('0x6600'))
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -86,7 +86,7 @@ describe('unpadHex', () => {
   it('should unpad a hex prefixed string', () => {
     const str = '0x0000000006600'
     const r = unpadHex(str)
-    assert.equal(r, '0x6600')
+    assert.strictEqual(r, '0x6600')
   })
   it('should throw if input is not hex-prefixed', () => {
     assert.throws(function () {
@@ -99,12 +99,12 @@ describe('setLengthLeft', () => {
   it('should left pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthLeft(bytes, 3)
-    assert.equal(bytesToHex(padded), '0x000909')
+    assert.strictEqual(bytesToHex(padded), '0x000909')
   })
   it('should left truncate a Uint8Array', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthLeft(bytes, 2)
-    assert.equal(bytesToHex(padded), '0x0009')
+    assert.strictEqual(bytesToHex(padded), '0x0009')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -117,12 +117,12 @@ describe('setLengthRight', () => {
   it('should right pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthRight(bytes, 3)
-    assert.equal(bytesToHex(padded), '0x090900')
+    assert.strictEqual(bytesToHex(padded), '0x090900')
   })
   it('should right truncate a Uint8Array', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthRight(bytes, 2)
-    assert.equal(bytesToHex(padded), '0x0900')
+    assert.strictEqual(bytesToHex(padded), '0x0900')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
@@ -135,7 +135,7 @@ describe('bytesToHex', () => {
   it('should convert a Uint8Array to a prefixed hex string', () => {
     const bytes = hexToBytes('0x5b9ac8')
     const hex = bytesToHex(bytes)
-    assert.equal(hex, '0x5b9ac8')
+    assert.strictEqual(hex, '0x5b9ac8')
   })
   it('empty Uint8Array', () => {
     const bytes = new Uint8Array()
@@ -148,11 +148,11 @@ describe('bytesToInt', () => {
   it('should convert an int to hex', () => {
     const bytes = hexToBytes('0x5b9ac8')
     const i = bytesToInt(bytes)
-    assert.equal(i, 6003400)
-    assert.equal(bytesToInt(new Uint8Array()), 0)
+    assert.strictEqual(i, 6003400)
+    assert.strictEqual(bytesToInt(new Uint8Array()), 0)
   })
   it('should convert empty input to 0', () => {
-    assert.equal(bytesToInt(new Uint8Array()), 0)
+    assert.strictEqual(bytesToInt(new Uint8Array()), 0)
   })
 })
 
@@ -162,14 +162,14 @@ describe('fromSigned', () => {
     const bytes = new Uint8Array(32)
     bytes[0] = 255
 
-    assert.equal(fromSigned(bytes).toString(), neg)
+    assert.strictEqual(fromSigned(bytes).toString(), neg)
   })
   it('should convert an unsigned (positive) Uint8Array to a signed number', () => {
     const neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
     const bytes = new Uint8Array(32)
     bytes[0] = 1
 
-    assert.equal(fromSigned(bytes).toString(), neg)
+    assert.strictEqual(fromSigned(bytes).toString(), neg)
   })
 })
 
@@ -179,7 +179,7 @@ describe('toUnsigned', () => {
     const hex = '0xff00000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
-    assert.equal(bytesToHex(toUnsigned(num)), hex)
+    assert.strictEqual(bytesToHex(toUnsigned(num)), hex)
   })
 
   it('should convert a signed (positive) number to unsigned', () => {
@@ -187,14 +187,14 @@ describe('toUnsigned', () => {
     const hex = '0x0100000000000000000000000000000000000000000000000000000000000000'
     const num = BigInt(neg)
 
-    assert.equal(bytesToHex(toUnsigned(num)), hex)
+    assert.strictEqual(bytesToHex(toUnsigned(num)), hex)
   })
 })
 
 describe('hex prefix', () => {
   const string = 'd658a4b8247c14868f3c512fa5cbb6e458e4a989'
   it('should add', () => {
-    assert.equal(addHexPrefix(string), '0x' + string)
+    assert.strictEqual(addHexPrefix(string), '0x' + string)
   })
 })
 
@@ -203,13 +203,13 @@ describe('short', () => {
   const shortened = '0x657468657265756d0000000000000000000000000000000000…'
   const shortenedToTen = '0x6574686572…'
   it('should short string', () => {
-    assert.equal(short(string), shortened)
+    assert.strictEqual(short(string), shortened)
   })
   it('should short buffer', () => {
-    assert.equal(short(hexToBytes(string)), shortened)
+    assert.strictEqual(short(hexToBytes(string)), shortened)
   })
   it('should short buffer to 10 chars', () => {
-    assert.equal(short(hexToBytes(string), 10), shortenedToTen)
+    assert.strictEqual(short(hexToBytes(string), 10), shortenedToTen)
   })
 })
 
@@ -221,7 +221,7 @@ describe('toBytes', () => {
     assert.isTrue(equalsBytes(toBytes([]), new Uint8Array()))
     // String
     assert.isTrue(equalsBytes(toBytes('0x11'), Uint8Array.from([17])))
-    assert.equal(bytesToHex(toBytes('0x1234')), '0x1234')
+    assert.strictEqual(bytesToHex(toBytes('0x1234')), '0x1234')
     assert.isTrue(equalsBytes(toBytes('0x'), Uint8Array.from([])))
     // Number
     assert.isTrue(equalsBytes(toBytes(1), Uint8Array.from([1])))
@@ -251,8 +251,10 @@ describe('toBytes', () => {
   })
 
   it('should fail with non 0x-prefixed hex strings', () => {
-    assert.throws(() => toBytes('11' as any), '11')
-    assert.throws(() => toBytes('' as any))
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes('11'), '11')
+    // @ts-expect-error -- Testing wrong input
+    assert.throws(() => toBytes(''))
     assert.throws(() => toBytes('0xR'), '0xR')
   })
 
@@ -296,8 +298,8 @@ describe('intToBytes and intToHex', () => {
   })
 
   it('should pass on correct input', () => {
-    assert.equal(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
-    assert.equal(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
+    assert.strictEqual(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
+    assert.strictEqual(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
   })
 
   it('should pass on correct input', () => {
@@ -308,19 +310,19 @@ describe('intToBytes and intToHex', () => {
 
 describe('validateNoLeadingZeroes', () => {
   const noLeadingZeroes = {
-    a: toBytes('0x123'),
+    a: hexToBytes('0x123'),
   }
   const noLeadingZeroBytes = {
-    a: toBytes('0x01'),
+    a: hexToBytes('0x01'),
   }
   const leadingZeroBytes = {
-    a: toBytes('0x001'),
+    a: hexToBytes('0x001'),
   }
   const onlyZeroes = {
-    a: toBytes('0x0'),
+    a: hexToBytes('0x0'),
   }
   const emptyBuffer = {
-    a: toBytes('0x'),
+    a: hexToBytes('0x'),
   }
 
   const undefinedValue = {
@@ -364,15 +366,15 @@ describe('validateNoLeadingZeroes', () => {
 
 describe('bytesToBigInt', () => {
   it('should pass on correct input', () => {
-    const buf = toBytes('0x123')
-    assert.equal(BigInt(0x123), bytesToBigInt(buf))
+    const buf = hexToBytes('0x123')
+    assert.strictEqual(BigInt(0x123), bytesToBigInt(buf))
   })
 })
 
 describe('bigIntToBytes', () => {
   it('should pass on correct input', () => {
     const num = BigInt(0x123)
-    assert.deepEqual(toBytes('0x123'), bigIntToBytes(num))
+    assert.deepEqual(hexToBytes('0x123'), bigIntToBytes(num))
   })
 })
 
@@ -405,7 +407,11 @@ describe('bigIntToAddressBytes', () => {
   for (const [addressHex, addressBigInt, isSafe] of testCases) {
     it('should correctly convert', () => {
       const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt as bigint, false))
-      assert.equal(addressHex, addressHexFromBigInt, `should correctly convert ${addressBigInt}`)
+      assert.strictEqual(
+        addressHex,
+        addressHexFromBigInt,
+        `should correctly convert ${addressBigInt}`,
+      )
       if (isSafe === false) {
         assert.throw(() => bigIntToAddressBytes(addressBigInt as bigint))
       }
@@ -422,7 +428,7 @@ describe('intToUnpaddedBytes', () => {
 
 describe('bigIntToHex', () => {
   it('should pass on correct input', () => {
-    assert.equal(bigIntToHex(BigInt(1)), '0x1')
+    assert.strictEqual(bigIntToHex(BigInt(1)), '0x1')
   })
 })
 
@@ -468,43 +474,43 @@ describe('matchingBytesLength', () => {
   it('should return 0 when both arrays are empty', () => {
     const bytes1 = new Uint8Array([])
     const bytes2 = new Uint8Array([])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
   })
 
   it('should return 0 when one of the arrays is empty', () => {
     const bytes1 = new Uint8Array([1, 2, 3])
     const bytes2 = new Uint8Array([])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
   })
 
   it('should return 0 when arrays have no matching elements', () => {
     const bytes1 = new Uint8Array([1, 2, 3])
     const bytes2 = new Uint8Array([4, 5, 6])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
   })
 
   it('should handle arrays with same elements but different lengths', () => {
     const bytes1 = new Uint8Array([1, 2, 3])
     const bytes2 = new Uint8Array([1, 2, 3, 4])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 3)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 3)
   })
 
   it('should handle arrays with matching elements at end', () => {
     const bytes1 = new Uint8Array([1, 2, 3])
     const bytes2 = new Uint8Array([0, 1, 2, 3])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 0)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
   })
 
   it('should handle arrays with matching elements at start', () => {
     const bytes1 = new Uint8Array([1, 2, 3])
     const bytes2 = new Uint8Array([1, 2, 3, 4, 5])
-    assert.equal(matchingBytesLength(bytes1, bytes2), 3)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 3)
   })
 
   it('should handle arrays with large number of elements', () => {
     const bytes1 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
     const bytes2 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
-    assert.equal(matchingBytesLength(bytes1, bytes2), 1000000)
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 1000000)
   })
 })
 
@@ -512,20 +518,20 @@ describe('matchingBitsLength', () => {
   it('should return 0 when both arrays are empty', () => {
     const bits1: number[] = []
     const bits2: number[] = []
-    assert.equal(matchingBitsLength(bits1, bits2), 0)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 0)
   })
 
   it('should return 0 when one of the arrays is empty', () => {
     const bits1: number[] = [1, 0, 1, 1, 0, 0, 1, 1] // Example bits
     const bits2: number[] = []
-    assert.equal(matchingBitsLength(bits1, bits2), 0)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 0)
   })
 
   it('should return 0 when arrays have no matching bits in the first byte', () => {
     // 0xff = 11111111, 0x7f = 01111111: first bit mismatches.
     const bits1: number[] = [1, 1, 1, 1, 1, 1, 1, 1] // 0xff
     const bits2: number[] = [0, 1, 1, 1, 1, 1, 1, 1] // 0x7f
-    assert.equal(matchingBitsLength(bits1, bits2), 0)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 0)
   })
 
   it('should return correct count for partially matching bits in the first byte', () => {
@@ -533,7 +539,7 @@ describe('matchingBitsLength', () => {
     // The first four bits match, then the 5th bit mismatches.
     const bits1: number[] = [1, 1, 1, 1, 1, 1, 1, 1] // 0xff
     const bits2: number[] = [1, 1, 1, 1, 0, 0, 0, 0] // 0xf0
-    assert.equal(matchingBitsLength(bits1, bits2), 4)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 4)
   })
 
   it('should handle arrays with matching bits across multiple bytes', () => {
@@ -576,7 +582,7 @@ describe('matchingBitsLength', () => {
       0,
       0, // 0xf0
     ]
-    assert.equal(matchingBitsLength(bits1, bits2), 12)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 12)
   })
 
   it('should handle arrays with same elements but different lengths', () => {
@@ -641,7 +647,7 @@ describe('matchingBitsLength', () => {
       0,
       0, // 0x78 (extra)
     ]
-    assert.equal(matchingBitsLength(bits1, bits2), 24)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 24)
   })
 
   it('should handle arrays with matching bits at the start then mismatch mid-byte', () => {
@@ -701,7 +707,7 @@ describe('matchingBitsLength', () => {
       0,
       0, // 0x00
     ]
-    assert.equal(matchingBitsLength(bits1, bits2), 17)
+    assert.strictEqual(matchingBitsLength(bits1, bits2), 17)
   })
 
   it('should handle arrays with a large number of elements', () => {
@@ -713,7 +719,7 @@ describe('matchingBitsLength', () => {
       arr2.push(i % 2) // Same pattern
     }
     // Each bit matches exactly.
-    assert.equal(matchingBitsLength(arr1, arr2), length)
+    assert.strictEqual(matchingBitsLength(arr1, arr2), length)
   })
 })
 

@@ -32,6 +32,7 @@ import type {
   VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
@@ -127,12 +128,18 @@ export interface InterpreterStep {
     fee: number
     dynamicFee?: bigint
     isAsync: boolean
+    code: number // The hexadecimal representation of the opcode (e.g. 0x60 for PUSH1)
   }
   account: Account
   address: Address
   memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
+  eofSection?: number // Current EOF section being executed
+  immediate?: Uint8Array // Immediate argument of the opcode
+  eofFunctionDepth?: number // Depth of CALLF return stack
+  error?: Uint8Array // Error bytes returned if revert occurs
+  storage?: [PrefixedHexString, PrefixedHexString][]
 }
 
 /**
@@ -283,7 +290,7 @@ export class Interpreter {
     while (this._runState.programCounter < this._runState.code.length) {
       const programCounter = this._runState.programCounter
       let opCode: number
-      let opCodeObj: OpcodeMapEntry
+      let opCodeObj: OpcodeMapEntry | undefined
       if (doJumpAnalysis) {
         opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
@@ -319,13 +326,13 @@ export class Interpreter {
         }
       }
 
-      this._runState.opCode = opCode!
+      this._runState.opCode = opCode
 
       try {
         if (overheadTimer !== undefined) {
           this.performanceLogger.pauseTimer()
         }
-        await this.runStep(opCodeObj!)
+        await this.runStep(opCodeObj)
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
@@ -374,6 +381,9 @@ export class Interpreter {
 
     let gas = opInfo.feeBigInt
 
+    // Cache pre-gas memory size if doing tracing (EIP-7756)
+    const memorySizeCache = this._runState.memoryWordCount
+
     try {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
@@ -384,7 +394,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, this.getGasLeft())
+        await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
       }
 
       if (
@@ -441,27 +451,58 @@ export class Interpreter {
     return this._evm['_opcodeMap'][op]
   }
 
-  async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
-    const opcode = opcodeInfo.opcodeInfo
+  async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode).opcodeInfo
+    const section = this._env.eof?.container.header.getSectionFromProgramCounter(
+      this._runState.programCounter,
+    )
+    let error = undefined
+    let immediate = undefined
+    if (opcodeInfo.code === 0xfd) {
+      // If opcode is REVERT, read error data and return in trace
+      const [offset, length] = this._runState.stack.peek(2)
+      error = new Uint8Array(0)
+      if (length !== BIGINT_0) {
+        error = this._runState.memory.read(Number(offset), Number(length))
+      }
+    }
+
+    // Add immediate if present (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
+    if (
+      stackDelta[opcodeInfo.code] !== undefined &&
+      stackDelta[opcodeInfo.code].intermediates > 0
+    ) {
+      immediate = this._runState.code.slice(
+        this._runState.programCounter + 1, // immediates start "immediately" following current opcode
+        this._runState.programCounter + 1 + stackDelta[opcodeInfo.code].intermediates,
+      )
+    }
+
+    // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
       gasRefund: this._runState.gasRefund,
       opcode: {
-        name: opcode.fullName,
-        fee: opcode.fee,
+        name: opcodeInfo.fullName,
+        fee: opcodeInfo.fee,
         dynamicFee,
-        isAsync: opcode.isAsync,
+        isAsync: opcodeInfo.isAsync,
+        code: opcodeInfo.code,
       },
       stack: this._runState.stack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(this._runState.memoryWordCount) * 32),
-      memoryWordCount: this._runState.memoryWordCount,
+      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
+      eofSection: section,
+      immediate,
+      error,
+      eofFunctionDepth:
+        this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
     }
 
     if (this._evm.DEBUG) {
@@ -499,6 +540,7 @@ export class Interpreter {
      * @property {fee}        opcode.number Base fee of the opcode
      * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
      * @property {boolean}    opcode.isAsync opcode is async
+     * @property {number}     opcode.code opcode code
      * @property {BigInt} gasLeft amount of gasLeft
      * @property {BigInt} gasRefund gas refund
      * @property {StateManager} stateManager a {@link StateManager} instance
@@ -510,6 +552,11 @@ export class Interpreter {
      * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
      * @property {BigInt} memoryWordCount current size of memory in words
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
+     * @property {number} eofSection the current EOF code section referenced by the PC
+     * @property {Uint8Array} immediate the immediate argument of the opcode
+     * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
+     * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
+     * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
      */
     await this._evm['_emit']('step', eventObj)
   }

@@ -54,7 +54,7 @@ describe('[EthereumClient]', async () => {
 
     await client.open()
     assert.isTrue(client.opened, 'opened')
-    assert.equal(await client.open(), false, 'already opened')
+    assert.strictEqual(await client.open(), false, 'already opened')
   }, 30000)
 
   it('should start/stop', async () => {
@@ -64,9 +64,9 @@ describe('[EthereumClient]', async () => {
     await (client.service as any)['execution'].setupMerkleVM()
     await client.start()
     assert.isTrue(client.started, 'started')
-    assert.equal(await client.start(), false, 'already started')
+    assert.strictEqual(await client.start(), false, 'already started')
     await client.stop()
     assert.isFalse(client.started, 'stopped')
-    assert.equal(await client.stop(), false, 'already stopped')
+    assert.strictEqual(await client.stop(), false, 'already stopped')
   }, 30000)
 })

@@ -197,7 +197,7 @@ describe('message sig', () => {
   it('should return hex strings that the RPC can use', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
-    assert.equal(toRPCSig(BigInt(27), r, s), sig)
+    assert.strictEqual(toRPCSig(BigInt(27), r, s), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
@@ -208,7 +208,7 @@ describe('message sig', () => {
   it('should support compact signature representation (EIP-2098)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    assert.equal(toCompactSig(BigInt(27), r, s), sig)
+    assert.strictEqual(toCompactSig(BigInt(27), r, s), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
@@ -219,7 +219,7 @@ describe('message sig', () => {
   it('should support compact signature representation (EIP-2098) (v=0)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    assert.equal(toCompactSig(BigInt(0), r, s), sig)
+    assert.strictEqual(toCompactSig(BigInt(0), r, s), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(27),
       r,
@@ -230,7 +230,7 @@ describe('message sig', () => {
   it('should support compact signature representation 2 (EIP-2098)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    assert.equal(toCompactSig(BigInt(28), r, s), sig)
+    assert.strictEqual(toCompactSig(BigInt(28), r, s), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
@@ -241,7 +241,7 @@ describe('message sig', () => {
   it('should support compact signature representation 2 (EIP-2098) (v=1)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
-    assert.equal(toCompactSig(BigInt(1), r, s), sig)
+    assert.strictEqual(toCompactSig(BigInt(1), r, s), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v: BigInt(28),
       r,
@@ -254,7 +254,7 @@ describe('message sig', () => {
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
     const v = chainId * BigInt(2) + BigInt(35)
-    assert.equal(toRPCSig(v, r, s, chainId), sig)
+    assert.strictEqual(toRPCSig(v, r, s, chainId), sig)
     assert.deepEqual(fromRPCSig(sig), {
       v,
       r,
@@ -282,7 +282,7 @@ describe('message sig', () => {
   })
 
   it('pad short r and s values', () => {
-    assert.equal(
+    assert.strictEqual(
       toRPCSig(BigInt(27), r.slice(20), s.slice(20)),
       '0x00000000000000000000000000000000000000004a1579cf389ef88b20a1abe90000000000000000000000000000000000000000326fa689f228040429e3ca661b',
     )

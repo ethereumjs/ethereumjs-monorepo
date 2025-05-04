@@ -15,7 +15,7 @@ describe('generateClientConfig', () => {
       network: 'mainnet',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainId(), 11155111n)
+    assert.strictEqual(common.chainId(), 11155111n)
   })
 
   it('should fall back to networkId if chainId is not provided', async () => {
@@ -24,7 +24,7 @@ describe('generateClientConfig', () => {
       network: 'mainnet',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainId(), 11155111n)
+    assert.strictEqual(common.chainId(), 11155111n)
   })
 
   it('should fall back to network name if both chainId and networkId are missing', async () => {
@@ -32,7 +32,7 @@ describe('generateClientConfig', () => {
       network: 'sepolia',
     }
     const { common } = await generateClientConfig(opts)
-    assert.equal(common.chainName(), 'sepolia')
+    assert.strictEqual(common.chainName(), 'sepolia')
   })
 
   it('should initialize WASM crypto when useJsCrypto is false', async () => {
@@ -129,6 +129,6 @@ describe('generateClientConfig', () => {
       logLevel: 'debug',
     }
     const { config } = await generateClientConfig(opts)
-    assert.equal(config.logger?.level, 'debug', 'Log level should be set to debug')
+    assert.strictEqual(config.logger?.level, 'debug', 'Log level should be set to debug')
   })
 })
