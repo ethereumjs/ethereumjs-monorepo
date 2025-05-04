@@ -35,7 +35,7 @@ console.log(eoaCode7702AuthorizationListBytesItemToJSON(signedSelf))
 const unsignedAuthorizationListItemOther: EOACode7702AuthorizationListItemUnsigned = {
   chainId: '0x', // The chainId 0 is special: this authorization will work on any chain which supports EIP-7702
   address: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-  nonce: '0x',
+  nonce: '0x1',
 }
 const signedOther = eoaCode7702SignAuthorization(
   unsignedAuthorizationListItemOther,
