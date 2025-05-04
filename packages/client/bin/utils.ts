@@ -54,7 +54,7 @@ import { setupMetrics } from '../src/util/metrics.ts'
 
 import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
-import * as ckzg from 'c-kzg'
+import { default as ckzg } from 'c-kzg'
 import type { Logger } from '../src/logging.ts'
 import type { ClientOpts } from '../src/types.ts'
 
