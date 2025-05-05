@@ -1,7 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
@@ -34,6 +34,10 @@ const main = async () => {
   const tx = createBlob4844Tx(txData, { common })
 
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+
+  // To send a transaction via RPC, you can something like this:
+  // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
+  // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
 }
 
 void main()
