@@ -10,6 +10,7 @@ import {
   VERKLE_NODE_WIDTH,
   VerkleLeafType,
   bytesToBigInt,
+  bytesToHex,
   chunkifyCode,
   createAccountFromRLP,
   createAddressFromString,
@@ -43,6 +44,7 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { createMPT } from '@ethereumjs/mpt'
 import type { Address, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -100,9 +102,9 @@ export class TransitionStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    if (opts.common.isActivatedEIP(6800) === false) {
-      throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
-    }
+    // if (opts.common.isActivatedEIP(6800) === false) {
+    //   throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
+    // }
 
     if (opts.common.customCrypto.verkle === undefined) {
       throw EthereumJSErrorWithoutCode('verkle crypto required')
@@ -526,5 +528,54 @@ export class TransitionStateManager implements StateManagerInterface {
   }
   async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
     throw EthereumJSErrorWithoutCode('Method not implemented.')
+  }
+
+  /**
+   * Migrates a specified set of MPT leaves (accounts) to the Verkle tree.
+   * The caller is responsible for determining which leaves to migrate (stride logic).
+   *
+   * @param leafKeys Array of account keys (addresses as Uint8Array) to migrate.
+   */
+  public async migrateLeavesToVerkle(leafKeys: Uint8Array[]): Promise<void> {
+    for (const key of leafKeys) {
+      // 1. Get the account RLP from the frozen MPT
+      const accountRLP = await this._frozenTree.get(key)
+      if (!accountRLP) {
+        // No account at this key, skip
+        continue
+      }
+      const address = createAddressFromString(bytesToHex(key))
+      const account = createPartialAccountFromRLP(accountRLP)
+
+      // 2. Insert account into Verkle Tree
+      await this.putAccount(address, account)
+
+      // 3. If account has code, migrate code as well
+      if (account.codeHash && !equalsBytes(account.codeHash, KECCAK256_NULL)) {
+        const code = await this.getCode(address)
+        if (code) {
+          await this.putCode(address, code)
+        }
+      }
+
+      // 4. Migrate storage if storageRoot is not empty
+      if (account.storageRoot && !equalsBytes(account.storageRoot, KECCAK256_NULL)) {
+        const storageTrie = await createMPT({
+          root: account.storageRoot,
+          db: this._frozenTree.database()['db'],
+        })
+
+        // Use walkAllValueNodes to iterate all storage slots
+        await storageTrie.walkAllValueNodes(async (node, keyNibbles) => {
+          // node.value() is the value at this storage slot
+          // keyNibbles is the nibbles array; convert to Uint8Array key
+          const storageKey = Uint8Array.from(keyNibbles)
+          const storageValue = node.value()
+          if (storageValue !== null && storageValue !== undefined) {
+            await this.putStorage(address, storageKey, storageValue)
+          }
+        })
+      }
+    }
   }
 }

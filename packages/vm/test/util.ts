@@ -391,17 +391,17 @@ export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
 
 /**
  * setupPreConditions given JSON testData
- * @param state - the state DB/trie
+ * @param stateManager - the stateManager
  * @param testData - JSON from tests repo
  */
-export async function setupPreConditions(state: StateManagerInterface, testData: any) {
-  await state.checkpoint()
+export async function setupPreConditions(stateManager: StateManagerInterface, testData: any) {
+  await stateManager.checkpoint()
   for (const addressStr of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[addressStr]
 
     const addressBuf = format(addressStr)
     const address = new Address(addressBuf)
-    await state.putAccount(address, new Account())
+    await stateManager.putAccount(address, new Account())
 
     const codeBuf = format(code)
     const codeHash = keccak256(codeBuf)
@@ -413,13 +413,13 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
-      await state.putStorage(address, key, val)
+      await stateManager.putStorage(address, key, val)
     }
 
     // Put contract code
-    await state.putCode(address, codeBuf)
+    await stateManager.putCode(address, codeBuf)
 
-    const storageRoot = (await state.getAccount(address))!.storageRoot
+    const storageRoot = (await stateManager.getAccount(address))!.storageRoot
 
     if (testData.exec?.address === addressStr) {
       testData.root(storageRoot)
@@ -433,9 +433,9 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
       storageRoot,
       codeSize: codeBuf.byteLength,
     })
-    await state.putAccount(address, account)
+    await stateManager.putAccount(address, account)
   }
-  await state.commit()
+  await stateManager.commit()
 }
 
 /**
