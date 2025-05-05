@@ -299,7 +299,6 @@ export class PendingBlock {
     if (requests !== undefined) {
       this.executionRequests.set(payloadId, requests)
     }
-    console.log({requests});
 
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
