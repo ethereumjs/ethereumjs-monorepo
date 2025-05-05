@@ -478,4 +478,7 @@ export const eipsDict: EIPsDict = {
   7864: {
     minimumHardfork: Hardfork.London,
   },
+  9999: {
+    minimumHardfork: Hardfork.Cancun,
+  },
 }
