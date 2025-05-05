@@ -201,8 +201,17 @@ describe(`${method}: call with executionPayloadV4`, () => {
     await service.txPool.add(depositTx, true)
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
-    const { executionPayload, executionRequests } = res.result
+    const getPayloadResult = res.result
+    // recall getpayload to verify if all of cached payload is returned
+    res = await rpc.request('engine_getPayloadV4', [payloadId])
+    const getPayloadRetryResult = res.result
+    const hasAllKeys = Object.keys(getPayloadResult).reduce(
+      (acc, key) => acc && Object.keys(getPayloadRetryResult).includes(key),
+      true,
+    )
+    assert(hasAllKeys === true, 'all cached data should be returned on retry')
 
+    const { executionPayload, executionRequests } = getPayloadResult
     assert.strictEqual(
       executionRequests?.length,
       1,
