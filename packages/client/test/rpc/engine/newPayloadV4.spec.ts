@@ -150,7 +150,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
     let res
 
     res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
-    assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
+    assert.strictEqual(res.result.hash, validForkChoiceState.headBlockHash)
 
     const validBlock = {
       ...blockData,
@@ -174,12 +174,12 @@ describe(`${method}: call with executionPayloadV4`, () => {
       const expectedError = expectedErrors[index]
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.strictEqual(res.error.code, INVALID_PARAMS)
       assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot, []])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
@@ -203,14 +203,14 @@ describe(`${method}: call with executionPayloadV4`, () => {
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const { executionPayload, executionRequests } = res.result
 
-    assert.equal(
+    assert.strictEqual(
       executionRequests?.length,
       1,
       'executionRequests should have the deposit request, and should exclude the other requests (these are empty)',
     )
 
     const depositRequestBytes = hexToBytes(executionRequests[0])
-    assert.equal(
+    assert.strictEqual(
       depositRequestBytes[0],
       0x00,
       'deposit request byte 0 is the deposit request identifier byte (0x00)',
@@ -223,7 +223,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
       parentBeaconBlockRoot,
       executionRequests,
     ])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     const newBlockHashHex = executionPayload.blockHash
     // add this block to the blockchain
@@ -235,6 +235,6 @@ describe(`${method}: call with executionPayloadV4`, () => {
       },
       null,
     ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
   })
 })

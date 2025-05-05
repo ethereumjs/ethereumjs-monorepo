@@ -78,8 +78,8 @@ describe('trace tests', async () => {
       gasPrice: 0xf,
     }).sign(randomBytes(32))
     await runTx(vm, { tx, skipBalance: true, skipBlockGasLimitValidation: true, skipNonce: true })
-    assert.equal(trace.length, 7, 'trace length is 7')
-    assert.equal(JSON.parse(trace[6]).gasUsed, 21154)
+    assert.strictEqual(trace.length, 7, 'trace length is 7')
+    assert.strictEqual(JSON.parse(trace[6]).gasUsed, 21154)
   })
   it('should produce a trace of the correct length', async () => {
     const common = new Common({
@@ -115,8 +115,8 @@ describe('trace tests', async () => {
       skipNonce: true,
       skipBlockGasLimitValidation: true,
     })
-    assert.equal(result.execResult.executionGasUsed, BigInt(4))
-    assert.equal(trace.length, 4)
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
+    assert.strictEqual(trace.length, 4)
   })
   it('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({

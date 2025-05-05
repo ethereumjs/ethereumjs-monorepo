@@ -83,19 +83,23 @@ describe('EIP4844 tests', () => {
     await blockBuilder.addTransaction(signedTx)
 
     const { block } = await blockBuilder.build()
-    assert.equal(block.transactions.length, 1, 'blob transaction should be included')
-    assert.equal(
+    assert.strictEqual(block.transactions.length, 1, 'blob transaction should be included')
+    assert.strictEqual(
       bytesToHex(block.transactions[0].hash()),
       bytesToHex(signedTx.hash()),
       'blob transaction should be same',
     )
 
     const blobGasPerBlob = common.param('blobGasPerBlob')
-    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
+    assert.strictEqual(
+      block.header.blobGasUsed,
+      blobGasPerBlob,
+      'blob gas used for 1 blob should match',
+    )
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block, skipBlockValidation: true })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)

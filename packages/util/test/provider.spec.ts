@@ -14,8 +14,12 @@ const fakeEthersProvider = {
 
 describe('getProvider', () => {
   it('should work', () => {
-    assert.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
-    assert.equal(
+    assert.strictEqual(
+      getProvider(providerUrl),
+      providerUrl,
+      'returned correct provider url string',
+    )
+    assert.strictEqual(
       getProvider(fakeEthersProvider),
       fakeEthersProvider._getConnection().url,
       'returned correct provider url string',
@@ -49,7 +53,7 @@ describe('fetchFromProvider', () => {
       method: 'eth_getBalance',
       params: ['0xabcd'],
     })
-    assert.equal(res, '0x1', 'returned correct response')
+    assert.strictEqual(res, '0x1', 'returned correct response')
     vi.unstubAllGlobals()
   })
 

@@ -27,7 +27,7 @@ describe('testing checkpoints', () => {
 
   it('should copy trie and get value added to original trie', async () => {
     trieCopy = trie.shallowCopy()
-    assert.equal(bytesToHex(trieCopy.root()), preRoot)
+    assert.strictEqual(bytesToHex(trieCopy.root()), preRoot)
     const res = await trieCopy.get(utf8ToBytes('do'))
     assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
   })
@@ -35,7 +35,7 @@ describe('testing checkpoints', () => {
   it('should deactivate cache on copy()', async () => {
     const trie = new MerklePatriciaTrie({ cacheSize: 100 })
     trieCopy = trie.shallowCopy()
-    assert.equal((trieCopy as any)._opts.cacheSize, 0)
+    assert.strictEqual((trieCopy as any)._opts.cacheSize, 0)
   })
 
   it('should create a checkpoint', () => {
@@ -51,8 +51,8 @@ describe('testing checkpoints', () => {
 
   it('should copy trie and get upstream and cache values after checkpoint', async () => {
     trieCopy = trie.shallowCopy()
-    assert.equal(bytesToHex(trieCopy.root()), postRoot)
-    assert.equal(trieCopy['_db'].checkpoints.length, 1)
+    assert.strictEqual(bytesToHex(trieCopy.root()), postRoot)
+    assert.strictEqual(trieCopy['_db'].checkpoints.length, 1)
     assert.isTrue(trieCopy.hasCheckpoints())
     const res = await trieCopy.get(utf8ToBytes('do'))
     assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
@@ -72,7 +72,7 @@ describe('testing checkpoints', () => {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
+    assert.strictEqual(bytesToUtf8(value!), 'value1')
   })
 
   /*
@@ -115,12 +115,12 @@ describe('testing checkpoints', () => {
     await MemoryState.commit()
 
     // The CommittedState should not change (not the key/value pairs, not the root, and not the root in DB)
-    assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '1')
-    assert.equal(
+    assert.strictEqual(bytesToUtf8((await CommittedState.get(KEY))!), '1')
+    assert.strictEqual(
       bytesToHex((await CommittedState['_db'].get(KEY_ROOT))!),
       '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
     )
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(CommittedState.root()),
       '0x77ddd505d2a5b76a2a6ee34b827a0d35ca19f8d358bee3d74a84eab59794487c',
     )
@@ -150,6 +150,6 @@ describe('testing checkpoints', () => {
       ],
     )
     // Verify that the key is updated
-    assert.equal(bytesToUtf8((await CommittedState.get(KEY))!), '2')
+    assert.strictEqual(bytesToUtf8((await CommittedState.get(KEY))!), '2')
   })
 })

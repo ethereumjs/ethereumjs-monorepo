@@ -35,7 +35,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
       gasLimit: BigInt(0xffff),
     }
     await vm.evm.runCode!({ ...runCodeArgs, block })
-    assert.equal(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
+    assert.strictEqual(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
 
     common.setHardfork(Hardfork.Paris)
     const prevRandao = bytesToBigInt(new Uint8Array(32).fill(1))
@@ -49,6 +49,6 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
       { common },
     )
     await vm.evm.runCode!({ ...runCodeArgs, block })
-    assert.equal(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
+    assert.strictEqual(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
   })
 })

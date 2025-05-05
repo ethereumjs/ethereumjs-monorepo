@@ -27,10 +27,10 @@ describe('Istanbul: EIP-1344', () => {
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
         if (testCase.err !== undefined) {
-          assert.equal(res.exceptionError?.error, testCase.err)
+          assert.strictEqual(res.exceptionError?.error, testCase.err)
         } else {
           assert.isTrue(res.exceptionError === undefined)
-          assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
+          assert.strictEqual(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         assert.fail(e.message)

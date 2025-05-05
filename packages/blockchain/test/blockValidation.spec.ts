@@ -294,7 +294,11 @@ describe('[Blockchain]: Block validation tests', () => {
     common.setHardfork(Hardfork.London)
     const forkBlock = generateBlock(preForkBlock, 'forkBlock', [], common)
     await blockchain.putBlock(forkBlock)
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
+    )
 
     const forkBlockHeaderData = forkBlock.header.toJSON()
     const uncleHeaderData = unclePreFork.header.toJSON()
@@ -322,7 +326,11 @@ describe('[Blockchain]: Block validation tests', () => {
       uncleHeader.hash(),
       'successfully validated a pre-london uncle on a london block',
     )
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
+    )
 
     assert.doesNotThrow(
       () =>
@@ -338,6 +346,10 @@ describe('[Blockchain]: Block validation tests', () => {
         ),
       'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee',
     )
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
+    )
   })
 })

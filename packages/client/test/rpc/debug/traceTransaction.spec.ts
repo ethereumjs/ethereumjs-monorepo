@@ -14,7 +14,7 @@ describe(method, () => {
     const { rpc } = await baseSetup({ engine: false, includeVM: true })
 
     const res = await rpc.request(method, ['0xabcd', {}])
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('missing receiptsManager'))
   })
 
@@ -22,25 +22,25 @@ describe(method, () => {
     const { server } = await setupChain(debugData, 'post-merge')
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, ['abcd', {}])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('hex string without 0x prefix'))
 
     res = await rpc.request(method, ['0xabcd', { enableReturnData: true }])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('enabling return data not implemented'))
 
     res = await rpc.request(method, ['0xabcd', { tracerConfig: { some: 'value' } }])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes('custom tracers and tracer configurations are not implemented'),
     )
 
     res = await rpc.request(method, ['0xabcd', { tracer: 'someTracer' }])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('custom tracers not implemented'))
 
     res = await rpc.request(method, ['0xabcd', { timeout: 1000 }])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('custom tracer timeouts not implemented'))
   })
 
@@ -70,7 +70,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [bytesToHex(tx.hash()), {}])
 
-    assert.equal(res.result.structLogs[0].op, 'PUSH1', 'produced a correct trace')
+    assert.strictEqual(res.result.structLogs[0].op, 'PUSH1', 'produced a correct trace')
   })
 
   it('call with reverting code', async () => {
@@ -99,7 +99,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [bytesToHex(tx.hash()), {}])
 
-    assert.equal(res.result.failed, true, 'returns error result with reverting code')
+    assert.strictEqual(res.result.failed, true, 'returns error result with reverting code')
   })
 
   it('call with memory enabled', async () => {
@@ -128,7 +128,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [bytesToHex(tx.hash()), { enableMemory: true }])
 
-    assert.equal(
+    assert.strictEqual(
       res.result.structLogs[5].memory[0],
       '0x0000000000000000000000000000000000000000000000000000000000000042',
       'produced a trace with correct memory value returned',

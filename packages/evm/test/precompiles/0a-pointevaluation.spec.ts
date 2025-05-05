@@ -59,7 +59,7 @@ describe('Precompiles: point evaluation', () => {
     }
 
     let res = await pointEvaluation(opts)
-    assert.equal(
+    assert.strictEqual(
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output',

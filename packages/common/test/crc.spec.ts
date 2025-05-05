@@ -13,7 +13,7 @@ describe('crc32', () => {
   it('should compute correct checksum', () => {
     for (const [input, expected] of TEST_VECTORS) {
       const checksum = crc32(utf8ToBytes(input))
-      assert.equal(checksum, expected)
+      assert.strictEqual(checksum, expected)
     }
   })
 })

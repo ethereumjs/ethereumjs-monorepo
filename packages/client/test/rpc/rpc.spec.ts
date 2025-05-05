@@ -17,7 +17,7 @@ describe('JSON-RPC call', () => {
     const rpc = getRPCClient(startRPC({}))
     const req = 'plaintext'
     const res = await rpc.request(req, [])
-    assert.equal(res.error.code, -32601)
+    assert.strictEqual(res.error.code, -32601)
   })
 
   it('auth protected server without any auth headers', async () => {
@@ -28,7 +28,7 @@ describe('JSON-RPC call', () => {
       await rpc.request(req, [])
       assert.fail('should error when request not authenticated by JWT')
     } catch (err: any) {
-      assert.equal(err.code, 401, 'unauthorized request')
+      assert.strictEqual(err.code, 401, 'unauthorized request')
     }
   })
 
@@ -45,7 +45,7 @@ describe('JSON-RPC call', () => {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
     } catch (err: any) {
-      assert.equal(err.code, 401, 'errored with invalid token')
+      assert.strictEqual(err.code, 401, 'errored with invalid token')
     }
   })
 
@@ -64,8 +64,8 @@ describe('JSON-RPC call', () => {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
     } catch (err: any) {
-      assert.equal(err.code, 401, 'errored with invalid token')
-      assert.equal(err.message, 'Unauthorized: Error: Signature verification failed')
+      assert.strictEqual(err.code, 401, 'errored with invalid token')
+      assert.strictEqual(err.message, 'Unauthorized: Error: Signature verification failed')
     }
   })
 
@@ -83,7 +83,7 @@ describe('JSON-RPC call', () => {
     const req = 'plaintext'
     try {
       const res = await rpc.request(req, [])
-      assert.equal(res.error.message, 'Method not found')
+      assert.strictEqual(res.error.message, 'Method not found')
     } catch {
       assert.fail('should have returned a valid response for an unknown method')
     }
@@ -105,7 +105,7 @@ describe('JSON-RPC call', () => {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
     } catch (err: any) {
-      assert.equal(err.code, 401, 'errored with valid but stale token')
+      assert.strictEqual(err.code, 401, 'errored with valid but stale token')
       assert.isTrue(err.message.includes('Stale jwt') === true, 'valid but stale token')
     }
   })
@@ -122,7 +122,7 @@ describe('JSON-RPC call', () => {
 
     try {
       const res = await rpc.request('unprotected_METHOD_DOES_NOT_EXIST', ['0x1', true])
-      assert.equal(res.error.message, 'Method not found')
+      assert.strictEqual(res.error.message, 'Method not found')
     } catch {
       assert.fail('should not have thrown error')
     }
@@ -142,7 +142,7 @@ describe('JSON-RPC call', () => {
       await rpc.request('protected_METHOD_DOES_NOT_EXIST', ['0x1', true])
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.equal(err.code, 401, 'errored with unauthorized')
+      assert.strictEqual(err.code, 401, 'errored with unauthorized')
       assert.isTrue(err.message.includes('Missing auth header') === true, 'no auth token provided')
     }
   })
@@ -164,7 +164,7 @@ describe('JSON-RPC call', () => {
 
     try {
       const res = await rpc.request('protected_METHOD_DOES_NOT_EXIST', ['0x1', true])
-      assert.equal(res.error.message, 'Method not found')
+      assert.strictEqual(res.error.message, 'Method not found')
     } catch {
       assert.fail('should have gotten valid response')
     }

@@ -59,7 +59,7 @@ describe('dump leaf values', () => {
       const value = hexToBytes(val)
       await trie.put(treeKey.slice(0, 31), [treeKey[31]], [value])
     }
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(trie.root()),
       '0x3a36cd08db733a2c1ef113142c754bd88bfea541cb56361ed1825d5883378e71',
     )
@@ -82,9 +82,9 @@ describe('dump node hashes', () => {
       await trie.put(treeKey.slice(0, 31), [treeKey[31]], [value])
     }
     const entries = await dumpNodeHashes(trie, trie.root())
-    assert.equal(entries?.length, 5)
+    assert.strictEqual(entries?.length, 5)
     for (const entry of entries!.slice(1)) {
-      assert.equal(entry[0].length, 64)
+      assert.strictEqual(entry[0].length, 64)
     }
   })
 })

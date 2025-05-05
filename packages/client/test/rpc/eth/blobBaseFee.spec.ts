@@ -101,7 +101,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
-    assert.equal(res.result, '0x1')
+    assert.strictEqual(res.result, '0x1')
   })
 
   it('call with more realistic blockchain', async () => {
@@ -118,6 +118,6 @@ describe(method, () => {
     }
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
-    assert.equal(res.result, '0x3')
+    assert.strictEqual(res.result, '0x3')
   })
 })
