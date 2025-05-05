@@ -202,7 +202,7 @@ describe(`${method}: call with executionPayloadV4`, () => {
 
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const getPayloadResult = res.result
-    // recall getpayloadv4 to verify if all of cached payload is returned
+    // recall getpayload to verify if all of cached payload is returned
     res = await rpc.request('engine_getPayloadV4', [payloadId])
     const getPayloadRetryResult = res.result
     const hasAllKeys = Object.keys(getPayloadResult).reduce(
