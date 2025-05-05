@@ -25,7 +25,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 describe('Wallet tests', () => {
   it('.getPrivateKey()', () => {
-    assert.equal(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
+    assert.strictEqual(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
 
     assert.throws(() => {
       Wallet.fromPrivateKey(hexToBytes('0x001122'))
@@ -143,12 +143,12 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.generate()', () => {
-    assert.equal(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
+    assert.strictEqual(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
     const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
     const wallet = Wallet.generate(true)
-    assert.equal(wallet.getPrivateKey().length, 32)
+    assert.strictEqual(wallet.getPrivateKey().length, 32)
     const addr = bytesToHex(wallet.getAddress())
-    assert.equal(
+    assert.strictEqual(
       BigInt(addr) <= max,
       true,
       'should generate an account compatible with ICAP Direct',
@@ -367,8 +367,8 @@ describe('Wallet tests', () => {
     let salt: any = ''
     let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -376,8 +376,8 @@ describe('Wallet tests', () => {
     salt = '0x'
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal('', w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual('', w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -385,8 +385,8 @@ describe('Wallet tests', () => {
     salt = hexToBytes('0x')
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal('', w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual('', w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -416,11 +416,11 @@ describe('Wallet tests', () => {
 
     assert.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -448,13 +448,13 @@ describe('Wallet tests', () => {
       },
     )
 
-    assert.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+    assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -480,13 +480,13 @@ describe('Wallet tests', () => {
       },
     )
 
-    assert.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+    assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -636,14 +636,14 @@ describe('Wallet tests', () => {
       kdf: 'pbkdf2',
     })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(iv, w.crypto.cipherparams.iv)
-    assert.equal(w.id, w2.id)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(iv, w.crypto.cipherparams.iv)
+    assert.strictEqual(w.id, w2.id)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
@@ -661,14 +661,14 @@ describe('Wallet tests', () => {
       kdf: 'scrypt',
     })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(iv, w.crypto.cipherparams.iv)
-    assert.equal(w.id, w2.id)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(iv, w.crypto.cipherparams.iv)
+    assert.strictEqual(w.id, w2.id)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
@@ -814,7 +814,7 @@ describe('Wallet tests', () => {
 
   it('.fromEtherCamp()', () => {
     const wallet = Thirdparty.fromEtherCamp('ethercamp123')
-    assert.equal(
+    assert.strictEqual(
       wallet.getAddressString(),
       '0x182b6ca390224c455f11b6337d74119305014ed4',
       'should work with seed text',
@@ -823,7 +823,7 @@ describe('Wallet tests', () => {
 
   it('.fromQuorumWallet()', () => {
     const wallet = Thirdparty.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
-    assert.equal(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
+    assert.strictEqual(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
   }, 30000)
 
   it('raw new Wallet() init', () => {

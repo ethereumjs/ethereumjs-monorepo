@@ -1,6 +1,12 @@
+[**@ethereumjs/blockchain**](../README.md)
+
+***
+
 [@ethereumjs/blockchain](../README.md) / EthashConsensus
 
 # Class: EthashConsensus
+
+Defined in: [consensus/ethash.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L18)
 
 This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
 
@@ -8,184 +14,160 @@ This class encapsulates Ethash-related consensus functionality when used with th
 
 - [`Consensus`](../interfaces/Consensus.md)
 
-## Table of contents
-
-### Constructors
-
-- [constructor](EthashConsensus.md#constructor)
-
-### Properties
-
-- [\_ethash](EthashConsensus.md#_ethash)
-- [algorithm](EthashConsensus.md#algorithm)
-- [blockchain](EthashConsensus.md#blockchain)
-
-### Methods
-
-- [genesisInit](EthashConsensus.md#genesisinit)
-- [newBlock](EthashConsensus.md#newblock)
-- [setup](EthashConsensus.md#setup)
-- [validateConsensus](EthashConsensus.md#validateconsensus)
-- [validateDifficulty](EthashConsensus.md#validatedifficulty)
-
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new EthashConsensus**()
+> **new EthashConsensus**(`ethash`): `EthashConsensus`
 
-#### Defined in
+Defined in: [consensus/ethash.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L26)
 
-[consensus/ethash.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L16)
+#### Parameters
+
+##### ethash
+
+`MinimalEthashInterface`
+
+#### Returns
+
+`EthashConsensus`
 
 ## Properties
 
 ### \_ethash
 
-• **\_ethash**: `undefined` \| `Ethash`
+> **\_ethash**: `MinimalEthashInterface`
 
-#### Defined in
+Defined in: [consensus/ethash.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L21)
 
-[consensus/ethash.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L14)
-
-___
+***
 
 ### algorithm
 
-• **algorithm**: `ConsensusAlgorithm`
+> **algorithm**: `ConsensusAlgorithm`
+
+Defined in: [consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L20)
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[algorithm](../interfaces/Consensus.md#algorithm)
+[`Consensus`](../interfaces/Consensus.md).[`algorithm`](../interfaces/Consensus.md#algorithm)
 
-#### Defined in
-
-[consensus/ethash.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L13)
-
-___
+***
 
 ### blockchain
 
-• **blockchain**: `undefined` \| [`Blockchain`](Blockchain.md)
+> **blockchain**: `undefined` \| [`Blockchain`](Blockchain.md)
 
-#### Defined in
-
-[consensus/ethash.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L12)
+Defined in: [consensus/ethash.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L19)
 
 ## Methods
 
-### genesisInit
+### genesisInit()
 
-▸ **genesisInit**(): `Promise`<`void`\>
+> **genesisInit**(): `Promise`\<`void`\>
+
+Defined in: [consensus/ethash.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L64)
 
 Initialize genesis for consensus mechanism
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[genesisInit](../interfaces/Consensus.md#genesisinit)
+[`Consensus`](../interfaces/Consensus.md).[`genesisInit`](../interfaces/Consensus.md#genesisinit)
 
-#### Defined in
+***
 
-[consensus/ethash.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L44)
+### newBlock()
 
-___
+> **newBlock**(): `Promise`\<`void`\>
 
-### newBlock
-
-▸ **newBlock**(): `Promise`<`void`\>
+Defined in: [consensus/ethash.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L69)
 
 Update consensus on new block
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[newBlock](../interfaces/Consensus.md#newblock)
+[`Consensus`](../interfaces/Consensus.md).[`newBlock`](../interfaces/Consensus.md#newblock)
 
-#### Defined in
+***
 
-[consensus/ethash.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L49)
+### setup()
 
-___
+> **setup**(`__namedParameters`): `Promise`\<`void`\>
 
-### setup
-
-▸ **setup**(`__namedParameters`): `Promise`<`void`\>
+Defined in: [consensus/ethash.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L65)
 
 Set up consensus mechanism
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `__namedParameters` | [`ConsensusOptions`](../interfaces/ConsensusOptions.md) |
+##### \_\_namedParameters
+
+[`ConsensusOptions`](../interfaces/ConsensusOptions.md)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[setup](../interfaces/Consensus.md#setup)
+[`Consensus`](../interfaces/Consensus.md).[`setup`](../interfaces/Consensus.md#setup)
 
-#### Defined in
+***
 
-[consensus/ethash.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L45)
+### validateConsensus()
 
-___
+> **validateConsensus**(`block`): `Promise`\<`void`\>
 
-### validateConsensus
-
-▸ **validateConsensus**(`block`): `Promise`<`void`\>
+Defined in: [consensus/ethash.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L35)
 
 Validate block consensus parameters
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `block` | `Block` | block to be validated |
+##### block
+
+`Block`
+
+block to be validated
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[validateConsensus](../interfaces/Consensus.md#validateconsensus)
+[`Consensus`](../interfaces/Consensus.md).[`validateConsensus`](../interfaces/Consensus.md#validateconsensus)
 
-#### Defined in
+***
 
-[consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L20)
+### validateDifficulty()
 
-___
+> **validateDifficulty**(`header`): `Promise`\<`void`\>
 
-### validateDifficulty
-
-▸ **validateDifficulty**(`header`): `Promise`<`void`\>
+Defined in: [consensus/ethash.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L50)
 
 Checks that the block's `difficulty` matches the canonical difficulty of the parent header.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `header` | `BlockHeader` | header of block to be checked |
+##### header
+
+`BlockHeader`
+
+header of block to be checked
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-[Consensus](../interfaces/Consensus.md).[validateDifficulty](../interfaces/Consensus.md#validatedifficulty)
-
-#### Defined in
-
-[consensus/ethash.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L34)
+[`Consensus`](../interfaces/Consensus.md).[`validateDifficulty`](../interfaces/Consensus.md#validatedifficulty)

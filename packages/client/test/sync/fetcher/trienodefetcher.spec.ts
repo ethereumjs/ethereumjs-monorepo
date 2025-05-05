@@ -40,8 +40,12 @@ describe('[TrieNodeFetcher]', async () => {
     })
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
-    assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
-    assert.equal(fetcher['pathToNodeRequestData'].length, 1, 'one node request has been added')
+    assert.strictEqual(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.strictEqual(
+      fetcher['pathToNodeRequestData'].length,
+      1,
+      'one node request has been added',
+    )
 
     void fetcher.fetch()
     await wait(100)
@@ -153,7 +157,7 @@ describe('[TrieNodeFetcher]', async () => {
     }
     const job = { peer, partialResult: [], task }
     const requestResult = (await fetcher.request(job as any)) as any
-    assert.equal(
+    assert.strictEqual(
       requestResult[0][0],
       res.nodes[0],
       'Request phase should cross-validate received nodes with requested nodes',
@@ -163,7 +167,7 @@ describe('[TrieNodeFetcher]', async () => {
 
     const rootNode = decodeMPTNode(nodes[0] as unknown as Uint8Array) as BranchMPTNode
     const children = rootNode.getChildren()
-    assert.equal(
+    assert.strictEqual(
       children.length,
       fetcher.pathToNodeRequestData.length,
       'Should generate requests for all child nodes',
@@ -192,7 +196,7 @@ describe('[TrieNodeFetcher]', async () => {
       pool,
       root: new Uint8Array(0),
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should return an array of tasks with pathStrings and paths', async () => {
@@ -213,9 +217,9 @@ describe('[TrieNodeFetcher]', async () => {
     const maxTasks = 1
     const tasks = fetcher.tasks(maxTasks)
 
-    assert.equal(tasks.length, maxTasks, `should return ${maxTasks} tasks`)
-    assert.equal(tasks[0].pathStrings.length, 1, 'should have pathStrings')
-    assert.equal(tasks[0].paths.length, 1, 'should have paths')
+    assert.strictEqual(tasks.length, maxTasks, `should return ${maxTasks} tasks`)
+    assert.strictEqual(tasks[0].pathStrings.length, 1, 'should have pathStrings')
+    assert.strictEqual(tasks[0].paths.length, 1, 'should have paths')
   })
 
   it('should return an object with pathStrings', () => {

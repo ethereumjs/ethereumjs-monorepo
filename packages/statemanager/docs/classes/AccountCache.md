@@ -1,95 +1,70 @@
+[**@ethereumjs/statemanager**](../README.md)
+
+***
+
 [@ethereumjs/statemanager](../README.md) / AccountCache
 
 # Class: AccountCache
 
-## Hierarchy
+Defined in: [cache/account.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L21)
+
+## Extends
 
 - `Cache`
 
-  ↳ **`AccountCache`**
-
-## Table of contents
-
-### Constructors
-
-- [constructor](AccountCache.md#constructor)
-
-### Properties
-
-- [\_checkpoints](AccountCache.md#_checkpoints)
-- [\_debug](AccountCache.md#_debug)
-- [\_diffCache](AccountCache.md#_diffcache)
-- [\_lruCache](AccountCache.md#_lrucache)
-- [\_orderedMapCache](AccountCache.md#_orderedmapcache)
-- [\_stats](AccountCache.md#_stats)
-
-### Methods
-
-- [\_saveCachePreState](AccountCache.md#_savecacheprestate)
-- [checkpoint](AccountCache.md#checkpoint)
-- [clear](AccountCache.md#clear)
-- [commit](AccountCache.md#commit)
-- [del](AccountCache.md#del)
-- [flush](AccountCache.md#flush)
-- [get](AccountCache.md#get)
-- [put](AccountCache.md#put)
-- [revert](AccountCache.md#revert)
-- [size](AccountCache.md#size)
-- [stats](AccountCache.md#stats)
-
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new AccountCache**(`opts`)
+> **new AccountCache**(`opts`): `AccountCache`
+
+Defined in: [cache/account.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L35)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opts` | [`CacheOpts`](../interfaces/CacheOpts.md) |
+##### opts
+
+[`CacheOpts`](../interfaces/CacheOpts.md)
+
+#### Returns
+
+`AccountCache`
 
 #### Overrides
 
-Cache.constructor
-
-#### Defined in
-
-[cache/account.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L36)
+`Cache.constructor`
 
 ## Properties
 
 ### \_checkpoints
 
-• **\_checkpoints**: `number` = `0`
+> **\_checkpoints**: `number` = `0`
+
+Defined in: [cache/cache.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L8)
 
 #### Inherited from
 
-Cache.\_checkpoints
+`Cache._checkpoints`
 
-#### Defined in
-
-[cache/cache.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L9)
-
-___
+***
 
 ### \_debug
 
-• **\_debug**: `Debugger`
+> **\_debug**: `Debugger`
+
+Defined in: [cache/cache.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L6)
 
 #### Inherited from
 
-Cache.\_debug
+`Cache._debug`
 
-#### Defined in
-
-[cache/cache.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L7)
-
-___
+***
 
 ### \_diffCache
 
-• **\_diffCache**: `Map`<`string`, `undefined` \| `AccountCacheElement`\>[] = `[]`
+> **\_diffCache**: `Map`\<`string`, `undefined` \| `AccountCacheElement`\>[] = `[]`
+
+Defined in: [cache/account.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L34)
 
 Diff cache collecting the state of the cache
 at the beginning of checkpoint height
@@ -99,79 +74,79 @@ If the whole cache element is undefined (in contrast
 to the account), the element didn't exist in the cache
 before.
 
-#### Defined in
-
-[cache/account.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L35)
-
-___
+***
 
 ### \_lruCache
 
-• **\_lruCache**: `undefined` \| `LRUCache`<`string`, `AccountCacheElement`, `unknown`\>
+> **\_lruCache**: `undefined` \| `LRUCache`\<`string`, `AccountCacheElement`, `unknown`\>
 
-#### Defined in
+Defined in: [cache/account.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L22)
 
-[cache/account.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L23)
-
-___
+***
 
 ### \_orderedMapCache
 
-• **\_orderedMapCache**: `undefined` \| `OrderedMap`<`string`, `AccountCacheElement`\>
+> **\_orderedMapCache**: `undefined` \| `OrderedMap`\<`string`, `AccountCacheElement`\>
 
-#### Defined in
+Defined in: [cache/account.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L23)
 
-[cache/account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L24)
-
-___
+***
 
 ### \_stats
 
-• **\_stats**: `Object`
+> **\_stats**: `object`
 
-#### Type declaration
+Defined in: [cache/cache.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L10)
 
-| Name | Type |
-| :------ | :------ |
-| `dels` | `number` |
-| `hits` | `number` |
-| `reads` | `number` |
-| `size` | `number` |
-| `writes` | `number` |
+#### deletions
+
+> **deletions**: `number` = `0`
+
+#### hits
+
+> **hits**: `number` = `0`
+
+#### reads
+
+> **reads**: `number` = `0`
+
+#### size
+
+> **size**: `number` = `0`
+
+#### writes
+
+> **writes**: `number` = `0`
 
 #### Inherited from
 
-Cache.\_stats
-
-#### Defined in
-
-[cache/cache.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L11)
+`Cache._stats`
 
 ## Methods
 
-### \_saveCachePreState
+### \_saveCachePreState()
 
-▸ **_saveCachePreState**(`cacheKeyHex`): `void`
+> **\_saveCachePreState**(`cacheKeyHex`): `void`
+
+Defined in: [cache/account.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L50)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `cacheKeyHex` | `string` |
+##### cacheKeyHex
+
+`string`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L51)
+### checkpoint()
 
-___
+> **checkpoint**(): `void`
 
-### checkpoint
-
-▸ **checkpoint**(): `void`
+Defined in: [cache/account.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L222)
 
 Marks current state of cache as checkpoint, which can
 later on be reverted or committed.
@@ -180,15 +155,13 @@ later on be reverted or committed.
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L214)
+### clear()
 
-___
+> **clear**(): `void`
 
-### clear
-
-▸ **clear**(): `void`
+Defined in: [cache/account.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L264)
 
 Clears cache.
 
@@ -196,15 +169,13 @@ Clears cache.
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L256)
+### commit()
 
-___
+> **commit**(): `void`
 
-### commit
-
-▸ **commit**(): `void`
+Defined in: [cache/account.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L202)
 
 Commits to current state of cache (no effect on trie).
 
@@ -212,99 +183,104 @@ Commits to current state of cache (no effect on trie).
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L194)
+### del()
 
-___
+> **del**(`address`): `void`
 
-### del
-
-▸ **del**(`address`): `void`
+Defined in: [cache/account.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L122)
 
 Marks address as deleted in cache.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address |
+##### address
+
+`Address`
+
+Address
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L114)
+### flush()
 
-___
+> **flush**(): \[`string`, `AccountCacheElement`\][]
 
-### flush
-
-▸ **flush**(): [`string`, `AccountCacheElement`][]
+Defined in: [cache/account.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L145)
 
 Flushes cache by returning accounts that have been modified
 or deleted and resetting the diff cache (at checkpoint height).
 
 #### Returns
 
-[`string`, `AccountCacheElement`][]
+\[`string`, `AccountCacheElement`\][]
 
-#### Defined in
+***
 
-[cache/account.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L137)
+### get()
 
-___
+> **get**(`address`): `undefined` \| `AccountCacheElement`
 
-### get
-
-▸ **get**(`address`): `undefined` \| `AccountCacheElement`
+Defined in: [cache/account.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L99)
 
 Returns the queried account or undefined if account doesn't exist
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of account |
+##### address
+
+`Address`
+
+Address of account
 
 #### Returns
 
 `undefined` \| `AccountCacheElement`
 
-#### Defined in
+***
 
-[cache/account.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L91)
+### put()
 
-___
+> **put**(`address`, `account`, `couldBePartialAccount`): `void`
 
-### put
-
-▸ **put**(`address`, `account`): `void`
+Defined in: [cache/account.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L68)
 
 Puts account to cache under its address.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of account |
-| `account` | `undefined` \| `Account` | Account or undefined if account doesn't exist in the trie |
+##### address
+
+`Address`
+
+Address of account
+
+##### account
+
+Account or undefined if account doesn't exist in the trie
+
+`undefined` | `Account`
+
+##### couldBePartialAccount
+
+`boolean` = `false`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L69)
+### revert()
 
-___
+> **revert**(): `void`
 
-### revert
-
-▸ **revert**(): `void`
+Defined in: [cache/account.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L174)
 
 Revert changes to cache last checkpoint (no effect on trie).
 
@@ -312,15 +288,13 @@ Revert changes to cache last checkpoint (no effect on trie).
 
 `void`
 
-#### Defined in
+***
 
-[cache/account.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L166)
+### size()
 
-___
+> **size**(): `number`
 
-### size
-
-▸ **size**(): `number`
+Defined in: [cache/account.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L234)
 
 Returns the size of the cache
 
@@ -328,36 +302,42 @@ Returns the size of the cache
 
 `number`
 
-#### Defined in
+***
 
-[cache/account.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L226)
+### stats()
 
-___
+> **stats**(`reset`): `object`
 
-### stats
-
-▸ **stats**(`reset?`): `Object`
+Defined in: [cache/account.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L246)
 
 Returns a dict with cache stats
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `reset` | `boolean` | `true` |
+##### reset
+
+`boolean` = `true`
 
 #### Returns
 
-`Object`
+`object`
 
-| Name | Type |
-| :------ | :------ |
-| `dels` | `number` |
-| `hits` | `number` |
-| `reads` | `number` |
-| `size` | `number` |
-| `writes` | `number` |
+##### deletions
 
-#### Defined in
+> **deletions**: `number` = `0`
 
-[cache/account.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L238)
+##### hits
+
+> **hits**: `number` = `0`
+
+##### reads
+
+> **reads**: `number` = `0`
+
+##### size
+
+> **size**: `number` = `0`
+
+##### writes
+
+> **writes**: `number` = `0`

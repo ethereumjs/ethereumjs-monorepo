@@ -1,138 +1,64 @@
+[**@ethereumjs/verkle**](../README.md)
+
+***
+
 [@ethereumjs/verkle](../README.md) / VerkleTree
 
 # Class: VerkleTree
 
+Defined in: [verkleTree.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L31)
+
 The basic verkle tree interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
-
-## Table of contents
-
-### Constructors
-
-- [constructor](VerkleTree.md#constructor)
-
-### Properties
-
-- [EMPTY\_TREE\_ROOT](VerkleTree.md#empty_tree_root)
-
-### Methods
-
-- [batch](VerkleTree.md#batch)
-- [checkRoot](VerkleTree.md#checkroot)
-- [checkpoint](VerkleTree.md#checkpoint)
-- [commit](VerkleTree.md#commit)
-- [createProof](VerkleTree.md#createproof)
-- [createReadStream](VerkleTree.md#createreadstream)
-- [database](VerkleTree.md#database)
-- [findLeafNode](VerkleTree.md#findleafnode)
-- [findPath](VerkleTree.md#findpath)
-- [flushCheckpoints](VerkleTree.md#flushcheckpoints)
-- [fromProof](VerkleTree.md#fromproof)
-- [get](VerkleTree.md#get)
-- [hasCheckpoints](VerkleTree.md#hascheckpoints)
-- [lookupNode](VerkleTree.md#lookupnode)
-- [persistRoot](VerkleTree.md#persistroot)
-- [put](VerkleTree.md#put)
-- [revert](VerkleTree.md#revert)
-- [root](VerkleTree.md#root)
-- [saveStack](VerkleTree.md#savestack)
-- [shallowCopy](VerkleTree.md#shallowcopy)
-- [verifyProof](VerkleTree.md#verifyproof)
-- [walkTree](VerkleTree.md#walktree)
-- [create](VerkleTree.md#create)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new VerkleTree**(`opts?`)
+> **new VerkleTree**(`opts`): `VerkleTree`
+
+Defined in: [verkleTree.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L55)
 
 Creates a new verkle tree.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `opts?` | [`VerkleTreeOpts`](../interfaces/VerkleTreeOpts.md) | Options for instantiating the verkle tree  Note: in most cases, the static [create](VerkleTree.md#create) constructor should be used.  It uses the same API but provides sensible defaults |
+##### opts
 
-#### Defined in
+[`VerkleTreeOpts`](../interfaces/VerkleTreeOpts.md)
 
-[verkleTree.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L50)
+Options for instantiating the verkle tree
+
+Note: in most cases, the static [createVerkleTree](../functions/createVerkleTree.md) constructor should be used. It uses the same API but provides sensible defaults
+
+#### Returns
+
+`VerkleTree`
 
 ## Properties
 
+### \_opts
+
+> **\_opts**: [`VerkleTreeOpts`](../interfaces/VerkleTreeOpts.md)
+
+Defined in: [verkleTree.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L32)
+
+***
+
 ### EMPTY\_TREE\_ROOT
 
-• **EMPTY\_TREE\_ROOT**: `Uint8Array`
+> **EMPTY\_TREE\_ROOT**: `Uint8Array`
+
+Defined in: [verkleTree.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L35)
 
 The root for an empty tree
 
-#### Defined in
-
-[verkleTree.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L36)
-
 ## Methods
 
-### batch
+### checkpoint()
 
-▸ **batch**(`ops`): `Promise`<`void`\>
+> **checkpoint**(): `void`
 
-The given hash of operations (key additions or deletions) are executed on the tree
-(delete operations are only executed on DB with `deleteFromDB` set to `true`)
-
-**`Example`**
-
-```ts
-const ops = [
-   { type: 'del', key: Uint8Array.from('father') }
- , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') }
- , { type: 'put', key: Uint8Array.from('dob'), value: Uint8Array.from('16 February 1941') }
- , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
- , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
-]
-await tree.batch(ops)
-```
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `ops` | `BatchDBOp`<`Uint8Array`, `Uint8Array`\>[] |
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[verkleTree.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L366)
-
-___
-
-### checkRoot
-
-▸ **checkRoot**(`root`): `Promise`<`boolean`\>
-
-Checks if a given root exists.
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `root` | `Uint8Array` |
-
-#### Returns
-
-`Promise`<`boolean`\>
-
-#### Defined in
-
-[verkleTree.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L120)
-
-___
-
-### checkpoint
-
-▸ **checkpoint**(): `void`
+Defined in: [verkleTree.ts:639](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L639)
 
 Creates a checkpoint that can later be reverted to or committed.
 After this is called, all changes can be reverted until `commit` is called.
@@ -141,58 +67,52 @@ After this is called, all changes can be reverted until `commit` is called.
 
 `void`
 
-#### Defined in
+***
 
-[verkleTree.ts:465](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L465)
+### checkRoot()
 
-___
+> **checkRoot**(`root`): `Promise`\<`boolean`\>
 
-### commit
+Defined in: [verkleTree.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L115)
 
-▸ **commit**(): `Promise`<`void`\>
+Checks if a given root exists.
+
+#### Parameters
+
+##### root
+
+`Uint8Array`
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### commit()
+
+> **commit**(): `Promise`\<`void`\>
+
+Defined in: [verkleTree.ts:648](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L648)
 
 Commits a checkpoint to disk, if current checkpoint is not nested.
 If nested, only sets the parent checkpoint as current checkpoint.
 
-**`Throws`**
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Throws
 
 If not during a checkpoint phase
 
-#### Returns
+***
 
-`Promise`<`void`\>
+### createReadStream()
 
-#### Defined in
+> **createReadStream**(): `any`
 
-[verkleTree.ts:474](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L474)
-
-___
-
-### createProof
-
-▸ **createProof**(`key`): `Promise`<[`Proof`](../README.md#proof)\>
-
-Creates a proof from a tree and key that can be verified using [verifyProof](VerkleTree.md#verifyproof).
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `key` | `Uint8Array` |
-
-#### Returns
-
-`Promise`<[`Proof`](../README.md#proof)\>
-
-#### Defined in
-
-[verkleTree.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L382)
-
-___
-
-### createReadStream
-
-▸ **createReadStream**(): `any`
+Defined in: [verkleTree.ts:589](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L589)
 
 The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
 
@@ -202,82 +122,92 @@ The `data` event is given an `Object` that has two properties; the `key` and the
 
 Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `tree`
 
-#### Defined in
+***
 
-[verkleTree.ts:406](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L406)
+### createRootNode()
 
-___
+> **createRootNode**(): `Promise`\<`void`\>
 
-### database
+Defined in: [verkleTree.ts:523](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L523)
 
-▸ **database**(`db?`): [`CheckpointDB`](CheckpointDB.md)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `db?` | `DB`<`Uint8Array`, `Uint8Array`\> |
+Create empty root node for initializing an empty tree.
 
 #### Returns
 
-[`CheckpointDB`](CheckpointDB.md)
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L86)
+### createVerkleProof()
 
-___
+> **createVerkleProof**(`_key`): `Promise`\<[`Proof`](../type-aliases/Proof.md)\>
 
-### findLeafNode
+Defined in: [verkleTree.ts:565](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L565)
 
-▸ **findLeafNode**(`key`, `throwIfMissing?`): `Promise`<``null`` \| [`LeafNode`](LeafNode.md)\>
-
-Tries to find the leaf node leading up to the given key, or null if not found.
+Creates a proof from a tree and key that can be verified using [VerkleTree.verifyVerkleProof](#verifyverkleproof).
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `key` | `Uint8Array` | `undefined` | the search key |
-| `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
+##### \_key
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<``null`` \| [`LeafNode`](LeafNode.md)\>
+`Promise`\<[`Proof`](../type-aliases/Proof.md)\>
 
-#### Defined in
+***
 
-[verkleTree.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L267)
+### del()
 
-___
+> **del**(`stem`, `suffixes`): `Promise`\<`void`\>
 
-### findPath
+Defined in: [verkleTree.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L329)
 
-▸ **findPath**(`key`, `throwIfMissing?`): `Promise`<`Path`\>
+#### Parameters
+
+##### stem
+
+`Uint8Array`
+
+##### suffixes
+
+`number`[]
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### findPath()
+
+> **findPath**(`key`): `Promise`\<`Path`\>
+
+Defined in: [verkleTree.ts:424](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L424)
 
 Tries to find a path to the node for the given key.
 It returns a `stack` of nodes to the closest node.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `key` | `Uint8Array` | `undefined` | the search key |
-| `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
+##### key
+
+`Uint8Array`
+
+the search key
 
 #### Returns
 
-`Promise`<`Path`\>
+`Promise`\<`Path`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L196)
+### flushCheckpoints()
 
-___
+> **flushCheckpoints**(): `void`
 
-### flushCheckpoints
-
-▸ **flushCheckpoints**(): `void`
+Defined in: [verkleTree.ts:678](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L678)
 
 Flushes all checkpoints, restoring the initial checkpoint state.
 
@@ -285,62 +215,64 @@ Flushes all checkpoints, restoring the initial checkpoint state.
 
 `void`
 
-#### Defined in
+***
 
-[verkleTree.ts:504](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L504)
+### fromProof()
 
-___
+> **fromProof**(`_proof`): `Promise`\<`void`\>
 
-### fromProof
-
-▸ **fromProof**(`proof`): `Promise`<`void`\>
+Defined in: [verkleTree.ts:557](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L557)
 
 Saves the nodes from a proof into the tree.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `proof` | [`Proof`](../README.md#proof) |
+##### \_proof
+
+[`Proof`](../type-aliases/Proof.md)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L374)
+### get()
 
-___
+> **get**(`stem`, `suffixes`): `Promise`\<(`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>)[]\>
 
-### get
+Defined in: [verkleTree.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L135)
 
-▸ **get**(`key`, `throwIfMissing?`): `Promise`<``null`` \| `Uint8Array`\>
-
-Gets a value given a `key`
+Gets values at a given verkle `stem` and set of suffixes
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `key` | `Uint8Array` | `undefined` | the key to search for |
-| `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
+##### stem
+
+`Uint8Array`
+
+the stem of the leaf node where we're seeking values
+
+##### suffixes
+
+`number`[]
+
+an array of suffixes corresponding to the values desired
 
 #### Returns
 
-`Promise`<``null`` \| `Uint8Array`\>
+`Promise`\<(`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>)[]\>
 
-A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
+A Promise that resolves to an array of `Uint8Array`s if a value
+was found or `undefined` if no value was found at a given suffixes.
 
-#### Defined in
+***
 
-[verkleTree.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L139)
+### hasCheckpoints()
 
-___
+> **hasCheckpoints**(): `boolean`
 
-### hasCheckpoints
-
-▸ **hasCheckpoints**(): `boolean`
+Defined in: [verkleTree.ts:631](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L631)
 
 Is the tree during a checkpoint phase?
 
@@ -348,79 +280,59 @@ Is the tree during a checkpoint phase?
 
 `boolean`
 
-#### Defined in
+***
 
-[verkleTree.ts:457](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L457)
+### persistRoot()
 
-___
+> **persistRoot**(): `Promise`\<`void`\>
 
-### lookupNode
-
-▸ **lookupNode**(`node`): `Promise`<``null`` \| [`VerkleNode`](../README.md#verklenode)\>
-
-Retrieves a node from db by hash.
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `node` | `Uint8Array` \| `Uint8Array`[] |
-
-#### Returns
-
-`Promise`<``null`` \| [`VerkleNode`](../README.md#verklenode)\>
-
-#### Defined in
-
-[verkleTree.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L289)
-
-___
-
-### persistRoot
-
-▸ **persistRoot**(): `Promise`<`void`\>
+Defined in: [verkleTree.ts:622](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L622)
 
 Persists the root hash in the underlying database
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L438)
+### put()
 
-___
+> **put**(`stem`, `suffixes`, `values`): `Promise`\<`void`\>
 
-### put
+Defined in: [verkleTree.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L166)
 
-▸ **put**(`key`, `value`): `Promise`<`void`\>
-
-Stores a given `value` at the given `key` or do a delete if `value` is empty
-(delete operations are only executed on DB with `deleteFromDB` set to `true`)
+Stores given `values` at the given `stem` and `suffixes` or do a delete if `value` is empty Uint8Array
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `key` | `Uint8Array` | the key to store the value at |
-| `value` | `Uint8Array` | the value to store |
+##### stem
+
+`Uint8Array`
+
+##### suffixes
+
+`number`[]
+
+array of suffixes at which to store individual values
+
+##### values
+
+(`0` \| `Uint8Array`\<`ArrayBufferLike`\>)[] = `[]`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-A Promise that resolves once value is stored.
+A Promise that resolves once value(s) are stored.
 
-#### Defined in
+***
 
-[verkleTree.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L159)
+### revert()
 
-___
+> **revert**(): `Promise`\<`void`\>
 
-### revert
-
-▸ **revert**(): `Promise`<`void`\>
+Defined in: [verkleTree.ts:664](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L664)
 
 Reverts the tree to the state it was at when `checkpoint` was first called.
 If during a nested checkpoint, sets root to most recent checkpoint, and sets
@@ -428,63 +340,57 @@ parent checkpoint as current.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L490)
+### root()
 
-___
+> **root**(`value?`): `Uint8Array`
 
-### root
-
-▸ **root**(`value?`): `Uint8Array`
+Defined in: [verkleTree.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L96)
 
 Gets and/or Sets the current root of the `tree`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `value?` | ``null`` \| `Uint8Array` |
+##### value?
+
+`null` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[verkleTree.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L101)
+### saveStack()
 
-___
+> **saveStack**(`putStack`): `Promise`\<`void`\>
 
-### saveStack
-
-▸ **saveStack**(`key`, `stack`, `opStack`): `Promise`<`void`\>
+Defined in: [verkleTree.ts:542](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L542)
 
 Saves a stack of nodes to the database.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `key` | `Uint8Array` | the key. Should follow the stack |
-| `stack` | [`VerkleNode`](../README.md#verklenode)[] | a stack of nodes to the value given by the key |
-| `opStack` | `PutBatch`<`Uint8Array`, `Uint8Array`\>[] | a stack of levelup operations to commit at the end of this function |
+##### putStack
+
+\[`Uint8Array`\<`ArrayBufferLike`\>, `null` \| [`VerkleNode`](../type-aliases/VerkleNode.md)\][]
+
+an array of tuples of keys (the partial path of the node in the trie) and nodes (VerkleNodes)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[verkleTree.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L326)
+### shallowCopy()
 
-___
+> **shallowCopy**(`includeCheckpoints`): `VerkleTree`
 
-### shallowCopy
-
-▸ **shallowCopy**(`includeCheckpoints?`): [`VerkleTree`](VerkleTree.md)
+Defined in: [verkleTree.ts:605](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L605)
 
 Returns a copy of the underlying tree.
 
@@ -497,89 +403,83 @@ being deactivated.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `includeCheckpoints` | `boolean` | `true` | If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db. |
+##### includeCheckpoints
+
+`boolean` = `true`
+
+If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
 
 #### Returns
 
-[`VerkleTree`](VerkleTree.md)
+`VerkleTree`
 
-#### Defined in
+***
 
-[verkleTree.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L422)
+### updateParent()
 
-___
+> **updateParent**(`leafNode`, `nearestNode`, `pathToNode`): `Promise`\<`undefined` \| \{ `lastPath`: `Uint8Array`; `node`: [`VerkleNode`](../type-aliases/VerkleNode.md); \}\>
 
-### verifyProof
+Defined in: [verkleTree.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L341)
 
-▸ **verifyProof**(`rootHash`, `key`, `proof`): `Promise`<``null`` \| `Uint8Array`\>
+Helper method for updating or creating the parent internal node for a given leaf node
+
+#### Parameters
+
+##### leafNode
+
+[`LeafVerkleNode`](LeafVerkleNode.md)
+
+the child leaf node that will be referenced by the new/updated internal node
+returned by this method
+
+##### nearestNode
+
+[`VerkleNode`](../type-aliases/VerkleNode.md)
+
+the nearest node to the new leaf node
+
+##### pathToNode
+
+`Uint8Array`
+
+the path to `nearestNode`
+
+#### Returns
+
+`Promise`\<`undefined` \| \{ `lastPath`: `Uint8Array`; `node`: [`VerkleNode`](../type-aliases/VerkleNode.md); \}\>
+
+a tuple of the updated parent node and the path to that parent (i.e. the partial stem of the leaf node that leads to the parent)
+
+***
+
+### verifyVerkleProof()
+
+> **verifyVerkleProof**(`_rootHash`, `_key`, `_proof`): `Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+
+Defined in: [verkleTree.ts:577](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L577)
 
 Verifies a proof.
 
-**`Throws`**
-
-If proof is found to be invalid.
-
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `rootHash` | `Uint8Array` |
-| `key` | `Uint8Array` |
-| `proof` | [`Proof`](../README.md#proof) |
+##### \_rootHash
+
+`Uint8Array`
+
+##### \_key
+
+`Uint8Array`
+
+##### \_proof
+
+[`Proof`](../type-aliases/Proof.md)
 
 #### Returns
 
-`Promise`<``null`` \| `Uint8Array`\>
+`Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
 The value from the key, or null if valid proof of non-existence.
 
-#### Defined in
+#### Throws
 
-[verkleTree.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L394)
-
-___
-
-### walkTree
-
-▸ **walkTree**(`root`, `onFound`): `Promise`<`void`\>
-
-Walks a tree until finished.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `root` | `Uint8Array` |  |
-| `onFound` | [`FoundNodeFunction`](../README.md#foundnodefunction) | callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves. |
-
-#### Returns
-
-`Promise`<`void`\>
-
-Resolves when finished walking tree.
-
-#### Defined in
-
-[verkleTree.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L258)
-
-___
-
-### create
-
-▸ `Static` **create**(`opts?`): `Promise`<[`VerkleTree`](VerkleTree.md)\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `opts?` | [`VerkleTreeOpts`](../interfaces/VerkleTreeOpts.md) |
-
-#### Returns
-
-`Promise`<[`VerkleTree`](VerkleTree.md)\>
-
-#### Defined in
-
-[verkleTree.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/verkle/src/verkleTree.ts#L66)
+If proof is found to be invalid.

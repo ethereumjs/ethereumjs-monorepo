@@ -195,7 +195,7 @@ describe('reorg tests', () => {
     )
 
     signerVotes = (blockchain.consensus as CliqueConsensus)._cliqueLatestVotes
-    assert.equal(signerVotes.length, 0, 'votes should be empty')
+    assert.strictEqual(signerVotes.length, 0, 'votes should be empty')
 
     blockSigners = (blockchain.consensus as CliqueConsensus)._cliqueLatestBlockSigners
     assert.isDefined(

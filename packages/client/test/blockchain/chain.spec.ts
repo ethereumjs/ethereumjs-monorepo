@@ -27,16 +27,16 @@ describe('[Chain]', () => {
       keyEncoding: KeyEncoding.String,
       valueEncoding: ValueEncoding.String,
     })
-    assert.equal(value, testValue, 'read value matches written value')
+    assert.strictEqual(value, testValue, 'read value matches written value')
   })
 
   it('should retrieve chain properties', async () => {
     const chain = await Chain.create({ config })
     await chain.open()
-    assert.equal(chain.chainId, BigInt(1), 'get chain.chainId')
-    assert.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
-    assert.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
-    assert.equal(
+    assert.strictEqual(chain.chainId, BigInt(1), 'get chain.chainId')
+    assert.strictEqual(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
+    assert.strictEqual(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
+    assert.strictEqual(
       bytesToHex(chain.genesis.hash()),
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis',
@@ -63,10 +63,10 @@ describe('[Chain]', () => {
       common: config.chainCommon,
     })
 
-    assert.equal(await chain.update(), false, 'skip update if not opened')
-    assert.equal(await chain.close(), false, 'skip close if not opened')
+    assert.strictEqual(await chain.update(), false, 'skip update if not opened')
+    assert.strictEqual(await chain.close(), false, 'skip close if not opened')
     assert.isFalse(chain.opened, 'chain should be closed')
-    assert.equal(chain.blocks.height, 0n, 'chain should be empty if not opened')
+    assert.strictEqual(chain.blocks.height, 0n, 'chain should be empty if not opened')
     await expect(chain.putHeaders([block.header])).rejects.toThrow('Chain closed')
 
     await chain.close()
@@ -81,7 +81,7 @@ describe('[Chain]', () => {
 
     await chain.open()
 
-    assert.equal(await chain.open(), false, 'skip open if already opened')
+    assert.strictEqual(await chain.open(), false, 'skip open if already opened')
 
     await chain.close()
   })
@@ -103,8 +103,8 @@ describe('[Chain]', () => {
       common: config.chainCommon,
     })
     await chain.putBlocks([block])
-    assert.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
-    assert.equal(chain.blocks.height.toString(10), '1', 'get chain.height')
+    assert.strictEqual(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
+    assert.strictEqual(chain.blocks.height.toString(10), '1', 'get chain.height')
     await chain.close()
   })
 })

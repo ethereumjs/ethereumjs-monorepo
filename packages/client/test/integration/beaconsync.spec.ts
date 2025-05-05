@@ -33,7 +33,7 @@ describe('should sync blocks', async () => {
   await localServer.discover('remotePeer1', '127.0.0.2')
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should be synced', () => {
-      assert.equal(localService.chain.blocks.height, BigInt(20), 'synced')
+      assert.strictEqual(localService.chain.blocks.height, BigInt(20), 'synced')
     })
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)

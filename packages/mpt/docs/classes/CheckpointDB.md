@@ -1,6 +1,12 @@
-[@ethereumjs/trie](../README.md) / CheckpointDB
+[**@ethereumjs/mpt**](../README.md)
+
+***
+
+[@ethereumjs/mpt](../README.md) / CheckpointDB
 
 # Class: CheckpointDB
+
+Defined in: [packages/mpt/src/db/checkpointDB.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L16)
 
 DB is a thin wrapper around the underlying levelup db,
 which validates inputs and sets encoding type.
@@ -9,226 +15,203 @@ which validates inputs and sets encoding type.
 
 - `DB`
 
-## Table of contents
-
-### Constructors
-
-- [constructor](CheckpointDB.md#constructor)
-
-### Properties
-
-- [\_stats](CheckpointDB.md#_stats)
-- [cacheSize](CheckpointDB.md#cachesize)
-- [checkpoints](CheckpointDB.md#checkpoints)
-- [db](CheckpointDB.md#db)
-
-### Methods
-
-- [batch](CheckpointDB.md#batch)
-- [checkpoint](CheckpointDB.md#checkpoint)
-- [commit](CheckpointDB.md#commit)
-- [del](CheckpointDB.md#del)
-- [get](CheckpointDB.md#get)
-- [hasCheckpoints](CheckpointDB.md#hascheckpoints)
-- [open](CheckpointDB.md#open)
-- [put](CheckpointDB.md#put)
-- [revert](CheckpointDB.md#revert)
-- [setCheckpoints](CheckpointDB.md#setcheckpoints)
-- [shallowCopy](CheckpointDB.md#shallowcopy)
-- [stats](CheckpointDB.md#stats)
-
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new CheckpointDB**(`opts`)
+> **new CheckpointDB**(`opts`): `CheckpointDB`
+
+Defined in: [packages/mpt/src/db/checkpointDB.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L50)
 
 Initialize a DB instance.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opts` | [`CheckpointDBOpts`](../interfaces/CheckpointDBOpts.md) |
+##### opts
 
-#### Defined in
+[`CheckpointDBOpts`](../interfaces/CheckpointDBOpts.md)
 
-[packages/trie/src/db/checkpoint.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L50)
+#### Returns
+
+`CheckpointDB`
 
 ## Properties
 
 ### \_stats
 
-• **\_stats**: `Object`
+> **\_stats**: `object`
 
-#### Type declaration
+Defined in: [packages/mpt/src/db/checkpointDB.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L34)
 
-| Name | Type |
-| :------ | :------ |
-| `cache` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
-| `cache.hits` | `number` |
-| `cache.reads` | `number` |
-| `cache.writes` | `number` |
-| `db` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
-| `db.hits` | `number` |
-| `db.reads` | `number` |
-| `db.writes` | `number` |
+#### cache
 
-#### Defined in
+> **cache**: `object`
 
-[packages/trie/src/db/checkpoint.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L34)
+##### cache.hits
 
-___
+> **hits**: `number` = `0`
+
+##### cache.reads
+
+> **reads**: `number` = `0`
+
+##### cache.writes
+
+> **writes**: `number` = `0`
+
+#### db
+
+> **db**: `object`
+
+##### db.hits
+
+> **hits**: `number` = `0`
+
+##### db.reads
+
+> **reads**: `number` = `0`
+
+##### db.writes
+
+> **writes**: `number` = `0`
+
+***
 
 ### cacheSize
 
-• `Readonly` **cacheSize**: `number`
+> `readonly` **cacheSize**: `number`
 
-#### Defined in
+Defined in: [packages/mpt/src/db/checkpointDB.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L19)
 
-[packages/trie/src/db/checkpoint.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L19)
-
-___
+***
 
 ### checkpoints
 
-• **checkpoints**: [`Checkpoint`](../README.md#checkpoint)[]
+> **checkpoints**: [`Checkpoint`](../type-aliases/Checkpoint.md)[]
 
-#### Defined in
+Defined in: [packages/mpt/src/db/checkpointDB.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L17)
 
-[packages/trie/src/db/checkpoint.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L17)
-
-___
+***
 
 ### db
 
-• **db**: `DB`<`string`, `string` \| `Uint8Array`\>
+> **db**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
-#### Defined in
-
-[packages/trie/src/db/checkpoint.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L18)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L18)
 
 ## Methods
 
-### batch
+### batch()
 
-▸ **batch**(`opStack`): `Promise`<`void`\>
+> **batch**(`opStack`): `Promise`\<`void`\>
 
-**`Inherit Doc`**
+Defined in: [packages/mpt/src/db/checkpointDB.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L229)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opStack` | `BatchDBOp`<`Uint8Array`, `Uint8Array`\>[] |
+##### opStack
+
+`BatchDBOp`[]
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
+
+#### Inherit Doc
 
 #### Implementation of
 
-DB.batch
+`DB.batch`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L230)
+### checkpoint()
 
-___
+> **checkpoint**(`root`): `void`
 
-### checkpoint
-
-▸ **checkpoint**(`root`): `void`
+Defined in: [packages/mpt/src/db/checkpointDB.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L91)
 
 Adds a new checkpoint to the stack
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `root` | `Uint8Array` |
+##### root
+
+`Uint8Array`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L92)
+### commit()
 
-___
+> **commit**(): `Promise`\<`void`\>
 
-### commit
-
-▸ **commit**(): `Promise`<`void`\>
+Defined in: [packages/mpt/src/db/checkpointDB.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L98)
 
 Commits the latest checkpoint
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L99)
+### del()
 
-___
+> **del**(`key`): `Promise`\<`void`\>
 
-### del
-
-▸ **del**(`key`): `Promise`<`void`\>
-
-**`Inherit Doc`**
+Defined in: [packages/mpt/src/db/checkpointDB.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L207)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `Uint8Array` |
+##### key
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
+
+#### Inherit Doc
 
 #### Implementation of
 
-DB.del
+`DB.del`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L208)
+### get()
 
-___
+> **get**(`key`): `Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
-### get
-
-▸ **get**(`key`): `Promise`<`undefined` \| `Uint8Array`\>
-
-**`Inherit Doc`**
+Defined in: [packages/mpt/src/db/checkpointDB.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L138)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `Uint8Array` |
+##### key
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`undefined` \| `Uint8Array`\>
+`Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+
+#### Inherit Doc
 
 #### Implementation of
 
-DB.get
+`DB.get`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L139)
+### hasCheckpoints()
 
-___
+> **hasCheckpoints**(): `boolean`
 
-### hasCheckpoints
-
-▸ **hasCheckpoints**(): `boolean`
+Defined in: [packages/mpt/src/db/checkpointDB.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L83)
 
 Is the DB during a checkpoint phase?
 
@@ -236,141 +219,154 @@ Is the DB during a checkpoint phase?
 
 `boolean`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L84)
+### open()
 
-___
+> **open**(): `Promise`\<`void`\>
 
-### open
+Defined in: [packages/mpt/src/db/checkpointDB.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L291)
 
-▸ **open**(): `Promise`<`void`\>
+Opens the database -- if applicable
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-DB.open
+`DB.open`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L291)
+### put()
 
-___
+> **put**(`key`, `value`): `Promise`\<`void`\>
 
-### put
-
-▸ **put**(`key`, `value`): `Promise`<`void`\>
-
-**`Inherit Doc`**
+Defined in: [packages/mpt/src/db/checkpointDB.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L183)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `Uint8Array` |
-| `value` | `Uint8Array` |
+##### key
+
+`Uint8Array`
+
+##### value
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
+
+#### Inherit Doc
 
 #### Implementation of
 
-DB.put
+`DB.put`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L184)
+### revert()
 
-___
+> **revert**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### revert
-
-▸ **revert**(): `Promise`<`Uint8Array`\>
+Defined in: [packages/mpt/src/db/checkpointDB.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L130)
 
 Reverts the latest checkpoint
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L131)
+### setCheckpoints()
 
-___
+> **setCheckpoints**(`checkpoints`): `void`
 
-### setCheckpoints
-
-▸ **setCheckpoints**(`checkpoints`): `void`
+Defined in: [packages/mpt/src/db/checkpointDB.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L69)
 
 Flush the checkpoints and use the given checkpoints instead.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `checkpoints` | [`Checkpoint`](../README.md#checkpoint)[] |
+##### checkpoints
+
+[`Checkpoint`](../type-aliases/Checkpoint.md)[]
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L70)
+### shallowCopy()
 
-___
+> **shallowCopy**(): `CheckpointDB`
 
-### shallowCopy
-
-▸ **shallowCopy**(): [`CheckpointDB`](CheckpointDB.md)
-
-**`Inherit Doc`**
+Defined in: [packages/mpt/src/db/checkpointDB.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L283)
 
 #### Returns
 
-[`CheckpointDB`](CheckpointDB.md)
+`CheckpointDB`
+
+#### Inherit Doc
 
 #### Implementation of
 
-DB.shallowCopy
+`DB.shallowCopy`
 
-#### Defined in
+***
 
-[packages/trie/src/db/checkpoint.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L283)
+### stats()
 
-___
+> **stats**(`reset`): `object`
 
-### stats
-
-▸ **stats**(`reset?`): `Object`
+Defined in: [packages/mpt/src/db/checkpointDB.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L261)
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `reset` | `boolean` | `true` |
+##### reset
+
+`boolean` = `true`
 
 #### Returns
 
-`Object`
+`object`
 
-| Name | Type |
-| :------ | :------ |
-| `cache` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
-| `cache.hits` | `number` |
-| `cache.reads` | `number` |
-| `cache.writes` | `number` |
-| `db` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
-| `db.hits` | `number` |
-| `db.reads` | `number` |
-| `db.writes` | `number` |
-| `size` | `number` |
+##### cache
 
-#### Defined in
+> **cache**: `object`
 
-[packages/trie/src/db/checkpoint.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L261)
+###### cache.hits
+
+> **hits**: `number` = `0`
+
+###### cache.reads
+
+> **reads**: `number` = `0`
+
+###### cache.writes
+
+> **writes**: `number` = `0`
+
+##### db
+
+> **db**: `object`
+
+###### db.hits
+
+> **hits**: `number` = `0`
+
+###### db.reads
+
+> **reads**: `number` = `0`
+
+###### db.writes
+
+> **writes**: `number` = `0`
+
+##### size
+
+> **size**: `number`

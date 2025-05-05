@@ -50,7 +50,7 @@ describe(method, () => {
     const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, [1])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
@@ -58,7 +58,7 @@ describe(method, () => {
     const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x123'])
-    assert.equal(res.error.code, -32001, 'Unknown payload')
+    assert.strictEqual(res.error.code, -32001, 'Unknown payload')
   })
 
   it('call with known payload', async () => {
@@ -128,29 +128,29 @@ describe(method, () => {
     const blobsAndProofs = res.result
     for (let i = 0; i < txVersionedHashes.length; i++) {
       const { blob, proof } = blobsAndProofs[i]
-      assert.equal(blob, txBlobs[i])
-      assert.equal(proof, txProofs[i])
+      assert.strictEqual(blob, txBlobs[i])
+      assert.strictEqual(proof, txProofs[i])
     }
 
     res = await rpc.request('engine_getPayloadV3', [payloadId])
 
     const { executionPayload, blobsBundle } = res.result
-    assert.equal(
+    assert.strictEqual(
       executionPayload.blockHash,
       '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block',
     )
-    assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
-    assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
+    assert.strictEqual(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
+    assert.strictEqual(executionPayload.blobGasUsed, '0x20000', 'correct blob gas used')
     const { commitments, proofs, blobs } = blobsBundle
     assert.isTrue(
       commitments.length === proofs.length && commitments.length === blobs.length,
       'equal commitments, proofs and blobs',
     )
-    assert.equal(blobs.length, 1, '1 blob should be returned')
-    assert.equal(proofs[0], txProofs[0], 'proof should match')
-    assert.equal(commitments[0], txCommitments[0], 'commitment should match')
-    assert.equal(blobs[0], txBlobs[0], 'blob should match')
+    assert.strictEqual(blobs.length, 1, '1 blob should be returned')
+    assert.strictEqual(proofs[0], txProofs[0], 'proof should match')
+    assert.strictEqual(commitments[0], txCommitments[0], 'commitment should match')
+    assert.strictEqual(blobs[0], txBlobs[0], 'blob should match')
 
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
     MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy

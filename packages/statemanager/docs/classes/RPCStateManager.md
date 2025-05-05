@@ -1,141 +1,82 @@
+[**@ethereumjs/statemanager**](../README.md)
+
+***
+
 [@ethereumjs/statemanager](../README.md) / RPCStateManager
 
 # Class: RPCStateManager
 
+Defined in: [rpcStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L29)
+
 ## Implements
 
-- `EVMStateManagerInterface`
-
-## Table of contents
-
-### Constructors
-
-- [constructor](RPCStateManager.md#constructor)
-
-### Properties
-
-- [common](RPCStateManager.md#common)
-- [originalStorageCache](RPCStateManager.md#originalstoragecache)
-
-### Methods
-
-- [accountExists](RPCStateManager.md#accountexists)
-- [checkpoint](RPCStateManager.md#checkpoint)
-- [clearCaches](RPCStateManager.md#clearcaches)
-- [clearContractStorage](RPCStateManager.md#clearcontractstorage)
-- [commit](RPCStateManager.md#commit)
-- [deleteAccount](RPCStateManager.md#deleteaccount)
-- [dumpStorage](RPCStateManager.md#dumpstorage)
-- [dumpStorageRange](RPCStateManager.md#dumpstoragerange)
-- [flush](RPCStateManager.md#flush)
-- [generateCanonicalGenesis](RPCStateManager.md#generatecanonicalgenesis)
-- [getAccount](RPCStateManager.md#getaccount)
-- [getAppliedKey](RPCStateManager.md#getappliedkey)
-- [getContractCode](RPCStateManager.md#getcontractcode)
-- [getContractStorage](RPCStateManager.md#getcontractstorage)
-- [getProof](RPCStateManager.md#getproof)
-- [getStateRoot](RPCStateManager.md#getstateroot)
-- [hasStateRoot](RPCStateManager.md#hasstateroot)
-- [modifyAccountFields](RPCStateManager.md#modifyaccountfields)
-- [putAccount](RPCStateManager.md#putaccount)
-- [putContractCode](RPCStateManager.md#putcontractcode)
-- [putContractStorage](RPCStateManager.md#putcontractstorage)
-- [revert](RPCStateManager.md#revert)
-- [setBlockTag](RPCStateManager.md#setblocktag)
-- [setStateRoot](RPCStateManager.md#setstateroot)
-- [shallowCopy](RPCStateManager.md#shallowcopy)
+- `StateManagerInterface`
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new RPCStateManager**(`opts`)
+> **new RPCStateManager**(`opts`): `RPCStateManager`
+
+Defined in: [rpcStateManager.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L39)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opts` | [`RPCStateManagerOpts`](../interfaces/RPCStateManagerOpts.md) |
+##### opts
 
-#### Defined in
+[`RPCStateManagerOpts`](../interfaces/RPCStateManagerOpts.md)
 
-[rpcStateManager.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L50)
+#### Returns
+
+`RPCStateManager`
 
 ## Properties
 
 ### common
 
-• `Readonly` **common**: `Common`
+> `readonly` **common**: `Common`
 
-#### Defined in
+Defined in: [rpcStateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L37)
 
-[rpcStateManager.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L48)
-
-___
+***
 
 ### originalStorageCache
 
-• **originalStorageCache**: [`OriginalStorageCache`](OriginalStorageCache.md)
+> **originalStorageCache**: [`OriginalStorageCache`](OriginalStorageCache.md)
+
+Defined in: [rpcStateManager.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L33)
 
 #### Implementation of
 
-EVMStateManagerInterface.originalStorageCache
-
-#### Defined in
-
-[rpcStateManager.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L44)
+`StateManagerInterface.originalStorageCache`
 
 ## Methods
 
-### accountExists
+### checkpoint()
 
-▸ **accountExists**(`address`): `Promise`<`boolean`\>
+> **checkpoint**(): `Promise`\<`void`\>
 
-Checks if an `account` exists at `address`
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the `account` to check |
-
-#### Returns
-
-`Promise`<`boolean`\>
-
-#### Defined in
-
-[rpcStateManager.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L225)
-
-___
-
-### checkpoint
-
-▸ **checkpoint**(): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L313)
 
 Checkpoints the current state of the StateManager instance.
 State changes that follow can then be committed by calling
 `commit` or `reverted` by calling rollback.
 
-Partial implementation, called from the subclass.
-
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.checkpoint
+`StateManagerInterface.checkpoint`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L387)
+### clearCaches()
 
-___
+> **clearCaches**(): `void`
 
-### clearCaches
-
-▸ **clearCaches**(): `void`
+Defined in: [rpcStateManager.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L91)
 
 Clears the internal cache so all accounts, contract code, and storage slots will
 initially be retrieved from the provider
@@ -144,41 +85,43 @@ initially be retrieved from the provider
 
 `void`
 
-#### Defined in
+#### Implementation of
 
-[rpcStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L111)
+`StateManagerInterface.clearCaches`
 
-___
+***
 
-### clearContractStorage
+### clearStorage()
 
-▸ **clearContractStorage**(`address`): `Promise`<`void`\>
+> **clearStorage**(`address`): `Promise`\<`void`\>
+
+Defined in: [rpcStateManager.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L177)
 
 Clears all storage entries for the account corresponding to `address`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address to clear the storage of |
+##### address
+
+`Address`
+
+Address to clear the storage of
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.clearContractStorage
+`StateManagerInterface.clearStorage`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L194)
+### commit()
 
-___
+> **commit**(): `Promise`\<`void`\>
 
-### commit
-
-▸ **commit**(): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L323)
 
 Commits the current change-set to the instance since the
 last call to checkpoint.
@@ -187,59 +130,59 @@ Partial implementation, called from the subclass.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.commit
+`StateManagerInterface.commit`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L398)
+### deleteAccount()
 
-___
+> **deleteAccount**(`address`): `Promise`\<`void`\>
 
-### deleteAccount
-
-▸ **deleteAccount**(`address`): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L291)
 
 Deletes an account from state under the provided `address`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the account which should be deleted |
+##### address
+
+`Address`
+
+Address of the account which should be deleted
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.deleteAccount
+`StateManagerInterface.deleteAccount`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L343)
+### dumpStorage()
 
-___
+> **dumpStorage**(`address`): `Promise`\<`StorageDump`\>
 
-### dumpStorage
-
-▸ **dumpStorage**(`address`): `Promise`<`StorageDump`\>
+Defined in: [rpcStateManager.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L188)
 
 Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | The address of the `account` to return storage for |
+##### address
+
+`Address`
+
+The address of the `account` to return storage for
 
 #### Returns
 
-`Promise`<`StorageDump`\>
+`Promise`\<`StorageDump`\>
 
 - The state of the account as an `Object` map.
 Keys are the storage keys, values are the storage values as strings.
@@ -247,119 +190,64 @@ Both are represented as `0x` prefixed hex strings.
 
 #### Implementation of
 
-EVMStateManagerInterface.dumpStorage
+`StateManagerInterface.dumpStorage`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L205)
+### flush()
 
-___
+> **flush**(): `Promise`\<`void`\>
 
-### dumpStorageRange
+Defined in: [rpcStateManager.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L338)
 
-▸ **dumpStorageRange**(`_address`, `_startKey`, `_limit`): `Promise`<`StorageRange`\>
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getAccount()
+
+> **getAccount**(`address`): `Promise`\<`undefined` \| `Account`\>
+
+Defined in: [rpcStateManager.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L203)
+
+Gets the account associated with `address` or `undefined` if account does not exist
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `_address` | `Address` |
-| `_startKey` | `bigint` |
-| `_limit` | `number` |
+##### address
+
+`Address`
+
+Address of the `account` to get
 
 #### Returns
 
-`Promise`<`StorageRange`\>
+`Promise`\<`undefined` \| `Account`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.dumpStorageRange
+`StateManagerInterface.getAccount`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L216)
+### getAppliedKey()
 
-___
+> **getAppliedKey**(`address`): `Uint8Array`
 
-### flush
-
-▸ **flush**(): `Promise`<`void`\>
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[rpcStateManager.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L415)
-
-___
-
-### generateCanonicalGenesis
-
-▸ **generateCanonicalGenesis**(`_initState`): `Promise`<`void`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `_initState` | `any` |
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Implementation of
-
-EVMStateManagerInterface.generateCanonicalGenesis
-
-#### Defined in
-
-[rpcStateManager.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L438)
-
-___
-
-### getAccount
-
-▸ **getAccount**(`address`): `Promise`<`undefined` \| `Account`\>
-
-Gets the code corresponding to the provided `address`.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address to get the `account` for |
-
-#### Returns
-
-`Promise`<`undefined` \| `Account`\>
-
-- Resolves with the code corresponding to the provided address.
-Returns an empty `Uint8Array` if the account has no associated code.
-
-#### Implementation of
-
-EVMStateManagerInterface.getAccount
-
-#### Defined in
-
-[rpcStateManager.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L251)
-
-___
-
-### getAppliedKey
-
-▸ **getAppliedKey**(`address`): `Uint8Array`
+Defined in: [rpcStateManager.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L304)
 
 Returns the applied key for a given address
 Used for saving preimages
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Uint8Array` | The address to return the applied key |
+##### address
+
+`Uint8Array`
+
+The address to return the applied key
 
 #### Returns
 
@@ -369,60 +257,107 @@ Used for saving preimages
 
 #### Implementation of
 
-EVMStateManagerInterface.getAppliedKey
+`StateManagerInterface.getAppliedKey`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L376)
+### getCode()
 
-___
+> **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### getContractCode
-
-▸ **getContractCode**(`address`): `Promise`<`Uint8Array`\>
+Defined in: [rpcStateManager.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L101)
 
 Gets the code corresponding to the provided `address`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address to get the `code` for |
+##### address
+
+`Address`
+
+Address to get the `code` for
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 - Resolves with the code corresponding to the provided address.
 Returns an empty `Uint8Array` if the account has no associated code.
 
 #### Implementation of
 
-EVMStateManagerInterface.getContractCode
+`StateManagerInterface.getCode`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L123)
+### getCodeSize()
 
-___
+> **getCodeSize**(`address`): `Promise`\<`number`\>
 
-### getContractStorage
+Defined in: [rpcStateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L113)
 
-▸ **getContractStorage**(`address`, `key`): `Promise`<`Uint8Array`\>
+#### Parameters
+
+##### address
+
+`Address`
+
+#### Returns
+
+`Promise`\<`number`\>
+
+#### Implementation of
+
+`StateManagerInterface.getCodeSize`
+
+***
+
+### ~~getStateRoot()~~
+
+> **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
+
+Defined in: [rpcStateManager.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L345)
+
+#### Returns
+
+`Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
+
+#### Deprecated
+
+This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+
+#### Implementation of
+
+`StateManagerInterface.getStateRoot`
+
+***
+
+### getStorage()
+
+> **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+
+Defined in: [rpcStateManager.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L138)
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the account to get the storage for |
-| `key` | `Uint8Array` | Key in the account's storage to get the value for. Must be 32 bytes long. |
+##### address
+
+`Address`
+
+Address of the account to get the storage for
+
+##### key
+
+`Uint8Array`
+
+Key in the account's storage to get the value for. Must be 32 bytes long.
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 - The storage value for the account
 corresponding to the provided address at the provided key.
@@ -430,90 +365,35 @@ If this does not exist an empty `Uint8Array` is returned.
 
 #### Implementation of
 
-EVMStateManagerInterface.getContractStorage
+`StateManagerInterface.getStorage`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L155)
+### ~~hasStateRoot()~~
 
-___
+> **hasStateRoot**(): `never`
 
-### getProof
-
-▸ **getProof**(`address`, `storageSlots?`): `Promise`<[`Proof`](../README.md#proof)\>
-
-Get an EIP-1186 proof from the provider
-
-#### Parameters
-
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `address` | `Address` | `undefined` | address to get proof of |
-| `storageSlots` | `Uint8Array`[] | `[]` | storage slots to get proof of |
-
-#### Returns
-
-`Promise`<[`Proof`](../README.md#proof)\>
-
-an EIP-1186 formatted proof
-
-#### Implementation of
-
-EVMStateManagerInterface.getProof
-
-#### Defined in
-
-[rpcStateManager.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L356)
-
-___
-
-### getStateRoot
-
-▸ **getStateRoot**(): `Promise`<`Uint8Array`\>
-
-**`Deprecated`**
-
-This method is not used by the RPC State Manager and is a stub required by the State Manager interface
-
-#### Returns
-
-`Promise`<`Uint8Array`\>
-
-#### Implementation of
-
-EVMStateManagerInterface.getStateRoot
-
-#### Defined in
-
-[rpcStateManager.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L422)
-
-___
-
-### hasStateRoot
-
-▸ **hasStateRoot**(): `never`
-
-**`Deprecated`**
-
-This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+Defined in: [rpcStateManager.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L357)
 
 #### Returns
 
 `never`
 
+#### Deprecated
+
+This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+
 #### Implementation of
 
-EVMStateManagerInterface.hasStateRoot
+`StateManagerInterface.hasStateRoot`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L434)
+### modifyAccountFields()
 
-___
+> **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-### modifyAccountFields
-
-▸ **modifyAccountFields**(`address`, `accountFields`): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L270)
 
 Gets the account associated with `address`, modifies the given account
 fields, then saves the account into state. Account fields can include
@@ -521,112 +401,139 @@ fields, then saves the account into state. Account fields can include
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the account to modify |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\> | Object containing account fields and values to modify |
+##### address
+
+`Address`
+
+Address of the account to modify
+
+##### accountFields
+
+`Partial`
+
+Object containing account fields and values to modify
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.modifyAccountFields
+`StateManagerInterface.modifyAccountFields`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L314)
+### putAccount()
 
-___
+> **putAccount**(`address`, `account`): `Promise`\<`void`\>
 
-### putAccount
-
-▸ **putAccount**(`address`, `account`): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L246)
 
 Saves an account into state under the provided `address`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address under which to store `account` |
-| `account` | `undefined` \| `Account` | The account to store |
+##### address
+
+`Address`
+
+Address under which to store `account`
+
+##### account
+
+The account to store
+
+`undefined` | `Account`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.putAccount
+`StateManagerInterface.putAccount`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L290)
+### putCode()
 
-___
+> **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-### putContractCode
-
-▸ **putContractCode**(`address`, `value`): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L124)
 
 Adds `value` to the state trie as code, and sets `codeHash` on the account
 corresponding to `address` to reference this.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address of the `account` to add the `code` for |
-| `value` | `Uint8Array` | The value of the `code` |
+##### address
+
+`Address`
+
+Address of the `account` to add the `code` for
+
+##### value
+
+`Uint8Array`
+
+The value of the `code`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.putContractCode
+`StateManagerInterface.putCode`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L141)
+### putStorage()
 
-___
+> **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-### putContractStorage
-
-▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L169)
 
 Adds value to the cache for the `account`
 corresponding to `address` at the provided `key`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `Address` | Address to set a storage value for |
-| `key` | `Uint8Array` | Key to set the value at. Must be 32 bytes long. |
-| `value` | `Uint8Array` | Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is empty or filled with zeros, deletes the value. |
+##### address
+
+`Address`
+
+Address to set a storage value for
+
+##### key
+
+`Uint8Array`
+
+Key to set the value at. Must be 32 bytes long.
+
+##### value
+
+`Uint8Array`
+
+Value to set at `key` for account corresponding to `address`.
+Cannot be more than 32 bytes. Leading zeros are stripped.
+If it is empty or filled with zeros, deletes the value.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.putContractStorage
+`StateManagerInterface.putStorage`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L186)
+### revert()
 
-___
+> **revert**(): `Promise`\<`void`\>
 
-### revert
-
-▸ **revert**(): `Promise`<`void`\>
+Defined in: [rpcStateManager.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L334)
 
 Reverts the current change-set to the instance since the
 last call to checkpoint.
@@ -635,85 +542,77 @@ Partial implementation , called from the subclass.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
 #### Implementation of
 
-EVMStateManagerInterface.revert
+`StateManagerInterface.revert`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L409)
+### setBlockTag()
 
-___
+> **setBlockTag**(`blockTag`): `void`
 
-### setBlockTag
-
-▸ **setBlockTag**(`blockTag`): `void`
+Defined in: [rpcStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L81)
 
 Sets the new block tag used when querying the provider and clears the
 internal cache.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `blockTag` | `bigint` \| ``"earliest"`` | the new block tag to use when querying the provider |
+##### blockTag
+
+the new block tag to use when querying the provider
+
+`bigint` | `"earliest"`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L101)
+### ~~setStateRoot()~~
 
-___
+> **setStateRoot**(`_root`): `Promise`\<`void`\>
 
-### setStateRoot
-
-▸ **setStateRoot**(`_root`): `Promise`<`void`\>
-
-**`Deprecated`**
-
-This method is not used by the RPC State Manager and is a stub required by the State Manager interface
+Defined in: [rpcStateManager.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L352)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `_root` | `Uint8Array` |
+##### \_root
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
+
+#### Deprecated
+
+This method is not used by the RPC State Manager and is a stub required by the State Manager interface
 
 #### Implementation of
 
-EVMStateManagerInterface.setStateRoot
+`StateManagerInterface.setStateRoot`
 
-#### Defined in
+***
 
-[rpcStateManager.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L429)
+### shallowCopy()
 
-___
+> **shallowCopy**(): `RPCStateManager`
 
-### shallowCopy
+Defined in: [rpcStateManager.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L66)
 
-▸ **shallowCopy**(): [`RPCStateManager`](RPCStateManager.md)
-
-Note that the returned statemanager will share the same JsonRpcProvider as the original
+Note that the returned statemanager will share the same JSONRPCProvider as the original
 
 #### Returns
 
-[`RPCStateManager`](RPCStateManager.md)
+`RPCStateManager`
 
 RPCStateManager
 
 #### Implementation of
 
-EVMStateManagerInterface.shallowCopy
-
-#### Defined in
-
-[rpcStateManager.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L79)
+`StateManagerInterface.shallowCopy`

@@ -8,7 +8,7 @@ describe('Storage Cache: initialization', () => {
     it(`should initialize`, async () => {
       const cache = new StorageCache({ size: 100, type })
 
-      assert.equal(cache._checkpoints, 0, 'initializes given trie')
+      assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
     })
   }
 })
@@ -34,7 +34,7 @@ describe('Storage Cache: put and get account', () => {
 
     it(`should flush`, async () => {
       const items = cache.flush()
-      assert.equal(items.length, 1)
+      assert.strictEqual(items.length, 1)
     })
 
     it(`should delete storage value from cache`, async () => {
@@ -102,7 +102,7 @@ describe('Storage Cache: checkpointing', () => {
       const cache = new StorageCache({ size: 100, type: CacheType.LRU })
       cache.put(addr, key, value)
       cache.clear()
-      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+      assert.strictEqual(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

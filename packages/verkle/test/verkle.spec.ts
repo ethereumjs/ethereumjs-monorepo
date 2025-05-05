@@ -115,7 +115,7 @@ describe('Verkle tree', () => {
     // by returning a stack where the last node is a leaf node
     // with a different stem than the one passed to `findPath`
     const pathToNonExistentNode = await tree.findPath(absentKeys[0])
-    assert.equal(pathToNonExistentNode.node, null)
+    assert.strictEqual(pathToNonExistentNode.node, null)
     assert.deepEqual(
       verkle.serializeCommitment(pathToNonExistentNode.stack[0][0].commitment),
       tree.root(),
@@ -179,7 +179,7 @@ describe('Verkle tree', () => {
     const foundPath = await trie.findPath(stem2)
 
     // Confirm node with stem2 doesn't exist in trie
-    assert.equal(foundPath.node, null)
+    assert.strictEqual(foundPath.node, null)
 
     // Create new leaf node
     const leafNode2 = await LeafVerkleNode.create(stem2, verkle)
@@ -188,7 +188,7 @@ describe('Verkle tree', () => {
 
     const nearestNode = foundPath.stack.pop()![0]
     // Verify that another leaf node is "nearest" node
-    assert.equal(nearestNode.type, VerkleNodeType.Leaf)
+    assert.strictEqual(nearestNode.type, VerkleNodeType.Leaf)
     assert.deepEqual((nearestNode as LeafVerkleNode).getValue(2), values[1])
 
     // Compute the portion of stem1 and stem2 that match (i.e. the partial path closest to stem2)
@@ -223,11 +223,11 @@ describe('Verkle tree', () => {
     await trie.saveStack(putStack)
     let res2 = await trie.findPath(stem1)
 
-    assert.equal(res2.remaining.length, 0, 'confirm full path was found')
-    assert.equal(res2.stack.length, 2, 'confirm node is at depth 2')
+    assert.strictEqual(res2.remaining.length, 0, 'confirm full path was found')
+    assert.strictEqual(res2.stack.length, 2, 'confirm node is at depth 2')
     res2 = await trie.findPath(stem2)
-    assert.equal(res2.remaining.length, 0, 'confirm full path was found')
-    assert.equal(res2.stack.length, 2, 'confirm node is at depth 2')
+    assert.strictEqual(res2.remaining.length, 0, 'confirm full path was found')
+    assert.strictEqual(res2.stack.length, 2, 'confirm node is at depth 2')
     const val2 = await trie.get(keys[2].slice(0, 31), [keys[2][31]])
     assert.deepEqual(val2[0], values[2], 'confirm values[2] can be retrieved from trie')
   })
