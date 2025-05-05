@@ -1381,7 +1381,6 @@ export class Engine {
         checkNotAfterHf,
         BigInt(executionPayload.executionPayload.timestamp),
       )
-      console.log("getPayload",{payloadId,requests: executionPayload.executionRequests});
       return executionPayload
     } catch (error: any) {
       if (validEngineCodes.includes(error.code)) throw error
