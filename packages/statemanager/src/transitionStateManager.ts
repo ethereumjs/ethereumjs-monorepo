@@ -45,7 +45,7 @@ import type {
 } from '@ethereumjs/common'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { createMPT } from '@ethereumjs/mpt'
-import type { Address, VerkleCrypto } from '@ethereumjs/util'
+import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -68,11 +68,10 @@ export class TransitionStateManager implements StateManagerInterface {
   originalStorageCache: OriginalStorageCache
   verkleCrypto: VerkleCrypto
 
-  // The frozen tree that we are transitioning away from. Read-only.
-  protected _frozenTree: MerklePatriciaTrie
-  // The new tree that we are transition to. Can be written to.
-  protected _activeTree: VerkleTree
-  protected _storageTries: { [key: string]: MerklePatriciaTrie }
+  // The frozen state manager that we are transitioning away from. Read-only.
+  protected _frozenStateManager: StateManagerInterface
+  // The new state manager that we are transitioning to. Can be written to.
+  protected _activeStateManager: StateManagerInterface
 
   public readonly common: Common
 
@@ -102,24 +101,13 @@ export class TransitionStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    // if (opts.common.isActivatedEIP(6800) === false) {
-    //   throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
-    // }
-
     if (opts.common.customCrypto.verkle === undefined) {
       throw EthereumJSErrorWithoutCode('verkle crypto required')
     }
 
-    this._frozenTree = opts.frozenTree
-    this._activeTree =
-      opts.activeTree ??
-      new VerkleTree({
-        verkleCrypto: opts.common.customCrypto.verkle,
-        db: new MapDB<Uint8Array, Uint8Array>(),
-        useRootPersistence: false,
-        cacheSize: 0,
-      })
-    this._storageTries = {}
+    // Accept state managers directly from options (update TransitionStateManagerOpts accordingly)
+    this._frozenStateManager = opts.frozenStateManager
+    this._activeStateManager = opts.activeStateManager
     this._caches = opts.caches
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.common.customCrypto.verkle
@@ -133,50 +121,13 @@ export class TransitionStateManager implements StateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    const elem = this._caches?.account?.get(address)
-    if (elem !== undefined) {
-      return elem.accountRLP !== undefined ? createAccountFromRLP(elem.accountRLP) : undefined
+    // Try from active first
+    let account = await this._activeStateManager.getAccount(address)
+    if (account !== undefined) {
+      return account
     }
-
-    // TODO:
-    // 1. Attempt retrieving from the active tree
-    // 2. Fallback to retrieving from the frozen tree
-
-    const stem = getVerkleStem(this.verkleCrypto, address, 0)
-
-    // First retrieve the account "header" values from the trie
-    const accountValues = await this._activeTree.get(stem, [
-      VerkleLeafType.BasicData,
-      VerkleLeafType.CodeHash,
-    ])
-
-    let account
-    if (accountValues[0] !== undefined) {
-      const basicData = decodeVerkleLeafBasicData(accountValues[0]!)
-      account = createPartialAccount({
-        version: basicData.version,
-        balance: basicData.balance,
-        nonce: basicData.nonce,
-        // Codehash is either untouched (i.e. undefined) or deleted (i.e. overwritten with zeros)
-        codeHash:
-          accountValues[1] === undefined || equalsBytes(accountValues[1], new Uint8Array(32))
-            ? KECCAK256_NULL
-            : accountValues[1],
-        codeSize: basicData.codeSize,
-        storageRoot: KECCAK256_NULL, // TODO: Add storage stuff
-      })
-    } else if (accountValues[1] === undefined) {
-      // account does not exist if both basic fields and codehash are undefined
-      if (this.DEBUG) {
-        this._debug(`getAccount address=${address.toString()} from DB (non-existent)`)
-      }
-      this._caches?.account?.put(address, account)
-    }
-
-    if (this.DEBUG) {
-      this._debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
-    }
-    return account
+    // Fallback to frozen
+    return this._frozenStateManager.getAccount(address)
   }
 
   /**
@@ -185,35 +136,7 @@ export class TransitionStateManager implements StateManagerInterface {
    * @param account - The account to store or undefined if to be deleted
    */
   putAccount = async (address: Address, account?: Account): Promise<void> => {
-    if (this.DEBUG) {
-      this._debug(
-        `putAccount address=${address} nonce=${account?.nonce} balance=${
-          account?.balance
-        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
-          account && account.isEmpty() ? 'yes' : 'no'
-        }`,
-      )
-    }
-    if (this._caches?.account === undefined) {
-      if (account !== undefined) {
-        const stem = getVerkleStem(this.verkleCrypto, address, 0)
-        const basicDataBytes = encodeVerkleLeafBasicData(account)
-        await this._activeTree.put(
-          stem,
-          [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
-          [basicDataBytes, account.codeHash],
-        )
-      } else {
-        // Delete account
-        await this.deleteAccount(address)
-      }
-    } else {
-      if (account !== undefined) {
-        this._caches?.account?.put(address, account, true)
-      } else {
-        this._caches?.account?.del(address)
-      }
-    }
+    await this._activeStateManager.putAccount(address, account)
   }
 
   /**
@@ -221,311 +144,128 @@ export class TransitionStateManager implements StateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   deleteAccount = async (address: Address): Promise<void> => {
-    if (this.DEBUG) {
-      this._debug(`Delete account ${address}`)
-    }
-
-    this._caches?.deleteAccount(address)
-
-    if (this._caches?.account === undefined) {
-      const stem = getVerkleStem(this.verkleCrypto, address)
-      // TODO: Determine the best way to clear code/storage for an account when deleting
-      // Will need to inspect all possible code and storage keys to see if it's anything
-      // other than untouched leaf values
-      // Special instance where we delete the account and revert the trie value to untouched
-      await this._activeTree.put(
-        stem,
-        [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
-        [LeafVerkleNodeValue.Untouched, LeafVerkleNodeValue.Untouched],
-      )
-    }
+    await this._activeStateManager.deleteAccount(address)
   }
 
   modifyAccountFields = async (address: Address, accountFields: AccountFields): Promise<void> => {
-    await modifyAccountFields(this, address, accountFields)
-  }
-  putCode = async (address: Address, value: Uint8Array): Promise<void> => {
-    if (this.DEBUG) {
-      this._debug(`putCode address=${address.toString()} value=${short(value)}`)
-    }
-
-    this._caches?.code?.put(address, value)
-
-    const codeHash = keccak256(value)
-    if (equalsBytes(codeHash, KECCAK256_NULL)) {
-      // If the code hash is the null hash, no code has to be stored
-      return
-    }
-
-    if ((await this.getAccount(address)) === undefined) {
-      await this.putAccount(address, new Account())
-    }
-    if (this.DEBUG) {
-      this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
-    }
-
-    const codeChunks = chunkifyCode(value)
-    const chunkStems = await generateCodeStems(codeChunks.length, address, this.verkleCrypto)
-
-    const chunkSuffixes: number[] = generateChunkSuffixes(codeChunks.length)
-    // Put the code chunks corresponding to the first stem (up to 128 chunks)
-    await this._activeTree.put(
-      chunkStems[0],
-      chunkSuffixes.slice(
-        0,
-        chunkSuffixes.length <= VERKLE_CODE_OFFSET ? chunkSuffixes.length : VERKLE_CODE_OFFSET,
-      ),
-      codeChunks.slice(
-        0,
-        codeChunks.length <= VERKLE_CODE_OFFSET ? codeChunks.length : VERKLE_CODE_OFFSET,
-      ),
-    )
-
-    // Put additional chunks under additional stems as applicable
-    for (let stem = 1; stem < chunkStems.length; stem++) {
-      const sliceStart = VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * (stem - 1)
-      const sliceEnd =
-        value.length <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-          ? value.length
-          : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-      await this._activeTree.put(
-        chunkStems[stem],
-        chunkSuffixes.slice(sliceStart, sliceEnd),
-        codeChunks.slice(sliceStart, sliceEnd),
-      )
-    }
-    await this.modifyAccountFields(address, {
-      codeHash,
-      codeSize: value.length,
-    })
+    await this._activeStateManager.modifyAccountFields(address, accountFields)
   }
 
+  /**
+   * Gets the code associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
+   */
   getCode = async (address: Address): Promise<Uint8Array> => {
-    if (this.DEBUG) {
-      this._debug(`getCode address=${address.toString()}`)
+    // Try from active first
+    let code = await this._activeStateManager.getCode(address)
+    if (code && code.length > 0) {
+      return code
     }
-
-    const elem = this._caches?.code?.get(address)
-    if (elem !== undefined) {
-      return elem.code ?? new Uint8Array(0)
-    }
-
-    const account = await this.getAccount(address)
-    if (!account) {
-      return new Uint8Array(0)
-    }
-    if (!account.isContract()) {
-      return new Uint8Array(0)
-    }
-
-    // allocate the code
-    const codeSize = account.codeSize
-
-    const stems = await generateCodeStems(
-      Math.ceil(codeSize / VERKLE_CODE_CHUNK_SIZE),
-      address,
-      this.verkleCrypto,
-    )
-    const chunkSuffixes = generateChunkSuffixes(Math.ceil(codeSize / VERKLE_CODE_CHUNK_SIZE))
-
-    const chunksByStem = new Array(stems.length)
-    // Retrieve the code chunks stored in the first leaf node
-    chunksByStem[0] = await this._activeTree.get(
-      stems[0],
-      chunkSuffixes.slice(0, codeSize <= VERKLE_CODE_OFFSET ? codeSize : VERKLE_CODE_OFFSET),
-    )
-
-    // Retrieve code chunks on any additional stems
-    for (let stem = 1; stem < stems.length; stem++) {
-      const sliceStart = VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * (stem - 1)
-      const sliceEnd =
-        codeSize <= VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-          ? codeSize
-          : VERKLE_CODE_OFFSET + VERKLE_NODE_WIDTH * stem
-      chunksByStem[stem] = await this._activeTree.get(
-        stems[stem],
-        chunkSuffixes.slice(sliceStart, sliceEnd),
-      )
-    }
-    const chunks = chunksByStem.flat()
-    const code = new Uint8Array(codeSize)
-    // Insert code chunks into final array (skipping PUSHDATA overflow indicator byte)
-    for (let x = 0; x < chunks.length; x++) {
-      if (chunks[x] === undefined)
-        throw EthereumJSErrorWithoutCode(`expected code chunk at ID ${x}, got undefined`)
-
-      let lastChunkByteIndex = VERKLE_CODE_CHUNK_SIZE
-      // Determine code ending byte (if we're on the last chunk)
-      if (x === chunks.length - 1) {
-        // On the last chunk, the slice either ends on a partial chunk (if codeSize doesn't exactly fit in full chunks), or a full chunk
-        lastChunkByteIndex = codeSize % VERKLE_CODE_CHUNK_SIZE || VERKLE_CODE_CHUNK_SIZE
-      }
-      code.set(
-        chunks[x]!.slice(1, lastChunkByteIndex + 1),
-        code.byteOffset + x * VERKLE_CODE_CHUNK_SIZE,
-      )
-    }
-    this._caches?.code?.put(address, code)
-
-    return code
+    // Fallback to frozen
+    return this._frozenStateManager.getCode(address)
   }
 
+  /**
+   * Gets the code size associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
+   */
   getCodeSize = async (address: Address): Promise<number> => {
-    const accountBytes = (
-      await this._activeTree.get(getVerkleStem(this.verkleCrypto, address), [
-        VerkleLeafType.BasicData,
-      ])
-    )[0]
-    if (accountBytes === undefined) return 0
-    return decodeVerkleLeafBasicData(accountBytes).codeSize
+    let size = await this._activeStateManager.getCodeSize(address)
+    if (size && size > 0) {
+      return size
+    }
+    return this._frozenStateManager.getCodeSize(address)
   }
+
+  /**
+   * Saves contract code for an account at the provided address.
+   * @param address - Address of the account
+   * @param value - Contract code as Uint8Array
+   */
+  putCode = async (address: Address, value: Uint8Array): Promise<void> => {
+    await this._activeStateManager.putCode(address, value)
+  }
+
+  /**
+   * Gets the storage associated with `address` and `key` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
+   * @param key - Key of the storage to get
+   */
   getStorage = async (address: Address, key: Uint8Array): Promise<Uint8Array> => {
-    if (key.length !== 32) {
-      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
+    let value = await this._activeStateManager.getStorage(address, key)
+    if (value && value.length > 0) {
+      return value
     }
-    const cachedValue = this._caches?.storage?.get(address, key)
-    if (cachedValue !== undefined) {
-      const decoded = RLP.decode(cachedValue ?? new Uint8Array(0)) as Uint8Array
-      return decoded
-    }
-
-    const account = await this.getAccount(address)
-    if (!account) {
-      return new Uint8Array()
-    }
-    const storageKey = await getVerkleTreeKeyForStorageSlot(
-      address,
-      bytesToBigInt(key),
-      this.verkleCrypto,
-    )
-    const value = await this._activeTree.get(storageKey.slice(0, 31), [storageKey[31]])
-
-    this._caches?.storage?.put(address, key, value[0] ?? hexToBytes('0x80'))
-    const decoded = (value[0] ?? new Uint8Array(0)) as Uint8Array
-    return setLengthLeft(decoded, 32)
+    return this._frozenStateManager.getStorage(address, key)
   }
 
+  /**
+   * Saves a value to storage.
+   * @param address - Address of the `account` to save
+   * @param key - Key of the storage to save
+   * @param value - Value to save
+   */
   putStorage = async (address: Address, key: Uint8Array, value: Uint8Array): Promise<void> => {
-    this._caches?.storage?.put(address, key, RLP.encode(value))
-    if (this._caches?.storage === undefined) {
-      const storageKey = await getVerkleTreeKeyForStorageSlot(
-        address,
-        bytesToBigInt(key),
-        this.verkleCrypto,
-      )
-      await this._activeTree.put(
-        storageKey.slice(0, 31),
-        [storageKey[31]],
-        [setLengthLeft(value, 32)],
-      )
-    }
+    await this._activeStateManager.putStorage(address, key, value)
   }
 
+  /**
+   * Clears a storage slot.
+   * @param address - Address of the `account` to save
+   */
   clearStorage = async (address: Address): Promise<void> => {
-    // TODO: Determine if it's possible to clear the actual slots in the trie
-    // since the EIP doesn't seem to state how to handle this
-    // The main concern I have is that we have no way of identifying all storage slots
-    // for a given account so we can't correctly update the trie's root hash
-    // (since presumably "clearStorage" would imply writing over all of the storage slots with zeros)
-    // Also, do we still need a storageRoot? - presumably not since we don't have separate storage tries
-    this._caches?.storage?.clearStorage(address)
+    await this._activeStateManager.clearStorage(address)
   }
 
   checkpoint = async (): Promise<void> => {
-    this._activeTree.checkpoint()
-    this._caches?.checkpoint()
+    await this._activeStateManager.checkpoint()
     this._checkpointCount++
   }
+
   commit = async (): Promise<void> => {
-    await this._activeTree.commit()
-    this._caches?.commit()
+    await this._activeStateManager.commit()
     this._checkpointCount--
-
     if (this._checkpointCount === 0) {
-      await this.flush()
       this.originalStorageCache.clear()
     }
-
-    if (this.DEBUG) {
-      this._debug(`state checkpoint committed`)
-    }
   }
+
   revert = async (): Promise<void> => {
-    await this._activeTree.revert()
-    this._caches?.revert()
-
+    await this._activeStateManager.revert()
     this._checkpointCount--
-
     if (this._checkpointCount === 0) {
-      await this.flush()
       this.originalStorageCache.clear()
-    }
-  }
-
-  flush = async (): Promise<void> => {
-    const codeItems = this._caches?.code?.flush() ?? []
-    for (const item of codeItems) {
-      const addr = createAddressFromString(`0x${item[0]}`)
-
-      const code = item[1].code
-      if (code === undefined) {
-        continue
-      }
-
-      await this.putCode(addr, code)
-    }
-
-    const storageItems = this._caches?.storage?.flush() ?? []
-    for (const item of storageItems) {
-      const address = createAddressFromString(`0x${item[0]}`)
-      const keyHex = item[1]
-      const keyBytes = unprefixedHexToBytes(keyHex)
-      const value = item[2]
-
-      const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
-      const account = await this.getAccount(address)
-      if (account) {
-        await this.putStorage(address, keyBytes, decoded)
-      }
-    }
-
-    const accountItems = this._caches?.account?.flush() ?? []
-    for (const item of accountItems) {
-      const address = createAddressFromString(`0x${item[0]}`)
-      const elem = item[1]
-      if (elem.accountRLP === undefined) {
-        await this.deleteAccount(address)
-      } else {
-        const account = createPartialAccountFromRLP(elem.accountRLP)
-        await this.putAccount(address, account)
-      }
     }
   }
 
   getStateRoot(): Promise<Uint8Array> {
-    return Promise.resolve(this._activeTree.root())
+    return this._activeStateManager.getStateRoot()
   }
 
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
-    this._activeTree.root(stateRoot)
-    clearCache === true && this.clearCaches()
-    return Promise.resolve()
+    return this._activeStateManager.setStateRoot(stateRoot, clearCache)
   }
+
   hasStateRoot(root: Uint8Array): Promise<boolean> {
-    return this._activeTree.checkRoot(root)
+    return this._activeStateManager.hasStateRoot(root)
   }
+
   dumpStorage?(_address: Address): Promise<StorageDump> {
     throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
+
   dumpStorageRange?(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
     throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
+
   clearCaches(): void {
     this._caches?.clear()
   }
+
   shallowCopy(_downlevelCaches?: boolean): StateManagerInterface {
     throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
+
   async checkChunkWitnessPresent(_address: Address, _codeOffset: number): Promise<boolean> {
     throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
@@ -538,43 +278,39 @@ export class TransitionStateManager implements StateManagerInterface {
    */
   public async migrateLeavesToVerkle(leafKeys: Uint8Array[]): Promise<void> {
     for (const key of leafKeys) {
-      // 1. Get the account RLP from the frozen MPT
-      const accountRLP = await this._frozenTree.get(key)
-      if (!accountRLP) {
+      // 1. Get the account from the frozen state manager
+      const address = createAddressFromString(bytesToHex(key))
+      const account = await this._frozenStateManager.getAccount(address)
+      if (!account) {
         // No account at this key, skip
         continue
       }
-      const address = createAddressFromString(bytesToHex(key))
-      const account = createPartialAccountFromRLP(accountRLP)
-
-      // 2. Insert account into Verkle Tree
-      await this.putAccount(address, account)
-
+      // 2. Insert account into active state manager
+      await this._activeStateManager.putAccount(address, account)
       // 3. If account has code, migrate code as well
       if (account.codeHash && !equalsBytes(account.codeHash, KECCAK256_NULL)) {
-        const code = await this.getCode(address)
+        const code = await this._frozenStateManager.getCode(address)
         if (code) {
-          await this.putCode(address, code)
+          await this._activeStateManager.putCode(address, code)
         }
       }
-
       // 4. Migrate storage if storageRoot is not empty
       if (account.storageRoot && !equalsBytes(account.storageRoot, KECCAK256_NULL)) {
-        const storageTrie = await createMPT({
-          root: account.storageRoot,
-          db: this._frozenTree.database()['db'],
-        })
-
-        // Use walkAllValueNodes to iterate all storage slots
-        await storageTrie.walkAllValueNodes(async (node, keyNibbles) => {
-          // node.value() is the value at this storage slot
-          // keyNibbles is the nibbles array; convert to Uint8Array key
-          const storageKey = Uint8Array.from(keyNibbles)
-          const storageValue = node.value()
-          if (storageValue !== null && storageValue !== undefined) {
-            await this.putStorage(address, storageKey, storageValue)
+        // For generic state managers, we need to enumerate all storage keys
+        // Here we assume frozenStateManager exposes a method to dump storage (or similar)
+        if (typeof this._frozenStateManager.dumpStorage === 'function') {
+          const storageDump = await this._frozenStateManager.dumpStorage(address)
+          for (const [keyHex, value] of Object.entries(storageDump)) {
+            const storageKey = unprefixedHexToBytes(keyHex)
+            await this._activeStateManager.putStorage(
+              address,
+              storageKey,
+              hexToBytes(value as PrefixedHexString),
+            )
           }
-        })
+        } else {
+          throw EthereumJSErrorWithoutCode('dumpStorage not implemented on frozenStateManager')
+        }
       }
     }
   }
