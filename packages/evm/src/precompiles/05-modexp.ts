@@ -24,8 +24,8 @@ import type { PrecompileInput } from './types.ts'
 
 const BIGINT_4 = BigInt(4)
 const BIGINT_16 = BigInt(16)
-const BIGINT_200 = BigInt(200)
 const BIGINT_480 = BigInt(480)
+const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
@@ -135,8 +135,8 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   } else {
     gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
-    if (gasUsed < BIGINT_200) {
-      gasUsed = BIGINT_200
+    if (gasUsed < BIGINT_500) {
+      gasUsed = BIGINT_500
     }
   }
   if (!gasLimitCheck(opts, gasUsed, pName)) {
