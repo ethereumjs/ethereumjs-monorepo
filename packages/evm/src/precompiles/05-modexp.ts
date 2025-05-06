@@ -83,7 +83,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   if (expLenMinus32OrZero < BIGINT_0) {
     expLenMinus32OrZero = BIGINT_0
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_8
+  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_16
   let adjustedExpLen = eightTimesExpLenMinus32OrZero
   if (bitLen > 0) {
     adjustedExpLen += BigInt(bitLen)
