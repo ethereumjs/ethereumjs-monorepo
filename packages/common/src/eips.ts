@@ -471,6 +471,14 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2935],
   },
   /**
+   * Description : Set upper bounds for MODEXP
+   * URL         : https://eips.ethereum.org/EIPS/eip-7823
+   * Status      : Review
+   */
+  7823: {
+    minimumHardfork: Hardfork.Chainstart,
+  },
+  /**
    * Description : Ethereum state using a unified binary tree (experimental)
    * URL         : hhttps://eips.ethereum.org/EIPS/eip-7864
    * Status      : Draft
