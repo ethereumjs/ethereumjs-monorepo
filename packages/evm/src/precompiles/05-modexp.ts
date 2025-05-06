@@ -117,6 +117,13 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const eLen = bytesToBigInt(data.subarray(32, 64))
   const mLen = bytesToBigInt(data.subarray(64, 96))
 
+  if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
+    if (opts._debug !== undefined) {
+      opts._debug(`${pName} failed: OOG`)
+    }
+    return OOGResult(opts.gasLimit)
+  }
+
   let maxLen = bLen
   if (maxLen < mLen) {
     maxLen = mLen
@@ -148,13 +155,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       executionGasUsed: gasUsed,
       returnValue: new Uint8Array(),
     }
-  }
-
-  if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
-    }
-    return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
