@@ -24,8 +24,8 @@ import type { PrecompileInput } from './types.ts'
 
 const BIGINT_4 = BigInt(4)
 const BIGINT_16 = BigInt(16)
-const BIGINT_200 = BigInt(200)
 const BIGINT_480 = BigInt(480)
+const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
@@ -83,7 +83,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   if (expLenMinus32OrZero < BIGINT_0) {
     expLenMinus32OrZero = BIGINT_0
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_8
+  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_16
   let adjustedExpLen = eightTimesExpLenMinus32OrZero
   if (bitLen > 0) {
     adjustedExpLen += BigInt(bitLen)
@@ -134,9 +134,10 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (!opts.common.isActivatedEIP(2565)) {
     gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   } else {
-    gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
-    if (gasUsed < BIGINT_200) {
-      gasUsed = BIGINT_200
+    const wordsSquared = multiplicationComplexityEIP2565(maxLen)
+    gasUsed = (adjustedELen * (maxLen > 32 ? 2n * wordsSquared : wordsSquared)) / Gquaddivisor
+    if (gasUsed < BIGINT_500) {
+      gasUsed = BIGINT_500
     }
   }
   if (!gasLimitCheck(opts, gasUsed, pName)) {
