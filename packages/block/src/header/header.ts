@@ -560,6 +560,11 @@ export class BlockHeader {
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessBlobGas(childCommon: Common): bigint {
+    const osakaForkBlock = this.common.hardforkBlock(Hardfork.Osaka)
+    if (osakaForkBlock !== null && this.number === osakaForkBlock - BIGINT_1) {
+      // at the fork, set excess_blob_gas to 0
+      return BIGINT_0
+    }
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
     const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
     const targetBlobGasPerBlock = childCommon.param('targetBlobGasPerBlock')
