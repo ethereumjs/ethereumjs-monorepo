@@ -471,6 +471,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2935],
   },
   /**
+   * Description : Increase MIN_BASE_FEE_PER_BLOB_GAS to speed up price discovery on blob space
+   * URL         : https://eips.ethereum.org/EIPS/eip-7762
+   * Status      : Review
+   */
+  7762: {
+    minimumHardfork: Hardfork.Osaka,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : Ethereum state using a unified binary tree (experimental)
    * URL         : hhttps://eips.ethereum.org/EIPS/eip-7864
    * Status      : Draft
