@@ -21,10 +21,10 @@ describe('snappy', async () => {
     assert.notDeepEqual(recompressed, hexToBytes(test.compressed))
   })
 
-  const redecompressed = await decompressData(recompressed)
+  const decompressedTest = await decompressData(recompressed)
 
   it('should decompress to original despite non-deterministic compression', () => {
-    assert.deepEqual(redecompressed, hexToBytes(test.decompressed))
-    assert.deepEqual(redecompressed, decompressed)
+    assert.deepEqual(decompressedTest, hexToBytes(test.decompressed))
+    assert.deepEqual(decompressedTest, decompressed)
   })
 })
