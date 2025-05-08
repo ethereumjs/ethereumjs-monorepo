@@ -1,4 +1,4 @@
-import { BIGINT_8, bigIntToBytes, bytesToBigInt, concatBytes } from '@ethereumjs/util'
+import { BIGINT_8, bigIntToBytes, bytesToBigInt, bytesToHex, concatBytes } from '@ethereumjs/util'
 
 import {
   addModBinary,
@@ -42,6 +42,8 @@ export class FieldContext {
   public scratchSpaceElemCount: bigint
   public outputWriteBuf: bigint[] | undefined
 
+  public modByteSize: number
+
   constructor(modBytes: Uint8Array, scratchSize: bigint) {
     if (modBytes.length > MAX_MODULUS_SIZE) {
       throw new Error('modulus cannot be greater than 768 bits')
@@ -61,7 +63,13 @@ export class FieldContext {
 
     const mod = bytesToBigInt(modBytes)
     const paddedSize = BigInt(Math.ceil(modBytes.length / 8) * 8) // Compute paddedSize as the next multiple of 8 bytes
-
+    this.modByteSize = modBytes.length
+    console.log('dbg300')
+    console.log(modBytes.length)
+    console.log(paddedSize)
+    console.log(mod)
+    console.log(Math.ceil(modBytes.length / 8))
+    console.log(modBytes.length / 8)
     if (isModulusBinary(mod)) {
       this.modulus = bytesToLimbs(modBytes)
       this.mulMod = mulModBinary
@@ -78,6 +86,7 @@ export class FieldContext {
       return
     }
 
+    console.log(modBytes)
     if (modBytes.at(-1)! % 2 === 0) {
       throw new Error('modulus cannot be even')
     }
@@ -133,18 +142,29 @@ export class FieldContext {
       const dstIdx = dst * elemSize + i * elemSize
       const srcBytes = from.slice(srcIdx, srcIdx + elemSize * 8)
       const val = bytesToLimbs(srcBytes)
+      console.log('dbg700')
+      console.log(count)
+      console.log(elemSize)
+      console.log(srcBytes)
+      console.log(bytesToHex(srcBytes))
+      console.log(val)
+      console.log(this.modulus)
+      console.log(this.scratchSpace)
       if (!lt(val, this.modulus)) throw new Error(`value being stored must be less than modulus`)
       if (this.useMontgomeryRepr) {
+        // console.log('dbg1000')
         const tmp = this.scratchSpace.slice(dstIdx + elemSize)
         this.mulMod(tmp, val, this.r2, this.modulus, this.modInvVal)
         for (let i = 0; i < elemSize; i++) {
           this.scratchSpace[dstIdx + i] = tmp[i]
         }
       } else {
+        // console.log('dbg1001')
         for (let i = 0; i < elemSize; i++) {
           this.scratchSpace[dstIdx + i] = val[i]
         }
       }
+      // console.log(this.scratchSpace)
     }
   }
 
@@ -176,13 +196,21 @@ export class FieldContext {
         }
       }
 
+      console.log('dbg950')
+      console.log(res)
+      console.log(dst)
+      console.log(dstIdx)
+      console.log(elemSize)
       // Write res[] into 'dst'
       for (let i = 0; i < elemSize; i++) {
         const limb = res[elemSize - 1 - i]
+        console.log(limb)
         putUint64BE(dst, dstIdx + i * 8, limb)
+        console.log('dbg951')
       }
       dstIdx += elemSize * 8
     }
+    console.log(dst)
   }
 
   /**

@@ -10,10 +10,25 @@ export const MASK_64 = (1n << 64n) - 1n
  * @param value bigint whose lower 64 bits are to be interpreted as big endian bytes and put into destination from offset
  */
 export function putUint64BE(dst: Uint8Array, offset: number, value: bigint): void {
+  console.log('dbg970')
   value = BigInt.asUintN(64, value)
   const hex = value.toString(16).padStart(16, '0')
+  console.log(value)
+  console.log(dst)
+  console.log(offset)
+  console.log(hex)
+  let j = 0
   for (let i = 0; i < 8; i++) {
-    dst[offset + i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+    const byteVal = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+
+    if (byteVal === 0) {
+      continue
+    } else {
+      dst[offset + j] = byteVal
+      j++
+    }
+    console.log(byteVal)
+    console.log(dst)
   }
 }
 
@@ -315,15 +330,15 @@ export function extractEVMMAXImmediateInputs(pc: number, code: Uint8Array) {
   const yStride = code[pc + 6]
   const count = code[pc + 7]
 
-  console.log('dbg600')
-  console.log(pc)
-  console.log(out)
-  console.log(outStride)
-  console.log(x)
-  console.log(xStride)
-  console.log(y)
-  console.log(yStride)
-  console.log(count)
+  // console.log('dbg600')
+  // console.log(pc)
+  // console.log(out)
+  // console.log(outStride)
+  // console.log(x)
+  // console.log(xStride)
+  // console.log(y)
+  // console.log(yStride)
+  // console.log(count)
 
   return [out, outStride, x, xStride, y, yStride, count]
 }

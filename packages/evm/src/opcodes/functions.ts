@@ -996,8 +996,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, _common) {
       const [id, modOffset, modSize, allocCount] = runState.stack.popN(4)
       const modulus = runState.memory.read(Number(modOffset), Number(modSize))
-      // console.log('dbg600')
-      // console.log(modulus)
+      console.log('dbg600')
+      console.log(modulus)
       runState.evmmaxState.allocAndSetActive(Number(id), modulus, allocCount)
     },
   ],
@@ -1005,17 +1005,24 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xc1,
     function (runState, _common) {
-      console.log('dbg900')
       const [dest, source, count] = runState.stack.popN(3)
-      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const copySize =
+        Number(count) *
+        runState.evmmaxState.getActive()?.getElemSize() *
+        runState.evmmaxState.getActive()?.modByteSize
       const destBuf = new Uint8Array(copySize)
       runState.evmmaxState.getActive()?.load(destBuf, Number(source), Number(count))
+      console.log('dbg900')
+      console.log(source)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       console.log(copySize)
       console.log(count)
-      console.log(runState.evmmaxState.getActive()?.getElemSize())
       console.log(destBuf)
       console.log(runState.memory._store)
+
+      // runState.memory.write(Number(dest), copySize, destBuf)
       runState.memory.write(Number(dest), copySize, destBuf)
+
       console.log(runState.memory._store)
     },
   ],
@@ -1025,9 +1032,18 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, _common) {
       // TODO figure out if we need to use extend(), _store(), or or just write()
       const [dest, source, count] = runState.stack.popN(3)
-      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const copySize =
+        Number(count) *
+        runState.evmmaxState.getActive()?.getElemSize() *
+        runState.evmmaxState.getActive()?.modByteSize
+      console.log('dbg400')
+      // console.log(runState.memory._store)
+      // console.log(copySize)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
+
       const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
       runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc3: ADDMODX
@@ -1039,7 +1055,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.code,
       )
       runState.programCounter += 7
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc4: SUBMODX
@@ -1051,7 +1069,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.code,
       )
       runState.programCounter += 7
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().subM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xc5: MULMODX
@@ -1063,7 +1083,11 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.code,
       )
       runState.programCounter += 7
+
+      console.log('dbg1100')
+      console.log(runState.evmmaxState.getActive().scratchSpace)
       runState.evmmaxState.getActive().mulM(out, outStride, x, xStride, y, yStride, count)
+      console.log(runState.evmmaxState.getActive().scratchSpace)
     },
   ],
   // 0xd0: DATALOAD

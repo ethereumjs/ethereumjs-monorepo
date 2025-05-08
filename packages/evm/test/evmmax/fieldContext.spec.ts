@@ -2,9 +2,9 @@ import { randomBytes } from 'crypto'
 import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { FieldContext } from '../../src/index.js'
+import { FieldContext } from '../../src/index.ts'
 
-function padBigIntBytes(val: bigint, byteLen: number): Uint8Array {
+export function padBigIntBytes(val: bigint, byteLen: number): Uint8Array {
   const raw = bigIntToBytes(val)
   if (raw.length === byteLen) return raw
   const out = new Uint8Array(byteLen)
@@ -12,12 +12,12 @@ function padBigIntBytes(val: bigint, byteLen: number): Uint8Array {
   return out
 }
 
-function randomBigInt(size: number, limit: bigint): bigint {
+export function randomBigInt(size: number, limit: bigint): bigint {
   return bytesToBigInt(randomBytes(size)) % limit
 }
 
-function randomBinaryModulus(size: number): bigint {
-  return 1n << BigInt(size * 8)
+export function randomBinaryModulus(size: number): bigint {
+  return 1n << BigInt(size * 8 - 1)
 }
 
 export function randomOddModulus(size: number): bigint {

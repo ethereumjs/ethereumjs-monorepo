@@ -825,6 +825,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* LOADX */
       0xc1,
       async function (runState, gas, common): Promise<bigint> {
+        // console.log('dbg1000')
         const [dst, src, count] = runState.stack.peek(3)
 
         if (!isUint64(src) || src >= runState.evmmaxState.getActive().getNumElems()) {
@@ -841,25 +842,42 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap('destination of copy out of bounds')
         }
 
-        const [loadSize, overflow2] = mul64(
+        const [overflow2, loadSize] = mul64(
           count,
           BigInt(runState.evmmaxState.getActive().getElemSize()),
         )
+
+        // console.log('dbg1001')
+        // console.log(count)
+        // console.log(BigInt(runState.evmmaxState.getActive().getElemSize()))
+        // console.log(loadSize)
+        // console.log(overflow2)
+
         if (overflow2 !== 0n) {
           trap('overflow')
         }
+
         const [last2, overflow3] = add64(dst, loadSize, 0n)
-        if (overflow3 !== 0n || last2 > runState.memoryWordCount) {
+
+        // console.log('dbg1002')
+        // console.log(dst)
+        // console.log(loadSize)
+        // console.log(last2)
+        // console.log(overflow3)
+
+        if (overflow3 !== 0n || last2 > runState.memory._store.length) {
           trap('out of bounds destination')
         }
 
         if (runState.evmmaxState.getActive().isModulusBinary) {
           return gas + loadSize * common.param('copyGas') // TODO check if this translates from go: toWordSize(storeSize) * params.copyGas
         } else {
+          // console.log('dbg1500')
+          // console.log(Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1)
+          // console.log(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
           return (
             gas +
-            count *
-              BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
+            count * BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize()) - 1])
           )
         }
       },
