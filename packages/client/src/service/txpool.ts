@@ -327,6 +327,16 @@ export class TxPool {
       )
     }
 
+    // EIP-7825: Transaction Gas Limit Cap
+    if (tx.common.isActivatedEIP(7825)) {
+      const maxGasLimit = tx.common.param('maxTransactionGasLimit')
+      if (tx.gasLimit > maxGasLimit) {
+        throw EthereumJSErrorWithoutCode(
+          `Transaction gas limit ${tx.gasLimit} exceeds the maximum allowed by EIP-7825 (${maxGasLimit})`,
+        )
+      }
+    }
+
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
     const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
