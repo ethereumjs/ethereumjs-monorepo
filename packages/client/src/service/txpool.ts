@@ -1,6 +1,7 @@
 import {
   Blob4844Tx,
   Capability,
+  NetworkWrapperType,
   isAccessList2930Tx,
   isBlob4844Tx,
   isFeeMarket1559Tx,
@@ -11,6 +12,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_2,
+  CELLS_PER_EXT_BLOB,
   EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -104,9 +106,15 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
-  public blobsAndProofsByHash: Map<
+  // EIP 4844 network wrapper blobs
+  public blobAndProofByHash: Map<
     PrefixedHexString,
     { blob: PrefixedHexString; proof: PrefixedHexString }
+  >
+  // EIP 7594 network wrapper blobs
+  public blobAndProofsByHash: Map<
+    PrefixedHexString,
+    { blob: PrefixedHexString; proofs: PrefixedHexString[] }
   >
 
   /**
@@ -173,9 +181,13 @@ export class TxPool {
     this.service = options.service
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
-    this.blobsAndProofsByHash = new Map<
+    this.blobAndProofByHash = new Map<
       PrefixedHexString,
       { blob: PrefixedHexString; proof: PrefixedHexString }
+    >()
+    this.blobAndProofsByHash = new Map<
+      PrefixedHexString,
+      { blob: PrefixedHexString; proofs: PrefixedHexString[] }
     >()
     this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
@@ -389,13 +401,26 @@ export class TxPool {
         if (tx.blobs !== undefined && tx.kzgProofs !== undefined) {
           for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
             const blob = tx.blobs![i]
-            const proof = tx.kzgProofs![i]
-            this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+
+            if (tx.networkWrapperVersion === NetworkWrapperType.EIP4844) {
+              const proof = tx.kzgProofs![i]
+              this.blobAndProofByHash.set(versionedHash, { blob, proof })
+              this.config.metrics?.blobEIP4844TxGauge?.inc()
+            } else if (tx.networkWrapperVersion === NetworkWrapperType.EIP7594) {
+              const proofs = tx.kzgProofs!.slice(
+                i * CELLS_PER_EXT_BLOB,
+                (i + 1) * CELLS_PER_EXT_BLOB,
+              )
+              this.blobAndProofsByHash.set(versionedHash, { blob, proofs })
+              this.config.metrics?.blobEIP7594TxGauge?.inc()
+            } else {
+              throw EthereumJSErrorWithoutCode(
+                `Invalid networkWrapperVersion=${tx.networkWrapperVersion}`,
+              )
+            }
           }
           this.pruneBlobsAndProofsCache()
         }
-
-        this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
@@ -408,15 +433,26 @@ export class TxPool {
     const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
     const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
 
-    const pruneLength =
-      this.blobsAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
+    let pruneLength =
+      this.blobAndProofByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
     let pruned = 0
     // since keys() is sorted by insertion order this prunes the oldest data in cache
-    for (const versionedHash of this.blobsAndProofsByHash.keys()) {
+    for (const versionedHash of this.blobAndProofByHash.keys()) {
       if (pruned >= pruneLength) {
         break
       }
-      this.blobsAndProofsByHash.delete(versionedHash)
+      this.blobAndProofByHash.delete(versionedHash)
+      pruned++
+    }
+
+    pruneLength =
+      this.blobAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
+    pruned = 0
+    for (const versionedHash of this.blobAndProofsByHash.keys()) {
+      if (pruned >= pruneLength) {
+        break
+      }
+      this.blobAndProofsByHash.delete(versionedHash)
       pruned++
     }
   }
@@ -464,7 +500,11 @@ export class TxPool {
       this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
     }
     if (isBlob4844Tx(tx)) {
-      this.config.metrics?.blobEIP4844TxGauge?.dec()
+      if (tx.networkWrapperVersion == NetworkWrapperType.EIP4844) {
+        this.config.metrics?.blobEIP4844TxGauge?.dec()
+      } else {
+        this.config.metrics?.blobEIP7594TxGauge?.dec()
+      }
     }
 
     if (newPoolObjects.length === 0) {
@@ -811,10 +851,26 @@ export class TxPool {
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
     const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0 }
+
+    if (vm.common.isActivatedEIP(7594)) {
+      let oldFormatBlobTxs = []
+      for (const [address, poolObjects] of this.pool) {
+        for (const txObj of poolObjects) {
+          const tx = txObj.tx
+          if (isBlob4844Tx(tx) && tx.networkWrapperVersion === NetworkWrapperType.EIP4844) {
+            oldFormatBlobTxs.push(tx)
+          }
+        }
+      }
+      oldFormatBlobTxs.map((tx) => this.removeByHash(bytesToUnprefixedHex(tx.hash()), tx))
+      this.config.logger?.info(`removed old 4844 network format txs=${oldFormatBlobTxs.length}`)
+    }
+
     for (const [address, poolObjects] of this.pool) {
       let txsSortedByNonce = poolObjects
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
+
       // Check if the account nonce matches the lowest known tx nonce
       let account = await vm.stateManager.getAccount(new Address(hexToBytes(`0x${address}`)))
       if (account === undefined) {

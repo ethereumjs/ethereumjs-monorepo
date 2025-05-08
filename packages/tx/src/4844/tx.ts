@@ -6,7 +6,9 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToInt,
   hexToBytes,
+  intToUnpaddedBytes,
   toBytes,
   toType,
 } from '@ethereumjs/util'
@@ -42,6 +44,12 @@ import type {
 export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
+export const NetworkWrapperType = {
+  EIP4844: 0,
+  EIP7594: 1,
+} as const
+export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof NetworkWrapperType]
+
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
  *
@@ -70,7 +78,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public readonly s?: bigint
 
   // End of Tx data part
-
+  networkWrapperVersion?: NetworkWrapperType
   blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
@@ -195,6 +203,36 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         `tx should have a "to" field and cannot be used to create contracts`,
       )
       throw EthereumJSErrorWithoutCode(msg)
+    }
+
+    this.networkWrapperVersion =
+      txData.networkWrapperVersion !== undefined
+        ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
+        : undefined
+
+    if (this.networkWrapperVersion !== undefined) {
+      switch (this.networkWrapperVersion) {
+        case NetworkWrapperType.EIP7594:
+          if (!this.common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 not enabled on Common for EIP7594 network wrapper version',
+            )
+          }
+          break
+
+        case NetworkWrapperType.EIP4844:
+          if (this.common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 is active on Common for EIP4844 network wrapper version',
+            )
+          }
+          break
+
+        default:
+          throw EthereumJSErrorWithoutCode(
+            `Invalid networkWrapperVersion=${this.networkWrapperVersion}`,
+          )
+      }
     }
 
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
@@ -323,16 +361,28 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    */
   serializeNetworkWrapper(): Uint8Array {
     if (
+      this.networkWrapperVersion === undefined ||
       this.blobs === undefined ||
       this.kzgCommitments === undefined ||
       this.kzgProofs === undefined
     ) {
       throw EthereumJSErrorWithoutCode(
-        'cannot serialize network wrapper without blobs, KZG commitments and KZG proofs provided',
+        'cannot serialize network wrapper without networkWrapperVersion, blobs, KZG commitments and KZG proofs provided',
       )
     }
 
-    return EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
+    const networkSerialized =
+      this.networkWrapperVersion === NetworkWrapperType.EIP4844
+        ? EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
+        : EIP2718.serialize(this, [
+            this.raw(),
+            intToUnpaddedBytes(this.networkWrapperVersion),
+            this.blobs,
+            this.kzgCommitments,
+            this.kzgProofs,
+          ])
+
+    return networkSerialized
   }
 
   /**
@@ -417,6 +467,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
         maxFeePerBlobGas: this.maxFeePerBlobGas,
+        networkWrapperVersion: this.networkWrapperVersion,
         blobVersionedHashes: this.blobVersionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,
