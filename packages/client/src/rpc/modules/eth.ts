@@ -1244,6 +1244,7 @@ export class Eth {
           common.isActivatedEIP(7594) &&
           tx.networkWrapperVersion !== NetworkWrapperType.EIP7594
         ) {
+          console.log('received old format tx', { hash: bytesToHex(tx.hash()) })
           throw Error(
             `tx with networkWrapperVersion=${tx.networkWrapperVersion} sent for EIP-7594 activated hardfork=${common.hardfork()}`,
           )
