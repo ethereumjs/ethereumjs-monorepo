@@ -275,7 +275,6 @@ export class BlockBuilder {
 
       blobGasUsed = this.blobGasUsed
     }
-    console.log({ network4844tx, network7596tx })
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
