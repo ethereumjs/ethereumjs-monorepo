@@ -9,6 +9,15 @@
 | Library to provide high level access to Ethereum State |
 | ------------------------------------------------------ |
 
+- 🫧 Transparent state access from EVM/VM
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (5 external + `@Noble` crypto)
+- ⏳ Checkpoints + Diff-based Caches
+- 🔌 Unified interface (for custom SMs)
+- 🎁 3 SMs included (Merkle/Simple/RPC)
+- 🛵 233KB bundle size (for Merkle SM) (63KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
 ## Table of Contents
 
 - [Installation](#installation)

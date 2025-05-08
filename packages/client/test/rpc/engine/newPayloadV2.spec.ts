@@ -28,7 +28,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     ]
 
     const res = await rpc.request(method, blockDataWithInvalidParentHash)
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes(
         "invalid argument 0 for key 'parentHash': hex string without 0x prefix",
@@ -41,7 +41,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
 
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(
       res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash"),
     )
@@ -58,7 +58,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     ]
     const res = await rpc.request(method, blockDataNonExistentBlockHash)
 
-    assert.equal(res.result.status, 'INVALID')
+    assert.strictEqual(res.result.status, 'INVALID')
   })
 
   it('call with non existent parent hash', async () => {
@@ -73,7 +73,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     ]
     const res = await rpc.request(method, blockDataNonExistentParentHash)
 
-    assert.equal(res.result.status, 'ACCEPTED')
+    assert.strictEqual(res.result.status, 'ACCEPTED')
   })
 
   it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
@@ -81,11 +81,11 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const rpc = getRPCClient(server)
     let res = await rpc.request(method, [beaconData[1]])
 
-    assert.equal(res.result.status, 'ACCEPTED')
+    assert.strictEqual(res.result.status, 'ACCEPTED')
 
     res = await rpc.request(method, [beaconData[0]])
 
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     const state = {
       headBlockHash: beaconData[1].blockHash,
@@ -94,12 +94,12 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
     res = await rpc.request('engine_forkchoiceUpdatedV1', [state])
 
-    assert.equal(res.result.payloadStatus.status, 'SYNCING')
+    assert.strictEqual(res.result.payloadStatus.status, 'SYNCING')
 
     // now block2 should be executed
     res = await rpc.request(method, [beaconData[1]])
 
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('call with valid data', async () => {
@@ -107,21 +107,20 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [blockData])
 
-    assert.equal(res.result.status, 'VALID')
-    assert.equal(res.result.latestValidHash, blockData.blockHash)
+    assert.strictEqual(res.result.status, 'VALID')
+    assert.strictEqual(res.result.latestValidHash, blockData.blockHash)
   })
 
   it('call with valid data but invalid transactions', async () => {
-    const { chain, server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
-    chain.config.logger!.silent = true
     const blockDataWithInvalidTransaction = {
       ...blockData,
       transactions: ['0x1'],
     }
     const res = await rpc.request(method, [blockDataWithInvalidTransaction])
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(res.result.latestValidHash, blockData.parentHash)
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(res.result.latestValidHash, blockData.parentHash)
     const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
     assert.isTrue(
       res.result.validationError.includes(expectedError),
@@ -130,11 +129,10 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with valid data & valid transaction but not signed', async () => {
-    const { server, common, chain } = await setupChain(postMergeGethGenesis, 'post-merge', {
+    const { server, common } = await setupChain(postMergeGethGenesis, 'post-merge', {
       engine: true,
     })
     const rpc = getRPCClient(server)
-    chain.config.logger!.silent = true
 
     // Let's mock a non-signed transaction so execution fails
     const tx = createFeeMarket1559Tx(
@@ -155,7 +153,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
 
     const res = await rpc.request(method, [blockDataWithValidTransaction])
-    assert.equal(res.result.status, 'INVALID')
+    assert.strictEqual(res.result.status, 'INVALID')
     assert.isTrue(res.result.validationError.includes('transaction at index 0 is unsigned'))
   })
 
@@ -196,7 +194,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
 
     const res = await rpc.request(method, [blockDataWithValidTransaction])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('re-execute payload and verify that no errors occur', async () => {
@@ -213,12 +211,12 @@ describe(`${method}: call with executionPayloadV1`, () => {
       },
     ])
 
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
 
     // Now let's try to re-execute payload
     res = await rpc.request(method, [blockData])
 
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('parent hash equals to block hash', async () => {
@@ -232,7 +230,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     ]
     const res = await rpc.request(method, blockDataHasBlockHashSameAsParentHash)
 
-    assert.equal(res.result.status, 'INVALID')
+    assert.strictEqual(res.result.status, 'INVALID')
   })
 
   it('call with executionPayloadV2', () => {

@@ -87,8 +87,8 @@ describe('VM initialized with custom state', () => {
     const toAddress = createAddressFromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
-    assert.equal(result.totalGasSpent.toString(), '21000')
-    assert.equal(receiverAddress!.balance.toString(), '1')
+    assert.strictEqual(result.totalGasSpent.toString(), '21000')
+    assert.strictEqual(receiverAddress!.balance.toString(), '1')
   })
 
   it('should retrieve value from storage', async () => {
@@ -107,7 +107,7 @@ describe('VM initialized with custom state', () => {
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage?.[0][1])
+    assert.strictEqual(bytesToHex(callResult.execResult.returnValue), storage?.[0][1])
   })
 
   it('setHardfork', async () => {
@@ -116,9 +116,9 @@ describe('VM initialized with custom state', () => {
     })
 
     let vm = await createVM({ common, setHardfork: true })
-    assert.equal(vm['_setHardfork'], true, 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.equal(vm['_setHardfork'], BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], 5001, 'should set setHardfork option')
   })
 })

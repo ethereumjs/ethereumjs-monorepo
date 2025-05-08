@@ -108,7 +108,7 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       '0x' + totalGasSpent.toString(16),
       'should return the correct gas estimate',
@@ -116,7 +116,7 @@ describe(method, () => {
 
     // Test without blockopt as its optional and should default to latest
     const res2 = await rpc.request(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
-    assert.equal(
+    assert.strictEqual(
       res2.result,
       '0x' + totalGasSpent.toString(16),
       'should return the correct gas estimate',
@@ -152,7 +152,7 @@ describe(method, () => {
     const EIP1559res = await rpc.request(method, [
       { ...estimateTxData, type: 2, maxFeePerGas: '0x' + 10000000000n.toString(16) },
     ])
-    assert.equal(
+    assert.strictEqual(
       EIP1559res.result,
       '0x' + totalGasSpent.toString(16),
       'should return the correct gas estimate for EIP1559 tx',
@@ -168,7 +168,7 @@ describe(method, () => {
         gasPrice: undefined,
       },
     ])
-    assert.equal(
+    assert.strictEqual(
       EIP1559reqNoGas.result,
       '0x' + totalGasSpent.toString(16),
       'should return the correct gas estimate',
@@ -178,7 +178,7 @@ describe(method, () => {
     const legacyTxNoGas = await rpc.request(method, [
       { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined, gasPrice: undefined },
     ])
-    assert.equal(
+    assert.strictEqual(
       legacyTxNoGas.result,
       '0x' + totalGasSpent.toString(16),
       'should return the correct gas estimate',
@@ -207,7 +207,7 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'pending',
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

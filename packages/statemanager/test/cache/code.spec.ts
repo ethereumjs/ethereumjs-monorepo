@@ -8,7 +8,7 @@ describe('Code Cache: initialization', () => {
     it(`should initialize`, async () => {
       const cache = new CodeCache({ size: 100, type })
 
-      assert.equal(cache._checkpoints, 0, 'initializes given code cache')
+      assert.strictEqual(cache._checkpoints, 0, 'initializes given code cache')
     })
   }
 })
@@ -33,7 +33,7 @@ describe('Code Cache: put and get code', () => {
 
     it(`should flush`, async () => {
       const items = cache.flush()
-      assert.equal(items.length, 1)
+      assert.strictEqual(items.length, 1)
     })
 
     it(`should delete code from cache`, async () => {
@@ -72,7 +72,7 @@ describe('Code Cache: checkpointing', () => {
 
       cache.put(addr, code1)
       cache.clear()
-      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+      assert.strictEqual(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

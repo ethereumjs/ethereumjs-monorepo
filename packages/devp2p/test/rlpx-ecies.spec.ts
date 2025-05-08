@@ -85,7 +85,7 @@ it(
     const body = getRandomBytesSync(600)
 
     const header = t.context.b.parseHeader(t.context.a.createBlockHeader(body.length) as Uint8Array)
-    assert.equal(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
+    assert.strictEqual(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
 
     const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Uint8Array)
     assert.deepEqual(parsedBody, body, 'createBody -> parseBody should lead to same')

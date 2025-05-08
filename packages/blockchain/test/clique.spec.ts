@@ -315,7 +315,7 @@ describe('Clique: Initialization', () => {
   it('Clique Voting: Single signer, no votes cast', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
-    assert.equal(block.header.number, BigInt(1))
+    assert.strictEqual(block.header.number, BigInt(1))
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         block.header.number + BigInt(1),

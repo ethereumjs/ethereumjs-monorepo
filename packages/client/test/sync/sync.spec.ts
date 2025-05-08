@@ -61,6 +61,6 @@ describe('should sync', async () => {
   config.syncedStateRemovalPeriod = 0
   config.updateSynchronizedState()
   it('should fall out of sync', async () => {
-    assert.equal(config.synchronized, false, 'should fall out of sync')
+    assert.strictEqual(config.synchronized, false, 'should fall out of sync')
   })
 })

@@ -179,27 +179,27 @@ describe(method, () => {
     const storageRange: StorageRange = res.result
 
     const firstVariableHash = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(firstVariableHash)].value,
       '0x43',
       'First variable correctly included.',
     )
 
     const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(secondVariableHash)].value,
       '0x01',
       'Second variable correctly included.',
     )
 
     const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(thirdVariableHash)].value,
       '0x02',
       'Third variable correctly included.',
     )
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       3,
       'Call returned the correct number of key value pairs.',
@@ -223,7 +223,7 @@ describe(method, () => {
     const storageRange: StorageRange = res.result
 
     const hashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(hashedKey)].value,
       '0x42',
       'Old value was correctly reported.',
@@ -245,7 +245,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       2,
       'Call returned the correct number of key value pairs.',
@@ -267,7 +267,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       0,
       'Call returned the correct number of key value pairs.',
@@ -295,7 +295,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       2,
       'Call returned the correct number of key value pairs.',
@@ -343,7 +343,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
+    assert.strictEqual(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
   })
 
   it<TestSetup>('Should provide a null value for preimages (until this is implemented).', async ({
@@ -377,7 +377,7 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('Could not get requested block hash.'))
   })
 
@@ -393,7 +393,7 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 1: argument must be larger than 0'))
 
     res = await rpc.request(method, [
@@ -403,7 +403,7 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(
       res.error.message.includes(
         'txIndex cannot be larger than the number of transactions in the block.',
@@ -422,7 +422,7 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 2: invalid address'))
   })
 
@@ -435,7 +435,7 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('Account does not exist.'))
   })
 
@@ -451,7 +451,7 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 4: argument must be larger than 0'))
   })
 
@@ -467,7 +467,7 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
 
     res = await rpc.request(method, [
@@ -477,7 +477,7 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 2: missing 0x prefix'))
 
     res = await rpc.request(method, [
@@ -487,7 +487,7 @@ describe(method, () => {
       '00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('invalid argument 3: hex string without 0x prefix'))
   })
 })

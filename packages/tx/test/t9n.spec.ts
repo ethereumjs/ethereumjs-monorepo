@@ -89,13 +89,17 @@ function runTests(filePath: string) {
               if (result.exception !== undefined) {
                 assert.fail('RLP is invalid, but decoding succeeded')
               } else {
-                assert.equal(bytesToHex(tx.hash()), result.hash!, 'correct hash')
-                assert.equal(
+                assert.strictEqual(bytesToHex(tx.hash()), result.hash!, 'correct hash')
+                assert.strictEqual(
                   tx.getIntrinsicGas(),
                   hexToBigInt(result.intrinsicGas),
                   'correct intrinsic gas',
                 )
-                assert.equal(tx.getSenderAddress().toString(), result.sender, 'correct sender')
+                assert.strictEqual(
+                  tx.getSenderAddress().toString(),
+                  result.sender,
+                  'correct sender',
+                )
               }
             } catch {
               if (result.exception === undefined) {

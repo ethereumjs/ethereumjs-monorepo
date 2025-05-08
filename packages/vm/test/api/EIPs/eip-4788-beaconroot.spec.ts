@@ -153,8 +153,8 @@ async function runBlockTest(input: {
 
   const ret = await runBlock(block)
   const bigIntReturn = bytesToBigInt(ret.vmResult.results[0].execResult.returnValue)
-  assert.equal(bigIntReturn, expRet, 'blockRoot ok')
-  assert.equal(ret.callStatus, expCallStatus, 'call status ok')
+  assert.strictEqual(bigIntReturn, expRet, 'blockRoot ok')
+  assert.strictEqual(ret.callStatus, expCallStatus, 'call status ok')
 }
 
 describe('should run beaconroot precompile correctly', async () => {

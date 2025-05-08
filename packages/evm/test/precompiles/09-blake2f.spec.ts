@@ -102,7 +102,7 @@ describe('Precompiles: BLAKE2F', () => {
         common,
         _EVM: evm,
       })
-      assert.equal(
+      assert.strictEqual(
         bytesToHex(result.returnValue),
         `0x${t.expected}`,
         'should generate expected value',
@@ -120,7 +120,11 @@ describe('Precompiles: BLAKE2F', () => {
         common,
         _EVM: evm,
       })
-      assert.equal(result.exceptionError!.error, t.expectedError, 'should generate expected error')
+      assert.strictEqual(
+        result.exceptionError!.error,
+        t.expectedError,
+        'should generate expected error',
+      )
     })
   }
 
@@ -155,6 +159,6 @@ describe('Precompiles: BLAKE2F', () => {
     const expected =
       '0x772acbd3f30b0c3f5f53e8b836ab406f7d8d46fd4b27e2ce2ecd67dbf18c958741e2c49d1f1b1a463907a484f970c057dab9684062b82fda69e8a0057e14766f'
 
-    assert.equal(bytesToHex(res.execResult.returnValue), expected)
+    assert.strictEqual(bytesToHex(res.execResult.returnValue), expected)
   })
 })

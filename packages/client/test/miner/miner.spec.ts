@@ -248,7 +248,7 @@ describe('assembleBlocks() -> with a single tx', async () => {
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx in new block', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'new block should include tx')
+      assert.strictEqual(blocks[0].transactions.length, 1, 'new block should include tx')
     })
     miner.stop()
     txPool.stop()
@@ -278,7 +278,7 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
   txA011.common.setHardfork(Hardfork.Paris)
   it('should add tx to pool', async () => {
     await txPool.add(txA011)
-    assert.equal(txPool.txsInPool, 1, 'transaction should be in pool')
+    assert.strictEqual(txPool.txsInPool, 1, 'transaction should be in pool')
   })
 
   // disable consensus to skip PoA block signer validation
@@ -288,12 +288,12 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should not include tx', () => {
-      assert.equal(
+      assert.strictEqual(
         blocks[0].transactions.length,
         0,
         'new block should not include tx due to hardfork mismatch',
       )
-      assert.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
+      assert.strictEqual(txPool.txsInPool, 1, 'transaction should remain in pool')
     })
     miner.stop()
     txPool.stop()
@@ -479,7 +479,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
   /// @ts-expect-error -- Property exists on actual class but not on interface
   vm.blockchain['_validateConsensus'] = false
   ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
-    assert.equal(block.transactions.length, 0, 'should not include tx')
+    assert.strictEqual(block.transactions.length, 0, 'should not include tx')
     miner.stop()
     txPool.stop()
   }
@@ -534,7 +534,7 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'only one tx should be included')
+      assert.strictEqual(blocks[0].transactions.length, 1, 'only one tx should be included')
     })
     miner.stop()
     txPool.stop()
@@ -642,13 +642,13 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   config.execCommon.setHardforkBy({ blockNumber: 1 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.Chainstart)
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.Chainstart)
 
   // block 2: berlin
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   config.execCommon.setHardforkBy({ blockNumber: 2 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.Berlin)
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.Berlin)
   const blockHeader2 = await chain.getCanonicalHeadHeader()
 
   // block 3: london
@@ -656,22 +656,22 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   await wait(100)
   const blockHeader3 = await chain.getCanonicalHeadHeader()
   config.execCommon.setHardforkBy({ blockNumber: 3 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.London)
-  assert.equal(
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.London)
+  assert.strictEqual(
     blockHeader2.gasLimit * BigInt(2),
     blockHeader3.gasLimit,
     'gas limit should be double previous block'
   )
   const initialBaseFee = config.execCommon.paramByEIP('initialBaseFee', 1559)!
-  assert.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
+  assert.strictEqual(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
   // block 4
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   const blockHeader4 = await chain.getCanonicalHeadHeader()
   config.execCommon.setHardforkBy({ blockNumber: 4 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.London)
-  assert.equal(
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.London)
+  assert.strictEqual(
     blockHeader4.baseFeePerGas!,
     blockHeader3.calcNextBaseFee(),
     'baseFee should be as calculated'
@@ -742,7 +742,7 @@ describe.skip('should handle mining ethash PoW', async () => {
   miner.start()
   await wait(1000)
   config.events.on(Event.CHAIN_UPDATED, async () => {
-    assert.equal(chain.blocks.latest!.header.number, BigInt(1))
+    assert.strictEqual(chain.blocks.latest!.header.number, BigInt(1))
     miner.stop()
     await chain.close()
   })

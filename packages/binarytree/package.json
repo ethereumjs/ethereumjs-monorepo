@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/binarytree",
-  "version": "10.0.0-dev-rc.1",
+  "version": "10.0.0",
   "description": "Implementation of binary trees as used in Ethereum.",
   "keywords": ["binary", "tree", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",
@@ -40,7 +40,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
@@ -54,11 +54,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^10.0.0-rc.1",
-    "@ethereumjs/util": "^10.0.0-rc.1",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
     "@noble/hashes": "^1.7.2",
     "debug": "^4.4.0",
-    "ethereum-cryptography": "^3.1.0",
+    "ethereum-cryptography": "^3.2.0",
     "lru-cache": "11.0.2"
   },
   "engines": {

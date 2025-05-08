@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "10.0.0-rc.1",
+  "version": "10.0.0",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
@@ -41,7 +41,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -57,10 +57,10 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0-rc.1",
-    "@ethereumjs/rlp": "^10.0.0-rc.1",
-    "@ethereumjs/util": "^10.0.0-rc.1",
-    "ethereum-cryptography": "^3.1.0"
+    "@ethereumjs/common": "^10.0.0",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
     "@ethereumjs/testdata": "1.0.0",
