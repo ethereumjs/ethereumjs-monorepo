@@ -58,6 +58,7 @@ export {
   validateEOF,
 }
 
+export * from './evmmax/fieldContext.ts'
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'
 export * from './params.ts'
