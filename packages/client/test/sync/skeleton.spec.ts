@@ -13,7 +13,6 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'
@@ -232,7 +231,6 @@ describe('[Skeleton] / initSync', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -349,8 +347,6 @@ describe('[Skeleton] / setHead', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-
-        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -547,7 +543,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

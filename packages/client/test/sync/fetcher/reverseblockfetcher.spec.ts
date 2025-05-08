@@ -4,7 +4,6 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain.ts'
 import { Config } from '../../../src/config.ts'
-import { getLogger } from '../../../src/logging.ts'
 import { Skeleton } from '../../../src/service/skeleton.ts'
 import { Event } from '../../../src/types.ts'
 import { wait } from '../../integration/util.ts'
@@ -184,7 +183,6 @@ describe('[ReverseBlockFetcher]', async () => {
       accountCache: 10000,
       storageCache: 1000,
       skeletonSubchainMergeMinimum: 0,
-      logger: getLogger({ logLevel: 'debug' }),
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })

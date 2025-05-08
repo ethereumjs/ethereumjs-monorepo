@@ -23,7 +23,6 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 import { mockBlockchain } from '../rpc/mockBlockchain.ts'
@@ -66,7 +65,6 @@ const config = new Config({
   common,
   accountCache: 10000,
   storageCache: 1000,
-  logger: getLogger({ loglevel: 'debug' }),
   prometheusMetrics: txGauge,
 })
 

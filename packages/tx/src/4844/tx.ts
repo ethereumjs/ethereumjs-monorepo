@@ -317,7 +317,9 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   /**
-   * @returns the serialized form of a blob transaction in the network wrapper format (used for gossipping mempool transactions over devp2p)
+   * @returns the serialized form of a blob transaction in the network wrapper format
+   * This format is used for gossipping mempool transactions over devp2p or when
+   * submitting a transaction via RPC.
    */
   serializeNetworkWrapper(): Uint8Array {
     if (

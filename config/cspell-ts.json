@@ -639,6 +639,7 @@
     "bytevector",
     "blobschedule",
     "hoodi",
-    "peerdas"
+    "peerdas",
+    "getpayload"
   ]
 }

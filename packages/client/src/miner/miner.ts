@@ -13,6 +13,7 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { Miner as EthashMiner, Solution } from '@ethereumjs/ethash'
 import type { Config } from '../config.ts'
 import type { VMExecution } from '../execution/index.ts'
+import { IndexOperation, IndexType } from '../execution/txIndex.ts'
 import type { FullEthereumService } from '../service/index.ts'
 import type { FullSynchronizer } from '../sync/index.ts'
 
@@ -335,6 +336,9 @@ export class Miner {
     const { block } = await blockBuilder.build(this.nextSolution)
     if (this.config.saveReceipts) {
       await this.execution.receiptsManager?.saveReceipts(block, receipts)
+    }
+    if (this.execution.txIndex) {
+      void this.execution.txIndex.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
     }
     this.config.logger?.info(
       `Miner: Sealed block with ${block.transactions.length} txs ${

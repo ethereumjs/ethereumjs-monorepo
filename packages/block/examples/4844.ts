@@ -14,6 +14,7 @@ const main = async () => {
     customCrypto: {
       kzg,
     },
+    hardfork: Hardfork.Cancun,
   })
   const blobTx = createBlob4844Tx(
     { blobsData: ['myFirstBlob'], to: createAddressFromPrivateKey(randomBytes(32)) },

@@ -101,12 +101,13 @@ This is the recommended tx type starting with the activation of the `london` HF,
 // ./examples/londonTx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-const txData = {
+const txData: FeeMarketEIP1559TxData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: '0x02625a00',
   maxPriorityFeePerGas: '0x01',
@@ -124,6 +125,7 @@ const txData = {
 
 const tx = createFeeMarket1559Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
+
 ```
 
 ### Access List Transactions (EIP-2930)
@@ -139,12 +141,13 @@ This transaction type has been introduced along the `berlin` HF. See the followi
 // ./examples/accessListTx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { AccessList2930TxData } from '@ethereumjs/tx'
 import { createAccessList2930Tx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 
-const txData = {
+const txData: AccessList2930TxData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: '0x02625a00',
   gasPrice: '0x01',
@@ -169,6 +172,7 @@ const txData = {
 
 const tx = createAccessList2930Tx(txData, { common })
 console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
+
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
@@ -191,8 +195,9 @@ See the following code snipped for an example on how to instantiate:
 // ./examples/blobTx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
@@ -200,17 +205,16 @@ const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Shanghai,
-    eips: [4844],
+    hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
-  const txData = {
+  const txData: BlobEIP4844TxData = {
     data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     gasLimit: '0x02625a00',
     maxPriorityFeePerGas: '0x01',
     maxFeePerGas: '0xff',
-    maxFeePerDataGas: '0xfff',
+    maxFeePerBlobGas: '0xfff',
     nonce: '0x00',
     to: '0xcccccccccccccccccccccccccccccccccccccccc',
     value: '0x0186a0',
@@ -226,16 +230,27 @@ const main = async () => {
   const tx = createBlob4844Tx(txData, { common })
 
   console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+
+  // To send a transaction via RPC, you can something like this:
+  // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
+  // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
 }
 
 void main()
+
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
 
 Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
 
-See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
+#### Serialization
+
+Blob transactions can be serialized in two ways.
+1) `tx.serialize()` - the standard serialization returns an RLP-encoded `uint8Array` that conforms to the transaction as represented after it is included in a block 
+2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  If you are constructing a transaction to submit via JSON-RPC, use this format.
+
+See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples of usage in instantiating, serializing, and deserializing these transactions.
 
 ### EOA Code Transaction (EIP-7702)
 
@@ -293,10 +308,11 @@ See this [example script](./examples/transactions.ts) or the following code exam
 // ./examples/legacyTx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { LegacyTxData } from '@ethereumjs/tx'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const txParams = {
+const txData: LegacyTxData = {
   nonce: '0x0',
   gasPrice: '0x09184e72a000',
   gasLimit: '0x2710',
@@ -306,7 +322,7 @@ const txParams = {
 }
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
-const tx = createLegacyTx(txParams, { common })
+const tx = createLegacyTx(txData, { common })
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 

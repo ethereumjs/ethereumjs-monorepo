@@ -10,7 +10,6 @@ import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -24,6 +23,7 @@ import { wait } from '../integration/util.ts'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import { MemoryLevel } from 'memory-level'
 import type { FullSynchronizer } from '../../src/sync/index.ts'
 
 const A = {
@@ -360,18 +360,22 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   const service = new FullEthereumService({
     config,
     chain,
-    metaDB: new AbstractLevel({
-      encodings: { utf8: true, buffer: true },
+    metaDB: new MemoryLevel({
+      keyEncoding: 'view',
+      valueEncoding: 'view',
     }),
   })
   const miner = new Miner({ config, service, skipHardForkValidation: true })
   const { txPool } = service
   await service.execution.open()
-  const { vm, receiptsManager } = service.execution
+  const { vm, receiptsManager, txIndex } = service.execution
   txPool.start()
   miner.start()
   it('should initialize receiptsManager', () => {
     assert.isDefined(receiptsManager, 'receiptsManager should be initialized')
+  })
+  it('should initialize txIndex', () => {
+    assert.isDefined(txIndex)
   })
 
   await setBalance(vm, A.address, BigInt('400000000000001'))
@@ -400,17 +404,21 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
     txPool.stop()
   }
   await (miner as any).queueNextAssembly(0)
-  it('should save receipt', async () => {
-    const receipt = await receiptsManager!.getReceipts(txB01.hash())
+  it(`should save receipts for block`, async () => {
+    const [blockHash] = (await txIndex!.getIndex(txB01.hash()))!
+    const receipt = await receiptsManager!.getReceipts(blockHash)
     assert.isDefined(receipt, 'receipt should be saved')
+    assert.equal(receipt.length, 4, 'receipt should include 4 tx')
   })
-  it('should save receipt', async () => {
-    let receipt = await receiptsManager!.getReceipts(txA01.hash())
+  it('should find receipt for tx', async () => {
+    let index = await txIndex!.getIndex(txB01.hash())
+    let receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
     assert.isDefined(receipt, 'receipt should be saved')
-    receipt = await receiptsManager!.getReceipts(txA02.hash())
+    index = await txIndex!.getIndex(txA02.hash())
+    receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
     assert.isDefined(receipt, 'receipt should be saved')
-
-    receipt = await receiptsManager!.getReceipts(txA03.hash())
+    index = await txIndex!.getIndex(txA03.hash())
+    receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
     assert.isDefined(receipt, 'receipt should be saved')
 
     await wait(500)

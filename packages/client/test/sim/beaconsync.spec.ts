@@ -5,7 +5,6 @@ import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
-import { getLogger } from '../../src/logging.ts'
 import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
@@ -206,12 +205,10 @@ async function createBeaconSyncClient(
 ) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SYNC ?? '')
-  const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
     bootnodes,
     multiaddrs: [],
-    logger,
     discDns: false,
     discV4: false,
     port: 30304,

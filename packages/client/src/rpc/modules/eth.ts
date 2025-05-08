@@ -52,6 +52,7 @@ import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../blockchain/index.ts'
 import type { ReceiptsManager } from '../../execution/receipt.ts'
+import type { TxIndex } from '../../execution/txIndex.ts'
 import type { EthereumClient } from '../../index.ts'
 import type { EthProtocol } from '../../net/protocol/index.ts'
 import type { FullEthereumService, Service } from '../../service/index.ts'
@@ -296,6 +297,7 @@ export class Eth {
   private client: EthereumClient
   private service: Service
   private receiptsManager: ReceiptsManager | undefined
+  private txIndex: TxIndex | undefined
   private _chain: Chain
   private _vm: VM | undefined
   private _rpcDebug: boolean
@@ -311,6 +313,7 @@ export class Eth {
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
+    this.txIndex = (this.service as FullEthereumService).execution?.txIndex
     this._rpcDebug = rpcDebug
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
@@ -846,9 +849,10 @@ export class Eth {
   async getTransactionByHash(params: [PrefixedHexString]) {
     const [txHash] = params
     if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
-    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    if (!this.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const [blockHash, txIndex] = txHashIndex
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return toJSONRPCTx(tx, block, txIndex)
@@ -990,7 +994,10 @@ export class Eth {
     const [txHash] = params
 
     if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
-    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
+    if (!this.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const result = await this.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
     if (!result) return null
     const [receipt, blockHash, txIndex, logIndex] = result
     const block = await this._chain.getBlock(blockHash)

@@ -176,9 +176,10 @@ export class Debug {
 
     const opts = validateTracerConfig(config)
 
-    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash),
-    )
+    if (!this.service.execution.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.service.execution.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
     if (!result) return null
     const [_, blockHash, txIndex] = result
     const block = await this.service.chain.getBlock(blockHash)
@@ -445,11 +446,10 @@ export class Debug {
     const [txHash] = params
     if (!this.service.execution.receiptsManager)
       throw EthereumJSErrorWithoutCode('missing receiptsManager')
-    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash),
-    )
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    if (!this.service.execution.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.service.execution.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const [blockHash, txIndex] = txHashIndex
     const block = await this.chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return bytesToHex(tx.serialize())

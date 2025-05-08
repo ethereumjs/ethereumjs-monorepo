@@ -1,6 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
-  BIGINT_0,
   EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToBigInt,
@@ -17,6 +16,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { TransactionType, TypedTransaction } from '@ethereumjs/tx'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { TxHashIndex } from './txIndex.ts'
 
 /**
  * TxReceiptWithType extends TxReceipt to provide:
@@ -50,29 +50,10 @@ type GetLogsReturn = {
 }[]
 
 /**
- * Indexes
- */
-type TxHashIndex = [blockHash: Uint8Array, txIndex: number]
-
-export type IndexType = (typeof IndexType)[keyof typeof IndexType]
-
-export const IndexType = {
-  TxHash: 'txhash',
-} as const
-
-export type IndexOperation = (typeof IndexOperation)[keyof typeof IndexOperation]
-
-export const IndexOperation = {
-  Save: 'save',
-  Delete: 'delete',
-} as const
-
-/**
  * Storage encodings
  */
 type rlpLog = Log
 type rlpReceipt = [postStateOrStatus: Uint8Array, cumulativeGasUsed: Uint8Array, logs: rlpLog[]]
-type rlpTxHash = [blockHash: Uint8Array, txIndex: Uint8Array]
 
 export type RlpConvert = (typeof RlpConvert)[keyof typeof RlpConvert]
 
@@ -85,9 +66,8 @@ export type RlpType = (typeof RlpType)[keyof typeof RlpType]
 export const RlpType = {
   Receipts: 'receipts',
   Logs: 'logs',
-  TxHash: 'txhash',
 } as const
-type rlpOut = Log[] | TxReceipt[] | TxHashIndex
+type rlpOut = Log[] | TxReceipt[]
 
 export class ReceiptsManager extends MetaDBManager {
   /**
@@ -114,12 +94,10 @@ export class ReceiptsManager extends MetaDBManager {
   async saveReceipts(block: Block, receipts: TxReceipt[]) {
     const encoded = this.rlp(RlpConvert.Encode, RlpType.Receipts, receipts)
     await this.put(DBKey.Receipts, block.hash(), encoded)
-    void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
   }
 
   async deleteReceipts(block: Block) {
     await this.delete(DBKey.Receipts, block.hash())
-    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
   }
 
   /**
@@ -166,9 +144,9 @@ export class ReceiptsManager extends MetaDBManager {
    * Returns receipt by tx hash with additional metadata for the JSON RPC response, or null if not found
    * @param txHash the tx hash
    */
-  async getReceiptByTxHash(txHash: Uint8Array): Promise<GetReceiptByTxHashReturn | null> {
-    const txHashIndex = await this.getIndex(IndexType.TxHash, txHash)
-    if (!txHashIndex) return null
+  async getReceiptByTxHashIndex(
+    txHashIndex: TxHashIndex,
+  ): Promise<GetReceiptByTxHashReturn | null> {
     const [blockHash, txIndex] = txHashIndex
     const receipts = await this.getReceipts(blockHash)
     if (receipts.length === 0) return null
@@ -248,72 +226,6 @@ export class ReceiptsManager extends MetaDBManager {
   }
 
   /**
-   * Saves or deletes an index from the metaDB
-   * @param operation the {@link IndexOperation}
-   * @param type the {@link IndexType}
-   * @param value for {@link IndexType.TxHash}, the block to save or delete the tx hash indexes for
-   */
-  private async updateIndex(
-    operation: IndexOperation,
-    type: typeof IndexType.TxHash,
-    value: Block,
-  ): Promise<void>
-  private async updateIndex(operation: IndexOperation, type: IndexType, value: any): Promise<void> {
-    switch (type) {
-      case IndexType.TxHash: {
-        const block = value
-        if (operation === IndexOperation.Save) {
-          const withinTxLookupLimit =
-            this.config.txLookupLimit === 0 ||
-            this.chain.headers.height - BigInt(this.config.txLookupLimit) < block.header.number
-          if (withinTxLookupLimit) {
-            for (const [i, tx] of block.transactions.entries()) {
-              const index: TxHashIndex = [block.hash(), i]
-              const encoded = this.rlp(RlpConvert.Encode, RlpType.TxHash, index)
-              await this.put(DBKey.TxHash, tx.hash(), encoded)
-            }
-          }
-          if (this.config.txLookupLimit > 0) {
-            // Remove tx hashes for one block past txLookupLimit
-            const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
-            if (limit < BIGINT_0) return
-            const blockDelIndexes = await this.chain.getBlock(limit)
-            void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
-          }
-        } else if (operation === IndexOperation.Delete) {
-          for (const tx of block.transactions) {
-            await this.delete(DBKey.TxHash, tx.hash())
-          }
-        }
-        break
-      }
-      default:
-        throw EthereumJSErrorWithoutCode('Unsupported index type')
-    }
-  }
-
-  /**
-   * Returns the value for an index or null if not found
-   * @param type the {@link IndexType}
-   * @param value for {@link IndexType.TxHash}, the txHash to get
-   */
-  private async getIndex(
-    type: typeof IndexType.TxHash,
-    value: Uint8Array,
-  ): Promise<TxHashIndex | null>
-  private async getIndex(type: IndexType, value: Uint8Array): Promise<any | null> {
-    switch (type) {
-      case IndexType.TxHash: {
-        const encoded = await this.get(DBKey.TxHash, value)
-        if (!encoded) return null
-        return this.rlp(RlpConvert.Decode, RlpType.TxHash, encoded)
-      }
-      default:
-        throw EthereumJSErrorWithoutCode('Unsupported index type')
-    }
-  }
-
-  /**
    * RLP encodes or decodes the specified data type for storage or retrieval from the metaDB
    * @param conversion {@link RlpConvert.Encode} or {@link RlpConvert.Decode}
    * @param type one of {@link RlpType}
@@ -330,11 +242,6 @@ export class ReceiptsManager extends MetaDBManager {
     type: typeof RlpType.Logs,
     value: rlpLog[],
   ): Log[]
-  private rlp(
-    conversion: typeof RlpConvert.Decode,
-    type: typeof RlpType.TxHash,
-    value: Uint8Array,
-  ): TxHashIndex
   private rlp(
     conversion: RlpConvert,
     type: RlpType,
@@ -379,14 +286,6 @@ export class ReceiptsManager extends MetaDBManager {
           return RLP.encode(value as Log[])
         } else {
           return RLP.decode(value as Uint8Array) as Log[]
-        }
-      case RlpType.TxHash:
-        if (conversion === RlpConvert.Encode) {
-          const [blockHash, txIndex] = value as TxHashIndex
-          return RLP.encode([blockHash, intToBytes(txIndex)])
-        } else {
-          const [blockHash, txIndex] = RLP.decode(value as Uint8Array) as unknown as rlpTxHash
-          return [blockHash, bytesToInt(txIndex)] as TxHashIndex
         }
       default:
         throw EthereumJSErrorWithoutCode('Unknown rlp conversion')

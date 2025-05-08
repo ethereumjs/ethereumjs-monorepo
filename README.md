@@ -171,11 +171,11 @@ You can find more detailed information on the configuration of different tooling
 
 ### Overview
 
-The following are our currently active branches:
+The following are our currently relevant main branches for active and former release series:
 
 | Branch                                                                                  | Release Series         | Status        |  Description                                   |
 | --------------------------------------------------------------------------------------- | ---------------------- | ------------- | ---------------------------------------------- |
-| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | Upcoming (Spring 2025) | `Develop`     | Breaking release work                          |
+| [master](https://github.com/ethereumjs/ethereumjs-monorepo)                             | v10 (new versioning scheme) | `Active`     | Working branch                          |
 | [maintenance-v8](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v8) | v7/v8                  | `Maintenance` | Maintenance for v8 releases (v7 also included) |
 | [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6                     | `Maintenance` | Maintenance for v6 releases                    |
 
