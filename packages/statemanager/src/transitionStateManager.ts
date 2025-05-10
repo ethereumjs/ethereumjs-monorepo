@@ -1,39 +1,18 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
-  MapDB,
-  VERKLE_CODE_CHUNK_SIZE,
-  VERKLE_CODE_OFFSET,
-  VERKLE_NODE_WIDTH,
-  VerkleLeafType,
-  bytesToBigInt,
   bytesToHex,
-  chunkifyCode,
-  createAccountFromRLP,
   createAddressFromString,
-  createPartialAccount,
-  createPartialAccountFromRLP,
-  decodeVerkleLeafBasicData,
-  encodeVerkleLeafBasicData,
   equalsBytes,
-  generateChunkSuffixes,
-  generateCodeStems,
-  getVerkleStem,
-  getVerkleTreeKeyForStorageSlot,
   hexToBytes,
-  setLengthLeft,
-  short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { LeafVerkleNodeValue, VerkleTree } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.ts'
-import { modifyAccountFields } from './util.ts'
 
 import type { Caches, TransitionStateManagerOpts } from './index.ts'
 
@@ -43,8 +22,6 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import { createMPT } from '@ethereumjs/mpt'
 import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
