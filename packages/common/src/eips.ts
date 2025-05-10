@@ -484,7 +484,7 @@ export const eipsDict: EIPsDict = {
    * URL         : https://eips.ethereum.org/EIPS/eip-7748
    * Status      : Draft
    */
-  7742: {
+  7748: {
     minimumHardfork: Hardfork.Verkle,
     requiredEIPs: [7612],
   },

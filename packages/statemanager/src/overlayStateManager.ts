@@ -14,7 +14,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.ts'
 
-import type { Caches, TransitionStateManagerOpts } from './index.ts'
+import type { Caches, OverlayStateManagerOpts } from './index.ts'
 
 import type {
   AccountFields,
@@ -26,7 +26,7 @@ import type { Address, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
- * Transition StateManager implementation for the VM.
+ * Overlay StateManager implementation for the VM.
  *
  * The state manager abstracts from the underlying data store
  * by providing higher level access to accounts, contract code
@@ -37,7 +37,7 @@ import type { Debugger } from 'debug'
  * EIP-7612: https://eips.ethereum.org/EIPS/eip-7612
  * EIP-7748: https://eips.ethereum.org/EIPS/eip-7748
  */
-export class TransitionStateManager implements StateManagerInterface {
+export class OverlayStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 
@@ -57,6 +57,22 @@ export class TransitionStateManager implements StateManagerInterface {
   private keccakFunction: Function
 
   /**
+   * Internal queue of MPT leaf keys (account addresses as 20-byte Uint8Arrays) that still
+   * need to be migrated to the Verkle tree.  This queue is populated either via the
+   * constructor `conversionQueue` option or later through {@link enqueueLeaves}.  Each
+   * conversion step will pop `CONVERSION_STRIDE` keys from the head of the queue and
+   * migrate them.
+   *
+   * NOTE: In a full node implementation this list would live in leveldb so that progress
+   * survives reboots.  For now we store it in-memory – callers SHOULD inject a
+   * persisted array when constructing the state manager.
+   */
+  private _conversionQueue: Uint8Array[]
+
+  /** Total number of leaves migrated so far (purely informative). */
+  private _migratedCount = 0
+
+  /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
@@ -66,7 +82,7 @@ export class TransitionStateManager implements StateManagerInterface {
    */
   protected readonly DEBUG: boolean = false
 
-  constructor(opts: TransitionStateManagerOpts) {
+  constructor(opts: OverlayStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
@@ -82,7 +98,7 @@ export class TransitionStateManager implements StateManagerInterface {
       throw EthereumJSErrorWithoutCode('verkle crypto required')
     }
 
-    // Accept state managers directly from options (update TransitionStateManagerOpts accordingly)
+    // Accept state managers directly from options (update OverlayStateManagerOpts accordingly)
     this._frozenStateManager = opts.frozenStateManager
     this._activeStateManager = opts.activeStateManager
     this._caches = opts.caches
@@ -91,6 +107,9 @@ export class TransitionStateManager implements StateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
     this.preStateRoot = new Uint8Array(32) // Initial state root is zeroes
+
+    // Conversion queue handling
+    this._conversionQueue = opts.conversionQueue ? [...opts.conversionQueue] : []
   }
 
   /**
@@ -216,7 +235,12 @@ export class TransitionStateManager implements StateManagerInterface {
   }
 
   getStateRoot(): Promise<Uint8Array> {
-    return this._activeStateManager.getStateRoot()
+    const activeStateRoot = this._activeStateManager.getStateRoot()
+    // If active tree is empty, return frozen state root
+    if (activeStateRoot) {
+      return activeStateRoot
+    }
+    return this._frozenStateManager.getStateRoot()
   }
 
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
@@ -290,5 +314,64 @@ export class TransitionStateManager implements StateManagerInterface {
         }
       }
     }
+
+    // Update accounting – these keys are now converted, ensure they are not in the queue
+    this._conversionQueue = this._conversionQueue.filter(
+      (k) => !leafKeys.some((c) => equalsBytes(c, k)),
+    )
+  }
+
+  /**
+   * Add new MPT leaf keys to the end of the conversion queue.
+   */
+  public enqueueLeaves(keys: Uint8Array[]) {
+    this._conversionQueue.push(...keys)
+  }
+
+  /**
+   * Returns the number of leaves that still need to be migrated.
+   */
+  public remainingConversion(): number {
+    return this._conversionQueue.length
+  }
+
+  /**
+   * Returns true if there are no more leaves pending migration.
+   */
+  public isFullyConverted(): boolean {
+    return this._conversionQueue.length === 0
+  }
+
+  /**
+   * Pops up to `stride` keys from the conversion queue and migrates them in a single batch.
+   * After the migration is completed the corresponding accounts are **deleted** from the
+   * frozen (MPT) backend so they are no longer accessible there, fulfilling the EIP-7748
+   * requirement of shrinking the old trie over time.
+   *
+   * The stride value SHOULD come from the `CONVERSION_STRIDE` constant defined in the
+   * execution spec.  Nothing prevents callers from using a smaller stride (e.g. for tests).
+   *
+   * If the queue is empty this method is a no-op.
+   */
+  public async runConversionStep(stride: number): Promise<void> {
+    if (stride <= 0 || this.isFullyConverted()) return
+
+    const batch: Uint8Array[] = this._conversionQueue.splice(0, stride)
+    if (batch.length === 0) return
+
+    await this.migrateLeavesToVerkle(batch)
+
+    // Remove migrated accounts from the frozen backend
+    for (const key of batch) {
+      const addr = createAddressFromString(bytesToHex(key))
+      if (typeof this._frozenStateManager.deleteAccount === 'function') {
+        await this._frozenStateManager.deleteAccount(addr)
+      } else {
+        // Fallback: put undefined account (works for most managers)
+        await this._frozenStateManager.putAccount(addr, undefined as unknown as Account)
+      }
+    }
+
+    this._migratedCount += batch.length
   }
 }
