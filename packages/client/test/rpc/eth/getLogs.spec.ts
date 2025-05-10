@@ -106,16 +106,11 @@ describe(method, async () => {
       assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
     }
 
-    if (hexToBigInt(res.result[0].blockTimestamp) === block.header.timestamp) {
-      assert.isTrue(
-        true,
-        `should return the correct blockTimestamp (fromBlock/toBlock as 'earliest' and 'latest')`,
-      )
-    } else {
-      assert.fail(
-        `should return the correct blockTimestamp (fromBlock/toBlock as 'earliest' and 'latest')`,
-      )
-    }
+    assert.strictEqual(
+      hexToBigInt(res.result[0].blockTimestamp),
+      block.header.timestamp,
+      `should return the correct blockTimestamp (fromBlock/toBlock as 'earliest' and 'latest')`,
+    )
 
     // get the logs using fromBlock/toBlock as numbers
     res = await rpc.request(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
@@ -244,22 +239,19 @@ describe(method, async () => {
       { common },
     ).sign(dummy.privKey)
 
-    const oldTimestamp = bigIntToHex(block.header.timestamp)
+    const block1Timestamp = bigIntToHex(block.header.timestamp)
     block = await runBlockWithTxs(chain, execution, [tx5, tx6])
-    const newTimestamp = bigIntToHex(block.header.timestamp)
+    const block2Timestamp = bigIntToHex(block.header.timestamp)
 
     res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
+    const block1Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x1')
+    const block2Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x2')
 
-    if (
-      res.result[0].blockTimestamp === oldTimestamp &&
-      res.result[10].blockTimestamp === oldTimestamp &&
-      res.result[20].blockTimestamp === newTimestamp &&
-      res.result[30].blockTimestamp === newTimestamp
-    ) {
-      assert.isTrue(true, 'should return the correct log timestamps across multiple blocks')
-    } else {
-      assert.fail('should return the correct log timestamps across multiple blocks')
-    }
+    assert.isTrue(
+      block1Logs.every((log) => log.blockTimestamp === block1Timestamp) &&
+        block2Logs.every((log) => log.blockTimestamp === block2Timestamp),
+      'should return the correct log timestamps across multiple blocks',
+    )
   })
 
   it('call with invalid params', async () => {
