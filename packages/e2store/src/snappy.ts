@@ -1,6 +1,6 @@
 import { Writable } from 'stream'
-import snappyStream from '@chainsafe/snappy-stream'
 import { concatBytes } from '@ethereumjs/util'
+import { createCompressStream, createUncompressStream } from './snappy-stream/index.ts'
 /**
  * Compress data using snappy
  * @param uncompressedData
@@ -16,7 +16,7 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
       },
     })
 
-    const compress = snappyStream.createCompressStream()
+    const compress = createCompressStream()
 
     compress.on('error', reject)
     writableStream.on('error', reject)
@@ -39,7 +39,7 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
 }
 
 export async function decompressData(compressedData: Uint8Array) {
-  const unsnappy = snappyStream.createUncompressStream({ asBuffer: true })
+  const unsnappy = createUncompressStream({ asBuffer: true })
   const destroy = () => {
     unsnappy.destroy()
   }
