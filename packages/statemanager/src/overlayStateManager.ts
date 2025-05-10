@@ -347,11 +347,6 @@ export class OverlayStateManager implements StateManagerInterface {
    * After the migration is completed the corresponding accounts are **deleted** from the
    * frozen (MPT) backend so they are no longer accessible there, fulfilling the EIP-7748
    * requirement of shrinking the old trie over time.
-   *
-   * The stride value SHOULD come from the `CONVERSION_STRIDE` constant defined in the
-   * execution spec.  Nothing prevents callers from using a smaller stride (e.g. for tests).
-   *
-   * If the queue is empty this method is a no-op.
    */
   public async runConversionStep(stride: number): Promise<void> {
     if (stride <= 0 || this.isFullyConverted()) return

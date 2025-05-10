@@ -1,0 +1,1 @@
+export const EIP7612_CONVERSION_STRIDE = 4000

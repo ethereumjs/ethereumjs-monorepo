@@ -67,11 +67,18 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   caches?: Caches
 }
 
-export interface TransitionStateManagerOpts extends BaseStateManagerOpts {
+export interface OverlayStateManagerOpts extends BaseStateManagerOpts {
   frozenStateManager: StateManagerInterface
   activeStateManager: StateManagerInterface
   common: Common // Common required since it provides verkleCrypto through customCrypto
   caches?: Caches
+  /**
+   * Optional initial queue of MPT leaf keys (addresses as 20-byte Uint8Arrays)
+   * that still need to be migrated to the Verkle tree.
+   * If omitted the queue starts empty and can later be populated via
+   * {@link OverlayStateManager.enqueueLeaves}.
+   */
+  conversionQueue?: Uint8Array[]
 }
 
 /**
