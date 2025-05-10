@@ -100,6 +100,7 @@ type JSONRPCLog = {
   transactionHash: string | null // DATA, 32 Bytes - hash of the transactions this log was created from. null when it's pending.
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this log was in. null when it's pending.
   blockNumber: string | null // QUANTITY - the block number where this log was in. null when it's pending.
+  blockTimestamp: string | null // QUANTITY - the block timestamp where this log was in. null when it's pending.
   address: string // DATA, 20 Bytes - address from which this log originated.
   data: string // DATA - contains one or more 32 Bytes non-indexed arguments of the log.
   topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
@@ -174,6 +175,7 @@ const toJSONRPCLog = async (
   transactionHash: tx !== undefined ? bytesToHex(tx.hash()) : null,
   blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
+  blockTimestamp: block ? bigIntToHex(block.header.timestamp) : null,
   address: bytesToHex(log[0]),
   topics: log[1].map(bytesToHex),
   data: bytesToHex(log[2]),
