@@ -104,9 +104,6 @@ describe('KZG API tests', () => {
     const commit = wasmKZG.blobToKzgCommitment(blob)
     const proof = wasmKZG.computeBlobProof(blob, commit)
 
-    console.log(jsKZG.blobToKzgCommitment(blob).toLowerCase())
-    console.log(cKzg.blobToKzgCommitment(blob).toLowerCase())
-
     assert.strictEqual(
       wasmKZG.blobToKzgCommitment(blob).toLowerCase(),
       jsKZG.blobToKzgCommitment(blob).toLowerCase(),
