@@ -850,7 +850,7 @@ export class TxPool {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
-    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0 }
+    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0, byFutureFork:0 }
 
     if (vm.common.isActivatedEIP(7594)) {
       let oldFormatBlobTxs = []
@@ -919,24 +919,28 @@ export class TxPool {
       //   ii) or there is no blobs limit provided
       //   iii) or blobs are still within limit if this best tx's blobs are included
       if (
-        !(best instanceof Blob4844Tx) ||
-        allowedBlobs === undefined ||
-        ((best as Blob4844Tx).blobs ?? []).length + blobsCount <= allowedBlobs
+        (best instanceof Blob4844Tx) &&
+        allowedBlobs !== undefined &&
+        ((best as Blob4844Tx).blobs ?? []).length + blobsCount > allowedBlobs
       ) {
-        if (accTxs.length > 0) {
-          byPrice.insert(accTxs[0])
-          byNonce.set(address, accTxs.slice(1))
-        }
-        // Accumulate the best priced transaction and increment blobs count
-        txs.push(best)
-        if (best instanceof Blob4844Tx) {
-          blobsCount += ((best as Blob4844Tx).blobs ?? []).length
-        }
-      } else {
         // Since no more blobs can fit in the block, not only skip inserting in byPrice but also remove all other
         // txs (blobs or not) of this sender address from further consideration
         skippedStats.byBlobsLimit += 1 + accTxs.length
         byNonce.set(address, [])
+        continue;
+      } else if ((best instanceof Blob4844Tx) && best.networkWrapperVersion === NetworkWrapperType.EIP7594 && !vm.common.isActivatedEIP(7594)){
+        skippedStats.byFutureFork += 1+ accTxs.length
+        byNonce.set(address,[])
+      }
+
+      if (accTxs.length > 0) {
+        byPrice.insert(accTxs[0])
+        byNonce.set(address, accTxs.slice(1))
+      }
+      // Accumulate the best priced transaction and increment blobs count
+      txs.push(best)
+      if (best instanceof Blob4844Tx) {
+        blobsCount += ((best as Blob4844Tx).blobs ?? []).length
       }
     }
     this.config.logger?.info(
