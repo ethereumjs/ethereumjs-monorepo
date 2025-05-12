@@ -36,14 +36,6 @@ export const blockToExecutionPayload = (
     }
   }
 
-  if (blobsBundle !== undefined) {
-    console.log('blobsBundle', {
-      commitments: blobsBundle.commitments.length,
-      blobs: blobsBundle.blobs.length,
-      proofs: blobsBundle.proofs.length,
-    })
-  }
-
   return {
     executionPayload,
     executionRequests,
