@@ -850,7 +850,7 @@ export class TxPool {
     const txs: TypedTransaction[] = []
     // Separate the transactions by account and sort by nonce
     const byNonce = new Map<string, TypedTransaction[]>()
-    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0, byFutureFork:0 }
+    const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0, byFutureFork: 0 }
 
     if (vm.common.isActivatedEIP(7594)) {
       let oldFormatBlobTxs = []
@@ -914,12 +914,12 @@ export class TxPool {
       const address = best.getSenderAddress().toString().slice(2)
       const accTxs = byNonce.get(address)!
 
-      // Insert the best tx into byPrice if
-      //   i) this is not a blob tx,
-      //   ii) or there is no blobs limit provided
-      //   iii) or blobs are still within limit if this best tx's blobs are included
+      // Skip the best tx into byPrice if
+      //   i) this is a blob tx,
+      //   ii) and there is blobs limit provided
+      //   iii) and blobs would exceed limit if this best tx's blobs are included
       if (
-        (best instanceof Blob4844Tx) &&
+        best instanceof Blob4844Tx &&
         allowedBlobs !== undefined &&
         ((best as Blob4844Tx).blobs ?? []).length + blobsCount > allowedBlobs
       ) {
@@ -927,10 +927,17 @@ export class TxPool {
         // txs (blobs or not) of this sender address from further consideration
         skippedStats.byBlobsLimit += 1 + accTxs.length
         byNonce.set(address, [])
-        continue;
-      } else if ((best instanceof Blob4844Tx) && best.networkWrapperVersion === NetworkWrapperType.EIP7594 && !vm.common.isActivatedEIP(7594)){
-        skippedStats.byFutureFork += 1+ accTxs.length
-        byNonce.set(address,[])
+        continue
+      }
+      // Skip the best tx if this is a future 7594 blob tx
+      else if (
+        best instanceof Blob4844Tx &&
+        best.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
+        !vm.common.isActivatedEIP(7594)
+      ) {
+        skippedStats.byFutureFork += 1 + accTxs.length
+        byNonce.set(address, [])
+        continue
       }
 
       if (accTxs.length > 0) {
@@ -944,7 +951,7 @@ export class TxPool {
       }
     }
     this.config.logger?.info(
-      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`,
+      `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit} byFutureFork=${skippedStats.byFutureFork}`,
     )
     return txs
   }
