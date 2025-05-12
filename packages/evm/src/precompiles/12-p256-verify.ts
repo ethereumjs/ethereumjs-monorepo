@@ -1,6 +1,6 @@
 import { BIGINT_0, BIGINT_1, bytesToBigInt, bytesToHex } from '@ethereumjs/util'
 
-import { p256 } from '@noble/curves/nist'
+import { p256 } from '@noble/curves/p256.js'
 import { EVMError } from '../errors.ts'
 import { EVMErrorResult, OOGResult } from '../evm.ts'
 import { getPrecompileName } from './index.ts'
