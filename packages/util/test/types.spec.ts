@@ -14,14 +14,14 @@ import {
 
 describe('toType', () => {
   it('from null and undefined', () => {
-    assert.equal(toType(null, TypeOutput.Number), null)
-    assert.equal(toType(null, TypeOutput.BigInt), null)
-    assert.equal(toType(null, TypeOutput.Uint8Array), null)
-    assert.equal(toType(null, TypeOutput.PrefixedHexString), null)
-    assert.equal(toType(undefined, TypeOutput.Number), undefined)
-    assert.equal(toType(undefined, TypeOutput.BigInt), undefined)
-    assert.equal(toType(undefined, TypeOutput.Uint8Array), undefined)
-    assert.equal(toType(undefined, TypeOutput.PrefixedHexString), undefined)
+    assert.strictEqual(toType(null, TypeOutput.Number), null)
+    assert.strictEqual(toType(null, TypeOutput.BigInt), null)
+    assert.strictEqual(toType(null, TypeOutput.Uint8Array), null)
+    assert.strictEqual(toType(null, TypeOutput.PrefixedHexString), null)
+    assert.strictEqual(toType(undefined, TypeOutput.Number), undefined)
+    assert.strictEqual(toType(undefined, TypeOutput.BigInt), undefined)
+    assert.strictEqual(toType(undefined, TypeOutput.Uint8Array), undefined)
+    assert.strictEqual(toType(undefined, TypeOutput.PrefixedHexString), undefined)
   })
   it('from Number', () => {
     const num = 1000
@@ -30,7 +30,7 @@ describe('toType', () => {
     assert.strictEqual(result, num)
 
     result = toType(num, TypeOutput.BigInt)
-    assert.equal(result, BigInt(num))
+    assert.strictEqual(result, BigInt(num))
 
     result = toType(num, TypeOutput.Uint8Array)
     assert.deepEqual(result, intToBytes(num))
@@ -51,7 +51,7 @@ describe('toType', () => {
     assert.strictEqual(result, Number(num))
 
     result = toType(num, TypeOutput.BigInt)
-    assert.equal(result, num)
+    assert.strictEqual(result, num)
 
     result = toType(num, TypeOutput.Uint8Array)
     assert.deepEqual(result, bigIntToBytes(num))
@@ -72,7 +72,7 @@ describe('toType', () => {
     assert.deepEqual(intToBytes(result), num)
 
     result = toType(num, TypeOutput.BigInt)
-    assert.equal(result, bytesToBigInt(num))
+    assert.strictEqual(result, bytesToBigInt(num))
 
     result = toType(num, TypeOutput.Uint8Array)
     assert.deepEqual(result, num)

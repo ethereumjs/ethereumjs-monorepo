@@ -26,7 +26,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     }
 
     const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    assert.equal(res.error.code, UNSUPPORTED_FORK)
+    assert.strictEqual(res.error.code, UNSUPPORTED_FORK)
     assert.isTrue(
       res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated'),
     )
@@ -62,12 +62,12 @@ describe(`${method}: call with executionPayloadV3`, () => {
       const expectedError = expectedErrors[index]
       // extra params for old methods should be auto ignored
       res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.strictEqual(res.error.code, INVALID_PARAMS)
       assert.isTrue(res.error.message.includes(expectedError))
     }
 
     res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
@@ -89,11 +89,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
         safeBlockHash: beaconData[2].blockHash,
       },
     ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
 
     // use new payload v1 as beaconData all belong to pre-shanghai
     res = await rpc.request('engine_newPayloadV1', [blockData])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
   })
 
   it('call with executionPayloadV2', () => {

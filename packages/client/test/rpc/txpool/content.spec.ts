@@ -76,7 +76,7 @@ describe(method, () => {
     await service.txPool.add(createTx({ type: 2 }, {}).sign(randomBytes(32)))
 
     const res = await rpc.request(method, [])
-    assert.equal(
+    assert.strictEqual(
       Object.keys(res.result.pending).length,
       1,
       'received one pending transaction back from response',

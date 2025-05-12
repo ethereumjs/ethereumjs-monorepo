@@ -28,7 +28,7 @@ describe('verkle node - leaf', () => {
     })
 
     assert.isTrue(isLeafVerkleNode(node), 'typeguard should return true')
-    assert.equal(node.type, VerkleNodeType.Leaf, 'type should be set')
+    assert.strictEqual(node.type, VerkleNodeType.Leaf, 'type should be set')
     assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
     assert.isTrue(equalsBytes(node.c1!, c1), 'c1 should be set')
     assert.isTrue(equalsBytes(node.c2!, c2), 'c2 should be set')
@@ -53,7 +53,7 @@ describe('verkle node - leaf', () => {
     const key = randomBytes(32)
     const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
     assert.instanceOf(node, LeafVerkleNode)
-    assert.equal(node.getValue(0), undefined)
+    assert.strictEqual(node.getValue(0), undefined)
     node.setValue(0, setLengthRight(Uint8Array.from([5]), 32))
     assert.deepEqual(node.getValue(0), setLengthRight(Uint8Array.from([5]), 32))
     node.setValue(0, LeafVerkleNodeValue.Deleted)
@@ -65,7 +65,7 @@ describe('verkle node - leaf', () => {
     const node = await LeafVerkleNode.create(key.slice(0, 31), verkle)
     node.setValue(0, LeafVerkleNodeValue.Deleted)
     const c1Values = createCValues(node.values.slice(0, 128))
-    assert.equal(c1Values[0][16], 1)
+    assert.strictEqual(c1Values[0][16], 1)
   })
 
   it('should update a commitment when setting a value', async () => {

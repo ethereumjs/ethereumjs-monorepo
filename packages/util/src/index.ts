@@ -51,6 +51,7 @@ export * from './types.ts'
 /**
  * Export ethjs-util methods
  */
+export * from './authorization.ts'
 export * from './binaryTree.ts'
 export * from './blobs.ts'
 export {

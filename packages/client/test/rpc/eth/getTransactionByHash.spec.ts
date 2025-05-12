@@ -29,12 +29,12 @@ describe(method, () => {
 
     // get the tx
     let res = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.equal(res.result.hash, bytesToHex(tx.hash()), 'should return the correct tx')
+    assert.strictEqual(res.result.hash, bytesToHex(tx.hash()), 'should return the correct tx')
 
     // run a block to ensure tx hash index is cleaned up when txLookupLimit=1
     await runBlockWithTxs(chain, execution, [])
     res = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.equal(res.result, null, 'should return null when past txLookupLimit')
+    assert.strictEqual(res.result, null, 'should return null when past txLookupLimit')
   })
 
   it('call with 1559 tx', async () => {
@@ -59,14 +59,14 @@ describe(method, () => {
 
     // get the tx
     let res = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.equal(res.result.type, '0x2', 'should return the correct tx type')
+    assert.strictEqual(res.result.type, '0x2', 'should return the correct tx type')
 
     // run some blocks to ensure tx hash index is not cleaned up when txLookupLimit=0
     await runBlockWithTxs(chain, execution, [])
     await runBlockWithTxs(chain, execution, [])
     await runBlockWithTxs(chain, execution, [])
     res = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.equal(
+    assert.strictEqual(
       res.result.hash,
       bytesToHex(tx.hash()),
       'should return the correct tx when txLookupLimit=0',
@@ -80,6 +80,6 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-    assert.equal(res.result, null, 'should return null')
+    assert.strictEqual(res.result, null, 'should return null')
   })
 })

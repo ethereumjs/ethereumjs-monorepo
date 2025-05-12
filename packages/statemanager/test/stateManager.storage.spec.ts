@@ -49,7 +49,7 @@ describe('StateManager -> Storage', () => {
         try {
           await stateManager.putStorage(address, new Uint8Array(12), hexToBytes('0x1231'))
         } catch (e: any) {
-          assert.equal(e.message, 'Storage key must be 32 bytes long')
+          assert.strictEqual(e.message, 'Storage key must be 32 bytes long')
           return
         }
 
@@ -68,7 +68,7 @@ describe('StateManager -> Storage', () => {
         try {
           await stateManager.getStorage(address, new Uint8Array(12))
         } catch (e: any) {
-          assert.equal(e.message, 'Storage key must be 32 bytes long')
+          assert.strictEqual(e.message, 'Storage key must be 32 bytes long')
           return
         }
 

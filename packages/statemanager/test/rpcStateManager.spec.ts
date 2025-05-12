@@ -48,10 +48,18 @@ describe('RPC State Manager initialization tests', async () => {
   it('should work', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
     assert.instanceOf(state, RPCStateManager, 'was able to instantiate state manager')
-    assert.equal(state['_blockTag'], '0x1', 'State manager starts with default block tag of 1')
+    assert.strictEqual(
+      state['_blockTag'],
+      '0x1',
+      'State manager starts with default block tag of 1',
+    )
 
     state = new RPCStateManager({ provider, blockTag: 1n })
-    assert.equal(state['_blockTag'], '0x1', 'State Manager instantiated with predefined blocktag')
+    assert.strictEqual(
+      state['_blockTag'],
+      '0x1',
+      'State Manager instantiated with predefined blocktag',
+    )
 
     state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
     assert.instanceOf(
@@ -148,7 +156,7 @@ describe('RPC State Manager API tests', () => {
     )
 
     await state.modifyAccountFields(vitalikDotEth, { nonce: 39n })
-    assert.equal(
+    assert.strictEqual(
       (await state.getAccount(vitalikDotEth))?.nonce,
       39n,
       'modified account fields successfully',
@@ -170,7 +178,7 @@ describe('RPC State Manager API tests', () => {
       setLengthLeft(bigIntToBytes(2n), 32),
     )
 
-    assert.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
+    assert.strictEqual(deletedSlot.length, 0, 'deleted slot from storage cache')
 
     await state.deleteAccount(vitalikDotEth)
     assert.isUndefined(
@@ -189,14 +197,14 @@ describe('RPC State Manager API tests', () => {
       setLengthLeft(bigIntToBytes(2n), 32),
     )
 
-    assert.equal(
+    assert.strictEqual(
       deletedSlotAfterRevert.length,
       4,
       'slot deleted since last checkpoint should exist in storage cache after revert',
     )
 
     const cacheStorage = await state.dumpStorage(UniswapERC20ContractAddress)
-    assert.equal(
+    assert.strictEqual(
       2,
       Object.keys(cacheStorage).length,
       'should have 2 storage slots in cache before clear',
@@ -215,17 +223,17 @@ describe('RPC State Manager API tests', () => {
       )
     }
 
-    assert.equal(
+    assert.strictEqual(
       state['_caches'].account?.get(UniswapERC20ContractAddress),
       undefined,
       'should not have any code for contract after cache is reverted',
     )
 
-    assert.equal(state['_blockTag'], '0x1', 'blockTag defaults to 1')
+    assert.strictEqual(state['_blockTag'], '0x1', 'blockTag defaults to 1')
     state.setBlockTag(5n)
-    assert.equal(state['_blockTag'], '0x5', 'blockTag set to 0x5')
+    assert.strictEqual(state['_blockTag'], '0x5', 'blockTag set to 0x5')
     state.setBlockTag('earliest')
-    assert.equal(state['_blockTag'], 'earliest', 'blockTag set to earliest')
+    assert.strictEqual(state['_blockTag'], 'earliest', 'blockTag set to earliest')
 
     await state.checkpoint()
   })
@@ -253,7 +261,7 @@ describe('runTx custom transaction test', () => {
       tx,
     })
 
-    assert.equal(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
+    assert.strictEqual(result.totalGasSpent, 21000n, 'sent some ETH to vitalik.eth')
   })
 })
 
@@ -271,7 +279,7 @@ describe('runTx test: replay mainnet transactions', () => {
     })
     const vm = await createVM({ common, stateManager: state })
     const res = await runTx(vm, { tx })
-    assert.equal(
+    assert.strictEqual(
       res.totalGasSpent,
       21000n,
       'calculated correct total gas spent for simple transfer',
@@ -302,7 +310,7 @@ describe('runBlock test', () => {
         generate: true,
         skipHeaderValidation: true,
       })
-      assert.equal(
+      assert.strictEqual(
         res.gasUsed,
         block.header.gasUsed,
         'should compute correct cumulative gas for block',
@@ -336,7 +344,7 @@ describe('blockchain', () =>
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(res.execResult.returnValue),
       '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d84',
     )
@@ -349,7 +357,7 @@ describe('Should return same value as MerkleStateManager when account does not e
 
     const account0 = await rpcState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     const account1 = await defaultState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
-    assert.equal(
+    assert.strictEqual(
       account0,
       account1,
       'Should return same value as MerkleStateManager when account does not exist',

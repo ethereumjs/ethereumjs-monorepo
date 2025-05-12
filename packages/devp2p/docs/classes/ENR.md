@@ -1,101 +1,62 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / ENR
 
 # Class: ENR
 
-## Table of contents
-
-### Constructors
-
-- [constructor](ENR.md#constructor)
-
-### Properties
-
-- [BRANCH\_PREFIX](ENR.md#branch_prefix)
-- [RECORD\_PREFIX](ENR.md#record_prefix)
-- [ROOT\_PREFIX](ENR.md#root_prefix)
-- [TREE\_PREFIX](ENR.md#tree_prefix)
-
-### Methods
-
-- [\_getIpProtocolConversionCodes](ENR.md#_getipprotocolconversioncodes)
-- [parseAndVerifyRecord](ENR.md#parseandverifyrecord)
-- [parseAndVerifyRoot](ENR.md#parseandverifyroot)
-- [parseBranch](ENR.md#parsebranch)
-- [parseTree](ENR.md#parsetree)
+Defined in: [packages/devp2p/src/dns/enr.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L31)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new ENR**()
+> **new ENR**(): `ENR`
+
+#### Returns
+
+`ENR`
 
 ## Properties
 
 ### BRANCH\_PREFIX
 
-▪ `Static` `Readonly` **BRANCH\_PREFIX**: ``"enrtree-branch:"``
+> `readonly` `static` **BRANCH\_PREFIX**: `"enrtree-branch:"` = `'enrtree-branch:'`
 
-#### Defined in
+Defined in: [packages/devp2p/src/dns/enr.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L34)
 
-[packages/devp2p/src/dns/enr.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L34)
-
-___
+***
 
 ### RECORD\_PREFIX
 
-▪ `Static` `Readonly` **RECORD\_PREFIX**: ``"enr:"``
+> `readonly` `static` **RECORD\_PREFIX**: `"enr:"` = `'enr:'`
 
-#### Defined in
+Defined in: [packages/devp2p/src/dns/enr.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L32)
 
-[packages/devp2p/src/dns/enr.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L32)
-
-___
+***
 
 ### ROOT\_PREFIX
 
-▪ `Static` `Readonly` **ROOT\_PREFIX**: ``"enrtree-root:"``
+> `readonly` `static` **ROOT\_PREFIX**: `"enrtree-root:"` = `'enrtree-root:'`
 
-#### Defined in
+Defined in: [packages/devp2p/src/dns/enr.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L35)
 
-[packages/devp2p/src/dns/enr.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L35)
-
-___
+***
 
 ### TREE\_PREFIX
 
-▪ `Static` `Readonly` **TREE\_PREFIX**: ``"enrtree:"``
+> `readonly` `static` **TREE\_PREFIX**: `"enrtree:"` = `'enrtree:'`
 
-#### Defined in
-
-[packages/devp2p/src/dns/enr.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L33)
+Defined in: [packages/devp2p/src/dns/enr.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L33)
 
 ## Methods
 
-### \_getIpProtocolConversionCodes
+### parseAndVerifyRecord()
 
-▸ `Static` **_getIpProtocolConversionCodes**(`protocolId`): `ProtocolCodes`
+> `static` **parseAndVerifyRecord**(`enr`, `common?`): [`PeerInfo`](../interfaces/PeerInfo.md)
 
-Gets relevant multiaddr conversion codes for ipv4, ipv6 and tcp, udp formats
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `protocolId` | `Uint8Array` |
-
-#### Returns
-
-`ProtocolCodes`
-
-#### Defined in
-
-[packages/devp2p/src/dns/enr.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L182)
-
-___
-
-### parseAndVerifyRecord
-
-▸ `Static` **parseAndVerifyRecord**(`enr`): [`PeerInfo`](../interfaces/PeerInfo.md)
+Defined in: [packages/devp2p/src/dns/enr.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L50)
 
 Converts an Ethereum Name Record (EIP-778) string into a PeerInfo object after validating
 its signature component with the public key encoded in the record itself.
@@ -108,23 +69,25 @@ The record components are:
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `enr` | `string` |
+##### enr
+
+`string`
+
+##### common?
+
+`Common`
 
 #### Returns
 
 [`PeerInfo`](../interfaces/PeerInfo.md)
 
-#### Defined in
+***
 
-[packages/devp2p/src/dns/enr.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L50)
+### parseAndVerifyRoot()
 
-___
+> `static` **parseAndVerifyRoot**(`root`, `publicKey`, `common?`): `string`
 
-### parseAndVerifyRoot
-
-▸ `Static` **parseAndVerifyRoot**(`root`, `publicKey`): `string`
+Defined in: [packages/devp2p/src/dns/enr.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L99)
 
 Extracts the branch subdomain referenced by a DNS tree root string after verifying
 the root record signature with its base32 compressed public key. Geth's top level DNS
@@ -132,10 +95,19 @@ domains and their public key can be found in: go-ethereum/params/bootnodes
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `root` | `string` | (See EIP-1459 for encoding details) |
-| `publicKey` | `string` | - |
+##### root
+
+`string`
+
+(See EIP-1459 for encoding details)
+
+##### publicKey
+
+`string`
+
+##### common?
+
+`Common`
 
 #### Returns
 
@@ -143,38 +115,34 @@ domains and their public key can be found in: go-ethereum/params/bootnodes
 
 subdomain subdomain to retrieve branch records from.
 
-#### Defined in
+***
 
-[packages/devp2p/src/dns/enr.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L101)
+### parseBranch()
 
-___
+> `static` **parseBranch**(`branch`): `string`[]
 
-### parseBranch
-
-▸ `Static` **parseBranch**(`branch`): `string`[]
+Defined in: [packages/devp2p/src/dns/enr.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L178)
 
 Returns subdomains listed in an ENR branch entry. These in turn lead to
 either further branch entries or ENR records.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `branch` | `string` |
+##### branch
+
+`string`
 
 #### Returns
 
 `string`[]
 
-#### Defined in
+***
 
-[packages/devp2p/src/dns/enr.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L170)
+### parseTree()
 
-___
+> `static` **parseTree**(`tree`): `ENRTreeValues`
 
-### parseTree
-
-▸ `Static` **parseTree**(`tree`): `ENRTreeValues`
+Defined in: [packages/devp2p/src/dns/enr.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L153)
 
 Returns the public key and top level domain of an ENR tree entry.
 The domain is the starting point for traversing a set of linked DNS TXT records
@@ -182,14 +150,12 @@ and the public key is used to verify the root entry record
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `tree` | `string` | (See EIP-1459 ) |
+##### tree
+
+`string`
+
+(See EIP-1459 )
 
 #### Returns
 
 `ENRTreeValues`
-
-#### Defined in
-
-[packages/devp2p/src/dns/enr.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L147)

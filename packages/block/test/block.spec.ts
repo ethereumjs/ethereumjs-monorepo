@@ -36,7 +36,7 @@ describe('[Block]: block functions', () => {
     const params = JSON.parse(JSON.stringify(paramsBlock))
     params['1']['minGasLimit'] = 3000 // 5000
     let block = createBlock({}, { params })
-    assert.equal(
+    assert.strictEqual(
       block.common.param('minGasLimit'),
       BigInt(3000),
       'should use custom parameters provided',
@@ -96,7 +96,7 @@ describe('[Block]: block functions', () => {
       },
       { common, setHardfork: true },
     )
-    assert.equal(block.common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
+    assert.strictEqual(block.common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
 
     block = createBlock(
       {
@@ -106,7 +106,7 @@ describe('[Block]: block functions', () => {
       },
       { common, setHardfork: true },
     )
-    assert.equal(
+    assert.strictEqual(
       block.common.hardfork(),
       Hardfork.Paris,
       'should use setHardfork option post merge',
@@ -221,7 +221,7 @@ describe('[Block]: block functions', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(preLondonTestDataBlocks2RLP.block2RLP)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
-    assert.equal(block.uncleHashIsValid(), true)
+    assert.strictEqual(block.uncleHashIsValid(), true)
     // @ts-expect-error -- Assigning to read-only property
     block.header.uncleHash = new Uint8Array(32)
     try {
@@ -304,7 +304,7 @@ describe('[Block]: block functions', () => {
     const block = createBlock({ header: { number: 1 } })
     assert.notEqual(block.isGenesis(), true)
     const genesisBlock = createBlock({ header: { number: 0 } })
-    assert.equal(genesisBlock.isGenesis(), true)
+    assert.strictEqual(genesisBlock.isGenesis(), true)
   })
 
   it('should test genesis hashes (mainnet default)', () => {
@@ -368,7 +368,7 @@ describe('[Block]: block functions', () => {
     const block = createBlockFromRLP(hexToBytes(preLondonTestDataBlocks2RLP.block2RLP), {
       common,
     })
-    assert.equal(typeof block.toJSON(), 'object')
+    assert.strictEqual(typeof block.toJSON(), 'object')
   })
 
   it('DAO hardfork', () => {
@@ -412,7 +412,7 @@ describe('[Block]: block functions', () => {
     )
 
     // test if difficulty defaults to 0
-    assert.equal(
+    assert.strictEqual(
       blockWithoutDifficultyCalculation.header.difficulty,
       BigInt(0),
       'header difficulty should default to 0',
@@ -434,7 +434,7 @@ describe('[Block]: block functions', () => {
       BigInt(0),
       'header difficulty should be set if difficulty header is given',
     )
-    assert.equal(
+    assert.strictEqual(
       blockWithDifficultyCalculation.header.ethashCanonicalDifficulty(genesis.header),
       blockWithDifficultyCalculation.header.difficulty,
       'header difficulty is canonical difficulty if difficulty header is given',
@@ -465,7 +465,11 @@ describe('[Block]: block functions', () => {
   it('should be able to initialize shanghai blocks with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlock({}, { common })
-    assert.equal(block.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+    assert.strictEqual(
+      block.common.hardfork(),
+      Hardfork.Shanghai,
+      'hardfork should be set to shanghai',
+    )
     assert.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
   })
 })

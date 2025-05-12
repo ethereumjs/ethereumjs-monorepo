@@ -25,24 +25,24 @@ describe('internal', () => {
     assert.isTrue(isHexString('0x0000000000000000000000000000000000000000'))
   })
   it('stripHexPrefix', () => {
-    assert.equal(stripHexPrefix('0xabc'), 'abc')
-    assert.equal(stripHexPrefix('abc'), 'abc')
+    assert.strictEqual(stripHexPrefix('0xabc'), 'abc')
+    assert.strictEqual(stripHexPrefix('abc'), 'abc')
   })
   it('padToEven', () => {
-    assert.equal(padToEven('123'), '0123')
-    assert.equal(padToEven('1234'), '1234')
+    assert.strictEqual(padToEven('123'), '0123')
+    assert.strictEqual(padToEven('1234'), '1234')
   })
   it('getBinarySize', () => {
-    assert.equal(getBinarySize('hello'), buf.byteLength)
+    assert.strictEqual(getBinarySize('hello'), buf.byteLength)
   })
   it('arrayContainsArray', () => {
-    assert.equal(arrayContainsArray([1, 2, 3], [1, 2]), true)
-    assert.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
-    assert.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
-    assert.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
+    assert.strictEqual(arrayContainsArray([1, 2, 3], [1, 2]), true)
+    assert.strictEqual(arrayContainsArray([1, 2, 3], [4, 5]), false)
+    assert.strictEqual(arrayContainsArray([1, 2, 3], [3, 5], true), true)
+    assert.strictEqual(arrayContainsArray([1, 2, 3], [4, 5], true), false)
   })
   it('toAscii', () => {
-    assert.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
+    assert.strictEqual(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
   })
   it('getKeys', () => {
     assert.deepEqual(
@@ -70,17 +70,17 @@ describe('internal', () => {
 
   describe('padToEven', () => {
     it('should pad odd-length string to even', () => {
-      assert.equal(padToEven('123'), '0123')
+      assert.strictEqual(padToEven('123'), '0123')
     })
 
     it('should not pad even-length string', () => {
-      assert.equal(padToEven('1234'), '1234')
+      assert.strictEqual(padToEven('1234'), '1234')
     })
   })
 
   describe('getBinarySize', () => {
     it('should return the correct binary size of a string', () => {
-      assert.equal(getBinarySize('Hello, World!'), 13)
+      assert.strictEqual(getBinarySize('Hello, World!'), 13)
     })
   })
 
@@ -100,17 +100,17 @@ describe('internal', () => {
 
   describe('fromUtf8', () => {
     it('should convert a UTF-8 string to a hex string', () => {
-      assert.equal(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
+      assert.strictEqual(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
 
     it('should convert a UTF-8 string with 2-byte characters to a hex string', () => {
-      assert.equal(fromUtf8('ϋύϒϗϘϢϰЂ'), '0xcf8bcf8dcf92cf97cf98cfa2cfb0d082')
+      assert.strictEqual(fromUtf8('ϋύϒϗϘϢϰЂ'), '0xcf8bcf8dcf92cf97cf98cfa2cfb0d082')
     })
   })
 
   describe('fromAscii', () => {
     it('should convert an ASCII string to a hex string', () => {
-      assert.equal(fromAscii('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
+      assert.strictEqual(fromAscii('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
   })
 

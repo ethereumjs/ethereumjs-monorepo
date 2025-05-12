@@ -1,85 +1,73 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / GenesisBlockConfig
 
 # Interface: GenesisBlockConfig
 
-## Table of contents
-
-### Properties
-
-- [baseFeePerGas](GenesisBlockConfig.md#basefeepergas)
-- [difficulty](GenesisBlockConfig.md#difficulty)
-- [excessBlobGas](GenesisBlockConfig.md#excessblobgas)
-- [extraData](GenesisBlockConfig.md#extradata)
-- [gasLimit](GenesisBlockConfig.md#gaslimit)
-- [nonce](GenesisBlockConfig.md#nonce)
-- [timestamp](GenesisBlockConfig.md#timestamp)
+Defined in: [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L48)
 
 ## Properties
 
-### baseFeePerGas
+### baseFeePerGas?
 
-• `Optional` **baseFeePerGas**: `string`
+> `optional` **baseFeePerGas**: `` `0x${string}` ``
 
-#### Defined in
+Defined in: [types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L54)
 
-[types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L49)
-
-___
+***
 
 ### difficulty
 
-• **difficulty**: `string` \| `number`
+> **difficulty**: `number` \| `` `0x${string}` ``
 
-#### Defined in
+Defined in: [types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L51)
 
-[types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L46)
+***
 
-___
+### excessBlobGas?
 
-### excessBlobGas
+> `optional` **excessBlobGas**: `` `0x${string}` ``
 
-• `Optional` **excessBlobGas**: `string`
+Defined in: [types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L55)
 
-#### Defined in
-
-[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L50)
-
-___
+***
 
 ### extraData
 
-• **extraData**: `string`
+> **extraData**: `` `0x${string}` ``
 
-#### Defined in
+Defined in: [types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L53)
 
-[types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L48)
-
-___
+***
 
 ### gasLimit
 
-• **gasLimit**: `string` \| `number`
+> **gasLimit**: `number` \| `` `0x${string}` ``
 
-#### Defined in
+Defined in: [types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L50)
 
-[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L45)
-
-___
+***
 
 ### nonce
 
-• **nonce**: `string`
+> **nonce**: `` `0x${string}` ``
 
-#### Defined in
+Defined in: [types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L52)
 
-[types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L47)
+***
 
-___
+### requestsHash?
 
-### timestamp
+> `optional` **requestsHash**: `` `0x${string}` ``
 
-• `Optional` **timestamp**: `string`
+Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L56)
 
-#### Defined in
+***
 
-[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L44)
+### timestamp?
+
+> `optional` **timestamp**: `` `0x${string}` ``
+
+Defined in: [types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L49)

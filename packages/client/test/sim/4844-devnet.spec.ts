@@ -97,7 +97,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       }
     }
 
-    assert.equal(
+    assert.strictEqual(
       eth2kzgs[0],
       txResult.tx.kzgCommitments![0],
       'found expected blob commitments on CL',
@@ -211,7 +211,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
     const multiPeer = Client.http({ port: 8947 })
     const res = await multiPeer.request('eth_syncing', [], 2.0)
     console.log(res)
-    assert.equal(res.result, 'false', 'multipeer is up and running')
+    assert.strictEqual(res.result, 'false', 'multipeer is up and running')
   })*/
 
   it('should reset td', async () => {

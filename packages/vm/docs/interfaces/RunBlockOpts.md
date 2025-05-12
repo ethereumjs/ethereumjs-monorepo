@@ -1,42 +1,32 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / RunBlockOpts
 
 # Interface: RunBlockOpts
 
+Defined in: [vm/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L252)
+
 Options for running a block.
-
-## Table of contents
-
-### Properties
-
-- [block](RunBlockOpts.md#block)
-- [clearCache](RunBlockOpts.md#clearcache)
-- [generate](RunBlockOpts.md#generate)
-- [reportPreimages](RunBlockOpts.md#reportpreimages)
-- [root](RunBlockOpts.md#root)
-- [setHardfork](RunBlockOpts.md#sethardfork)
-- [skipBalance](RunBlockOpts.md#skipbalance)
-- [skipBlockValidation](RunBlockOpts.md#skipblockvalidation)
-- [skipHardForkValidation](RunBlockOpts.md#skiphardforkvalidation)
-- [skipHeaderValidation](RunBlockOpts.md#skipheadervalidation)
-- [skipNonce](RunBlockOpts.md#skipnonce)
 
 ## Properties
 
 ### block
 
-• **block**: `Block`
+> **block**: `Block`
+
+Defined in: [vm/src/types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L256)
 
 The @ethereumjs/block to process
 
-#### Defined in
+***
 
-[vm/src/types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L220)
+### clearCache?
 
-___
+> `optional` **clearCache**: `boolean`
 
-### clearCache
-
-• `Optional` **clearCache**: `boolean`
+Defined in: [vm/src/types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L268)
 
 Clearing the StateManager cache.
 
@@ -44,131 +34,116 @@ If state root is not reset for whatever reason this can be set to `false` for be
 
 Default: true
 
-#### Defined in
+***
 
-[vm/src/types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L232)
+### generate?
 
-___
+> `optional` **generate**: `boolean`
 
-### generate
-
-• `Optional` **generate**: `boolean`
+Defined in: [vm/src/types.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L275)
 
 Whether to generate the stateRoot and other related fields.
 If `true`, `runBlock` will set the fields `stateRoot`, `receiptTrie`, `gasUsed`, and `bloom` (logs bloom) after running the block.
 If `false`, `runBlock` throws if any fields do not match.
 Defaults to `false`.
 
-#### Defined in
+***
 
-[vm/src/types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L239)
+### parentStateRoot?
 
-___
+> `optional` **parentStateRoot**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### reportPreimages
+Defined in: [vm/src/types.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L280)
 
-• `Optional` **reportPreimages**: `boolean`
+The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
+
+***
+
+### reportPreimages?
+
+> `optional` **reportPreimages**: `boolean`
+
+Defined in: [vm/src/types.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L321)
 
 If true, adds a hashedKey -> preimages mapping of all touched accounts
 to the `RunTxResult` returned.
 
-#### Defined in
+***
 
-[vm/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L282)
+### root?
 
-___
+> `optional` **root**: `Uint8Array`\<`ArrayBufferLike`\>
 
-### root
-
-• `Optional` **root**: `Uint8Array`
+Defined in: [vm/src/types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L260)
 
 Root of the state trie
 
-#### Defined in
+***
 
-[vm/src/types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L224)
+### setHardfork?
 
-___
+> `optional` **setHardfork**: `boolean`
 
-### setHardfork
-
-• `Optional` **setHardfork**: `boolean` \| `BigIntLike`
+Defined in: [vm/src/types.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L315)
 
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
 
-Additionally it is possible to pass in a specific TD value to support live-Merge-HF
-transitions. Note that this should only be needed in very rare and specific scenarios.
-
 Default: `false` (HF is set to whatever default HF is set by the Common instance)
 
-#### Defined in
+***
 
-[vm/src/types.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L276)
+### skipBalance?
 
-___
+> `optional` **skipBalance**: `boolean`
 
-### skipBalance
-
-• `Optional` **skipBalance**: `boolean`
+Defined in: [vm/src/types.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L308)
 
 If true, checks the balance of the `from` account for the transaction and sets its
 balance equal equal to the upfront cost (gas limit * gas price + transaction value)
 
-#### Defined in
+***
 
-[vm/src/types.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L266)
+### skipBlockValidation?
 
-___
+> `optional` **skipBlockValidation**: `boolean`
 
-### skipBlockValidation
-
-• `Optional` **skipBlockValidation**: `boolean`
+Defined in: [vm/src/types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L287)
 
 If true, will skip "Block validation":
 Block validation validates the header (with respect to the blockchain),
 the transactions, the transaction trie and the uncle hash.
 
-#### Defined in
+***
 
-[vm/src/types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L245)
+### skipHardForkValidation?
 
-___
+> `optional` **skipHardForkValidation**: `boolean`
 
-### skipHardForkValidation
-
-• `Optional` **skipHardForkValidation**: `boolean`
+Defined in: [vm/src/types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L292)
 
 If true, skips the hardfork validation of vm, block
 and tx
 
-#### Defined in
+***
 
-[vm/src/types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L250)
+### skipHeaderValidation?
 
-___
+> `optional` **skipHeaderValidation**: `boolean`
 
-### skipHeaderValidation
-
-• `Optional` **skipHeaderValidation**: `boolean`
+Defined in: [vm/src/types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L299)
 
 if true, will skip "Header validation"
 If the block has been picked from the blockchain to be executed,
 header has already been validated, and can be skipped especially when
 consensus of the chain has moved ahead.
 
-#### Defined in
+***
 
-[vm/src/types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L257)
+### skipNonce?
 
-___
+> `optional` **skipNonce**: `boolean`
 
-### skipNonce
-
-• `Optional` **skipNonce**: `boolean`
+Defined in: [vm/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L303)
 
 If true, skips the nonce check
-
-#### Defined in
-
-[vm/src/types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L261)

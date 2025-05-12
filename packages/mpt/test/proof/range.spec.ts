@@ -106,10 +106,10 @@ describe('simple merkle range proofs generation and verification', () => {
     for (let i = 0; i < 10; i++) {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
-      assert.equal(await verify(trie, entries, start, end), end !== entries.length - 1)
+      assert.strictEqual(await verify(trie, entries, start, end), end !== entries.length - 1)
     }
 
-    assert.equal(await verify(trie, entries, entries.length - 2, entries.length - 1), false)
+    assert.strictEqual(await verify(trie, entries, entries.length - 2, entries.length - 1), false)
   })
 
   it('create a non-existent range proof and verify it', async () => {
@@ -135,7 +135,7 @@ describe('simple merkle range proofs generation and verification', () => {
         continue
       }
 
-      assert.equal(
+      assert.strictEqual(
         await verify(trie, entries, start, end, startKey, endKey),
         end !== entries.length - 1,
       )
@@ -144,7 +144,7 @@ describe('simple merkle range proofs generation and verification', () => {
     // Special case, two edge proofs for two edge key.
     const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
     const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
-    assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
+    assert.strictEqual(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
   })
 
   it('create invalid non-existent range proof and verify it', async () => {
@@ -157,7 +157,7 @@ describe('simple merkle range proofs generation and verification', () => {
     const decreasedStartKey = decreaseKey(startKey)!
     const increasedEndKey = increaseKey(endKey)!
 
-    assert.equal(await verify(trie, entries, start, end, decreasedStartKey, endKey), true)
+    assert.strictEqual(await verify(trie, entries, start, end, decreasedStartKey, endKey), true)
     try {
       await verify(trie, entries, start + 5, end, decreasedStartKey)
       assert.fail()
@@ -165,7 +165,7 @@ describe('simple merkle range proofs generation and verification', () => {
       // Ignore
     }
 
-    assert.equal(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
+    assert.strictEqual(await verify(trie, entries, start, end, startKey, increasedEndKey), true)
     try {
       await verify(trie, entries, start, end + 5, startKey, increasedEndKey)
       assert.fail()
@@ -185,16 +185,16 @@ describe('simple merkle range proofs generation and verification', () => {
 
     // One element with existent edge proof, both edge proofs
     // point to the SAME key.
-    assert.equal(await verify(trie, entries, start, start, startKey), true)
+    assert.strictEqual(await verify(trie, entries, start, start, startKey), true)
 
     // One element with left non-existent edge proof
-    assert.equal(await verify(trie, entries, start, start, decreasedStartKey), true)
+    assert.strictEqual(await verify(trie, entries, start, start, decreasedStartKey), true)
 
     // One element with right non-existent edge proof
-    assert.equal(await verify(trie, entries, start, start, undefined, increasedEndKey), true)
+    assert.strictEqual(await verify(trie, entries, start, start, undefined, increasedEndKey), true)
 
     // One element with two non-existent edge proofs
-    assert.equal(
+    assert.strictEqual(
       await verify(trie, entries, start, start, decreasedStartKey, increasedEndKey),
       true,
     )
@@ -205,13 +205,13 @@ describe('simple merkle range proofs generation and verification', () => {
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
     const tinyStartKey = hexToBytes(`0x${'00'.repeat(32)}`)
-    assert.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
+    assert.strictEqual(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
   it('create all element range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
-    assert.equal(
+    assert.strictEqual(
       await verifyMerkleRangeProof(
         trie.root(),
         null,
@@ -224,10 +224,10 @@ describe('simple merkle range proofs generation and verification', () => {
     )
 
     // With edge proofs, it should still work.
-    assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
+    assert.strictEqual(await verify(trie, entries, 0, entries.length - 1), false)
 
     // Even with non-existent edge proofs, it should still work.
-    assert.equal(
+    assert.strictEqual(
       await verify(
         trie,
         entries,
@@ -246,7 +246,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const end of cases) {
-      assert.equal(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
+      assert.strictEqual(await verify(trie, entries, 0, end, startKey), end !== entries.length - 1)
     }
   })
 
@@ -256,7 +256,10 @@ describe('simple merkle range proofs generation and verification', () => {
 
     const cases = [0, 1, 200, entries.length - 1]
     for (const start of cases) {
-      assert.equal(await verify(trie, entries, start, entries.length - 1, undefined, endKey), false)
+      assert.strictEqual(
+        await verify(trie, entries, start, entries.length - 1, undefined, endKey),
+        false,
+      )
     }
   })
 
@@ -467,7 +470,7 @@ describe('simple merkle range proofs generation and verification', () => {
         endKey = entries[end][0]
       }
 
-      assert.equal(await verify(trie, entries, start, end, startKey, endKey), expect)
+      assert.strictEqual(await verify(trie, entries, start, end, startKey, endKey), expect)
     }
   })
 
@@ -479,6 +482,6 @@ describe('simple merkle range proofs generation and verification', () => {
       bloatedProof = bloatedProof.concat(await createMerkleProof(trie, entries[i][0]))
     }
 
-    assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
+    assert.strictEqual(await verify(trie, entries, 0, entries.length - 1), false)
   })
 })

@@ -54,7 +54,7 @@ describe('insert', () => {
       tree2.root(Uint8Array.from([1, 2, 3]))
       assert.fail('Should have thrown an error')
     } catch (e: any) {
-      assert.equal(e.message, `Invalid root length. Roots are ${tree['_hashLen']} bytes`)
+      assert.strictEqual(e.message, `Invalid root length. Roots are ${tree['_hashLen']} bytes`)
     }
 
     // TODO: Determine if this is the correct behavior
@@ -83,7 +83,7 @@ describe('insert', () => {
     )
 
     // Assert that the computed state root matches the expected hash.
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(tree.root()),
       '0x694545468677064fd833cddc8455762fe6b21c6cabe2fc172529e0f573181cd5',
     )
@@ -117,7 +117,7 @@ describe('insert', () => {
     assert.isDefined(retrievedValue2, 'Value for key2 should exist')
 
     // Check that the computed state root matches the expected hash.
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(tree.root()),
       '0x85fc622076752a6fcda2c886c18058d639066a83473d9684704b5a29455ed2ed',
     )
@@ -355,7 +355,7 @@ describe('insert', () => {
       await tree1.revert()
       assert.fail('Should have thrown an error')
     } catch (e: any) {
-      assert.equal(e.message, 'trying to revert when not checkpointed')
+      assert.strictEqual(e.message, 'trying to revert when not checkpointed')
     }
 
     await tree1.put(stem3, [index3], [value3])
@@ -370,7 +370,7 @@ describe('insert', () => {
       await tree1.commit()
       assert.fail('Should have thrown an error')
     } catch (e: any) {
-      assert.equal(e.message, 'trying to commit when not checkpointed')
+      assert.strictEqual(e.message, 'trying to commit when not checkpointed')
     }
   })
 
@@ -482,7 +482,7 @@ describe('insert', () => {
 
     const leafValues = await dumpLeafValues(tree, tree.root())
     assert.isDefined(leafValues)
-    assert.equal(leafValues!.length, 100)
+    assert.strictEqual(leafValues!.length, 100)
 
     const expectedValues = keyValuePairs.map(({ value }) => bytesToHex(value)).sort()
     const actualValues = leafValues!.map(([_, value]) => value).sort()
@@ -495,7 +495,7 @@ describe('insert', () => {
     const nodeHashes = await dumpNodeHashes(tree, tree.root())
     assert.isDefined(nodeHashes)
     expect(nodeHashes!.length).toBeGreaterThan(100)
-    assert.equal(nodeHashes![0][1], bytesToHex(tree.root()))
+    assert.strictEqual(nodeHashes![0][1], bytesToHex(tree.root()))
   })
 
   it('should update value when inserting a duplicate key', async () => {

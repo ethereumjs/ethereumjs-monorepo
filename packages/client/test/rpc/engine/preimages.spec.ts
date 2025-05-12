@@ -100,7 +100,7 @@ async function runBlock(
   const executeBlock = createBlock(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
-  assert.equal(res.result.status, 'VALID', 'valid status should be received')
+  assert.strictEqual(res.result.status, 'VALID', 'valid status should be received')
   return executePayload
 }
 
@@ -126,8 +126,8 @@ describe(`valid verkle network setup`, async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
     const block0 = res.result
-    assert.equal(block0.hash, genesisBlockHash)
-    assert.equal(block0.stateRoot, genesisStateRoot)
+    assert.strictEqual(block0.hash, genesisBlockHash)
+    assert.strictEqual(block0.stateRoot, genesisStateRoot)
   })
 
   // build some testcases uses some transactions from kaustinen2 which have

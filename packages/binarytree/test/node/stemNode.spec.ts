@@ -28,7 +28,7 @@ describe('StemBinaryNode', () => {
     // Decode the node using the provided decodeBinaryNode helper.
     const decoded = decodeBinaryNode(serialized)
     // Verify that the decoded node is of type Stem.
-    assert.equal(decoded.type, BinaryNodeType.Stem, 'Node type should be Stem')
+    assert.strictEqual(decoded.type, BinaryNodeType.Stem, 'Node type should be Stem')
 
     // Cast the decoded node to StemBinaryNode.
     const recovered = decoded as StemBinaryNode
@@ -37,7 +37,7 @@ describe('StemBinaryNode', () => {
     assert.isTrue(equalsBytes(recovered.stem, stem), 'Stem should round-trip correctly')
 
     // Verify that the values array has the correct length.
-    assert.equal(recovered.values.length, 256, 'Values array should have 256 elements')
+    assert.strictEqual(recovered.values.length, 256, 'Values array should have 256 elements')
 
     // Check that the non-null values round-trip.
     assert.isDefined(recovered.values[3], 'Value at index 3 should exist')

@@ -56,8 +56,8 @@ describe('[StorageFetcher]', async () => {
     } as StorageFetcherOptions)
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
-    assert.equal(fetcher['in'].length, 0, 'No jobs have yet been added')
-    assert.equal(fetcher['storageRequests'].length, 1, 'one storageRequests have been added')
+    assert.strictEqual(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.strictEqual(fetcher['storageRequests'].length, 1, 'one storageRequests have been added')
     fetcher.enqueueByStorageRequestList([
       {
         accountHash: hexToBytes(
@@ -70,9 +70,9 @@ describe('[StorageFetcher]', async () => {
         count: BigInt(2) ** BigInt(256) - BigInt(1),
       },
     ])
-    assert.equal(fetcher['in'].length, 1, 'A new task has been queued')
+    assert.strictEqual(fetcher['in'].length, 1, 'A new task has been queued')
     const job = fetcher['in'].peek()
-    assert.equal(job?.task.storageRequests.length, 2, 'two storageRequests are added to job')
+    assert.strictEqual(job?.task.storageRequests.length, 2, 'two storageRequests are added to job')
 
     void fetcher.fetch()
     await wait(100)
@@ -174,7 +174,7 @@ describe('[StorageFetcher]', async () => {
     const job = fetcher['in'].peek()
 
     fetcher.process(job!, StorageDataResponse)
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(fetcher.accountToHighestKnownHash.get(accountHashString)),
       JSON.stringify(utf8ToBytes(highestReceivedhash)),
       'should set new highest known hash',
@@ -182,7 +182,7 @@ describe('[StorageFetcher]', async () => {
     job!.task.storageRequests[0]['first'] = BigInt(3)
     job!.task.storageRequests[0]['count'] = BigInt(4)
     const result = await fetcher.request(job!)
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(result?.[0]),
       JSON.stringify({ skipped: true }),
       'should skip fetching task with limit lower than highest known key hash',
@@ -190,7 +190,7 @@ describe('[StorageFetcher]', async () => {
 
     StorageDataResponse.completed = true
     fetcher.process(job!, StorageDataResponse)
-    assert.equal(
+    assert.strictEqual(
       fetcher.accountToHighestKnownHash.get(accountHashString),
       undefined,
       'should delete highest known hash for completed job',
@@ -230,9 +230,9 @@ describe('[StorageFetcher]', async () => {
     fetcher.enqueueTask(task as any)
     const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, StorageDataResponse)
-    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.[0].length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.[0].length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
     const remainingStorageData: any = [
       [
         [{ hash: utf8ToBytes(''), body: utf8ToBytes('') }],
@@ -242,7 +242,7 @@ describe('[StorageFetcher]', async () => {
     ]
     remainingStorageData.completed = true
     results = fetcher.process(job as any, remainingStorageData)
-    assert.equal((results as any)[0].length, 5, 'Should return full results')
+    assert.strictEqual((results as any)[0].length, 5, 'Should return full results')
   })
 
   it('should request correctly', async () => {
@@ -457,10 +457,10 @@ describe('[StorageFetcher]', async () => {
     results!.completed = true
     results = fetcher.process(job as any, results!)
     assert.isDefined(results, 'Response should be processed correctly')
-    assert.equal(results![0].length, 3, '3 results should be there with dummy partials')
+    assert.strictEqual(results![0].length, 3, '3 results should be there with dummy partials')
     // remove out the dummy partials
     results![0].splice(0, 2)
-    assert.equal(results![0].length, 1, 'valid slot in results')
+    assert.strictEqual(results![0].length, 1, 'valid slot in results')
 
     try {
       await fetcher.store(results! as any)
@@ -515,6 +515,6 @@ describe('[StorageFetcher]', async () => {
       count: BigInt(10),
     } as StorageFetcherOptions)
     fetcher['pool'].idle = vi.fn(() => 'peer0') as any
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 })

@@ -33,7 +33,7 @@ it('should handle bad result', () => {
   fetcher.wait = td.func<FetcherTest['wait']>()
   td.when(fetcher.wait()).thenResolve(undefined)
   fetcher['success'](job, undefined)
-  assert.equal(fetcher['in'].length, 1, 'enqueued job')
+  assert.strictEqual(fetcher['in'].length, 1, 'enqueued job')
   setTimeout(() => assert.isTrue(job.peer.idle, 'peer idled'), 10)
 })
 
@@ -44,10 +44,10 @@ it('should handle failure', () => {
   fetcher['running'] = true
   fetcher.next = td.func<FetcherTest['next']>()
   config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
-    assert.equal(err.message, 'err0', 'got error'),
+    assert.strictEqual(err.message, 'err0', 'got error'),
   )
   fetcher['failure'](job as Job<any, any, any>, new Error('err0'))
-  assert.equal(fetcher['in'].length, 1, 'enqueued job')
+  assert.strictEqual(fetcher['in'].length, 1, 'enqueued job')
 })
 
 describe('should handle expiration', async () => {
@@ -84,7 +84,7 @@ describe('should handle expiration', async () => {
       setTimeout(resolve, 10)
     })
 
-    assert.equal(fetcher['in'].length, 1, 'enqueued job')
+    assert.strictEqual(fetcher['in'].length, 1, 'enqueued job')
     assert.deepEqual((job as any).state, 'expired', 'expired job')
   })
 })
@@ -102,11 +102,11 @@ describe('should handle queue management', () => {
     fetcher['in'].insert(job1 as any)
     fetcher['in'].insert(job2 as any)
     fetcher['in'].insert(job3 as any)
-    assert.equal(fetcher['in'].length, 3, 'queue filled')
+    assert.strictEqual(fetcher['in'].length, 3, 'queue filled')
   })
   it('should clear queue', () => {
     fetcher.clear()
-    assert.equal(fetcher['in'].length, 0, 'queue cleared')
+    assert.strictEqual(fetcher['in'].length, 0, 'queue cleared')
   })
   const job4 = { index: 3 }
   const job5 = { index: 4 }
@@ -140,7 +140,7 @@ describe('should re-enqueue on a non-fatal error', () => {
   })
   fetcher['success'](job, ['something'])
   it('should step back', () => {
-    assert.equal(
+    assert.strictEqual(
       fetcher['in'].peek()?.task.first,
       BigInt(1),
       'should step back for safeReorgDistance',
@@ -158,8 +158,8 @@ describe('should handle fatal errors correctly', () => {
   fetcher['in'].insert(job)
   fetcher.error({ name: 'VeryBadError', message: 'Something very bad happened' }, job, true)
   it('should handle fatal error', () => {
-    assert.equal(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
-    assert.equal(fetcher['in'].length, 0, 'fatal error clears job queue')
+    assert.strictEqual(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
+    assert.strictEqual(fetcher['in'].length, 0, 'fatal error clears job queue')
   })
   fetcher.clear()
 })

@@ -35,7 +35,7 @@ describe('VM.runCode: initial program counter', () => {
       try {
         const result = await evm.runCode!(runCodeArgs)
         if (testData.resultPC !== undefined) {
-          assert.equal(
+          assert.strictEqual(
             result.runState?.programCounter,
             testData.resultPC,
             `should start the execution at the specified pc or 0, testCases[${i}]`,
@@ -47,7 +47,7 @@ describe('VM.runCode: initial program counter', () => {
 
       if (testData.error !== undefined) {
         err = err?.message ?? 'no error thrown'
-        assert.equal(err, testData.error, 'error message should match')
+        assert.strictEqual(err, testData.error, 'error message should match')
         err = false
       }
 
@@ -72,7 +72,7 @@ describe('VM.runCode: interpreter', () => {
     } catch {
       assert.fail('should not throw error')
     }
-    assert.equal(result?.exceptionError?.errorType, EVMErrorTypeString)
+    assert.strictEqual(result?.exceptionError?.errorType, EVMErrorTypeString)
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 

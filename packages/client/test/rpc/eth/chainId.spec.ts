@@ -11,7 +11,7 @@ describe(method, () => {
     const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
-    assert.equal(typeof res.result, 'string', 'chainId should be a string')
+    assert.strictEqual(typeof res.result, 'string', 'chainId should be a string')
   })
 
   it('returns 1 for Mainnet', async () => {
@@ -19,7 +19,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, '0x1', 'should return chainId 1')
+    assert.strictEqual(res.result, '0x1', 'should return chainId 1')
   })
 
   it('returns 5 for Goerli', async () => {
@@ -30,6 +30,6 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, '0x5', 'should return chainId 5')
+    assert.strictEqual(res.result, '0x5', 'should return chainId 5')
   })
 })
