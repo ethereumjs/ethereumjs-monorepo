@@ -366,6 +366,14 @@ export const eipsDict: EIPsDict = {
     */
     requiredEIPs: [2929],
   },
+  /***
+   * Description: Precompile for secp256r1 Curve Support
+   * URL: https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md
+   * Status: Final
+   */
+  7212: {
+    minimumHardfork: Hardfork.Prague,
+  },
   /**
    * Description : Increase the MAX_EFFECTIVE_BALANCE -> Execution layer triggered consolidations (experimental)
    * URL         : https://eips.ethereum.org/EIPS/eip-7251
