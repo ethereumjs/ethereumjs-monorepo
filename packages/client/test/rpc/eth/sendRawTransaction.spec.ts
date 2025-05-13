@@ -1,7 +1,12 @@
 import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
+import {
+  NetworkWrapperType,
+  createBlob4844Tx,
+  createFeeMarket1559TxFromRLP,
+  createLegacyTx,
+} from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -248,6 +253,7 @@ describe(method, () => {
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -263,6 +269,7 @@ describe(method, () => {
 
     const replacementTx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
