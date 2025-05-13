@@ -40,7 +40,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUTS), opts.gasLimit)
   }
 
-  const isValid = p256.verify({ r, s }, hash, new p256.ProjectivePoint(x, y, BIGINT_0).toHex())
+  const isValid = p256.verify({ r, s }, hash, p256.ProjectivePoint.fromAffine({ x, y }).toHex())
 
   const returnValue = new Uint8Array(32)
   returnValue[0] = isValid ? 1 : 0
