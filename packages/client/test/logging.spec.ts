@@ -33,6 +33,7 @@ describe('[Logging]', () => {
     }
   })
 
+  // must be run with `FORCE_COLOR='1' npx vitest test/logging.spec.ts`
   it('should colorize key=value pairs', () => {
     if (process.env.GITHUB_ACTION !== undefined) {
       assert.isTrue(true, 'no color functionality in ci')
