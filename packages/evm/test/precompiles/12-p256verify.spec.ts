@@ -46,7 +46,6 @@ describe('Precompiles: p256 verify', () => {
       gasLimit: 0xfffffffffn,
       _EVM: evm,
       common,
-      _debug: (msg) => console.log(msg),
     }
 
     const res = await p256Verify(opts)
@@ -98,12 +97,8 @@ describe('Precompiles: p256 verify', () => {
     const x = Uint8Array.from(coseKey.get(-2))
     const y = Uint8Array.from(coseKey.get(-3))
 
-    const hash = sha256(
-      concatBytes(
-        base64urlnopad.decode(webAuthnInput.authenticatorData),
-        base64urlnopad.decode(webAuthnInput.clientDataJson),
-      ),
-    )
+    const hash = sha256(base64urlnopad.decode(webAuthnInput.clientDataJson))
+
     const sig = p256.Signature.fromDER(base64urlnopad.decode(webAuthnInput.signature))
 
     const webAuthnInputOpts: PrecompileInput = {
@@ -123,7 +118,7 @@ describe('Precompiles: p256 verify', () => {
     assert.strictEqual(
       webAuthnInputRes.returnValue[0],
       1,
-      'p256 verify precompile verifies webauthn inputs',
+      'p256-verify precompile verifies webauthn inputs',
     )
   })
 })
