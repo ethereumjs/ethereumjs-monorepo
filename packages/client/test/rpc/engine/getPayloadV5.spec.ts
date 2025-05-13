@@ -43,7 +43,7 @@ const validPayload = [
   },
 ]
 
-const method = 'engine_getPayloadV3'
+const method = 'engine_getPayloadV5'
 
 describe(method, () => {
   it('call with known payload', async () => {
@@ -148,7 +148,7 @@ describe(method, () => {
       }
     }
 
-    res = await rpc.request('engine_getPayloadV3', [payloadId])
+    res = await rpc.request('engine_getPayloadV5', [payloadId])
 
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
