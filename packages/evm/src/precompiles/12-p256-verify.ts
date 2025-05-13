@@ -21,6 +21,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.data.length !== 160) {
+    opts._debug?.(`${pName} failed: Invalid input length: expeted 160, got ${opts.data.length}`)
     return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
@@ -40,7 +41,11 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
     return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUTS), opts.gasLimit)
   }
 
-  const isValid = p256.verify({ r, s }, hash, p256.ProjectivePoint.fromAffine({ x, y }).toHex())
+  const isValid = p256.verify(
+    { r, s },
+    hash.slice(2),
+    p256.ProjectivePoint.fromAffine({ x, y }).toHex(),
+  )
 
   const returnValue = new Uint8Array(32)
   returnValue[0] = isValid ? 1 : 0
