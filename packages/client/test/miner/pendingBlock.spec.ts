@@ -3,7 +3,12 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
-import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
+import {
+  NetworkWrapperType,
+  createBlob4844Tx,
+  createFeeMarket1559Tx,
+  createLegacyTx,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -393,6 +398,7 @@ describe('[PendingBlock]', async () => {
 
       const txA01 = createBlob4844Tx(
         {
+          networkWrapperVersion: NetworkWrapperType.EIP4844,
           blobVersionedHashes: txBlobVersionedHashes,
           blobs: txBlobs,
           kzgCommitments: txCommitments,
@@ -493,6 +499,7 @@ describe('[PendingBlock]', async () => {
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         kzgCommitments: commitments,
         kzgProofs: proofs,
