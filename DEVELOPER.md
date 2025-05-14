@@ -140,13 +140,41 @@ Each package includes:
 - `eslint.config.mjs` - package specific ESLint configuration that extends the repository wide config
 
 
-#### Lint Commands
+#### Commands
+
+Commands area available on both root and package levels.
 
 ```json
 {
   "scripts": {
     "lint": "../../config/cli/lint.sh",
     "lint:fix": "../../config/cli/lint-fix.sh"
+  }
+}
+```
+
+### Spellcheck
+
+We use [cspell](https://github.com/streetsidesoftware/cspell) to do spell checks, both to detect spelling mistakes in comments and make naming within the monorepo code more consistent (and so to e.g. always use `EVM` instead of an `Evm`/`EVM` mix).
+
+#### Configuration Files
+
+The following two configuration files include a list of allowed words (add yours if you have one necessary) as well as some additional configuration, separate for docs and code.
+
+- `config/cspell-md.json` | `Markdown`
+- `config/cspell-ts.json` | `TypeScript`
+
+#### Commands
+
+Commands area available on both root and package levels.
+
+```json
+{
+  "scripts": {
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json ...",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json ..."
   }
 }
 ```
