@@ -17,6 +17,9 @@ It is intended to be both an entrypoint for external contributors as well as a r
 - [Advanced Topics](#advanced-topics)
   - [E2E Testing](#e2e-testing)
   - [Cross-Package Development](#cross-package-development)
+- [Additional Docs](#additional-docs)
+  - [VM](#vm)
+  - [Client](#client)
 
 ## Monorepo
 
@@ -218,3 +221,14 @@ This feature makes it easier to develop across multiple packages simultaneously.
 
 Common development dependencies (e.g. `eslint`, `biome`) are defined in the root `package.json`. 
 
+## Additional Docs
+
+There are selected additional developer docs available to get more deep on certain topics. The following is an overview.
+
+### VM
+
+[VM Docs](./packages/vm/DEVELOPER.md) for testing, debugging and VM/EVM profiling.
+
+### Client
+
+[Client Docs](./packages/client/DEVELOPER.md) for running Hive tests.
