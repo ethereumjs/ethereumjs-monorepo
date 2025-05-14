@@ -32,15 +32,13 @@ The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using
 
 - `/packages` - Contains all EthereumJS packages
 - `/config` - Shared configuration files and scripts
-- `/ethereum-tests` - Git submodule with Ethereum test vectors
+- `packages/ethereum-tests` - Git submodule with Ethereum test vectors
 
 ### Scripts
 
 The `./config/cli` directory contains helper scripts referenced in package.json files:
 
 - `coverage.sh` - Runs test coverage
-- `lint.sh` - Checks code style
-- `lint-fix.sh` - Automatically fixes code style issues
 - `ts-build.sh` - Builds TypeScript for production
 - `ts-compile.sh` - Compiles TypeScript for development
 
@@ -49,17 +47,17 @@ The `./config/cli` directory contains helper scripts referenced in package.json 
 #### Common Commands
 
 - **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
-- **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
-- **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
+- **Lint code**: `npm run lint` - Check code style with ESLint v9 and Biome
+- **Fix linting issues**: `npm run lint:fix` - Automatically fix style issues
 - **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
-- **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
+- **Build documentation**: `npm run docs:build` - Generate documentation for all packages
 
 #### Working on a Specific Package
 
 To focus on a single package (e.g., VM):
 
 1. Navigate to the package directory: `cd packages/vm`
-2. Run tests: `npm test`
+2. Run tests: `npm run test`
 3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
 4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
 
@@ -69,7 +67,7 @@ All packages include a `typescript` entry in the exports map that allows direct 
 
 - Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
 - Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
-- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
+- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript' (if running Node 22+)`
 
 #### Windows Users Note
 
@@ -145,18 +143,12 @@ Each package includes:
 
 Commands area available on both root and package levels.
 
-```json
-{
-  "scripts": {
-    "lint": "../../config/cli/lint.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh"
-  }
-}
-```
+Run `npm run lint` to find lint issues and `npm run lint:fix` to fix fixable lintable issues.
+
 
 ### Spellcheck
 
-We use [cspell](https://github.com/streetsidesoftware/cspell) to do spell checks, both to detect spelling mistakes in comments and make naming within the monorepo code more consistent (and so to e.g. always use `EVM` instead of an `Evm`/`EVM` mix).
+We use [cspell](https://github.com/streetsidesoftware/cspell) to do spellchecking. 
 
 #### Configuration Files
 
@@ -235,16 +227,6 @@ npm unlink
 ```
 
 When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
-
-### Cross-Package Development
-
-All packages include a `typescript` entry in their exports map to enable direct use of TypeScript sources without recompilation:
-
-- For tests: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
-- For scripts: `tsx --conditions=typescript myScript.ts`
-- Via environment variable: `NODE_OPTIONS='--conditions=typescript'`
-
-This feature makes it easier to develop across multiple packages simultaneously.
 
 ### Shared Dependencies
 
