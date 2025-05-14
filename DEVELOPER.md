@@ -140,6 +140,8 @@ npx vitest test/path/to/test.spec.ts
 
 #### Browser
 
+We use `vitest` with `playwright` to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+
 ## Advanced Topics
 
 #### Quick Summary
@@ -173,6 +175,8 @@ npm unlink --no-save @ethereumjs/package-name
 # In the package directory
 npm unlink
 ```
+
+When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
 
 ### Cross-Package Development
 

@@ -82,43 +82,6 @@ npm install
 
 See our [Development docs](./DEVELOPER.md) for an overview on things like tooling or configuration if you want to contribute to the EthereumJS monorepo. 🙂
 
-
-### Testing Packages with an external project
-
-To test changes locally before publishing, use npm link:
-
-1. **Build the package you want to test**:
-
-```sh
-cd packages/vm  # Or another package
-npm run build
-```
-
-2. **Link the package globally**:
-
-```sh
-npm link
-```
-
-3. **In your test project, link to the local package**:
-
-```sh
-cd path/to/your/project
-npm link @ethereumjs/vm  # Use the appropriate package name
-```
-
-4. **When you're done, unlink the package**:
-
-```sh
-# In your test project
-npm unlink @ethereumjs/vm
-
-# In the package directory
-npm unlink
-```
-
-When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
-
 ### Windows Users Note
 
 Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
