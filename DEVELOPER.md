@@ -30,9 +30,9 @@ The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using
 - `/config` - Shared configuration files and scripts
 - `/ethereum-tests` - Git submodule with Ethereum test vectors
 
-## Workflow
+### Workflow
 
-### Common Commands
+#### Common Commands
 
 - **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
 - **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome

@@ -96,12 +96,6 @@ To reset this setting:
 npm config delete script-shell
 ```
 
-### Configuration Guide
-
-The [config](config/) folder gives an overview on shared configuration and scripts between packages.
-
-You can find more detailed information on the configuration of different tooling and language parts (TypeScript, linting, testing,...) in the specific [Configuration Guide](./config/README.md).
-
 ## Branches
 
 ### Overview
