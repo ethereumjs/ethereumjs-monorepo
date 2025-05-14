@@ -30,6 +30,16 @@ The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using
 - `/config` - Shared configuration files and scripts
 - `/ethereum-tests` - Git submodule with Ethereum test vectors
 
+### Scripts
+
+The `./config/cli` directory contains helper scripts referenced in package.json files:
+
+- `coverage.sh` - Runs test coverage
+- `lint.sh` - Checks code style
+- `lint-fix.sh` - Automatically fixes code style issues
+- `ts-build.sh` - Builds TypeScript for production
+- `ts-compile.sh` - Compiles TypeScript for development
+
 ### Workflow
 
 #### Common Commands
@@ -158,6 +168,8 @@ We use `vitest` with `playwright` to run browser tests.  When running browser te
 
 ## Advanced Topics
 
+### Linking to an External Library
+
 #### Quick Summary
 
 To test packages with an external project locally, use npm link:
@@ -206,12 +218,3 @@ This feature makes it easier to develop across multiple packages simultaneously.
 
 Common development dependencies (e.g. `eslint`, `biome`) are defined in the root `package.json`. 
 
-## CLI Scripts
-
-The `./config/cli` directory contains helper scripts referenced in package.json files:
-
-- `coverage.sh` - Runs test coverage
-- `lint.sh` - Checks code style
-- `lint-fix.sh` - Automatically fixes code style issues
-- `ts-build.sh` - Builds TypeScript for production
-- `ts-compile.sh` - Compiles TypeScript for development
