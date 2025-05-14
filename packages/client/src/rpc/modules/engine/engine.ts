@@ -63,7 +63,6 @@ import {
   payloadAttributesFieldValidatorsV3,
 } from './validators.ts'
 
-import { blob } from 'node:stream/consumers'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
