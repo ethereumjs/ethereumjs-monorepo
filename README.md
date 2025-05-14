@@ -82,20 +82,6 @@ npm install
 
 See our [Development docs](./DEVELOPER.md) for an overview on things like tooling or configuration if you want to contribute to the EthereumJS monorepo. 🙂
 
-### Windows Users Note
-
-Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
-
-```sh
-npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
-```
-
-To reset this setting:
-
-```sh
-npm config delete script-shell
-```
-
 ## Branches
 
 ### Overview

@@ -57,6 +57,20 @@ All packages include a `typescript` entry in the exports map that allows direct 
 - Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
 - Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
 
+#### Windows Users Note
+
+Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
+
+```sh
+npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
+```
+
+To reset this setting:
+
+```sh
+npm config delete script-shell
+```
+
 ## Development Tools
 
 ### TypeScript
