@@ -82,9 +82,6 @@ npm install
 
 See our [Development docs](./DEVELOPER.md) for an overview on things like tooling or configuration if you want to contribute to the EthereumJS monorepo. 🙂
 
-### Browser Testing
-
-We use `vitest` with `playwright` to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
 
 ### Testing Packages with an external project
 

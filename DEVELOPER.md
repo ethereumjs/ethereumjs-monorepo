@@ -128,7 +128,7 @@ Each package includes:
 
 The project uses Vitest for testing with c8 for code coverage.
 
-#### Test Commands
+#### General
 
 Each package includes one or more test scripts.  To run all tests in any package, use `npm run test`.  Refer to the package.json for more specifics.
 
@@ -137,6 +137,8 @@ To run a specific test and watch for changes:
 ```sh
 npx vitest test/path/to/test.spec.ts
 ```
+
+#### Browser
 
 ## Advanced Topics
 
