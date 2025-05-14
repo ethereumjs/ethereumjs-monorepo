@@ -1,10 +1,14 @@
-# EthereumJS - Configuration Guide
+# EthereumJS - Developer Docs
 
-This guide provides an overview of the configuration systems and development tools used throughout the EthereumJS monorepo. It consolidates information that was previously spread across multiple documents to provide a single reference point.
+This guide provides an overview of the monorepo, development tools used, shared configuration and additionally covers some advanced topics.
+
+It is intended to be both an entrypoint for external contributors as well as a reference point for team members.
 
 ## Contents
 
-- [Monorepo Structure](#monorepo-structure)
+- [Monorepo](#monorepo)
+  - [Structure](#structure)
+  - [Workflow](#workflow)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
@@ -14,15 +18,44 @@ This guide provides an overview of the configuration systems and development too
   - [E2E Testing](#e2e-testing)
   - [Cross-Package Development](#cross-package-development)
 
-## Monorepo Structure
+## Monorepo
 
-The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage all the packages in our monorepo.
+### Structure
 
-### Key directories
+The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage all the packages in our monorepo and link packages together.
+
+#### Key Directories
 
 - `/packages` - Contains all EthereumJS packages
 - `/config` - Shared configuration files and scripts
 - `/ethereum-tests` - Git submodule with Ethereum test vectors
+
+## Workflow
+
+### Common Commands
+
+- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
+- **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
+- **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
+- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
+- **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
+
+#### Working on a Specific Package
+
+To focus on a single package (e.g., VM):
+
+1. Navigate to the package directory: `cd packages/vm`
+2. Run tests: `npm test`
+3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
+4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
+
+#### Cross-Package Development
+
+All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
+
+- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
+- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
+- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
 
 ## Development Tools
 

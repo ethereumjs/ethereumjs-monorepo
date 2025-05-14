@@ -78,34 +78,9 @@ git submodule update
 npm install
 ```
 
-### Development Workflow
+### Development
 
-The monorepo uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to link local packages together, making development easier.
-
-#### Common Commands
-
-- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
-- **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
-- **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
-- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
-- **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
-
-#### Working on a Specific Package
-
-To focus on a single package (e.g., VM):
-
-1. Navigate to the package directory: `cd packages/vm`
-2. Run tests: `npm test`
-3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
-4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
-
-#### Cross-Package Development
-
-All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
-
-- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
-- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
-- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
+See our [Development docs](./DEVELOPER.md) for an overview on things like tooling or configuration if you want to contribute to the EthereumJS monorepo. 🙂
 
 ### Browser Testing
 
