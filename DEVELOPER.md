@@ -132,7 +132,7 @@ Use these commands in your package scripts:
 
 ### Linting
 
-We use [ESLint](https://eslint.org/) v9 and Biome for code style enforcement and linting.
+We use [ESLint](https://eslint.org/) v9 and [Biome](https://biomejs.dev/) for code style enforcement and linting.
 
 #### Configuration Files
 
