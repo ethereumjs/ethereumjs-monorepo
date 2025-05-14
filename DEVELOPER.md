@@ -12,8 +12,9 @@ It is intended to be both an entrypoint for external contributors as well as a r
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
+  - [Spellcheck](#spellcheck)
   - [Testing](#testing)
-  - [Documentation](#documentation)
+  - [Documentation](#documentation)V
 - [Advanced Topics](#advanced-topics)
   - [E2E Testing](#e2e-testing)
   - [Cross-Package Development](#cross-package-development)
@@ -88,7 +89,7 @@ npm config delete script-shell
 
 ### TypeScript
 
-All packages use TypeScript with a shared base configuration.
+All packages use [TypeScript](https://www.typescriptlang.org/) with a shared base configuration.
 
 #### Configuration Files
 
@@ -131,7 +132,7 @@ Use these commands in your package scripts:
 
 ### Linting
 
-We use ESLint v9 and Biome for code style enforcement and linting.
+We use [ESLint](https://eslint.org/) v9 and Biome for code style enforcement and linting.
 
 #### Configuration Files
 
@@ -181,7 +182,7 @@ Commands area available on both root and package levels.
 
 ### Testing
 
-The project uses Vitest for testing with c8 for code coverage.
+The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vitest.dev/guide/coverage.html) for code coverage.
 
 #### General
 
@@ -195,7 +196,7 @@ npx vitest test/path/to/test.spec.ts
 
 #### Browser
 
-We use `vitest` with `playwright` to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
 
 ## Advanced Topics
 
