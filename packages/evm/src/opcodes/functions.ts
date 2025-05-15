@@ -47,6 +47,7 @@ import {
 } from './util.ts'
 
 import type { Common } from '@ethereumjs/common'
+import { extractEVMMAXImmediateInputs } from '../evmmax/index.ts'
 import type { RunState } from '../interpreter.ts'
 
 export interface SyncOpHandler {
@@ -987,6 +988,82 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       runState.interpreter.log(mem, topicsCount, topicsBuf)
+    },
+  ],
+  // 0xc0: SETMODX
+  [
+    0xc0,
+    function (runState, _common) {
+      const [id, modOffset, modSize, allocCount] = runState.stack.popN(4)
+      const modulus = runState.memory.read(Number(modOffset), Number(modSize))
+      // console.log('dbg600')
+      // console.log(modulus)
+      runState.evmmaxState.allocAndSetActive(Number(id), modulus, allocCount)
+    },
+  ],
+  // 0xc1: LOADX
+  [
+    0xc1,
+    function (runState, _common) {
+      console.log('dbg900')
+      const [dest, source, count] = runState.stack.popN(3)
+      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const destBuf = new Uint8Array(copySize)
+      runState.evmmaxState.getActive()?.load(destBuf, Number(source), Number(count))
+      console.log(copySize)
+      console.log(count)
+      console.log(runState.evmmaxState.getActive()?.getElemSize())
+      console.log(destBuf)
+      console.log(runState.memory._store)
+      runState.memory.write(Number(dest), copySize, destBuf)
+      console.log(runState.memory._store)
+    },
+  ],
+  // 0xc2: STOREX
+  [
+    0xc2,
+    function (runState, _common) {
+      // TODO figure out if we need to use extend(), _store(), or or just write()
+      const [dest, source, count] = runState.stack.popN(3)
+      const copySize = Number(count) * runState.evmmaxState.getActive()?.getElemSize()
+      const srcBuf = runState.memory.read(Number(source), Number(count) * copySize)
+      runState.evmmaxState.getActive()?.store(Number(dest), Number(count), srcBuf)
+    },
+  ],
+  // 0xc3: ADDMODX
+  [
+    0xc3,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter - 1,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().addM(out, outStride, x, xStride, y, yStride, count)
+    },
+  ],
+  // 0xc4: SUBMODX
+  [
+    0xc4,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter - 1,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().subM(out, outStride, x, xStride, y, yStride, count)
+    },
+  ],
+  // 0xc5: MULMODX
+  [
+    0xc5,
+    function (runState, _common) {
+      const [out, outStride, x, xStride, y, yStride, count] = extractEVMMAXImmediateInputs(
+        runState.programCounter - 1,
+        runState.code,
+      )
+      runState.programCounter += 7
+      runState.evmmaxState.getActive().mulM(out, outStride, x, xStride, y, yStride, count)
     },
   ],
   // 0xd0: DATALOAD

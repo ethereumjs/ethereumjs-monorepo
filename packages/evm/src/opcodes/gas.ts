@@ -7,6 +7,7 @@ import {
   BIGINT_32,
   BIGINT_64,
   bigIntToBytes,
+  bytesToBigInt,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -21,6 +22,9 @@ import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
+  evmmaxMemoryGasCost,
+  isPowerOfTwo,
+  makeEVMMAXArithGasFunc,
   maxCallGas,
   setLengthLeftStorage,
   subMemUsage,
@@ -30,6 +34,13 @@ import {
 
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import {
+  ADD_OR_SUB_COST,
+  MAX_ALLOC_SIZE,
+  MULMODX_COST,
+  SETMODX_ODD_MODULUS_COST,
+} from '../evmmax/index.ts'
+import { add64, mul64 } from '../evmmax/util.ts'
 import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
@@ -45,6 +56,11 @@ async function eip7702GasCost(
     return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
   }
   return BIGINT_0
+}
+
+const MAX_UINT64 = 2n ** 64n - 1n
+function isUint64(value: bigint): boolean {
+  return value >= 0n && value <= MAX_UINT64
 }
 
 /**
@@ -766,6 +782,142 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
         return gas
+      },
+    ],
+    [
+      /* SETMODX */
+      0xc0,
+      async function (runState, gas, common): Promise<bigint> {
+        const [modId, modOffset, modSize, allocCount] = runState.stack.peek(4)
+
+        if (!isUint64(modId) || !isUint64(modSize) || !isUint64(allocCount)) {
+          trap('one or more parameters overflows 64 bits')
+        }
+        if (runState.evmmaxState.getAlloced().get(Number(modId)) !== undefined) {
+          return gas
+        }
+        if (modSize > 96n) {
+          trap('modulus cannot exceed 768 bits in width')
+        }
+        if (!isUint64(modOffset + modSize)) {
+          trap('modulus offset + size overflows uint64')
+        }
+        if (allocCount > 256) {
+          trap('cannot allocate more than 256 field elements per modulus id')
+        }
+        const paddedModSize = (modSize + 7n) / 8n
+        const precompCost = SETMODX_ODD_MODULUS_COST[Number(paddedModSize)]
+
+        const allocSize = paddedModSize * allocCount
+        if (runState.evmmaxState.allocSize() + allocSize > MAX_ALLOC_SIZE) {
+          trap('call context evmmax allocation threshold exceeded')
+        }
+
+        const memCost = evmmaxMemoryGasCost(runState, common, allocSize, 0n, 0n) // TODO should I be setting length and offset to 0?
+        const modBytes = runState.memory.read(Number(modOffset), Number(modSize))
+        if (!isPowerOfTwo(bytesToBigInt(modBytes))) {
+          return (gas += BigInt(precompCost) + memCost)
+        }
+        return gas + memCost
+      },
+    ],
+    [
+      /* LOADX */
+      0xc1,
+      async function (runState, gas, common): Promise<bigint> {
+        const [dst, src, count] = runState.stack.peek(3)
+
+        if (!isUint64(src) || src >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('src index out of bounds')
+        }
+        if (!isUint64(count) || count >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('count must be less than number of field elements in the active space')
+        }
+        const [last1, overflow1] = add64(src, count, 0n)
+        if (overflow1 !== 0n || last1 > runState.evmmaxState.getActive().getNumElems()) {
+          trap('out of bounds copy source')
+        }
+        if (!isUint64(dst)) {
+          trap('destination of copy out of bounds')
+        }
+
+        const [loadSize, overflow2] = mul64(
+          count,
+          BigInt(runState.evmmaxState.getActive().getElemSize()),
+        )
+        if (overflow2 !== 0n) {
+          trap('overflow')
+        }
+        const [last2, overflow3] = add64(dst, loadSize, 0n)
+        if (overflow3 !== 0n || last2 > runState.memoryWordCount) {
+          trap('out of bounds destination')
+        }
+
+        if (runState.evmmaxState.getActive().isModulusBinary) {
+          return gas + loadSize * common.param('copyGas') // TODO check if this translates from go: toWordSize(storeSize) * params.copyGas
+        } else {
+          return (
+            gas +
+            count *
+              BigInt(MULMODX_COST[Number(runState.evmmaxState.getActive().getElemSize() / 8) - 1])
+          )
+        }
+      },
+    ],
+    [
+      /* STOREX */
+      0xc2,
+      async function (runState, gas, common): Promise<bigint> {
+        const [dst, src, count] = runState.stack.peek(3)
+
+        if (!isUint64(src) || src >= runState.memory._store.length) {
+          trap('src index out of bounds')
+        }
+        if (!isUint64(dst) || dst >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('destination of copy out of bounds')
+        }
+        if (!isUint64(count) || count >= runState.evmmaxState.getActive().getNumElems()) {
+          trap('count must be less than number of field elements in the active space')
+        }
+        const storeSize = count * runState.evmmaxState.getActive().getNumElems()
+        if (src + storeSize > runState.memory._store.length) {
+          trap('source of copy out of bounds of EVM memory')
+        }
+
+        if (runState.evmmaxState.getActive().isModulusBinary) {
+          return gas + storeSize * common.param('copyGas') // TODO check if this translates from go: toWordSize(storeSize) * params.copyGas
+        } else {
+          return (
+            gas +
+            count *
+              BigInt(
+                MULMODX_COST[
+                  Number(Math.ceil(runState.evmmaxState.getActive().getElemSize() / 8)) - 1
+                ],
+              )
+          )
+        }
+      },
+    ],
+    [
+      /* ADDMODX */
+      0xc3,
+      async function (runState, gas, common): Promise<bigint> {
+        return makeEVMMAXArithGasFunc(ADD_OR_SUB_COST)(runState, gas, common)
+      },
+    ],
+    [
+      /* SUBMODX */
+      0xc4,
+      async function (runState, gas, common): Promise<bigint> {
+        return makeEVMMAXArithGasFunc(ADD_OR_SUB_COST)(runState, gas, common)
+      },
+    ],
+    [
+      /* MULMODX */
+      0xc5,
+      async function (runState, gas, common): Promise<bigint> {
+        return makeEVMMAXArithGasFunc(MULMODX_COST)(runState, gas, common)
       },
     ],
     /* EXTCALL */

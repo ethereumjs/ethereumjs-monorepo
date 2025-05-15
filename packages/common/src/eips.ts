@@ -344,6 +344,14 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.London,
   },
   /**
+   * Description : EVM Modular Arithmetic Extensions
+   * URL         : https://eips.ethereum.org/EIPS/eip-6690
+   * Status      : Draft
+   */
+  6690: {
+    minimumHardfork: Hardfork.Prague,
+  },
+  /**
    * Description : Execution layer triggerable withdrawals (experimental)
    * URL         : https://github.com/ethereum/EIPs/blob/3b5fcad6b35782f8aaeba7d4ac26004e8fbd720f/EIPS/eip-7002.md
    * Status      : Review
