@@ -464,6 +464,7 @@ Each opcode has an associated handler function that:
 - Calculates dynamic gas costs
 - Performs the opcode's logic (stack operations, memory operations, etc.)
 - Updates the EVM state
+- The program counter is incremented in between the execution of the gas handler and opcode logic handler functions, this should be considered e.g. if parsing immediate input parameters
 - Special opcodes like `CALL`, `CREATE`, `DELEGATECALL` create a new message and call back to the EVM's `runCall` method
 
 #### Journal and State Management
