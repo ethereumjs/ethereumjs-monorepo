@@ -1545,15 +1545,28 @@ export class Engine {
       }
     }
 
+    let blobsInPool = 0
+    let blobMissed = false
     const blobAndProofsArr: BlobAndProofV2[] = []
     for (const versionedHashHex of params[0]) {
       const blobAndProofs = this.service.txPool.blobAndProofsByHash.get(versionedHashHex)
       if (blobAndProofs === undefined) {
-        return null
+        blobMissed = true
+      } else {
+        blobsInPool++
+        blobAndProofsArr.push(blobAndProofs)
       }
-      blobAndProofsArr.push(blobAndProofs)
     }
 
+    this.config.metrics?.blobEIP7594ReqTotalGauge.inc(params[0].length)
+    this.config.metrics?.blobEIP7594ReqTotalInPoolGauge.inc(blobsInPool)
+
+    if (blobMissed) {
+      this.config.metrics?.blobEIP7594PoolMissGauge.inc()
+      return null
+    }
+
+    this.config.metrics?.blobEIP7594PoolHitGauge.inc()
     return blobAndProofsArr
   }
 }

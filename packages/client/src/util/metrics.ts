@@ -22,5 +22,21 @@ export const setupMetrics = () => {
       name: 'blob_eip_7594_transactions_in_transaction_pool',
       help: 'Number of blob EIP 7594 transactions in the client transaction pool',
     }),
+    blobEIP7594ReqTotalGauge: new promClient.Gauge({
+      name: 'get_blobs_requests_blobs_total',
+      help: 'Number of blobs requested via GetBlobsV2',
+    }),
+    blobEIP7594ReqTotalInPoolGauge: new promClient.Gauge({
+      name: 'get_blobs_requests_blobs_in_blobpool_total',
+      help: 'Number of blobs requested via GetBlobsV2 that are present in the blobpool',
+    }),
+    blobEIP7594PoolHitGauge: new promClient.Gauge({
+      name: 'get_blobs_requests_success_total',
+      help: 'Number of times GetBlobsV2 responded with a success/hit',
+    }),
+    blobEIP7594PoolMissGauge: new promClient.Gauge({
+      name: 'get_blobs_requests_failure_total',
+      help: 'Number of times GetBlobsV2 responded with a failure/miss',
+    }),
   }
 }
