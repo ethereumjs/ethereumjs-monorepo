@@ -78,94 +78,9 @@ git submodule update
 npm install
 ```
 
-### Development Workflow
+### Development
 
-The monorepo uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to link local packages together, making development easier.
-
-#### Common Commands
-
-- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
-- **Lint code**: `npm run lint --workspaces` - Check code style with ESLint v9 and Biome
-- **Fix linting issues**: `npm run lint:fix --workspaces` - Automatically fix style issues
-- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
-- **Build documentation**: `npm run docs:build --workspaces` - Generate documentation for all packages
-
-#### Working on a Specific Package
-
-To focus on a single package (e.g., VM):
-
-1. Navigate to the package directory: `cd packages/vm`
-2. Run tests: `npm test`
-3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
-4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
-
-#### Cross-Package Development
-
-All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
-
-- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
-- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
-- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript'`
-
-### Browser Testing
-
-We use `vitest` with `playwright` to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
-
-### Testing Packages with an external project
-
-To test changes locally before publishing, use npm link:
-
-1. **Build the package you want to test**:
-
-```sh
-cd packages/vm  # Or another package
-npm run build
-```
-
-2. **Link the package globally**:
-
-```sh
-npm link
-```
-
-3. **In your test project, link to the local package**:
-
-```sh
-cd path/to/your/project
-npm link @ethereumjs/vm  # Use the appropriate package name
-```
-
-4. **When you're done, unlink the package**:
-
-```sh
-# In your test project
-npm unlink @ethereumjs/vm
-
-# In the package directory
-npm unlink
-```
-
-When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
-
-### Windows Users Note
-
-Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
-
-```sh
-npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
-```
-
-To reset this setting:
-
-```sh
-npm config delete script-shell
-```
-
-### Configuration Guide
-
-The [config](config/) folder gives an overview on shared configuration and scripts between packages.
-
-You can find more detailed information on the configuration of different tooling and language parts (TypeScript, linting, testing,...) in the specific [Configuration Guide](./config/README.md).
+See our [Development docs](./DEVELOPER.md) for an overview on things like tooling or configuration if you want to contribute to the EthereumJS monorepo. 🙂
 
 ## Branches
 
@@ -240,7 +155,7 @@ To update the diagram above edit the README file and open a new PR with the chan
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](./DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](./CODE_OF_CONDUCT.md).
 
 ## License
 
