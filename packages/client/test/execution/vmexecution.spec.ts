@@ -26,6 +26,7 @@ import { closeRPC, setupChain, testSetup } from '../rpc/helpers.ts'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import { bytesToHex } from '@ethereumjs/util'
+import { MemoryLevel } from 'memory-level'
 
 const shanghaiPayload: ExecutionPayload = {
   blockNumber: '0x1',
@@ -101,7 +102,22 @@ describe('[VMExecution]', () => {
     const config = new Config({ vm, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const exec = new VMExecution({ config, chain })
-    assert.strictEqual(exec.vm, vm, 'should use vm provided')
+    assert.equal(exec.vm, vm, 'should use vm provided')
+    assert.isUndefined(exec.txIndex, 'txIndex should be undefined')
+  })
+  it('Initialization with metaDB', async () => {
+    const vm = await createVM()
+    const config = new Config({ vm, accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const exec = new VMExecution({
+      config,
+      chain,
+      metaDB: new MemoryLevel({
+        valueEncoding: 'view',
+        keyEncoding: 'view',
+      }),
+    })
+    assert.isDefined(exec.txIndex, 'txIndex should be defined')
   })
 
   it('Block execution / Hardforks PoW (mainnet)', async () => {

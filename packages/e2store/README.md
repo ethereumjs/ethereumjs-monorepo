@@ -21,9 +21,12 @@
       - [Format E2HS](#format-e2hs)
       - [Read Tuples from E2HS](#read-tuples-from-e2hs)
       - [Read E2HS Tuple at Index](#read-e2hs-tuple-at-index)
+      - [E2HS Helper Functions](#e2hs-helper-functions)
     - [Era1](#era1)
       - [Export History as Era1](#export-history-as-era1)
-    - [Read Era1 file](#read-era1-file)
+      - [Read Era1 file](#read-era1-file)
+      - [Validate Era1 file](#validate-era1-file)
+      - [Era1 Helper Functions](#era1-helper-functions)
     - [Era](#era)
       - [Read Era file](#read-era-file)
   - [Common Use Cases](#common-use-cases)
@@ -63,29 +66,54 @@ const e2hs = await formatE2HS(data)
 #### Read Tuples from E2HS
 
 ```ts
-import { readTuplesFromE2HS, parseEH2SBlockTuple } from "@ethereumjs/e2store"
+// ./examples/e2hs.ts#L30-L32
 
-// Read all tuples from an E2HS file
-const tuples = await readTuplesFromE2HS(filePath)
-for await (const tuple of tuples) {
-  const { headerWithProof, body, receipts } = parseEH2SBlockTuple(tuple)
-  console.log(headerWithProof)
-  console.log(body)
-  console.log(receipts)
-}
+const tuples = readTuplesFromE2HS(e2hsFile)
+
+const tuple = (await tuples.next()).value
 ```
 
 #### Read E2HS Tuple at Index
 
 ```ts
-import { readE2HSTupleAtIndex, parseEH2SBlockTuple } from "@ethereumjs/e2store"
+// ./examples/e2hs.ts#L47-L49
 
-// Read a specific tuple by index
-const tuple = await readE2HSTupleAtIndex(filePath, index)
-const { headerWithProof, body, receipts } = parseEH2SBlockTuple(tuple)
-console.log(headerWithProof)
-console.log(body)
-console.log(receipts)
+const targetIndex = 1234
+const tupleAtIndex = await readE2HSTupleAtIndex(e2hsFile, targetIndex)
+console.log('tuple at index 1234', tupleAtIndex)
+```
+
+#### E2HS Helper Functions
+
+`getBlockIndex` returns the index of the block in the e2hs file:
+`readBlockIndex` returns the starting number and offsets of the blocks in the e2hs file:
+```ts
+// ./examples/e2hs.ts#L18-L28
+
+const blockIndex = getBlockIndex(e2hsFile)
+console.log('blockIndex', {
+  type: blockIndex.type,
+  count: blockIndex.count,
+  recordStart: blockIndex.recordStart,
+  data: blockIndex.data.length + ' bytes',
+})
+
+const { startingNumber, offsets } = readBlockIndex(blockIndex.data, blockIndex.count)
+console.log('startingNumber', startingNumber)
+console.log('offsets', offsets.length)
+```
+
+`decompressE2HSTuple` decompresses a block tuple:
+`parseEH2SBlockTuple` parses a block tuple:
+
+```ts
+// ./examples/e2hs.ts#L35-L39
+
+const decompressedTuple = await decompressE2HSTuple(tuple!)
+console.log('decompressedTuple', decompressedTuple)
+
+const parsedTuple = parseEH2SBlockTuple(decompressedTuple)
+console.log('parsedTuple', parsedTuple)
 ```
 
 ### Era1
@@ -106,67 +134,137 @@ const epoch = 0
 await exportEpochAsEra1(epoch, dataDir)
 ```
 
-### Read Era1 file
+#### Read Era1 file
 
 `readERA1` returns an async iterator of block tuples (header + body + receipts + totalDifficulty):
 
 ```ts
-import {
-  readBinaryFile,
-  validateERA1,
-  readERA1,
-  parseBlockTuple,
-  blockFromTuple,
-  getHeaderRecords,
-  EpochAccumulator,
-} from "@ethereumjs/e2store"
+// ./examples/era1.ts#L48-L50
 
-const era1File = readBinaryFile(PATH_TO_ERA1_FILE)
+const tuples = await readERA1(era1File)
+const tupleEntry = await tuples.next()
+console.log('tupleEntry', tupleEntry.value!)
+```
 
-// Validate era1 file
-// Rebuilds epoch accumulator and validates the accumulator root
-const isValid = validateERA1(era1File)
-if (!isValid) {
-  throw new Error('Invalid Era1 file')
-}
+#### Validate Era1 file
 
-// Read blocks from era1 file
-const blocks = readERA1(era1File)
+`validateERA1` validates the era1 file by reconstructing the epoch accumulator and validating the accumulator root:
 
-for await (const blockTuple of blocks) {
-  const { header, body, receipts } = await parseBlockTuple(blockTuple)
-  const block = blockFromTuple({ header, body })
-  console.log(`Block number: ${block.header.number}`)
-}
+```ts
+// ./examples/era1.ts#L57-L59
 
-// Reconstruct epoch accumulator
+const valid = await validateERA1(era1File)
+console.log('valid', valid)
+```
+
+#### Era1 Helper Functions
+
+`getBlockIndex` returns the index of the block in the era1 file:
+`readBlockIndex` returns the starting number and offsets of the blocks in the era1 file:
+`readOtherEntries` returns the accumulator root and other entries of the era1 file:
+`getHeaderRecords` returns the header records of the era1 file:
+
+```ts
+// ./examples/era1.ts#L21-L45
+
+const blockIndex = getBlockIndex(era1File)
+console.log('blockIndex', {
+  type: blockIndex.type,
+  count: blockIndex.count,
+  recordStart: blockIndex.recordStart,
+  data: blockIndex.data.length + ' bytes',
+})
+
+const { startingNumber, offsets } = readBlockIndex(blockIndex.data, blockIndex.count)
+console.log('startingNumber', startingNumber)
+console.log('offsets', offsets.length)
+
+const { accumulatorRoot, otherEntries } = await readOtherEntries(era1File)
+console.log('accumulatorRoot', bytesToHex(accumulatorRoot))
+console.log('otherEntries', otherEntries.length)
+
 const headerRecords = await getHeaderRecords(era1File)
 const epochAccumulator = EpochAccumulator.encode(headerRecords)
 const epochAccumulatorRoot = EpochAccumulator.merkleRoot(headerRecords)
+
+console.log('epochAccumulator', epochAccumulator.length + ' bytes')
+console.log('epochAccumulatorRoot', bytesToHex(epochAccumulatorRoot))
+console.log(
+  'Reconstructed root matches encoded root',
+  bytesToHex(epochAccumulatorRoot) === bytesToHex(accumulatorRoot),
+```
+
+`parseBlockTuple` parses a block tuple:
+`blockFromTuple` converts a block tuple to a block:
+
+```ts
+// ./examples/era1.ts#L53-L58
+
+console.log('parsed tuple', tuple)
+
+const block = blockFromTuple(tuple)
+console.log('block', block)
+
+const valid = await validateERA1(era1File)
 ```
 
 ### Era
 
-Era files are used to store beacon chain data, including beacon states and blocks.
+Era files are used to store beacon chain data, including beacon states and blocks. 
 
 #### Read Era file
 
+`readBeaconState` reads the beacon state from an era file:
+
 ```ts
-import { readBeaconState, readBlocksFromEra } from "@ethereumjs/e2store"
+// ./examples/era.ts#L18-L24
 
-const eraFile = readBinaryFile(PATH_TO_ERA_FILE)
-
-// Extract BeaconState
+// Read beacon state from era file
 const state = await readBeaconState(eraFile)
-console.log(`Current slot: ${state.slot}`)
+console.log('beaconState', {
+  slot: state.slot,
+  validators: state.validators.length,
+})
 
-// Read Beacon Blocks from era file
-let count = 0
-for await (const block of readBlocksFromEra(eraFile)) {
-  console.log(`Block slot: ${block.message.slot}`)
-  count++
-  if (count > 10) break
-}
+```
+
+`readBeaconBlock` reads a specific beacon block from an era file:
+
+```ts
+// ./examples/era.ts#L25-L30
+
+// Read a specific beacon block
+const block = await readBeaconBlock(eraFile, 0)
+console.log('beaconBlock', {
+  slot: block.message.slot,
+  proposer_index: block.message.proposer_index,
+})
+```
+
+`readBlocksFromEra` returns an async iterator of beacon blocks:
+
+```ts
+// ./examples/era.ts#L32-L37
+
+// Read blocks from era file
+const blocks = readBlocksFromEra(eraFile)
+
+const firstBlock = (await blocks.next()).value!
+
+console.log(`Block`, firstBlock)
+```
+
+`readSlotIndex` reads the slot index from an era file:
+```ts
+// ./examples/era.ts#L10-L16
+
+// Read slot index from era file
+const slotIndex = readSlotIndex(eraFile)
+console.log('slotIndex', {
+  startSlot: slotIndex.startSlot,
+  recordStart: slotIndex.recordStart,
+  slotOffsets: slotIndex.slotOffsets.length + ' slots',
+})
 ```
 
 ## Common Use Cases
@@ -179,7 +277,7 @@ for await (const block of readBlocksFromEra(eraFile)) {
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

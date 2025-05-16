@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
+import { getLogger } from '../../../src/logging.ts'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'debug_verbosity'
@@ -16,6 +17,9 @@ describe(method, () => {
     const manager = createManager(await createClient({ opened: true, noPeers: true }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const client = manager['_client']
+
+    //@ts-ignore
+    client.config.logger = getLogger()
 
     let res
 
