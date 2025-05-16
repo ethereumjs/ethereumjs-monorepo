@@ -1,5 +1,11 @@
 import { createLegacyTx } from '@ethereumjs/tx'
-import { bytesToHex, createContractAddress, hexToBytes } from '@ethereumjs/util'
+import {
+  bigIntToHex,
+  bytesToHex,
+  createContractAddress,
+  hexToBigInt,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
@@ -75,7 +81,7 @@ describe(method, async () => {
       { common },
     ).sign(dummy.privKey)
 
-    await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
+    let block = await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
 
     // compare the logs
     let res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
@@ -99,6 +105,12 @@ describe(method, async () => {
     } else {
       assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
     }
+
+    assert.strictEqual(
+      hexToBigInt(res.result[0].blockTimestamp),
+      block.header.timestamp,
+      `should return the correct blockTimestamp (fromBlock/toBlock as 'earliest' and 'latest')`,
+    )
 
     // get the logs using fromBlock/toBlock as numbers
     res = await rpc.request(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
@@ -205,6 +217,40 @@ describe(method, async () => {
       res.result.length,
       20,
       'should return the correct logs (filter by blockHash)',
+    )
+
+    // test adding more logs and checking timestamps against multiple blocks
+    const tx5 = createLegacyTx(
+      {
+        ...txData,
+        data,
+        to: contractAddr1,
+        nonce: 4,
+      },
+      { common },
+    ).sign(dummy.privKey)
+    const tx6 = createLegacyTx(
+      {
+        ...txData,
+        data,
+        to: contractAddr2,
+        nonce: 5,
+      },
+      { common },
+    ).sign(dummy.privKey)
+
+    const block1Timestamp = bigIntToHex(block.header.timestamp)
+    block = await runBlockWithTxs(chain, execution, [tx5, tx6])
+    const block2Timestamp = bigIntToHex(block.header.timestamp)
+
+    res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
+    const block1Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x1')
+    const block2Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x2')
+
+    assert.isTrue(
+      block1Logs.every((log) => log.blockTimestamp === block1Timestamp) &&
+        block2Logs.every((log) => log.blockTimestamp === block2Timestamp),
+      'should return the correct log timestamps across multiple blocks',
     )
   })
 
