@@ -66,7 +66,6 @@ function checkMaxInitCodeSize(common: Common, length: number) {
  * @param cannotEqual Pass true if the number also cannot equal one less than the maximum value
  */
 export function valueOverflowCheck(
-  // TODO: better method name
   values: { [key: string]: bigint | undefined },
   bits = 256,
   cannotEqual = false,
