@@ -66,4 +66,10 @@ export const paramsTx: ParamsDict = {
   7691: {
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
   },
+  /**
+   * Transaction Gas Limit Cap
+   */
+  7825: {
+    maxTransactionGasLimit: 30000000, // Maximum gas limit for a single transaction (30M)
+  },
 }

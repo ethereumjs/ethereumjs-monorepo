@@ -471,6 +471,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2935],
   },
   /**
+   * Description : Transaction Gas Limit Cap
+   * URL         : https://eips.ethereum.org/EIPS/eip-7825
+   * Status      : Draft
+   */
+  7825: {
+    minimumHardfork: Hardfork.Osaka,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Ethereum state using a unified binary tree (experimental)
    * URL         : hhttps://eips.ethereum.org/EIPS/eip-7864
    * Status      : Draft
