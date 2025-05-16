@@ -152,7 +152,7 @@ jobs:
 
   static:
     needs: build
-    uses: ./.github/workflows/static-build.yml
+    uses: ./.github/workflows/rlp-ethash-genesis-wallet-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
