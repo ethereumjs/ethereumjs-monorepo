@@ -431,19 +431,19 @@ The `runCall` method handles the execution of messages, which can be either cont
 - Manages account nonce updates
 - Handles value transfers between accounts
 - Delegates to either `_executeCall` or `_executeCreate` based on whether the message has a `to` address
+- **Both `_executeCall` and `_executeCreate` call into `runInterpreter` to actually execute the bytecode**
 - Processes any errors or exceptions
 - Manages selfdestruct sets and created contract addresses
 - Commits or reverts state changes based on execution result
 - Triggers events (`beforeMessage`, `afterMessage`)
 
 #### Code Execution (`runCode` / `runInterpreter`)
-The `runCode` method is responsible for bytecode execution:
-- Sets up a message context for code execution
-- The `runInterpreter` method then:
-  - Creates an execution environment (address, caller, value, etc.)
-  - Instantiates an Interpreter with the message context
-  - Handles EOF code execution if applicable (EIP-3540)
-  - Processes execution results
+The `runCode` method is a helper for directly running EVM bytecode (e.g., for testing or utility purposes) without the full message/transaction context:
+- Sets up a minimal message context for code execution
+- **Directly calls `runInterpreter` to execute the provided bytecode**
+- Does not go through the full message handling logic of `runCall`
+
+The `runInterpreter` method is used by both `runCall` (via `_executeCall`/`_executeCreate`) and `runCode` to process the actual bytecode.
 
 #### Bytecode Processing (Interpreter)
 The Interpreter class is the core bytecode processor:
