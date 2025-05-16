@@ -252,10 +252,10 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.Http
   return !opts.httpServer ? httpServer : undefined
 }
 
-export /**
+/**
  * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
  */
-function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
+export function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
   let jwtSecret: Uint8Array
   const defaultJwtPath = `${config.datadir}/jwtsecret`
   const usedJwtPath = jwtFilePath ?? defaultJwtPath

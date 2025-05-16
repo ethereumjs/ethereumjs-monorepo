@@ -1,15 +1,15 @@
 import type { MethodConfig } from '../util/rpc.ts'
 
 export const RPCNamespace = {
-  Eth: 'eth', // untrusted
-  Engine: 'engine', // trusted
+  eth: 'eth', // untrusted
+  engine: 'engine', // trusted
 } as const
 
 export type RPCNamespace = (typeof RPCNamespace)[keyof typeof RPCNamespace]
 
 export const RPCTransport = {
-  Ws: 'ws',
-  Http: 'http',
+  ws: 'ws',
+  http: 'http',
 } as const
 
 export type RPCTransport = (typeof RPCTransport)[keyof typeof RPCTransport]
