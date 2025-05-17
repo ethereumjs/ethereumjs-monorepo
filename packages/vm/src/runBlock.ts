@@ -133,50 +133,50 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
-    // Initialize the access witness
+  // if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
+  //   // Initialize the access witness
 
-    if (vm.common.customCrypto.verkle === undefined) {
-      throw Error('verkleCrypto required when EIP-6800 is active')
-    }
-    vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: vm.common.customCrypto.verkle,
-    })
-    vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: vm.common.customCrypto.verkle,
-    })
+  //   if (vm.common.customCrypto.verkle === undefined) {
+  //     throw Error('verkleCrypto required when EIP-6800 is active')
+  //   }
+  //   vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+  //     verkleCrypto: vm.common.customCrypto.verkle,
+  //   })
+  //   vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
+  //     verkleCrypto: vm.common.customCrypto.verkle,
+  //   })
 
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
-    }
+  //   if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
+  //     throw Error(`VerkleStateManager needed for execution of verkle blocks`)
+  //   }
 
-    if (vm.DEBUG) {
-      debug(`Initializing executionWitness`)
-    }
-    if (clearCache) {
-      stateManager.clearCaches()
-    }
+  //   if (vm.DEBUG) {
+  //     debug(`Initializing executionWitness`)
+  //   }
+  //   if (clearCache) {
+  //     stateManager.clearCaches()
+  //   }
 
-    // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+  //   // Populate the execution witness
+  //   stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
 
-    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
-    if ('verifyVerklePostState' in stateManager) {
-      // Update the stateRoot cache
-      await stateManager.setStateRoot(block.header.stateRoot)
-      if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
-        if (vm.DEBUG) {
-          debug(`Verkle proof verification succeeded`)
-        }
-      } else {
-        throw Error(`Verkle proof verification failed`)
-      }
-    }
-  } else {
-    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
-      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
-    }
-  }
+  //   // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+  //   if ('verifyVerklePostState' in stateManager) {
+  //     // Update the stateRoot cache
+  //     await stateManager.setStateRoot(block.header.stateRoot)
+  //     if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
+  //       if (vm.DEBUG) {
+  //         debug(`Verkle proof verification succeeded`)
+  //       }
+  //     } else {
+  //       throw Error(`Verkle proof verification failed`)
+  //     }
+  //   }
+  // } else {
+  //   if (typeof stateManager.initVerkleExecutionWitness === 'function') {
+  //     throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
+  //   }
+  // }
 
   // check for DAO support and if we should apply the DAO fork
   if (

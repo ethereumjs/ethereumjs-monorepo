@@ -2,9 +2,14 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { MerklePatriciaTrie, createMPT } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import {
+  Caches,
+  MerkleStateManager,
+  StatefulVerkleStateManager,
+  TransitionStateManager,
+} from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -98,7 +103,30 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
+    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
+  }
+
+  // set up pre-state
+  await setupPreConditions(stateManager, testData)
+
+  t.deepEquals(
+    await stateManager.getStateRoot(),
+    genesisBlock.header.stateRoot,
+    'correct pre stateRoot',
+  )
+
+  // If using the TransitionStateManager:
+  // - Populate the frozen tree with the populated MPT
+  // - Replace the stateTree with an empty Verkle tree
+  // - Replace the stateManager with the TransitionStateManager
+  if (options.stateManager === 'transition') {
+    stateTree = await createVerkleTree()
+    stateManager = new TransitionStateManager({
+      frozenTree: (stateManager as MerkleStateManager)['_trie'],
+      activeTree: stateTree,
+      common,
+      caches: new Caches(),
+    })
   }
 
   const begin = Date.now()
@@ -107,6 +135,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     bls: options.bls,
     bn254: options.bn254,
   }
+
   let vm = await createVM({
     stateManager,
     blockchain,
@@ -117,15 +146,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       reportAfterBlock: options.profile,
     },
   })
-
-  // set up pre-state
-  await setupPreConditions(vm.stateManager, testData)
-
-  t.deepEquals(
-    await vm.stateManager.getStateRoot(),
-    genesisBlock.header.stateRoot,
-    'correct pre stateRoot',
-  )
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {

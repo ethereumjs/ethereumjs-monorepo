@@ -147,11 +147,11 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
     )
   }
 
-  if (header.common.isActivatedEIP(6800) && executionWitnessBytes === undefined) {
-    throw EthereumJSErrorWithoutCode(
-      'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined',
-    )
-  }
+  // if (header.common.isActivatedEIP(6800) && executionWitnessBytes === undefined) {
+  //   throw EthereumJSErrorWithoutCode(
+  //     'Invalid serialized block input: EIP-6800 is active, and execution witness is undefined',
+  //   )
+  // }
 
   // parse transactions
   const transactions = []
