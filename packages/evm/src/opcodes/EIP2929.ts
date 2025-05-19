@@ -2,6 +2,7 @@ import { BIGINT_0 } from '@ethereumjs/util'
 
 import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
+import { ceil32 } from './util.ts'
 
 /**
  * Adds address to accessedAddresses set if not already included.
@@ -30,7 +31,21 @@ export function accessAddressEIP2929(
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
     if (chargeGas && !(common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
-      return common.param('coldaccountaccessGas')
+      // EIP 7907:
+      // get the excess contract code size gas and add it to the cold account access gas
+      // initCodeWordGas (2) * every byte over the excessCodeSizeThreshold
+      let coldAccountAccessGas = common.param('coldaccountaccessGas')
+      if (common.isActivatedEIP(7907)) {
+        const excessContractSize = BigInt(
+          Math.max(
+            0,
+            runState.env.contract.codeSize - Number(common.param('excessCodeSizeThreshold')),
+          ),
+        )
+        const excessContractSizeGas = ceil32(excessContractSize) * common.param('initCodeWordGas')
+        coldAccountAccessGas += excessContractSizeGas
+      }
+      return coldAccountAccessGas
     } else if (chargeGas && (common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       // If Verkle is active, then the warmstoragereadGas should still be charged
       // This is because otherwise opcodes will have cost 0 (this is thus the base fee)
