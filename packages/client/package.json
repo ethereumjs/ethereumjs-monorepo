@@ -52,6 +52,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@crate-crypto/node-eth-kzg": "^0.6.0",
     "@ethereumjs/block": "10.0.0",
     "@ethereumjs/blockchain": "10.0.0",
     "@ethereumjs/common": "10.0.0",

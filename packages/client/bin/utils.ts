@@ -52,6 +52,7 @@ import { Event } from '../src/types.ts'
 import { parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
 
+import { DasContextJs } from '@crate-crypto/node-eth-kzg'
 import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import { default as ckzg } from 'c-kzg'
@@ -633,6 +634,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
 
   // const kzg = new microEthKZG(trustedSetup)
   ckzg.loadTrustedSetup(0)
+  const dasKzg = new DasContextJs()
   const cKzg = {
     blobToKzgCommitment: (blob: string) => {
       const blobBytes = hexToBytes(blob as PrefixedHexString)
@@ -660,12 +662,13 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     },
     computeCells: (blob: string) => {
       const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const cellsBytes = ckzg.computeCells(blobBytes)
+      const cellsBytes = dasKzg.computeCells(blobBytes)
       return cellsBytes.map((cellBytes) => bytesToHex(cellBytes)) as string[]
     },
     computeCellsAndProofs: (blob: string) => {
       const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const [cellsBytes, proofsBytes] = ckzg.computeCellsAndKzgProofs(blobBytes)
+      // const [cellsBytes, proofsBytes] = ckzg.computeCellsAndKzgProofs(blobBytes)
+      const { cells: cellsBytes, proofs: proofsBytes } = dasKzg.computeCellsAndKzgProofs(blobBytes)
       return [
         cellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
         proofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
@@ -673,7 +676,11 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     },
     recoverCellsAndProofs: (indices: number[], cells: string[]) => {
       const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
-      const [allCellsBytes, allProofsBytes] = ckzg.recoverCellsAndKzgProofs(indices, cellsBytes)
+      // const [allCellsBytes, allProofsBytes] = ckzg.recoverCellsAndKzgProofs(indices, cellsBytes)
+      const { cells: allCellsBytes, proofs: allProofsBytes } = dasKzg.recoverCellsAndKzgProofs(
+        indices.map(BigInt),
+        cellsBytes,
+      )
       return [
         allCellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
         allProofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
@@ -688,7 +695,13 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       const commitmentsBytes = commitments.map((commit) => hexToBytes(commit as PrefixedHexString))
       const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
       const proofsBytes = proofs.map((prf) => hexToBytes(prf as PrefixedHexString))
-      return ckzg.verifyCellKzgProofBatch(commitmentsBytes, indices, cellsBytes, proofsBytes)
+      // return ckzg.verifyCellKzgProofBatch(commitmentsBytes, indices, cellsBytes, proofsBytes)
+      return dasKzg.verifyCellKzgProofBatch(
+        commitmentsBytes,
+        indices.map(BigInt),
+        cellsBytes,
+        proofsBytes,
+      )
     },
   }
   // Initialize WASM crypto if JS crypto is not specified
