@@ -162,6 +162,16 @@ export function sharedConstructor(
   // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
   valueOverflowCheck({ nonce: tx.nonce }, 64, true)
 
+  // EIP-7825: Transaction Gas Limit Cap
+  if (tx.common.isActivatedEIP(7825)) {
+    const maxGasLimit = tx.common.param('maxTransactionGasLimit')
+    if (tx.gasLimit > maxGasLimit) {
+      throw EthereumJSErrorWithoutCode(
+        `Transaction gas limit ${tx.gasLimit} exceeds the maximum allowed by EIP-7825 (${maxGasLimit})`,
+      )
+    }
+  }
+
   const createContract = tx.to === undefined || tx.to === null
   const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
 
