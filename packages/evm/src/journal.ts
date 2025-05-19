@@ -12,11 +12,11 @@ import {
 import debugDefault from 'debug'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
-import type { Account, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, PrefixedHexString, NumericString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 type AddressString = string
-type SlotString = string
+type SlotString = NumericString
 type WarmSlots = Set<SlotString>
 
 type JournalType = Map<AddressString, WarmSlots>
