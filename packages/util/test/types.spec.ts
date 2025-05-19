@@ -18,10 +18,12 @@ describe('toType', () => {
     assert.strictEqual(toType(null, TypeOutput.BigInt), null)
     assert.strictEqual(toType(null, TypeOutput.Uint8Array), null)
     assert.strictEqual(toType(null, TypeOutput.PrefixedHexString), null)
+    assert.strictEqual(toType(null, TypeOutput.NumericString), null)
     assert.strictEqual(toType(undefined, TypeOutput.Number), undefined)
     assert.strictEqual(toType(undefined, TypeOutput.BigInt), undefined)
     assert.strictEqual(toType(undefined, TypeOutput.Uint8Array), undefined)
     assert.strictEqual(toType(undefined, TypeOutput.PrefixedHexString), undefined)
+    assert.strictEqual(toType(undefined, TypeOutput.NumericString), undefined)
   })
   it('from Number', () => {
     const num = 1000
@@ -37,6 +39,9 @@ describe('toType', () => {
 
     result = toType(num, TypeOutput.PrefixedHexString)
     assert.strictEqual(result, bytesToHex(bigIntToBytes(BigInt(num))))
+
+    result = toType(num, TypeOutput.NumericString)
+    assert.strictEqual(result, num.toString())
 
     assert.throws(() => {
       const num = Number.MAX_SAFE_INTEGER + 1
@@ -59,6 +64,9 @@ describe('toType', () => {
     result = toType(num, TypeOutput.PrefixedHexString)
     assert.strictEqual(result, bytesToHex(bigIntToBytes(num)))
 
+    result = toType(num, TypeOutput.NumericString)
+    assert.strictEqual(result, num.toString())
+
     const num2 = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)
     assert.throws(() => {
       toType(num2, TypeOutput.Number)
@@ -79,6 +87,9 @@ describe('toType', () => {
 
     result = toType(num, TypeOutput.PrefixedHexString)
     assert.strictEqual(result, bytesToHex(num))
+
+    result = toType(num, TypeOutput.NumericString)
+    assert.strictEqual(result, bytesToBigInt(num).toString())
   })
   it('from PrefixedHexString', () => {
     const num = intToHex(1000)
@@ -92,6 +103,9 @@ describe('toType', () => {
 
     result = toType(num, TypeOutput.Uint8Array)
     assert.deepEqual(result, hexToBytes(num))
+
+    result = toType(num, TypeOutput.NumericString)
+    assert.strictEqual(result, bytesToBigInt(hexToBytes(num)).toString())
 
     assert.throws(() => {
       //@ts-expect-error -- Testing invalid input
