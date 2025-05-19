@@ -65,6 +65,7 @@ export const TypeOutput = {
   BigInt: 1,
   Uint8Array: 2,
   PrefixedHexString: 3,
+  NumericString: 4,
 } as const
 
 export type TypeOutputReturnType = {
@@ -72,6 +73,7 @@ export type TypeOutputReturnType = {
   [TypeOutput.BigInt]: bigint
   [TypeOutput.Uint8Array]: Uint8Array
   [TypeOutput.PrefixedHexString]: PrefixedHexString
+  [TypeOutput.NumericString]: NumericString
 }
 
 /**
@@ -123,6 +125,8 @@ export function toType<T extends TypeOutput>(
     }
     case TypeOutput.PrefixedHexString:
       return bytesToHex(output) as TypeOutputReturnType[T]
+    case TypeOutput.NumericString:
+      return bytesToBigInt(output).toString() as TypeOutputReturnType[T]
     default:
       throw EthereumJSErrorWithoutCode('unknown outputType')
   }
