@@ -1,15 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import {
-  EthereumJSErrorWithoutCode,
-  bytesToUnprefixedHex,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
-
-import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.ts'
+import { RPCManager } from '../src/rpc/index.ts'
 import * as modules from '../src/rpc/modules/index.ts'
 import {
-  MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
@@ -17,7 +8,7 @@ import {
 
 import type { Server } from 'jayson/promise/index.js'
 import type { EthereumClient } from '../src/client.ts'
-import type { Config } from '../src/config.ts'
+import type { RpcConfig } from '../src/rpc/config.ts'
 
 export type RPCArgs = {
   rpc: boolean
@@ -40,190 +31,92 @@ export type RPCArgs = {
 }
 
 /**
- * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
- */
-function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
-  let jwtSecret: Uint8Array
-  const defaultJwtPath = `${config.datadir}/jwtsecret`
-  const usedJwtPath = jwtFilePath ?? defaultJwtPath
-
-  // If jwtFilePath is provided, it should exist
-  if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
-    throw EthereumJSErrorWithoutCode(`No file exists at provided jwt secret path=${jwtFilePath}`)
-  }
-
-  if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {
-    const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
-    const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
-    const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
-    if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
-      throw Error('Need a valid 256 bit hex encoded secret')
-    }
-    jwtSecret = hexToBytes(`0x${jwtSecretHex}`)
-  } else {
-    const folderExists = existsSync(config.datadir)
-    if (!folderExists) {
-      mkdirSync(config.datadir, { recursive: true })
-    }
-
-    jwtSecret = randomBytes(32)
-    writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
-    config.logger?.info(`New Engine API JWT token created path=${defaultJwtPath}`)
-  }
-  config.logger?.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
-  return jwtSecret
-}
-
-/**
  * Starts and returns enabled RPCServers
  */
-export function startRPCServers(client: EthereumClient, args: RPCArgs) {
+export function startRPCServers(client: EthereumClient, rpcConfigs: RpcConfig[]): Server[] {
   const { config } = client
   const servers: Server[] = []
-  const {
-    rpc,
-    rpcAddr,
-    rpcPort,
-    ws,
-    wsPort,
-    wsAddr,
-    rpcEngine,
-    rpcEngineAddr,
-    rpcEnginePort,
-    wsEngineAddr,
-    wsEnginePort,
-    jwtSecret: jwtSecretPath,
-    rpcEngineAuth,
-    rpcCors,
-    rpcDebug,
-    rpcDebugVerbose,
-  } = args
+
   const manager = new RPCManager(client, config)
-  const { logger } = config
-  const jwtSecret =
-    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : new Uint8Array(0)
-  let withEngineMethods = false
 
-  if ((rpc || rpcEngine) && !config.saveReceipts) {
-    logger?.warn(
-      `Starting client without --saveReceipts might lead to interop issues with a CL especially if the CL intends to propose blocks, omitting methods=${saveReceiptsMethods}`,
-    )
-  }
+  const serverGroups: Map<string, { rpcConfig: RpcConfig; server: any }> = new Map()
 
-  if (rpc || ws) {
-    let rpcHttpServer
-    withEngineMethods = rpcEngine && rpcEnginePort === rpcPort && rpcEngineAddr === rpcAddr
+  for (const rpcConfig of rpcConfigs) {
+    // unique key for each server: eth-rpc (http & ws), engine-rpc (http & ws)
+    // used to create a single rpc server for each transport type
+    const key = `${rpcConfig.type}-${rpcConfig.methodConfig}`
 
-    const { server, namespaces, methods } = createRPCServer(manager, {
-      methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
-      rpcDebugVerbose,
-      rpcDebug,
-      logger,
-    })
-    servers.push(server)
+    let serverEntry = serverGroups.get(key)
 
-    if (rpc) {
-      rpcHttpServer = createRPCServerListener({
-        RPCCors: rpcCors,
-        server,
-        withEngineMiddleware:
-          withEngineMethods && rpcEngineAuth
-            ? {
-                jwtSecret,
-                unlessFn: (req: any) =>
-                  Array.isArray(req.body)
-                    ? req.body.some((r: any) => r.method.includes('engine_')) === false
-                    : req.body.method.includes('engine_') === false,
-              }
-            : undefined,
+    if (!serverEntry) {
+      const { server, namespaces, methods } = createRPCServer(manager, {
+        methodConfig: rpcConfig.methodConfig,
+        rpcDebug: rpcConfig.debug,
+        rpcDebugVerbose: rpcConfig.debugVerbose,
+        logger: config.logger,
       })
-      rpcHttpServer.listen(rpcPort, rpcAddr)
-      logger?.info(
-        `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
-          withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
-        }`,
-      )
-      logger?.debug(
-        `Methods available at address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces} methods=${Object.keys(
+
+      servers.push(server)
+      serverGroups.set(key, { rpcConfig, server })
+      serverEntry = { rpcConfig, server }
+
+      config.logger?.info(
+        `Created RPCServer for type=${rpcConfig.type} methodConfig=${rpcConfig.methodConfig} namespaces=${namespaces} methods=${Object.keys(
           methods,
         ).join(',')}`,
       )
     }
-    if (ws) {
-      const opts: any = {
-        rpcCors,
-        server,
-        withEngineMiddleware: withEngineMethods && rpcEngineAuth ? { jwtSecret } : undefined,
-      }
-      if (rpcAddr === wsAddr && rpcPort === wsPort) {
-        // We want to load the websocket upgrade request to the same server
-        opts.httpServer = rpcHttpServer
-      }
 
-      const rpcWsServer = createWsRPCServerListener(opts)
-      if (rpcWsServer) rpcWsServer.listen(wsPort)
-      logger?.info(
-        `Started JSON RPC Server address=ws://${wsAddr}:${wsPort} namespaces=${namespaces}${
-          withEngineMethods ? ` rpcEngineAuth=${rpcEngineAuth}` : ''
-        }`,
-      )
-      logger?.debug(
-        `Methods available at address=ws://${wsAddr}:${wsPort} namespaces=${namespaces} methods=${Object.keys(
-          methods,
-        ).join(',')}`,
-      )
-    }
-  }
-
-  if (rpcEngine && !(rpc && rpcPort === rpcEnginePort && rpcAddr === rpcEngineAddr)) {
-    const { server, namespaces, methods } = createRPCServer(manager, {
-      methodConfig: MethodConfig.EngineOnly,
-      rpcDebug,
-      rpcDebugVerbose,
-      logger,
-    })
-    servers.push(server)
-    const rpcHttpServer = createRPCServerListener({
-      RPCCors: rpcCors,
-      server,
-      withEngineMiddleware: rpcEngineAuth
+    const { server } = serverEntry
+    // middleware for engine auth
+    const middleware =
+      rpcConfig.engineAuth && rpcConfig.jwtSecret
         ? {
-            jwtSecret,
+            jwtSecret: rpcConfig.jwtSecret,
+            unlessFn: (req: any) =>
+              Array.isArray(req.body)
+                ? req.body.some((r: any) => r.method.includes('engine_')) === false
+                : req.body.method.includes('engine_') === false,
           }
-        : undefined,
-    })
-    rpcHttpServer.listen(rpcEnginePort, rpcEngineAddr)
-    logger?.info(
-      `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`,
-    )
-    logger?.debug(
-      `Methods available at address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} methods=${Object.keys(
-        methods,
-      ).join(',')}`,
-    )
+        : undefined
 
-    if (ws) {
-      const opts: any = {
-        rpcCors,
+    if (rpcConfig.transport === 'http') {
+      const httpServer = createRPCServerListener({
+        RPCCors: rpcConfig.cors,
         server,
-        withEngineMiddleware: rpcEngineAuth ? { jwtSecret } : undefined,
+        withEngineMiddleware: middleware,
+      })
+      httpServer.listen(rpcConfig.port, rpcConfig.address)
+
+      config.logger?.info(
+        `Started JSON RPC Server address=http://${rpcConfig.address}:${rpcConfig.port} type=${rpcConfig.type} ${
+          rpcConfig.engineAuth ? 'engineAuth=true' : ''
+        }`,
+      )
+    }
+
+    if (rpcConfig.transport === 'ws') {
+      const wsOpts: any = {
+        RPCCors: rpcConfig.cors,
+        server,
+        withEngineMiddleware: middleware,
       }
 
-      if (rpcEngineAddr === wsEngineAddr && rpcEnginePort === wsEnginePort) {
-        // We want to load the websocket upgrade request to the same server
-        opts.httpServer = rpcHttpServer
+      // Attach to existing HTTP server for upgrades if same port/address
+      const httpKey = `${rpcConfig.type}-${rpcConfig.methodConfig}`
+      if (rpcConfig.address === rpcConfig.address && serverGroups.has(httpKey)) {
+        wsOpts.httpServer = serverGroups.get(httpKey)?.server
       }
 
-      const rpcWsServer = createWsRPCServerListener(opts)
-      if (rpcWsServer) rpcWsServer.listen(wsEnginePort, wsEngineAddr)
-      logger?.info(
-        `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`,
-      )
-      logger?.debug(
-        `Methods available at address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} methods=${Object.keys(
-          methods,
-        ).join(',')}`,
-      )
+      const wsServer = createWsRPCServerListener(wsOpts)
+      if (wsServer) {
+        wsServer.listen(rpcConfig.port)
+        config.logger?.info(
+          `Started JSON RPC WS Server address=ws://${rpcConfig.address}:${rpcConfig.port} namespaces=${rpcConfig.type} ${
+            rpcConfig.engineAuth ? 'engineAuth=true' : ''
+          }`,
+        )
+      }
     }
   }
 
