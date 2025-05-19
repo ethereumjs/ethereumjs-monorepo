@@ -1,4 +1,4 @@
-import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto, NumericString } from '@ethereumjs/util'
 import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
@@ -170,7 +170,7 @@ export type EIPConfig = {
 }
 
 export type ParamsConfig = {
-  [key: string]: number | string | null
+  [key: string]: number | NumericString | null
 }
 
 export type HardforkConfig = {
