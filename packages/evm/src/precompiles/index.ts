@@ -18,6 +18,7 @@ import { precompile08 } from './08-bn254-pairing.ts'
 import { precompile09 } from './09-blake2f.ts'
 import { precompile10 } from './10-bls12-map-fp-to-g1.ts'
 import { precompile11 } from './11-bls12-map-fp2-to-g2.ts'
+import { precompile12 } from './12-p256-verify.ts'
 import { MCLBLS, NobleBLS } from './bls12_381/index.ts'
 import { NobleBN254, RustBN254 } from './bn254/index.ts'
 
@@ -213,6 +214,15 @@ const precompileEntries: PrecompileEntry[] = [
     precompile: precompile11,
     name: 'BLS12_MAP_FP_TO_G2 (0x11)',
   },
+  {
+    address: BYTES_19 + '12',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 7212,
+    },
+    precompile: precompile12,
+    name: 'P256_VERIFY (0x12)',
+  },
 ]
 
 const precompiles: Precompiles = {
@@ -233,6 +243,7 @@ const precompiles: Precompiles = {
   [BYTES_19 + '0f']: precompile0f,
   [BYTES_19 + '10']: precompile10,
   [BYTES_19 + '11']: precompile11,
+  [BYTES_19 + '12']: precompile12,
 }
 
 type DeletePrecompile = {
