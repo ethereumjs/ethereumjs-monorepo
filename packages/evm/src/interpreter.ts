@@ -1123,7 +1123,7 @@ export class Interpreter {
     this._env.contract.nonce += BIGINT_1
     await this.journal.putAccount(this._env.address, this._env.contract)
 
-    if (this.common.isActivatedEIP(3860) || this.common.isActivatedEIP(7907)) {
+    if (this.common.isActivatedEIP(3860)) {
       if (
         codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false

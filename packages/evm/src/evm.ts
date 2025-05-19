@@ -500,7 +500,7 @@ export class EVM implements EVMInterface {
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
-    if (this.common.isActivatedEIP(3860) || this.common.isActivatedEIP(7907)) {
+    if (this.common.isActivatedEIP(3860)) {
       if (
         message.data.length > Number(this.common.param('maxInitCodeSize')) &&
         !this.allowUnlimitedInitCodeSize
@@ -707,15 +707,9 @@ export class EVM implements EVMInterface {
       if (this.common.gteHardfork(Hardfork.Homestead)) {
         if (!allowedCodeSize) {
           if (this.DEBUG) {
-            if (this.common.isActivatedEIP(7907)) {
-              debug(
-                `Code size exceeds maximum code size ${this.common.param('maxCodeSize')}KB (>= Osaka)`,
-              )
-            } else {
-              debug(
-                `Code size exceeds maximum code size ${this.common.param('maxCodeSize')}KB (>= SpuriousDragon)`,
-              )
-            }
+            debug(
+              `Code size exceeds maximum code size ${this.common.param('maxCodeSize')}KB (>= ${this.common.isActivatedEIP(7907) ? 'Osaka' : 'SpuriousDragon'})`,
+            )
           }
           result = { ...result, ...CodesizeExceedsMaximumError(message.gasLimit) }
         } else {

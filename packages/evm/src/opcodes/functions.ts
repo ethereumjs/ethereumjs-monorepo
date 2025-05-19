@@ -1340,7 +1340,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [value, offset, length] = runState.stack.popN(3)
 
       if (
-        (common.isActivatedEIP(3860) || common.isActivatedEIP(7907)) &&
+        common.isActivatedEIP(3860) &&
         length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
@@ -1376,7 +1376,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [value, offset, length, salt] = runState.stack.popN(4)
 
       if (
-        (common.isActivatedEIP(3860) || common.isActivatedEIP(7907)) &&
+        common.isActivatedEIP(3860) &&
         length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
